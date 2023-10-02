@@ -12,6 +12,19 @@
  *************************************************************************/
 package org.ejbca.config;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.accounts.AccountBindingException;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.internal.InternalResources;
+import org.cesecore.internal.UpgradeableDataHashMap;
+import org.ejbca.core.model.UsernameGenerateMode;
+import org.ejbca.core.protocol.acme.AcmeChallenge;
+import org.ejbca.core.protocol.acme.AcmeIdentifier;
+import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
+import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
+import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,37 +37,26 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.accounts.AccountBindingException;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.internal.InternalResources;
-import org.cesecore.internal.UpgradeableDataHashMap;
-import org.ejbca.core.model.ra.UsernameGeneratorParams;
-import org.ejbca.core.protocol.acme.AcmeChallenge;
-import org.ejbca.core.protocol.acme.AcmeIdentifier;
-import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
-import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
-import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
-
 /**
  * Configuration used by specifying the configurationId as part of the request URL path or as URL parameter.
  */
 public class AcmeConfiguration extends UpgradeableDataHashMap implements Serializable {
 
-    /** Class logger. */
+    /**
+     * Class logger.
+     */
     private static final Logger log = Logger.getLogger(AcmeConfiguration.class);
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     protected static final InternalResources intres = InternalResources.getInstance();
-    
+
     protected static final float LATEST_VERSION = 11;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
     private static final String KEY_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
-    private static final String KEY_RA_NAMEGENERATIONPOSTFIX= "ra.namegenerationpostfix";
+    private static final String KEY_RA_NAMEGENERATIONPOSTFIX = "ra.namegenerationpostfix";
     private static final String KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING = "requireExternalAccountBinding";
     private static final String KEY_EXTERNAL_ACCOUNT_BINDING = "externalAccountBinding";
     private static final String KEY_PRE_AUTHORIZATION_ALLOWED = "preAuthorizationAllowed";
@@ -85,7 +87,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_CLIENT_AUTHENTICATION_REQUIRED = "clientAuthenticationRequired";
     private static final String KEY_PREFERRED_ROOT_CA_SUBJECTDN = "preferredrootcasubjectdn";
 
-    private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGeneratorParams.RANDOM;
+    private static final String DEFAULT_RA_USERNAME_GENERATION_SCHEME = UsernameGenerateMode.RANDOM.name();
     private static final String DEFAULT_RA_USERNAME_GENERATION_PARAMS = "CN";
     private static final String DEFAULT_RA_USERNAME_GENERATION_PREFIX = "";
     private static final String DEFAULT_RA_USERNAME_GENERATION_POSTFIX = "";
@@ -97,25 +99,26 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final boolean DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = false;
     private static final boolean DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = true;
     public static final String DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES = "any-dns-challenge";
-    
+
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
     private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
     private static final String DEFAULT_WEBSITE_URL = "https://www.example.com/";
     private static final long DEFAULT_ORDER_VALIDITY = 3600000L;
     private static final String DEFAULT_AUTHORIZED_REDIRECT_PORTS = "22,25,80,443";
     private static final boolean DEFAULT_USE_DNSSEC_VALIDATION = true;
-    
+
     public static final int DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID = -1;
     public static final int DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID = -1;
     private static final boolean DEFAULT_CLIENT_AUTHENTICATION_REQUIRED = false;
     public static final String DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN = "default";
-    
-    private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[] { "TLSv1.2", "TLSv1.3" };
-    
+
+    private static final String[] DEFAULT_TLS_APLN_PROTOCOLS_ENABLED = new String[]{ "TLSv1.2", "TLSv1.3" };
+
     private String configurationId = null;
     private List<String> caaIdentities = new ArrayList<>();
-    
-    public AcmeConfiguration() {}
+
+    public AcmeConfiguration() {
+    }
 
     public AcmeConfiguration(final Object upgradeableDataHashMapData) {
         super.loadData(upgradeableDataHashMapData);
@@ -146,12 +149,12 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             }
             // v8. ACME EAB with multiple keys -> multiple EAB.
             try {
-                if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) { 
+                if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) {
                     setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
                             AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
                 } else if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof LinkedHashMap) {
-                    final LinkedList<LinkedHashMap<Object,Object>> clones = new LinkedList<>();
-                    clones.add((LinkedHashMap<Object,Object>)data.get(KEY_EXTERNAL_ACCOUNT_BINDING));
+                    final LinkedList<LinkedHashMap<Object, Object>> clones = new LinkedList<>();
+                    clones.add((LinkedHashMap<Object, Object>) data.get(KEY_EXTERNAL_ACCOUNT_BINDING));
                     data.put(KEY_EXTERNAL_ACCOUNT_BINDING, clones);
                 } else if (!(data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof List)) { // Should never happen.
                     log.error("Invalida data type during upgrade. Verify ACME configuration with alias '" + getConfigurationId() + "'");
@@ -203,7 +206,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // v2. ACME external account binding implementation.
             try {
                 // Should not be reached anymore with version 8.
-                if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) { 
+                if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) == null) {
                     setExternalAccountBinding(new LinkedList<AcmeExternalAccountBinding>(Collections.singletonList(
                             AcmeExternalAccountBindingFactory.INSTANCE.getDefaultImplementation())));
                 }
@@ -214,33 +217,43 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         }
     }
 
-    /** @return the configuration ID as used in the request URL path */
-    public String getConfigurationId() { return configurationId; }
-    public void setConfigurationId(final String configurationId) { this.configurationId = configurationId; }
+    /**
+     * @return the configuration ID as used in the request URL path
+     */
+    public String getConfigurationId() {
+        return configurationId;
+    }
+
+    public void setConfigurationId(final String configurationId) {
+        this.configurationId = configurationId;
+    }
 
     /**
      * Getter for RA Name Generation Scheme for given alias
-     * @return name generation scheme, one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
+     *
+     * @return name generation scheme, one of UsernameGenerateMode.DN, UsernameGenerateMode.RANDOM, UsernameGenerateMode.FIXED, UsernameGenerateMode.USERNAME
      */
     public String getRANameGenScheme() {
         // Set default to RANDOM for aliases created before RA name generation was added.
         String value = (String) data.get(KEY_RA_NAMEGENERATIONSCHEME);
         if (value == null) {
-            value = UsernameGeneratorParams.RANDOM;
+            value = UsernameGenerateMode.RANDOM.name();
         }
         return value;
     }
 
     /**
      * Setter for RA Name Generation Scheme
-     * @param scheme one of UsernameGeneratorParams.DN, UsernameGeneratorParams.RANDOM, UsernameGeneratorParams.FIXED, UUsernameGeneratorParams.SERNAME
+     *
+     * @param scheme one of UsernameGenerateMode.DN, UsernameGenerateMode.RANDOM, UsernameGenerateMode.FIXED, UsernameGenerateMode.SERNAME
      */
     public void setRANameGenScheme(String scheme) {
         data.put(KEY_RA_NAMEGENERATIONSCHEME, scheme);
     }
-    
+
     /**
      * Getter for RA Name Generation Params for given alias
+     *
      * @return RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
      */
     public String getRANameGenParams() {
@@ -249,8 +262,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Setter for RA Name Generation Parameters
+     *
      * @param params RA name generation scheme DN parameters, Can be CN, UID, SN etc, or CN;UID;SN
-     */    
+     */
     public void setRANameGenParams(String params) {
         data.put(KEY_RA_NAMEGENERATIONPARAMS, params);
     }
@@ -269,16 +283,16 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     /**
      * Setter for RA Name Generation Prefix
-     * @param prefix RA name prefix
      *
-     */ 
+     * @param prefix RA name prefix
+     */
     public void setRANameGenPrefix(String prefix) {
         data.put(KEY_RA_NAMEGENERATIONPREFIX, prefix);
     }
-    
+
     /**
      * Getter for RA Name Generation Postfix
-     */     
+     */
     public String getRANameGenPostfix() {
         // Set default to empty String for aliases created before RA name generation was added.
         String value = (String) data.get(KEY_RA_NAMEGENERATIONPOSTFIX);
@@ -288,27 +302,28 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         return value;
     }
 
-     /**
+    /**
      * Setter for RA Name Generation Postfix.
-     * @param postfix RA name postfix
      *
-     */    
+     * @param postfix RA name postfix
+     */
     public void setRANameGenPostfix(String postfix) {
         data.put(KEY_RA_NAMEGENERATIONPOSTFIX, postfix);
     }
-    
+
     /**
      * External Account Binding
      * https://tools.ietf.org/html/rfc8555#section-7.3.4
-     *
+     * <p>
      * NOTE: Don't expose this as client configuration yet. The current implementation has the code for validation
-     *       using a dummy HMAC, but will strip this info anyway from the actual account.
+     * using a dummy HMAC, but will strip this info anyway from the actual account.
      *
      * @return true if an the server should enforce external account bindings.
      */
     public boolean isRequireExternalAccountBinding() {
-        return Boolean.valueOf((String)super.data.get(KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING));
+        return Boolean.valueOf((String) super.data.get(KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING));
     }
+
     public void setRequireExternalAccountBinding(final boolean requireExternalAccountBinding) {
         super.data.put(KEY_REQUIRE_EXTERNAL_ACCOUNT_BINDING, String.valueOf(requireExternalAccountBinding));
     }
@@ -316,11 +331,11 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     @SuppressWarnings("unchecked")
     public LinkedList<AcmeExternalAccountBinding> getExternalAccountBinding() throws AccountBindingException {
         final LinkedList<AcmeExternalAccountBinding> result = new LinkedList<>();
-        
+
         if (data.get(KEY_EXTERNAL_ACCOUNT_BINDING) instanceof List) {
             for (Object o : (List<?>) data.get(KEY_EXTERNAL_ACCOUNT_BINDING)) {
                 if (o instanceof LinkedHashMap) {
-                    final LinkedHashMap<Object,Object> eabData = (LinkedHashMap<Object,Object>) o;
+                    final LinkedHashMap<Object, Object> eabData = (LinkedHashMap<Object, Object>) o;
                     final AcmeExternalAccountBinding eab = AcmeExternalAccountBindingFactory.INSTANCE.getArcheType((String) eabData.get("typeIdentifier"));
                     eab.setDataMap(eabData);
                     result.add(eab);
@@ -335,9 +350,9 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     public void setExternalAccountBinding(final LinkedList<AcmeExternalAccountBinding> eabs) {
         if (eabs != null) {
-            final List<LinkedHashMap<Object,Object>> clones = new ArrayList<>();
+            final List<LinkedHashMap<Object, Object>> clones = new ArrayList<>();
             for (AcmeExternalAccountBinding eab : eabs) {
-                final LinkedHashMap<Object,Object> clone = eab.clone().getDataMap();
+                final LinkedHashMap<Object, Object> clone = eab.clone().getDataMap();
                 clones.add(clone);
             }
             data.put(KEY_EXTERNAL_ACCOUNT_BINDING, clones);
@@ -347,96 +362,112 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     /**
      * Pre-Authorization
      * https://tools.ietf.org/html/rfc8555#section-7.4.1
-     * 
+     * <p>
      * "If a CA wishes to allow pre-authorization within ACME, it can offer a "new authorization" resource in its
      * directory by adding the field "newAuthz" with a URL for the new authorization resource."
      */
     public boolean isPreAuthorizationAllowed() {
-        return Boolean.valueOf((String)super.data.get(KEY_PRE_AUTHORIZATION_ALLOWED));
+        return Boolean.valueOf((String) super.data.get(KEY_PRE_AUTHORIZATION_ALLOWED));
     }
+
     public void setPreAuthorizationAllowed(final boolean preAuthorizationAllowed) {
         super.data.put(KEY_PRE_AUTHORIZATION_ALLOWED, String.valueOf(preAuthorizationAllowed));
     }
 
-    /** @return the End Entity Profile ID whos default Certificate Profile and CA will be used for issuing */
+    /**
+     * @return the End Entity Profile ID whos default Certificate Profile and CA will be used for issuing
+     */
     public int getEndEntityProfileId() {
         final Integer endEntityProfileId = (Integer) super.data.get(KEY_END_ENTITY_PROFILE_ID);
-        return endEntityProfileId==null ? EndEntityConstants.NO_END_ENTITY_PROFILE : endEntityProfileId.intValue();
+        return endEntityProfileId == null ? EndEntityConstants.NO_END_ENTITY_PROFILE : endEntityProfileId.intValue();
     }
+
     public void setEndEntityProfileId(final int endEntityProfileId) {
         super.data.put(KEY_END_ENTITY_PROFILE_ID, Integer.valueOf(endEntityProfileId));
     }
 
-    /** 
-     * For testing purposes only, the identifier can be set to 'localhost', if you want to issue certificates 
+    /**
+     * For testing purposes only, the identifier can be set to 'localhost', if you want to issue certificates
      * for arbitrary DNS names on your host -> http://localhost/.well-known/acme-challenge/{token}
-     * 
+     *
      * @return the pattern we will use for "http-01" challenge validation. Defaults to example from RFC draft 06.
-     * */
+     */
     public String getValidationHttpCallBackUrlTemplate() {
         final String urlTemplate = (String) super.data.get(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE);
-        return urlTemplate==null ? "http://{identifer}/.well-known/acme-challenge/{token}" : urlTemplate;
+        return urlTemplate == null ? "http://{identifer}/.well-known/acme-challenge/{token}" : urlTemplate;
     }
+
     public void setValidationHttpCallBackUrlTemplate(final String urlTemplate) {
-        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+        if (!EjbcaConfiguration.getIsInProductionMode()) {
             super.data.put(KEY_VALIDATION_HTTP_CALLBACK_URL_TEMPLATE, urlTemplate);
         }
     }
-    
-    /** 
-     * For testing purposes only, the identifier can be set to 'localhost', if you want to issue certificates 
+
+    /**
+     * For testing purposes only, the identifier can be set to 'localhost', if you want to issue certificates
      * for arbitrary DNS names on your host -> https://localhost:1443
      **/
     public void setValidationTlsAlpnLocalhost(final boolean useLocalhost) {
-        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+        if (!EjbcaConfiguration.getIsInProductionMode()) {
             super.data.put(KEY_VALIDATION_TLS_ALPN_USE_LOCALHOST, useLocalhost);
         }
     }
-    
-    /** @return true if the tls-alpn-01 challenge validation is done against localhost */
+
+    /**
+     * @return true if the tls-alpn-01 challenge validation is done against localhost
+     */
     public boolean isValidationTlsAlpnLocalhost() {
         final Boolean useLocalhost = (Boolean) super.data.get(KEY_VALIDATION_TLS_ALPN_USE_LOCALHOST);
-        return useLocalhost == null ? false: useLocalhost;
+        return useLocalhost == null ? false : useLocalhost;
     }
-    
-    /** @return the port for the tls-alpn-01 challenge validation or the default SSL port if not set. */
+
+    /**
+     * @return the port for the tls-alpn-01 challenge validation or the default SSL port if not set.
+     */
     public int getValidationTlsAlpnPort() {
         final Integer port = (Integer) super.data.get(KEY_VALIDATION_TLS_ALPN_PORT);
         return port == null ? 443 : port;
     }
-    
-    /** 
+
+    /**
      * For testing purposes only, the port can be set i.e. to an unprivileged port like 1443.
      * See AcmeInMemoryTlsAlpServer.PORT.
      **/
     public void setValidationTlsAlpnPort(final int port) {
-        if (!EjbcaConfiguration.getIsInProductionMode()) { 
+        if (!EjbcaConfiguration.getIsInProductionMode()) {
             super.data.put(KEY_VALIDATION_TLS_ALPN_PORT, port);
         }
     }
 
-    /** @return an URL of where the current Terms Of Services can be located. */
+    /**
+     * @return an URL of where the current Terms Of Services can be located.
+     */
     public String getTermsOfServiceUrl() {
         return (String) super.data.get(KEY_TERMS_OF_SERVICE_URL);
     }
-    
+
     public void setTermsOfServiceUrl(final String termsOfServiceUrl) {
         super.data.put(KEY_TERMS_OF_SERVICE_URL, termsOfServiceUrl);
     }
-    
-    /** @return a URL pointing to a location where advice how to agree to a new terms Of services version can be found. */
+
+    /**
+     * @return a URL pointing to a location where advice how to agree to a new terms Of services version can be found.
+     */
     public String getTermsOfServiceChangeUrl() {
         return (String) super.data.get(KEY_TERMS_OF_SERVICE_CHANGE_URL);
     }
-    
+
     public void setTermsOfServiceChangeUrl(final String url) {
         super.data.put(KEY_TERMS_OF_SERVICE_CHANGE_URL, url);
     }
-    
-    /** @return the web site URL presented in the directory meta data */
+
+    /**
+     * @return the web site URL presented in the directory meta data
+     */
     public String getWebSiteUrl() {
         return (String) super.data.get(KEY_WEB_SITE_URL);
     }
+
     public void setWebSiteUrl(final String webSiteUrl) {
         super.data.put(KEY_WEB_SITE_URL, webSiteUrl);
     }
@@ -449,25 +480,33 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         this.caaIdentities = caaIdentities;
     }
 
-    /** @return how long a new order will be valid for in milliseconds */
+    /**
+     * @return how long a new order will be valid for in milliseconds
+     */
     public long getOrderValidity() {
         final Long orderValidity = (Long) data.get(KEY_ORDER_VALIDITY);
         return Objects.isNull(orderValidity) ? DEFAULT_ORDER_VALIDITY : orderValidity;
     }
+
     public void setOrderValidity(final long orderValidity) {
         super.data.put(KEY_ORDER_VALIDITY, orderValidity);
     }
 
-    /** @return how long a new pre-authorizations will be valid for in milliseconds */
+    /**
+     * @return how long a new pre-authorizations will be valid for in milliseconds
+     */
     public long getPreAuthorizationValidity() {
         final Long preAuthorizationValidity = (Long) super.data.get(KEY_PRE_AUTHORIZATION_VALIDITY);
-        return preAuthorizationValidity==null ? 24*3600000L : preAuthorizationValidity.intValue();
+        return preAuthorizationValidity == null ? 24 * 3600000L : preAuthorizationValidity.intValue();
     }
+
     public void setPreAuthorizationValidity(final int preAuthorizationValidity) {
         super.data.put(KEY_PRE_AUTHORIZATION_VALIDITY, Long.valueOf(preAuthorizationValidity));
     }
 
-    /** @return the number of required challenges that needs to be fulfilled in order to grant authorization for an identifier */
+    /**
+     * @return the number of required challenges that needs to be fulfilled in order to grant authorization for an identifier
+     */
     public int getValidChallengesPerAuthorization() {
         return 1;
     }
@@ -479,7 +518,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setWildcardCertificateIssuanceAllowed(final boolean wildcardCertificateIssuanceAllowed) {
         super.data.put(KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED, String.valueOf(wildcardCertificateIssuanceAllowed));
     }
-    
+
     public boolean isWildcardWithHttp01ChallengeAllowed() {
         return Boolean.valueOf((String) super.data.get(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED));
     }
@@ -487,11 +526,11 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setWildcardWithHttp01ChallengeAllowed(final boolean allowed) {
         super.data.put(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED, String.valueOf(allowed));
     }
-    
+
     public String getDnsIdentifiersChallengeTypes() {
         return (String) super.data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES);
     }
-    
+
     public List<String> getDnsIdentifiersChallengeTypesList() {
         final List<String> result = new ArrayList<>();
         final String types = getDnsIdentifiersChallengeTypes();
@@ -500,7 +539,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         }
         return result;
     }
-    
+
     public void setDnsIdentifiersChallengeTypes(String types) throws AcmeChallengeTypeException {
         if (types != null && !types.trim().isEmpty()) {
             // Remove duplicates.
@@ -520,7 +559,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             super.data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
         }
     }
-    
+
     public String getDnssecTrustAnchor() {
         return (String) super.data.get(KEY_DNSSEC_TRUST_ANCHOR);
     }
@@ -536,29 +575,29 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setDnsResolver(String dnsResolver) {
         super.data.put(KEY_DNS_RESOLVER, String.valueOf(dnsResolver));
     }
-    
+
     public int getDnsPort() {
         final Integer dnsPort = (Integer) super.data.get(KEY_DNS_PORT);
         return dnsPort != null ? dnsPort : DNS_SERVER_PORT_DEFAULT;
     }
-    
+
     public void setDnsPort(final int dnsPort) {
         super.data.put(KEY_DNS_PORT, dnsPort);
     }
-    
+
     public int getRetryAfter() {
-        final Integer retryAfter = (Integer)data.get(KEY_RETRY_AFTER);
+        final Integer retryAfter = (Integer) data.get(KEY_RETRY_AFTER);
         return Objects.isNull(retryAfter) ? 0 : retryAfter.intValue();
     }
-    
+
     public void setRetryAfter(final int retryAfter) {
         data.put(KEY_RETRY_AFTER, retryAfter);
     }
-    
+
     public String getAuthorizedRedirectPorts() {
         return (String) super.data.get(KEY_AUTHORIZED_REDIRECT_PORTS);
     }
-    
+
     public Set<Integer> getAuthorizedRedirectPortsList() {
         final String ports = getAuthorizedRedirectPorts();
         if (ports != null && !ports.trim().isEmpty()) {
@@ -576,27 +615,27 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             super.data.put(KEY_AUTHORIZED_REDIRECT_PORTS, "");
         }
     }
-    
+
     public boolean isTermsOfServiceRequireNewApproval() {
         return Boolean.valueOf((String) super.data.get(KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL));
     }
-    
+
     public void setTermsOfServiceRequireNewApproval(boolean termsOfServiceRequireNewApproval) {
         super.data.put(KEY_TERMS_OF_SERVICE_REQUIRE_NEW_APPROVAL, String.valueOf(termsOfServiceRequireNewApproval));
     }
-    
+
     public boolean isAgreeToNewTermsOfServiceAllowed() {
         return Boolean.valueOf((String) super.data.get(KEY_AGREE_TO_NEW_TERMS_OF_SERVICE_ALLOWED));
     }
-    
+
     public void setAgreeToNewTermsOfServiceAllowed(boolean allowed) {
         super.data.put(KEY_AGREE_TO_NEW_TERMS_OF_SERVICE_ALLOWED, String.valueOf(allowed));
     }
-    
+
     public boolean isUseDnsSecValidation() {
         return Boolean.valueOf((String) super.data.get(KEY_USE_DNSSEC_VALIDATION));
     }
-    
+
     public void setUseDnsSecValidation(final boolean useDnsSecValidation) {
         super.data.put(KEY_USE_DNSSEC_VALIDATION, String.valueOf(useDnsSecValidation));
     }
@@ -618,23 +657,23 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setApprovalForKeyChangeId(int approvalForKeyChangeId) {
         data.put(KEY_APPROVAL_FOR_KEY_CHANGE_ID, approvalForKeyChangeId);
     }
-    
+
     public boolean isApprovalForNewAccountRequired() {
-        return DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID != getApprovalForNewAccountId(); 
+        return DEFAULT_APPROVAL_FOR_NEW_ACCOUNT_ID != getApprovalForNewAccountId();
     }
-    
+
     public boolean isApprovalForKeyChangeRequired() {
         return DEFAULT_APPROVAL_FOR_KEY_CHANGE_ID != getApprovalForKeyChangeId();
     }
-    
+
     public boolean isClientAuthenticationRequired() {
         return Boolean.valueOf((String) super.data.get(KEY_CLIENT_AUTHENTICATION_REQUIRED));
     }
-    
+
     public void setClientAuthenticationRequired(final boolean required) {
         super.data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(required));
     }
-    
+
     public String getPreferredRootCaSubjectDn() {
         String value = (String) data.get(KEY_PREFERRED_ROOT_CA_SUBJECTDN);
         if (StringUtils.isBlank(value)) {
@@ -644,16 +683,18 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             return value;
         }
     }
-    
+
     public void setPreferredRootCaSubjectDn(String preferredRootCaSubjectDn) {
         data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, preferredRootCaSubjectDn);
     }
-    
+
     public String[] getTlsAlpnProtocolsEnabled() {
         return DEFAULT_TLS_APLN_PROTOCOLS_ENABLED;
     }
-    
-    /** Initializes a new acme configuration with default values. */
+
+    /**
+     * Initializes a new acme configuration with default values.
+     */
     public void initialize(String alias) {
         alias += ".";
         setRANameGenScheme(DEFAULT_RA_USERNAME_GENERATION_SCHEME);
