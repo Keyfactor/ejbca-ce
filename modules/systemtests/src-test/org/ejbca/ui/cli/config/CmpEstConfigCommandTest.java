@@ -25,6 +25,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
+import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Test;
@@ -138,16 +139,16 @@ public class CmpEstConfigCommandTest {
         assertUnusedAlias("Test can't proceed on this system.", alias);
         try {
             new org.ejbca.ui.cli.config.est.AddAliasCommand().execute("--alias", alias);
-            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.DN, "CN", "", "");
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGenerateMode.DN.name(), "CN", "", "");
             new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONPREFIX, "--value", "prefix");
-            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.DN, "CN", "prefix", "");
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGenerateMode.DN.name(), "CN", "prefix", "");
             new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONPOSTFIX, "--value", "postfix");
-            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.DN, "CN", "prefix", "postfix");
-            new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "--value", UsernameGeneratorParams.RANDOM);
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGenerateMode.DN.name(), "CN", "prefix", "postfix");
+            new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "--value", UsernameGenerateMode.RANDOM.name());
             // If the next line ever fails due to expectedParams being "", this is not a bug
-            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.RANDOM, "CN", "prefix", "postfix");
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGenerateMode.RANDOM.name(), "CN", "prefix", "postfix");
             new org.ejbca.ui.cli.config.est.UpdateCommand().execute("--alias", alias, "--key", EstConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "--value", "");
-            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGeneratorParams.RANDOM, "", "prefix", "postfix");
+            assertEstConfigurationRaNameGenerationParameters(alias, UsernameGenerateMode.RANDOM.name(), "", "prefix", "postfix");
         } finally {
             new org.ejbca.ui.cli.config.est.RemoveAliasCommand().execute("--alias", alias);
         }
