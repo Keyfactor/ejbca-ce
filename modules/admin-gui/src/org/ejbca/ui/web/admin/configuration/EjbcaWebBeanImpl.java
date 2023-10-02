@@ -1963,7 +1963,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         }
         reloadEstConfiguration();
         estConfigForEdit = new EstConfiguration();
-        estConfigForEdit.setAliasList(new LinkedHashSet<String>());
+        estConfigForEdit.setAliasList(new LinkedHashSet<>());
         estConfigForEdit.addAlias(alias);
         for(final String key : EstConfiguration.getAllAliasKeys(alias)) {
             final String value = estconfiguration.getValue(key, alias);

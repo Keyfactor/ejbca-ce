@@ -110,9 +110,7 @@ public class RaEndEntityBean implements Serializable {
 
     private String username = null;
     private RaEndEntityDetails raEndEntityDetails = null;
-    private Map<Integer, String> eepIdToNameMap = null;
-    private Map<Integer, String> cpIdToNameMap = null;
-    private Map<Integer,String> caIdToNameMap = new HashMap<>();
+    private final Map<Integer,String> caIdToNameMap = new HashMap<>();
     private boolean editEditEndEntityMode = false;
     private List<RaCertificateDetails> issuedCerts = null;
     private SelectItem[] selectableStatuses = null;
@@ -150,12 +148,8 @@ public class RaEndEntityBean implements Serializable {
     private String psd2NcaId;
     private List<String> selectedPsd2PspRoles;
     private String cabfOrganizationIdentifier;
-    private String certValidityStartTime;
-    private String certValidityEndTime;
-    private boolean useCertValidityStartTime;
-    private boolean isCertValidityStartTimeModifiable;
-    private boolean useCertValidityEndTime;
-    private boolean isCertValidityEndTimeModifiable;
+    private String validityStartTime;
+    private String validityEndTime;
 
     // SSH fields
     private String sshKeyId;
@@ -200,8 +194,8 @@ public class RaEndEntityBean implements Serializable {
         if (username != null) {
             final EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
             if (endEntityInformation != null) {
-                cpIdToNameMap = raMasterApiProxyBean.getAuthorizedCertificateProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
-                eepIdToNameMap = raMasterApiProxyBean.getAuthorizedEndEntityProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
+                final Map<Integer, String> cpIdToNameMap = raMasterApiProxyBean.getAuthorizedCertificateProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
+                final Map<Integer, String> eepIdToNameMap = raMasterApiProxyBean.getAuthorizedEndEntityProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
                 final List<CAInfo> caInfos = new ArrayList<>(raMasterApiProxyBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
                 for (final CAInfo caInfo : caInfos) {
                     caIdToNameMap.put(caInfo.getCAId(), caInfo.getName());
@@ -215,18 +209,16 @@ public class RaEndEntityBean implements Serializable {
                 endEntityProfiles = authorizedEndEntityProfiles.getIdMap()
                     .entrySet()
                     .stream()
-                    .collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue().getName()));
+                    .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getName()));
 
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
 
-                ExtendedInformation extendedInformation =
-                        checkIfExtendedInfoIsNull(endEntityInformation.getExtendedInformation());
+                ExtendedInformation extendedInformation = checkIfExtendedInfoIsNull(endEntityInformation.getExtendedInformation());
                 extensionData = raEndEntityDetails.getExtensionData(extendedInformation);
-                certValidityStartTime = extendedInformation.getCertificateStartTime();
-                certValidityEndTime = extendedInformation.getCertificateEndTime();
-
+                validityStartTime = raEndEntityDetails.getValidityStartTime();
+                validityEndTime = raEndEntityDetails.getValidityEndTime();
                 keyRecoverable = raEndEntityDetails.getEndEntityInformation().getKeyRecoverable();
                 resetMaxFailedLogins();
                 email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
@@ -245,10 +237,6 @@ public class RaEndEntityBean implements Serializable {
                     sshCriticalOptionsSourceAddress = raEndEntityDetails.getSshSourceAddress();
                     sshCriticalOptionsVerifyRequired = raEndEntityDetails.getSshVerifyRequired();
                 }
-                useCertValidityStartTime = getEndEntityProfile().isValidityStartTimeUsed();
-                isCertValidityStartTimeModifiable = getEndEntityProfile().isValidityStartTimeModifiable();
-                useCertValidityEndTime = getEndEntityProfile().isValidityEndTimeUsed();
-                isCertValidityEndTimeModifiable = getEndEntityProfile().isValidityEndTimeModifiable();
             }
         }
         issuedCerts = null;
@@ -569,12 +557,12 @@ public class RaEndEntityBean implements Serializable {
     }
 
     private boolean setCertificateValidity(ExtendedInformation extendedInformation, boolean changed) {
-        if (certValidityStartTime != null && !certValidityStartTime.equals(extendedInformation.getCertificateStartTime())) {
-            extendedInformation.setCertificateStartTime(certValidityStartTime);
+        if (validityStartTime != null && !validityStartTime.equals(extendedInformation.getCertificateStartTime())) {
+            extendedInformation.setCertificateStartTime(validityStartTime);
             changed = true;
         }
-        if (certValidityEndTime != null && !certValidityEndTime.equals(extendedInformation.getCertificateEndTime())) {
-            extendedInformation.setCertificateEndTime(certValidityEndTime);
+        if (validityEndTime != null && !validityEndTime.equals(extendedInformation.getCertificateEndTime())) {
+            extendedInformation.setCertificateEndTime(validityEndTime);
             changed = true;
         }
         return changed;
@@ -1111,7 +1099,7 @@ public class RaEndEntityBean implements Serializable {
             subjectAlternativeNames = null;
             subjectDirectoryAttributes = null;
             sshPrincipals = null;
-
+            raEndEntityDetails.setEepId(eepId);
 
             if (raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId() == eepId) {
                 email = raEndEntityDetails.getEmail() == null ? null : raEndEntityDetails.getEmail().split("@");
@@ -1143,10 +1131,10 @@ public class RaEndEntityBean implements Serializable {
         this.cpId = cpId;
         int defaultCA = authorizedEndEntityProfiles.get(eepId).getValue().getDefaultCA();
         Map<Integer, String> cAs = getCertificateAuthorities();
-        if (cAs.size() == 0) {
+        if (cAs.isEmpty()) {
             caId = 0;
         } else {
-            caId = cAs.keySet().contains(defaultCA) ? defaultCA : cAs.keySet().iterator().next();
+            caId = cAs.containsKey(defaultCA) ? defaultCA : cAs.keySet().iterator().next();
         }
     }
 
@@ -1524,10 +1512,7 @@ public class RaEndEntityBean implements Serializable {
         final List<String> oldRoles = raEndEntityDetails.getSelectedPsd2PspRoles();
         final List<String> roleDiff = new ArrayList<>(oldRoles);
         roleDiff.removeAll(getSelectedPsd2PspRoles());
-        if (oldRoles.size() != getSelectedPsd2PspRoles().size() || !roleDiff.isEmpty()){
-            return true;
-        }
-        return false;
+        return oldRoles.size() != getSelectedPsd2PspRoles().size() || !roleDiff.isEmpty();
     }
 
     /**
@@ -1566,36 +1551,20 @@ public class RaEndEntityBean implements Serializable {
         return CabForumOrganizationIdentifier.VALIDATION_REGEX;
     }
 
-    public String getCertValidityStartTime() {
-        return certValidityStartTime;
+    public String getValidityStartTime() {
+        return validityStartTime;
     }
 
-    public void setCertValidityStartTime(String certValidityStartTime) {
-        this.certValidityStartTime = certValidityStartTime;
+    public void setValidityStartTime(String validityStartTime) {
+        this.validityStartTime = validityStartTime;
     }
 
-    public String getCertValidityEndTime() {
-        return certValidityEndTime;
+    public String getValidityEndTime() {
+        return validityEndTime;
     }
 
-    public void setCertValidityEndTime(String certValidityEndTime) {
-        this.certValidityEndTime = certValidityEndTime;
-    }
-
-    public boolean isValidityStartTimeUsed() {
-        return useCertValidityStartTime;
-    }
-
-    public boolean isCertValidityStartTimeModifiable() {
-        return isCertValidityStartTimeModifiable;
-    }
-
-    public boolean isValidityEndTimeUsed() {
-        return useCertValidityEndTime;
-    }
-
-    public boolean isCertValidityEndTimeModifiable() {
-        return isCertValidityEndTimeModifiable;
+    public void setValidityEndTime(String validityEndTime) {
+        this.validityEndTime = validityEndTime;
     }
 
     private EndEntityProfile getEndEntityProfile() {
@@ -1659,10 +1628,10 @@ public class RaEndEntityBean implements Serializable {
     }
 
     public List<SelectItem> getSshVerifyRequiredOptions() {
-        final List<SelectItem> options = new ArrayList<>();
-        options.add(new SelectItem(true, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_enabled")));
-        options.add(new SelectItem(false, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_disabled")));
-        return options;
+        return List.of(
+                new SelectItem(true, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_enabled")),
+                new SelectItem(false, raLocaleBean.getMessage("enroll_ssh_critical_verify_required_disabled"))
+        );
     }
 
     /**
@@ -1671,7 +1640,7 @@ public class RaEndEntityBean implements Serializable {
      * @return String of SSH principals separated by colon (:)
      */
     private static String sshPrincipalFieldsToString(List<EndEntityProfile.FieldInstance> sshPrincipals) {
-        String[] sshPrincipalValues = sshPrincipals.stream().map(e -> e.getValue()).toArray(String[]::new);
+        String[] sshPrincipalValues = sshPrincipals.stream().map(EndEntityProfile.FieldInstance::getValue).toArray(String[]::new);
         return StringUtils.join(sshPrincipalValues, ":");
     }
 
