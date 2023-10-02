@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.cesecore.certificates.certificate.request;
 
 import java.io.IOException;
@@ -11,11 +23,16 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Random;
+
+import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmc.PKIData;
 import org.bouncycastle.asn1.cmc.TaggedAttribute;
 import org.bouncycastle.asn1.cmc.TaggedCertificationRequest;
@@ -42,6 +59,7 @@ import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 
 import com.keyfactor.util.CertTools;
 
@@ -74,8 +92,10 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
 
     private byte[] message;
     private byte[] encryptedPrivateKey;
-    PKIData pkiData;
-    private PrivateKey requestPrivatekey;
+    private PKIData pkiData;
+    private KeyPair requestKeyPair;
+    
+    // private String kraReference; we may attach this from RA from MSAE alias and use it while adding recovery data
 
     public MsKeyArchivalRequestMessage() {
 
@@ -90,9 +110,9 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         ContentInfo info = ContentInfo.getInstance(msg);
         SignedData signedData = SignedData.getInstance(info.getContent());
         ContentInfo contentInfo = signedData.getEncapContentInfo();
-        String content = Hex.toHexString(contentInfo.getContent().toASN1Primitive().getEncoded());
+        DEROctetString octetData = (DEROctetString) DEROctetString.getInstance(contentInfo.getContent());
 
-        pkiData = PKIData.getInstance(Hex.decode(content.substring(8))); // need to unwrap manually(remove Tag and Length)
+        pkiData = PKIData.getInstance(octetData.getOctets()); // need to unwrap manually(remove Tag and Length)
         for (TaggedRequest tr : pkiData.getReqSequence()) { // only one
             TaggedCertificationRequest tcr = TaggedCertificationRequest.getInstance(tr.getValue());
             p10msg = tcr.getCertificationRequest().getEncoded();
@@ -138,7 +158,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             }
                             
             AttributeTable attrTable = signer.getUnsignedAttributes();
-            for(Attribute attr: attrTable.toASN1Structure().getAttributes()) { // only one
+            for(Attribute attr: attrTable.toASN1Structure().getAttributes()) {
                 if(!attr.getAttrType().equals(szOID_ARCHIVED_KEY_ATTR)) {
                     continue;
                 }
@@ -175,6 +195,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                 }
             }
             
+            log.debug("verified MS key archival outer request.");
             return true;
         } catch (OperatorCreationException e) {
             log.error("Content verifier provider could not be created.", e);
@@ -192,8 +213,11 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         }
     }
     
-    public void decryptPrivateKey(String provider, PrivateKey caEncryptionKey) {
+    public void decryptPrivateKey(String provider, PrivateKey caEncryptionKey) throws CertificateCreateException {
         // TODO: untested
+        if (log.isTraceEnabled()) {
+            log.trace("<decryptPrivateKey()");
+        }
         try {
             CMSEnvelopedDataParser ep = new CMSEnvelopedDataParser(encryptedPrivateKey);
             RecipientInformationStore recipients = ep.getRecipientInfos();
@@ -208,30 +232,56 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                     new JceKeyTransEnvelopedRecipient(caEncryptionKey).setProvider(provider));
             byte[] encodedPrivateKey = recData.getContentStream().readAllBytes();
             
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(encodedPrivateKey));
+            KeyFactory kf = KeyFactory.getInstance("RSA"); // signature and non-RSA keys are not supported
+            PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(encodedPrivateKey));
+            requestKeyPair = new KeyPair(getRequestPublicKey(), requestPrivatekey);
+            
+            testKeyPair();
 
-        } catch (CMSException | IOException e) {
+        } catch (CMSException|IOException e) {
             throw new IllegalStateException(e);
-        } catch (InvalidKeySpecException e) {
+        } catch (InvalidKeySpecException|InvalidKeyException e) {
             throw new IllegalStateException(e);
         } catch (NoSuchAlgorithmException e) {
             // nopmd
         }
 
         log.debug("decrypted MS key archival private key.");
+        if (log.isTraceEnabled()) {
+            log.trace(">decryptPrivateKey()");
+        }
+    }
+    
+    private void testKeyPair() throws CertificateCreateException {
+        if (log.isTraceEnabled()) {
+            log.trace("<testKeyPair()");
+        }
+        byte[] randomBytes = new byte[20];
+        byte[] decryptedBytes = null;
+        try {
+            new Random().nextBytes(randomBytes);
+            Cipher encCipher = Cipher.getInstance("RSA");
+            encCipher.init(Cipher.ENCRYPT_MODE, requestKeyPair.getPublic());
+            byte[] encryptedBytes = encCipher.doFinal(randomBytes);
+            
+            Cipher decCipher = Cipher.getInstance("RSA");
+            decCipher.init(Cipher.DECRYPT_MODE, requestKeyPair.getPrivate());
+            decryptedBytes = decCipher.doFinal(encryptedBytes);
+                    
+        } catch (Exception e) {
+            log.info("MS key archival key testing failed", e);
+        }
+        
+        if (decryptedBytes==null || !Objects.deepEquals(randomBytes, decryptedBytes)) {
+            throw new CertificateCreateException("MS key archival keys are invalid or did not match.");
+        }
+        if (log.isTraceEnabled()) {
+            log.trace(">testKeyPair()");
+        }
     }
     
     public KeyPair getKeyPairToArchive() {
-        if (requestPrivatekey==null) {
-            return null;
-        }
-        try {
-            return new KeyPair(getRequestPublicKey(), requestPrivatekey);
-        } catch (Exception e) {
-            // will not happen
-        }
-        return null;
+        return requestKeyPair;
     }
 
 }
