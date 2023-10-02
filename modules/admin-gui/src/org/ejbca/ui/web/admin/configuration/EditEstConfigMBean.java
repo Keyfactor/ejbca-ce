@@ -21,8 +21,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.ejbca.config.EstConfiguration;
+import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
@@ -667,7 +667,9 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
      * Get the available RA name generation schemes for radio buttons
      */
     public List<SelectItem> getAvailableRaNameGenSchemes() {
-        return UsernameGeneratorParams.modeList.stream().map(SelectItem::new).collect(Collectors.toList());
+        return Arrays.stream(UsernameGenerateMode.values())
+                .map(UsernameGenerateMode::name)
+                .map(SelectItem::new).collect(Collectors.toList());
     }
 
     /**
