@@ -366,10 +366,16 @@ public class RaEndEntityBean implements Serializable {
         }
 
         if (eep.isEmailUsed()) {
-            for (EndEntityProfile.FieldInstance instance: getSubjectDistinguishNames().getFieldInstances()) {
+            for (EndEntityProfile.FieldInstance instance : getSubjectDistinguishNames().getFieldInstances()) {
                 if (isDnEmail(instance)) {
-                    if (instance.isUseDataFromEmailField()) {
-                        instance.setValue(email[0]+"@"+email[1]);
+                    String emailValue = endEntityInformation.getEmail();
+                    if (instance.isUseDataFromEmailField() && StringUtils.isNotEmpty(emailValue)) {
+                        String[] emailParts = emailValue.split("@");
+                        if (emailParts.length >= 2) {
+                            instance.setValue(emailParts[0] + "@" + emailParts[1]);
+                        } else {
+                            instance.setValue(instance.getDefaultValue());
+                        }
                     } else {
                         instance.setValue(instance.getDefaultValue());
                     }
@@ -377,10 +383,11 @@ public class RaEndEntityBean implements Serializable {
             }
         }
         String subjectDn = getSubjectDistinguishNames().getValue();
-        if(!subjectDn.equals(endEntityInformation.getDN())) {
+        if (!subjectDn.equals(endEntityInformation.getDN())) {
             endEntityInformation.setDN(subjectDn);
             changed = true;
         }
+
         if (subjectAlternativeNames == null) {
             if (StringUtils.isNotBlank(endEntityInformation.getSubjectAltName())) {
                 endEntityInformation.setSubjectAltName(null);
