@@ -17,6 +17,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.KeyFactory;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.RSAPrivateCrtKeySpec;
@@ -236,5 +238,252 @@ public class MsKeyArchivalRequestMessageTest {
                 
         //msg.decryptPrivateKey("BC", exchangePrivKey); // same result
     }
+    
+    
+    @Test
+    public void testUserEnroll2() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        String req = "MIILxgYJKoZIhvcNAQcCoIILtzCCC7MCAQMxCzAJBgUrDgMCGgUAMIID5AYIKwYBBQUHDAKgggPW\n"
+                + "BIID0jCCA84wRDBCAgECBgorBgEEAYI3CgoBMTEwLwIBADADAgEBMSUwIwYJKwYBBAGCNxUVMRYE\n"
+                + "FBYE22NS12CLiwSf5eL79Yz29qI8MIIDgKCCA3wCAQEwggN1MIICXQIBADAAMIIBIjANBgkqhkiG\n"
+                + "9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuVy89AFwirYURzt8VdSSooOa2QG81SN3xjLToXGjLBcjNVaa\n"
+                + "hNeZsBD9XqE3dHlSJMXD77RctbjZL0wEieSq9vKmKX5bCHBpzo/QRC55YC/OVSL+a7nk7KlhrMfc\n"
+                + "yB6du1xc1uiPVnVaYEqZbKMQTKYilDRvoAD+tcJYJfPM9VlGLJeVMDXnmD7D7hPeccod50UTUfRq\n"
+                + "fL918aaMCvLno8t9Z+/Qy4NMAOVdkubnKyGER+IBCB/Ga6cdZinJYCbeNEg4Q0JwlRxruNZSOiYu\n"
+                + "3RIAQKDqPwrKSS+9UiUCYGSFyT9RaLYtVQQaxhV/jIDquqhP4aE6KlB/tHvvzt/W2QIDAQABoIIB\n"
+                + "LjCCASoGCSqGSIb3DQEJDjGCARswggEXMD4GCSsGAQQBgjcVBwQxMC8GJisGAQQBgjcVCIWfoX+C\n"
+                + "gJ5Kg6WFGYXI6iaE/JsggQCF9M9h7O17AgFkAgIAhzApBgNVHSUEIjAgBggrBgEFBQcDAgYIKwYB\n"
+                + "BQUHAwQGCisGAQQBgjcKAwQwDgYDVR0PAQH/BAQDAgWgMDUGCSsGAQQBgjcVCgQoMCYwCgYIKwYB\n"
+                + "BQUHAwIwCgYIKwYBBQUHAwQwDAYKKwYBBAGCNwoDBDBEBgkqhkiG9w0BCQ8ENzA1MA4GCCqGSIb3\n"
+                + "DQMCAgIAgDAOBggqhkiG9w0DBAICAIAwBwYFKw4DAgcwCgYIKoZIhvcNAwcwHQYDVR0OBBYEFPvG\n"
+                + "uKgyoHjfZ/95zdNIcBTK4ivSMA0GCSqGSIb3DQEBBQUAA4IBAQB5J6DJZ2Yo8aGtaOoqQxr6W/PX\n"
+                + "ZqXsr8ZVjX7s9yo4YBNAVNFBNBcmAMOhu/wRvxbc4wdek9lUBVuL4om1oEzlALp7KpTg/FphJwbv\n"
+                + "eC42kPNvkT5AzogGCPqaRf/tW4asdXfHI5ecwbv4iOqqgHZ4JlrII39g8YgCp6uXOk21hyBi6a8D\n"
+                + "OIgTpYxixeQl2F/k4gsA335OnKLBbOec83tTA4tE52kZk3xsrs17CI5JwV0k4AWTroo7N28pzqig\n"
+                + "P7UWiBnUadUyU4IEFNLFiRIFJSR0wOURZN451bAieyPZFVI3hZQknI5T/sBiDOXH8dfuOJ8S4hmr\n"
+                + "gc22gRB4Ku12MAAwADGCB7cwggezAgEDgBT7xrioMqB432f/ec3TSHAUyuIr0jAJBgUrDgMCGgUA\n"
+                + "oD4wFwYJKoZIhvcNAQkDMQoGCCsGAQUFBwwCMCMGCSqGSIb3DQEJBDEWBBTEg+311TyznpoNYbkI\n"
+                + "ZW5vT21Z7TANBgkqhkiG9w0BAQEFAASCAQB38UAJfK/eepfR2gEroK6jyk4ByXIqBD0hf7aDGPHf\n"
+                + "xJY/+4E8/tiQY33kjgtpgr5WsUbCdlzdYTCXT+afbh2fw9hjEHhxFHVdZNHABW8h7pkEPRY4nHiC\n"
+                + "+CMqVLnoufvJcivy1mdeAE6Wj7l0a8Hi50fXbwP1x87bROgnCYCAsR7+Xt8Ewlf21QHleBIeMBfX\n"
+                + "MyVuHwFqPmELJgp8D16yF4e04krk7fIiFW65d86Qh5ACbi/6u8Yuvt1k69+jyKrzJ2tdI0Wb5BgT\n"
+                + "ilLlQ2OSCRI2lI91CLNXuRUlvsls+oMBI0+VTp5I1vtw4YgeupXx2/seywZfibSrIDUIh3KyoYIG\n"
+                + "ODCCBjQGCSsGAQQBgjcVDTGCBiUwggYhBgkqhkiG9w0BBwOgggYSMIIGDgIBADGCAUYwggFCAgEA\n"
+                + "MCowEjEQMA4GA1UEAwwHSXNzdWVyMgIUV94OYm2LhjYpuvwHNneFoeIxlzcwDQYJKoZIhvcNAQEB\n"
+                + "BQAEggEAg/GXI9UYEkUVM+BTSHzaFZHGdg/37fBazUL1KHzFXouLyHUO5rB4OEs3GmOx02ptarPo\n"
+                + "3WwiOc9O6ojkonCJ3urKixqEFwjOHHFe4/49DMpecVdHU785kruOwTsfc0NHoAVeRwxvmeiyQxzO\n"
+                + "iKJdY8OTL9mY0M8Vi5J111S5hqC6x8s+SJPbuycwOgCL7EHzXW6XcNPwCk1HQW5zOITmV/vdXfV6\n"
+                + "81ZA3YIqKDAodnNGWUiUoQBkqFa+D7o1P00/1t9pBdd6nARFu2ZCI0nOJmtzvKhTfEuDmKTiLxty\n"
+                + "4nzcvzBRw1R07titPNb1CRgwKVuDOT9AuVvHqfsqEK3D+TCCBL0GCSqGSIb3DQEHATAUBggqhkiG\n"
+                + "9w0DBwQItZ5bG17Tga+AggSY+u8A39Z4a3TEX8KwVbH4SoxV6jknd6TKkyfZml7ifPTl9WVmmBIj\n"
+                + "xUdovdPGkRkVgMfM4tIflnyjP8rQjJ9bPg4B1QuSZiPfTc/63obRy3oC69CnKIu5b3S2IfF+4Bgi\n"
+                + "i7jGeaigyoBS+V8hBtGzi+jiJf5NHr2Lg1au+Mtkiz6ql13MYljh4UZpaW1ee/8QmXH8T2vHJTql\n"
+                + "RQHyQlZKl0TK/jCiZkyAJNBDq0s/Xakn4TOVmGueT+UpEpe90sWp+75t+PW1u2H34kltjMr6Gt3k\n"
+                + "KRKA/aY/YTzLzX7OF3tpvE9X0ecfU8JK8N1dgLA7dYlNgzmhCjwH35/kcs6LYdFlutLeGTTiUe2Z\n"
+                + "x2j3wdOk1t3Po/q6MvlUvKLP5bUVrfIhsQA071GQg/vsE+nZam949VJBWtNNwvYSp7CKtaQVEZVr\n"
+                + "04854A4KQEI26LgtkYStT5ZTO3KmHc14hnaV9o2Azt25E3bLK3iSzIREXYe45pGWsEGHDT+BAjwd\n"
+                + "ChmiQxnXVuyTPPZ10IPoHREhqVMipxacDT7UQNPXu+z3W9VPrazVkf//JSSxxIEZ2x6/a+N0Rf5B\n"
+                + "KQt3lFZHEk1hctuq8ofmVlaviy6PwhsEJwFsDtnviZeF6WL8G11L8kyIz1Rce4AVlaACAzyCEOkY\n"
+                + "V223MNe7U5Ei64QPwGJkEei496Hl8an9ihkEhtF4z/jkWtfrGBx9amLYNRao09dluxvSXjnGgCMA\n"
+                + "vWzOfZUxiN8UNqEczx06/b2pON4g/LWiBzIXdUgGH45G5Da9+VHtfLeLUwK8OZh08pAyi3MgWJgO\n"
+                + "oApTiJ4YUT1rZvwRoQJJDQk2VMuyxbH5aKT3Lj0EY3lAksImnBlqpuojQ0AJed6U3+G3mHjCo6Uh\n"
+                + "h1kxG/UB8Ko7TdF2TpUIk4Kb20MIqqGIZTwrWEqzZ1QhQC7hd7wbhHEIRIJOCptEVEIC0e4ySdhT\n"
+                + "m/DlYfZWp9OnmGaZhYOVMaVe896nqz7+6uMZ8Xkz+oo+vaBM/7KYt0b0zTqd64j8CDQY4f0zK+lG\n"
+                + "9F7R/aI+EJhFilScwgexDfFoYLBZbiIs9qbuGaDuqTuFFovKkcsqSUCJBDu6+H3YvljZmLxVtnAA\n"
+                + "czKdW/Phn1sbCrMYSPdWO7sH3Lu3ujCgHfQJHI5dlJj3m630V9e14RzwpVHHfoS9D5Ot/HWeSq2a\n"
+                + "a4U/lJxEKSdAqco/5aEVtZ5qT2mYmIPo6lQXrTl+0sEjbM9EMUeBmfLulQ2w8Ww9lAPq6yc+Fk/d\n"
+                + "TJsaDF8ID6/l0sq2c2YrydqSYlDyV4m5Ddnxhoyw3oeYzEws5EYNLt0Mftfkc9mZR8i1oJuyJ3Fd\n"
+                + "BLNetPuFu/VFINYjeAjuoi1f/9eV2eYTmv80Zu2jX77PTBvU3wvSZLX+rkTnYQEpwirvuFii6YNO\n"
+                + "m//6NgftNoez8xLht9QT0Le1VuEc5ip9Wl2sr/vDs6FKxNANZV9ZAYfv7+Os8RumRZFFXK6Zyy26\n"
+                + "jSW1vbvIPtm72DY6vyokDy8bRdtonZcBqWp6y0bBgm9eSo0XV9FOMQg65KkAteQMpJfchBEd"; 
+        
+        MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Base64.decode(req));
+        assertTrue(msg.verify());
+        assertEquals("", msg.getRequestDN()); // ?? AD look up
+        assertNotNull(msg.getRequestPublicKey());
+        
+        String encodedPrivateKey = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDRTiJtDwsRgozw\n"
+                + "atZb4/X/HNB/xaOdiSukZRkJ5tNVOEuWV5fjYxALQcnuSW+uUHkwYyniZWO527Ct\n"
+                + "lDEJ55TsI/PSXLJ7kFJCiAD4IpkaUyZ7XXpkmWd6SA7jp2EACIc8UIBJaMTuLpmL\n"
+                + "ElgrDnu58Rwz652lbqPKqOYLFjkNr/y+JEtrOog8Lk+UPhsUPmXlx940RvWTkfHT\n"
+                + "+K7FQC/tFO+4D5boonrH1VtJFd51ZDxsFDhrl2v3yuV8M3AAar516Td8DGe6Tqb6\n"
+                + "88LYI4wTVcEBNFkR4ITC8d6721vR5rkihuzvB+XtYGZVlCekEySuM7dA6PcxZ5O6\n"
+                + "evmhMGBHAgMBAAECggEAQ4kVJaB9f0xjIq4udZ8EQKlxA1Fn3kyk9toiLqY62Zwd\n"
+                + "E6k22smboy46tHcgoJvZxsmweZsihxWCmDehbSM608k0AtQjSSiDynDs8yPix/I9\n"
+                + "j//VHsG6+GNo3n8jFuopjMYi5sz2Ai6qH4wvQ9FcDd7lLUGg8ADXu+wssjYc+bOS\n"
+                + "NyY9M7tn2oxj6cZkJW5sVgV7EekkAg21o2XB7EJ4NCudKtXmPrqI55G7f6/g1ekK\n"
+                + "/+5G09dNqpRLFcWJphZVuU2n526EG6qIySLniFClwgvod/qK8hqgqINAGSOouDIO\n"
+                + "OW3zKUlnBvWq4rn8nWFzt+UjdO42byRcUU0h9U13tQKBgQD4UvvXkzl9ASsuZUTD\n"
+                + "P++NDLRNiAy+wx2Ch6k2ak4wR/8VfiJPK9HWofGMWSk0bpJjDgX1yf6u7fl0i+mD\n"
+                + "+7+odrwaWG5xbGgSKKYJDwcBHRBRMuH1EIs0drydv0qW0HtTffzLplOx0ehyHk+9\n"
+                + "OpXEaPlGxrgxdlXWAEsoCyAhqwKBgQDXxmO5s7DVmfTxG8UpOSmU3HfkhsTRI7Yb\n"
+                + "jB3RyEB7fmvCPSJYk1MD8RNgzbuE/aagKSSa2K1tct/rALu5vxheiM4UO+1JTpnj\n"
+                + "6HeqPSIovMilzmTzOUY4Z53+aropaJoULnYckmeUqqZy8vXna6NERu/crI45+Xpz\n"
+                + "4OutQ0oX1QKBgFxpXWmDU4COn8g7TZSvxXEjSjIUMFIJgIDkBXfHpeNX17ji4Ne/\n"
+                + "we5zA9YsFCZ8A6QzQsqOamYlD5Fsw/EnDdMepK/VOvyg0DX5xJhYbE3gyAK/wdEW\n"
+                + "YAedLGI0Hwjy+wI+P4Z2Fm11ZWCaoSgVlkiqnCHXsBJQLG9gWpfDVCjTAoGAZ0r8\n"
+                + "gHBpzcc2v5lIp/RKWI22AzsUyv1qdwN7XuqbG8MoOMLlRzu3eOKWITg7dW2rr24i\n"
+                + "rNHfK87bLHecZk35j3+0D3GkpPwwpS6q4l8DlDbTYrRMFTcsy2Gm+50B40LEx7Z6\n"
+                + "KjFXzo5mwg5W82LOtKe0uZINP+mS2hgpGjdlJ8UCgYBrkGcASe18yKscrWis02bx\n"
+                + "3d+ror5tdATqmuJDJR31g/lSpC3w+sBvOleHcXkX36LSxZUqZyaHJowNoXYathbs\n"
+                + "tgNgD2tp2hDBEHdJOcx5Vo7HGHRSAbJjeSBtjc8kJuSVmEvUNBST5Tt5DWzcOloJ\n"
+                + "SSPpWa3QgFphkWUYxVi2Gw==";
+        
+        PrivateKey exchangePrivKey = null;
+        try {
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            exchangePrivKey = kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.decode(encodedPrivateKey)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        //msg.decryptPrivateKey("BC", exchangePrivKey);
+        
+        String encryptedData = "83f19723d51812451533e053487cda1591c6760ff7edf05acd42f5287cc55e8b8bc8750ee6b078384b3"
+                + "71a63b1d36a6d6ab3e8dd6c2239cf4eea88e4a27089deeaca8b1a841708ce1c715ee3fe3d0cca5e71574753bf3992bb8ec"
+                + "13b1f734347a0055e470c6f99e8b2431cce88a25d63c3932fd998d0cf158b9275d754b986a0bac7cb3e4893dbbb27303a"
+                + "008bec41f35d6e9770d3f00a4d47416e733884e657fbdd5df57af35640dd822a283028767346594894a10064a856be0fb"
+                + "a353f4d3fd6df6905d77a9c0445bb66422349ce266b73bca8537c4b8398a4e22f1b72e27cdcbf3051c35474eed8ad3cd"
+                + "6f5091830295b83393f40b95bc7a9fb2a10adc3f9";
+        
+        Cipher encCipher = Cipher.getInstance("RSA");
+        encCipher.init(Cipher.DECRYPT_MODE, exchangePrivKey);
+        byte[] encryptedBytes = encCipher.doFinal(Hex.decode(encryptedData));
+        System.out.println(Hex.toHexString(encryptedBytes));
+        
+        final SecretKey key = new SecretKeySpec(encryptedBytes, "DESede");
+        final IvParameterSpec iv = new IvParameterSpec(Hex.decode("b59e5b1b5ed381af"));
+        final Cipher decipher = Cipher.getInstance("DESede/CBC/PKCS5Padding");
+        decipher.init(Cipher.DECRYPT_MODE, key, iv);
+        
+        String cbcEncrypted = "faef00dfd6786b74c45fc2b055b1f84a8c55ea392777a4ca9327d99a5ee27cf4e5f56566981223c5476"
+                + "8bdd3c691191580c7cce2d21f967ca33fcad08c9f5b3e0e01d50b926623df4dcffade86d1cb7a02ebd0a7288bb96f74"
+                + "b621f17ee018228bb8c679a8a0ca8052f95f2106d1b38be8e225fe4d1ebd8b8356aef8cb648b3eaa975dcc6258e1e146"
+                + "69696d5e7bff109971fc4f6bc7253aa54501f242564a9744cafe30a2664c8024d043ab4b3f5da927e13395986b9e4f"
+                + "e5291297bdd2c5a9fbbe6df8f5b5bb61f7e2496d8ccafa1adde4291280fda63f613ccbcd7ece177b69bc4f57d1e71f53"
+                + "c24af0dd5d80b03b75894d8339a10a3c07df9fe472ce8b61d165bad2de1934e251ed99c768f7c1d3a4d6ddcfa3faba32"
+                + "f954bca2cfe5b515adf221b10034ef519083fbec13e9d96a6f78f552415ad34dc2f612a7b08ab5a41511956bd38f39e0"
+                + "0e0a404236e8b82d9184ad4f96533b72a61dcd78867695f68d80ceddb91376cb2b7892cc84445d87b8e69196b041870d"
+                + "3f81023c1d0a19a24319d756ec933cf675d083e81d1121a95322a7169c0d3ed440d3d7bbecf75bd54fadacd591ffff252"
+                + "4b1c48119db1ebf6be37445fe41290b77945647124d6172dbaaf287e65656af8b2e8fc21b0427016c0ed9ef899785e962f"
+                + "c1b5d4bf24c88cf545c7b801595a002033c8210e918576db730d7bb539122eb840fc0626411e8b8f7a1e5f1a9fd8a19"
+                + "0486d178cff8e45ad7eb181c7d6a62d83516a8d3d765bb1bd25e39c6802300bd6cce7d953188df1436a11ccf1d3afdbd"
+                + "a938de20fcb5a20732177548061f8e46e436bdf951ed7cb78b5302bc399874f290328b732058980ea00a53889e18513d"
+                + "6b66fc11a102490d093654cbb2c5b1f968a4f72e3d0463794092c2269c196aa6ea2343400979de94dfe1b79878c2a3a"
+                + "5218759311bf501f0aa3b4dd1764e950893829bdb4308aaa188653c2b584ab3675421402ee177bc1b84710844824e0a"
+                + "9b44544202d1ee3249d8539bf0e561f656a7d3a798669985839531a55ef3dea7ab3efeeae319f17933fa8a3ebda04cf"
+                + "fb298b746f4cd3a9deb88fc083418e1fd332be946f45ed1fda23e1098458a549cc207b10df16860b0596e222cf6a6e"
+                + "e19a0eea93b85168bca91cb2a494089043bbaf87dd8be58d998bc55b6700073329d5bf3e19f5b1b0ab31848f7563bb"
+                + "b07dcbbb7ba30a01df4091c8e5d9498f79badf457d7b5e11cf0a551c77e84bd0f93adfc759e4aad9a6b853f949c4429"
+                + "2740a9ca3fe5a115b59e6a4f69989883e8ea5417ad397ed2c1236ccf4431478199f2ee950db0f16c3d9403eaeb273e16"
+                + "4fdd4c9b1a0c5f080fafe5d2cab673662bc9da926250f25789b90dd9f1868cb0de8798cc4c2ce4460d2edd0c7ed7e4"
+                + "73d99947c8b5a09bb227715d04b35eb4fb85bbf54520d6237808eea22d5fffd795d9e6139aff3466eda35fbecf4c1bd4d"
+                + "f0bd264b5feae44e7610129c22aefb858a2e9834e9bfffa3607ed3687b3f312e1b7d413d0b7b556e11ce62a7d5a5dacaf"
+                + "fbc3b3a14ac4d00d655f590187efefe3acf11ba64591455cae99cb2dba8d25b5bdbbc83ed9bbd8363abf2a240f2f1b45"
+                + "db689d9701a96a7acb46c1826f5e4a8d1757d14e31083ae4a900b5e40ca497dc84111d";
 
+        // final byte[] encData = new
+        // sun.misc.BASE64Decoder().decodeBuffer(message);
+        final byte[] plainText = decipher.doFinal(Hex.decode(cbcEncrypted));
+        System.out.println(Hex.toHexString(plainText));
+    }
+    
+    @Test
+    public void testUserEnroll3() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        String req = "MIILxgYJKoZIhvcNAQcCoIILtzCCC7MCAQMxCzAJBgUrDgMCGgUAMIID5AYIKwYBBQUHDAKgggPW\n"
+                + "BIID0jCCA84wRDBCAgECBgorBgEEAYI3CgoBMTEwLwIBADADAgEBMSUwIwYJKwYBBAGCNxUVMRYE\n"
+                + "FBh5CuTtWoMxyQdaDeJxI4Zuiu54MIIDgKCCA3wCAQEwggN1MIICXQIBADAAMIIBIjANBgkqhkiG\n"
+                + "9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyK0fMIdNY1trJfKX9fgt7MNcgXxdfhUopro9bZnX/UlL2wo4\n"
+                + "ZGZsNxlyblvij0SjqGqVyqQcORVqSxH5apH/S5fWMhNpOLITTTlD5Z0q8b7RLjd5KS3fCO0gF6oK\n"
+                + "XBTBKpG1Ucks4hx6w1Ay4be9t97P8Wx0/2ci8Vv1Q4bhSxzKzcPJ8OuqwV2G381HIOFpPdcFYXOK\n"
+                + "2NZQWg0rJzWpjfuwKoAHHhFgPhsPbUWNKiMNU4DJQ44cY52FK8ah8OnY7jBwX/bR+nj3uxDSFeJ4\n"
+                + "V+Vcjl/DBSZv+lcisfAC4AAIM5GhbHsS4tgu5iaLD2m0xBjWlu5xAH/F5WygCpuJsQIDAQABoIIB\n"
+                + "LjCCASoGCSqGSIb3DQEJDjGCARswggEXMD4GCSsGAQQBgjcVBwQxMC8GJisGAQQBgjcVCIWfoX+C\n"
+                + "gJ5Kg6WFGYXI6iaE/JsggQCF9M9h7O17AgFkAgIAhzApBgNVHSUEIjAgBggrBgEFBQcDAgYIKwYB\n"
+                + "BQUHAwQGCisGAQQBgjcKAwQwDgYDVR0PAQH/BAQDAgWgMDUGCSsGAQQBgjcVCgQoMCYwCgYIKwYB\n"
+                + "BQUHAwIwCgYIKwYBBQUHAwQwDAYKKwYBBAGCNwoDBDBEBgkqhkiG9w0BCQ8ENzA1MA4GCCqGSIb3\n"
+                + "DQMCAgIAgDAOBggqhkiG9w0DBAICAIAwBwYFKw4DAgcwCgYIKoZIhvcNAwcwHQYDVR0OBBYEFPMX\n"
+                + "lU6fPYohQXxFtrbBKDl/8DsmMA0GCSqGSIb3DQEBBQUAA4IBAQB4LSkpvAFxoY7I0dxgQE1YsOzp\n"
+                + "hnWAJd0je+9/nKPaOSwZN3zSRgGCn9bBJ6wVHsRfRrQle3m69GZ9MH9tq2+PS+dcyIs7mREjBD2e\n"
+                + "xOzoxYmRHsbEjKV9/GAfwCXIbxRxcI9Oof+kkUCeLm4vtoSjOx24nchVPoeYUyKzeSDGO0tUeIkr\n"
+                + "aadWGKHrw/goWHODuhfRMGgQgltmH0EXuJDnS44zeYeM2UhTDZDZtIEsYiits0QllCxt5W0hIWZd\n"
+                + "HYHXiFjBamUkvlokeox7dAx10P2L0FmXqxtBvkR80f1mtuvwZ1kSLjJ6KIRJeaQQJIYnwAZ7P/jA\n"
+                + "avxwcvk9ggK9MAAwADGCB7cwggezAgEDgBTzF5VOnz2KIUF8Rba2wSg5f/A7JjAJBgUrDgMCGgUA\n"
+                + "oD4wFwYJKoZIhvcNAQkDMQoGCCsGAQUFBwwCMCMGCSqGSIb3DQEJBDEWBBS3DJyorp/OeaVtc0fS\n"
+                + "24FxZi9BdjANBgkqhkiG9w0BAQEFAASCAQBFZkIsO8Zn5czDdVmhYucuyl6VVF+XrHzKuM78Hdnr\n"
+                + "GUghIz+OS+YRRvSVcqEVGzUugn8e0X/RJ1gpK6M/JIuaPXcY7Kz3oYg22O2Xn6subIsdKCb6y1AC\n"
+                + "EVRu3+T4Zuu7yJcQS49VBUmDHddZ9+lwkvotzUYAD8Y91l6hN0qr+5zt0Kqmm7Dty3YfTci19lm7\n"
+                + "bq3yFZl/WNCA/3p3k7QSZDPh1CLZ16VviMjUArjHO01Ud0YPMfdZoD3tHnqNfdzCZp5BSCMCd2bo\n"
+                + "SLpePIwnD/vkZF8w7tnVsuf4UlYHMcW9d6lQMkbf0d1Qj1wQVSNahLpFCkJJfxOyNdI1RUlwoYIG\n"
+                + "ODCCBjQGCSsGAQQBgjcVDTGCBiUwggYhBgkqhkiG9w0BBwOgggYSMIIGDgIBADGCAUYwggFCAgEA\n"
+                + "MCowEjEQMA4GA1UEAwwHSXNzdWVyMgIUV94OYm2LhjYpuvwHNneFoeIxlzcwDQYJKoZIhvcNAQEB\n"
+                + "BQAEggEAvqN1mtJfL75b1IWYAscSixLzmXjf1RB4mFte/ckrXXX20ErYvFBIJEkjQWeWNPoR4G4/\n"
+                + "fMfjMgLw3yrllhvsCyJljPRxqRpyPkhExqMF+lvWP1orub9MzHSA5S76End9P2aBT/zIVRDrZBTa\n"
+                + "p25WpB7QdDCbnih1YpLtIjdmbxUg2nUkoZOxEfmmUdizWixbOie5SZwjHh3yLd8L0GKTiPbr2AMB\n"
+                + "bMjsHb8Afz4merl2GgKdPzX16EYXPjYJoxIRPQMK2noZp8Zd1kGgoHFB5PTfQ9jKU2f8VivnaT4R\n"
+                + "cyTwHy4vylkSq+GeQDzsEqnXBMl1lYM01p5PUvO3MT/1YDCCBL0GCSqGSIb3DQEHATAUBggqhkiG\n"
+                + "9w0DBwQIrYaQAb3JQR6AggSYS1BwsbMi+EdeyLOgunBs7SGtrrkr6fkueCEbMxk0zFvlr6CxnXWI\n"
+                + "00NAcQanFhV/++/pJpWYj4thPdNhtqxtlNbCMLogrT6ozrANni50zjL9j7a2HlEARsaZYIBWopga\n"
+                + "a2YK78Jd4pymzfty/L/DC4BKHBVJcAkOx33G/n+b6RmRqufFzv3Gri7UTlSrUvg68BnzH1w2i8sU\n"
+                + "BfrA15LJom/hUSZ2nAX/A4njQzW68V9yfY+S/2Xa1JBw/EfhugH7IL/KCj519rGmkUcPgH3GYa0y\n"
+                + "QjBUC8HtPhHkU3qWmoPOU1zwFJnocp8M5X7GlXmisOwSwfQRq9SPyspnKLUmAU1IFok8ATy+CqeQ\n"
+                + "w2/X48H2rfE+XbZ+udkS1NTbOzABS69JLwM0FNF9JJvXvUwWnW4R6zT6GFQqPxuHLRZX8fhKwwLS\n"
+                + "/aajNgRo/Z5oAl4TRMN1fAon6FECCBhV14ITqvlwKy6Wo5l4CdyvBUpWxopJFDRWpcCwYadCgsCM\n"
+                + "+ZiUOxu+WsePNmdpfujw1YA1KTG7/LTALKVsVFxLu7ADzhldjKxpyBOMl7vHCL3VQ+8v5FI/WWTF\n"
+                + "jqCwcT1V64D11ZoIREOUNIJxDktJw4tTEB+ZDE9+MqZEbLb/jaKzd1ZvyKBiZ58cIIDDUIWUMTL0\n"
+                + "TCq3lY0Iz7iOD8jsqiwm/XsZLsdxownMuKgt3bXNs9wOf5htzcfuxYlLFVxYSxFoLnirZzx3d0EM\n"
+                + "BRMFG1Yytzq4pqE37t8vVcUInunsTUraWFsC1WV7TIDVezoQWOThVs42inYC4v4NitGqbiEEDD6b\n"
+                + "NkJiDNjwDwZyhtVvuZrGX2xSD2g4sgPXjWFjfmtifZqeFVGvmNkMLhJZkjaArm4KA5irwaZRbspb\n"
+                + "Q7FIJapMloEZA+XGYTGMkpFIFyJql+/e3ENNziAkaxNiCwoMbvoFfqxZI4PDeC5hXRc2A0NAB2wW\n"
+                + "9YVTYbpDbOh+n3MhjcVkx9o/h0oXLMaBW6UopiKUJfbcqEneUdDi1yGf8JvwZF0lf1alOROj4jd3\n"
+                + "S/1ZkD0MYauIlfZNHWY74ER3hOm3YeC3Z11T4ysB1pZdNEE8dB547QGVQlkvRQIgIsWQz3XIJFp9\n"
+                + "4efAnaX3BpLX6BpHO/9bYOvZoHezVPp+6tHHAnkpPtIAw8rSYB81Yx5tvnEske/7YfF2+wDkwHcL\n"
+                + "vfGOPFoaRNKEVwuSd0KCmmREKCBNJvxsbE0DwBTfV3Zp0f4WvoJ1b29infzIP5VvR/FiIP1sFA8I\n"
+                + "B4HxtpG8kkx7NLqS7tNs7qcleG3JgoJFXvHoTTMxDnXi7pg5No2n2/BLmrtqvVQL8knXyBAScVUH\n"
+                + "7V/Ur07Ekqx1S7aIzMbpbyGwfJTwxDKXEyCtUtv5P5p+lQAnu50oBXCK6ka5fLxhHDZzSyAgrqEA\n"
+                + "Ye4HWVs/JsrXDNaspxnFlADu41ZwPJjLOoE6JKUDD9JF1WRmZV0lieLgECkOFUk+/oXxJGTCMRhL\n"
+                + "F4I+HeAnnlxbAlon6VZz0082/4Qaqmlvr5INujdyEr/9XhD7YKveJ4aIE1CuQhfxhm970c3W";
+        MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Base64.decode(req));
+        assertTrue(msg.verify());
+        assertEquals("", msg.getRequestDN()); // ?? AD look up
+        assertNotNull(msg.getRequestPublicKey());
+        
+        String encodedPrivateKey = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDRTiJtDwsRgozw\n"
+                + "atZb4/X/HNB/xaOdiSukZRkJ5tNVOEuWV5fjYxALQcnuSW+uUHkwYyniZWO527Ct\n"
+                + "lDEJ55TsI/PSXLJ7kFJCiAD4IpkaUyZ7XXpkmWd6SA7jp2EACIc8UIBJaMTuLpmL\n"
+                + "ElgrDnu58Rwz652lbqPKqOYLFjkNr/y+JEtrOog8Lk+UPhsUPmXlx940RvWTkfHT\n"
+                + "+K7FQC/tFO+4D5boonrH1VtJFd51ZDxsFDhrl2v3yuV8M3AAar516Td8DGe6Tqb6\n"
+                + "88LYI4wTVcEBNFkR4ITC8d6721vR5rkihuzvB+XtYGZVlCekEySuM7dA6PcxZ5O6\n"
+                + "evmhMGBHAgMBAAECggEAQ4kVJaB9f0xjIq4udZ8EQKlxA1Fn3kyk9toiLqY62Zwd\n"
+                + "E6k22smboy46tHcgoJvZxsmweZsihxWCmDehbSM608k0AtQjSSiDynDs8yPix/I9\n"
+                + "j//VHsG6+GNo3n8jFuopjMYi5sz2Ai6qH4wvQ9FcDd7lLUGg8ADXu+wssjYc+bOS\n"
+                + "NyY9M7tn2oxj6cZkJW5sVgV7EekkAg21o2XB7EJ4NCudKtXmPrqI55G7f6/g1ekK\n"
+                + "/+5G09dNqpRLFcWJphZVuU2n526EG6qIySLniFClwgvod/qK8hqgqINAGSOouDIO\n"
+                + "OW3zKUlnBvWq4rn8nWFzt+UjdO42byRcUU0h9U13tQKBgQD4UvvXkzl9ASsuZUTD\n"
+                + "P++NDLRNiAy+wx2Ch6k2ak4wR/8VfiJPK9HWofGMWSk0bpJjDgX1yf6u7fl0i+mD\n"
+                + "+7+odrwaWG5xbGgSKKYJDwcBHRBRMuH1EIs0drydv0qW0HtTffzLplOx0ehyHk+9\n"
+                + "OpXEaPlGxrgxdlXWAEsoCyAhqwKBgQDXxmO5s7DVmfTxG8UpOSmU3HfkhsTRI7Yb\n"
+                + "jB3RyEB7fmvCPSJYk1MD8RNgzbuE/aagKSSa2K1tct/rALu5vxheiM4UO+1JTpnj\n"
+                + "6HeqPSIovMilzmTzOUY4Z53+aropaJoULnYckmeUqqZy8vXna6NERu/crI45+Xpz\n"
+                + "4OutQ0oX1QKBgFxpXWmDU4COn8g7TZSvxXEjSjIUMFIJgIDkBXfHpeNX17ji4Ne/\n"
+                + "we5zA9YsFCZ8A6QzQsqOamYlD5Fsw/EnDdMepK/VOvyg0DX5xJhYbE3gyAK/wdEW\n"
+                + "YAedLGI0Hwjy+wI+P4Z2Fm11ZWCaoSgVlkiqnCHXsBJQLG9gWpfDVCjTAoGAZ0r8\n"
+                + "gHBpzcc2v5lIp/RKWI22AzsUyv1qdwN7XuqbG8MoOMLlRzu3eOKWITg7dW2rr24i\n"
+                + "rNHfK87bLHecZk35j3+0D3GkpPwwpS6q4l8DlDbTYrRMFTcsy2Gm+50B40LEx7Z6\n"
+                + "KjFXzo5mwg5W82LOtKe0uZINP+mS2hgpGjdlJ8UCgYBrkGcASe18yKscrWis02bx\n"
+                + "3d+ror5tdATqmuJDJR31g/lSpC3w+sBvOleHcXkX36LSxZUqZyaHJowNoXYathbs\n"
+                + "tgNgD2tp2hDBEHdJOcx5Vo7HGHRSAbJjeSBtjc8kJuSVmEvUNBST5Tt5DWzcOloJ\n"
+                + "SSPpWa3QgFphkWUYxVi2Gw==";
+        
+        PrivateKey exchangePrivKey = null;
+        try {
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            exchangePrivKey = kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.decode(encodedPrivateKey)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+                
+        msg.decryptPrivateKey("BC", exchangePrivKey);
+    }
 }

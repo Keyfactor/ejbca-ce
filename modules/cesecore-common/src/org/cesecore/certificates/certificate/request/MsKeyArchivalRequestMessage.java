@@ -232,6 +232,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                     new JceKeyTransEnvelopedRecipient(caEncryptionKey).setProvider(provider));
             byte[] encodedPrivateKey = recData.getContentStream().readAllBytes();
             
+            System.out.println(Hex.toHexString(encodedPrivateKey));
             KeyFactory kf = KeyFactory.getInstance("RSA"); // signature and non-RSA keys are not supported
             PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(encodedPrivateKey));
             requestKeyPair = new KeyPair(getRequestPublicKey(), requestPrivatekey);
