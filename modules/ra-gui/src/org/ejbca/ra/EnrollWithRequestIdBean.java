@@ -694,7 +694,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     public List<SelectItem> getAvailableAlgorithmSelectItems() {
         final List<SelectItem> availableAlgorithmSelectItems = RaAvailableAlgorithmsTool
                 .getAvailableAlgorithmSelectItems(getCertificateProfile(), raLocaleBean.getMessage("enroll_select_ka_nochoice"));
-        EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
+        availableAlgorithmSelectItems.sort(EnrollMakeNewRequestBean.selectItemComparator);
         return availableAlgorithmSelectItems;
     }
 
