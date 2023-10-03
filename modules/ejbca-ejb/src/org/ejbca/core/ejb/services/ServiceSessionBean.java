@@ -629,7 +629,18 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             }
             throw new ServiceExecutionFailedException("Service could not run.");
         }
-        executeServiceInNoTransactionOrThrowException(worker, getServiceName(serviceId));
+        String serviceName = getServiceName(serviceId);
+        ServiceExecutionResult result = executeServiceInNoTransactionOrThrowException(worker, serviceName);
+        if (!result.getResult().equals(ServiceExecutionResult.Result.SUCCESS)) {
+            if (log.isDebugEnabled()) {
+                log.debug("The service " + serviceName + " could not execute or resulted in no action: " + result.getMessage());
+            }
+            throw new ServiceExecutionFailedException(result.getResult().toString());
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("The service " + serviceName + " executed with the following result: " + result.getResult());
+            }            
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
@@ -798,7 +809,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public void executeServiceInNoTransactionOrThrowException(IWorker worker, String serviceName) throws ServiceExecutionFailedException {
+    public ServiceExecutionResult executeServiceInNoTransactionOrThrowException(IWorker worker, String serviceName) throws ServiceExecutionFailedException {
         log.info("Attempting to run service: " + serviceName);
             // Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since
             // we have circular dependencies!
@@ -838,6 +849,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ServiceExecutionResult result = worker.work(ejbs);            
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName, result.getResult().getOutput(), result.getMessage());
             log.info(msg);
+            return result;
     }
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
