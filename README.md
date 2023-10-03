@@ -42,4 +42,4 @@ EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICEN
 * [Keyfactor/ejbca-vault-plugin](https://github.com/Keyfactor/ejbca-vault-plugin) 
 * [Keyfactor/ejbca-vault-monitor](https://github.com/Keyfactor/ejbca-vault-monitor) 
 * [Keyfactor/ejbca-cert-cvc](https://github.com/Keyfactor/ejbca-cert-cvc) 
-* [Keyfactor/ejbca-containers](https://github.com/Keyfactor/ejbca-containers) 
+* [Keyfactor/keyfactorcommunity](https://github.com/Keyfactor/keyfactorcommunity) 
