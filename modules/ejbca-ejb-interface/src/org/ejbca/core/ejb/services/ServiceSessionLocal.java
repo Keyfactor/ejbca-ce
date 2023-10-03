@@ -14,6 +14,7 @@ package org.ejbca.core.ejb.services;
 
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
 
 import javax.ejb.Local;
 import javax.ejb.Timer;
@@ -75,8 +76,13 @@ public interface ServiceSessionLocal extends ServiceSession {
 	/** Executes a the service in a separate in no transaction. */
 	void executeServiceInNoTransaction(final IWorker worker, final String serviceName);
 	
-	/** Executes a the service in a separate in no transaction or throws exception if service already running. */
-	void executeServiceInNoTransactionOrThrowException(IWorker worker, String serviceName) throws ServiceExecutionFailedException;
+	/** Executes a the service in a separate in no transaction or throws exception if fail.
+	 *  @param worker the worker
+	 *  @param serviceName name of the service to run
+	 *  @return ServiceExecutionResult containing result of the execution
+	 *  @throws ServiceExecutionFailedExeption if execution failed 
+	 */
+	ServiceExecutionResult executeServiceInNoTransactionOrThrowException(IWorker worker, String serviceName) throws ServiceExecutionFailedException;
 	
     /** Cancels a timer with the given Id. */
 	void cancelTimer(final Integer id);
