@@ -353,10 +353,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     caInfo.getLatestSubjectDN(), true);
 
                             for (Certificate cert : activeCaCertificates) {
-                                String signKeyAlias = getSignKeyAliasFromSubjectKeyId(cryptoToken, getAuthorityKeyIdentifier((X509Certificate) cert));
                                 final PrivateKey privateKey;
-
+                                String signKeyAlias=null;
                                 try {
+                                    signKeyAlias = getSignKeyAliasFromSubjectKeyId(cryptoToken, getAuthorityKeyIdentifier((X509Certificate) cert));
                                     privateKey = cryptoToken.getPrivateKey(signKeyAlias);
                                     if (privateKey == null) {
                                         log.warn(
@@ -557,7 +557,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return AuthorityKeyIdentifier.getInstance(extValue).getKeyIdentifier();
     }
     
-    private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] certificateSubjectKeyId) {
+    private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] certificateSubjectKeyId) throws CryptoTokenOfflineException {
         if (log.isDebugEnabled()) {
             log.debug("certSubjectKeyId: " + new String(Hex.encode(certificateSubjectKeyId)));
         }
@@ -568,7 +568,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     return keyAlias;
                 }
             }
-        } catch (KeyStoreException | CryptoTokenOfflineException e) {
+        } catch (KeyStoreException e) {
             throw new IllegalStateException(e);
         }
         throw new IllegalStateException("No key matching Subject Key Id '" + new String(Hex.encode(certificateSubjectKeyId)) + "' found.");
