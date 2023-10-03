@@ -13,6 +13,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.services.ServiceDataSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
+import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 
 /**
@@ -41,16 +42,20 @@ public class SystemRestResource extends BaseRestResource {
         }
         final Integer serviceId = serviceSession.getServiceId(serviceName);
         if (serviceId == 0) {
-            String exception = "The following service could not be found: " + serviceName;
-            log.info(exception);
-            throw new RestException(Status.NOT_FOUND.getStatusCode(),  exception);
+            String exceptionMessage = "The following service could not be found: " + serviceName;
+            log.info(exceptionMessage);
+            throw new RestException(Status.NOT_FOUND.getStatusCode(),  exceptionMessage);
         }
         try {
             serviceSession.runServiceNoTimer(serviceId);
         } catch (ServiceExecutionFailedException exception) {
-            String message = "The service could not run or was already running: " + serviceName;
-            log.info(exception.getMessage());
-            throw new RestException(Status.CONFLICT.getStatusCode(), message );            
+            String message = null;
+            if (exception.getMessage().equals(ServiceExecutionResult.Result.FAILURE.toString())) {
+                message = "The service " + serviceName + " failed. See server log.";
+            } else if (exception.getMessage().equals(ServiceExecutionResult.Result.NO_ACTION.toString())){
+                message = "The service " + serviceName + " was already running or no action were approperiate. See server log.";    
+            }
+            throw new RestException(Status.CONFLICT.getStatusCode(), message);            
         }
         return Response.status(Status.OK).build();
     }
