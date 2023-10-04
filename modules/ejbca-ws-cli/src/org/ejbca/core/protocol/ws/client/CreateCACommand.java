@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyValuePair;
@@ -36,8 +37,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * Creates new CA
- *
- * @version $Id$
  */
 public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -152,8 +151,33 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
         getPrintStream().println("The policy ID can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and cpsurl "
                 + "as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\". You can add multiple policies such as "
                 + "\"2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt\".");
+        getPrintStream().println();
+        getPrintStream().println("The properties file should follow the java 'key=value' properties files format.  The following fields can be set:");
+        getPrintStream().println(wrap(CAConstants.CA_PROPERTY_FIELD_NAMES, 80, 2));
     }
     
+    static private String wrap(String[] words, int width, int leftPad) {
+        String out = "";
+        String line = "";
+        String padString = "";
+        for (int i = 0; i < leftPad; ++i)
+            padString += " ";
+        for (String word : words) {
+            if (line.equals("") || line.length() + word.length() < width - leftPad + 1)
+                if (line.equals(""))
+                    line += word;
+                else
+                    line += " " + word;
+            else {
+                out += padString + line + "\n";
+                line = word;
+            }
+        }
+        if (!line.equals(""))
+            out += padString + line + "\n";
+        return out;
+    }
+
     private ArrayList<KeyValuePair> getKeyValuePairListFromProperties(Properties properties) {
         ArrayList<KeyValuePair> kvlist = new ArrayList<KeyValuePair>();
         Iterator<Object> itr = properties.keySet().iterator();

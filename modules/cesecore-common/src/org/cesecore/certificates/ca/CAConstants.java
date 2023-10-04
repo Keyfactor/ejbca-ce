@@ -77,6 +77,40 @@ public final class CAConstants {
 
     private static final String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "OFFLINE","EXTERNALCA", "UNINITIALIZED"};
 
+    public static final String[] CA_PROPERTY_FIELD_NAMES = {
+            //@formatter:off
+            "acceptRevocationNonExistingEntry",
+            "allowChangingRevocationReason",
+            "caSerialNumberOctetSize",
+            "certificateAiaDefaultCaIssuerUri",
+            "crlExpirationPeriodMilliseconds",
+            "crlIssuanceIntervalMilliseconds",
+            "crlNumberUsed",
+            "crlOverlapMilliseconds",
+            "defaultCRLDistPoint",
+            "defaultOCSPServiceLocator",
+            "deltaCRLMilliseconds",
+            "doEnforceKeyRenewal",
+            "doEnforceUniqueDistinguishedName",
+            "doEnforceUniquePublicKeys",
+            "doPreProduceOcspResponses",
+            "doStoreOcspResponsesOnDemand",
+            "finishUser",
+            "generateCrlUponRevocation",
+            "includeInHealthCheck",
+            "msCaCompatible",
+            "policyOids",
+            "requestPreProcessor",
+            "useAppendOnlyTable",
+            "useAuthorityKeyIdentifier",
+            "useCertificateStorage",
+            "useLdapDnOrder",
+            "usePartitionedCrl",
+            "useUserStorage",
+            "useUTF8PolicyText",
+            //@formatter:on
+    };
+
     /**
      * Prevents creation of new CAConstants
      */
