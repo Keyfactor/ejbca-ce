@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ra;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.message.SimpleMessage;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -157,6 +158,7 @@ public class AddEndEntityCommandTest {
             final TestAppender appender1 = new TestAppender();
             final Logger logger1 = command1.getLogger();
             logger1.addAppender(appender1);
+            
             command1.execute(INVALIDUSER_PATH_SETPWDPWD_ARGS);
             col = endEntityAccessSession.query(admin, query, caauthstring, eeprofilestr, 0, AccessRulesConstants.CREATE_END_ENTITY);
             assertEquals(1, col.size());
@@ -166,6 +168,9 @@ public class AddEndEntityCommandTest {
             // Password should not have changed
             assertTrue(eeAuthSession.verifyPassword(admin, USER_NAME, "foo123", false));
             assertFalse(eeAuthSession.verifyPassword(admin, USER_NAME, "bar123", false));
+            List<LoggingEvent> log = appender1.getLog();
+            assertEquals("End entity with username '"+USER_NAME_INVALID+"' does not exist.", ((SimpleMessage) log.get(0).getMessage()).getFormattedMessage());
+            
             // Verify that we had a nice error message that the user did not exist
             //List<LoggingEvent> log = appender1.getLog();
             //assertEquals("End entity with username '"+USER_NAME_INVALID+"' does not exist.", log.get(1).getMessage());
@@ -184,9 +189,10 @@ public class AddEndEntityCommandTest {
             // Password should not have changed
             assertTrue(eeAuthSession.verifyPassword(admin, USER_NAME, "foo123", false));
             assertFalse(eeAuthSession.verifyPassword(admin, USER_NAME, "foo123bar", false));
+            
             // Verify that we had a nice error message that the user did not exist
-            //log = appender2.getLog();
-            //assertEquals("End entity with username '"+USER_NAME_INVALID+"' does not exist.", log.get(1).getMessage());
+            log = appender2.getLog();
+            assertEquals("End entity with username '"+USER_NAME_INVALID+"' does not exist.", ((SimpleMessage) log.get(0).getMessage()).getFormattedMessage());
         } finally {
             try {
                 eeSession.deleteUser(admin, USER_NAME);
