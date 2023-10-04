@@ -365,22 +365,6 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
 
-        if (eep.isEmailUsed()) {
-            for (EndEntityProfile.FieldInstance instance: getSubjectDistinguishNames().getFieldInstances()) {
-                if (isDnEmail(instance)) {
-                    if (instance.isUseDataFromEmailField()) {
-                        instance.setValue(email[0]+"@"+email[1]);
-                    } else {
-                        instance.setValue(instance.getDefaultValue());
-                    }
-                }
-            }
-        }
-        String subjectDn = getSubjectDistinguishNames().getValue();
-        if(!subjectDn.equals(endEntityInformation.getDN())) {
-            endEntityInformation.setDN(subjectDn);
-            changed = true;
-        }
         if (subjectAlternativeNames == null) {
             if (StringUtils.isNotBlank(endEntityInformation.getSubjectAltName())) {
                 endEntityInformation.setSubjectAltName(null);
@@ -441,6 +425,25 @@ public class RaEndEntityBean implements Serializable {
             }
         } else {
             endEntityInformation.setEmail(null);
+        }
+
+        if (eep.isEmailUsed()) {
+            for (EndEntityProfile.FieldInstance instance : getSubjectDistinguishNames().getFieldInstances()) {
+                if (isDnEmail(instance)) {
+                    String emailValue = endEntityInformation.getEmail();
+                    if (instance.isUseDataFromEmailField() && StringUtils.isNotEmpty(emailValue)) {
+                        String[] emailParts = emailValue.split("@");
+                            instance.setValue(emailParts[0] + "@" + emailParts[1]);
+                    } else {
+                        instance.setValue(instance.getDefaultValue());
+                    }
+                }
+            }
+        }
+        String subjectDn = getSubjectDistinguishNames().getValue();
+        if (!subjectDn.equals(endEntityInformation.getDN())) {
+            endEntityInformation.setDN(subjectDn);
+            changed = true;
         }
 
         if (eep.isSendNotificationUsed() && !sendNotification.equals(endEntityInformation.getSendNotification())) {
