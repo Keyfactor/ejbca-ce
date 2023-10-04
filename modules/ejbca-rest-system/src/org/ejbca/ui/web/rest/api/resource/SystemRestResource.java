@@ -53,7 +53,8 @@ public class SystemRestResource extends BaseRestResource {
             if (exception.getMessage().equals(ServiceExecutionResult.Result.FAILURE.toString())) {
                 message = "The service " + serviceName + " failed. See server log.";
             } else if (exception.getMessage().equals(ServiceExecutionResult.Result.NO_ACTION.toString())){
-                message = "The service " + serviceName + " was already running or no action were approperiate. See server log.";    
+                message = "The service " + serviceName + " did not run because there were no changes to be made or due to the same "
+                        + "service already running. See server log.";
             }
             throw new RestException(Status.CONFLICT.getStatusCode(), message);            
         }

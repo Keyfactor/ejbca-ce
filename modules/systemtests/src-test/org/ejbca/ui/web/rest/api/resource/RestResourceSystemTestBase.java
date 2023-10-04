@@ -179,6 +179,7 @@ public class RestResourceSystemTestBase {
     protected static final int HTTP_STATUS_CODE_OK = 200;
     protected static final int HTTP_STATUS_CODE_ACCEPTED = 202;
     protected static final int HTTP_STATUS_CODE_NOT_FOUND = 404;
+    protected static final int HTTP_STATUS_CODE_CONFLICT = 409;
 
     static {
         clearLoginCertificateSetup(); // Always make sure we start with a clean environment
