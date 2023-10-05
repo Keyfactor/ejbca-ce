@@ -142,9 +142,12 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
     }
 
     private static boolean wasInitiatedWithoutMessage(Throwable throwable) {
-        return throwable.getMessage() == null
-                || throwable.getCause() == null
-                || throwable.getMessage().equals(throwable.getCause().toString());
+        // throwable has no message or its cause has a generated message
+        return throwable.getMessage() == null || throwable.getCause() != null &&
+                (
+                        throwable.getMessage().equals(throwable.getCause().toString())
+                                || throwable.getMessage().equals(throwable.getCause().getMessage())
+                );
     }
 
     // Map managed exceptions (not of error nature)
