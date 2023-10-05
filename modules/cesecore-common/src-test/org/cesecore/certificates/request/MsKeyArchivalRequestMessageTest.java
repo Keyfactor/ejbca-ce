@@ -15,6 +15,7 @@ package org.cesecore.certificates.request;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.KeyFactory;
 import java.security.PrivateKey;
@@ -252,11 +253,14 @@ public class MsKeyArchivalRequestMessageTest {
     }
     
     @Test
-    public void testUserEnroll0() throws Exception { // fails as expected
-        PKCS10RequestMessage msg = new PKCS10RequestMessage(Base64.decode(USER_ENROLL_REQ));
-        assertTrue(msg.verify());
-        assertEquals("", msg.getRequestDN()); // ?? AD look up
-        assertNotNull(msg.getRequestPublicKey());         
+    public void testUserEnroll0() throws Exception { 
+        try {
+            // fails as expected
+            PKCS10RequestMessage msg = new PKCS10RequestMessage(Base64.decode(USER_ENROLL_REQ));
+            fail("should have failed to parse CMC request as PKCS10");
+        } catch (Exception e) {
+            
+        }        
     }
     
     
