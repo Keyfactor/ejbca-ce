@@ -237,7 +237,7 @@ public class MsKeyArchivalRequestMessageTest {
     public void testComputerEnroll() throws Exception {
         MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Base64.decode(COMPUTER_ENROLL));
         assertTrue(msg.verify());
-        assertEquals("", msg.getRequestDN()); // ?? AD look up
+        assertEquals("", msg.getRequestDN()); // AD look up
         assertNotNull(msg.getRequestPublicKey()); 
     }
     
@@ -245,7 +245,7 @@ public class MsKeyArchivalRequestMessageTest {
     public void testUserEnroll() throws Exception {
         MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Base64.decode(USER_ENROLL_REQ));
         assertTrue(msg.verify());
-        assertEquals("", msg.getRequestDN()); // ?? AD look up
+        assertEquals("", msg.getRequestDN());
         assertNotNull(msg.getRequestPublicKey()); 
                 
         msg.decryptPrivateKey("BC", exchangePrivKey);
@@ -253,7 +253,7 @@ public class MsKeyArchivalRequestMessageTest {
     }
     
     @Test
-    public void testUserEnroll0() throws Exception { 
+    public void testParseUserEnrollKeyArchivalAsPkcs10() throws Exception { 
         try {
             // fails as expected
             PKCS10RequestMessage msg = new PKCS10RequestMessage(Base64.decode(USER_ENROLL_REQ));
@@ -266,7 +266,6 @@ public class MsKeyArchivalRequestMessageTest {
     
     @Test
     public void testUserEnroll2() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
         String req = "MIILxgYJKoZIhvcNAQcCoIILtzCCC7MCAQMxCzAJBgUrDgMCGgUAMIID5AYIKwYBBQUHDAKgggPW\n"
                 + "BIID0jCCA84wRDBCAgECBgorBgEEAYI3CgoBMTEwLwIBADADAgEBMSUwIwYJKwYBBAGCNxUVMRYE\n"
                 + "FBYE22NS12CLiwSf5eL79Yz29qI8MIIDgKCCA3wCAQEwggN1MIICXQIBADAAMIIBIjANBgkqhkiG\n"
@@ -333,7 +332,6 @@ public class MsKeyArchivalRequestMessageTest {
     
     @Test
     public void testUserEnroll3() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
         String req = "MIILxgYJKoZIhvcNAQcCoIILtzCCC7MCAQMxCzAJBgUrDgMCGgUAMIID5AYIKwYBBQUHDAKgggPW\n"
                 + "BIID0jCCA84wRDBCAgECBgorBgEEAYI3CgoBMTEwLwIBADADAgEBMSUwIwYJKwYBBAGCNxUVMRYE\n"
                 + "FBh5CuTtWoMxyQdaDeJxI4Zuiu54MIIDgKCCA3wCAQEwggN1MIICXQIBADAAMIIBIjANBgkqhkiG\n"
@@ -389,7 +387,7 @@ public class MsKeyArchivalRequestMessageTest {
                 + "F4I+HeAnnlxbAlon6VZz0082/4Qaqmlvr5INujdyEr/9XhD7YKveJ4aIE1CuQhfxhm970c3W";
         MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Base64.decode(req));
         assertTrue(msg.verify());
-        assertEquals("", msg.getRequestDN()); // ?? AD look up
+        assertEquals("", msg.getRequestDN());
         assertNotNull(msg.getRequestPublicKey());
                         
         msg.decryptPrivateKey("BC", exchangePrivKey);
