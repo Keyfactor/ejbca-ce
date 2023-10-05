@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.revoke;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.audit.enums.EventStatus;
@@ -70,6 +71,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:
@@ -171,11 +173,11 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     	}
     }
     
-    private AuthenticationToken getOrCreateAuthotizedTokenCreateCrl(final AuthenticationToken admin, String caName) {
+    private AuthenticationToken getOrCreateAuthorizedTokenCreateCrl(final AuthenticationToken admin, String caName) {
         // ca_access permission is checked already
         if (!authorizationSession.isAuthorized(admin, StandardRules.CREATECRL.resource())) {
             log.warn("Admin: " + admin + " is not authorized to create CRL for CA: " + caName + ", creating pseudo-token.");
-            return new AlwaysAllowLocalAuthenticationToken("" + admin.toString());
+            return new AlwaysAllowLocalAuthenticationToken(StringUtils.EMPTY + admin.toString());
         }
         return admin;
     }
@@ -189,18 +191,12 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         final int caId = baseCertificateData.getIssuerDN().hashCode();
         final CAInfo caInfo = caSession.getCAInfo(admin, caId);
 
-        final CA ca = (CA) caSession.getCANoLog(admin, caInfo.getCAId(), null);
-
-        CertificateDataWrapper revokedCdw = certificateStoreSession.getCertificateData(
-                cdw.getBaseCertificateData().getFingerprint());
-        CertificateData revokedCertData = revokedCdw.getCertificateData();
-        deleteOcspIfExists(caId, revokedCertData);
-        ocspResponseSigningSession.preSignOcspResponse(ca, revokedCertData);
-        // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking
+        preSignOcspResponse(admin, caInfo, cdw, caId);
+        // ECA-9716 caInfo == null with self-signed certificates stored in DB before revoking
         // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity)
         if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
             log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
-            AuthenticationToken newAdmin = getOrCreateAuthotizedTokenCreateCrl(admin, caInfo.getName());
+            AuthenticationToken newAdmin = getOrCreateAuthorizedTokenCreateCrl(admin, caInfo.getName());
             try {
                 publishCrlSession.forceCRL(newAdmin, caId);
                 publishCrlSession.forceDeltaCRL(newAdmin, caId);
@@ -210,6 +206,20 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 // Should never happen.
                 log.error("Failed to sign new CRL upon revocation because not authorized to CA: " + e.getMessage());
             }
+        }
+    }
+
+    private void preSignOcspResponse(AuthenticationToken admin, CAInfo caInfo, CertificateDataWrapper cdw, int caId)
+            throws AuthorizationDeniedException {
+        if (caInfo != null) {
+            CA ca = (CA) caSession.getCANoLog(admin, caInfo.getCAId(), null);
+            Optional.ofNullable(ca).ifPresent(cAuthority -> {
+                CertificateDataWrapper revokedCdw = certificateStoreSession.getCertificateData(
+                        cdw.getBaseCertificateData().getFingerprint());
+                CertificateData revokedCertData = revokedCdw.getCertificateData();
+                deleteOcspIfExists(caId, revokedCertData);
+                ocspResponseSigningSession.preSignOcspResponse(cAuthority, revokedCertData);
+            });
         }
     }
 
