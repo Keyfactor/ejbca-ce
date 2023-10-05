@@ -13,13 +13,14 @@
 package org.cesecore.certificates.certificate.request;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
-import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,10 +29,12 @@ import java.util.Random;
 
 import javax.crypto.Cipher;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmc.PKIData;
 import org.bouncycastle.asn1.cmc.TaggedAttribute;
@@ -43,6 +46,8 @@ import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.cms.SignedData;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedDataParser;
@@ -53,6 +58,7 @@ import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
+import org.bouncycastle.jcajce.provider.asymmetric.util.KeyUtil;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
@@ -163,7 +169,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                     continue;
                 }
                 encryptedPrivateKey = attr.getAttributeValues()[0].toASN1Primitive().getEncoded();
-             }
+            }
             
             if (encryptedPrivateKey==null) {
                 log.debug("MS Key archival request is malforemd does not contain the encrpyted private key.");
@@ -198,13 +204,13 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             log.debug("verified MS key archival outer request.");
             return true;
         } catch (OperatorCreationException e) {
-            log.error("Content verifier provider could not be created.", e);
+            log.info("Content verifier provider could not be created.", e);
             return false;
         } catch (PKCSException e) {
-            log.error("Signature could not be processed.", e);
+            log.info("Signature could not be processed.", e);
             return false;
         } catch (CMSException|IOException e) {
-            log.error("CMS data could not be parsed.", e);
+            log.info("CMS data could not be parsed.", e);
             return false;
         } finally {
             if (log.isTraceEnabled()) {
@@ -232,16 +238,17 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                     new JceKeyTransEnvelopedRecipient(caEncryptionKey).setProvider(provider));
             byte[] encodedPrivateKey = recData.getContentStream().readAllBytes();
             
-            System.out.println(Hex.toHexString(encodedPrivateKey));
-            KeyFactory kf = KeyFactory.getInstance("RSA"); // signature and non-RSA keys are not supported
-            PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(encodedPrivateKey));
-            requestKeyPair = new KeyPair(getRequestPublicKey(), requestPrivatekey);
+            PrivateKey requestPrivateKey =  parsePrivateKeyBlob(encodedPrivateKey);
+            if (requestPrivateKey==null) {
+                throw new CertificateCreateException("Private key parsing failed");
+            }
+            requestKeyPair = new KeyPair(getRequestPublicKey(), requestPrivateKey);
             
             testKeyPair();
 
         } catch (CMSException|IOException e) {
             throw new IllegalStateException(e);
-        } catch (InvalidKeySpecException|InvalidKeyException e) {
+        } catch (InvalidKeyException e) {
             throw new IllegalStateException(e);
         } catch (NoSuchAlgorithmException e) {
             // nopmd
@@ -251,6 +258,67 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         if (log.isTraceEnabled()) {
             log.trace(">decryptPrivateKey()");
         }
+    }
+    
+    /**
+     * Parse private key from MS specific blob. Only RSA keys are supported now.
+     * ref: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/5cf2e6b9-3195-4f85-bc18-05b50e6d4e11
+     * 
+     * @param encodedPrivateKey
+     * @return
+     */
+    private PrivateKey parsePrivateKeyBlob(byte[] encodedPrivateKey) {
+        if (encodedPrivateKey[0]!=0x07 || encodedPrivateKey[1]!=0x02 ) { // only parsing normal RSA keys
+            return null;
+        }
+        
+        try {
+            byte[] buffer = ArrayUtils.subarray(encodedPrivateKey, 12, 16);
+            ArrayUtils.reverse(buffer);
+            int byteLen = ByteBuffer.wrap(buffer).getInt()/8;
+            BigInteger pubExp = bigIntFromByteArray(encodedPrivateKey, 16, 20);
+            int start = 20;
+            int end = 20+byteLen;
+            BigInteger modulus = bigIntFromByteArray(encodedPrivateKey, start, end);
+            start=end;
+            end=start + byteLen/2;
+            BigInteger prime1 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            start=end;
+            end=start + byteLen/2;
+            BigInteger prime2 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            start=end;
+            end=start + byteLen/2;
+            BigInteger exponent1 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            start=end;
+            end=start + byteLen/2;
+            BigInteger exponent2 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            start=end;
+            end=start + byteLen/2;
+            BigInteger coefficient = bigIntFromByteArray(encodedPrivateKey, start, end);
+            start=end;
+            end=start + byteLen;
+            BigInteger privateExp = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
+            RSAPrivateKey privKey = new RSAPrivateKey(modulus, pubExp, privateExp, prime1, prime2, 
+                                                                        exponent1, exponent2, coefficient);
+            
+            // see org/bouncycastle/jcajce/provider/asymmetric/rsa/BCRSAPublicKey.java
+            AlgorithmIdentifier algorithmIdentifier = new AlgorithmIdentifier(
+                                                PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE);
+            byte[] derEncodedPrivKey = KeyUtil.getEncodedPrivateKeyInfo(algorithmIdentifier, privKey);
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(derEncodedPrivKey));            
+            return requestPrivatekey;
+        } catch (Exception e) {
+            log.info("Exception during private key blob processing: ", e);
+            return null;
+        }
+    }
+    
+    private BigInteger bigIntFromByteArray(byte[] encodedPrivateKey, int start, int end) {
+        byte[] buffer = ArrayUtils.subarray(encodedPrivateKey, start, end);
+        ArrayUtils.reverse(buffer);
+        return new BigInteger(buffer);
     }
     
     private void testKeyPair() throws CertificateCreateException {
@@ -268,7 +336,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             Cipher decCipher = Cipher.getInstance("RSA");
             decCipher.init(Cipher.DECRYPT_MODE, requestKeyPair.getPrivate());
             decryptedBytes = decCipher.doFinal(encryptedBytes);
-                    
+           
         } catch (Exception e) {
             log.info("MS key archival key testing failed", e);
         }
