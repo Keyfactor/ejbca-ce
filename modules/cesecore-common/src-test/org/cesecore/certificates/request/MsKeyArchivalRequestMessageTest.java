@@ -17,21 +17,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateCrtKeySpec;
-import java.util.Random;
-
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -137,106 +130,133 @@ public class MsKeyArchivalRequestMessageTest {
             + "90q7jQ8J8cUntumeRHzf6zupN1d2dtofzfmaK/b8NGuJykPmbCTESRGEVvvi0p4i368rjt6Khapn\n"
             + "uIgC30ELUt0UuRV+igTa9fWviHv4D+cFkdJ7mEAG+Z64sN1rfzaBQyj9/qSXK1yTfqfqR7jW";
     
+    private static final String COMPUTER_ENROLL = "MIILZQYJKoZIhvcNAQcCoIILVjCCC1ICAQMxCzAJBgUrDgMCGgUAMIIDgAYIKwYBBQUHDAKgggNy\n"
+            + "BIIDbjCCA2owRDBCAgECBgorBgEEAYI3CgoBMTEwLwIBADADAgEBMSUwIwYJKwYBBAGCNxUVMRYE\n"
+            + "FEfFGGTPflFnpDNk8dqpgdFmAQKBMIIDHKCCAxgCAQEwggMRMIIB+QIBADAAMIIBIjANBgkqhkiG\n"
+            + "9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqSIUwK3Y9NgBbE4e4nerw7TTSc5qdWs+SxmGXpWUXce2GTQw\n"
+            + "d77HOCv3iBd8tAGTZGnFs4LvSF3q75iCFzwdhBYU0Fupzdgta3WOHRdJ2VK0VFAkJF2khVdLhwMP\n"
+            + "5wyq5fnB3NrlNS6TgKOY1NDSyO4a0Z22gb2reu0CbYVVP3O0RNlbywsi7ID7cp5TWpTl26500h5G\n"
+            + "rZ2exqGC7O/Tjjz68Bo1HOpSBOW4Wdc8mhFsFRidvRO5XH4WvGTL2ALGt8iXJHXp4LI9teFvaFEw\n"
+            + "+WK/p43Cd6Ei2SMOWScPXGDS0dtcXnU5cDoSBLj43isqAwhNUp84XoqKE2BB4rTPOQIDAQABoIHL\n"
+            + "MIHIBgkqhkiG9w0BCQ4xgbowgbcwPgYJKwYBBAGCNxUHBDEwLwYnKwYBBAGCNxUIhZ+hf4KAnkqD\n"
+            + "pYUZhcjqJoT8myCBAIK/vTWDw41NAgFkAgEzMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcD\n"
+            + "AjAOBgNVHQ8BAf8EBAMCBaAwJwYJKwYBBAGCNxUKBBowGDAKBggrBgEFBQcDATAKBggrBgEFBQcD\n"
+            + "AjAdBgNVHQ4EFgQUSUk3M1EU+mxI67SaBMbmyS9bIFUwDQYJKoZIhvcNAQEFBQADggEBACMW4Ezf\n"
+            + "SFGTN/tecE+QcBIeNJ6Gmpz2LMeS/4bkqwanGy1NQlMubC4jbjIiqOeOYB0oTTAHccd9EVNuxAMg\n"
+            + "rI5nuyKeWoIkGaTMqSJzlCXWmP9Etgf3K2HNTkuQaTpiLx3Fu4Zj3pw0boavUd8mfIX0I8zmNrzl\n"
+            + "+MTK1HT+lf4zf/oxBXKgqOFS2kBcz2Wa86egdNEQWkRqtoK6n/wdRxChQwHaGEAgV/ORYDgsBNzB\n"
+            + "rYpffQT63+efcJfKvoqtgsd15f9RRne2KNWWSaQFg8NdeX4eFdR0oQC6zdlHgqVWHCzLlvQ3nNkK\n"
+            + "ZwH0bzPRNiYzcpTpSVMHa1XkIa+tzfowADAAMYIHujCCB7YCAQOAFElJNzNRFPpsSOu0mgTG5skv\n"
+            + "WyBVMAkGBSsOAwIaBQCgPjAXBgkqhkiG9w0BCQMxCgYIKwYBBQUHDAIwIwYJKoZIhvcNAQkEMRYE\n"
+            + "FPSRuBANVthuex9d1Ry+BTyossTMMA0GCSqGSIb3DQEBAQUABIIBAEnjQkNj0yseulisiSERtE8A\n"
+            + "2a4BAeGtfi/Ia7ilvsUKXB7FMvEoDhFFX+6mZg2SSOz5yqBb1aMvJ8eOYTm+fEuO/wTYeThOvf8Q\n"
+            + "Cef9dKy6IPCHUsMWgfpWZUHtqP5k4kiHlpjFz+08QovPcqWjdsFFYk61ezg24HijM/lQ+KY2/MKi\n"
+            + "83XxHS0jvuYK7TEWCJTRd72M/QMBbAKwzwAo0Qy5BRUCgw5NfnWHzbe1zNDmzs00h4R/7SchXo7E\n"
+            + "+Vpw28jwOpdfp2tulEDNsXQgrgN4BjHSkspBzAluP/aPQ1csykEf8nZsN7uVfCvMQAjVlIuswVc0\n"
+            + "+5uUjWhL58yAi8WhggY7MIIGNwYJKwYBBAGCNxUNMYIGKDCCBiQGCSqGSIb3DQEHA6CCBhUwggYR\n"
+            + "AgEAMYIBSTCCAUUCAQAwLTAVMRMwEQYDVQQDDApJc3N1aW5nIENBAhRQR0Bz0aGO/vQaBQxh3o3h\n"
+            + "B1//6DANBgkqhkiG9w0BAQEFAASCAQAw4verjebXkVdC9txVLCERE5VqilTq0H+IjT5gYkDEEGDg\n"
+            + "dyeuGmn4bqmgcuHaDHD0LbG3iD9qU+igOkzMJjD7tk6acR1ESt8/hVqCxUCMIY/i1aIMR/BSPy6g\n"
+            + "Xk12HKWD5nkw6jlTpgbcEXulrwz6JlnkwSfCOkAajZ4DKt/DqrNhYuf/CsIT3Vpfzu7a1ysO5DY+\n"
+            + "DQa2edoOXtuJqowdBp5Q5r00Rvfy62YCuSFkdRmgPWFhUUyErSiH+ER57Z0rX+RRzet0V1D8lxmW\n"
+            + "1YjZdnJjOEqJ17DOznpXX0p/ZZUy0yAcOd0n5wa9wUWo+SCq9lfjVSbwXnOV+89tIvOoMIIEvQYJ\n"
+            + "KoZIhvcNAQcBMBQGCCqGSIb3DQMHBAhqdCcixIfZUYCCBJheN5hux3Xy/62umvALFB7seVN1Nr4H\n"
+            + "gxowMm2mUFGEt45Y3hDpe9zkxAplG49vUGdzO+I+UVAUUtzk7fccmu2z1sAUP5RuZUvpYvBJICNj\n"
+            + "z2L2P4RsYtHvrXlLOsRU/GBxki31t2feD9fbmKdXyJskVios76dPTr3WKTpREIbDCqottIhjla+3\n"
+            + "NyfRqEJh6cHlFZut54ixOAOKv1lwko6r1Lqcf/PeXGeNSJNsf7fs62BsZLUJNjrqdrSepwtHgA0Z\n"
+            + "D6x/auaYefmWUe2R1YQA4Nn20bGmsM+zlFR5ybH+XxSlqgXNmmJerQtYmA4Qy+/NejGjUcPqCSh/\n"
+            + "gtkEvg8AN6nOtopAQmOAn4MmFQW/yFpBdZ7adNXkX87hcwqCQJmKVo9uDZ0QKCGW2hjqFl5MdP5v\n"
+            + "DFdeVLdu/axilRDd4Pa7lcSl+hzHfXzWvn0HMB2U7R52Xni0dApomaQF1zmhVuVzJWP3gHvFd7CD\n"
+            + "gwuP6MOpT845mVgnYl0001he+QxyUH1JQKZT9VVOD6nDk6FTbGhnJX/5gHWjPiyHQKkUweJhEF51\n"
+            + "MoMlfxBCuzeXb1fXq49G1UF3ws2AmBmR6XVraT+Pg7sb1+WiCByVXdQ3Np1Dk0/RHcihkw7VD+Ka\n"
+            + "7rc7x2NSPT4CnEOAxLLpmPZKXoD0rWdTR4GeGnZyq8k1vWLW25NPRg6SBbH221u0PB+tOt1gXrPr\n"
+            + "gUFlAUBVLSlfrNV5rLxBb6Qcr16XYfUmDq5APCPG7A3X0YuKjINY/SqR7EG7mwPmC4jPbUXQtDnm\n"
+            + "/9jGfCkeixl+3j6A1EJFnhC3p/+g1LSPXWlrV4BSh3cVWE5iZfgsmE6Az6A+xdTulwkdCYbDrwGU\n"
+            + "aS+IOYRmm8fdUcyh4/ZvrQ/vBSpqgKBGhnbRwE5N4bed1JsARfPoKKGtwLx2+/PmQaWVxilq0Mb1\n"
+            + "h8sbEPa9h4y9VqccVOuQ+qZaRnmR3Zpjns4HCFay6fjlKBjWblIafETZMiI3SHQc3ZmNGfWPLVDz\n"
+            + "jNjgLzw4uF8Grf5pr0MsztrCGW+hnD3iGsaG2xgGDT8hY0EQZYpu4PPrW6HNKipmKZJbj/fCLqO4\n"
+            + "QkUTbIpY0pUJCcKar77pWQO5BBwfPDtCzVd9Qx8a0SJoA8080oRDleVurbTDdpXr0baOvOb6Ue1L\n"
+            + "N2bUo3sHm0XcH8S/J4OECqliU9om7NDs4B62ylYNaecVaN+VZyV8fg8wjgFuNHsq+2PRSgGVYdpS\n"
+            + "Eqz/Gg7CAxB1Y6DWlSV1V8iSyogVdmbunSYRwEXDgGcdhM/hKL2i5o94MnuV02As4bPAAk+sOo2w\n"
+            + "5RvaUirK2HSDfP8PIiElE8g9PPWvn1ZODIas74kQ2syGJvSfoC1KXsNAeH9K7leLSY3CQ2IlntqQ\n"
+            + "hXtvEuO2Ioj2fkvZznsz92VwfCI6nDNvU6oA6Bgo/QzM+sPIFdxBK5HP7U5Y9ABG85rLlGBEM8+W\n"
+            + "qgR2/glGMTrq+FKcWO/BTBtNuAHGvVzfhrB2YsMsuLsVjoehX7DZ9CuPHdKu1qkRcpP1/T2QUZfN\n"
+            + "D1/FmUj+I+nmHMF/kF4=";
+    
+    private static final String CA_XCHG_PRIV_KEY = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDRTiJtDwsRgozw\n"
+            + "atZb4/X/HNB/xaOdiSukZRkJ5tNVOEuWV5fjYxALQcnuSW+uUHkwYyniZWO527Ct\n"
+            + "lDEJ55TsI/PSXLJ7kFJCiAD4IpkaUyZ7XXpkmWd6SA7jp2EACIc8UIBJaMTuLpmL\n"
+            + "ElgrDnu58Rwz652lbqPKqOYLFjkNr/y+JEtrOog8Lk+UPhsUPmXlx940RvWTkfHT\n"
+            + "+K7FQC/tFO+4D5boonrH1VtJFd51ZDxsFDhrl2v3yuV8M3AAar516Td8DGe6Tqb6\n"
+            + "88LYI4wTVcEBNFkR4ITC8d6721vR5rkihuzvB+XtYGZVlCekEySuM7dA6PcxZ5O6\n"
+            + "evmhMGBHAgMBAAECggEAQ4kVJaB9f0xjIq4udZ8EQKlxA1Fn3kyk9toiLqY62Zwd\n"
+            + "E6k22smboy46tHcgoJvZxsmweZsihxWCmDehbSM608k0AtQjSSiDynDs8yPix/I9\n"
+            + "j//VHsG6+GNo3n8jFuopjMYi5sz2Ai6qH4wvQ9FcDd7lLUGg8ADXu+wssjYc+bOS\n"
+            + "NyY9M7tn2oxj6cZkJW5sVgV7EekkAg21o2XB7EJ4NCudKtXmPrqI55G7f6/g1ekK\n"
+            + "/+5G09dNqpRLFcWJphZVuU2n526EG6qIySLniFClwgvod/qK8hqgqINAGSOouDIO\n"
+            + "OW3zKUlnBvWq4rn8nWFzt+UjdO42byRcUU0h9U13tQKBgQD4UvvXkzl9ASsuZUTD\n"
+            + "P++NDLRNiAy+wx2Ch6k2ak4wR/8VfiJPK9HWofGMWSk0bpJjDgX1yf6u7fl0i+mD\n"
+            + "+7+odrwaWG5xbGgSKKYJDwcBHRBRMuH1EIs0drydv0qW0HtTffzLplOx0ehyHk+9\n"
+            + "OpXEaPlGxrgxdlXWAEsoCyAhqwKBgQDXxmO5s7DVmfTxG8UpOSmU3HfkhsTRI7Yb\n"
+            + "jB3RyEB7fmvCPSJYk1MD8RNgzbuE/aagKSSa2K1tct/rALu5vxheiM4UO+1JTpnj\n"
+            + "6HeqPSIovMilzmTzOUY4Z53+aropaJoULnYckmeUqqZy8vXna6NERu/crI45+Xpz\n"
+            + "4OutQ0oX1QKBgFxpXWmDU4COn8g7TZSvxXEjSjIUMFIJgIDkBXfHpeNX17ji4Ne/\n"
+            + "we5zA9YsFCZ8A6QzQsqOamYlD5Fsw/EnDdMepK/VOvyg0DX5xJhYbE3gyAK/wdEW\n"
+            + "YAedLGI0Hwjy+wI+P4Z2Fm11ZWCaoSgVlkiqnCHXsBJQLG9gWpfDVCjTAoGAZ0r8\n"
+            + "gHBpzcc2v5lIp/RKWI22AzsUyv1qdwN7XuqbG8MoOMLlRzu3eOKWITg7dW2rr24i\n"
+            + "rNHfK87bLHecZk35j3+0D3GkpPwwpS6q4l8DlDbTYrRMFTcsy2Gm+50B40LEx7Z6\n"
+            + "KjFXzo5mwg5W82LOtKe0uZINP+mS2hgpGjdlJ8UCgYBrkGcASe18yKscrWis02bx\n"
+            + "3d+ror5tdATqmuJDJR31g/lSpC3w+sBvOleHcXkX36LSxZUqZyaHJowNoXYathbs\n"
+            + "tgNgD2tp2hDBEHdJOcx5Vo7HGHRSAbJjeSBtjc8kJuSVmEvUNBST5Tt5DWzcOloJ\n"
+            + "SSPpWa3QgFphkWUYxVi2Gw==";
+    
+    static PrivateKey exchangePrivKey = null;
+    
+    @BeforeClass
+    public static void init() {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
+        
+        try {
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            exchangePrivKey = kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.decode(CA_XCHG_PRIV_KEY)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     @Test
     public void testSmoke() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
+        
         MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Hex.decode(SAMPLE_REQUEST));
         assertTrue(msg.verify());
         assertEquals("CN=TestCN,O=TestOrg", msg.getRequestDN());
     }
     
     @Test
+    public void testComputerEnroll() throws Exception {
+        MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Base64.decode(COMPUTER_ENROLL));
+        assertTrue(msg.verify());
+        assertEquals("", msg.getRequestDN()); // ?? AD look up
+        assertNotNull(msg.getRequestPublicKey()); 
+    }
+    
+    @Test
     public void testUserEnroll() throws Exception {
-        CryptoProviderTools.installBCProviderIfNotAvailable();
         MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Base64.decode(USER_ENROLL_REQ));
         assertTrue(msg.verify());
         assertEquals("", msg.getRequestDN()); // ?? AD look up
         assertNotNull(msg.getRequestPublicKey()); 
-        
-        String encodedPrivateKey = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDRTiJtDwsRgozw\n"
-                + "atZb4/X/HNB/xaOdiSukZRkJ5tNVOEuWV5fjYxALQcnuSW+uUHkwYyniZWO527Ct\n"
-                + "lDEJ55TsI/PSXLJ7kFJCiAD4IpkaUyZ7XXpkmWd6SA7jp2EACIc8UIBJaMTuLpmL\n"
-                + "ElgrDnu58Rwz652lbqPKqOYLFjkNr/y+JEtrOog8Lk+UPhsUPmXlx940RvWTkfHT\n"
-                + "+K7FQC/tFO+4D5boonrH1VtJFd51ZDxsFDhrl2v3yuV8M3AAar516Td8DGe6Tqb6\n"
-                + "88LYI4wTVcEBNFkR4ITC8d6721vR5rkihuzvB+XtYGZVlCekEySuM7dA6PcxZ5O6\n"
-                + "evmhMGBHAgMBAAECggEAQ4kVJaB9f0xjIq4udZ8EQKlxA1Fn3kyk9toiLqY62Zwd\n"
-                + "E6k22smboy46tHcgoJvZxsmweZsihxWCmDehbSM608k0AtQjSSiDynDs8yPix/I9\n"
-                + "j//VHsG6+GNo3n8jFuopjMYi5sz2Ai6qH4wvQ9FcDd7lLUGg8ADXu+wssjYc+bOS\n"
-                + "NyY9M7tn2oxj6cZkJW5sVgV7EekkAg21o2XB7EJ4NCudKtXmPrqI55G7f6/g1ekK\n"
-                + "/+5G09dNqpRLFcWJphZVuU2n526EG6qIySLniFClwgvod/qK8hqgqINAGSOouDIO\n"
-                + "OW3zKUlnBvWq4rn8nWFzt+UjdO42byRcUU0h9U13tQKBgQD4UvvXkzl9ASsuZUTD\n"
-                + "P++NDLRNiAy+wx2Ch6k2ak4wR/8VfiJPK9HWofGMWSk0bpJjDgX1yf6u7fl0i+mD\n"
-                + "+7+odrwaWG5xbGgSKKYJDwcBHRBRMuH1EIs0drydv0qW0HtTffzLplOx0ehyHk+9\n"
-                + "OpXEaPlGxrgxdlXWAEsoCyAhqwKBgQDXxmO5s7DVmfTxG8UpOSmU3HfkhsTRI7Yb\n"
-                + "jB3RyEB7fmvCPSJYk1MD8RNgzbuE/aagKSSa2K1tct/rALu5vxheiM4UO+1JTpnj\n"
-                + "6HeqPSIovMilzmTzOUY4Z53+aropaJoULnYckmeUqqZy8vXna6NERu/crI45+Xpz\n"
-                + "4OutQ0oX1QKBgFxpXWmDU4COn8g7TZSvxXEjSjIUMFIJgIDkBXfHpeNX17ji4Ne/\n"
-                + "we5zA9YsFCZ8A6QzQsqOamYlD5Fsw/EnDdMepK/VOvyg0DX5xJhYbE3gyAK/wdEW\n"
-                + "YAedLGI0Hwjy+wI+P4Z2Fm11ZWCaoSgVlkiqnCHXsBJQLG9gWpfDVCjTAoGAZ0r8\n"
-                + "gHBpzcc2v5lIp/RKWI22AzsUyv1qdwN7XuqbG8MoOMLlRzu3eOKWITg7dW2rr24i\n"
-                + "rNHfK87bLHecZk35j3+0D3GkpPwwpS6q4l8DlDbTYrRMFTcsy2Gm+50B40LEx7Z6\n"
-                + "KjFXzo5mwg5W82LOtKe0uZINP+mS2hgpGjdlJ8UCgYBrkGcASe18yKscrWis02bx\n"
-                + "3d+ror5tdATqmuJDJR31g/lSpC3w+sBvOleHcXkX36LSxZUqZyaHJowNoXYathbs\n"
-                + "tgNgD2tp2hDBEHdJOcx5Vo7HGHRSAbJjeSBtjc8kJuSVmEvUNBST5Tt5DWzcOloJ\n"
-                + "SSPpWa3QgFphkWUYxVi2Gw==";
-        
-        PrivateKey exchangePrivKey = null;
-        try {
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            exchangePrivKey = kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.decode(encodedPrivateKey)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        String encryptedData = "0ab076d044191d41739826bc7538de3aee14426aaac6830f6019a17d545ba384ce83533db240029b4b7c1"
-                + "82cf80593852e12eddd846d29aaadb11aee5fff01a225e03c4d991c869fc6e02557f944f3b9f742638d3f20c76b83b1a62"
-                + "fe7af5b913d9ba7b10b5069b77083f8880e77e3e4813cf23fde16c47ff404aabd7c9dc5cd720ddcb7c3eb9174a085a54a55"
-                + "378af90096c19d3b6fe508bf69fed662901ddd1f551c3f711c4915af840cc5441d285c8ab6db21d846b3c29f03ab1740c29"
-                + "2d96d7ea8c2c8e329199f121d0d279fe66204879f9e28211d26921d0e5767976f62dd73c1edcdf74ce4f07e56330269519b"
-                + "7c0fce435759d17846088b49b30bef52";
-        
-        Cipher encCipher = Cipher.getInstance("RSA");
-        encCipher.init(Cipher.DECRYPT_MODE, exchangePrivKey);
-        byte[] encryptedBytes = encCipher.doFinal(Hex.decode(encryptedData));
-        System.out.println(Hex.toHexString(encryptedBytes));
-        
-        final SecretKey key = new SecretKeySpec(encryptedBytes, "DESede");
-        final IvParameterSpec iv = new IvParameterSpec(Hex.decode("845490bfd152138f"));
-        final Cipher decipher = Cipher.getInstance("DESede/CBC/PKCS5Padding");
-        decipher.init(Cipher.DECRYPT_MODE, key, iv);
-        
-        String cbcEncrypted = "0054b67f628ffe2b3bd290d9fc590c76003880e9fdcad5a0e0fc673b70375cf9ce71acfba3677746c9bec1"
-                + "892332b878d17d6e17788f6c9f91abdd141da0223f6117ff977c299c565b972b2dcd850b720f996d8b86817612feb01830"
-                + "3e543572e3baf649b38b17ca1df4bd078b8d967bf701ad6cca4a4288597700e4d9a5d3a4c24f737ef05023301e58b27313"
-                + "4caee0a5014568973dc666b9b4bc53b5884ded254afc4be98919f61cc5501efe5f53ad6af5827308f10d38805231fe23a8"
-                + "c070e1dce9119f2eccbcf6a2c882dca40bcdd8451e485ed6ca557b66929617536f4e49334807380f0c5795fc0fa562186c"
-                + "17f7acc4f1b23e74f650332d74acbd3529cc14812b405803aee2e2b637b8fad2e1573d85a0a1ac45fc13794fa75091bae7"
-                + "8c9090f7ca6931bbe8e3cf5ef9640a1e648a88bbabacfa3f13ace564826339dd802c67dc68e0c53a73728743cba785bb59"
-                + "829308dc42f2c2acd410f25579bb07527096cd5e1b7f3e83abb344f183a99fd86bc48c357e5aaf743c318e262f163b75ac"
-                + "64c4c6bd15a3aea6b1d5556f9552dc36fd88817873308debc3d8af238e9575059eb54ce32c75da6828d663e5f2a69d0657"
-                + "73ef47ccb5f9800928ee80102ee21fbd82824af7f303eb807ace931674d18a939adf9c53ca01caf9a45e019ac5de6f89a3"
-                + "ce51d967e15751319c8522d031c480468a3be2317a00088efba7ef36f456f09e19cc6f846070c4f434f5b3b5de5e7f2fc2"
-                + "f02085255b4fa07766827c25ebc179767aef49c287429f17765f21309984e06d825c9e6a561f44930487d4172d15671c8e"
-                + "39a289705ef5e8bb5d75e64bc383353f8b60bfd9dc4f6914f95a413e69ddcda9d201cb48b855259f74f2147b6ffddba005"
-                + "2d8a5b65db6dba0f95b2e113fca8354d1562177f8f98cc7f178b8910c42897b465c12dc803475741822e859cd28ea42377"
-                + "93bcaca5f03d8556eac71deafc302047b6b57175fdf5fd51f27e7d370c9932969c320733fa64e3921f753294a943e81ed"
-                + "2ed977366f30e7e1fcf08428316e55239d6e4da6f84e8ca17c055a93d9f2dd26f560f028f31afcba7c8d9a6b86188c3952a"
-                + "9e1598dc51560f6a9ec9cd3bc582d488c3ff5f171d69cd0022b821ecd0a4826dedc6d5d4577b2c91ba46b6ec116e416542b"
-                + "a15212b51754ce8b5f9291447cb3ac450c3996a0d991fd45953c2aea2568ea17623947acf4c3eaf7bb3526f8be4a9f77bc"
-                + "fb92a9aa202db0604227cd457b91453d0b333d062168902cfe388eb14258fb6de6400d8c7c3fe0c8c12f4460761878321b"
-                + "7e590302c31cb5105e3eea7f55d2e9d1ce82bac7c1db0c73a6370f4131095185f8cb6bd5fe911b07b43675c780f39ec3ae"
-                + "4e2924bb847f1ab30fcac803595d56407bb571f8171769ee57621da8c13b34a0b1c3ec0b2299cbe9eb2800a599c5bab3a2"
-                + "08144bce48a10085fa998f0253ea625ed4489bf976595e77f06b19a525d4ae55a11e19ebc1c1c58e777f74abb8d0f09f1c"
-                + "527b6e99e447cdfeb3ba937577676da1fcdf99a2bf6fc346b89ca43e66c24c449118456fbe2d29e22dfaf2b8ede8a85aa6"
-                + "7b88802df410b52dd14b9157e8a04daf5f5af887bf80fe70591d27b984006f99eb8b0dd6b7f36814328fdfea4972b5c937"
-                + "ea7ea47b8d6";
-
-        // final byte[] encData = new
-        // sun.misc.BASE64Decoder().decodeBuffer(message);
-        final byte[] plainText = decipher.doFinal(Hex.decode(cbcEncrypted));
-        System.out.println(Hex.toHexString(plainText));
                 
-        //msg.decryptPrivateKey("BC", exchangePrivKey); // same result
+        msg.decryptPrivateKey("BC", exchangePrivKey);
+        assertNotNull(msg.getKeyPairToArchive()); 
+    }
+    
+    @Test
+    public void testUserEnroll0() throws Exception { // fails as expected
+        PKCS10RequestMessage msg = new PKCS10RequestMessage(Base64.decode(USER_ENROLL_REQ));
+        assertTrue(msg.verify());
+        assertEquals("", msg.getRequestDN()); // ?? AD look up
+        assertNotNull(msg.getRequestPublicKey());         
     }
     
     
@@ -302,90 +322,9 @@ public class MsKeyArchivalRequestMessageTest {
         assertEquals("", msg.getRequestDN()); // ?? AD look up
         assertNotNull(msg.getRequestPublicKey());
         
-        String encodedPrivateKey = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDRTiJtDwsRgozw\n"
-                + "atZb4/X/HNB/xaOdiSukZRkJ5tNVOEuWV5fjYxALQcnuSW+uUHkwYyniZWO527Ct\n"
-                + "lDEJ55TsI/PSXLJ7kFJCiAD4IpkaUyZ7XXpkmWd6SA7jp2EACIc8UIBJaMTuLpmL\n"
-                + "ElgrDnu58Rwz652lbqPKqOYLFjkNr/y+JEtrOog8Lk+UPhsUPmXlx940RvWTkfHT\n"
-                + "+K7FQC/tFO+4D5boonrH1VtJFd51ZDxsFDhrl2v3yuV8M3AAar516Td8DGe6Tqb6\n"
-                + "88LYI4wTVcEBNFkR4ITC8d6721vR5rkihuzvB+XtYGZVlCekEySuM7dA6PcxZ5O6\n"
-                + "evmhMGBHAgMBAAECggEAQ4kVJaB9f0xjIq4udZ8EQKlxA1Fn3kyk9toiLqY62Zwd\n"
-                + "E6k22smboy46tHcgoJvZxsmweZsihxWCmDehbSM608k0AtQjSSiDynDs8yPix/I9\n"
-                + "j//VHsG6+GNo3n8jFuopjMYi5sz2Ai6qH4wvQ9FcDd7lLUGg8ADXu+wssjYc+bOS\n"
-                + "NyY9M7tn2oxj6cZkJW5sVgV7EekkAg21o2XB7EJ4NCudKtXmPrqI55G7f6/g1ekK\n"
-                + "/+5G09dNqpRLFcWJphZVuU2n526EG6qIySLniFClwgvod/qK8hqgqINAGSOouDIO\n"
-                + "OW3zKUlnBvWq4rn8nWFzt+UjdO42byRcUU0h9U13tQKBgQD4UvvXkzl9ASsuZUTD\n"
-                + "P++NDLRNiAy+wx2Ch6k2ak4wR/8VfiJPK9HWofGMWSk0bpJjDgX1yf6u7fl0i+mD\n"
-                + "+7+odrwaWG5xbGgSKKYJDwcBHRBRMuH1EIs0drydv0qW0HtTffzLplOx0ehyHk+9\n"
-                + "OpXEaPlGxrgxdlXWAEsoCyAhqwKBgQDXxmO5s7DVmfTxG8UpOSmU3HfkhsTRI7Yb\n"
-                + "jB3RyEB7fmvCPSJYk1MD8RNgzbuE/aagKSSa2K1tct/rALu5vxheiM4UO+1JTpnj\n"
-                + "6HeqPSIovMilzmTzOUY4Z53+aropaJoULnYckmeUqqZy8vXna6NERu/crI45+Xpz\n"
-                + "4OutQ0oX1QKBgFxpXWmDU4COn8g7TZSvxXEjSjIUMFIJgIDkBXfHpeNX17ji4Ne/\n"
-                + "we5zA9YsFCZ8A6QzQsqOamYlD5Fsw/EnDdMepK/VOvyg0DX5xJhYbE3gyAK/wdEW\n"
-                + "YAedLGI0Hwjy+wI+P4Z2Fm11ZWCaoSgVlkiqnCHXsBJQLG9gWpfDVCjTAoGAZ0r8\n"
-                + "gHBpzcc2v5lIp/RKWI22AzsUyv1qdwN7XuqbG8MoOMLlRzu3eOKWITg7dW2rr24i\n"
-                + "rNHfK87bLHecZk35j3+0D3GkpPwwpS6q4l8DlDbTYrRMFTcsy2Gm+50B40LEx7Z6\n"
-                + "KjFXzo5mwg5W82LOtKe0uZINP+mS2hgpGjdlJ8UCgYBrkGcASe18yKscrWis02bx\n"
-                + "3d+ror5tdATqmuJDJR31g/lSpC3w+sBvOleHcXkX36LSxZUqZyaHJowNoXYathbs\n"
-                + "tgNgD2tp2hDBEHdJOcx5Vo7HGHRSAbJjeSBtjc8kJuSVmEvUNBST5Tt5DWzcOloJ\n"
-                + "SSPpWa3QgFphkWUYxVi2Gw==";
+        msg.decryptPrivateKey("BC", exchangePrivKey);
+        assertNotNull(msg.getKeyPairToArchive()); 
         
-        PrivateKey exchangePrivKey = null;
-        try {
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            exchangePrivKey = kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.decode(encodedPrivateKey)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        //msg.decryptPrivateKey("BC", exchangePrivKey);
-        
-        String encryptedData = "83f19723d51812451533e053487cda1591c6760ff7edf05acd42f5287cc55e8b8bc8750ee6b078384b3"
-                + "71a63b1d36a6d6ab3e8dd6c2239cf4eea88e4a27089deeaca8b1a841708ce1c715ee3fe3d0cca5e71574753bf3992bb8ec"
-                + "13b1f734347a0055e470c6f99e8b2431cce88a25d63c3932fd998d0cf158b9275d754b986a0bac7cb3e4893dbbb27303a"
-                + "008bec41f35d6e9770d3f00a4d47416e733884e657fbdd5df57af35640dd822a283028767346594894a10064a856be0fb"
-                + "a353f4d3fd6df6905d77a9c0445bb66422349ce266b73bca8537c4b8398a4e22f1b72e27cdcbf3051c35474eed8ad3cd"
-                + "6f5091830295b83393f40b95bc7a9fb2a10adc3f9";
-        
-        Cipher encCipher = Cipher.getInstance("RSA");
-        encCipher.init(Cipher.DECRYPT_MODE, exchangePrivKey);
-        byte[] encryptedBytes = encCipher.doFinal(Hex.decode(encryptedData));
-        System.out.println(Hex.toHexString(encryptedBytes));
-        
-        final SecretKey key = new SecretKeySpec(encryptedBytes, "DESede");
-        final IvParameterSpec iv = new IvParameterSpec(Hex.decode("b59e5b1b5ed381af"));
-        final Cipher decipher = Cipher.getInstance("DESede/CBC/PKCS5Padding");
-        decipher.init(Cipher.DECRYPT_MODE, key, iv);
-        
-        String cbcEncrypted = "faef00dfd6786b74c45fc2b055b1f84a8c55ea392777a4ca9327d99a5ee27cf4e5f56566981223c5476"
-                + "8bdd3c691191580c7cce2d21f967ca33fcad08c9f5b3e0e01d50b926623df4dcffade86d1cb7a02ebd0a7288bb96f74"
-                + "b621f17ee018228bb8c679a8a0ca8052f95f2106d1b38be8e225fe4d1ebd8b8356aef8cb648b3eaa975dcc6258e1e146"
-                + "69696d5e7bff109971fc4f6bc7253aa54501f242564a9744cafe30a2664c8024d043ab4b3f5da927e13395986b9e4f"
-                + "e5291297bdd2c5a9fbbe6df8f5b5bb61f7e2496d8ccafa1adde4291280fda63f613ccbcd7ece177b69bc4f57d1e71f53"
-                + "c24af0dd5d80b03b75894d8339a10a3c07df9fe472ce8b61d165bad2de1934e251ed99c768f7c1d3a4d6ddcfa3faba32"
-                + "f954bca2cfe5b515adf221b10034ef519083fbec13e9d96a6f78f552415ad34dc2f612a7b08ab5a41511956bd38f39e0"
-                + "0e0a404236e8b82d9184ad4f96533b72a61dcd78867695f68d80ceddb91376cb2b7892cc84445d87b8e69196b041870d"
-                + "3f81023c1d0a19a24319d756ec933cf675d083e81d1121a95322a7169c0d3ed440d3d7bbecf75bd54fadacd591ffff252"
-                + "4b1c48119db1ebf6be37445fe41290b77945647124d6172dbaaf287e65656af8b2e8fc21b0427016c0ed9ef899785e962f"
-                + "c1b5d4bf24c88cf545c7b801595a002033c8210e918576db730d7bb539122eb840fc0626411e8b8f7a1e5f1a9fd8a19"
-                + "0486d178cff8e45ad7eb181c7d6a62d83516a8d3d765bb1bd25e39c6802300bd6cce7d953188df1436a11ccf1d3afdbd"
-                + "a938de20fcb5a20732177548061f8e46e436bdf951ed7cb78b5302bc399874f290328b732058980ea00a53889e18513d"
-                + "6b66fc11a102490d093654cbb2c5b1f968a4f72e3d0463794092c2269c196aa6ea2343400979de94dfe1b79878c2a3a"
-                + "5218759311bf501f0aa3b4dd1764e950893829bdb4308aaa188653c2b584ab3675421402ee177bc1b84710844824e0a"
-                + "9b44544202d1ee3249d8539bf0e561f656a7d3a798669985839531a55ef3dea7ab3efeeae319f17933fa8a3ebda04cf"
-                + "fb298b746f4cd3a9deb88fc083418e1fd332be946f45ed1fda23e1098458a549cc207b10df16860b0596e222cf6a6e"
-                + "e19a0eea93b85168bca91cb2a494089043bbaf87dd8be58d998bc55b6700073329d5bf3e19f5b1b0ab31848f7563bb"
-                + "b07dcbbb7ba30a01df4091c8e5d9498f79badf457d7b5e11cf0a551c77e84bd0f93adfc759e4aad9a6b853f949c4429"
-                + "2740a9ca3fe5a115b59e6a4f69989883e8ea5417ad397ed2c1236ccf4431478199f2ee950db0f16c3d9403eaeb273e16"
-                + "4fdd4c9b1a0c5f080fafe5d2cab673662bc9da926250f25789b90dd9f1868cb0de8798cc4c2ce4460d2edd0c7ed7e4"
-                + "73d99947c8b5a09bb227715d04b35eb4fb85bbf54520d6237808eea22d5fffd795d9e6139aff3466eda35fbecf4c1bd4d"
-                + "f0bd264b5feae44e7610129c22aefb858a2e9834e9bfffa3607ed3687b3f312e1b7d413d0b7b556e11ce62a7d5a5dacaf"
-                + "fbc3b3a14ac4d00d655f590187efefe3acf11ba64591455cae99cb2dba8d25b5bdbbc83ed9bbd8363abf2a240f2f1b45"
-                + "db689d9701a96a7acb46c1826f5e4a8d1757d14e31083ae4a900b5e40ca497dc84111d";
-
-        // final byte[] encData = new
-        // sun.misc.BASE64Decoder().decodeBuffer(message);
-        final byte[] plainText = decipher.doFinal(Hex.decode(cbcEncrypted));
-        System.out.println(Hex.toHexString(plainText));
     }
     
     @Test
@@ -448,42 +387,8 @@ public class MsKeyArchivalRequestMessageTest {
         assertTrue(msg.verify());
         assertEquals("", msg.getRequestDN()); // ?? AD look up
         assertNotNull(msg.getRequestPublicKey());
-        
-        String encodedPrivateKey = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDRTiJtDwsRgozw\n"
-                + "atZb4/X/HNB/xaOdiSukZRkJ5tNVOEuWV5fjYxALQcnuSW+uUHkwYyniZWO527Ct\n"
-                + "lDEJ55TsI/PSXLJ7kFJCiAD4IpkaUyZ7XXpkmWd6SA7jp2EACIc8UIBJaMTuLpmL\n"
-                + "ElgrDnu58Rwz652lbqPKqOYLFjkNr/y+JEtrOog8Lk+UPhsUPmXlx940RvWTkfHT\n"
-                + "+K7FQC/tFO+4D5boonrH1VtJFd51ZDxsFDhrl2v3yuV8M3AAar516Td8DGe6Tqb6\n"
-                + "88LYI4wTVcEBNFkR4ITC8d6721vR5rkihuzvB+XtYGZVlCekEySuM7dA6PcxZ5O6\n"
-                + "evmhMGBHAgMBAAECggEAQ4kVJaB9f0xjIq4udZ8EQKlxA1Fn3kyk9toiLqY62Zwd\n"
-                + "E6k22smboy46tHcgoJvZxsmweZsihxWCmDehbSM608k0AtQjSSiDynDs8yPix/I9\n"
-                + "j//VHsG6+GNo3n8jFuopjMYi5sz2Ai6qH4wvQ9FcDd7lLUGg8ADXu+wssjYc+bOS\n"
-                + "NyY9M7tn2oxj6cZkJW5sVgV7EekkAg21o2XB7EJ4NCudKtXmPrqI55G7f6/g1ekK\n"
-                + "/+5G09dNqpRLFcWJphZVuU2n526EG6qIySLniFClwgvod/qK8hqgqINAGSOouDIO\n"
-                + "OW3zKUlnBvWq4rn8nWFzt+UjdO42byRcUU0h9U13tQKBgQD4UvvXkzl9ASsuZUTD\n"
-                + "P++NDLRNiAy+wx2Ch6k2ak4wR/8VfiJPK9HWofGMWSk0bpJjDgX1yf6u7fl0i+mD\n"
-                + "+7+odrwaWG5xbGgSKKYJDwcBHRBRMuH1EIs0drydv0qW0HtTffzLplOx0ehyHk+9\n"
-                + "OpXEaPlGxrgxdlXWAEsoCyAhqwKBgQDXxmO5s7DVmfTxG8UpOSmU3HfkhsTRI7Yb\n"
-                + "jB3RyEB7fmvCPSJYk1MD8RNgzbuE/aagKSSa2K1tct/rALu5vxheiM4UO+1JTpnj\n"
-                + "6HeqPSIovMilzmTzOUY4Z53+aropaJoULnYckmeUqqZy8vXna6NERu/crI45+Xpz\n"
-                + "4OutQ0oX1QKBgFxpXWmDU4COn8g7TZSvxXEjSjIUMFIJgIDkBXfHpeNX17ji4Ne/\n"
-                + "we5zA9YsFCZ8A6QzQsqOamYlD5Fsw/EnDdMepK/VOvyg0DX5xJhYbE3gyAK/wdEW\n"
-                + "YAedLGI0Hwjy+wI+P4Z2Fm11ZWCaoSgVlkiqnCHXsBJQLG9gWpfDVCjTAoGAZ0r8\n"
-                + "gHBpzcc2v5lIp/RKWI22AzsUyv1qdwN7XuqbG8MoOMLlRzu3eOKWITg7dW2rr24i\n"
-                + "rNHfK87bLHecZk35j3+0D3GkpPwwpS6q4l8DlDbTYrRMFTcsy2Gm+50B40LEx7Z6\n"
-                + "KjFXzo5mwg5W82LOtKe0uZINP+mS2hgpGjdlJ8UCgYBrkGcASe18yKscrWis02bx\n"
-                + "3d+ror5tdATqmuJDJR31g/lSpC3w+sBvOleHcXkX36LSxZUqZyaHJowNoXYathbs\n"
-                + "tgNgD2tp2hDBEHdJOcx5Vo7HGHRSAbJjeSBtjc8kJuSVmEvUNBST5Tt5DWzcOloJ\n"
-                + "SSPpWa3QgFphkWUYxVi2Gw==";
-        
-        PrivateKey exchangePrivKey = null;
-        try {
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            exchangePrivKey = kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.decode(encodedPrivateKey)));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-                
+                        
         msg.decryptPrivateKey("BC", exchangePrivKey);
+        assertNotNull(msg.getKeyPairToArchive()); 
     }
 }
