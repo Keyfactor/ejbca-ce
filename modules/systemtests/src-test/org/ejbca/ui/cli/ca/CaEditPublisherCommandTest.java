@@ -13,7 +13,10 @@
 
 package org.ejbca.ui.cli.ca;
 
+import static org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher.CERT_EXTERNAL_COMMAND_PROPERTY_NAME;
+import static org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher.CRL_EXTERNAL_COMMAND_PROPERTY_NAME;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -34,7 +37,7 @@ import org.junit.Test;
 
 /**
  * System test class for CA EditPublisher command
- * 
+ *
  * @version $Id$
  */
 public class CaEditPublisherCommandTest {
@@ -42,7 +45,7 @@ public class CaEditPublisherCommandTest {
     private static final String PUBLISHER_NAME = "1327publisher2";
     private static final String GCP_PUBLISHER_NAME = "1327GCPpublisher3";
     private static final String[] HAPPY_PATH_ARGS = { PUBLISHER_NAME, "hostnames", "myhost.com" };
-    private static final String[] HAPPY_PATH_GCP_ARGS = { GCP_PUBLISHER_NAME, "propertyData", "primekey http://www.primekey.se" };
+    private static final String[] HAPPY_PATH_GCP_ARGS = { GCP_PUBLISHER_NAME, "propertyData", CERT_EXTERNAL_COMMAND_PROPERTY_NAME + " http://www.primekey.se" };
     private static final String[] HAPPY_PATH_WITH_TYPE_ARGS = { PUBLISHER_NAME, "addMultipleCertificates", "true" };
     private static final String[] HAPPY_PATH_GETVALUE_ARGS = { PUBLISHER_NAME, "-getValue", "addMultipleCertificates" };
     private static final String[] HAPPY_PATH_LISTFIELDS_ARGS = { PUBLISHER_NAME, "-listFields" };
@@ -97,19 +100,32 @@ public class CaEditPublisherCommandTest {
         try {
             CustomPublisherContainer gcp = new CustomPublisherContainer();
             gcp.setClassPath(GeneralPurposeCustomPublisher.class.getName());
-            gcp.setPropertyData("foo=bar");
+            gcp.setPropertyData(CRL_EXTERNAL_COMMAND_PROPERTY_NAME + "=bar");
             publisherProxySession.addPublisher(admin, GCP_PUBLISHER_NAME, gcp);
             CustomPublisherContainer pub1 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
-            assertEquals("Propertydata was not added as it should", "foo=bar", StringUtils.trim(pub1.getPropertyData()));
+            assertEquals("Propertydata was not added as it should", CRL_EXTERNAL_COMMAND_PROPERTY_NAME + "=bar", StringUtils.trim(pub1.getPropertyData()));
             CommandResult result = command.execute(HAPPY_PATH_GCP_ARGS);
             assertEquals("Command was not sucessfully run.", CommandResult.SUCCESS, result);
             // Check that we edited
             CustomPublisherContainer pub2 = (CustomPublisherContainer) publisherSession.getPublisher(GCP_PUBLISHER_NAME);
-            assertEquals("Propertydata was not changed as it should", "primekey=http://www.primekey.se", StringUtils.trim(pub2.getPropertyData()));
+            assertEquals("Propertydata was not changed as it should", CERT_EXTERNAL_COMMAND_PROPERTY_NAME + "=http://www.primekey.se", StringUtils.trim(pub2.getPropertyData()));
         } finally {
             publisherProxySession.removePublisherInternal(admin, GCP_PUBLISHER_NAME);
         }
+    }
 
+    @Test
+    public void testExecuteWithInvalidProperty() throws AuthorizationDeniedException {
+        try {
+            CustomPublisherContainer gcp = new CustomPublisherContainer();
+            gcp.setClassPath(GeneralPurposeCustomPublisher.class.getName());
+            gcp.setPropertyData("foo=bar");
+            fail("Expected ‘foo’ property being unsupported!");
+        } catch (Exception e) {
+            assertEquals("Expected ‘foo’ property being unsupported!", "Unsupported properties: foo", e.getMessage());
+        } finally {
+            publisherProxySession.removePublisherInternal(admin, GCP_PUBLISHER_NAME);
+        }
     }
 
     @Test
