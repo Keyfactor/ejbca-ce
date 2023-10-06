@@ -50,11 +50,28 @@ import javax.persistence.PersistenceContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.cmc.BodyPartID;
+import org.bouncycastle.asn1.cmc.CMCObjectIdentifiers;
+import org.bouncycastle.asn1.cmc.CMCStatus;
+import org.bouncycastle.asn1.cmc.CMCStatusInfoBuilder;
+import org.bouncycastle.asn1.cmc.PKIResponse;
+import org.bouncycastle.asn1.cmc.TaggedAttribute;
+import org.bouncycastle.asn1.cms.Attribute;
+import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSTypedData;
+import org.bouncycastle.cms.SimpleAttributeTableGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.its.ETSISignedData;
 import org.bouncycastle.its.ETSISignedDataBuilder;
@@ -93,6 +110,7 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.BaseCertificateData;
@@ -108,6 +126,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -1570,6 +1589,116 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             // high level catch block
             log.debug("ITS payload could not be signed.", e);
             throw new SignRequestSignatureException("ITS payload could not be signed.", e);
+        }
+    }
+
+    @Override
+    public byte[] createCmcFullPkiResponse(AuthenticationToken admin, int caId, X509Certificate cert, boolean includeChain)
+            throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">createCmcFullPkiResponse");
+        }
+        final X509CA ca = (X509CA) caSession.getCA(admin, caId);
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+        final byte[] returnval = createCmcFullPkiResponse(ca, cryptoToken, cert, includeChain);
+        if (returnval != null) {
+            // Audit log that we used the CA's signing key to create a CMS signature
+            final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
+            final Map<String, Object> details = new LinkedHashMap<>();
+            if (cert != null) {
+                details.put("leafSubject", LogRedactionUtils.getSubjectDnLogSafe(cert));
+                details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
+            }
+            details.put("includeChain", Boolean.toString(includeChain));
+            details.put("msg", detailsMsg);
+            securityEventsLoggerSession.log(EjbcaEventTypes.CA_SIGNCMS, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+                    String.valueOf(caId), null, null, details);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<createCmcFullPkiResponse()");
+        }
+        return returnval;
+    }
+    
+    private byte[] createCmcFullPkiResponse(X509CA ca, CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
+        // TODO: failure status here and add otherInfo when approval support is added over MSAE
+        CMCStatusInfoBuilder cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.success, new BodyPartID(0x01));
+        cmcStatusInfoBuilder.setStatusString("Issued"); // TODO: human readable
+        
+        TaggedAttribute taggedAttribute1 = new TaggedAttribute(new BodyPartID(0x01),
+                CMCObjectIdentifiers.id_cmc_statusInfo,
+                new DERSet(cmcStatusInfoBuilder.build()));
+        
+        String szOID_ISSUED_CERT_HASH =  "1.3.6.1.4.1.311.21.17";
+        Attribute certHash = null;
+        try {
+            certHash = new Attribute(new ASN1ObjectIdentifier(szOID_ISSUED_CERT_HASH), 
+                                    new DERSet(new DERBitString(CertTools.generateSHA1Fingerprint(cert.getEncoded()))));
+        } catch (CertificateEncodingException e) {
+            // nopmd
+        }
+        
+        Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
+                new DERSet(new DERBitString("abcd".getBytes()))); // TODO: from request message
+
+        String szOID_CMC_ADD_ATTRIBUTES = "1.3.6.1.4.1.311.10.10.1"; // TODO: find place to collect oids
+        TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
+                new ASN1ObjectIdentifier(szOID_CMC_ADD_ATTRIBUTES),
+                new DERSet(new DERSequence(new ASN1Encodable[]{certHash, encryptedKeyHash}))); 
+        
+        DERSequence pkiRespAsSequence = new DERSequence(
+                        new ASN1Encodable[]{
+                                new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2}), 
+                        new DERSequence(), new DERSequence()});
+        PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence); // grab beta release or use ASN1Sequence and then getInstance
+        ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
+        try {
+            byte[] encapInfoEncoded = encapInfo.getEncoded();
+            byte[] encapInfoHash = CertTools.generateSHA1Fingerprint(encapInfoEncoded);
+            
+            // signerInfo
+            JcaSignerInfoGeneratorBuilder signerInfobuilder = new JcaSignerInfoGeneratorBuilder(
+                    new JcaDigestCalculatorProviderBuilder().setProvider("BC").build());
+            
+            String szOID_PKCS_9_CONTENT_TYPE = "1.2.840.113549.1.9.3";
+            Attribute contentTypeAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_CONTENT_TYPE), 
+                                                        new DERSet(CMCObjectIdentifiers.id_cct_PKIResponse));
+            String szOID_PKCS_9_MESSAGE_DIGEST = "1.2.840.113549.1.9.4";
+    //        Attribute contentHashAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
+    //                new DERSet(new DEROctetString(encapInfoHash)));
+    
+            AttributeTable attrTable = new AttributeTable(contentTypeAttribute);
+            attrTable.add(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), new DERSet(new DEROctetString(encapInfoHash)));
+            signerInfobuilder.setSignedAttributeGenerator(new SimpleAttributeTableGenerator(attrTable));
+            
+            final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            if (caPrivateKey == null) {
+                String msg1 = "createCMC: Private key does not exist!";
+                log.debug(msg1);
+                throw new SignRequestSignatureException(msg1);
+            }
+            ContentSigner sha256Signer = new JcaContentSignerBuilder(ca.getCAInfo().getCAToken().getSignatureAlgorithm())
+                                                        .setProvider(cryptoToken.getSignProviderName())
+                                                                                .build(caPrivateKey);
+            CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+            gen.addSignerInfoGenerator(signerInfobuilder.build(sha256Signer, (X509Certificate) ca.getCACertificate())); // used subjectKeyIdentifier
+            
+            // add certificate chain
+            List<X509Certificate> certChain = new ArrayList<>();
+            certChain.add(cert);
+            ca.getCertificateChain().forEach(x -> certChain.add((X509Certificate) x));
+            gen.addCertificates(new org.bouncycastle.util.CollectionStore<X509Certificate>(certChain)); // include full chain
+            
+            gen.addCRL(null); // may be multiple - MS compatible CA??
+            
+            CMSTypedData data = new CMSProcessableByteArray(
+                    /*new ASN1ObjectIdentifier("1.2.840.113549.1.7.2"),*/ encapInfoEncoded);
+            CMSSignedData cmsResponse = gen.generate(data, true);
+            return cmsResponse.getEncoded();
+            
+        } catch (Exception e) {
+            log.info("CMC signing failed: ", e);
+            throw new SignRequestSignatureException("CMC signing failed: ", e);
         }
     }
 }

@@ -98,6 +98,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
 
     private byte[] message;
     private byte[] encryptedPrivateKey;
+    private byte[] envelopedPrivKeyHash;
     private PKIData pkiData;
     private KeyPair requestKeyPair;
     
@@ -180,7 +181,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             final MessageDigest md = MessageDigest.getInstance(
                     hashAlgorithmMap.get(pkcs10.getSignatureAlgorithm().getAlgorithm())); 
             pkcs10.getSignatureAlgorithm();
-            final String envelopedPrivKeyHash = Hex.toHexString(md.digest(encryptedPrivateKey));
+            envelopedPrivKeyHash = md.digest(encryptedPrivateKey);
+            final String envelopedPrivKeyHashStr = Hex.toHexString(envelopedPrivKeyHash);
             
             for (TaggedAttribute ta: pkiData.getControlSequence()) {
                 org.bouncycastle.asn1.ASN1Sequence asnseq = 
@@ -194,7 +196,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                     }
                     if (attr.getAttributeValues().length!=1 || 
                             !Hex.toHexString(attr.getAttributeValues()[0].toASN1Primitive().getEncoded())
-                                .endsWith(envelopedPrivKeyHash)) { // not unwrapping ASN1String
+                                .endsWith(envelopedPrivKeyHashStr)) { // not unwrapping ASN1String
                         log.debug("MS Key archival request is private key hash did not match.");
                         return false;
                     }
@@ -351,6 +353,10 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
     
     public KeyPair getKeyPairToArchive() {
         return requestKeyPair;
+    }
+    
+    public byte[] getEnvelopedPrivKeyHash() {
+        return envelopedPrivKeyHash;
     }
 
 }
