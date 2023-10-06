@@ -366,6 +366,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         byte[] retval = null;
         Class<X509ResponseMessage> respClass = X509ResponseMessage.class;
         ResponseMessage resp = signSession.createCertificate(admin, msg, respClass, userData);
+        // TODO: in case of exception need to send a signed response with different cMCStatus
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         if (responseType == CertificateConstants.CERT_RES_TYPE_CERTIFICATE) {
             retval = cert.getEncoded();
@@ -375,19 +376,19 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             // see KeyStoreCreateSessionBean.finishProcessingAndStoreKeys
             keyRecoverySession.addKeyRecoveryData(admin, EJBTools.wrap(cert), userData.getUsername(), EJBTools.wrap(keyPairToArchive));
         }
+        if (!"X.509".equals(cert.getType()) && (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7 || 
+                responseType == CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN ||
+                responseType == CertificateConstants.CERT_RES_TYPE_CMCFULLPKI)) {
+            log.info("Certificate response type PKCS7/PKCS7withChain/CMC can only be used with X.509 certificates, not " + cert.getType());
+        }
+        if (responseType == CertificateConstants.CERT_RES_TYPE_CMCFULLPKI) {
+            retval = signSession.createCmcFullPkiResponse(admin, userData.getCAId(), (X509Certificate)cert, true);
+        }
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7) {
-            if (!"X.509".equals(cert.getType())) {
-                log.info("Certificate response type PKCS7 can only be used with X.509 certificates, not " + cert.getType());
-            } else {
-                retval = signSession.createPKCS7(admin, (X509Certificate)cert, false, userData.getEndEntityProfileId());
-            }
+            retval = signSession.createPKCS7(admin, (X509Certificate)cert, false, userData.getEndEntityProfileId());
         }
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN) {
-            if (!"X.509".equals(cert.getType())) {
-                log.info("Certificate response type PKCS7_WITH_CHAIN can only be used with X.509 certificates, not " + cert.getType());
-            } else {
-                retval = signSession.createPKCS7(admin, (X509Certificate)cert, true, userData.getEndEntityProfileId());
-            }
+            retval = signSession.createPKCS7(admin, (X509Certificate)cert, true, userData.getEndEntityProfileId());
         }
         return retval;
     }
