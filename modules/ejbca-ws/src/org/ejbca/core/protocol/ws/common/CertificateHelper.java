@@ -41,7 +41,11 @@ public class CertificateHelper {
 	 * Indicates that the requester want a BASE64 encoded pkcs7 with the complete chain in the CertificateResponse object.
 	 */
 	public static final String RESPONSETYPE_PKCS7WITHCHAIN = "PKCS7WITHCHAIN";
-	
+	/**
+     * Indicates that the CMC full PKI response(MSAE key archival) in the CertificateResponse object.
+     */
+    public static final String RESPONSETYPE_CMC_FULL_PKI = "CMCFULLPKI";
+    
 	/**
 	 * Request data types for WS
 	 */
