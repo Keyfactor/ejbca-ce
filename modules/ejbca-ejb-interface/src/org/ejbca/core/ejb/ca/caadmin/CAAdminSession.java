@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -25,6 +26,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -32,6 +34,8 @@ import org.cesecore.certificates.ca.CANameChangeRenewalException;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -39,8 +43,12 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
+import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
@@ -778,4 +786,6 @@ public interface CAAdminSession {
      */
     void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
             throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException;
+
+    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, CertificateProfile cp) throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException;
 }

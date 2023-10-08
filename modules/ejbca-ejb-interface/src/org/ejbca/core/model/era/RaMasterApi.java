@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -616,6 +617,8 @@ public interface RaMasterApi {
      */
     byte[] generateKeyStoreWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException;
+
+    byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, String caName, String certProfile) throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
