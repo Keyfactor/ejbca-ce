@@ -696,6 +696,8 @@ public final class CAConstants {
                     "NOJAzdaEx91BkoTk8GQPtIoA4YMcDEhSiGvSqxa08c3/a1vLux+k0A==\n" + 
                     "-----END PRIVATE KEY-----\n";
 
+    public static final String KEY_EXCHANGE_CERTIFICATE_SDN_ENDING = "-Xchg";
+
     /** Return a hard coded private key that can be used for signing
      * @param caPublicKey the public part of the CA's signing key
      * @return PrivateKey that can be used to sign with the passed in sigAlg,
