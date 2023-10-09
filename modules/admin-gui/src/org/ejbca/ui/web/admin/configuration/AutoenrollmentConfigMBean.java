@@ -29,6 +29,7 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import com.keyfactor.util.StringTools;
 
 /**
+ *
  */
 @Named
 @SessionScoped
@@ -48,28 +49,26 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
     }
 
-    public List<SelectItem> getAutoenrollConfigAliasesSelectItemList() {
-        List<String> aliasList = getEjbcaWebBean().getAutoenrollConfiguration().getSortedAliasList();
-        final List<SelectItem> ret = new ArrayList<>();
-        for (String alias : aliasList) {
-            ret.add(new SelectItem(alias));
-        }
-        return ret;
+    public List<String> getAutoenrollConfigAliasesSelectItemList() {
+        return getEjbcaWebBean().getAutoenrollConfiguration().getSortedAliasList();
     }
 
-    public void addAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(newAlias)) {
-            if (!StringTools.checkFieldForLegalChars(newAlias)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else {
-                if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(newAlias)) {
-                    addErrorMessage("MSAE_ALIAS_EXISTS");
-                } else {
-                    getEjbcaWebBean().addAutoenrollAlias(newAlias);
-                    newAlias = null;
-                }
-            }
-        }
+    public String addAlias() throws AuthorizationDeniedException {
+//        if (StringUtils.isNotEmpty(newAlias)) {
+//            if (!StringTools.checkFieldForLegalChars(newAlias)) {
+//                addErrorMessage("ONLYCHARACTERS");
+//            } else {
+//                if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(newAlias)) {
+//                    addErrorMessage("MSAE_ALIAS_EXISTS");
+//                } else {
+//                    getEjbcaWebBean().addAutoenrollAlias(newAlias);
+//                    newAlias = null;
+//                }
+//            }
+//        }
+        selectedAlias = null;
+        viewOnly = false;
+        return "edit";
     }
 
     public void renameAlias() throws AuthorizationDeniedException {
@@ -88,69 +87,78 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
 
     }
 
-    public void cloneAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(newAlias) && StringUtils.isNotEmpty(selectedAlias)) {
-            if (!StringTools.checkFieldForLegalChars(newAlias)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else {
-                if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(newAlias)) {
-                    addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
-                } else {
-                    getEjbcaWebBean().cloneAutoenrollAlias(selectedAlias, newAlias);
-                    newAlias = null;
-                }
-            }
+    public String cloneAlias() throws AuthorizationDeniedException {
+        if (StringUtils.isEmpty(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return null;
         }
+        if (!StringTools.checkFieldForLegalChars(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return null;
+        }
+        if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(newAlias)) {
+            addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
+            return null;
+        }
+        getEjbcaWebBean().cloneAutoenrollAlias(selectedAlias, newAlias);
+        newAlias = null;
+        selectedAlias = null;
+        return "done";
     }
 
-    public void deleteAutoenrollmentAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(selectedAlias)) {
-            getEjbcaWebBean().removeAutoenrollAlias(selectedAlias);
-            if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(selectedAlias)) {
-                addErrorMessage("MSAE_COULD_NOT_DELETE_ALIAS");
-            }
+    public String deleteAlias() throws AuthorizationDeniedException {
+        getEjbcaWebBean().removeAutoenrollAlias(selectedAlias);
+        if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(selectedAlias)) {
+            addErrorMessage("MSAE_COULD_NOT_DELETE_ALIAS");
         }
-        actionCancel();
+        selectedAlias = null;
+        return "done";
     }
 
     /**
      * Delete action.
      */
-    public void actionDelete() {
-        if (StringUtils.isNotEmpty(selectedAlias)) {
-            deleteInProgress = true;
-        } else {
-            addErrorMessage("MSAE_NOT_SELECTED");
-        }
+    public String actionDelete(final String alias) {
+        selectedAlias = alias;
+        return "delete";
+    }
+
+    public String actionClone(final String alias) {
+        selectedAlias = alias;
+        return "clone";
     }
 
     /**
      * Cancel action.
      */
     public void actionCancel() {
-        deleteInProgress = false;
         selectedAlias = null;
         newAlias = null;
     }
 
-    /** @return the navigation outcome defined in faces-config.xml */
-    public String actionView() {
-        if (StringUtils.isNotEmpty(selectedAlias)) {
-            viewOnly = true;
-            return "view";
-        }
-        addErrorMessage("MSAE_NOT_SELECTED");
-        return "";
+    /**
+     * @return the navigation outcome defined in faces-config.xml
+     */
+    public String actionView(final String alias) {
+        selectedAlias = alias;
+        viewOnly = true;
+        return "view";
     }
 
-    /** @return the navigation outcome defined in faces-config.xml */
-    public String actionEdit() {
-        if (StringUtils.isNotEmpty(selectedAlias)) {
-            viewOnly = false;
-            return "edit";
-        }
-        addErrorMessage("MSAE_NOT_SELECTED");
-        return "";
+    /**
+     * @return the navigation outcome defined in faces-config.xml
+     */
+    public String actionEdit(final String alias) {
+        selectedAlias = alias;
+        viewOnly = false;
+        return "edit";
+    }
+
+    /**
+     * @return true if no aliases have been configured yet
+     */
+    public boolean isAliasListEmpty() {
+        return getEjbcaWebBean().getAutoenrollConfiguration().getSortedAliasList().isEmpty();
     }
 
     public boolean isAuthorizedToEdit() {
