@@ -36,6 +36,64 @@
       <h:outputText value="#{web.text.MSAE_NOT_AVAILABLE}" />
     </h:panelGroup>
     <h:form rendered="#{web.ejbcaWebBean.runningEnterprise}">
+      <h:dataTable value="#{autoenrollmentConfigMBean.autoenrollConfigAliasesSelectItemList}" var="alias" styleClass="grid"
+      rendered="#{!autoenrollmentConfigMBean.aliasListEmpty}">
+        <h:column headerClass="listColumn1">
+          <f:facet name="header">
+            <h:outputText value="#{web.text.MSAE_ALIAS_NAME }"/>
+          </f:facet>
+          <h:outputText value="#{alias}" title="#{alias}"/>
+        </h:column>
+        <h:column>
+          <f:facet name="header">
+            <h:outputText value="#{web.text.ACTIONS}"/>
+          </f:facet>
+          <h:commandButton id="buttonviewalias"
+                           value="#{web.text.VIEW}"
+                           action="#{autoenrollmentConfigMBean.actionView(alias)}">
+            <f:param name="faces-redirect" value="true"/>
+            <f:param name="mode" value="view"/>
+            <f:param name="alias" value="#{alias}"/>
+          </h:commandButton>
+          <h:commandButton value="#{web.text.EDIT}"
+                           action="#{autoenrollmentConfigMBean.actionEdit(alias)}"
+                           disabled="#{!autoenrollmentConfigMBean.authorizedToEdit}">
+            <f:param name="faces-redirect" value="true"/>
+            <f:param name="alias" value="#{alias}"/>
+            <f:param name="mode" value="edit"/>
+          </h:commandButton>
+          <h:commandButton value="#{web.text.DELETE}"
+                           action="#{autoenrollmentConfigMBean.deleteAlias(alias)}"
+                           disabled="#{!autoenrollmentConfigMBean.authorizedToEdit}"/>
+          <h:commandButton value="#{web.text.CLONE}" action="#{autoenrollmentConfigMBean.cloneAlias(alias)}"/>
+        </h:column>
+      </h:dataTable>
+
+      <h:panelGrid styleClass="actions margin-top" width="100%" rendered="#{autoenrollmentConfigMBean.authorizedToEdit}">
+        <h:outputText value="#{web.text.MSAE_ALIASES_NOT_CONFIGURED}"
+                      rendered="#{autoenrollmentConfigMBean.aliasListEmpty}"/>
+        <h:panelGroup>
+          <h:commandButton id="buttonaliasadd" name="buttonaliasadd" action="#{autoenrollmentConfigMBean.addAlias}"
+                           value="#{web.text.ADD}">
+            <f:param name="faces-redirect" value="true"/>
+            <f:param name="mode" value="edit"/>
+          </h:commandButton>
+        </h:panelGroup>
+      </h:panelGrid>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <h:panelGrid rendered="#{!autoenrollmentConfigMBean.deleteInProgress}">
         <h:panelGrid styleClass="list" columns="1" columnClasses="listColumn1">
           <h:panelGroup>
