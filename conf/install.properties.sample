@@ -54,6 +54,11 @@ ca.tokenpassword=null
 # For the key to be generated in soft keystore.
 ca.keytype=RSA
 
+# The keyspec for the administrative CAs key, to be generated in soft keystore.
+# Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192).
+# Keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.
+ca.keyspec=2048
+
 # Default signing algorithm for the Management CA.
 # Available algorithms are:
 # SHA1WithRSA, SHA1withECDSA, SHA256WithRSA, SHA256withECDSA.
