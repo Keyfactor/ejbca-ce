@@ -192,7 +192,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             log.info("reqtype: " + reqType + ", resptype: " + responseType);
             if (reqType==CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) { 
                 log.info("decrypting private key for archival");
-                keyPairToArchive = validateAndGetMsaeKeyPairToArchive((MsKeyArchivalRequestMessage)requestMessage);
+                keyPairToArchive = null; //TODO
+                validateAndGetMsaeKeyPairToArchive((MsKeyArchivalRequestMessage)requestMessage);
                 log.info("Verified and retrieved private key for archival");
             }
             

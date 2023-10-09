@@ -52,7 +52,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -64,7 +63,6 @@ import org.bouncycastle.asn1.cmc.PKIResponse;
 import org.bouncycastle.asn1.cmc.TaggedAttribute;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
@@ -1639,13 +1637,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         Attribute certHash = null;
         try {
             certHash = new Attribute(new ASN1ObjectIdentifier(szOID_ISSUED_CERT_HASH), 
-                                    new DERSet(new DERBitString(CertTools.generateSHA1Fingerprint(cert.getEncoded()))));
+                                    new DERSet(new DEROctetString(CertTools.generateSHA1Fingerprint(cert.getEncoded()))));
         } catch (CertificateEncodingException e) {
             // nopmd
         }
         
         Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
-                new DERSet(new DERBitString(request.getEnvelopedPrivKeyHash())));
+                new DERSet(new DEROctetString(request.getEnvelopedPrivKeyHash())));
 
         String szOID_CMC_ADD_ATTRIBUTES = "1.3.6.1.4.1.311.10.10.1"; // TODO: find place to collect oids
         TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
@@ -1658,9 +1656,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         new DERSequence(), new DERSequence()});
         // TODO: grab beta release to use added constructor
         PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence);
-        ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
+        //ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
         try {
-            byte[] encapInfoEncoded = encapInfo.getEncoded();
+            byte[] encapInfoEncoded = pkiResponse.getEncoded();
             byte[] encapInfoHash = CertTools.generateSHA1Fingerprint(encapInfoEncoded);
             
             // signerInfo
@@ -1671,12 +1669,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             Attribute contentTypeAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_CONTENT_TYPE), 
                                                         new DERSet(CMCObjectIdentifiers.id_cct_PKIResponse));
             String szOID_PKCS_9_MESSAGE_DIGEST = "1.2.840.113549.1.9.4";
-    //        Attribute contentHashAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
-    //                new DERSet(new DEROctetString(encapInfoHash)));
+            Attribute contentHashAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
+                    new DERSet(new DEROctetString(encapInfoHash)));
     
-            AttributeTable attrTable = new AttributeTable(contentTypeAttribute);
-            attrTable.add(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
-                                            new DERSet(new DEROctetString(encapInfoHash)));
+            AttributeTable attrTable = new AttributeTable(new DERSet(
+                    new ASN1Encodable[]{ contentTypeAttribute.toASN1Primitive(), 
+                                                    contentHashAttribute.toASN1Primitive()}));
             signerInfobuilder.setSignedAttributeGenerator(new SimpleAttributeTableGenerator(attrTable));
             
             final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
@@ -1705,8 +1703,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         
             // gen.addCRL(null); // add only if error, may be multiple - MS compatible CA??
             
-            CMSTypedData data = new CMSProcessableByteArray(
-                    /*new ASN1ObjectIdentifier("1.2.840.113549.1.7.2"),*/ encapInfoEncoded);
+            CMSTypedData data = new CMSProcessableByteArray(CMCObjectIdentifiers.id_cct_PKIResponse, encapInfoEncoded);
             CMSSignedData cmsResponse = gen.generate(data, true);
             return cmsResponse.getEncoded();
             
