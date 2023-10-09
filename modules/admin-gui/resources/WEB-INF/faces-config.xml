@@ -160,18 +160,18 @@
         <from-view-id>/sysconfig/autoenrollconfiguration.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>clone</from-outcome>
-            <to-view-id>/sysconfig/cloneautoenrollmentconfiguration.xhtml</to-view-id>
+            <to-view-id>/sysconfig/cloneautoenrollmentalias.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
     <navigation-rule>
         <from-view-id>/sysconfig/autoenrollconfiguration.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>delete</from-outcome>
-            <to-view-id>/sysconfig/deleteautoenrollmentconfiguration.xhtml</to-view-id>
+            <to-view-id>/sysconfig/deleteautoenrollmentalias.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
     <navigation-rule>
-        <from-view-id>/sysconfig/cloneautoenrollmentconfiguration.xhtml</from-view-id>
+        <from-view-id>/sysconfig/cloneautoenrollmentalias.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>done</from-outcome>
             <to-view-id>/sysconfig/autoenrollconfiguration.xhtml</to-view-id>
@@ -182,7 +182,7 @@
         </navigation-case>
     </navigation-rule>
     <navigation-rule>
-        <from-view-id>/sysconfig/deleteautoenrollmentconfiguration.xhtml</from-view-id>
+        <from-view-id>/sysconfig/deleteautoenrollmentalias.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>done</from-outcome>
             <to-view-id>/sysconfig/autoenrollconfiguration.xhtml</to-view-id>
