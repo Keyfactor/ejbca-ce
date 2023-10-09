@@ -618,7 +618,7 @@ public interface RaMasterApi {
     byte[] generateKeyStoreWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException;
 
-    byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, String caName, String certProfile) throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException;
+    byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId) throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
