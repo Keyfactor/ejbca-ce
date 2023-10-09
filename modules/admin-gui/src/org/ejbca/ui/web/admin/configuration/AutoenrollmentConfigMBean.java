@@ -54,18 +54,6 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
     }
 
     public String addAlias() throws AuthorizationDeniedException {
-//        if (StringUtils.isNotEmpty(newAlias)) {
-//            if (!StringTools.checkFieldForLegalChars(newAlias)) {
-//                addErrorMessage("ONLYCHARACTERS");
-//            } else {
-//                if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(newAlias)) {
-//                    addErrorMessage("MSAE_ALIAS_EXISTS");
-//                } else {
-//                    getEjbcaWebBean().addAutoenrollAlias(newAlias);
-//                    newAlias = null;
-//                }
-//            }
-//        }
         selectedAlias = null;
         viewOnly = false;
         return "edit";
