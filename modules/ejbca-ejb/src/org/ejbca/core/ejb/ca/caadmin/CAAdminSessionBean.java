@@ -881,7 +881,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             publicKey,
             X509KeyUsage.keyEncipherment,
             null,
-            cp.getEncodedValidity(),
+            null,
             cp,
             sequence,
             cceConfig
