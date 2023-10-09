@@ -226,7 +226,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     }
     
     private KeyPair validateAndGetMsaeKeyPairToArchive(MsKeyArchivalRequestMessage requestMessage) throws CertificateCreateException {
-
         // make sure global config and EE profile allows key archival i.e. recovery is enabled(use??) etc
         // see KeyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray
         // also encryption key usage in the CSR, RSA key etc
