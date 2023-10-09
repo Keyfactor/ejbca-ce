@@ -2369,8 +2369,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return certificate.getEncoded();
         }
 
-        CA ca = (CA)caSession.getCA(authenticationToken, caName);
-        CertificateProfile cp = certificateProfileSession.getCertificateProfile(certProfile);
+        CA ca = (CA)caSession.getCA(authenticationToken, Integer.valueOf(caName));
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(Integer.valueOf(certProfile));
         log.info("Creating KEC as certificate not found with subjectDN=[ CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
         Certificate keyExchangeCertificate = caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
 
