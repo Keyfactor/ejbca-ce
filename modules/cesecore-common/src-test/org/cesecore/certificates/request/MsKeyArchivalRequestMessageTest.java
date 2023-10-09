@@ -21,7 +21,6 @@ import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
@@ -42,6 +41,8 @@ import org.bouncycastle.asn1.cmc.TaggedAttribute;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
+import org.bouncycastle.asn1.cms.SignedData;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
@@ -51,10 +52,9 @@ import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.junit.BeforeClass;
@@ -290,7 +290,7 @@ public class MsKeyArchivalRequestMessageTest {
     public void testParseUserEnrollKeyArchivalAsPkcs10() throws Exception { 
         try {
             // fails as expected
-            PKCS10RequestMessage msg = new PKCS10RequestMessage(Base64.decode(USER_ENROLL_REQ));
+            new PKCS10RequestMessage(Base64.decode(USER_ENROLL_REQ));
             fail("should have failed to parse CMC request as PKCS10");
         } catch (Exception e) {
             
@@ -491,16 +491,24 @@ public class MsKeyArchivalRequestMessageTest {
             gen.addSignerInfoGenerator(signerInfobuilder.build(sha256Signer, (X509Certificate) encCertificate)); // used subjectKeyIdentifier
             
             // add certificate chain
-//            List<Certificate> certChain = new ArrayList<>();
-//            certChain.add(CertTools.getCertfromByteArray(encCertificate.getEncoded()));
-//            gen.addCertificates(new org.bouncycastle.util.CollectionStore<Certificate>(certChain)); // include full chain
+            List<X509CertificateHolder> certChain = new ArrayList<>();
+            certChain.add(new X509CertificateHolder(encCertificate.getEncoded()));
+            CollectionStore<X509CertificateHolder> store = new CollectionStore<>(certChain);
+            gen.addCertificates(store); // include full chain
             
 //            gen.addCRL(null); // may be multiple - MS compatible CA??
             
             CMSTypedData data = new CMSProcessableByteArray(encapInfoEncoded);
             CMSSignedData cmsResponse = gen.generate(data, true);
-            System.out.println(Hex.toHexString(cmsResponse.getEncoded()));
+            byte[] resp = cmsResponse.getEncoded();
+            System.out.println(Hex.toHexString(resp));
             
+            System.out.println(SignedData.getInstance(ContentInfo.getInstance(resp).getContent()).getCertificates().getObjectAt(0));
+            X509CertificateHolder x = new X509CertificateHolder(SignedData.getInstance(ContentInfo.getInstance(resp)
+                    .getContent()).getCertificates().getObjectAt(0).toASN1Primitive().getEncoded());
+            System.out.println(x.getIssuer().equals(x.getSubject()));
+
+            System.out.println(CertTools.isCA(CertTools.getCertfromByteArray(x.toASN1Structure().getEncoded())));
         } catch (Exception e) {
             e.printStackTrace();
         }

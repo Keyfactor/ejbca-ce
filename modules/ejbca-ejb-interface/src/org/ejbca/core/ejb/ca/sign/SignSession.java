@@ -43,6 +43,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -130,7 +131,7 @@ public interface SignSession {
      * @throws SignRequestSignatureException if the certificate is not signed by the CA
      * @throws AuthorizationDeniedException
      */
-    byte[] createCmcFullPkiResponse(AuthenticationToken admin, int caId, X509Certificate cert, boolean includeChain) throws CADoesntExistsException,
+    byte[] createCmcFullPkiResponse(AuthenticationToken admin, int caId, X509Certificate cert, MsKeyArchivalRequestMessage request) throws CADoesntExistsException,
             SignRequestSignatureException, AuthorizationDeniedException;
 
     /**

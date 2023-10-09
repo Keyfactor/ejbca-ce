@@ -66,6 +66,7 @@ import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
@@ -1593,37 +1594,42 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public byte[] createCmcFullPkiResponse(AuthenticationToken admin, int caId, X509Certificate cert, boolean includeChain)
+    public byte[] createCmcFullPkiResponse(AuthenticationToken admin, int caId, X509Certificate cert, MsKeyArchivalRequestMessage request)
             throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createCmcFullPkiResponse");
         }
         final X509CA ca = (X509CA) caSession.getCA(admin, caId);
         final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-        final byte[] returnval = createCmcFullPkiResponse(ca, cryptoToken, cert, includeChain);
-        if (returnval != null) {
-            // Audit log that we used the CA's signing key to create a CMS signature
-            final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
-            final Map<String, Object> details = new LinkedHashMap<>();
-            if (cert != null) {
-                details.put("leafSubject", LogRedactionUtils.getSubjectDnLogSafe(cert));
-                details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
-            }
-            details.put("includeChain", Boolean.toString(includeChain));
-            details.put("msg", detailsMsg);
-            securityEventsLoggerSession.log(EjbcaEventTypes.CA_SIGNCMS, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                    String.valueOf(caId), null, null, details);
+        final byte[] returnval = createCmcFullPkiResponse(ca, cryptoToken, cert, request);
+
+        // Audit log that we used the CA's signing key to create a CMS signature
+        final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
+        final Map<String, Object> details = new LinkedHashMap<>();
+        if (cert != null) {
+            details.put("leafSubject", LogRedactionUtils.getSubjectDnLogSafe(cert));
+            details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
         }
+        details.put("msg", detailsMsg);
+        securityEventsLoggerSession.log(EjbcaEventTypes.CA_SIGNCMS, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+                String.valueOf(caId), null, null, details);
+
         if (log.isTraceEnabled()) {
             log.trace("<createCmcFullPkiResponse()");
         }
         return returnval;
     }
     
-    private byte[] createCmcFullPkiResponse(X509CA ca, CryptoToken cryptoToken, X509Certificate cert, boolean includeChain) throws SignRequestSignatureException {
+    private byte[] createCmcFullPkiResponse(X509CA ca, CryptoToken cryptoToken, X509Certificate cert, MsKeyArchivalRequestMessage request) throws SignRequestSignatureException {
         // TODO: failure status here and add otherInfo when approval support is added over MSAE
-        CMCStatusInfoBuilder cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.success, new BodyPartID(0x01));
-        cmcStatusInfoBuilder.setStatusString("Issued"); // TODO: human readable
+        CMCStatusInfoBuilder cmcStatusInfoBuilder = null;
+        if(cert!=null) {
+            cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.success, new BodyPartID(0x01));
+            cmcStatusInfoBuilder.setStatusString("Issued"); // TODO: error i.e. cert=null, human readable string
+        } else {
+            cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.failed, new BodyPartID(0x01));
+            cmcStatusInfoBuilder.setStatusString("Failed"); 
+        }
         
         TaggedAttribute taggedAttribute1 = new TaggedAttribute(new BodyPartID(0x01),
                 CMCObjectIdentifiers.id_cmc_statusInfo,
@@ -1639,7 +1645,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         
         Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
-                new DERSet(new DERBitString("abcd".getBytes()))); // TODO: from request message
+                new DERSet(new DERBitString(request.getEnvelopedPrivKeyHash())));
 
         String szOID_CMC_ADD_ATTRIBUTES = "1.3.6.1.4.1.311.10.10.1"; // TODO: find place to collect oids
         TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
@@ -1650,7 +1656,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         new ASN1Encodable[]{
                                 new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2}), 
                         new DERSequence(), new DERSequence()});
-        PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence); // grab beta release or use ASN1Sequence and then getInstance
+        // TODO: grab beta release to use added constructor
+        PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence);
         ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
         try {
             byte[] encapInfoEncoded = encapInfo.getEncoded();
@@ -1668,28 +1675,35 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     //                new DERSet(new DEROctetString(encapInfoHash)));
     
             AttributeTable attrTable = new AttributeTable(contentTypeAttribute);
-            attrTable.add(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), new DERSet(new DEROctetString(encapInfoHash)));
+            attrTable.add(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
+                                            new DERSet(new DEROctetString(encapInfoHash)));
             signerInfobuilder.setSignedAttributeGenerator(new SimpleAttributeTableGenerator(attrTable));
             
             final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-            if (caPrivateKey == null) {
-                String msg1 = "createCMC: Private key does not exist!";
-                log.debug(msg1);
-                throw new SignRequestSignatureException(msg1);
-            }
-            ContentSigner sha256Signer = new JcaContentSignerBuilder(ca.getCAInfo().getCAToken().getSignatureAlgorithm())
+            ContentSigner caSigner = new JcaContentSignerBuilder(ca.getCAInfo().getCAToken().getSignatureAlgorithm())
                                                         .setProvider(cryptoToken.getSignProviderName())
                                                                                 .build(caPrivateKey);
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-            gen.addSignerInfoGenerator(signerInfobuilder.build(sha256Signer, (X509Certificate) ca.getCACertificate())); // used subjectKeyIdentifier
+            gen.addSignerInfoGenerator(signerInfobuilder.build(caSigner, (X509Certificate) ca.getCACertificate()));
             
             // add certificate chain
-            List<X509Certificate> certChain = new ArrayList<>();
-            certChain.add(cert);
-            ca.getCertificateChain().forEach(x -> certChain.add((X509Certificate) x));
-            gen.addCertificates(new org.bouncycastle.util.CollectionStore<X509Certificate>(certChain)); // include full chain
+            List<X509CertificateHolder> certChain = new ArrayList<>();
+            if (cert!=null) {
+                certChain.add(new X509CertificateHolder(cert.getEncoded()));
+            }
+            ca.getCertificateChain().forEach(x -> {
+                try {
+                    certChain.add(new X509CertificateHolder(x.getEncoded()));
+                } catch (CertificateEncodingException | IOException e) {
+                    log.debug("error during ca cert chain encoding");
+                    throw new IllegalStateException(e);
+                }
+            });
             
-            gen.addCRL(null); // may be multiple - MS compatible CA??
+            CollectionStore<X509CertificateHolder> store = new CollectionStore<>(certChain);
+            gen.addCertificates(store);
+                        
+            // gen.addCRL(null); // add only if error, may be multiple - MS compatible CA??
             
             CMSTypedData data = new CMSProcessableByteArray(
                     /*new ASN1ObjectIdentifier("1.2.840.113549.1.7.2"),*/ encapInfoEncoded);
