@@ -1326,7 +1326,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public ProtocolGuiInfo(String protocol, boolean enabled) {
             this.protocol = protocol;
             this.enabled = enabled;
-            this.url = AvailableProtocols.getContextPathByName(protocol, isRunningEnterprise());
+            this.url = AvailableProtocols.getContextPathByName(protocol);
             this.available = true;
         }
 
@@ -1354,6 +1354,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_COAP_MANAGEMENT.getName()) && !isRunningEnterprise()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRunningEnterprise()) {
