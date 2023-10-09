@@ -180,7 +180,7 @@ public final class ExternalProcessTools {
                 String pemString = new String(testPemBytes);
                 pemString = pemString.substring(pemString.indexOf(LINE_SEPARATOR) + 1, pemString.length());
                 pemString = pemString.substring(pemString.indexOf(LINE_SEPARATOR) + 1, pemString.length());
-                if (log.isDebugEnabled()) {
+                if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
                     log.debug("Using certificates:\n" + pemString);
                 }
                 arguments.remove(arguments.indexOf(PLACE_HOLDER_CERTIFICATE));
@@ -204,7 +204,7 @@ public final class ExternalProcessTools {
             if (!writeFileToDisk) {
                 cmdArray = buildShellCommand(StringUtils.join(cmdArray, " "));
             }
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
                 log.debug("Process external command for " + getPlatformString() + ": " + cmdArray);
             }
             // Launch external process.

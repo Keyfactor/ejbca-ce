@@ -174,8 +174,8 @@ public abstract class RequestMessageUtils {
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_SPKAC) {
             byte[] reqBytes = req.getBytes();
             if (reqBytes != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Received NS request: " + LogRedactionUtils.getRedactedMessage(new String(reqBytes)));
+                if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
+                    log.debug("Received NS request: " + new String(reqBytes));
                 }
                 byte[] buffer = Base64.decode(reqBytes);
                 if (buffer == null) {

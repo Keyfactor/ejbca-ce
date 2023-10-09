@@ -14,9 +14,9 @@ package org.ejbca.ui.web.admin.publisher;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import javax.faces.model.SelectItem;
 
@@ -123,12 +123,10 @@ public final class CustomPublisherMBData implements Serializable {
 
         final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
 
-        customPublisherPropertyValues = publisher
-                .getCustomUiPropertyList(authenticationToken).stream()
-                .collect(Collectors.toMap(
-                        CustomPublisherProperty::getName,
-                        this::providePresentableValue
-                ));
+        customPublisherPropertyValues = new HashMap<>();
+        for (final CustomPublisherProperty property : ((CustomPublisherContainer) publisher).getCustomUiPropertyList(authenticationToken)) {
+            customPublisherPropertyValues.put(property.getName(), providePresentableValue(property));
+        }
     }
 
     private Object provideFactualValue(CustomPublisherProperty property, Object presentableValue) {
