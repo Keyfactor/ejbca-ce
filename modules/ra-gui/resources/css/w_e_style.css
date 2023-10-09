@@ -307,7 +307,11 @@ ul.pure-menu-list > li.pure-menu-item > ul.pure-menu-children > form > li, ul.pu
   background: #fff; }
 
 ul.pure-menu-children {
-  text-align: left; }
+  text-align: left;
+  left: 50% !important;
+  transform: translate(-50%);
+  background: #517397;
+}
 
 label.showNonModifiable {
   margin-left: 2%; }
