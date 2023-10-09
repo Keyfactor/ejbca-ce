@@ -1009,6 +1009,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void enrollPkcs10ExpectCertificateResponseWithCVC() throws Exception {
+        assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         cvcTestCa = CryptoTokenTestUtils.createTestCVCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testCVCIssuerDn);
         enrollPkcs10ExpectCertificateResponseWithRequestedSubjectDnAndIssuer(null, true);
     }
