@@ -875,8 +875,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         eeInfo.setDN("CN=" + ca.getName() + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
         eeInfo.setCAId(ca.getCAId());
 
-        final Certificate cert = ca.generateCertificate(cryptoToken, eeInfo, publicKey, X509KeyUsage.keyEncipherment,
-            null, "1m", cp, sequence, cceConfig);
+        final Certificate cert = ca.generateCertificate(
+            cryptoToken,
+            eeInfo,
+            publicKey,
+            X509KeyUsage.keyEncipherment,
+            null,
+            null,
+            cp,
+            sequence,
+            cceConfig
+        );
 
         certificateStoreSession.storeCertificate(authenticationToken, cert, CertificateConstants.CERT_USERNAME_SYSTEMCA,
             CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_TYPE_ENCRYPTION,
