@@ -1160,7 +1160,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             caSigningPackage = new SigningKeyContainer(caPublicKey, caPrivateKey, provider);           
         } else {
             if(alternativeCryptoToken == null) {
-                throw new CryptoTokenOfflineException("Use of alternative keys was defined, but no crypto token for them was defined.");
+                throw new CryptoTokenOfflineException("Use of alternative keys was defined for CA " + getName() + " with ID "
+                        + getSubjectDN().hashCode() + ", but no crypto token for them was defined.");
             }
             
             final int alternativeKeyPurpose = getUseNextCACert(request) ? CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN_NEXT : CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN;
@@ -1711,8 +1712,26 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 }
                 final ContentSigner signer = new BufferingContentSigner(
                         new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caSigningPackage.getPrimaryPrivateKey()), X509CAImpl.SIGN_BUFFER_SIZE);
+                
+                final String alternativeSigningAlgorithm; 
+                if (certProfile.getAlternativeSignatureAlgorithm() == null) {
+                    alternativeSigningAlgorithm = getCAToken().getAlternativeSignatureAlgorithm();
+                } else {
+                    alternativeSigningAlgorithm = certProfile.getAlternativeSignatureAlgorithm();
+                }
+                
+                final String altProv;
+                if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getAlternativeProvider())) {
+                    altProv = CryptoProviderTools.getProviderNameFromAlg(alternativeSigningAlgorithm);
+                } else {
+                    altProv = caSigningPackage.getAlternativeProvider();
+                }
+                ContentSigner alternativeSigner = new BufferingContentSigner(
+                        new JcaContentSignerBuilder(alternativeSigningAlgorithm).setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey()),
+                        X509CAImpl.SIGN_BUFFER_SIZE);
+                
                 // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
-                final X509CertificateHolder certHolder = precertbuilder.build(signer);
+                final X509CertificateHolder certHolder = precertbuilder.build(signer, false, alternativeSigner);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 // ECA-6051 Re-Factored with Domain Service Layer.
                 if (certGenParams.getAuthenticationToken() != null && certGenParams.getCertificateValidationDomainService() != null) {
@@ -1820,7 +1839,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 altProv = caSigningPackage.getAlternativeProvider();
             }
   
-            ContentSigner alternativeSigner = new JcaContentSignerBuilder(alternativeSigningAlgorithm).setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey());
+            ContentSigner alternativeSigner = new BufferingContentSigner(
+                    new JcaContentSignerBuilder(alternativeSigningAlgorithm).setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey()),
+                    X509CAImpl.SIGN_BUFFER_SIZE);
             certHolder = certbuilder.build(signer, false, alternativeSigner);
         }
         X509Certificate cert;

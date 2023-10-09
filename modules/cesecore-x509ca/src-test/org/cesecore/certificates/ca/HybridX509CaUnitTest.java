@@ -30,9 +30,9 @@ import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 import org.bouncycastle.asn1.ASN1Primitive;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AltSignatureAlgorithm;
 import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
+import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -77,7 +77,7 @@ public class HybridX509CaUnitTest {
     }
 
     /**
-     * Construct a vanilla X509 root CA with an RSA key as primary and Dilithium2 as alternative
+     * Construct a vanilla X509 root CA with an P256 key as primary and Dilithium2 as alternative
      */
     @Test
     public void testHybridRootCa() throws InvalidAlgorithmParameterException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
@@ -100,8 +100,7 @@ public class HybridX509CaUnitTest {
         }
         cryptoToken.activate(cryptoTokenPassword.toCharArray());
 
-        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATESIGNKEYALIAS);
-        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATEDECKEYALIAS);
+        cryptoToken.generateKeyPair("secp256r1", CAToken.SOFTPRIVATESIGNKEYALIAS);
         cryptoToken.generateKeyPair(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
 
         // Create CAToken
@@ -111,8 +110,8 @@ public class HybridX509CaUnitTest {
         // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
         caToken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caToken.setAlternativeCryptoTokenId(cryptoTokenId);
         caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
 
@@ -129,7 +128,7 @@ public class HybridX509CaUnitTest {
                 cryptoToken.getPublicKey(CAToken.SOFTPRIVATESIGNKEYALIAS), -1, null, cainfo.getEncodedValidity(), certificateProfile, "0000", null);
 
         assertTrue("Primary signing algorithm was oid incorrect: " + caCertificate.getSigAlgOID(),
-                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId().equals(caCertificate.getSigAlgOID()));
+                X9ObjectIdentifiers.ecdsa_with_SHA256.getId().equals(caCertificate.getSigAlgOID()));
 
         try {
             caCertificate.verify(caCertificate.getPublicKey());
@@ -137,7 +136,7 @@ public class HybridX509CaUnitTest {
             fail("Certificate did not verify using primary key");
         }
 
-        assertEquals("Signature algorithm name mismatch: " + caCertificate.getSigAlgName(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA.toUpperCase(),
+        assertEquals("Signature algorithm name mismatch: " + caCertificate.getSigAlgName(), AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA.toUpperCase(),
                 caCertificate.getSigAlgName());
 
         X509CertificateHolder certHolder = new JcaX509CertificateHolder(caCertificate);
@@ -179,8 +178,7 @@ public class HybridX509CaUnitTest {
         }
         cryptoToken.activate(cryptoTokenPassword.toCharArray());
 
-        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATESIGNKEYALIAS);
-        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATEDECKEYALIAS);
+        cryptoToken.generateKeyPair("secp256r1", CAToken.SOFTPRIVATESIGNKEYALIAS);
 
         final CryptoToken alternativeCryptoToken;
         try {
@@ -199,8 +197,8 @@ public class HybridX509CaUnitTest {
         // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
         caToken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+        caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caToken.setAlternativeCryptoTokenId(cryptoTokenId);
         caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
 
@@ -217,7 +215,7 @@ public class HybridX509CaUnitTest {
                 cryptoToken.getPublicKey(CAToken.SOFTPRIVATESIGNKEYALIAS), -1, null, cainfo.getEncodedValidity(), certificateProfile, "0000", null);
 
         assertTrue("Primary signing algorithm was oid incorrect: " + caCertificate.getSigAlgOID(),
-                PKCSObjectIdentifiers.sha256WithRSAEncryption.getId().equals(caCertificate.getSigAlgOID()));
+                X9ObjectIdentifiers.ecdsa_with_SHA256.getId().equals(caCertificate.getSigAlgOID()));
 
         try {
             caCertificate.verify(caCertificate.getPublicKey());
@@ -235,7 +233,7 @@ public class HybridX509CaUnitTest {
         Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS, CAToken.SOFTPRIVATESIGNKEYALIAS);
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
