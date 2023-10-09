@@ -180,7 +180,6 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             // should also verify the private key hash as enveloped private key is not signed(unauthenticated)
             final MessageDigest md = MessageDigest.getInstance(
                     hashAlgorithmMap.get(pkcs10.getSignatureAlgorithm().getAlgorithm())); 
-            pkcs10.getSignatureAlgorithm();
             envelopedPrivKeyHash = md.digest(encryptedPrivateKey);
             final String envelopedPrivKeyHashStr = Hex.toHexString(envelopedPrivKeyHash);
             
@@ -222,7 +221,6 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
     }
     
     public void decryptPrivateKey(String provider, PrivateKey caEncryptionKey) throws CertificateCreateException {
-        // TODO: untested
         if (log.isTraceEnabled()) {
             log.trace("<decryptPrivateKey()");
         }
@@ -331,6 +329,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         byte[] decryptedBytes = null;
         try {
             new Random().nextBytes(randomBytes);
+            log.info("randomBytes: " + Hex.toHexString(randomBytes));
             Cipher encCipher = Cipher.getInstance("RSA");
             encCipher.init(Cipher.ENCRYPT_MODE, requestKeyPair.getPublic());
             byte[] encryptedBytes = encCipher.doFinal(randomBytes);
@@ -338,7 +337,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             Cipher decCipher = Cipher.getInstance("RSA");
             decCipher.init(Cipher.DECRYPT_MODE, requestKeyPair.getPrivate());
             decryptedBytes = decCipher.doFinal(encryptedBytes);
-           
+            log.info("decryptedBytes: " + Hex.toHexString(decryptedBytes));
         } catch (Exception e) {
             log.info("MS key archival key testing failed", e);
         }
