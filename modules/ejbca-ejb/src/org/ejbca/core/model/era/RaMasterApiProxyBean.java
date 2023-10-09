@@ -1570,7 +1570,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, String caName, String certProfile)
+    public byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
         throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
         CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
         SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException {
@@ -1581,7 +1581,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 0) { // TODO: should be 17
                 try {
-                    return raMasterApi.getKeyExchangeCertificate(authenticationToken, caName, certProfile);
+                    return raMasterApi.getKeyExchangeCertificate(authenticationToken, caId, cpId);
                 } catch (AuthorizationDeniedException e) {
                     if (authorizationDeniedException == null) {
                         authorizationDeniedException = e;
