@@ -179,7 +179,6 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             // should also verify the private key hash as enveloped private key is not signed(unauthenticated)
             final MessageDigest md = MessageDigest.getInstance(
                     hashAlgorithmMap.get(pkcs10.getSignatureAlgorithm().getAlgorithm())); 
-            pkcs10.getSignatureAlgorithm();
             final String envelopedPrivKeyHash = Hex.toHexString(md.digest(encryptedPrivateKey));
             
             for (TaggedAttribute ta: pkiData.getControlSequence()) {
