@@ -51,7 +51,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="msaeAliasName" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.currentAlias}"
+                                 value="#{msAutoEnrollmentSettings.dto.alias}"
                                  required="true"
                                  requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}">
                         <f:converter converterId="trimConverter"/>
@@ -64,7 +64,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="msaeForestRoot" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.msaeForestRoot}" size="45"
+                                 value="#{msAutoEnrollmentSettings.dto.msaeForestRoot}" size="45"
                                  title="#{web.text.FORMAT_DOMAINNAME}">
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
@@ -78,7 +78,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="msaeDomain" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.msaeDomain}" size="45"
+                                 value="#{msAutoEnrollmentSettings.dto.msaeDomain}" size="45"
                                  title="#{web.text.FORMAT_DOMAINNAME}">
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
@@ -92,7 +92,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="policyName" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.policyName}" size="45"
+                                 value="#{msAutoEnrollmentSettings.dto.policyName}" size="45"
                                  title="#{web.text.FORMAT_STRING}">
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
@@ -106,7 +106,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="spn" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.servicePrincipalName}" size="100"
+                                 value="#{msAutoEnrollmentSettings.dto.servicePrincipalName}" size="100"
                                  title="#{web.text.FORMAT_STRING}">
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
@@ -128,7 +128,7 @@
                     </h:panelGroup>
                     <h:panelGroup rendered="#{msAutoEnrollmentSettings.keyTabUploaded}">
                         <h:outputLabel value="#{web.text.MSAE_KEYTAB_TITLE_UPLOADED} "/>
-                        <h:commandLink value="#{msAutoEnrollmentSettings.keyTabFilename}"
+                        <h:commandLink value="#{msAutoEnrollmentSettings.dto.keyTabFilename}"
                                        action="#{msAutoEnrollmentSettings.downloadKeyTabFile}"/>
                         <br/>
                     </h:panelGroup>
@@ -150,7 +150,7 @@
                     </h:panelGroup>
                     <h:panelGroup rendered="#{msAutoEnrollmentSettings.krb5ConfFileUploaded}">
                         <h:outputLabel value="#{web.text.MSAE_KRB5_CONF_TITLE_UPLOADED} "/>
-                        <h:commandLink value="#{msAutoEnrollmentSettings.krb5ConfFilename}"
+                        <h:commandLink value="#{msAutoEnrollmentSettings.dto.krb5ConfFilename}"
                                        action="#{msAutoEnrollmentSettings.downloadKrb5ConfFile}"/>
                         <br/>
                     </h:panelGroup>
@@ -165,7 +165,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:selectBooleanCheckbox id="msaeIsUseSSL" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                             value="#{msAutoEnrollmentSettings.useSSL}">
+                                             value="#{msAutoEnrollmentSettings.dto.useSSL}">
                         <f:ajax render="msaeconfiguration:msaeAuthKeyBinding"/>
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="msaeIsUseSSL" value="#{web.text.USE}"/>
@@ -180,7 +180,7 @@
                 <h:panelGroup>
                     <h:selectBooleanCheckbox id="msaeFollowLdapReferral"
                                              disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                             value="#{msAutoEnrollmentSettings.followLdapReferral}">
+                                             value="#{msAutoEnrollmentSettings.dto.followLdapReferral}">
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="msaeFollowLdapReferral" value="#{web.text.USE}"/>
                 </h:panelGroup>
@@ -193,8 +193,8 @@
                 </h:panelGroup>
                 <h:panelGroup id="msaeAuthKeyBinding">
                     <h:selectOneMenu
-                            disabled="#{autoenrollmentConfigMBean.viewOnly or not msAutoEnrollmentSettings.useSSL}"
-                            value="#{msAutoEnrollmentSettings.authKeyBinding}">
+                            disabled="#{autoenrollmentConfigMBean.viewOnly or not msAutoEnrollmentSettings.dto.useSSL}"
+                            value="#{msAutoEnrollmentSettings.dto.authKeyBinding}">
                         <f:selectItems value="#{msAutoEnrollmentSettings.availableAuthenticationKeyBindings}"/>
                     </h:selectOneMenu>
                 </h:panelGroup>
@@ -207,7 +207,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="msaeAdConnectionPort" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.adConnectionPort}" size="5"
+                                 value="#{msAutoEnrollmentSettings.dto.adConnectionPort}" size="5"
                                  title="#{web.text.FORMAT_INTEGER}">
                     </h:inputText>
                 </h:panelGroup>
@@ -220,7 +220,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="msaeLdapReadTimeout" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.ldapReadTimeout}" size="5"
+                                 value="#{msAutoEnrollmentSettings.dto.ldapReadTimeout}" size="5"
                                  title="#{web.text.FORMAT_MILLISECONDS}">
                     </h:inputText>
                 </h:panelGroup>
@@ -233,7 +233,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="msaeLdapConnectTimeout" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.ldapConnectTimeout}" size="5"
+                                 value="#{msAutoEnrollmentSettings.dto.ldapConnectTimeout}" size="5"
                                  title="#{web.text.FORMAT_MILLISECONDS}">
                     </h:inputText>
                 </h:panelGroup>
@@ -246,7 +246,7 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputText id="msaeAdLoginDN" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                 value="#{msAutoEnrollmentSettings.adLoginDN}" size="45"
+                                 value="#{msAutoEnrollmentSettings.dto.adLoginDN}" size="45"
                                  title="#{web.text.FORMAT_DN_UPN}">
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
@@ -262,7 +262,7 @@
                     <h:inputSecret id="msaeAdLoginPassword" disabled="#{autoenrollmentConfigMBean.viewOnly}"
                                    autocomplete="off"
                                    redisplay="true"
-                                   value="#{msAutoEnrollmentSettings.adLoginPassword}" size="45"
+                                   value="#{msAutoEnrollmentSettings.dto.adLoginPassword}" size="45"
                                    title="#{web.text.FORMAT_STRING}">
                         <f:converter converterId="trimConverter"/>
                     </h:inputSecret>
@@ -276,7 +276,7 @@
                 </h:panelGroup>
                 <h:panelGroup id="msaeCaName">
                     <h:selectOneMenu disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                     value="#{msAutoEnrollmentSettings.caName}">
+                                     value="#{msAutoEnrollmentSettings.dto.caName}">
                         <f:selectItems value="#{msAutoEnrollmentSettings.availableCAs}"/>
                     </h:selectOneMenu>
                 </h:panelGroup>
