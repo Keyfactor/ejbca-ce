@@ -72,7 +72,6 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
                 }
             }
         }
-
     }
 
     public String cloneAlias() throws AuthorizationDeniedException {
