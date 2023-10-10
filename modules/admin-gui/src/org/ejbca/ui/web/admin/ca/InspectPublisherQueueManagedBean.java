@@ -140,7 +140,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
             } else if (publisherQueueData.getPublishType() == PublisherConst.PUBLISH_TYPE_CRL) {
                 final CRLInfo crlInfo = crlSession.getCRLInfo(getFingerprint());
                 if (isAuthorizedToViewCrl(crlInfo)) {
-                    return String.format("%spublicweb/webdist/certdist?cmd=crl&issuer=%s&crlnumber=%d", getEjbcaWebBean().getBaseUrlPublic(),
+                    return String.format("%spublicweb/webdist/certdist?cmd=crl&issuer=%s&crlnumber=%d", getEjbcaWebBean().getBaseUrl(),
                             StringEscapeUtils.escapeHtml(crlInfo.getSubjectDN()), crlInfo.getLastCRLNumber());
                 }
             }

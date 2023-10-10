@@ -61,7 +61,7 @@
 						<h:panelGroup>
 							<h:commandButton
 									class="buttonstyle"
-									onclick="return confirmcaaction('#{manageCAsMBean.confirmMessage}')"
+									onclick="if (checkSelectionMade('managecas:selectcas')) return confirmcaaction('#{manageCAsMBean.confirmMessage}')"
 									id="buttondeleteca"
 									value="#{web.text.DELETECA}"
 									action="#{manageCAsMBean.deleteCA()}"

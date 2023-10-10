@@ -38,8 +38,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 /**
  * Representation of an End Entity Profile.
- * 
- * @version $Id$
  */ 
 @Entity
 @Table(name="EndEntityProfileData")
@@ -61,7 +59,9 @@ public class EndEntityProfileData extends ProtectedData implements Serializable 
 		setId(id);
 		setProfileName(profileName);
 		setProfile(endEntityProfile);
-		log.debug("Created profile " + profileName);
+		if (log.isDebugEnabled()) {
+		    log.debug("Created profile " + profileName);
+		}
 	}
 	
 	public EndEntityProfileData() { }

@@ -28,8 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.CMSSignedData;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -41,6 +39,7 @@ import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CAReferenceField;
@@ -59,6 +58,7 @@ import com.keyfactor.util.StringTools;
  * Helper class for handling certificate request from browsers or general PKCS#10
  */
 public class RequestHelper {
+    
     private static Logger log = Logger.getLogger(RequestHelper.class);
     private AuthenticationToken administrator;
     private ServletDebug debug;
@@ -153,7 +153,11 @@ public class RequestHelper {
             log.debug("Created certificate (PKCS7) for " + username);
             if (debug != null) {
                 debug.print("<h4>Generated certificate:</h4>");
-                debug.printInsertLineBreaks(cert.toString().getBytes());
+                if (LogRedactionUtils.redactPii()) {
+                    debug.printInsertLineBreaks(LogRedactionUtils.REDACTED_CONTENT.getBytes());
+                } else {
+                    debug.printInsertLineBreaks(cert.toString().getBytes());
+                }
             }
             return new CertificateRequestResponse(cert, encoded);
         } catch (IOException e) {
@@ -251,7 +255,11 @@ public class RequestHelper {
         out.flushBuffer();
         if (log.isDebugEnabled()) {
             log.debug("Sent reply to client");
-            log.debug(new String(b64cert));   
+            if (LogRedactionUtils.redactPii()) {
+                log.debug(LogRedactionUtils.REDACTED_CONTENT);
+            } else {
+                log.debug(new String(b64cert));
+            }
         }
     }
     /**
@@ -268,27 +276,7 @@ public class RequestHelper {
         RequestHelper.sendNewB64File(b64cert, out, "cert.pem", beginKey, endKey);
     } // sendNewB64Cert
 
-    /**
-     * Sends back CA-certificate as binary file (application/x-x509-ca-cert)
-     *
-     * @param cert DER encoded certificate to be returned
-     * @param out output stream to send to
-     *
-     * @throws IOException on error
-     */
-    public static void sendNewX509CaCert(byte[] cert, HttpServletResponse out)
-            throws IOException {
-        // First we must know if this is a single cert or a CMS structure
-        try {
-            new CMSSignedData(cert);
-            log.debug("Returning CMS with certificates as application/x-x509-ca-ra-cert");
-            sendBinaryBytes(cert, out, "application/x-x509-ca-ra-cert", null);
-        } catch (CMSException e) {
-            // It was a cert, not a CMS
-            log.debug("Returning X.509 certificate as application/x-x509-ca-cert");
-            sendBinaryBytes(cert, out, "application/x-x509-ca-cert", null);
-        }    
-    } // sendNewX509CaCert
+
 
     /**
      * Sends back a number of bytes

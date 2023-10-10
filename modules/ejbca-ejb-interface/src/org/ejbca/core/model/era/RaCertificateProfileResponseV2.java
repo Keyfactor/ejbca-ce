@@ -35,6 +35,7 @@ public class RaCertificateProfileResponseV2 implements Serializable {
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     private List<Integer> availableBitLengths;
+    private List<Integer> availableSecurityLevels;
 
     public Integer getCertificateProfileId() {
         return certificateProfileId;
@@ -54,6 +55,10 @@ public class RaCertificateProfileResponseV2 implements Serializable {
 
     public List<Integer> getAvailableBitLengths(){
         return availableBitLengths;
+    }
+
+    public List<Integer> getAvailableSecurityLevels() {
+        return availableSecurityLevels;
     }
 
     public static RaCertificateProfileResponseConverter converter () {
@@ -86,6 +91,7 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             final List<String> availableKeyAlgorithmsFromProfile = certificateProfile.getAvailableKeyAlgorithmsAsList();
             List<String> availableEcdsaCurvesFromProfile = new ArrayList<>();
             List<Integer> availableBitLengthsFromProfile = new ArrayList<>();
+            List<Integer> availableSecurityLevelsFromProfile = new ArrayList<>();
             if (!availableKeyAlgorithmsFromProfile.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 availableEcdsaCurvesFromProfile.add("No ECDSA curves available.");
             }else {
@@ -97,10 +103,14 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             }else {
                 availableBitLengthsFromProfile = certificateProfile.getAvailableBitLengthsAsList();
             }
+            if (availableKeyAlgorithmsFromProfile.contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
+                availableSecurityLevelsFromProfile = certificateProfile.getAvailableSecurityLevelsAsList();
+            }
             response.certificateProfileId = certProfileId;
             response.availableAlgorithms = availableKeyAlgorithmsFromProfile;
             response.availableBitLengths = availableBitLengthsFromProfile;
             response.availableEcdsaCurves = availableEcdsaCurvesFromProfile;
+            response.availableSecurityLevels = availableSecurityLevelsFromProfile;
             response.availableCas = getAvailableCasFromProfile(caIds, caInfos);
             return response;
         }

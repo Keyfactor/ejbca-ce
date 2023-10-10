@@ -53,6 +53,7 @@ public class CustomWorkerType extends WorkerType {
     private String manualClassPath;
     private String propertyText;
     private Collection<String> compatibleActionTypeNames = new ArrayList<>();
+    private Collection<String> compatibleActionTypeNamesNoMail = new ArrayList<>();
     private Collection<String> compatibleIntervalTypeNames = new ArrayList<>();
     private ListDataModel<CustomServiceWorkerProperty> customUiPropertyListDataModel = null;
 
@@ -62,6 +63,9 @@ public class CustomWorkerType extends WorkerType {
 		compatibleActionTypeNames.add(CustomActionType.NAME);
 		compatibleActionTypeNames.add(NoActionType.NAME);
 		compatibleActionTypeNames.add(MailActionType.NAME);
+		
+		compatibleActionTypeNamesNoMail.add(CustomActionType.NAME);
+        compatibleActionTypeNamesNoMail.add(NoActionType.NAME);
 		
 		compatibleIntervalTypeNames.add(CustomIntervalType.NAME);
 		compatibleIntervalTypeNames.add(PeriodicalIntervalType.NAME);
@@ -142,6 +146,9 @@ public class CustomWorkerType extends WorkerType {
 	 */
     @Override
 	public Collection<String> getCompatibleActionTypeNames() {
+        if(getClassPath().equals("org.ejbca.peerconnector.keybind.PeerInternalKeyBindingUpdaterWorker")) {
+            return compatibleActionTypeNamesNoMail;
+        }
 		return compatibleActionTypeNames;
 	}
 

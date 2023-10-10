@@ -47,14 +47,14 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String MSAE_FOREST_ROOT = "msaeForestRoot";
     private static final String MSAE_DOMAIN = "msaeDomain";
     private static final String MSAE_KEYTAB_FILENAME = "msaeKeyTabFilename";
-    private static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
+    public static final String MSAE_KEYTAB_BYTES = "msaeKeyTabBytes";
     private static final String POLICY_NAME = "policyName";
     private static final String POLICY_UID = "policyUid";
     private static final String SPN = "servicePrincipalName";
 
     
     // MSAE Krb5Conf
-    private static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
+    public static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
     private static final Object MSAE_KRB5_CONF_FILENAME = "msaeKrb5ConfFilename";
 
     // MSAE Settings
@@ -71,7 +71,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String CA_NAME = "caName";
 
     // Template to Settings
-    private static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
+    public static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
 
     private static final int DEFAULT_AD_CONNECTION_PORT = 389;
@@ -105,7 +105,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         }
     }
 
-    private void initWithDefaults(String alias) {
+    public void initWithDefaults(String alias) {
         if(StringUtils.isNotEmpty(alias)) {
             alias = alias + ".";
             data.put(alias + MSAE_FOREST_ROOT, "");
@@ -403,7 +403,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         } else {
             log.info("Autoenrollment alias '" + alias + "' does not exist");
         }
-        return null;
+        return new byte[0];
     }
 
     public void setValueBytes(String key, byte[] value, String alias) {

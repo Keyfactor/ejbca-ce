@@ -14,6 +14,8 @@ package org.ejbca.core.model.services.workers;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.KeyedLock;
+import org.cesecore.util.PropertyTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublishingResult;
@@ -25,7 +27,6 @@ import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -47,7 +48,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * This must be decided by serviceName, since we can configure one of these
      * services for every publisher.
      */
-    private static HashMap<String, Boolean> runmap = new HashMap<String, Boolean>();
+    private static final KeyedLock<String> lock = new KeyedLock<>();
 
 
     @Override
@@ -85,32 +86,13 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
         log.trace(">work");
         final PublisherSessionLocal publisherSession = ((PublisherSessionLocal)ejbs.get(PublisherSessionLocal.class));
         final PublisherQueueSessionLocal publisherQueueSession = ((PublisherQueueSessionLocal)ejbs.get(PublisherQueueSessionLocal.class));
-        // A semaphore used to not run parallel processing jobs
-        boolean running = false;
-        synchronized (runmap) {
-            Boolean b = runmap.get(this.serviceName);
-            if (b != null) {
-                running = b.booleanValue();
-            }
-        }
         final PublishingResult publishingResult = new PublishingResult();
         final ServiceExecutionResult ret;
-        if (!running) {
+        if (lock.tryLock(serviceName)) {
             try {
-                synchronized (runmap) {
-                    runmap.put(this.serviceName, Boolean.TRUE);
-                }
                 Object o = properties.get(PROP_PUBLISHER_IDS);
-                
-                
-                final long maxNumberOfEntriesToCheck;
-                if (properties.containsKey(PROP_MAX_WORKER_JOBS)) {
-                    maxNumberOfEntriesToCheck = Long.valueOf(properties.getProperty(PROP_MAX_WORKER_JOBS));
-                } else {
-                    maxNumberOfEntriesToCheck = DEFAULT_QUEUE_WORKER_JOBS;
-                }
-                
                 if (o != null) {
+                    final long maxNumberOfEntriesToCheck = PropertyTools.get(properties, PROP_MAX_WORKER_JOBS, DEFAULT_QUEUE_WORKER_JOBS);
                     String idstr = (String) o;
                     if (log.isDebugEnabled()) {
                         log.debug("Publisher IDs: " + idstr);
@@ -131,9 +113,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     log.debug("No publisher IDs configured for worker.");
                 }
             } finally {
-                synchronized (runmap) {
-                    runmap.put(this.serviceName, Boolean.FALSE);
-                }
+                lock.release(serviceName);
             }
             if (publishingResult.getSuccesses() == 0 && publishingResult.getFailures() == 0) {
                 ret = new ServiceExecutionResult(Result.NO_ACTION,
@@ -167,6 +147,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
      * @param status
      *            status to update to
      */
+    @Override
     protected void updateStatus(String pk, int status) {
     }
 

@@ -12,12 +12,11 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.Serializable;
-import java.util.Random;
-
 import javax.annotation.PostConstruct;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import java.io.Serializable;
+import java.util.Random;
 
 /**
  * Example of JSF Managed Bean for backing a page. 
@@ -29,8 +28,6 @@ import javax.inject.Named;
 public class RaExampleBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(RaExampleBean.class);
-
 
     @PostConstruct
     private void postContruct() { }

@@ -375,7 +375,11 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
         List<EndEntitySearchResult> results;
         if (!timeConstraint.equals(TimeConstraint.NONE) && !(before == null && after == null)) {
-            query.add(timeConstraint.getNumericValue(), after, before, BooleanCriteria.AND.getNumericValue());
+            if (query.isEmpty()) {
+                query.add(timeConstraint.getNumericValue(), after, before);
+            } else {
+                query.add(timeConstraint.getNumericValue(), after, before, BooleanCriteria.AND.getNumericValue());
+            }
         }
         try {
             Collection<EndEntityInformation> userlist = endEntityAccessSession.query(getAdmin(), query,

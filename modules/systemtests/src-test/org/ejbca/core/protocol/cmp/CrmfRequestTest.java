@@ -305,7 +305,7 @@ public class CrmfRequestTest extends CmpTestCase {
             assertNotNull(resp);
             // In this very old BlueX message, POP verification fails. 
             // The HMAC password used to protect the request is 'password', which is set on the CMP user "Some Common Name" above
-            checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null); // expecting a bad_pop
+            checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null, null); // expecting a bad_pop
         } finally {
             endEntityManagementSession.deleteUser(ADMIN, username);        	
         }
@@ -315,7 +315,7 @@ public class CrmfRequestTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
             assertNotNull(resp);
             // If we don't know the HMAC password, the below error will be instead
-            checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badRequest, null); // expecting a bad_pop
+            checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badRequest, null, null); // expecting a bad_pop
         } finally {
             endEntityManagementSession.deleteUser(ADMIN, username);         
         }
@@ -675,7 +675,7 @@ public class CrmfRequestTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // This request should fail because we did not provide a protocolEncrKey key
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server generated keys not allowed");
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server generated keys not allowed", cacert);
             // checkCmpFailMessage(resp, "Request public key can not be empty without providing a protocolEncrKey", 1, reqId, 7, PKIFailureInfo.badRequest);
 
             // 1.
@@ -695,7 +695,7 @@ public class CrmfRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // This request should fail because we did not provide a protocolEncrKey key
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)");
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)", cacert);
             // checkCmpFailMessage(resp, "Request public key can not be empty without providing a protocolEncrKey", 1, reqId, 7, PKIFailureInfo.badRequest);
 
             // 2.
@@ -711,7 +711,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)");
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Request public key can not be empty without providing a suitable protocolEncrKey (RSA)", cacert);
 
             // 3.
 
@@ -727,7 +727,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key algoritm, not possible to server generate keys");
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key algoritm, not possible to server generate keys", cacert);
 
             // 4.
 
@@ -823,7 +823,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "RSA key generation requested, but certificate profile specified does not allow RSA");
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "RSA key generation requested, but certificate profile specified does not allow RSA", cacert);
 
             // 7.
 
@@ -845,7 +845,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key size, not possible to server generate keys");
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Certificate profile specified more than one key size, not possible to server generate keys", cacert);
 
             // 8.
 
@@ -863,7 +863,7 @@ public class CrmfRequestTest extends CmpTestCase {
             // Send request and receive response
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
-            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server key generation requested, but SubjectPublicKeyInfo specifies unsupported algorithm 1.2.840.113549.3.7");
+            checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest, "Server key generation requested, but SubjectPublicKeyInfo specifies unsupported algorithm 1.2.840.113549.3.7", cacert);
 
             // 9.
 
@@ -928,7 +928,7 @@ public class CrmfRequestTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             // Expect a CertificateResponse (reject) message with error FailInfo.BAD_REQUEST
             checkCmpPKIErrorMessage(resp, ISSUER_DN, userDN1, PKIFailureInfo.badRequest,
-                    "ECDSA key generation requested, but X962Parameters curve is none of the allowed named curves: prime192v1");
+                    "ECDSA key generation requested, but X962Parameters curve is none of the allowed named curves: prime192v1", cacert);
 
             // 11.
 

@@ -17,7 +17,6 @@ import java.io.Serializable;
 public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private static final long serialVersionUID = 1L;
 
-    private boolean isUsed;
     private String oid;
     private String minorRevision;
     private String MajorRevision;
@@ -43,7 +42,6 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     }
 
     private void init() {
-        setUsed(false);
         setOid("");
         setMinorRevision("");
         setMajorRevision("");
@@ -67,14 +65,6 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
 
 
     // Getters and Setters
-    public boolean isUsed() {
-        return isUsed;
-    }
-
-    public void setUsed(boolean used) {
-        isUsed = used;
-    }
-
     public String getOid() {
         return oid;
     }

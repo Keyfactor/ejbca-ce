@@ -290,7 +290,7 @@ public class CertificateValidity {
         if (profile.getUseCertificateValidityOffset()) {
             final String offset = profile.getCertificateValidityOffset();
             try {
-                result = new Date(now.getTime() + SimpleTime.parseMillies(offset));
+                result = new Date(now.getTime() + SimpleTime.parseMillis(offset));
                 if (log.isDebugEnabled()) {
                     log.debug( "Using validity offset by certificate profile: " + offset);
                 }
@@ -412,7 +412,7 @@ public class CertificateValidity {
     private static final Boolean isRelativeTime(final String encodedValidity) {
         try {
         	// Try the most likely setting first, for fail-fast
-            SimpleTime.parseMillies(encodedValidity);
+            SimpleTime.parseMillis(encodedValidity);
             return Boolean.TRUE;
         } catch(NumberFormatException nfe) {
             // NOOP

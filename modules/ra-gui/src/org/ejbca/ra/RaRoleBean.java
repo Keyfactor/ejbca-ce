@@ -50,7 +50,6 @@ import org.ejbca.ra.jsfext.AddRemoveListState;
 /**
  * Backing bean for the Edit Role page
  *
- * @version $Id$
  */
 @Named
 @ViewScoped

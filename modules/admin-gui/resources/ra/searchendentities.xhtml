@@ -205,6 +205,9 @@
 				allowUnsorting="true" 
 				sortMode="single"
 				disabledTextSelection="false">
+				<p:ajax event="toggleSelect" update="results:selectionActionButtons" />
+				<p:ajax event="rowSelectCheckbox" update="results:selectionActionButtons" />
+				<p:ajax event="rowUnselectCheckbox" update="results:selectionActionButtons" />
 				<p:column selectionMode="multiple"
 					style="width:16px;text-align:center" />
 
@@ -249,12 +252,13 @@
 					</h:selectOneMenu>
 				</h:panelGroup>
 
-				<h:panelGroup
+				<h:panelGroup id="selectionActionButtons"
 					rendered="#{searchEndEntitiesMBean.mayRevoke or searchEndEntitiesMBean.mayDelete}">
 					<p:commandButton rendered="#{searchEndEntitiesMBean.mayRevoke}"
 						value="#{web.text.REVOKESELECTED}"
 						type="submit"
 						action="#{searchEndEntitiesMBean.revokeSelected()}"
+						disabled="#{empty searchEndEntitiesMBean.selectedResults}"
 						styleClass="mr-2" icon="pi pi-times" 
 						process="@all"
 						update="@form">
@@ -267,6 +271,7 @@
 						value="#{web.text.REVOKEANDDELETE}"
 						type="submit"
 						action="#{searchEndEntitiesMBean.revokeAndDeleteSelected()}"
+						disabled="#{empty searchEndEntitiesMBean.selectedResults}"
 						styleClass="mr-2" icon="pi pi-times"
 						process="@all"
 						update="@form">
@@ -278,6 +283,7 @@
 						value="#{web.text.DELETE_SELECTED}"
 						type="submit"
 						action="#{searchEndEntitiesMBean.deleteSelected()}"
+						disabled="#{empty searchEndEntitiesMBean.selectedResults}"
 						styleClass="mr-2" icon="pi pi-times"
 						process="@all"
 						update="@form">

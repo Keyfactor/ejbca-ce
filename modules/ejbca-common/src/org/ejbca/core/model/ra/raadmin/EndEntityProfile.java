@@ -13,6 +13,9 @@
 
 package org.ejbca.core.model.ra.raadmin;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -28,16 +31,13 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -170,7 +170,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String MINPWDSTRENGTH    = "MINPWDSTRENGTH";
 
     /** CA/B Forum Organization Identifier extension */
-    private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";
+    private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";    
 
     // Default values
     // These must be in a strict order that can never change
@@ -267,6 +267,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String ALLOW_MERGEDN_WEBSERVICES = "ALLOW_MERGEDN_WEBSERVICES";
     private static final String ALLOW_MERGEDN = "ALLOW_MERGEDN";
     private static final String ALLOW_MULTI_VALUE_RDNS = "ALLOW_MULTI_VALUE_RDNS";
+    
+    /** Redact SubjectDn and SAN from server and audit log*/
+    public static final String REDACTPII   = "REDACTPII";
 
     @Deprecated //Since 8.0.0
     private static final String PRINTINGUSE            = "PRINTINGUSE";
@@ -1606,6 +1609,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public void setAllowMergeDn(final boolean merge){
         data.put(ALLOW_MERGEDN, merge);
     }
+    
+    
+    public boolean isRedactPii() {
+        return getValueDefaultFalse(REDACTPII);
+    }
+    
+    public void setRedactPii(final boolean redactPii) {
+        data.put(REDACTPII, redactPii);
+    }
 
     /** @return true if multi value RDNs should be supported, on a few specific RDNs. Default is false. */
     public boolean getAllowMultiValueRDNs(){
@@ -2151,7 +2163,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         if(log.isDebugEnabled()) {
             log.debug("SSH principals count: " + field.getInstances().size());
             log.debug("SSH principals required: " + requiredFields);
-            log.debug("SSH subjectAlternateName(pseudo): " + subjectAlternateName);
+            log.debug("SSH subjectAlternateName(pseudo): " + LogRedactionUtils.getSubjectAltNameLogSafe(subjectAlternateName));
         }
         if(StringUtils.isNotBlank(subjectAlternateName) && subjectAlternateName.startsWith("dnsName=")) {
             subjectAlternateName = subjectAlternateName.substring("dnsName=".length());
@@ -3285,8 +3297,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /**
      * Nested class FieldInstance for convenient invoking from xhtml
      */
-    public class FieldInstance{
-        private final String name;
+    public class FieldInstance implements Serializable {
+		private static final long serialVersionUID = -7555686304626193105L;
+
+		private final String name;
         private final int number;
         private String value;
         private String defaultValue;

@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -49,7 +48,6 @@ import org.ejbca.util.oauth.OAuthTools;
 
 import com.keyfactor.util.CertTools;
 import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
 
 /**
@@ -529,14 +527,12 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             return StringUtils.EMPTY;
         try {
             JWKSet jwkSet = JWKSet.load(new URL(oauthKeyEditor.getPublicKeyUrl()));
-            for (JWK jwk : jwkSet.getKeys()) {
-                if (validateSameKeyExists(jwk.getKeyID())) {
+            Collection<OAuthPublicKey> oAuthPublicKeys = OAuthTools.parseKeys(jwkSet.getKeys());
+            for (OAuthPublicKey key : oAuthPublicKeys) {
+                if (validateSameKeyExists(key.getKeyIdentifier())) {
                     continue;
                 }
-                final PublicKey publicKey = jwk.toRSAKey().toPublicKey();
-                final byte[] encoded = publicKey.getEncoded();
-                oauthKeyEditor.getPublicKeys().add(
-                        new OAuthPublicKey(encoded, jwk.getKeyID()));
+                oauthKeyEditor.getPublicKeys().add(key);
             }
         } catch (MalformedURLException e) {
             log.info("Could not parse public key config url " + oauthKeyEditor.getPublicKeyUrl());

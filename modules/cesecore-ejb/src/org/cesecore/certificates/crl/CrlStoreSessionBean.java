@@ -12,23 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import java.math.BigInteger;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-
+import com.keyfactor.util.CertTools;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -45,7 +29,21 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
 
-import com.keyfactor.util.CertTools;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs. CRLs are signed using
@@ -57,6 +55,13 @@ import com.keyfactor.util.CertTools;
 public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessionRemote {
 
     private static final Logger log = Logger.getLogger(CrlStoreSessionBean.class);
+
+    private static final String CRL_DELETION_SEARCH_QUERY = "SELECT new org.cesecore.certificates.crl.CrlMetadataHolderDto("
+            + "a.fingerprint, a.issuerDN, a.crlNumber, a.deltaCRLIndicator, a.nextUpdate) "
+            + "FROM CRLData a WHERE a.issuerDN = :issuerDn "
+            + "AND crlNumber < :maxCrlNumber "
+            + "AND crlNumber <> :lastBaseCrlNumber "
+            + "AND a.nextUpdate < :currentTime";
 
     /** Internal localization of logs and errors */
     protected static final InternalResources intres = InternalResources.getInstance();
@@ -123,6 +128,24 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
     public List<CRLData> findByIssuerDN(final String issuerDN) {
         final TypedQuery<CRLData> query = entityManager.createQuery("SELECT a FROM CRLData a WHERE a.issuerDN=:issuerDN", CRLData.class);
         query.setParameter("issuerDN", issuerDN);
+        return query.getResultList();
+    }
+
+    @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public List<CrlMetadataHolderDto> findExpiredCrlByIssuerDn(String issuerDn, long maximumExpiredTime, int lastBaseCrlNumber,
+            int lastDeltaCrlNumber, int maxNumberOfResults) {
+        StringBuilder sqlBuilder = new StringBuilder(CRL_DELETION_SEARCH_QUERY);
+        if (issuerDn != null) {
+            sqlBuilder.append(" AND issuerDN = :issuerDn");
+        }
+        TypedQuery<CrlMetadataHolderDto> query = entityManager.createQuery(sqlBuilder.toString(),
+                CrlMetadataHolderDto.class);
+        query.setMaxResults(maxNumberOfResults);
+        query.setParameter("issuerDn", issuerDn);
+        query.setParameter("currentTime", maximumExpiredTime);
+        query.setParameter("maxCrlNumber", Math.max(lastBaseCrlNumber, lastDeltaCrlNumber));
+        query.setParameter("lastBaseCrlNumber", lastBaseCrlNumber);
         return query.getResultList();
     }
 
@@ -334,7 +357,24 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             this.entityManager.remove(crlData);
         }
     }
-    
+
+    @Override
+    public void delete(CrlMetadataHolderDto crlMetadata, AuthenticationToken adminForLogging) {
+        String fingerprint = crlMetadata.getFingerprint();
+        if (crlMetadata.getNextUpdate() > System.currentTimeMillis()) {
+            throw new IllegalStateException("CRL with the fingerprint=" + fingerprint + " is not yet expired");
+        }
+        final Query query = entityManager.createQuery("DELETE FROM CRLData c WHERE c.fingerprint = :fingerprint");
+        query.setParameter("fingerprint", fingerprint);
+        query.executeUpdate();
+
+        final String caIdString = (crlMetadata.getIssuerDN() != null ? String.valueOf(crlMetadata.getIssuerDN().hashCode()) : null);
+        final String detailsMsg = InternalResources.getInstance().getLocalizedMessage("store.deleteexpiredcrl",
+                crlMetadata.getFingerprint(), caIdString);
+        logSession.log(EventTypes.CRL_CLEANUP, EventStatus.SUCCESS, ModuleTypes.CRL, ServiceTypes.CORE, adminForLogging.toString(),
+                caIdString, crlMetadata.getFingerprint(), crlMetadata.getIssuerDN(), detailsMsg);
+    }
+
     /**
      * Get the highest CRL number issued by the given issuer.
      *
@@ -345,26 +385,25 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
      */
     private Integer findHighestCRLNumber(final String issuerDN, final int crlPartitionIndex, boolean deltaCRL) {
         if (deltaCRL) {
-            final Query query = entityManager.createQuery(
-                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator>0 AND "
-                            + getCrlPartitionIndexCondition(crlPartitionIndex));
-            query.setParameter("issuerDN", issuerDN);
-            query.setMaxResults(1);
-            if (crlPartitionIndex > 0) {
-                query.setParameter("crlPartitionIndex", crlPartitionIndex);
-            }
-            return (Integer) QueryResultWrapper.getSingleResult(query);
+            final String deltaCrlCrlIndicatorClause = "AND a.deltaCRLIndicator > 0";
+            return findHighestCRLNumber(issuerDN, crlPartitionIndex, deltaCrlCrlIndicatorClause);
         } else {
-            final Query query = entityManager.createQuery(
-                    "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN AND a.deltaCRLIndicator=-1 AND "
-                            + getCrlPartitionIndexCondition(crlPartitionIndex));
-            query.setParameter("issuerDN", issuerDN);
-            query.setMaxResults(1);
-            if (crlPartitionIndex > 0) {
-                query.setParameter("crlPartitionIndex", crlPartitionIndex);
-            }
-            return (Integer) QueryResultWrapper.getSingleResult(query);
+            final String nonDeltaCrlCrlIndicatorClause = "AND a.deltaCRLIndicator = -1";
+            return findHighestCRLNumber(issuerDN, crlPartitionIndex, nonDeltaCrlCrlIndicatorClause);
         }
+    }
+
+    private Integer findHighestCRLNumber(final String issuerDN, final int crlPartitionIndex, String deltaCrlIndicatorClause) {
+        final Query query = entityManager.createQuery(
+                "SELECT MAX(a.crlNumber) FROM CRLData a WHERE a.issuerDN=:issuerDN "
+                        + deltaCrlIndicatorClause + " AND "
+                        + getCrlPartitionIndexCondition(crlPartitionIndex));
+        query.setParameter("issuerDN", issuerDN);
+        query.setMaxResults(1);
+        if (crlPartitionIndex > 0) {
+            query.setParameter("crlPartitionIndex", crlPartitionIndex);
+        }
+        return QueryResultWrapper.getSingleResult(query);
     }
     
     /**

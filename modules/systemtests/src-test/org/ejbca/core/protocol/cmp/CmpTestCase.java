@@ -130,6 +130,7 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.cmp.CMPException;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -1403,7 +1404,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(failMsg, pkiStatusInfo.getStatusString().getStringAtUTF8(0).getString());
     }
 
-    public static void checkCmpPKIErrorMessage(byte[] pkiMessageBytes, String sender, X500Name recipient, int expectedErrorCode, String errorMsg) throws IOException {
+    public static void checkCmpPKIErrorMessage(byte[] pkiMessageBytes, String sender, X500Name recipient, int expectedErrorCode, String errorMsg, Certificate cacert) throws IOException {
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull("Response should not be null", pkiMessage);
         final PKIHeader pkiHeader = pkiMessage.getHeader();
@@ -1421,12 +1422,40 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull("Expected present PKIStatusInfo.", pkiStatusInfo);
         assertEquals("Unexpected status.", 2, pkiStatusInfo.getStatus().intValue());
         final PKIFreeText pkiFreeText = pkiStatusInfo.getStatusString();
+        final String errorStr = pkiFreeText.getStringAtUTF8(0).getString();
         if (log.isDebugEnabled() && pkiFreeText!=null) {
-            log.debug("Response error message: " + pkiFreeText.getStringAtUTF8(0).getString());
+            log.debug("Response error message: " + errorStr);
         }
         assertEquals("Return wrong error code.", expectedErrorCode, pkiStatusInfo.getFailInfo().intValue());
         if (errorMsg != null) {
-            assertEquals(errorMsg, pkiFreeText.getStringAtUTF8(0).getString());
+            assertEquals(errorMsg, errorStr);
+        }
+        if (cacert != null) {
+            AlgorithmIdentifier algId = pkiHeader.getProtectionAlg();
+            if (algId == null) {
+                assertNotNull("Protection algorithm was null when expecting a signed response, this was probably an unprotected error message: " + tag + ":" + errorStr + ":" + pkiHeader.getFreeText(), algId);
+            }
+            assertEquals(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), algId.getAlgorithm().getId());
+            // Verify the signature
+            byte[] protBytes = CmpMessageHelper.getProtectedBytes(pkiMessage);
+            ASN1BitString bs = pkiMessage.getProtection();
+            try {
+                final Signature signature = Signature.getInstance(PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), BouncyCastleProvider.PROVIDER_NAME);
+                signature.initVerify(cacert);
+                signature.update(protBytes);
+                assertTrue(signature.verify(bs.getBytes()));
+            } catch (NoSuchAlgorithmException | NoSuchProviderException | InvalidKeyException | SignatureException e) {
+                log.debug(e.getMessage(), e);
+                fail(e.getMessage());
+            }
+            // Check that the senderKID is also set when the response is signed
+            // The sender Key ID is there so the signer (CA) can have multiple certificates out there
+            // with the same DN but different keys
+            ASN1OctetString str = pkiMessage.getHeader().getSenderKID();
+            assertNotNull("senderKID should not be null when response is signed from the CA", str);
+            final byte[] senderKID = pkiMessage.getHeader().getSenderKID().getOctets();
+            final byte[] verifyKID = CertTools.getSubjectKeyId(cacert);
+            assertEquals("senderKID in the response is not the expected as in the certificate we plan to verify with.", Hex.toHexString(verifyKID), Hex.toHexString(senderKID));
         }
     }
 

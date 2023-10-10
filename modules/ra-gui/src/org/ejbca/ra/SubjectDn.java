@@ -28,6 +28,8 @@ import com.keyfactor.util.certificate.DnComponents;
  */
 public class SubjectDn extends RaAbstractDn{
 
+    private static final long serialVersionUID = 1880387408052352354L;
+
     public SubjectDn(final EndEntityProfile endEntityProfile) {
         super(endEntityProfile);
     }

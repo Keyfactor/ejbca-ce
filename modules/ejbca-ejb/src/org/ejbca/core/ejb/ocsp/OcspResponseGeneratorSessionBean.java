@@ -12,69 +12,17 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ocsp;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.InvalidParameterException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.Principal;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.UnrecoverableEntryException;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TimeZone;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.CachingKeyStoreWrapper;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -159,6 +107,7 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
+import org.cesecore.certificates.util.cert.CertificateUtils;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
@@ -182,23 +131,74 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.oscp.OcspResponseData;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.log.ProbableErrorHandler;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.CachingKeyStoreWrapper;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.InvalidParameterException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Principal;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * This SSB generates OCSP responses. 
@@ -353,10 +353,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                     caInfo.getLatestSubjectDN(), true);
 
                             for (Certificate cert : activeCaCertificates) {
-                                String signKeyAlias = getSignKeyAliasFromSubjectKeyId(cryptoToken, getAuthorityKeyIdentifier((X509Certificate) cert));
                                 final PrivateKey privateKey;
-
+                                String signKeyAlias=null;
                                 try {
+                                    signKeyAlias = getSignKeyAliasFromSubjectKeyId(cryptoToken, getAuthorityKeyIdentifier((X509Certificate) cert));
                                     privateKey = cryptoToken.getPrivateKey(signKeyAlias);
                                     if (privateKey == null) {
                                         log.warn(
@@ -375,7 +375,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                                 
                                 final String signatureProviderName = cryptoToken.getSignProviderName();
                                 if (!caCertificateChain.isEmpty()) {
-                                    generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration);
+                                    generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
                                 } else {
                                     log.warn("CA with ID " + caId
                                             + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
@@ -404,13 +404,15 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             final String signatureProviderName = cryptoToken.getSignProviderName();
                             if (!caCertificateChain.isEmpty()) {
-                                generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration);
+                                generateOcspSigningCacheEntries(caCertificateChain, signatureProviderName, privateKey, ocspConfiguration, caToken);
                                 generateOcspConfigCacheEntry(caCertificateChain.get(0), caId, preProduceOcspResponse, storeOcspResponseOnDemand, isMsCaCompatible);
 
                             } else {
                                 log.warn("CA with ID " + caId
                                         + " appears to lack a certificate in the database. This may be a serious error if not in a test environment.");
                             }
+                            
+                            
                         }
                     } else if (caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
                         // If set, all external CA's without a keybinding (set below) will be responded to by the default responder. 
@@ -533,7 +535,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             }
             
             X509Certificate caCert = (X509Certificate) caData.getCA().getCACertificate();
-            willSignForCaId = OcspSigningCache.getCertificateIDFromCertificate(caCert);
+            willSignForCaId = CertificateUtils.getIdFromCertificate(caCert);
             signedBehalfOfCaIds.addAll(willSignForCaId);
             CertificateStatus certificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCert, true);
             
@@ -555,7 +557,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return AuthorityKeyIdentifier.getInstance(extValue).getKeyIdentifier();
     }
     
-    private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] certificateSubjectKeyId) {
+    private String getSignKeyAliasFromSubjectKeyId(CryptoToken cryptoToken, byte[] certificateSubjectKeyId) throws CryptoTokenOfflineException {
         if (log.isDebugEnabled()) {
             log.debug("certSubjectKeyId: " + new String(Hex.encode(certificateSubjectKeyId)));
         }
@@ -566,19 +568,22 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     return keyAlias;
                 }
             }
-        } catch (KeyStoreException | CryptoTokenOfflineException e) {
+        } catch (KeyStoreException e) {
             throw new IllegalStateException(e);
         }
         throw new IllegalStateException("No key matching Subject Key Id '" + new String(Hex.encode(certificateSubjectKeyId)) + "' found.");
     }
     
     private void generateOcspSigningCacheEntries(List<X509Certificate> caCertificateChain, String signatureProviderName, PrivateKey privateKey,
-            GlobalOcspConfiguration ocspConfiguration) {
+            GlobalOcspConfiguration ocspConfiguration, CAToken caToken) {
         X509Certificate caCertificate = caCertificateChain.get(0);
         final CertificateStatus caCertificateStatus = getRevocationStatusWhenCasPrivateKeyIsCompromised(caCertificate, false);
 
-        OcspSigningCache.INSTANCE.stagingAdd(new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
-                signatureProviderName, null, ocspConfiguration.getOcspResponderIdType()));
+        OcspSigningCacheEntry signingCacheEntry = new OcspSigningCacheEntry(caCertificate, caCertificateStatus, caCertificateChain, null, privateKey,
+                signatureProviderName, null, ocspConfiguration.getOcspResponderIdType());
+        signingCacheEntry.setCrlSigningAlgorithm(caToken.getSignatureAlgorithm());
+        
+        OcspSigningCache.INSTANCE.stagingAdd(signingCacheEntry);
         checkWarnings(caCertificateStatus, caCertificate);
     }
 
@@ -894,6 +899,16 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         }
+        
+        // if CA is signing the response then get the algorithm from CA
+        if (CertTools.isCA(signerCert) && ocspSigningCacheEntry.getCrlSigningAlgorithm()!=null) {
+            sigAlg = ocspSigningCacheEntry.getCrlSigningAlgorithm();
+            if (log.isDebugEnabled()) {
+                log.debug("Using CA signing algorithm to sign OCSP response. " + sigAlg);
+            }
+            return sigAlg;
+        }
+        
         // the signature algorithm used to sign the OCSPRequest
         if(req.getSignatureAlgOID() != null) {
             sigAlg = AlgorithmTools.getAlgorithmNameFromOID(req.getSignatureAlgOID());
@@ -914,7 +929,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         "for the signing service using an out-of-band mechanism. " + sigAlg);
             }
             return sigAlg;
-        }   
+        }
+        
+        // possibly unreachable as we rule out both OcspKeybinding and CA certificates before
         // The signature algorithm specified for the version of OCSP in use.
         String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
         sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
@@ -943,7 +960,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             ocspRequest = new OCSPReq(request);
         } catch (IOException e) {
-            throw new MalformedRequestException("Could not form OCSP request", e);
+            throw new MalformedRequestException("Could not form OCSP request", LogRedactionUtils.getRedactedException(e));
         }
         if (ocspRequest.getRequestorName() == null) {
             if (log.isDebugEnabled()) {
@@ -954,11 +971,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 final X500Name requestorDirectoryName = (X500Name) ocspRequest.getRequestorName().getName();
                 final String requestor = CertTools.stringToBCDNString(requestorDirectoryName.toString());
                 final String requestorRaw = GeneralName.directoryName + ": " + X500Name.getInstance(CeSecoreNameStyle.INSTANCE, requestorDirectoryName).toString();
-                if (transactionLogger.isEnabled()) {
+                if (transactionLogger.isEnabled() && !LogRedactionUtils.redactPii()) {
                     transactionLogger.paramPut(TransactionLogger.REQ_NAME, requestor);
                     transactionLogger.paramPut(TransactionLogger.REQ_NAME_RAW, requestorRaw);
                 }
-                if (log.isDebugEnabled()) {
+                if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
                     log.debug("Requestor name is: '" + requestor + "' Raw: '" + requestorRaw + "'");
                 }
             }
@@ -1897,7 +1914,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 try {
                     responseExtensions.put(extendedRevokedOID, new Extension(extendedRevokedOID, false, DERNull.INSTANCE.getEncoded() ));
                 } catch (IOException e) {
-                    throw new IllegalStateException("Could not get encoding from DERNull.", e);
+                    throw new IllegalStateException("Could not get encoding from DERNull.", LogRedactionUtils.getRedactedException(e));
                 }
             }
             if (ocspSigningCacheEntry != null) {
@@ -1971,7 +1988,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             }
             String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
-            log.info(errMsg); // No need to log the full exception here
+            log.info(LogRedactionUtils.getRedactedMessage(errMsg)); // No need to log the full exception here
             // RFC 2560: responseBytes are not set on error.
             ocspResponse = responseGenerator.build(OCSPRespBuilder.UNAUTHORIZED, null);
             if (!isPreSigning && transactionLogger.isEnabled()) {
@@ -2021,7 +2038,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         } catch (IOException e) {
-            log.error("Unexpected IOException caught.", e);
+            log.error("Unexpected IOException caught.", LogRedactionUtils.getRedactedException(e));
             if (!isPreSigning && transactionLogger.isEnabled()) {
                 transactionLogger.writeln();
                 transactionLogger.flush();
@@ -2043,7 +2060,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         }
         return new OcspResponseInformation(ocspResponse, maxAge, signerCert);
     }
-    
+
     private int fetchCertStatus(org.bouncycastle.cert.ocsp.CertificateStatus certStatus) {
         if (Objects.isNull(certStatus)) {
             return OCSPResponseItem.OCSP_GOOD;
@@ -2108,7 +2125,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
             }
         } catch (final IOException e) {
-            throw new IllegalStateException("An error occurred when constructing the id-pkix-ocsp-archive-cutoff extension.", e);
+            throw new IllegalStateException("An error occurred when constructing the id-pkix-ocsp-archive-cutoff extension.",
+                    LogRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -2309,10 +2327,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             req = gen.build();
             getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true, issueFinalResponse, includeExpiredCertificates);
         } catch (Throwable e) {
-            final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+            final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", LogRedactionUtils.getRedactedMessage(e.getMessage()));
             log.info(errMsg);
             if (log.isDebugEnabled()) {
-                log.debug(errMsg, e);
+                log.debug(errMsg, LogRedactionUtils.getRedactedThrowable(e));
             }
         }
         
@@ -2580,7 +2598,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     createInternalKeyBindings(authenticationToken, p11CryptoTokenId, cachingKeyStoreWrapper.getKeyStore(), trustDefaults);
                 }
             } catch (Exception e) {
-                log.error("", e);
+                log.error("", LogRedactionUtils.getRedactedException(e));
             }
         }
         if (OcspConfiguration.getSoftKeyDirectoryName() != null && (OcspConfiguration.getStorePassword() != null || activationPassword != null)) {
@@ -2626,7 +2644,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         try {
             keyStore = makeKeysOnlyP12(keyStore, passwordChars);
         } catch (Exception e) {
-            throw new RuntimeException("failed to convert keystore to P12 during keybindings upgrade", e);
+            throw new RuntimeException("failed to convert keystore to P12 during keybindings upgrade", LogRedactionUtils.getRedactedException(e));
         }
         
         final String name = file.getName();
@@ -2801,7 +2819,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 OcspSigningCacheEntry ocspSigningCacheEntry = null;
                 OcspDataConfigCacheEntry configCacheEntry = null;
                 if (issuingCertificate != null) {
-                    final List<CertificateID> certIds = OcspSigningCache.getCertificateIDFromCertificate(issuingCertificate);
+                    final List<CertificateID> certIds = CertificateUtils.getIdFromCertificate(issuingCertificate);
                     // We only need to use the first certId type to find an entry in the cache, certIds.get(0), since all of them should be in the cache
                     ocspSigningCacheEntry = OcspSigningCache.INSTANCE.getEntry(certIds.get(0));
                     if (ocspSigningCacheEntry == null) {
@@ -2817,7 +2835,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                             }
                             
                         } catch (CertificateEncodingException e) {
-                           throw new IllegalStateException("Could not process certificate", e);
+                           throw new IllegalStateException("Could not process certificate", LogRedactionUtils.getRedactedException(e));
                         }
                     }                    
                 } else {
@@ -2887,5 +2905,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return sb.toString();
     }
 
+    @Override
+    public boolean isOcspExists(Integer caId, String serialNumber) {
+        return ocspDataSession.findOcspDataByCaIdSerialNumber(caId, serialNumber) != null;
+    }
+
+    @Override
+    public void deleteOcspDataByCaIdSerialNumber(final int caId, final String serialNumber) {
+        ocspDataSession.deleteOcspDataByCaIdSerialNumber(caId, serialNumber);
+    }
 }
 

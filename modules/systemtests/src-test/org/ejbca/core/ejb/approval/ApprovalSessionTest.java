@@ -34,11 +34,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.keyfactor.util.certificate.DnComponents;
 import org.apache.log4j.Logger;
+import org.cesecore.audit.AuditLogEntry;
+import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
@@ -56,11 +61,15 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
+import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -70,6 +79,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.profile.AccumulativeApprovalProfile;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
@@ -148,20 +158,25 @@ public class ApprovalSessionTest extends CaTestCase {
     private static KeyPair externalAdminRsaKey;
 
     private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
-    private ApprovalSessionProxyRemote approvalSessionProxyRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionProxyRemote.class,
-            EjbRemoteHelper.MODULE_TEST);
-    private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(ApprovalExecutionSessionRemote.class);
+    private ApprovalSessionProxyRemote approvalSessionProxyRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionProxyRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
+    private static final EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+
+    private final static String DEVICE_NAME = IntegrityProtectedDevice.class.getSimpleName();
+    private static String REDACTED_END_ENTITY_PROFILE_NAME = "redacted_ee_profile";
+    private static int redactedEndEntityProfileId;
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+
         createTestCA();
+
         approvalProfile = new AccumulativeApprovalProfile("AccumulativeApprovalProfile");
         approvalProfile.setNumberOfApprovalsRequired(2);
         approvalProfile.setMaxExtensionTime(0);
@@ -174,11 +189,23 @@ public class ApprovalSessionTest extends CaTestCase {
         int longExpirationApprovalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfileLongExpirationPeriod);
         approvalProfileLongExpirationPeriod.setProfileId(longExpirationApprovalProfileId);
         externalAdminRsaKey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.removeField(DnComponents.COMMONNAME, 0);
+        profile.addField(DnComponents.COMMONNAME);
+        profile.addField(DnComponents.COUNTRY);
+        profile.addField(DnComponents.ORGANIZATION);
+        profile.addField(DnComponents.RFC822NAME);
+        profile.setRedactPii(true);
+        profile.setAvailableCAs(Arrays.asList(SecConst.ALLCAS));
+        endEntityProfileSession.addEndEntityProfile(intadmin, REDACTED_END_ENTITY_PROFILE_NAME, profile);
+        redactedEndEntityProfileId = endEntityProfileSession.getEndEntityProfileId(REDACTED_END_ENTITY_PROFILE_NAME);
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
         removeTestCA();
+
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         internalCertificateStoreSession.removeCertificate(admincert1);
@@ -196,6 +223,11 @@ public class ApprovalSessionTest extends CaTestCase {
         }
         for (File file : fileHandles) {
             FileTools.delete(file);
+        }
+        try {
+            endEntityProfileSession.removeEndEntityProfile(intadmin, REDACTED_END_ENTITY_PROFILE_NAME);
+        } catch (Exception e) {
+            // NOPMD, ignore errors
         }
     }
 
@@ -238,8 +270,8 @@ public class ApprovalSessionTest extends CaTestCase {
         role = roleSession.persistRole(intadmin, new Role(null, roleName, Arrays.asList(
                 AccessRulesConstants.REGULAR_APPROVEENDENTITY,
                 AccessRulesConstants.ENDENTITYPROFILEBASE,
-                StandardRules.CAACCESSBASE.resource()
-        ), null));
+                StandardRules.CAACCESSBASE.resource(),
+                AuditLogRules.VIEW.resource()), null));
         roleMemberSession.persist(intadmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
                 caid, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                 AccessMatchType.TYPE_EQUALCASE.getNumericValue(), adminusername1, role.getRoleId(), null));
@@ -272,13 +304,16 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalProfile.setApprovalExpirationPeriod(EXPIRATION_PERIOD);
         approvalProfile.setRequestExpirationPeriod(EXPIRATION_PERIOD);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfile);
+
         nonExecutableRequest = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfile);
         removeApprovalIds = new ArrayList<>();
         removeApprovalIds.add(nonExecutableRequest.generateApprovalId());
+
         originalValidityLongExpirationPeriod = approvalProfileLongExpirationPeriod.getRequestExpirationPeriod();
         approvalProfileLongExpirationPeriod.setApprovalExpirationPeriod(EXPIRATION_PERIOD_LONG);
         approvalProfileLongExpirationPeriod.setRequestExpirationPeriod(EXPIRATION_PERIOD_LONG);
         approvalProfileSession.changeApprovalProfile(intadmin, approvalProfileLongExpirationPeriod);
+
         nonExecutableRequestLongExpirationPeriod = new DummyApprovalRequest(reqadmin, null, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, false, approvalProfileLongExpirationPeriod);
         removeApprovalIds.add(nonExecutableRequestLongExpirationPeriod.generateApprovalId());
      }
@@ -321,6 +356,87 @@ public class ApprovalSessionTest extends CaTestCase {
         }
     }
 
+
+   @Test
+   public void testPiiRedactionWithAddApprovalRequestAndApprove() throws Exception {
+       log.trace(">testPiiRedactionWithAddApprovalRequestAndApprove");
+       final String username = "USER_testPiiRedactionWithAddApprovalRequestAndApprove";
+
+       // Given that an AddEndEntityApprovalRequest is created.
+       final long addApprovalStartTime = System.currentTimeMillis();
+       final AddEndEntityApprovalRequest addEndEntityApprovalRequest = createAddEndEntityApprovalRequest(approvalProfile, username, caid, redactedEndEntityProfileId);
+       approvalSessionRemote.addApprovalRequest(admin1, addEndEntityApprovalRequest);
+       final int approvalId = addEndEntityApprovalRequest.generateApprovalId();
+
+       // And that approval request successfully created.
+       List<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(approvalId);
+       assertEquals("Should contain the approval request", 1, result.size());
+       removeApprovalIds.add(addEndEntityApprovalRequest.generateApprovalId());
+
+       // Audit log should have redacted logs for APPROVAL_ADD
+       List<? extends AuditLogEntry> approvalRequestAuditLogs = getAuditLogs(addApprovalStartTime, EjbcaEventTypes.APPROVAL_ADD.toString());
+
+       assertEquals("Only one AuditLog should be returned", 1, approvalRequestAuditLogs.size());
+       assertTrue("Should contain redaction placeholder", approvalRequestAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + LogRedactionUtils.REDACTED_CONTENT));
+
+       // Given that previous Approval Request is APPROVED
+       final Approval addEndEntityApproval = createApproval("Add EE Approval");
+       final long approvalStartTime = System.currentTimeMillis();
+       approvalExecutionSessionRemote.approve(admin1, addEndEntityApprovalRequest.generateApprovalId(), addEndEntityApproval);
+       Collection<ApprovalDataVO> approvalResult = approvalSessionRemote.findApprovalDataVO(addEndEntityApprovalRequest.generateApprovalId());
+
+       // And that Approval is correctly completed.
+       assertEquals("Wrong number of approval requests was returned.", 1, approvalResult.size());
+
+       // Audit log should have redacted SubjectDN
+       List<? extends AuditLogEntry> approvalAuditLogs = getAuditLogs(approvalStartTime, EjbcaEventTypes.APPROVAL_APPROVE.toString());
+
+       assertEquals("Only one AuditLog should be returned", 1, approvalAuditLogs.size());
+       assertTrue("Should contain redaction placeholder", approvalAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + LogRedactionUtils.REDACTED_CONTENT));
+
+       log.trace("<testAddApprovalRequestWithPiiRedaction");
+   }
+
+    @Test
+    public void testPiiRedactionWithAddApprovalRequestAndRejection() throws Exception {
+        log.trace(">testPiiRedactionWithAddApprovalRequestAndRejection");
+
+        final String username = "USER_testPiiRedactionWithAddApprovalRequestAndRejection";
+
+        // Given that an AddEndEntityApprovalRequest is created.
+        final long addApprovalStartTime = System.currentTimeMillis();
+        final AddEndEntityApprovalRequest addEndEntityApprovalRequest = createAddEndEntityApprovalRequest(approvalProfile, username, caid, redactedEndEntityProfileId);
+        approvalSessionRemote.addApprovalRequest(admin1, addEndEntityApprovalRequest);
+        final int approvalId = addEndEntityApprovalRequest.generateApprovalId();
+
+        // And that AR successfully created.
+        List<ApprovalDataVO> result = approvalSessionRemote.findApprovalDataVO(approvalId);
+        assertEquals("Should contain the approval request", 1, result.size());
+        removeApprovalIds.add(addEndEntityApprovalRequest.generateApprovalId());
+
+        // Audit log should have redacted logs for APPROVAL_ADD
+        List<? extends AuditLogEntry> approvalRequestAuditLogs = getAuditLogs(addApprovalStartTime, EjbcaEventTypes.APPROVAL_ADD.toString());
+
+        assertEquals("Only one AuditLog should be returned", 1, approvalRequestAuditLogs.size());
+        assertTrue("Should contain redaction placeholder", approvalRequestAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + LogRedactionUtils.REDACTED_CONTENT));
+
+        // Given that previous Approval Request is REJECTED
+        final Approval addEndEntityApproval = createApproval("Add EE Approval");
+        final long rejectionStartTime = System.currentTimeMillis();
+        approvalExecutionSessionRemote.reject(admin1, addEndEntityApprovalRequest.generateApprovalId(), addEndEntityApproval);
+        Collection<ApprovalDataVO> rejectionResult = approvalSessionRemote.findApprovalDataVO(addEndEntityApprovalRequest.generateApprovalId());
+
+        // And that Approval is correctly completed.
+        assertEquals("Wrong number of approval requests was returned.", 1, rejectionResult.size());
+
+        // Audit log should have redacted SubjectDN
+        List<? extends AuditLogEntry> approvalAuditLogs = getAuditLogs(rejectionStartTime, EjbcaEventTypes.APPROVAL_REJECT.toString());
+
+        assertEquals("Only one AuditLog should be returned", 1, approvalAuditLogs.size());
+        assertTrue("Should contain redaction placeholder", approvalAuditLogs.get(0).getMapAdditionalDetails().toString().contains("SUBJECTDN=" + LogRedactionUtils.REDACTED_CONTENT));
+
+        log.trace("<testPiiRedactionWithAddApprovalRequestAndRejection");
+    }
     @Test
     public void testAddApprovalRequest() throws Exception {
         log.trace(">testAddApprovalRequest");
@@ -369,12 +485,12 @@ public class ApprovalSessionTest extends CaTestCase {
 
         // Test approvalId generation with a "real" approval request with a requestAdmin
         approvalProfile.setNumberOfApprovalsRequired(1);
-        
+
         //final AuthenticationToken cliReqAuthToken = getCliAdmin();
         final String username = "ApprovalEndEntityUsername";
-        
-        
-        final AddEndEntityApprovalRequest ar = createAddEndEntityApprovalRequest(approvalProfileLongExpirationPeriod, username, caid);
+
+
+        final AddEndEntityApprovalRequest ar = createAddEndEntityApprovalRequest(approvalProfileLongExpirationPeriod, username, caid, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
         log.debug("Adding approval with approvalID (hash): " + ar.generateApprovalId());
         approvalSessionRemote.addApprovalRequest(admin1, ar);
         result = approvalSessionRemote.findApprovalDataVO(ar.generateApprovalId());
@@ -701,7 +817,7 @@ public class ApprovalSessionTest extends CaTestCase {
         assertTrue("At least one expired query was not returned.", result.size() > 0);
         log.trace("<testExpiredQuery");
     }
-    
+
     @Test
     public void testGetRemainingNumberOfApprovals() throws Exception {
         int approvalId = removeApprovalIds.get(1);
@@ -869,5 +985,14 @@ public class ApprovalSessionTest extends CaTestCase {
     
     private Approval createApprovalLongExpirationPeriod(final String approvalComment) {
         return new Approval(approvalComment, AccumulativeApprovalProfile.FIXED_STEP_ID, getLongExpirationPeriodApprovalPartitionId());
+    }
+
+    private List<? extends AuditLogEntry> getAuditLogs(final long startTime, final String event) throws AuthorizationDeniedException {
+        final List<Object> params = new ArrayList<>();
+        params.add(startTime);
+        params.add(event);
+
+        return ejbcaAuditorSession.selectAuditLog(intadmin, DEVICE_NAME, 0, 100,
+                                                  "a.timeStamp >= ?0 AND a.eventType = ?1", "a.timeStamp DESC", params);
     }
 }

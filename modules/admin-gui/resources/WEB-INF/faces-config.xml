@@ -170,12 +170,39 @@
             <from-outcome>edit</from-outcome>
             <to-view-id>/sysconfig/editestalias.xhtml</to-view-id>
         </navigation-case>
-    </navigation-rule>
-    <navigation-rule>
-        <from-view-id>/sysconfig/estconfigurations.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>view</from-outcome>
             <to-view-id>/sysconfig/editestalias.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>clone</from-outcome>
+            <to-view-id>/sysconfig/cloneestalias.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>delete</from-outcome>
+            <to-view-id>/sysconfig/deleteestalias.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/sysconfig/cloneestalias.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/sysconfig/estconfigurations.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/sysconfig/estconfigurations.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+    <navigation-rule>
+        <from-view-id>/sysconfig/deleteestalias.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/sysconfig/estconfigurations.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/sysconfig/estconfigurations.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
     <navigation-rule>
@@ -185,6 +212,43 @@
             <to-view-id>/sysconfig/estconfigurations.xhtml</to-view-id>
         </navigation-case>
     </navigation-rule>
+
+    <navigation-rule>
+        <from-view-id>/sysconfig/scepaliasconfiguration.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/sysconfig/scepconfiguration.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/sysconfig/scepconfiguration.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
+        <from-view-id>/sysconfig/scepconfiguration.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>edit</from-outcome>
+            <to-view-id>/sysconfig/scepaliasconfiguration.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>delete</from-outcome>
+            <to-view-id>/sysconfig/deletescepalias.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
+        <from-view-id>/sysconfig/deletescepalias.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/sysconfig/scepconfiguration.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/sysconfig/scepconfiguration.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
 
   <navigation-rule>
     <from-view-id>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</from-view-id>

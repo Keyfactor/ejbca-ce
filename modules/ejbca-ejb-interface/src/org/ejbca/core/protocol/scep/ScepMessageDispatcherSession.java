@@ -14,11 +14,6 @@
 package org.ejbca.core.protocol.scep;
 
 
-/**
- * 
- * @version $Id$
- *
- */
 public interface ScepMessageDispatcherSession {
 
 }

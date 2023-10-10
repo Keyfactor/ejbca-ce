@@ -65,6 +65,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
 import org.cesecore.util.SecureXMLDecoder;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -142,9 +143,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         boolean success = false;
         success = publisherResult.getSuccesses() > 0;
         if (success) {
-            final String msg = intres.getLocalizedMessage("publisher.store", entity.getVolatileData().getUserDN(), publisher.getName(), success);
+            final int eepId = certificateStoreSession.getCertificateData(entity.getFingerprint()).getCertificateData().getEndEntityProfileId();
+            final String userDn = LogRedactionUtils.getSubjectDnLogSafe(entity.getVolatileData().getUserDN(), eepId);
+
+            final String msg = intres.getLocalizedMessage("publisher.store", userDn, publisher.getName(), success);
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
+
             auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
                     EjbcaServiceTypes.EJBCA, admin.toString(), null, entity.getFingerprint(), entity.getVolatileData().getUsername(), details);
         } else {
@@ -230,7 +235,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 } else {
                     log.error("Return type from storeCertificateNonTransactionalInternal was not a Boolean but a " + result.getClass().getName() + ", this is an API error.");
                 }
-                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getSubjectDnNeverNull(), name, result);
+
+                final String msg = intres.getLocalizedMessage("publisher.store", certificateData.getLogSafeSubjectDn(), name, result);
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER,
@@ -242,7 +248,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 final String msg = intres.getLocalizedMessage("publisher.errorstore", name, fingerprint);
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
-                details.put("error", ((PublisherException) publisherResult).getMessage());
+
+                details.put("error", LogRedactionUtils.getRedactedMessage(((PublisherException) publisherResult).getMessage()));
                 auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
                         EjbcaServiceTypes.EJBCA, admin.toString(), null, certSerno, username, details);
                 if (publ.getUseQueueForCertificates()) {
@@ -350,7 +357,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                             final String msg = intres.getLocalizedMessage("publisher.errorstore", name, "CRL");
                             final Map<String, Object> details = new LinkedHashMap<>();
                             details.put("msg", msg);
-                            details.put("error", pe.getMessage());
+
+                            details.put("error", LogRedactionUtils.getRedactedMessage(pe.getMessage()));
                             auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER,
                                 EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                         }

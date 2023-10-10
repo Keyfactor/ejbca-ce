@@ -125,25 +125,7 @@ httpsserver.tokentype=JKS
 # Default: true
 #(Read the warning!)web.reqauth=true
 
-# Allow users to self-register on public web, by entering their information.
-# This creates an approval request for the admin.
-# Default = false
-#web.selfreg.enabled=false
-
-# Certificate types to make available for the user
-#web.selfreg.defaultcerttype=1
-#web.selfreg.certtypes.1.description=User certificate
-#web.selfreg.certtypes.1.eeprofile=SOMEPROFILE
-#web.selfreg.certtypes.1.certprofile=ENDUSER
-
-# Optional: Instead of asking the user for a username, EJBCA can generate
-# the username from a field in the subject DN
-#web.selfreg.certtypes.1.usernamemapping=CN
-
-# Optional: Prefix to add before the username
-#web.selfreg.certtypes.1.usernameprefix=Example_
-
-# Deploy the request browser certificate renewal web application and show a 
+# Deploy the request browser certificate renewal web application and show a
 # link to it from the EJBCA public web.
 # Default = false
 #web.renewalenabled=false
@@ -192,6 +174,9 @@ httpsserver.tokentype=JKS
 #
 # Default: false
 #web.log.adminforwardedip=true
+
+# Allows to provide an alternative Content-Security-Policy header's value
+#web.header.content_security_policy=default-src 'none'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; img-src 'self'; frame-src 'self'; font-src 'self'; connect-src 'self'; form-action 'self'; reflected-xss block
 
 # Available PKCS#11 CryptoToken libraries and their display names
 # If a library file's presence is not detected it will not show up in the Admin GUI.
@@ -272,6 +257,8 @@ httpsserver.tokentype=JKS
 #cryptotoken.p11.lib.113.file=/home/liquidsec_bin/lib/libliquidsec_pkcs11.so
 #cryptotoken.p11.lib.115.name=AWS CloudHSM
 #cryptotoken.p11.lib.115.file=/opt/cloudhsm/lib/libcloudhsm_pkcs11.so
+#cryptotoken.p11.lib.116.name=Utimaco R3
+#cryptotoken.p11.lib.116.file=/opt/utimaco/lib/libcs_pkcs11_R3.so
 #cryptotoken.p11.lib.120.name=YubiHSM2
 #cryptotoken.p11.lib.120.file=/usr/lib/x86_64-linux-gnu/pkcs11/yubihsm_pkcs11.so
 #cryptotoken.p11.lib.130.name=Trident HSM

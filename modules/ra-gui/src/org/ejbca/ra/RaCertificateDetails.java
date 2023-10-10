@@ -14,6 +14,7 @@ package org.ejbca.ra;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -82,7 +83,9 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
  * UI representation of a certificate from the back end.
  *
  */
-public class RaCertificateDetails {
+public class RaCertificateDetails implements Serializable {
+
+    private static final long serialVersionUID = -909308593706119329L;
 
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
@@ -251,6 +254,18 @@ public class RaCertificateDetails {
                 }
             }
         }
+        //Hide username if this is a pre-cert
+        if (certificate instanceof X509Certificate) {
+            X509Certificate x509Certificate = (X509Certificate) certificate;
+            if (x509Certificate.getExtensionValue(CertTools.PRECERT_POISON_EXTENSION_OID) != null) {
+                this.username = "";
+            } else {
+                this.username = certificateData.getUsername() == null ? "" : certificateData.getUsername();
+            }
+        } else {
+            this.username = certificateData.getUsername() == null ? "" : certificateData.getUsername();
+        }
+
         if(certificateData.getType() == CertificateConstants.CERTTYPE_SSH) {
             this.sshKeyId = SshCertificateUtils.getKeyId(certificateData.getSubjectDnNeverNull());
             String[] principalsAndComment = SshCertificateUtils.parsePrincipalsAndComment(certificateData.getSubjectAltNameNeverNull());        

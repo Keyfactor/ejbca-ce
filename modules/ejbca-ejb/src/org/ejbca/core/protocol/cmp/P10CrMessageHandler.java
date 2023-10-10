@@ -38,6 +38,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
@@ -205,13 +206,13 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                         if (authenticationModule == null) {
                             String errmsg = messageVerifyer.getErrorMessage();
                             LOG.error(errmsg);
-                            return CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
+                            return sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, errmsg);
                         }
 						
                         p10CrReq.setPassword(authenticationModule.getAuthenticationString());
 		                resp = signSession.createCertificate(admin, p10CrReq, CmpResponseMessage.class, endEntityInformation);
 					} else {
-						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
+						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", LogRedactionUtils.getSubjectDnLogSafe(dn));
 						LOG.info(errMsg);						
 		                // If we didn't find the entity return error message
 		                final String failText = INTRES.getLocalizedMessage("ra.wrongusernameorpassword");
@@ -234,24 +235,24 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
 		} catch (AuthorizationDeniedException | AuthLoginException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e);	
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.NOT_AUTHORIZED, e.getMessage());
+            resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.NOT_AUTHORIZED, e.getMessage());
 		} catch (CADoesntExistsException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it	
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.WRONG_AUTHORITY, e.getMessage());
+			resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.WRONG_AUTHORITY, e.getMessage());
 		} catch (SignRequestSignatureException e) {
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
 			LOG.info(errMsg, e); // info because this is something we should expect and we handle it
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_POP, e.getMessage());
+			resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_POP, e.getMessage());
         } catch (CesecoreException | EjbcaException | CertificateExtensionException e) {
             // Thrown checking for the public key in the request, if these are thrown there is something wrong with the key in the request
-            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
-            LOG.info(errMsg, e); // info because this is something we should expect and we handle it
-            resp = CmpMessageHelper.createUnprotectedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, LogRedactionUtils.getRedactedMessage(e.getMessage()));
+            LOG.info(errMsg, LogRedactionUtils.getRedactedException(e)); // info because this is something we should expect and we handle it
+            resp = sendSignedErrorMessage(cmpRequestMessage, FailInfo.BAD_REQUEST, e.getMessage());
         } catch (EJBException e) {
 			// Fatal error
 			final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
-			LOG.error(errMsg, e);			
+			LOG.error(errMsg, LogRedactionUtils.getRedactedException(e));			
 			resp = null;
 		}
         if (LOG.isTraceEnabled()) {
@@ -305,7 +306,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
         if (authenticationModule == null) {
             String errmsg = messageVerifyer.getErrorMessage();
             LOG.info(errmsg);
-            return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
+            return sendSignedErrorMessage(crmfreq, FailInfo.BAD_REQUEST, errmsg);
         }        
         // Create a username and password and register the new user in EJBCA
         final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);      
@@ -337,7 +338,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                     this.responseProt);
         }
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Creating username from base dn: " + dnname.toString());
+            LOG.debug("Creating username from base dn: " + LogRedactionUtils.getSubjectDnLogSafe(dnname.toString(), eeProfileId));
         }
         final String username = StringTools.stripUsername(gen.generateUsername(dnname.toString()));
         final String pwd;
@@ -360,7 +361,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
             //This should not run since an error would have occurred earlier if the authentication module was unknown 
             final String errMsg = "Unknown authentication module.";
             LOG.error(errMsg);
-            return CmpMessageHelper.createUnprotectedErrorMessage(crmfreq, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+            return sendSignedErrorMessage(crmfreq, FailInfo.BAD_MESSAGE_CHECK, errMsg);
         }
         // AltNames may be in the request template
         final String altNames = req.getRequestAltNames();
@@ -440,15 +441,15 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                 resp = this.certificateRequestSession.processCertReq(adminForEjb, userdata, req, CmpResponseMessage.class);
             }
         } catch (EndEntityProfileValidationException e) {
-            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
+            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), LogRedactionUtils.getRedactedException(e, eeProfileId));
             resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId,
                     this.responseProt);
         } catch (ApprovalException | EndEntityExistsException e) {
-            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
+            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), LogRedactionUtils.getRedactedException(e, eeProfileId));
             resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId,
                     this.responseProt);
         } catch (CertificateExtensionException e) {
-            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
+            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), LogRedactionUtils.getRedactedException(e, eeProfileId));
             resp = CmpMessageHelper.createErrorMessage(crmfreq, FailInfo.BAD_REQUEST, e.getMessage(), requestId, requestType, verifyer, keyId,
                     this.responseProt);
         }
@@ -464,13 +465,14 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
     private EndEntityInformation getEndEntityByDn(String dn) throws AuthorizationDeniedException {
 	    EndEntityInformation endEntityInformation = null;
 	    if (LOG.isDebugEnabled()) {
-	        LOG.debug("looking for user with dn: "+dn);
+	        LOG.debug("looking for user with dn: "+ LogRedactionUtils.getSubjectDnLogSafe(dn));
 	    }
 	    List<EndEntityInformation> endEntityInformations = endEntityAccessSession.findUserBySubjectDN(admin, dn);
 	    if (!endEntityInformations.isEmpty()) {
 	        endEntityInformation = endEntityInformations.get(0);
 	        if (endEntityInformations.size() > 1) {
-	            LOG.warn("Multiple end entities with subject DN " + dn + " were found. This may lead to unexpected behavior.");
+	            LOG.warn("Multiple end entities with subject DN " + LogRedactionUtils.getSubjectDnLogSafe(dn) +
+                        " were found. This may lead to unexpected behavior.");
 	        }
 	    }
         return endEntityInformation;

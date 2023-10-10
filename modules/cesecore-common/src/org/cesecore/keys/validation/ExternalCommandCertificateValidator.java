@@ -34,6 +34,7 @@ import org.cesecore.profiles.Profile;
 import org.cesecore.util.ExternalProcessException;
 import org.cesecore.util.ExternalProcessTools;
 import org.cesecore.util.ExternalScriptsAllowlist;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
@@ -188,6 +189,8 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final List<String> messages = new ArrayList<>();
         if (log.isDebugEnabled()) {
             log.debug("Validating certificate with external command: " + getExternalCommand());
+        }
+        if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
             log.debug("Validating certificate with external command (cert):" + certificate);
         }
         // Add CA certificate chain, that may be processed.

@@ -4,9 +4,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
 import javax.faces.component.html.HtmlInputFile;
-import javax.faces.event.AbortProcessingException;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.event.ValueChangeListener;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.ui.DynamicUiComponent;
@@ -34,16 +31,6 @@ public class JsfDynamicUiHtmlInputFileUpload extends HtmlInputFile implements Dy
     void setDynamicUiProperty(final DynamicUiProperty<?> property) {
         this.dynamicUiProperty = property;
         this.dynamicUiProperty.addDynamicUiComponent(this);
-        addValueChangeListener(new ValueChangeListener() {
-            
-            @Override
-            public void processValueChange(ValueChangeEvent event) throws AbortProcessingException {
-                if (log.isTraceEnabled()) {
-                    log.trace("Property change event for dynamic UI property " + (dynamicUiProperty != null ? dynamicUiProperty.getName()
-                            : null) + " fired: " + event);
-                }
-            }
-        });
     }
     
     @Override

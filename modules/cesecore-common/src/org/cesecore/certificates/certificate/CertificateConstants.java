@@ -13,6 +13,8 @@
 
 package org.cesecore.certificates.certificate;
 
+import org.bouncycastle.tls.HashAlgorithm;
+
 /**
  * Constants for users and certificates. Constants for Type of user: Type is constructed as a mask
  * since one user can be of several types. To test a user type:
@@ -118,4 +120,14 @@ public final class CertificateConstants {
     
     /** Certificate is a pre-certificate. Used as tag in CertificateData. Do not change! */
     public static final String CERT_TAG_PRECERT = "P";
+
+    /**
+     * Default Certificate ID hash algorithm.
+     */
+    public static final String SHA1 = HashAlgorithm.getName(HashAlgorithm.sha1).toUpperCase();
+    public static final String SHA256 = HashAlgorithm.getName(HashAlgorithm.sha256).toUpperCase();
+    public static final String SHA384 = HashAlgorithm.getName(HashAlgorithm.sha384).toUpperCase();
+    public static final String SHA512 = HashAlgorithm.getName(HashAlgorithm.sha512).toUpperCase();
+    public static final String[] AVAILABLE_CERTID_HASH_ALGORITHMS = {SHA1, SHA256, SHA384, SHA512};
+    public static final String DEFAULT_CERTID_HASH_ALGORITHM = AVAILABLE_CERTID_HASH_ALGORITHMS[0];
 }

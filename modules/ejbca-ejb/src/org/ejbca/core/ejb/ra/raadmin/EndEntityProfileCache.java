@@ -21,6 +21,8 @@ import javax.persistence.EntityManager;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.configuration.LogRedactionConfiguration;
+import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -103,6 +105,10 @@ public enum EndEntityProfileCache {
         final Map<Integer, String> idNameCache = new HashMap<Integer, String>(idNameMapCacheTemplate);
         final Map<String, Integer> nameIdCache = new HashMap<String, Integer>(nameIdMapCacheTemplate);
         final Map<Integer, EndEntityProfile> profCache = new HashMap<Integer, EndEntityProfile>();
+        
+        final Map<Integer, LogRedactionConfiguration> idToLogRedactionConfigCache = new HashMap<>();
+        final Map<String, LogRedactionConfiguration> nameToLogRedactionConfigCache = new HashMap<>();
+        
         try {
         	final List<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
         	for (final EndEntityProfileData next : result) {
@@ -110,7 +116,14 @@ public enum EndEntityProfileCache {
         		final String profileName = next.getProfileName();
         		idNameCache.put(id, profileName);
         		nameIdCache.put(profileName, id);
-        		profCache.put(id, next.getProfile());
+        		
+        		EndEntityProfile profile = next.getProfile();
+        		profCache.put(id, profile);
+        		
+        		LogRedactionConfiguration logRedactionConfig = new LogRedactionConfiguration(profile.isRedactPii());
+        		idToLogRedactionConfigCache.put(id, logRedactionConfig);
+        		nameToLogRedactionConfigCache.put(profileName, logRedactionConfig);
+        		
         	}
         } catch (Exception e) {
         	LOG.error(INTRES.getLocalizedMessage("ra.errorreadprofiles"), e);
@@ -118,6 +131,9 @@ public enum EndEntityProfileCache {
         idNameMapCache = idNameCache;
         nameIdMapCache = nameIdCache;
         profileCache = profCache;
+        
+        LogRedactionConfigurationCache.INSTANCE.updateLogRedactionCache(idToLogRedactionConfigCache, nameToLogRedactionConfigCache);
+        
         if (LOG.isTraceEnabled()) {
             final long end = System.currentTimeMillis();
             LOG.trace("<updateProfileCache took: "+(end-now)+"ms");

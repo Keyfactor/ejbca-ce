@@ -12,27 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.TreeMap;
-
-import javax.ejb.EJB;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.http.Part;
-
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,12 +36,31 @@ import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import javax.ejb.EJB;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import javax.servlet.http.Part;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
- *
  */
 @Named
 @ViewScoped
@@ -78,9 +78,9 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private PublishingCrlSessionLocal publishingCrlSession;
 
     private final GlobalConfiguration globalConfiguration;
-    List<CAGuiInfo> caGuiInfos = null;
-    private Part uploadFile;
-    List<String> extCaNameList;
+    private List<CAGuiInfo> caGuiInfos = null;
+    private transient Part uploadFile;
+    private final List<String> extCaNameList;
     private String crlImportCaName;
 
     public CAFunctionsMBean() {
@@ -90,25 +90,29 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         extCaNameList = new ArrayList<>(externalCANames.keySet());
     }
 
-    /** GUI representation of a CA for the CA Structure page */
-    public class CAGuiInfo {
+    /**
+     * GUI representation of a CA for the CA Structure page
+     */
+    public class CAGuiInfo implements Serializable {
+        private static final long serialVersionUID = -555096060949439122L;
+
         private final String name;
         private final int caId;
         private final String subjectdn;
-        private final List<Certificate> certificatechain;
+        private final List<CertificateChainElement> certificatechain;
         private final List<CRLGuiInfo> crlinfo;
         private final CRLInfo deltacrlinfo;
         private final Boolean deltaPeriodEnabled;
         private final Boolean caStatusActive;
-        private final boolean showJksDownloadForm[];
+        private final boolean[] showJksDownloadForm;
         private final String caType;
 
-        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<Certificate> certificatechain, final List<CRLGuiInfo> crlinfo,
-                final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive, final String caType) {
+        public CAGuiInfo(final String name, final int caId, final String subjectdn, final List<CertificateChainElement> certificatechain, final List<CRLGuiInfo> crlinfo,
+                         final CRLInfo deltacrlinfo, final Boolean deltaPeriodEnabled, final Boolean caStatusActive, final String caType) {
             this.name = name;
             this.caId = caId;
             this.subjectdn = subjectdn;
-            this.certificatechain = certificatechain!= null ? new ArrayList<>(certificatechain) : new ArrayList<>();
+            this.certificatechain = certificatechain != null ? new ArrayList<>(certificatechain) : new ArrayList<>();
             Collections.reverse(this.certificatechain);
             this.crlinfo = crlinfo;
             this.deltacrlinfo = deltacrlinfo;
@@ -122,8 +126,8 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return name;
         }
 
-        public String getEscapedName() throws UnsupportedEncodingException {
-            return URLEncoder.encode(name, StandardCharsets.UTF_8.toString());
+        public String getEscapedName() {
+            return URLEncoder.encode(name, StandardCharsets.UTF_8);
         }
 
         public int getCaId() {
@@ -134,11 +138,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return subjectdn;
         }
 
-        public String getEscapedSubjectDn() throws UnsupportedEncodingException {
-            return URLEncoder.encode(subjectdn, StandardCharsets.UTF_8.toString());
+        public String getEscapedSubjectDn() {
+            return URLEncoder.encode(subjectdn, StandardCharsets.UTF_8);
         }
 
-        public List<Certificate> getCertificatechain() {
+        public List<CertificateChainElement> getCertificatechain() {
             return certificatechain;
         }
 
@@ -150,11 +154,11 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return showJksDownloadForm[index];
         }
 
-        public void showJksDownloadForm(final int index){
+        public void showJksDownloadForm(final int index) {
             showJksDownloadForm[index] = true;
         }
 
-        public void hideJksDownloadForm(){
+        public void hideJksDownloadForm() {
             Arrays.fill(showJksDownloadForm, false);
         }
 
@@ -174,15 +178,15 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             return deltacrlinfo == null;
         }
 
-        public String getDeltaCrlCreateDate(){
+        public String getDeltaCrlCreateDate() {
             return getEjbcaWebBean().formatAsISO8601(deltacrlinfo.getCreateDate());
         }
 
-        public String getDeltaCrlExpireDate(){
+        public String getDeltaCrlExpireDate() {
             return getEjbcaWebBean().formatAsISO8601(deltacrlinfo.getExpireDate());
         }
 
-        public boolean isDeltaCrlExpired(){
+        public boolean isDeltaCrlExpired() {
             return deltacrlinfo.getExpireDate().compareTo(new Date()) < 0;
         }
 
@@ -197,13 +201,48 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         public boolean isDisplayPartitions() {
             return crlinfo.size() > 1;
         }
+
+        public boolean isCrlSupported() {
+            return "X.509".equals(getCaType());
+        }
+
+    }
+
+    public class CertificateChainElement {
+        private final Certificate cert;
+        private final String subjectDN;
+
+        public CertificateChainElement(Certificate cert, String subjectDN) {
+            this.cert = cert;
+            this.subjectDN = subjectDN;
+        }
+
+        public Certificate getCertificate() {
+            return cert;
+        }
+
+        public String getSubjectDN() {
+            return CertTools.getUnescapedRdnValue(subjectDN);
+        }
+
+        public boolean isCertExists() {
+            return Objects.nonNull(cert);
+        }
+
+        public boolean isRoot() {
+            return Objects.nonNull(cert)
+                    && StringUtils.isNotEmpty(CertTools.getIssuerDN(cert))
+                    && StringUtils.isNotEmpty(CertTools.getSubjectDN(cert))
+                    && CertTools.isSelfSigned(cert);
+        }
+
     }
 
     public class CRLGuiInfo {
         private final Date createDate;
         private final Date expireDate;
         private final String subjectDn;
-        private final int lastCrlNumber; 
+        private final int lastCrlNumber;
         private final int partitionIndex;
 
         public CRLGuiInfo(CRLInfo crlInfo) {
@@ -214,24 +253,24 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             partitionIndex = crlInfo.getCrlPartitionIndex();
         }
 
-        public String getCrlCreateDate(){
+        public String getCrlCreateDate() {
             return getEjbcaWebBean().formatAsISO8601(createDate);
         }
 
-        public String getCrlExpireDate(){
+        public String getCrlExpireDate() {
             return getEjbcaWebBean().formatAsISO8601(expireDate);
         }
 
-        public boolean isCrlExpired(){
-           return expireDate.compareTo(new Date()) < 0;
+        public boolean isCrlExpired() {
+            return expireDate.compareTo(new Date()) < 0;
         }
 
         public String getSubjectDn() {
             return subjectDn;
         }
 
-        public String getURLEncodedSubjectDn() throws UnsupportedEncodingException {
-            return URLEncoder.encode(subjectDn, StandardCharsets.UTF_8.toString());
+        public String getURLEncodedSubjectDn() {
+            return URLEncoder.encode(subjectDn, StandardCharsets.UTF_8);
         }
 
         public int getLastCrlNumber() {
@@ -244,7 +283,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     }
 
-    public List<CAGuiInfo> getCaInfos(){
+    public List<CAGuiInfo> getCaInfos() {
         if (caGuiInfos == null) {
             refreshCaGuiInfos();
         }
@@ -262,10 +301,12 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             if (cainfo == null) {
                 continue;    // Something wrong happened retrieving this CA?
             }
-            
+
             final List<CRLGuiInfo> crlInfos = new ArrayList<>();
             if (cainfo instanceof X509CAInfo) {
-                final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null ? 1 : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
+                final int numberOfPartitions = cainfo.getAllCrlPartitionIndexes() == null
+                        ? 1
+                        : cainfo.getAllCrlPartitionIndexes().getMaximumInteger();
                 for (int currentPartitionIndex = 0; currentPartitionIndex <= numberOfPartitions; currentPartitionIndex++) {
                     final CRLInfo currentCrlInfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), currentPartitionIndex, false);
                     if (currentCrlInfo != null) {
@@ -281,16 +322,56 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
             final CRLInfo deltacrlinfo = crlStoreSession.getLastCRLInfoLightWeight(cainfo.getLatestSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true);
 
-            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(), 
-                    cainfo.getCAType()!=CAInfo.CATYPE_PROXY ? cainfo.getCertificateChain() : null, 
-                    crlInfos, deltacrlinfo, cainfo.getDeltaCRLPeriod() > 0, 
+            final CAGuiInfo caGuiInfo = new CAGuiInfo(caName, caid, cainfo.getSubjectDN(),
+                    cainfo.getCAType() != CAInfo.CATYPE_PROXY
+                            ? getCertificateChain(cainfo.getCertificateChain())
+                            : null,
+                    crlInfos, deltacrlinfo, cainfo.getDeltaCRLPeriod() > 0,
                     cainfo.getStatus() == CAConstants.CA_ACTIVE, cainfo.getCaTypeAsString());
             caGuiInfos.add(caGuiInfo);
         }
     }
 
-    public String getUnescapedRdnValue(final Certificate certificate){
-        return CertTools.getUnescapedRdnValue(CertTools.getSubjectDN(certificate));
+    private List<CertificateChainElement> getCertificateChain(final List<Certificate> originalChain) {
+        final Set<Certificate> missingChainCerts = new HashSet<>();
+        final Set<Certificate> certificates = new HashSet<>(originalChain);
+
+        certificates.stream()
+                .filter(Objects::nonNull)
+                .map(cert -> caSession.findBySubjectDN(CertTools.getIssuerDN(cert)))
+                .filter(Objects::nonNull)
+                .forEach(caData ->
+                        missingChainCerts.add(caData.getCA().getCACertificate())
+                );
+
+        certificates.addAll(missingChainCerts);
+
+        try {
+
+            List<Certificate> chain = certificates.size() == 1 ? new ArrayList<>(certificates) : CertTools.createCertChain(certificates);
+            final List<CertificateChainElement> uiChain = new ArrayList<>();
+            boolean needToAddAliasToParent = !isRoot(chain.get(chain.size() - 1));
+            chain.forEach(cert -> uiChain.add(new CertificateChainElement(cert, CertTools.getSubjectDN(cert))));
+
+            //Add last because this list will be reverted
+            if (needToAddAliasToParent) {
+                uiChain.add(new CertificateChainElement(null, CertTools.getIssuerDN(chain.get(chain.size() - 1))));
+            }
+            return uiChain;
+
+        } catch (Exception e) {
+            log.info("Could not build valid chain, displaying original one, size = " + originalChain.size() + ", error = " + e.getMessage());
+            return originalChain
+                    .stream()
+                    .map(cert -> new CertificateChainElement(cert, CertTools.getSubjectDN(cert)))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public boolean isRoot(final Certificate certificate) {
+        return StringUtils.isNotEmpty(CertTools.getIssuerDN(certificate))
+                && StringUtils.isNotEmpty(CertTools.getSubjectDN(certificate))
+                && CertTools.isSelfSigned(certificate);
     }
 
     public String getCertificatePopupLink(final int caid) {
@@ -301,15 +382,15 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/viewcainfo.xhtml?caid=" + caid;
     }
 
-    public String getDownloadCertificateLink(){
+    public String getDownloadCertificateLink() {
         return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/cacert";
     }
 
-    public String getSshPublicKeyLink(){
+    public String getSshPublicKeyLink() {
         return getEjbcaWebBean().getBaseUrl() + "ssh";
     }
 
-    public String getDownloadCrlLink(){
+    public String getDownloadCrlLink() {
         return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getCaPath() + "/getcrl/getcrl";
     }
 
@@ -325,7 +406,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("No CRL file uploaded");
             return;
         }
-        
+
         final byte[] bytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
 
         if (bytes == null || bytes.length == 0) {
@@ -364,6 +445,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("CATOKENISOFFLINE");
         }
     }
+
     public void createNewDeltaCrl(final int caid) throws CAOfflineException, CryptoTokenOfflineException {
         try {
             publishingCrlSession.forceDeltaCRL(getAdmin(), caid);

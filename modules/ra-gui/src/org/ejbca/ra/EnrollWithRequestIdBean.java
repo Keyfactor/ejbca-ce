@@ -22,12 +22,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -57,9 +53,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.roles.management.RoleSessionLocal;
-import org.ejbca.config.WebConfiguration;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -82,9 +77,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
@@ -476,7 +468,7 @@ public class EnrollWithRequestIdBean implements Serializable {
                     log.info("Keystore could not be generated for user " + endEntityInformation.getUsername()+": "+e.getMessage()+", "+errorCode);
                 } else {
                     raLocaleBean.addMessageError(errorCode);
-                    log.info("Exception generating keystore. Error Code: " + errorCode, e);
+                    log.info("Exception generating keystore. Error Code: " + errorCode, LogRedactionUtils.getRedactedThrowable(e));
                 }
             } else {
                 raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
@@ -484,7 +476,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             }
             return;
         } catch (Exception e){
-            raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(), e.getMessage());
+            raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", endEntityInformation.getUsername(),  e.getMessage());
             log.info("Keystore could not be generated for user " + endEntityInformation.getUsername());
         }
         
@@ -700,89 +692,9 @@ public class EnrollWithRequestIdBean implements Serializable {
 
     /** @return the current availableAlgorithms as determined by state of dependencies */
     public List<SelectItem> getAvailableAlgorithmSelectItems() {
-        final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
-        final CertificateProfile certificateProfile = getCertificateProfile();
-        if (certificateProfile!=null) {
-            final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
-            final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength == 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength >= 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED25519)) {
-                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519,
-                        AlgorithmConstants.KEYALGORITHM_ED25519));
-            }
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED448)) {
-                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448,
-                        AlgorithmConstants.KEYALGORITHM_ED448));
-            }
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-                final Set<String> ecChoices = new HashSet<>();
-                if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
-                    for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap(false).keySet()) {
-                        if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
-                            continue;
-                        }
-                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                        if (availableBitLengths.contains(bitLength)) {
-                            ecChoices.add(ecNamedCurve);
-                        }
-                    }
-                }
-                ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
-                ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
-                final List<String> ecChoicesList = new ArrayList<>(ecChoices);
-                Collections.sort(ecChoicesList);
-                for (final String ecNamedCurve : ecChoicesList) {
-                    if (!AlgorithmTools.isKnownAlias(ecNamedCurve)) {
-                        log.warn("Ignoring unknown curve " + ecNamedCurve + " from being displayed in the RA web.");
-                        continue;
-                    }
-                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                                    + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
-                }
-            }
-            if (WebConfiguration.isPQCEnabled()) {
-                for (String algorithm : availableKeyAlgorithms) {
-                    if (AlgorithmTools.isPQC(algorithm)) {
-                        availableAlgorithmSelectItems.add(new SelectItem(algorithm));
-                    }
-                }
-            }
-            for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
-                if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
-                    for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
-                        final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
-                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                        if (availableBitLengths.contains(bitLength)) {
-                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
-                                    CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
-                        } else {
-                            if (log.isTraceEnabled()) {
-                                log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
-                            }
-                        }
-                    }
-                }
-            }
-            if (availableAlgorithmSelectItems.size() < 1) {
-                availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
-            }
-        }
-        EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
+        final List<SelectItem> availableAlgorithmSelectItems = RaAvailableAlgorithmsTool
+                .getAvailableAlgorithmSelectItems(getCertificateProfile(), raLocaleBean.getMessage("enroll_select_ka_nochoice"));
+        availableAlgorithmSelectItems.sort(EnrollMakeNewRequestBean.selectItemComparator);
         return availableAlgorithmSelectItems;
     }
 

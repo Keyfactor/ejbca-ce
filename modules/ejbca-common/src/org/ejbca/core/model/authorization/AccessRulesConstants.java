@@ -16,7 +16,7 @@ package org.ejbca.core.model.authorization;
 import org.cesecore.authorization.control.StandardRules;
 
 /**
- * @version $Id$
+ *
  */
 public abstract class AccessRulesConstants {
 
@@ -103,10 +103,13 @@ public abstract class AccessRulesConstants {
     public static final String SERVICES_BASE                              = "/services";
     public static final String SERVICES_EDIT                              = SERVICES_BASE+"/edit";
     public static final String SERVICES_VIEW                              = SERVICES_BASE+"/view";
-    
+    public static final String SERVICES_DB_MAINTENANCE                    = SERVICES_BASE+"/database_maintenance";
+
     // Standard Regular Access Rules
     public static final String[] STANDARDREGULARACCESSRULES = {StandardRules.CAFUNCTIONALITY.resource(), 
                                                            REGULAR_ACTIVATECA,
+                                                           StandardRules.CAADD.resource(),
+                                                           StandardRules.CAREMOVE.resource(),
                                                            StandardRules.CAEDIT.resource(),
                                                            StandardRules.CARENEW.resource(),
                                                            StandardRules.CAVIEW.resource(),
@@ -141,6 +144,7 @@ public abstract class AccessRulesConstants {
                                                            StandardRules.SYSTEMFUNCTIONALITY.resource(),
                                                            SERVICES_EDIT,
                                                            SERVICES_VIEW,
+                                                           SERVICES_DB_MAINTENANCE,
                                                            StandardRules.EDITROLES.resource(),
                                                            StandardRules.VIEWROLES.resource(),
                                                            StandardRules.SYSTEMCONFIGURATION_EDIT.resource(),

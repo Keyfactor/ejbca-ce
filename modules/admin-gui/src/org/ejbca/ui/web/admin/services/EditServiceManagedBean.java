@@ -45,6 +45,7 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.CRLDownloadWorker;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
+import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorkerConstants;
 import org.ejbca.core.model.services.workers.HsmKeepAliveWorker;
 import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
@@ -63,6 +64,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CertificateExpirationNotifie
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.DatabaseMaintenanceWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
@@ -156,7 +158,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
     }
 
     public void setServiceConfiguration(ServiceConfiguration serviceConfiguration) {
-        this.serviceConfigurationView = new ServiceConfigurationView(serviceConfiguration);
+        this.serviceConfigurationView = new ServiceConfigurationView(serviceConfiguration, isAuthorizedToDbMaintenanceService());
     }
 
     public String save() {
@@ -209,6 +211,13 @@ public class EditServiceManagedBean extends BaseManagedBean {
      */
     public boolean getHasEditRights() {
         return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
+    }
+
+    /**
+     * @return true if admin has access to /services/dbMaintenance
+     */
+    private boolean isAuthorizedToDbMaintenanceService() {
+        return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_DB_MAINTENANCE);
     }
 
     /** Help method used to edit data in the mail action type. */
@@ -279,6 +288,9 @@ public class EditServiceManagedBean extends BaseManagedBean {
         if ((cp != null) && cp.equals(PreCertificateRevocationWorkerConstants.WORKER_CLASS)) {
             ret = PreCertificateRevocationWorkerType.NAME;
         }
+        if ((cp != null) && cp.equals(DatabaseMaintenanceWorkerConstants.WORKER_CLASS)) {
+            ret = DatabaseMaintenanceWorkerType.NAME;
+        }
         if (ret == null) {
             ret = CustomWorkerType.NAME;
         }
@@ -306,6 +318,12 @@ public class EditServiceManagedBean extends BaseManagedBean {
     public PreCertificateRevocationWorkerType getPreCertificateRevocationWorkerType() {
         String name = PreCertificateRevocationWorkerType.NAME;
         return (PreCertificateRevocationWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
+    }
+
+    /** Helper method used to edit data in the DatabaseMaintenanceWorkerType. */
+    public DatabaseMaintenanceWorkerType getDatabaseMaintenanceWorkerType() {
+        String name = DatabaseMaintenanceWorkerType.NAME;
+        return (DatabaseMaintenanceWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
     }
 
     /** Help method used to edit data in the custom interval type. */

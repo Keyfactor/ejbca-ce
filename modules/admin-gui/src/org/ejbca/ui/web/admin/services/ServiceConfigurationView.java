@@ -36,6 +36,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.ActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.DatabaseMaintenanceWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
@@ -47,7 +48,6 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
  * Class responsible for converting the data between the GUI and a
  * ServiceConfiguration VO
  *
- * @version $Id$
  */
 public class ServiceConfigurationView implements Serializable{
 
@@ -68,12 +68,14 @@ public class ServiceConfigurationView implements Serializable{
 	private String description = "";
 	private String[] pinToNodes = new String[0];
 	private boolean runOnAllNodes = false;
+	private boolean isAuthorizedToDbMaintenanceService;
 	
 	private ServiceConfiguration serviceConfiguration;
 	
-	public ServiceConfigurationView(ServiceConfiguration serviceConfiguration) {
+	public ServiceConfigurationView(ServiceConfiguration serviceConfiguration, boolean isAuthorizedToDbMaintenanceService) {
 		
 		typeManager = new ServiceTypeManager();
+		this.isAuthorizedToDbMaintenanceService = isAuthorizedToDbMaintenanceService;
 	
 		this.serviceConfiguration = serviceConfiguration;
 		WorkerType workerType = (WorkerType) typeManager.getServiceTypeByClassPath(serviceConfiguration.getWorkerClassPath());
@@ -312,6 +314,9 @@ public class ServiceConfigurationView implements Serializable{
 		final ArrayList<SelectItem> retval = new ArrayList<>();
 		final Collection<ServiceType> available = typeManager.getAvailableWorkerTypes();
 		for (final ServiceType next : available) {
+			if (!isAuthorizedToDbMaintenanceService && next instanceof DatabaseMaintenanceWorkerType) {
+				continue;
+			}
 			String label = next.getName();
 			if (next.isTranslatable()) {
 				label = EjbcaJSFHelper.getBean().getText().get(next.getName());
@@ -331,11 +336,11 @@ public class ServiceConfigurationView implements Serializable{
 			}
 		}
 		// Sort by label
-		Collections.sort(retval, new Comparator<SelectItem>() {
-            @Override
-            public int compare(SelectItem arg0, SelectItem arg1) {
-                return arg0.getLabel().compareTo(arg1.getLabel());
-            }
+		retval.sort(new Comparator<SelectItem>() {
+			@Override
+			public int compare(SelectItem arg0, SelectItem arg1) {
+				return arg0.getLabel().compareTo(arg1.getLabel());
+			}
 		});
 		return retval;
 	}

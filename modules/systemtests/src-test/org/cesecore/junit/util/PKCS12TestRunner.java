@@ -26,6 +26,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
@@ -54,22 +55,25 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
                 getTokenImplementation(), CAInfo.SELFSIGNED, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, "3650d");
 
         setCaForRemoval(x509ca.getCAId(), x509ca);
-        
         return x509ca;
     }
     
     @Override
     public X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity) throws Exception {
-        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
-        X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
-                getTokenImplementation(), issuerDn.hashCode(), "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, validity);
-
-        setCaForRemoval(x509ca.getCAId(), x509ca);
-        
-        return x509ca;
+        return createX509Ca(subjectDn, issuerDn, caName, validity, "1024", AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
     
+    @Override
+    public X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity, 
+            String keySpec, String signingAlgorithm) throws Exception {
+        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
+                getTokenImplementation(), subjectDn.equalsIgnoreCase(issuerDn) ? CAInfo.SELFSIGNED: issuerDn.hashCode(), 
+                keySpec, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, validity, signingAlgorithm);
 
+        setCaForRemoval(x509ca.getCAId(), x509ca);
+        return x509ca;
+    }
 
     @Override
     public String getNamingSuffix() {       

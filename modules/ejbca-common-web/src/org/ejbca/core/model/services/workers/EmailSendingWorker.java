@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.util.PropertyTools;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
@@ -112,10 +113,10 @@ public abstract class EmailSendingWorker extends BaseWorker {
 	}
 
 	protected boolean isSendToAdmins() {
-		return properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS,"FALSE").equalsIgnoreCase("TRUE");
+	    return PropertyTools.get(properties, EmailSendingWorkerConstants.PROP_SENDTOADMINS, false);
 	}
 
 	protected boolean isSendToEndUsers() {
-		return properties.getProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS,"FALSE").equalsIgnoreCase("TRUE");
+	    return PropertyTools.get(properties, EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, false);
 	}
 }

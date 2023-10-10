@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Holds information about a certificate but not the certificate itself.
@@ -133,4 +134,7 @@ public class CertificateInfo implements Serializable {
         return accountBindingId;
     }
 
+    public String getSerialNumberHex() {
+        return getSerialNumber().toString(16).toUpperCase(Locale.ROOT);
+    }
 }

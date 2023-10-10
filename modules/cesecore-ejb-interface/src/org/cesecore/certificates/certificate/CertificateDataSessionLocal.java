@@ -15,6 +15,7 @@ package org.cesecore.certificates.certificate;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -170,6 +171,15 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
      */
     List<Object[]> findExpirationInfo(Collection<String> cas, Collection<Integer> certificateProfiles,
             long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
-    
-    
+
+    /**
+     * Finds certificates expiring after the given date.
+     *
+     * @param issuerDns The issuer DNs, or null for all.
+     * @param expiredBefore Expiration date must be before this date.
+     * @param maxNumberOfResults Batch size.
+     * @return Collection of certificate metadata.
+     */
+    List<CertificateInfo> findOldCertificates(Collection<String> issuerDns, Date expiredBefore, int maxNumberOfResults);
+
 }

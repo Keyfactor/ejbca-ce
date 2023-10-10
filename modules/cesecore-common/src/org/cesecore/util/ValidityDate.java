@@ -217,7 +217,7 @@ public class ValidityDate {
 	public static Date getDate(final String encodedValidity, final Date firstDate, final boolean notAfterIsInclusive) {
 	    try {
 	        // We think this is the most common, so try this first, it's fail-fast
-	        final long millis = SimpleTime.parseMillies(encodedValidity);
+	        final long millis = SimpleTime.parseMillis(encodedValidity);
 	        final long endSecond = notAfterIsInclusive ? NOT_AFTER_INCLUSIVE_OFFSET: 0;
 	        final Date endDate = new Date(firstDate.getTime() + millis - endSecond);
 	        return endDate;
@@ -322,7 +322,27 @@ public class ValidityDate {
 	public static boolean isAbsoluteTimeOrDaysHoursMinutes(final String dateString) {
 	    return VALIDITY_TIME_PATTERN.matcher(dateString).matches();
 	}
-	
+
+	/**
+	 * Check if the validity date is a relative date string of days:hours:minutes format
+	 * @param dateString	a date string
+	 */
+	public static boolean isRelativeTime(final String dateString) {
+		return dateString.matches(RELATIVE_TIME_REGEX);
+	}
+
+	/**
+	 * Check if the relative date in day:hours:minutes format is valid. Mainly checking
+	 * hours and minutes columns.
+	 * @param dateString	a date string in relative format
+	 * @return
+	 */
+	public static boolean isValidRelativeTime(final String dateString) {
+		final String[] endTimeArray = dateString.split(":");
+
+		return Long.parseLong(endTimeArray[1]) <= 23 && Long.parseLong(endTimeArray[2]) <= 59;
+	}
+
 	/**
 	 * Parse date from relative time format of days:hours:minutes. Follows same convention as getDate(String, Date, boolean).
 	 * 

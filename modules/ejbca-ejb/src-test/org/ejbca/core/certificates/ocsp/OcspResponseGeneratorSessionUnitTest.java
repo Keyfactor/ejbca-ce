@@ -591,11 +591,13 @@ public class OcspResponseGeneratorSessionUnitTest {
         expect(caSessionMock.getAllCaIds()).andReturn(Collections.singletonList(ISSUER_CAID)).once();
         final Properties caTokenProperties = new Properties();
         caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, OCSP_SIGN_KEY_ALIAS);
+        CAToken caToken = new CAToken(CRYPTOTOKEN_ID, caTokenProperties);
+        caToken.setSignatureAlgorithm("SHA256WithRSA");
         final X509CAInfo caInfo = new X509CAInfoBuilder()
                 .setSubjectDn(ISSUER_CERT_DN)
                 .setCaId(ISSUER_CAID)
                 .setStatus(CAConstants.CA_ACTIVE)
-                .setCaToken(new CAToken(CRYPTOTOKEN_ID, caTokenProperties))
+                .setCaToken(caToken)
                 .setCertificateChain(Collections.singletonList(getIssuerCert()))
                 .setCrlPublishers(Collections.emptyList())
                 .build();

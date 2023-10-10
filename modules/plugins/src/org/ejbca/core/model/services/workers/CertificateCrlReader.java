@@ -124,7 +124,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
         caIdToNameMap.entrySet();
         final List<String> authorizedCaIds = new ArrayList<>();
         for (String caName : authorizedCaNames) {
-            final Integer id = (Integer)idNameBidiMap.getKey(caName); // belt and suspenders
+            final Integer id = idNameBidiMap.getKey(caName); // belt and suspenders
             authorizedCaIds.add(id != null ? id.toString() : "-1");
         }
         // "None" CA first in list

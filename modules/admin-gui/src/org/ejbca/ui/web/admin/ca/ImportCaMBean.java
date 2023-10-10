@@ -58,7 +58,7 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
     private String importPassword;
     private String importSigAlias;
     private String importEncAlias;
-    private Part uploadedFile;
+    private transient Part uploadedFile;
 
     public ImportCaMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());

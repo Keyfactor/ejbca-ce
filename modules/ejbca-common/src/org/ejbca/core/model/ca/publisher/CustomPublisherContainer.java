@@ -16,14 +16,18 @@ package org.ejbca.core.model.ca.publisher;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -106,40 +110,90 @@ public class CustomPublisherContainer extends BasePublisher {
 		return (String) data.get(PROPERTYDATA);
 	}
 
-	/**
-	 *  Sets the propertydata used to configure this custom publisher.
-	 */   
-	public void setPropertyData(String propertydata) throws PublisherException {
-	    if(isCustomUiRenderingSupported()) {
-            CustomPublisherUiSupport publisher = (CustomPublisherUiSupport) getCustomPublisher();
-	        //Check if any fields are passwords, and encrypt those
-	        Properties properties = new Properties();
-	        try {
-	            properties.load(new ByteArrayInputStream(propertydata.getBytes()));
-	        } catch (IOException e) {
-	            throw new IllegalArgumentException("Properties could not be loaded.", e);
-	        }
-	        StringBuilder encryptedProperties = new StringBuilder();
-	        for(Object key : properties.keySet()) {
-	            String value;
-	            int propertyType = publisher.getPropertyType((String)key);
-                if (propertyType == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD) {
-                    //Property is of a type that shouldn't be written in clear text to disk. Encrypt!
-                    final char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
-                    value = StringTools.pbeEncryptStringWithSha256Aes192(properties.getProperty((String) key), encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
-                } else if ((propertyType == CustomPublisherProperty.UI_TEXTINPUT) && "dataSource".equals((String) key)) {
-                    value = properties.getProperty((String) key);
-                    validateDataSource(value);
-                } else {
-                    value = properties.getProperty((String) key);
+    /**
+     *  Sets the propertyData used to configure this custom publisher without validation.
+     */
+    public void setPropertyData(String propertyData) throws PublisherException {
+        setPropertyData(propertyData, false);
+    }
+
+    /**
+     *  Sets the propertyData used to configure this custom publisher with validation.
+     */
+    public void assignPropertyData(String propertyData) throws PublisherException {
+        setPropertyData(propertyData, true);
+    }
+
+    /**
+     *  Sets the propertyData used to configure this custom publisher.
+     */
+    private void setPropertyData(String propertyData, boolean validate) throws PublisherException {
+        final ICustomPublisher publisher = getCustomPublisher();
+
+        if (publisher != null) {
+            final Properties properties = buildProperties(propertyData, "Properties could not be loaded.");
+            final Set<String> propertyNames = properties.keySet().stream().map(Object::toString).collect(Collectors.toSet());
+
+            final Set<String> declaredPropertyNames = publisher.getDeclaredPropertyNames();
+            if (!declaredPropertyNames.containsAll(propertyNames)) {
+                final Set<String> extraPropertyNames = new HashSet<>(propertyNames);
+                extraPropertyNames.removeAll(declaredPropertyNames);
+
+                throw new PublisherException("Unsupported properties: " + String.join(", ", extraPropertyNames));
+            }
+
+            if (isCustomUiRenderingSupported()) {
+                final StringBuilder rawPropertyData = new StringBuilder();
+
+                for (String propertyName : propertyNames) {
+                    final int propertyType = ((CustomPublisherUiSupport) publisher).getPropertyType(propertyName);
+                    final String propertyValue = properties.getProperty(propertyName);
+                    final String value = parsePropertyValue(propertyType, propertyName, propertyValue);
+
+                    if (validate) {
+                        validateProperty(propertyName, propertyValue);
+                    }
+
+                    rawPropertyData.append(propertyName).append("=").append(value).append("\n");
                 }
-	            encryptedProperties.append(key).append("=").append(value).append("\n");
-	        }
-	        data.put(PROPERTYDATA, encryptedProperties.toString());  
-	    } else {
-	        data.put(PROPERTYDATA, propertydata);  
-	    }
-	}
+
+                data.put(PROPERTYDATA, rawPropertyData.toString());
+                return;
+            }
+        }
+
+        data.put(PROPERTYDATA, propertyData);
+    }
+
+    private static Properties buildProperties(String propertyData, String errorMessage) {
+        Properties properties = new Properties();
+        if (propertyData != null) try {
+            properties.load(new ByteArrayInputStream(propertyData.getBytes()));
+        } catch (IOException e) {
+            throw new IllegalArgumentException(errorMessage, e);
+        }
+        return properties;
+    }
+
+    private String parsePropertyValue(int propertyType, String propertyName, String propertyValue) throws PublisherException {
+        if (propertyType == CustomPublisherProperty.UI_TEXTINPUT_PASSWORD) {
+            //Property is of a type that shouldn't be written in clear text to disk. Encrypt!
+            final char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
+            return StringTools.pbeEncryptStringWithSha256Aes192(propertyValue, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
+
+        } else if ((propertyType == CustomPublisherProperty.UI_TEXTINPUT) && "dataSource".equals(propertyName)) {
+            validateDataSource(propertyValue);
+            return propertyValue;
+
+        } else {
+            return propertyValue;
+        }
+    }
+
+    public void validateProperty(String name, String value) throws PublisherException {
+        ICustomPublisher customPublisher = getCustomPublisher();
+        if (customPublisher != null) customPublisher.validateProperty(name, value);
+    }
 
     public boolean isCustomAccessRulesSupported() {
 	    return getCustomPublisher() instanceof CustomPublisherAccessRulesSupport;
@@ -170,16 +224,10 @@ public class CustomPublisherContainer extends BasePublisher {
     }
 	
     public Properties getProperties() {
-        final Properties properties = new Properties();
         final String propertyData = getPropertyData();
         // Re-Factor: Here the strings are escaped: \\ -> \; \n -> new line, etc.
-        if (propertyData != null) {
-            try {
-                properties.load(new ByteArrayInputStream(propertyData.getBytes()));
-            } catch (IOException e) {
-                throw new IllegalStateException("Could not retrieve properties from database", e);
-            }
-        }
+        final Properties properties = buildProperties(propertyData, "Could not retrieve properties from database");
+
         /*
          * The below code is only to be able to handle the change of our EnterpriseValidationAuthorityPublisher from
          * built in to custom type.
@@ -290,7 +338,10 @@ public class CustomPublisherContainer extends BasePublisher {
                 log.error("Publisher configured incorrectly, a number in configuration contains illegal characters.");
                 return null;
             } catch (ReflectiveOperationException iae) {
-                throw new IllegalStateException(iae);
+                Throwable throwable = iae instanceof InvocationTargetException
+                        ? ((InvocationTargetException) iae).getTargetException()
+                        : iae;
+                throw new IllegalStateException(throwable);
             } 
 		}
 		

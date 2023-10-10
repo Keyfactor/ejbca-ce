@@ -12,6 +12,18 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.cache;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import org.apache.log4j.Logger;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.RespID;
+import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
+import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.util.cert.CertificateUtils;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.keybind.impl.OcspKeyBinding;
+
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -21,18 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import org.apache.log4j.Logger;
-import org.bouncycastle.cert.ocsp.CertificateID;
-import org.bouncycastle.cert.ocsp.OCSPException;
-import org.bouncycastle.cert.ocsp.RespID;
-import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
-import org.cesecore.certificates.certificate.CertificateStatus;
-import org.cesecore.config.OcspConfiguration;
-import org.cesecore.keybind.impl.OcspKeyBinding;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
 
 /**
  * Hold information needed for creating an OCSP response without database lookups.
@@ -60,6 +60,9 @@ public class OcspSigningCacheEntry {
     private RespID respId;
     private final X509Certificate[] responseCertChain;
     private final boolean signingCertificateForOcspSigning;
+    
+    // only relevant if CA itself signs the OCSP response
+    private String crlSigningAlgorithm;
     
     // we flatten the CertificateIds SHA(1/256/384/512) for simpler lookup
     // references to each CA X509Certificate is stored for each hash mechanism
@@ -100,7 +103,7 @@ public class OcspSigningCacheEntry {
         this.signatureProviderName = signatureProviderName;
         this.ocspKeyBinding = ocspKeyBinding;
         this.issuerCaCertificate = issuerCaCertificate;
-        this.certificateID = OcspSigningCache.getCertificateIDFromCertificate(issuerCaCertificate);
+        this.certificateID = CertificateUtils.getIdFromCertificate(issuerCaCertificate);
         this.issuerCaCertificateStatus = issuerCaCertificateStatus;
         this.responderIdType = responderIdType;
         if (signingCertificate==null) {
@@ -282,6 +285,14 @@ public class OcspSigningCacheEntry {
 
     public Map<CertificateID, CertificateStatus> getSignedBehalfOfCaStatus() {
         return signedBehalfOfCaStatus;
+    }
+
+    public String getCrlSigningAlgorithm() {
+        return crlSigningAlgorithm;
+    }
+
+    public void setCrlSigningAlgorithm(String crlSigningAlgorithm) {
+        this.crlSigningAlgorithm = crlSigningAlgorithm;
     }
 
 }

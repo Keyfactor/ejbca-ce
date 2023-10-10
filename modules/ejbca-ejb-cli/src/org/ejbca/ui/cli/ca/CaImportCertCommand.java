@@ -175,7 +175,8 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             }
         } else {
             errorString.append("Invalid certificate status, must be " + ACTIVE + " or " + REVOKED + "\n");
-            return CommandResult.FUNCTIONAL_FAILURE;
+            log.error("ERROR: " + errorString.toString());
+            return CommandResult.CLI_FAILURE;
         }
 
         Certificate certificate;

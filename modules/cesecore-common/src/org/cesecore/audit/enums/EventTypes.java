@@ -53,6 +53,8 @@ public enum EventTypes implements EventType {
     CERT_REQUEST,
     /** Issuance of a certificate by a Certificate Authority. */
     CERT_CREATION,
+    /** Deletion of an expired certificate. */
+    CERT_CLEANUP,
     /** Certificate Transparency log servers responds to a pre-certificate submission from a Certificate Authority. */
     CERT_CTPRECERT_SUBMISSION,
     /** <i>Event type is currently not used in EJBCA.</i> */
@@ -163,6 +165,8 @@ public enum EventTypes implements EventType {
     INTERNALKEYBINDING_EDIT,
     /** Removal of an existing Internal Key Binding. */
     INTERNALKEYBINDING_DELETE,
+    /** Removal of an expired CRL */
+    CRL_CLEANUP
     ;
 
     @Override

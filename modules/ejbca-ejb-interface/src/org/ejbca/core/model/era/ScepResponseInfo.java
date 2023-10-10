@@ -69,7 +69,7 @@ public class ScepResponseInfo implements Serializable {
         try {
             this.thumbprint = MessageDigest.getInstance("SHA-1").digest(issuedCert.getEncoded());
         } catch (CertificateEncodingException | NoSuchAlgorithmException e) {
-            log.error("Unexpected error when creating SHA-1 thumbprint of certificate: " + issuedCert.getSubjectDN(), e);
+            log.error("Unexpected error when creating SHA-1 thumbprint of certificate: " + issuedCert.getSubjectX500Principal(), e);
         }
         failed = false;
     }

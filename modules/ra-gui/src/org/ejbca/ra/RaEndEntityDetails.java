@@ -12,8 +12,34 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
+import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
+import org.cesecore.util.LogRedactionUtils;
+import org.cesecore.util.SshCertificateUtils;
+import org.cesecore.util.ValidityDate;
+import org.ejbca.core.model.ra.ExtendedInformationFields;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -28,37 +54,17 @@ import java.util.Properties;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
-import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
-import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.util.SshCertificateUtils;
-import org.cesecore.util.ValidityDate;
-import org.ejbca.core.model.ra.ExtendedInformationFields;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP;
+import static org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP;
 
 /**
  * UI representation of a result set item from the back end.
  *
  * For printing user data fields.
  */
-public class RaEndEntityDetails {
+public class RaEndEntityDetails implements Serializable {
+
+    private static final long serialVersionUID = -7607596829535211817L;
 
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
@@ -75,7 +81,7 @@ public class RaEndEntityDetails {
     private final String subjectDn;
     private final String subjectAn;
     private final String subjectDa;
-    private final int eepId;
+    private int eepId;
     private final String eepName;
     private final int cpId;
     private final String cpName;
@@ -108,9 +114,9 @@ public class RaEndEntityDetails {
     
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<Integer,String> caIdToNameMap) {
-        this(endEntity, callbacks, cpIdToNameMap.get(Integer.valueOf(endEntity.getCertificateProfileId())),
-                String.valueOf(eepIdToNameMap.get(Integer.valueOf(endEntity.getEndEntityProfileId()))),
-                String.valueOf(caIdToNameMap.get(Integer.valueOf(endEntity.getCAId()))));
+        this(endEntity, callbacks, cpIdToNameMap.get(endEntity.getCertificateProfileId()),
+                String.valueOf(eepIdToNameMap.get(endEntity.getEndEntityProfileId())),
+                String.valueOf(caIdToNameMap.get(endEntity.getCAId())));
     }
 
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
@@ -136,12 +142,10 @@ public class RaEndEntityDetails {
             this.sshPrincipals = SshCertificateUtils.getPrincipalsAsString(this.subjectAn);
             this.sshComment = SshCertificateUtils.getComment(this.subjectAn);
             Map<String, String> sshCriticalOptions = this.extendedInformation.getSshCriticalOptions();
-            this.sshForceCommand = sshCriticalOptions.containsKey(
-                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP) ?
-                    sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP) : null;
-            this.sshSourceAddress = sshCriticalOptions.containsKey(
-                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) ?
-                    sshCriticalOptions.get(SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP) : null;
+            this.sshForceCommand = sshCriticalOptions
+                    .getOrDefault(SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, null);
+            this.sshSourceAddress = sshCriticalOptions
+                    .getOrDefault(SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, null);
             this.sshVerifyRequired = sshCriticalOptions.containsKey(
                 SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
         } else {
@@ -156,13 +160,13 @@ public class RaEndEntityDetails {
         if(timeCreated != null) {
             this.created = ValidityDate.formatAsISO8601ServerTZ(timeCreated.getTime(), TimeZone.getDefault());
         } else {
-            this.created = "";
+            this.created = StringUtils.EMPTY;
         }
         final Date timeModified = endEntity.getTimeModified();
         if(timeModified != null) {
             this.modified = ValidityDate.formatAsISO8601ServerTZ(timeModified.getTime(), TimeZone.getDefault());
         } else {
-            this.modified = "";
+            this.modified = StringUtils.EMPTY;
         }
         this.status = endEntity.getStatus();
     }
@@ -224,6 +228,7 @@ public class RaEndEntityDetails {
     public String getSshForceCommand() { return sshForceCommand; }
     public String getSshSourceAddress() { return sshSourceAddress; }
     public boolean getSshVerifyRequired() { return sshVerifyRequired; }
+
     public String getSshVerifyRequiredString() {
         return getSshVerifyRequired() ? callbacks.getRaLocaleBean().getMessage("enroll_ssh_critical_verify_required_enabled") :
                 callbacks.getRaLocaleBean().getMessage("enroll_ssh_critical_verify_required_disabled");
@@ -315,7 +320,7 @@ public class RaEndEntityDetails {
                 keyTypeString = getAlgorithmUiRepresentationString(keyTypeString, extendedInformation.getKeyStoreAlgorithmSubType());
             }
             return keyTypeString;
-        } else if (extendedInformation.getCertificateRequest() != null && extendedInformation.getKeyStoreAlgorithmType() == null) {
+        } else if (extendedInformation != null && extendedInformation.getCertificateRequest() != null && extendedInformation.getKeyStoreAlgorithmType() == null) {
             return getKeysFromCsr();
         }
         return null; // null = hidden in UI
@@ -379,14 +384,14 @@ public class RaEndEntityDetails {
             output.flush();
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
-            log.info("Token " + filename + " could not be downloaded", e);
+                log.info("Token " + LogRedactionUtils.getSubjectDnLogSafe(filename, eepId) + " could not be downloaded", LogRedactionUtils.getRedactedThrowable(e, eepId));
             callbacks.getRaLocaleBean().getMessage("enroll_token_could_not_be_downloaded", filename);
         } finally {
             if (output != null) {
                 try {
                     output.close();
                 } catch (IOException e) {
-                    throw new IllegalStateException("Failed to close outputstream", e);
+                    throw new IllegalStateException("Failed to close outputstream", LogRedactionUtils.getRedactedThrowable(e, eepId));
                 }
             }
         }
@@ -401,14 +406,14 @@ public class RaEndEntityDetails {
     }
 
     public boolean isEmailEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isEmailUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isEmailUsed();
     }
     public String getEmail() {
         return endEntityInformation.getEmail();
     }
 
     public boolean isLoginsMaxEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isMaxFailedLoginsUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isMaxFailedLoginsUsed();
     }
     public String getLoginsMax() {
         return Integer.toString(extendedInformation.getMaxLoginAttempts());
@@ -418,7 +423,7 @@ public class RaEndEntityDetails {
     }
 
     public boolean isSendNotificationEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isSendNotificationUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isSendNotificationUsed();
     }
     public boolean isSendNotificationDisabled(){
         return getEndEntityProfile().isSendNotificationRequired();
@@ -474,7 +479,7 @@ public class RaEndEntityDetails {
     }
 
     public boolean isCertificateSerialNumberOverrideEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isCustomSerialNumberUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isCustomSerialNumberUsed();
     }
     public String getCertificateSerialNumberOverride() {
         final BigInteger certificateSerialNumber = extendedInformation.certificateSerialNumber();
@@ -484,31 +489,40 @@ public class RaEndEntityDetails {
         return "";
     }
 
-    public boolean isOverrideNotBeforeEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isValidityStartTimeUsed() : false;
+    public boolean isValidityStartTimeUsed() {
+        return getEndEntityProfile() != null && getEndEntityProfile().isValidityStartTimeUsed();
     }
-    public String getOverrideNotBefore() {
-        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+
+    public boolean isValidityStartTimeModifiable() {
+        return getEndEntityProfile() != null && getEndEntityProfile().isValidityStartTimeModifiable();
     }
-    public boolean isOverrideNotAfterEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isValidityEndTimeUsed() : false;
+    public String getValidityStartTime() {
+        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);//From EE
     }
-    public String getOverrideNotAfter() {
-        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+    public boolean isValidityEndTimeUsed() {
+        return getEndEntityProfile() != null && getEndEntityProfile().isValidityEndTimeUsed();
+    }
+
+    public boolean isValidityEndTimeModifiable() {
+        return getEndEntityProfile() != null && getEndEntityProfile().isValidityEndTimeModifiable();
+    }
+
+    public String getValidityEndTime() {
+        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);//From EE;
     }
 
     public boolean isCardNumberEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isCardNumberUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isCardNumberUsed();
     }
     public String getCardNumber() {
         return endEntityInformation.getCardNumber();
     }
 
     public boolean isNameConstraintsPermittedEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isNameConstraintsPermittedUsed();
     }
     public boolean isNameConstraintsPermittedRequired() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsPermittedRequired() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isNameConstraintsPermittedRequired();
     }
     /**
      * Format permitted name constraints as user has entered earlier to create end 
@@ -534,10 +548,10 @@ public class RaEndEntityDetails {
     }
     
     public boolean isNameConstraintsExcludedEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isNameConstraintsExcludedUsed();
     }
     public boolean isNameConstraintsExcludedRequired() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isNameConstraintsExcludedRequired() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isNameConstraintsExcludedRequired();
     }
     public String getNameConstraintsExcluded() {
         final List<String> value = extendedInformation.getNameConstraintsExcluded();
@@ -563,7 +577,7 @@ public class RaEndEntityDetails {
     
 
     public boolean isAllowedRequestsEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isAllowedRequestsUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isAllowedRequestsUsed();
     }
     public String getAllowedRequests() {
         return getEndEntityProfile() != null ? String.valueOf(getEndEntityProfile().getAllowedRequests()) : "";
@@ -574,7 +588,7 @@ public class RaEndEntityDetails {
     }
 
     public boolean isIssuanceRevocationReasonEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isIssuanceRevocationReasonUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isIssuanceRevocationReasonUsed();
     }
     public String getIssuanceRevocationReason() {
       final String reasonCode = String.valueOf(extendedInformation.getIssuanceRevocationReason());
@@ -681,7 +695,14 @@ public class RaEndEntityDetails {
         }
         return false;
     }
-    
+
+    public void setEepId(int eepId){
+        if (this.eepId == eepId)
+            return;
+        this.eepId = eepId;
+        this.endEntityProfile = null;
+    }
+
     /**
      * @return Certificate extension data read from extended information
      */
@@ -727,7 +748,7 @@ public class RaEndEntityDetails {
      * @return true if the Revised Payment Service Directive (PSD2) Qualified Certificate statement field usage is enabled in End Entity profile.
      */
     public boolean isPsd2QcStatementEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isPsd2QcStatementUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isPsd2QcStatementUsed();
     }
 
     /**
@@ -751,7 +772,7 @@ public class RaEndEntityDetails {
         return Optional.ofNullable(extendedInformation.getQCEtsiPSD2RolesOfPSP())
                 .orElseGet(Collections::emptyList)
                 .stream()
-                .map(role -> role.getName())
+                .map(PSD2RoleOfPSPStatement::getName)
                 .collect(Collectors.toList());
     }
 
@@ -771,7 +792,7 @@ public class RaEndEntityDetails {
      * @return true if CA/B Forum Organization Identifier field usage is enabled in End Entity profile.
      */
     public boolean isCabfOrganizationIdentifierEnabled() {
-        return getEndEntityProfile() != null ? getEndEntityProfile().isCabfOrganizationIdentifierUsed() : false;
+        return getEndEntityProfile() != null && getEndEntityProfile().isCabfOrganizationIdentifierUsed();
     }
 
     /**

@@ -28,6 +28,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -37,6 +39,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -76,7 +79,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * 7. output the result as a der encoded block on stdout 
  * -----
  *
- * @version $Id$
  */
 public class ScepServlet extends HttpServlet {
     private static final long serialVersionUID = -6776853218419335240L;
@@ -177,7 +179,7 @@ public class ScepServlet extends HttpServlet {
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         log.trace(">SCEP doGet()");
-        if (log.isDebugEnabled()) {
+        if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
             log.debug("query string=" + request.getQueryString());
         }
         final boolean isProtocolAuthorized = raMasterApiProxyBean.isAuthorizedNoLogging(raScepAuthCheckToken,
@@ -237,7 +239,7 @@ public class ScepServlet extends HttpServlet {
                 }
             }
             final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new WebPrincipal("ScepServlet", remoteAddr));
-            if (log.isDebugEnabled()) {
+            if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
                 log.debug("Got request '" + operation + "'");
                 log.debug("Message: " + message);
             }
@@ -314,7 +316,7 @@ public class ScepServlet extends HttpServlet {
                 // For example: "Content-Type:application/x-x509-ca-cert\n\n"<BER-encoded X509>
                 if (scepResponse != null) {
                     log.debug("Sent CA certificate to SCEP client.");
-                    RequestHelper.sendNewX509CaCert(scepResponse, response);
+                    sendNewX509CaCert(scepResponse, response);
                     iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
                     log.info(iMsg);
                 } else {
@@ -434,6 +436,28 @@ public class ScepServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
         }
     }
+    
+    /**
+     * Sends back CA-certificate as binary file (application/x-x509-ca-cert)
+     *
+     * @param cert DER encoded certificate to be returned
+     * @param out output stream to send to
+     *
+     * @throws IOException on error
+     */
+    private void sendNewX509CaCert(byte[] cert, HttpServletResponse out)
+            throws IOException {
+        // First we must know if this is a single cert or a CMS structure
+        try {
+            new CMSSignedData(cert);
+            log.debug("Returning CMS with certificates as application/x-x509-ca-ra-cert");
+            RequestHelper.sendBinaryBytes(cert, out, "application/x-x509-ca-ra-cert", null);
+        } catch (CMSException e) {
+            // It was a cert, not a CMS
+            log.debug("Returning X.509 certificate as application/x-x509-ca-cert");
+            RequestHelper.sendBinaryBytes(cert, out, "application/x-x509-ca-cert", null);
+        }    
+    } // sendNewX509CaCert
     
     public static String getAlias(String pathInfo) {
         // PathInfo contains the alias used for SCEP configuration. 

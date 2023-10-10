@@ -134,7 +134,16 @@ public class GetCRLServlet extends BaseAdminServlet {
 			dnpart = CertTools.getPartFromDN(dn, "SN");
 		}
 		if (dnpart == null) {
+			dnpart = CertTools.getPartFromDN(dn, "DN");
+		}
+		if (dnpart == null) {
+			dnpart = CertTools.getPartFromDN(dn, "OU");
+		}
+		if (dnpart == null) {
 			dnpart = CertTools.getPartFromDN(dn, "O");
+		}
+		if (dnpart == null) {
+			dnpart = Long.toString(System.currentTimeMillis());
 		}
 		return dnpart.replaceAll("\\W", "");
 	}

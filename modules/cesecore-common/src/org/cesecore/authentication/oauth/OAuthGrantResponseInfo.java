@@ -22,6 +22,7 @@ public final class OAuthGrantResponseInfo implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String accessToken;
+    private String idToken;
     private String tokenType;
     private long expiresIn;
     private String refreshToken;
@@ -70,4 +71,13 @@ public final class OAuthGrantResponseInfo implements Serializable {
     public void setScope(final String scope) {
         this.scope = scope;
     }
+
+    public String getIdToken() {
+        return idToken;
+    }
+
+    public void setIdToken(final String idToken) {
+        this.idToken = idToken;
+    }
+
 }

@@ -59,3 +59,8 @@
 #pkcs11.token2_number=2
 #pkcs11.token2_label=TEST1
 #pkcs11.token2_index=i1
+
+# Uncomment the following line to redact logs generated during test runs. The default value is false.
+#enable.log.redact=true
+# Absolute file name of the server log file. Default value is "/opt/wildfly/standalone/log/server.log". This is only relevant for testing PII redaction in server logs. 
+#server.log.path=

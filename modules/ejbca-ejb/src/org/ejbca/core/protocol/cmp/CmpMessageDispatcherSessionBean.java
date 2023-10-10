@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,6 +39,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
@@ -93,7 +93,6 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public byte[] dispatchRequest(final AuthenticationToken authenticationToken, final byte[] pkiMessageBytes, final String cmpConfigurationAlias)
             throws NoSuchAliasException {
-
         final CmpConfiguration cmpConfiguration = (CmpConfiguration) this.globalConfigSession
                 .getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
         if (!cmpConfiguration.aliasExists(cmpConfigurationAlias)) {
@@ -127,21 +126,23 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     private ResponseMessage dispatch(final AuthenticationToken authenticationToken, final PKIMessage pkiMessage, final PKIHeader pkiHeader,
             final CmpConfiguration cmpConfiguration, String cmpConfigurationAlias, final int levelOfNesting) {
         if (levelOfNesting > CmpMessageHelper.MAX_LEVEL_OF_NESTING) {
-            return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, "Rejected request due to unreasonable level of nesting.");
+                return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, "Rejected request due to unreasonable level of nesting.");
         }
         final boolean authenticated = levelOfNesting > 0;
         try {
             final PKIBody pkiBody = pkiMessage.getBody();
             final int tagno = pkiBody.getType();
             if (log.isDebugEnabled()) {
-                final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" + pkiHeader.getSender().toString() +
-                        ", recipient=" + pkiHeader.getRecipient().toString() + System.lineSeparator() +
+                final String message = "Received CMP message with pvno=" + pkiHeader.getPvno() + ", sender=" +
+                        LogRedactionUtils.getRedactedMessage(pkiHeader.getSender().toString()) +
+                        ", recipient=" + LogRedactionUtils.getRedactedMessage(pkiHeader.getRecipient().toString()) 
+                        + System.lineSeparator() +
                         "Cmp configuration alias: " + cmpConfigurationAlias + System.lineSeparator() +
                         "The CMP message is already authenticated: " + authenticated + System.lineSeparator() +
                         "Body is of type: " + tagno + System.lineSeparator() +
                         "Transaction ID: " + pkiHeader.getTransactionID();
                 log.debug(message);
-                if (log.isTraceEnabled()) {
+                if (log.isTraceEnabled() && !LogRedactionUtils.redactPii()) {
                     log.trace(ASN1Dump.dumpAsString(pkiMessage));
                 }
             }
@@ -203,13 +204,13 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         return dispatch(authenticationToken, nestedPkiMessage, pkiHeader, cmpConfiguration, cmpConfigurationAlias, levelOfNesting+1);
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getMessage();
-                        log.info(errMsg, e);
-                        return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, errMsg);
+                        log.info(LogRedactionUtils.getRedactedMessage(errMsg), LogRedactionUtils.getRedactedException(e));
+                        return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, errMsg );
                     }
                 }
                 final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
                 log.info(errMsg);
-                return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, errMsg);
+                    return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, errMsg);
             default:
                 unknownMessageType = tagno;
                 log.info("Received an unknown message type, tagno=" + tagno);
@@ -227,7 +228,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 if (unknownMessageType > -1) {
                     final String eMsg = intres.getLocalizedMessage("cmp.errortypenohandle", Integer.valueOf(unknownMessageType));
                     log.error(eMsg);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(pkiHeader, FailInfo.BAD_REQUEST, eMsg);
+                        return new BaseCmpMessageHandler(authenticationToken, cmpConfiguration, cmpConfigurationAlias, ejbBridgeSession).sendSignedErrorMessage(new GeneralCmpMessage(pkiMessage), FailInfo.BAD_REQUEST, eMsg);
                 }
                 throw new IllegalStateException("Something is null! Handler=" + handler + ", cmpMessage=" + cmpMessage);
             }
@@ -307,7 +308,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 try {
                     cainfo = caSession.getCAInfo(admin, caId);
                     if (cainfo != null && CollectionUtils.isNotEmpty(cainfo.getCertificateChain())) {
-                        cacert = (X509Certificate) cainfo.getCertificateChain().get(0);
+                        cacert = cainfo.getCertificateChain().get(0);
                         if (!result.contains(cacert)) {
                             result.add(cacert);
                         }

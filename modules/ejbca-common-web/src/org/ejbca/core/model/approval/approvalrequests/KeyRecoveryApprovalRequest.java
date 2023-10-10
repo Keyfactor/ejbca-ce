@@ -27,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -42,8 +43,6 @@ import com.keyfactor.util.CertTools;
 /**
  * Approval Request created when an administrator wants
  * to recovery a end entities keyset
- *
- * @version $Id$
  */
 public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 
@@ -114,7 +113,8 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
 		retval.add(new ApprovalDataText("CERTSERIALNUMBER",CertTools.getSerialNumberAsString(cert),true,false));
-		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.getSubjectDN(cert).toString(),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.getSubjectDN(cert).toString(),true,false));
 		retval.add(new ApprovalDataText("ISSUERDN",CertTools.getIssuerDN(cert).toString(),true,false));
 		return retval;
 	}

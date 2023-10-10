@@ -127,25 +127,25 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final String CABFORGANIZATIONIDENTIFIER = "cabforganizationidentifier";
 
     /** Keystore specifications used for enrolling end entity user with key-pair generated on a server side (KickAssRA).*/
-    private static String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
-    private static String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
+    private static final String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
+    private static final String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
 
     /** The ID of the approval request that was submitted to create the end entity */
-    private static String ADD_EE_APPROVAL_REQUEST_ID = "ADD_EE_APPROVAL_REQUEST_ID";
+    private static final String ADD_EE_APPROVAL_REQUEST_ID = "ADD_EE_APPROVAL_REQUEST_ID";
     /** The IDs of the approval requests that were submitted to edit the end entity */
-    private static String EDIT_EE_APPROVAL_REQUEST_IDS = "EDIT_EE_APPROVAL_REQUEST_IDS";
+    private static final String EDIT_EE_APPROVAL_REQUEST_IDS = "EDIT_EE_APPROVAL_REQUEST_IDS";
     /** The IDs of the approval requests that were submitted to revoke the end entity */
-    private static String REVOKE_EE_APPROVAL_REQUEST_IDS = "REVOKE_EE_APPROVAL_REQUEST_IDS";
+    private static final String REVOKE_EE_APPROVAL_REQUEST_IDS = "REVOKE_EE_APPROVAL_REQUEST_IDS";
 
     /** Certificate request used for enrolling end entity user with public key provided by user (KickAssRA). */
-    private static String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
+    public static final String CERTIFICATE_REQUEST = "CERTIFICATE_REQUEST";
 
     /** If using SCEP in RA mode with approvals, the incoming enrollment request together with the transactions need to be cached for later use. */
-    private static String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
+    public static final String SCEP_CACHED_REQUEST = "SCEP_CACHED_REQUEST";
     /** If using SCEP in RA mode with approvals, the incoming approval type (add or edit) needs to be cached. */
-    private static String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
+    private static final String SCEP_CACHED_APROVAL_TYPE = "SCEP_CACHED_APROVAL_TYPE";
     // ** External account binding id
-    private static String ACCOUNT_BINDING_ID = "ACCOUNT_BINDING_ID";
+    private static final String ACCOUNT_BINDING_ID = "ACCOUNT_BINDING_ID";
     
     public String getAccountBindingId() {
         return (String) data.get(ACCOUNT_BINDING_ID);

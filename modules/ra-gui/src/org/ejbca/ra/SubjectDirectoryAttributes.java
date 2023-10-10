@@ -12,18 +12,19 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.util.List;
-
+import com.keyfactor.util.certificate.DnComponents;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
-import com.keyfactor.util.certificate.DnComponents;
+import java.util.List;
 
 /**
  * Contains Subject Directory attributes
  *
  */
 public class SubjectDirectoryAttributes extends RaAbstractDn{
+
+    private static final long serialVersionUID = 8885738348274908827L;
 
     public SubjectDirectoryAttributes(final EndEntityProfile endEntityProfile) {
         super(endEntityProfile);

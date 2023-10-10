@@ -13,23 +13,9 @@
 
 package org.ejbca.core.ejb.ca.revoke;
 
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.audit.enums.EventStatus;
@@ -41,6 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -65,11 +52,26 @@ import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
+import org.ejbca.core.ejb.ocsp.PreSigningOcspResponseSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:
@@ -105,6 +107,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     private PublisherSessionLocal publisherSession;
     @EJB
     private PublishingCrlSessionLocal publishCrlSession;
+    @EJB
+    private PreSigningOcspResponseSessionLocal ocspResponseSigningSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -135,7 +139,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     @Override
     public void revokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Collection<Integer> publishers,
             Date revocationDate, Date invalidityDate, final int reason, final String userDataDN) throws CertificateRevokeException, AuthorizationDeniedException {
-    	final boolean waschanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(cdw, revocationDate, reason), invalidityDate, reason);
+    	final boolean waschanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(admin, cdw, revocationDate, reason), invalidityDate, reason);
     	// Only publish the revocation if it was actually performed
     	if (waschanged) {
     	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
@@ -147,7 +151,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     			// unrevocation, -1L as revocationDate
     		    final boolean published = publisherSession.storeCertificate(admin, publishers, cdw, password, userDataDN, null);
         		if (published) {
-        			log.info(intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason)));
+        			log.info(intres.getLocalizedMessage("store.republishunrevokedcert", reason));
         		} else {
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
                     Map<Integer, BasePublisher> all = publisherSession.getAllPublishers();
@@ -169,11 +173,11 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     	}
     }
     
-    private AuthenticationToken getOrCreateAuthotizedTokenCreateCrl(final AuthenticationToken admin, String caName) {
+    private AuthenticationToken getOrCreateAuthorizedTokenCreateCrl(final AuthenticationToken admin, String caName) {
         // ca_access permission is checked already
         if (!authorizationSession.isAuthorized(admin, StandardRules.CREATECRL.resource())) {
             log.warn("Admin: " + admin + " is not authorized to create CRL for CA: " + caName + ", creating pseudo-token.");
-            return new AlwaysAllowLocalAuthenticationToken("" + admin.toString());
+            return new AlwaysAllowLocalAuthenticationToken(StringUtils.EMPTY + admin.toString());
         }
         return admin;
     }
@@ -182,13 +186,17 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
      * Performs post-revocation actions. Currently, it only generates a new CRL, if CRL generation on revocation is configured.
      */
     private void postRevokeCertificate(final AuthenticationToken admin, final CertificateDataWrapper cdw) throws AuthorizationDeniedException {
-        final int caId = cdw.getBaseCertificateData().getIssuerDN().hashCode();
+        BaseCertificateData baseCertificateData = cdw.getBaseCertificateData();
+
+        final int caId = baseCertificateData.getIssuerDN().hashCode();
         final CAInfo caInfo = caSession.getCAInfo(admin, caId);
-        // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking
+
+        preSignOcspResponse(admin, caInfo, cdw, caId);
+        // ECA-9716 caInfo == null with self-signed certificates stored in DB before revoking
         // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity)
         if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
             log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
-            AuthenticationToken newAdmin = getOrCreateAuthotizedTokenCreateCrl(admin, caInfo.getName());
+            AuthenticationToken newAdmin = getOrCreateAuthorizedTokenCreateCrl(admin, caInfo.getName());
             try {
                 publishCrlSession.forceCRL(newAdmin, caId);
                 publishCrlSession.forceDeltaCRL(newAdmin, caId);
@@ -201,12 +209,39 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         }
     }
 
+    private void preSignOcspResponse(AuthenticationToken admin, CAInfo caInfo, CertificateDataWrapper cdw, int caId)
+            throws AuthorizationDeniedException {
+        if (caInfo != null) {
+            CA ca = (CA) caSession.getCANoLog(admin, caInfo.getCAId(), null);
+            Optional.ofNullable(ca).ifPresent(cAuthority -> {
+                CertificateDataWrapper revokedCdw = certificateStoreSession.getCertificateData(
+                        cdw.getBaseCertificateData().getFingerprint());
+                CertificateData revokedCertData = revokedCdw.getCertificateData();
+                preSignOcspIfCertIsPresent(caId, cAuthority, revokedCertData);
+            });
+        }
+    }
+
+    private void preSignOcspIfCertIsPresent(int caId, CA cAuthority, CertificateData revokedCertData) {
+        Optional.ofNullable(revokedCertData).ifPresent(cert -> {
+            deleteOcspIfExists(caId, revokedCertData);
+            ocspResponseSigningSession.preSignOcspResponse(cAuthority, revokedCertData);
+        });
+    }
+
+    private void deleteOcspIfExists(int caId, BaseCertificateData baseCertificateData) {
+        String serialNumber = baseCertificateData.getSerialNumber();
+        if (ocspResponseSigningSession.isOcspExists(caId, serialNumber)) {
+            ocspResponseSigningSession.deleteOcspDataByCaIdSerialNumber(caId, serialNumber);
+        }
+    }
+
     @Override
     public void revokeCertificates(AuthenticationToken admin, List<CertificateDataWrapper> cdws, Collection<Integer> publishers, final int reason)
             throws CertificateRevokeException, AuthorizationDeniedException {
-        CertificateData data = null;
-        boolean wasChanged = false;
-        Integer caId = null;
+        CertificateData data;
+        boolean wasChanged;
+        Integer caId;
         final Map<Integer,ArrayList<CertificateDataWrapper>> generateCrlsForCas = new HashMap<>(); 
         
         for (CertificateDataWrapper cdw : cdws) {
@@ -216,8 +251,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 data.getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
               continue;
             }
-                    
-            wasChanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(
+
+            wasChanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(admin,
                     cdw, new Date(data.getRevocationDate()), reason), new Date(data.getInvalidityDate()), reason);
             
             // Only publish the revocation if it was actually performed
@@ -231,7 +266,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                     // unrevocation, -1L as revocationDate
                     final boolean published = publisherSession.storeCertificate(admin, publishers, cdw, password, data.getSubjectDN(), null);
                     if (published) {
-                        log.info(intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason)));
+                        log.info(intres.getLocalizedMessage("store.republishunrevokedcert", reason));
                     } else {
                         final String serialNumber = certificateData.getSerialNumberHex();
                         // If it is not possible, only log error but continue the operation of not revoking the certificate
@@ -308,13 +343,19 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     }
 
     /** @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
-    private Date getRevocationDate(final CertificateDataWrapper cdw, final Date revocationDate, final int reason) {
-        if (revocationDate == null || (reason != RevokedCertInfo.NOT_REVOKED && reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ||
+    private Date getRevocationDate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revocationDate, final int reason) throws AuthorizationDeniedException {
+        if (revocationDate == null
+                || (reason != RevokedCertInfo.NOT_REVOKED && reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ||
                 (cdw.getBaseCertificateData().getRevocationReason() != RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
             return revocationDate; // return unmodified
         }
-        
         final String issuerDN = cdw.getBaseCertificateData().getIssuerDN();
+        CAInfo caInfo = caSession.getCAInfo(admin, issuerDN.hashCode());
+        boolean isDeltaCrlEnabled = caInfo.getDeltaCRLPeriod() > 0;
+        if (!isDeltaCrlEnabled) {
+            return revocationDate;
+        }
+
         final CRLInfo baseCrlInfo = crlStoreSession.getLastCRLInfo(issuerDN, cdw.getBaseCertificateData().getCrlPartitionIndex(), false);
         if (baseCrlInfo == null || baseCrlInfo.getCreateDate().before(revocationDate)) { // if not on base CRL
             return null;

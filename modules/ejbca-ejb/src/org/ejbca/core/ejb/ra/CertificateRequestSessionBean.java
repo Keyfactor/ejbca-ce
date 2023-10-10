@@ -23,6 +23,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -34,6 +35,10 @@ import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -62,6 +67,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -81,10 +87,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
-
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
@@ -140,13 +142,14 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         RequestMessage requestMessage;
         try {
             requestMessage = RequestMessageUtils.getRequestMessageFromType(username, password, req, reqType);
-        } catch (InvalidKeyException | SignRequestSignatureException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException
-                | IOException e) {
+        } catch (InvalidKeyException | SignRequestSignatureException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
+        } catch (IOException e) {
+            throw LogRedactionUtils.getRedactedException(e);
         } catch (ParseException | ConstructionException | NoSuchFieldException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
+            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, LogRedactionUtils.getRedactedException(e));
         }
         CAInfo cainfo = caSession.getCAInfoInternal(userdata.getCAId());
         if (cainfo.isUseUserStorage() && username != null) {
@@ -189,10 +192,19 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 }
                 retval = getCertResponseFromPublicKey(admin, requestMessage, responseType, userdata);
             }
-        } catch (CertificateExtensionException | CertificateException | EjbcaException | CesecoreException e) {
+        } catch (CertificateExtensionException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } 
+            throw LogRedactionUtils.getRedactedException(e);
+        } catch (CertificateException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw LogRedactionUtils.getRedactedException(e);
+        } catch (EjbcaException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw LogRedactionUtils.getRedactedException(e);
+        } catch (CesecoreException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw LogRedactionUtils.getRedactedException(e);
+        }
         return retval;
     }
 
@@ -238,7 +250,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             retval = signSession.createCertificate(admin, req, responseClass, userdata);
         } catch (EjbcaException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
+            throw LogRedactionUtils.getRedactedException(e);
         } catch (CertificateExtensionException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
@@ -313,15 +325,23 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         byte[] retval = null;
         Class<X509ResponseMessage> respClass = X509ResponseMessage.class;
         ResponseMessage resp = signSession.createCertificate(admin, msg, respClass, userData);
-        X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
+        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
         if (responseType == CertificateConstants.CERT_RES_TYPE_CERTIFICATE) {
             retval = cert.getEncoded();
         }
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7) {
-            retval = signSession.createPKCS7(admin, cert, false);
+            if (!"X.509".equals(cert.getType())) {
+                log.info("Certificate response type PKCS7 can only be used with X.509 certificates, not " + cert.getType());
+            } else {
+                retval = signSession.createPKCS7(admin, (X509Certificate)cert, false, userData.getEndEntityProfileId());
+            }
         }
         if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN) {
-            retval = signSession.createPKCS7(admin, cert, true);
+            if (!"X.509".equals(cert.getType())) {
+                log.info("Certificate response type PKCS7_WITH_CHAIN can only be used with X.509 certificates, not " + cert.getType());
+            } else {
+                retval = signSession.createPKCS7(admin, (X509Certificate)cert, true, userData.getEndEntityProfileId());
+            }
         }
         return retval;
     }
@@ -376,18 +396,18 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw e;
         } catch (IOException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(LogRedactionUtils.getRedactedException(e));
         } catch (CertificateException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
+            throw LogRedactionUtils.getRedactedException(e);
         } catch (InvalidAlgorithmParameterException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (RuntimeException e) {
-            throw e;
+            throw new RuntimeException(LogRedactionUtils.getRedactedException(e));
         } catch (Exception e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw new KeyStoreException(e);
+            throw new KeyStoreException(LogRedactionUtils.getRedactedException(e));
         }
         return ret;
     }

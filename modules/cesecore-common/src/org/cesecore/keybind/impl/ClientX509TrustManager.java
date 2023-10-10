@@ -15,6 +15,7 @@ package org.cesecore.keybind.impl;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.cesecore.certificates.pinning.TrustEntry;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 
 import com.keyfactor.util.CertTools;
@@ -31,10 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-/**
- * 
- * @version $Id$
- */
+
 public class ClientX509TrustManager implements X509TrustManager {
     private final Logger log = Logger.getLogger(ClientX509TrustManager.class);
     private final List<TrustEntry> trustEntries;
@@ -60,11 +58,11 @@ public class ClientX509TrustManager implements X509TrustManager {
         final List<Collection<X509Certificate>> trustedCertificateChains = getTrustedCertificateChains(leafCertificate);
         if (log.isDebugEnabled()) {
             if (trustedCertificateChains == null) {
-                log.debug("Verifying the leaf certificate '" + CertTools.getSubjectDN(leafCertificate) + "' with no trusted certificate chains.");
+                log.debug("Verifying the leaf certificate '" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(leafCertificate)) + "' with no trusted certificate chains.");
             } else {
-                log.debug("Verifying the leaf certificate '" + CertTools.getSubjectDN(leafCertificate) + "' with trusted certificate chains "
+                log.debug("Verifying the leaf certificate '" + LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(leafCertificate)) + "' with trusted certificate chains "
                         + trustedCertificateChains.stream()
-                            .map(chain -> chain.stream().map(x -> CertTools.getSubjectDN(x)).collect(Collectors.toList()))
+                            .map(chain -> chain.stream().map(x -> LogRedactionUtils.getSubjectDnLogSafe(CertTools.getSubjectDN(x))).collect(Collectors.toList()))
                             .collect(Collectors.toList()));
             }
         }
@@ -72,7 +70,8 @@ public class ClientX509TrustManager implements X509TrustManager {
             String subjectAltName = CertTools.getSubjectAlternativeName(leafCertificate);
             String issuerdn = CertTools.getIssuerDN(leafCertificate);
             String sn = CertTools.getSerialNumberAsString(leafCertificate);
-            String errmsg = "Certificate with serial number '0x" + sn + "' and SAN '" + subjectAltName + "' issued by '" + issuerdn +
+            String errmsg = "Certificate with serial number '0x" + sn + "' and SAN '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectAltName) +
+                    "' issued by '" + issuerdn +
                     "' is NOT trusted. Ensure the certificate is a TLS server certificate issued by a CA known to EJBCA, and permitted by " +
                     "your authentication key binding.";
             throw new CertificateException(errmsg);

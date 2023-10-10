@@ -12,15 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
-import java.security.cert.X509Certificate;
-import java.util.Set;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.ws.rs.core.Response;
-
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -29,6 +20,11 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.util.HttpTools;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Validator;
+import javax.ws.rs.core.Response;
+import java.security.cert.X509Certificate;
 
 /**
  * Base class for common methods used across all REST resources.
@@ -40,7 +36,9 @@ public abstract class BaseRestResource {
 
     private static final String RESOURCE_STATUS = "OK";
     public static final String RESOURCE_VERSION = "1.0";
-    
+    private static final String CONFIG_DUMP = "v1/configdump";
+    private static final String CRYPTO_TOKEN = "v1/cryptotoken";
+
     // Some status codes (including 422) are missing from the JAX-RS Response.Status enum
     protected static final int HTTP_STATUS_CODE_UNPROCESSABLE_ENTITY = 422;
 
@@ -60,6 +58,7 @@ public abstract class BaseRestResource {
 
     /**
      * Returns an AuthenticationToken for the requesting administrator based on the SSL client certificate
+     *
      * @param requestContext HTTP context
      * @param allowNonAdmins false if we should verify that it is a real administrator, true only extracts the certificate and checks that it is not revoked.
      * @return AuthenticationToken for the requesting administrator
@@ -77,35 +76,11 @@ public abstract class BaseRestResource {
         if (certificate == null && StringUtils.isEmpty(oauthBearerToken)) {
             throw new AuthorizationDeniedException("Error no client certificate or OAuth token received for authentication.");
         }
-
-        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certificate, oauthBearerToken);
-    }
-
-    // TODO ECA-7119 Due to limited validation exception handling support in JAX-RS 1.1, we validate the object programmatically to handle the response properly.
-    // TODO ECA-7119 Within JAX-RS 2.0, configure the error handler to support a ValidationException and use @Valid annotation for input parameters
-    /**
-     * This method triggers the validation over input object and throws RestException in case of validation violation.
-     *
-     * @param object the object for validation.
-     * @throws RestException in case of constraint violation.
-     */
-    protected void validateObject(final Object object) throws RestException {
-        
-        final Set<ConstraintViolation<Object>> constraintViolations = getValidator().validate(object);
-        if(!constraintViolations.isEmpty()) {
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), constraintViolations.iterator().next().getMessage());
+        if (requestContext.getRequestURI().toLowerCase().contains(CONFIG_DUMP) || requestContext.getRequestURI().toLowerCase().contains(CRYPTO_TOKEN)) {
+            return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certificate, oauthBearerToken, true);
         }
-    }
-    
-    private static Validator getValidator() {
-        if (validator == null) {
-            synchronized (mutex) {
-                if (validator == null) { // check again inside synchronized block to avoid race condition
-                    validator = Validation.buildDefaultValidatorFactory().getValidator();
-                }
-            }
-        }
-        return validator;
+
+        return new EjbLocalHelper().getEjbcaRestHelperSession().getAdmin(allowNonAdmins, certificate, oauthBearerToken, false);
     }
 
 }

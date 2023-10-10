@@ -13,7 +13,7 @@
 package org.cesecore.authorization.control;
 
 /**
- * @version $Id$
+ *
  */
 public enum StandardRules {
     ROLE_ROOT("/"),
@@ -38,9 +38,6 @@ public enum StandardRules {
 	SYSTEMFUNCTIONALITY("/system_functionality"),
 	EDITROLES(SYSTEMFUNCTIONALITY.resource()+"/edit_administrator_privileges"),
 	VIEWROLES(SYSTEMFUNCTIONALITY.resource()+"/view_administrator_privileges"),
-	RECOVERY("/recovery"),
-	BACKUP(RECOVERY.resource()+"/backup"),
-	RESTORE(RECOVERY.resource()+"/restore"),
     SYSTEMCONFIGURATION_EDIT(SYSTEMFUNCTIONALITY.resource()+"/edit_systemconfiguration"),
     SYSTEMCONFIGURATION_VIEW(SYSTEMFUNCTIONALITY.resource()+"/view_systemconfiguration"),
     EKUCONFIGURATION_EDIT(SYSTEMFUNCTIONALITY.resource()+"/edit_available_extended_key_usages"),

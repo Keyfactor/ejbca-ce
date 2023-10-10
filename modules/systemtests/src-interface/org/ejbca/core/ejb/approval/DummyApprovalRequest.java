@@ -30,8 +30,6 @@ import com.keyfactor.util.CertTools;
 
 /**
  * Dummy Approval Request used for testing and demonstration purposes.
- *
- * @version $Id$
  */
 public class DummyApprovalRequest extends ApprovalRequest {
 
@@ -40,6 +38,7 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	private static final int LATEST_VERSION = 1;
 
 	private boolean executable = false;
+	private boolean redactPii = false;
 
     /**
      * Main constructor of an approval request
@@ -55,6 +54,13 @@ public class DummyApprovalRequest extends ApprovalRequest {
 	            boolean executable, final ApprovalProfile approvalProfile) {
         super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile, null);
 		this.executable = executable;
+	}
+
+	public DummyApprovalRequest(AuthenticationToken requestAdmin, String requestSignature, int cAId, int endEntityProfileId,
+								boolean executable, final ApprovalProfile approvalProfile, boolean redactPii) {
+		super(requestAdmin, requestSignature, ApprovalRequest.REQUESTTYPE_SIMPLE, cAId, endEntityProfileId, approvalProfile, null);
+		this.executable = executable;
+		this.redactPii = redactPii;
 	}
 
     /**
@@ -114,6 +120,10 @@ public class DummyApprovalRequest extends ApprovalRequest {
 		ArrayList<ApprovalDataText> newText = new ArrayList<ApprovalDataText>();
 		newText.add(new ApprovalDataText("DUMMYDATAROW1: ", "YES" , false, false));
 		newText.add(new ApprovalDataText("DUMMYDATAROW2: ", "YES" , false, false));
+		newText.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(redactPii), false, false));
+		newText.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, "DUMMY SUBJECT DN", false, false));
+		newText.add(new ApprovalDataText(ApprovalDataText.SUBJECT_ALT_NAME, "DUMMY SAN", false, false));
+
 		return newText;
 	}
 

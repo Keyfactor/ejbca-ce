@@ -1647,6 +1647,30 @@
                         for="revocationReasonModifiableCheckBox"
                         value="#{web.text.MODIFYABLE}" />
                 </h:panelGrid>
+                <h:panelGroup>
+						&nbsp;
+				</h:panelGroup>
+				<h:panelGroup id="redactPiiGroup">
+                    <h:outputText value="#{web.text.REDACTSUBJECTNAME}" />
+                    &nbsp;
+					<h:outputText
+                        value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Fields.html#Redact_PII')}"
+                        escape="false" />
+                </h:panelGroup>
+                <h:panelGrid id="redactPiiInput" columns="2">
+                    <h:selectBooleanCheckbox
+                        id="redactPiiCheckBox"
+                        value="#{endEntityProfileMBean.profiledata.redactPii}"
+                        disabled="#{endEntityProfileMBean.viewOnly}">
+                    </h:selectBooleanCheckbox>
+                    <h:panelGroup>
+                        <h:outputLabel for="redactPiiCheckBox"
+                            value="#{web.text.ALLOW}" />
+                            &nbsp;
+                            <h:outputText styleClass="help"
+                            value="#{web.text.REDACT_PII_HELP}" />
+                    </h:panelGroup>
+                </h:panelGrid>
                 <h:panelGroup id="sendNotificationsDeleteAllGroup">
                     <h:commandButton
                         id="sendNotificationsDeleteAllButton"
