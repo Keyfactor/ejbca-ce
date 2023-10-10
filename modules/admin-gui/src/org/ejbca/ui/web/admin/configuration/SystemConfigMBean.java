@@ -20,7 +20,6 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -113,7 +112,6 @@ import org.primefaces.event.TabChangeEvent;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StreamSizeLimitExceededException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.nimbusds.jwt.SignedJWT;
 
 /**
  * Backing bean for the various system configuration pages.
@@ -162,6 +160,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         //Database preferences
         private int maximumQueryCount;
         private long maximumQueryTimeout;
+        
+        //redact pii
+        private boolean redactPiiByDefault;
+        private boolean redactPiiEnforced;
 
         private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
             if(globalConfig == null) {
@@ -202,6 +204,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 this.maximumQueryCount = globalCesecoreConfiguration.getMaximumQueryCount();
                 this.maximumQueryTimeout= globalCesecoreConfiguration.getMaximumQueryTimeout();
+                
+                this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
+                this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -271,6 +276,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setMaximumQueryCount(int maximumQueryCount) { this.maximumQueryCount = maximumQueryCount; }
         public long getMaximumQueryTimeout() { return maximumQueryTimeout; }
         public void setMaximumQueryTimeout(final long maximumQueryTimeout) { this.maximumQueryTimeout = maximumQueryTimeout; }
+
+        public boolean isRedactPiiByDefault() { return redactPiiByDefault; }
+        public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
+        public boolean isRedactPiiEnforced() { return redactPiiEnforced; }
+        public void setRedactPiiEnforced(boolean redactPiiEnforced) { this.redactPiiEnforced = redactPiiEnforced; }
+        
     }
 
     public class EKUInfo {
@@ -521,16 +532,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
      */
     private boolean defaultOAuthKeySafeToChange(String label) {
         if (getAdmin() instanceof OAuth2AuthenticationToken) {
-            OAuth2AuthenticationToken currentAdminToken = (OAuth2AuthenticationToken) getAdmin();
-            try {
-                SignedJWT signedJwt = SignedJWT.parse(currentAdminToken.getEncodedToken());
-                String adminTokenkeyId = signedJwt.getHeader().getKeyID();
-                if (adminTokenkeyId == null && (label == null || !label.equals(oAuthConfiguration.getDefaultOauthKey().getLabel()))) {
-                    return false;
-                }
-            } catch (ParseException e) {
-                log.info("Failed to parse OAuth2 JWT: " + e.getMessage(), e);
-            }    
+            final OAuth2AuthenticationToken currentAdminToken = (OAuth2AuthenticationToken) getAdmin();
+            if (currentAdminToken.isUsingDefaultProvider() && (label == null || !label.equals(oAuthConfiguration.getDefaultOauthKey().getLabel()))) {
+                return false;
+            }
         }
         return true;
     }
@@ -1042,6 +1047,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
                 globalCesecoreConfiguration.setMaximumQueryCount(currentConfig.getMaximumQueryCount());
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
+                globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
+                globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
                 // Purge access rule for key recovery from all roles if key recovery is disabled
                 // This is done after the configuration has been saved successfully, thus making
@@ -1139,7 +1146,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     return o1.getLabel().compareToIgnoreCase(o1.getLabel());
                 }
             });
-            availableCryptoTokens.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT_ENCRYPTION_CRYPTOTOKEN")));
+            availableCryptoTokens.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT_ENCRYPTION_CRYPTO_TOKEN")));
         }
         return availableCryptoTokens;
     }
@@ -1319,7 +1326,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public ProtocolGuiInfo(String protocol, boolean enabled) {
             this.protocol = protocol;
             this.enabled = enabled;
-            this.url = AvailableProtocols.getContextPathByName(protocol, isRunningEnterprise());
+            this.url = AvailableProtocols.getContextPathByName(protocol);
             this.available = true;
         }
 
@@ -1346,10 +1353,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             if (protocol.equals(AvailableProtocols.MSAE.getName()) && !isMSAESettingsAvailable()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRunningEnterprise()) {
+            if (protocol.equals(AvailableProtocols.REST_COAP_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
-            if (protocol.equals(AvailableProtocols.REST_COAP_MANAGEMENT.getName()) && !isRunningEnterprise()) {
+            if (protocol.equals(AvailableProtocols.REST_CA_MANAGEMENT.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_CONFIGDUMP.getName()) && !isRunningEnterprise()) {
@@ -1365,6 +1372,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_SSH_V1.getName()) && !isRunningEnterprise()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST_SYSTEM_V1.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.ACME.getName()) && !isAcmeAvailable()) {
@@ -1492,7 +1502,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public void addEKU() {
         AvailableExtendedKeyUsagesConfiguration ekuConfig = getAvailableEKUConfig();
         List<String> extKeyUsageNames = ekuConfig.getAllExtKeyUsageName();
-        List<String> translatedNames = new ArrayList<String>();
+        List<String> translatedNames = new ArrayList<>();
         for (String name : extKeyUsageNames) {
             translatedNames.add(getEjbcaWebBean().getText(name));
         }
@@ -1689,10 +1699,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private void importLogoFromImageFile() throws IOException {
         String contentType = raLogoFile.getContentType();
         if (!contentType.equals("image/jpeg") && !contentType.equals("image/png")) {
-            addErrorMessage("LOGOIMPORTIGNORE", raLogoFile.getName());
+            addErrorMessage("LOGOIMPORTIGNORE", raLogoFile.getSubmittedFileName());
             return;
         }
-        logoName = raLogoFile.getName();
+        logoName = raLogoFile.getSubmittedFileName();
         logoBytes = IOUtils.toByteArray(raLogoFile.getInputStream(), raLogoFile.getSize());     
         addInfoMessage("LOGOIMPORTSUCCESS", logoName);
     }
@@ -1713,10 +1723,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 .stream()
                 .map(unpackedFile -> new RaCssInfo(unpackedFile.getContentAsBytes(), unpackedFile.getFileName()))
                 .collect(Collectors.toMap(RaCssInfo::getCssName, Function.identity()));
-        if (raCssInfosMap.isEmpty() && raCssFile.getName().endsWith(".css")) {
+        if (raCssInfosMap.isEmpty() && raCssFile.getSubmittedFileName().endsWith(".css")) {
             // Single file selected (not zip)
-            raCssInfosMap.put(raCssFile.getName(), new RaCssInfo(fileBuffer, raCssFile.getName()));
-            importedFiles.add(raCssFile.getName());
+            raCssInfosMap.put(raCssFile.getSubmittedFileName(), new RaCssInfo(fileBuffer, raCssFile.getSubmittedFileName()));
+            importedFiles.add(raCssFile.getSubmittedFileName());
         } else if (raCssInfosMap.isEmpty()) {
             addErrorMessage("CANNOT_PROCESS_ZIP_FILE");
             return;

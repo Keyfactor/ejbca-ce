@@ -36,6 +36,7 @@ import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SecureXMLDecoder;
 
 
@@ -119,7 +120,12 @@ public class AcmeOrderData extends ProtectedData implements Serializable {
         } catch (IOException e) {
             final String msg = "Failed to parse AcmeOrderData data map in database: " + e.getMessage();
             if (log.isDebugEnabled()) {
-                log.debug(msg + ". Data:\n" + getRawData());
+                // Redact the ACME identifiers.
+                if (LogRedactionUtils.redactPii()) {
+                    log.debug(msg + ". Data:\n" + LogRedactionUtils.REDACTED_CONTENT);
+                } else {
+                    log.debug(msg + ". Data:\n" + getRawData());
+                }
             }
             throw new IllegalStateException(msg, e);
         }

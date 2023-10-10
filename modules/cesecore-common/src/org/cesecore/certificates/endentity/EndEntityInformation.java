@@ -23,11 +23,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.ssh.SshEndEntityProfileFields;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.XmlSerializer;
 
@@ -193,6 +195,13 @@ public class EndEntityInformation implements Serializable {
         	this.subjectDN=StringTools.putBase64String(removedTrailingEmpties.toString());
     	}
     }
+    
+    public String getLogSafeSubjectDn() {
+        if (StringUtils.isEmpty(getDN())) {
+            return "";
+        }
+        return LogRedactionUtils.getSubjectDnLogSafe(getDN(), endentityprofileid);
+    }
 
     /** User DN as stored in the database. If the registered DN has unused DN fields the empty ones are kept, i.e.
      * CN=Tomas,OU=,OU=PrimeKey,C=SE. See ECA-1841 for an explanation of this.
@@ -205,6 +214,14 @@ public class EndEntityInformation implements Serializable {
     public void setCAId(int caid){this.caid=caid;}
     public void setSubjectAltName( String subjectaltname) { this.subjectAltName=StringTools.putBase64String(subjectaltname); }
     public String getSubjectAltName() {return StringTools.getBase64String(subjectAltName);}
+    
+    public String getLogSafeSubjectAltName() {
+        if (StringUtils.isEmpty(subjectAltName)) {
+            return "";
+        }
+        return LogRedactionUtils.getSubjectAltNameLogSafe(subjectAltName, endentityprofileid);
+    }
+    
     public void setEmail(String email) {this.subjectEmail = StringTools.putBase64String(email);}
     public String getEmail() {return StringTools.getBase64String(subjectEmail);}
     public void setCardNumber(String cardNumber) {this.cardNumber =  StringTools.putBase64String(cardNumber);}
@@ -407,6 +424,14 @@ public class EndEntityInformation implements Serializable {
      * @return an information map about this end entity, listing all general fields.
      */
     public Map<String, String> getDetailMap() {
+        return getDetailMap(LogRedactionUtils.isRedactPii(endentityprofileid));
+    }
+      
+    /**
+     * @return an information map about this end entity, listing all general fields
+     *  and redacting subjectDn and SAN based end entity profile settings
+     */
+    public Map<String, String> getDetailMap(boolean tryRedact) {
         @SuppressWarnings("unchecked")
         Map<String, String> details = new Base64GetHashMap();
         details.put("caid", Integer.toString(caid));
@@ -417,6 +442,10 @@ public class EndEntityInformation implements Serializable {
             StringBuilder extendedInformationDump = new StringBuilder("{");
             LinkedHashMap<Object, Object> rawData = extendedinformation.getRawData();
             for (Object key : rawData.keySet()) {
+                if (tryRedact && ( ExtendedInformation.CERTIFICATE_REQUEST.equals(key) || 
+                        ExtendedInformation.SCEP_CACHED_REQUEST.equals(key)) ) {
+                    continue;
+                }
                 if (rawData.get(key) != null) {
                     extendedInformationDump.append(", [").append((String) key).append(':').append(rawData.get(key)).append(']');
                 }
@@ -425,8 +454,8 @@ public class EndEntityInformation implements Serializable {
             details.put("extendedInformation", extendedInformationDump.substring(2));
         }
         details.put("status", Integer.toString(status));
-        details.put("subjectAltName", subjectAltName);
-        details.put("subjectDN", subjectDN);
+        details.put("subjectAltName", tryRedact ? getLogSafeSubjectAltName() : getSubjectAltName());
+        details.put("subjectDN", tryRedact ? getLogSafeSubjectDn(): getDN());
         details.put("subjectEmail", subjectEmail);
         if (timecreated != null) {
             details.put("timecreated", timecreated.toString());
@@ -447,9 +476,13 @@ public class EndEntityInformation implements Serializable {
      * @return the differences between this map and the parameter, as <key, [thisValue, otherValue]>
      */
     public Map<String, String[]> getDiff(EndEntityInformation other) {
+        return getDiff(other, false);
+    }
+    
+    public Map<String, String[]> getDiff(EndEntityInformation other, boolean tryRedact) {
         Map<String, String[]> changedValues = new LinkedHashMap<>();
-        Map<String, String> thisValues = getDetailMap();
-        Map<String, String> otherValues = other.getDetailMap();
+        Map<String, String> thisValues = getDetailMap(tryRedact); // may receives non-redacted DN and SAN
+        Map<String, String> otherValues = other.getDetailMap(tryRedact);
         List<String> thisKeySet = new ArrayList<>(thisValues.keySet());
         for (String key : thisKeySet) {
             String thisValue = thisValues.get(key);

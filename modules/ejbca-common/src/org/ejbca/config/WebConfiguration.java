@@ -13,16 +13,15 @@
 
 package org.ejbca.config;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
-
+import com.keyfactor.util.StringTools;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.util.SlotList;
 import org.ejbca.util.URIUtil;
 
-import com.keyfactor.util.StringTools;
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This file handles configuration from web.properties
@@ -113,6 +112,10 @@ public class WebConfiguration {
 		return value;
 	}
 
+	public static String getContentSecurityPolicy() {
+		return EjbcaConfigurationHolder.getString("web.header.content_security_policy");
+	}
+
 	/**
 	 * Defines the available languages by language codes separated with a comma
 	 */
@@ -179,13 +182,6 @@ public class WebConfiguration {
 	 */
 	public static String getWebContentEncoding() {
 	   	return EjbcaConfigurationHolder.getString("web.contentencoding");
-	}
-	
-	/**
-	 * Whether self-registration (with admin approval) is enabled in public web
-	 */
-	public static boolean getSelfRegistrationEnabled() {
-		return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString("web.selfreg.enabled"));
 	}
 	
 	/**
@@ -350,11 +346,6 @@ public class WebConfiguration {
     /** @return true if we have SunP11 Crypto Token enabled in the Admin GUI. */
     public static boolean isSunP11Enabled(){
         return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("sunp11.cryptotoken.enabled")); // default true
-    }
-
-    /** @return true if we have P11NG Crypto Token enabled in the Admin GUI. */
-    public static boolean isP11NGEnabled(){
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("p11ng.cryptotoken.enabled"));
     }
 
     /** @return true if we have P11NG Utimaco CP5 specific Crypto Token functions enabled in the Admin GUI. */

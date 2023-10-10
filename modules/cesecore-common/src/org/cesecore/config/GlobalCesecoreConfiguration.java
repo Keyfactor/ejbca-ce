@@ -36,6 +36,9 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     private static final String MAXIMUM_QUERY_COUNT_KEY = "maximum.query.count";
     private static final String MAXIMUM_QUERY_TIMEOUT_KEY = "maximum.query.timeout";
     
+    private static final String REDACT_PII_DATA_DEFAULT = "redact.pii.default";
+    private static final String REDACT_PII_DATA_ENFORCED = "redact.pii.enforced";
+    
     @Override
     public void upgrade() {
     }
@@ -43,6 +46,32 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     @Override
     public String getConfigurationId() {
         return CESECORE_CONFIGURATION_ID;
+    }
+    
+    /** 
+     * Use a default value when End entity profile redaction settings is not accessible e.g. 
+     * in peers(RA/VA), EMPTY end entity profile, exception messages with multiple sources etc 
+     */
+    public boolean getRedactPiiByDefault() {
+        final Object res = data.get(REDACT_PII_DATA_DEFAULT);
+        return res == null ? false : (boolean) res;
+    }
+    
+    public void setRedactPiiByDefault(boolean redactPiiByDefault) {
+        data.put(REDACT_PII_DATA_DEFAULT, redactPiiByDefault);
+    }
+    
+    /** 
+     * This flag may be enabled(true) to redact PII data irrespective of the setting at End entity profile
+     * It will allow customer to redact data for a CA node without editing every single profile 
+     */
+    public boolean getRedactPiiEnforced() {
+        final Object res = data.get(REDACT_PII_DATA_ENFORCED);
+        return res == null ? false : (boolean) res;
+    }
+    
+    public void setRedactPiiEnforced(boolean redactPiiEnforced) {
+        data.put(REDACT_PII_DATA_ENFORCED, redactPiiEnforced);
     }
     
     /** @return the maximum size of the result from SQL select queries */

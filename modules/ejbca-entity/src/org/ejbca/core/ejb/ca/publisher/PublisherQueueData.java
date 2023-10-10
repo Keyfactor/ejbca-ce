@@ -38,6 +38,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.GUIDGenerator;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SecureXMLDecoder;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -189,7 +190,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
             } catch (IOException e) {
                 final String msg = "Failed to parse PublisherQueueVolatileInformation map in database: " + e.getMessage();
                 if (log.isDebugEnabled()) {
-                    log.debug(msg + ". Data:\n" + vd);
+                    log.debug(msg + ". Data:\n" + LogRedactionUtils.getRedactedMessage(vd));
                 }
                 throw new IllegalStateException(msg, e);
             }
@@ -225,7 +226,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 
             try {
                 if (log.isDebugEnabled()) {
-                    log.debug("PublisherQueueVolatileData: \n" + baos.toString("UTF8"));
+                    log.debug("PublisherQueueVolatileData: \n" + LogRedactionUtils.getRedactedMessage(baos.toString("UTF8")));
                 }
                 setVolatileData(baos.toString("UTF8"));
             } catch (UnsupportedEncodingException e) {

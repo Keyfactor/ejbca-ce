@@ -102,6 +102,7 @@ import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
@@ -354,6 +355,33 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }
+            }
+        }
+        return false;
+    }
+    
+    @Override
+    public boolean isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(final AuthenticationToken authenticationToken, final String... resources) {
+        // First try to find one with an active CA
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    if (raMasterApi.isAuthorizedNoLogging(authenticationToken, resources)) {
+                        return true;
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        // If none were found, try to find one without an active CA
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            try {
+                if (raMasterApi.isAuthorizedNoLogging(authenticationToken, resources)) {
+                    return true;
+                }
+            } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                // Just try next implementation
             }
         }
         return false;
@@ -1400,7 +1428,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 } catch (EjbcaException e) {
                     // If the user is not found (e.g. during key recovery), try next implementation
                     if (!ErrorCode.USER_NOT_FOUND.equals(e.getErrorCode())) {
-                        throw e;
+                        throw LogRedactionUtils.getRedactedException(e);
                     }
                     if (userNotFoundException == null) {
                         userNotFoundException = e;
@@ -1432,7 +1460,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             final byte[] certBytes = createCertificate(authenticationToken, endEntity);
             return CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
         } catch (IOException | OperatorCreationException | CertificateParsingException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(LogRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -1472,7 +1500,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 } catch (EjbcaException e) {
                     // If the user is not found (e.g. during key recovery), try next implementation
                     if (!ErrorCode.USER_NOT_FOUND.equals(e.getErrorCode())) {
-                        throw e;
+                        throw LogRedactionUtils.getRedactedException(e);
                     }
                     if (userNotFoundException == null) {
                         userNotFoundException = e;
@@ -1631,7 +1659,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
         } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException |
                 InvalidAlgorithmParameterException | IOException e) {
-            throw new IllegalStateException(e);
+            throw new IllegalStateException(LogRedactionUtils.getRedactedException(e));
         }
     }
 
@@ -1651,7 +1679,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation
                 } catch (EjbcaException e) {
                     if (!(e.getCause() instanceof NoSuchEndEntityException)) {
-                        throw e; // rethrow everything else
+                        throw LogRedactionUtils.getRedactedException(e); // rethrow everything else
                     } else if (ejbcaException == null) {
                         ejbcaException = e;
                     }
@@ -1686,7 +1714,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 } catch (EjbcaException e) {
                     // Only catch "CA doesn't exist" case here
                     if (e.getErrorCode() != null && !ErrorCode.CA_NOT_EXISTS.getInternalErrorCode().equals(e.getErrorCode().getInternalErrorCode())) {
-                        throw e;
+                        throw LogRedactionUtils.getRedactedException(e);
                     }
                     if (caDoesntExistException == null) {
                         caDoesntExistException = e;
@@ -1736,7 +1764,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 } catch (EjbcaException e) {
                     // Only catch "CA doesn't exist" case here
                     if (e.getErrorCode() != null && !ErrorCode.CA_NOT_EXISTS.getInternalErrorCode().equals(e.getErrorCode().getInternalErrorCode())) {
-                        throw e;
+                        throw LogRedactionUtils.getRedactedException(e);
                     }
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
@@ -2044,7 +2072,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation.
                 } catch (NoSuchEndEntityException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug( "End entity for proxied request on CA could not be found: " + e.getMessage());
+                        log.debug( "End entity for proxied request on CA could not be found: " +
+                                LogRedactionUtils.getRedactedMessage(e.getMessage()));
                     }
                     if (noSuchEndEntityException == null) {
                         noSuchEndEntityException = e;
@@ -2052,7 +2081,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation.
                 } catch (ApprovalException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug( "End entity for proxied request on CA is in approval process: " + e.getMessage());
+                        log.debug( "End entity for proxied request on CA is in approval process: " +
+                                LogRedactionUtils.getRedactedMessage(e.getMessage()));
                     }
                     if (approvalException == null) {
                         approvalException = e;
@@ -2060,7 +2090,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation.
                 } catch (WaitingForApprovalException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug( "End entity for proxied request on CA is in approval process: " + e.getMessage());
+                        log.debug( "End entity for proxied request on CA is in approval process: " +
+                                LogRedactionUtils.getRedactedMessage(e.getMessage()));
                     }
                     if (waitingForApprovalException == null) {
                         waitingForApprovalException = e;
@@ -2068,7 +2099,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation.
                 } catch (AlreadyRevokedException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug( "End entity for proxied request on CA is revoked already: " + e.getMessage());
+                        log.debug( "End entity for proxied request on CA is revoked already: " +
+                                LogRedactionUtils.getRedactedMessage(e.getMessage()));
                     }
                     if (alreadyRevokedException == null) {
                         alreadyRevokedException = e;
@@ -2076,7 +2108,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation.
                 } catch (CouldNotRemoveEndEntityException e) {
                     if (log.isDebugEnabled()) {
-                        log.debug( "End entity for proxied request on CA could not be removed: " + e.getMessage());
+                        log.debug( "End entity for proxied request on CA could not be removed: " +
+                                LogRedactionUtils.getRedactedMessage(e.getMessage()));
                     }
                 	if (couldNotRemoveEndEntityException == null) {
                         couldNotRemoveEndEntityException = e;
@@ -2354,7 +2387,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         
         if (caughtException != null) {
-            throw caughtException;
+            throw LogRedactionUtils.getRedactedException(caughtException);
         } else {
             return null;
         }
@@ -2680,7 +2713,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw authorizationDeniedException;
         }
         if (!oneSucceeded && certificateEncodingException != null) {
-            throw certificateEncodingException;
+            throw LogRedactionUtils.getRedactedException(certificateEncodingException);
         }
         return new ArrayList<>(result.values());
     }
@@ -2766,7 +2799,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     }
                     // Just try next implementation.
                 } catch (EjbcaException e) {
-                    log.debug("Server side exception for proxied request on CA thrown: " + e.getMessage());
+                    log.debug("Server side exception for proxied request on CA thrown: " + LogRedactionUtils.getRedactedMessage(e.getMessage()));
                     if (ejbcaException == null) {
                         ejbcaException = e;
                     }
@@ -2778,7 +2811,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw authorizationDeniedException;
         }
         if (ejbcaException != null) {
-            throw ejbcaException;
+            throw LogRedactionUtils.getRedactedException(ejbcaException);
         }
         if (caDoesntExistsException != null) {
             throw caDoesntExistsException;
@@ -2956,8 +2989,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     }
                     // Just try next implementation
                 } catch(ParseException | ConstructionException | NoSuchFieldException e) {
-                	log.info("CV certificate request for proxied request could not processed:" + e.getMessage());
-                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
+                	log.info("CV certificate request for proxied request could not processed:" +
+                            LogRedactionUtils.getRedactedMessage(e.getMessage()));
+                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
                 }
             }
         }

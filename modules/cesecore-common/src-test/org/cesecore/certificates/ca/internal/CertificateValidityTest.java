@@ -108,7 +108,7 @@ public class CertificateValidityTest {
         absolulteTestDate = new Date( caTo.getTime() - 10 * SimpleTime.MILLISECONDS_PER_DAY); 
         assertTrue("Fix test end date '" + absolulteTestDate + "'is before CA end date '" + caTo + "'.", absolulteTestDate.before(caTo));
         relativeTimeString = "1y2mo3d4h5s";
-        assertTrue("Realtive test time does not exceed CA end date time.", new Date(now.getTime() + SimpleTime.parseMillies(relativeTimeString)).before(caTo));
+        assertTrue("Realtive test time does not exceed CA end date time.", new Date(now.getTime() + SimpleTime.parseMillis(relativeTimeString)).before(caTo));
     }
 
 	@Test
@@ -136,7 +136,7 @@ public class CertificateValidityTest {
         profile.setUseCertificateValidityOffset(true);
         profile.setCertificateValidityOffset("-1mo-2d-3h-4m-5s");
         validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
-        notBefore = new Date(now.getTime() + SimpleTime.parseMillies(profile.getCertificateValidityOffset()));
+        notBefore = new Date(now.getTime() + SimpleTime.parseMillis(profile.getCertificateValidityOffset()));
         notAfter = absolulteTestDate;
         assertTrue("2. NotBefore '"+validity.getNotBefore()+"'matches start date '"+notBefore+"'", validity.getNotBefore().getTime() == notBefore.getTime());
         assertTrue("2. NotAfter '"+validity.getNotAfter()+"' matches end date '"+notAfter+"'", equals(validity.getNotAfter(), notAfter));
@@ -149,7 +149,7 @@ public class CertificateValidityTest {
         // now the end date caused by relative times must be rolled on day forward, but not with absolute times.
         profile.setExpirationRestrictionForWeekdaysExpireBefore(false);
         validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
-        notBefore = new Date(now.getTime() + SimpleTime.parseMillies(profile.getCertificateValidityOffset()));
+        notBefore = new Date(now.getTime() + SimpleTime.parseMillis(profile.getCertificateValidityOffset()));
         notAfter = absolulteTestDate;
         assertTrue("3. NotBefore '"+validity.getNotBefore()+"'matches start date '"+notBefore+"'.", validity.getNotBefore().getTime() == notBefore.getTime());
         assertTrue("3. NotAfter '"+validity.getNotAfter()+"' matches end date '"+notAfter+"'.", equals(validity.getNotAfter(), notAfter));
@@ -243,7 +243,7 @@ public class CertificateValidityTest {
         profile.setEncodedValidity(relativeTestTime);
         validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
-        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime) - 1000);
+        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillis(relativeTestTime) - 1000);
         assertTrue("1. NotBefore '"+validity.getNotBefore()+"'matches start date '"+notBefore+"'.", equals( validity.getNotBefore(), notBefore));
         assertTrue("1. NotAfter '"+validity.getNotAfter()+"' matches end date '"+notAfter+"'.", equals(validity.getNotAfter(), notAfter));
                 
@@ -258,7 +258,7 @@ public class CertificateValidityTest {
         profile.setExpirationRestrictionForWeekdaysExpireBefore(false);
         validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
-        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime) - 1000);
+        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillis(relativeTestTime) - 1000);
         calendar = new GregorianCalendar();
         calendar.setTime(notAfter);
         calendar.add(Calendar.DAY_OF_MONTH, 1); 
@@ -270,7 +270,7 @@ public class CertificateValidityTest {
         profile.setExpirationRestrictionForWeekdaysExpireBefore(true);
         validity = new CertificateValidity(now, subject, caInfo, profile, null, null, caCertificate, false, false);
         notBefore = new Date(now.getTime() + CertificateValidity.getValidityOffset());
-        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillies(relativeTestTime) - 1000);
+        notAfter = new Date(now.getTime() + CertificateValidity.getValidityOffset() + SimpleTime.parseMillis(relativeTestTime) - 1000);
         calendar = new GregorianCalendar();
         calendar.setTime(notAfter);
         calendar.add(Calendar.DAY_OF_MONTH, -1); 
