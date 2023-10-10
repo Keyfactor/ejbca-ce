@@ -173,7 +173,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             }
             
             if (encryptedPrivateKey==null) {
-                log.debug("MS Key archival request is malforemd does not contain the encrpyted private key.");
+                log.debug("MS Key archival request is malformed does not contain the encrpyted private key.");
                 return false;
             }
             
@@ -277,27 +277,44 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             ArrayUtils.reverse(buffer);
             int byteLen = ByteBuffer.wrap(buffer).getInt()/8;
             BigInteger pubExp = bigIntFromByteArray(encodedPrivateKey, 16, 20);
+            
             int start = 20;
             int end = 20+byteLen;
             BigInteger modulus = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger prime1 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger prime2 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger exponent1 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger exponent2 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger coefficient = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen;
             BigInteger privateExp = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
+            
+            System.out.println(pubExp);
+            System.out.println(modulus);
+            System.out.println(prime1);
+            System.out.println(prime2);
+            System.out.println(exponent1);
+            System.out.println(exponent2);
+            System.out.println(coefficient);
+            System.out.println(privateExp);
             
             RSAPrivateKey privKey = new RSAPrivateKey(modulus, pubExp, privateExp, prime1, prime2, 
                                                                         exponent1, exponent2, coefficient);
