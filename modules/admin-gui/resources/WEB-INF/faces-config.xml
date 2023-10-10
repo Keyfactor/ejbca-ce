@@ -213,6 +213,43 @@
         </navigation-case>
     </navigation-rule>
 
+    <navigation-rule>
+        <from-view-id>/sysconfig/scepaliasconfiguration.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/sysconfig/scepconfiguration.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/sysconfig/scepconfiguration.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
+        <from-view-id>/sysconfig/scepconfiguration.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>edit</from-outcome>
+            <to-view-id>/sysconfig/scepaliasconfiguration.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>delete</from-outcome>
+            <to-view-id>/sysconfig/deletescepalias.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
+        <from-view-id>/sysconfig/deletescepalias.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/sysconfig/scepconfiguration.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/sysconfig/scepconfiguration.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+
   <navigation-rule>
     <from-view-id>/ca/editcertificateprofiles/editcertificateprofiles.xhtml</from-view-id>
     <navigation-case>
