@@ -124,7 +124,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.dto = dto;
     }
 
-
     public Part getKeyTabFile() {
         return keyTabFile;
     }
@@ -196,11 +195,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
     }
 
-    /**
-     * Return the mapped templates in ListDataModel
-     *
-     * @return template models
-     */
     public ListDataModel<MSAutoEnrollmentSettingsTemplate> getMappedMsTemplatesModel() {
         return new ListDataModel<>(getDto().getMappedMsTemplates());
     }
@@ -264,13 +258,9 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     private MSAutoEnrollmentSettingsTemplate findMsTemplateByOid(List<MSAutoEnrollmentSettingsTemplate> templates, final String templateOid) {
-        for (MSAutoEnrollmentSettingsTemplate template : templates) {
-            if (template.getOid().equals(templateOid)) {
-                return template;
-            }
-        }
-
-        return null;
+        return templates.stream()
+                .filter(template -> template.getOid().equals(templateOid))
+                .findAny().orElse(null);
     }
 
     /**
@@ -279,11 +269,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
-        // TODO: Implement and maybe return a Map<id, template> so findMsTemplateByOid is simpler
         if (availableTemplates == null) {
             final String selectedAlias = getDto().getAlias();
             if (selectedAlias == null) {
-                return Collections.emptyList();
+                return List.of();
             }
             availableTemplates = adConnection.getCertificateTemplateSettings(selectedAlias);
         }
