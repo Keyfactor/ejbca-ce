@@ -27,7 +27,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
@@ -511,15 +513,18 @@ public class MsKeyArchivalRequestMessageTest {
         Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
                 new DERSet(new DEROctetString("abcd".getBytes()))); // TODO: from request message
 
+        ASN1Encodable wrappedAttributes = new DERSequence(
+                new ASN1Encodable[]{new ASN1Integer(0),  
+                        new DERSequence(new ASN1Integer(1)), new DERSet(new ASN1Encodable[]{certHash, encryptedKeyHash})});
+        
         String szOID_CMC_ADD_ATTRIBUTES = "1.3.6.1.4.1.311.10.10.1"; // TODO: find place to collect oids
         TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
                 new ASN1ObjectIdentifier(szOID_CMC_ADD_ATTRIBUTES),
-                new DERSet(new DERSequence(new ASN1Encodable[]{certHash, encryptedKeyHash}))); 
+                new DERSet(wrappedAttributes)); 
         
+        DERSequence payload = new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2});
         DERSequence pkiRespAsSequence = new DERSequence(
-                        new ASN1Encodable[]{
-                                new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2}), 
-                        new DERSequence(), new DERSequence()});
+                        new ASN1Encodable[]{payload, new DERSequence(), new DERSequence()});
         PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence); // grab beta release or use ASN1Sequence and then getInstance
         System.out.println( pkiResponse.getControlSequence().size());
         System.out.println(Hex.toHexString(pkiResponse.getControlSequence().getObjectAt(0).toASN1Primitive().getEncoded()));
@@ -527,8 +532,8 @@ public class MsKeyArchivalRequestMessageTest {
          
         try {
             byte[] encapInfoEncoded = pkiResponse.getEncoded();
-            System.out.println("encapInfoEncoded:" + Hex.toHexString(encapInfoEncoded));
-            byte[] encapInfoHash = CertTools.generateSHA1Fingerprint(encapInfoEncoded);
+            System.out.println("encapInfoEncoded: " + Hex.toHexString(encapInfoEncoded));
+            byte[] payloadHash = CertTools.generateSHA256Fingerprint(payload.getEncoded());// TODO: parametrize
             
             // signerInfo
             JcaSignerInfoGeneratorBuilder signerInfobuilder = new JcaSignerInfoGeneratorBuilder(
@@ -539,7 +544,7 @@ public class MsKeyArchivalRequestMessageTest {
                                                         new DERSet(CMCObjectIdentifiers.id_cct_PKIResponse));
             String szOID_PKCS_9_MESSAGE_DIGEST = "1.2.840.113549.1.9.4";
             Attribute contentHashAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
-                    new DERSet(new DEROctetString(encapInfoHash)));
+                    new DERSet(new DEROctetString(payloadHash)));
     
             AttributeTable attrTable = new AttributeTable(new DERSet(
                     new ASN1Encodable[]{ contentTypeAttribute.toASN1Primitive(), 
@@ -564,6 +569,8 @@ public class MsKeyArchivalRequestMessageTest {
             gen.addCertificates(store); // include full chain
             
 //            gen.addCRL(null); // may be multiple - MS compatible CA??
+            
+            ASN1Sequence.getInstance(pkiResponse);
             
             CMSTypedData data = new PKCS7ProcessableObject(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
             CMSSignedData cmsResponse = gen.generate(data, true);
