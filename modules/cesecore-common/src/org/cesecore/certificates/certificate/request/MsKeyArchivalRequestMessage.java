@@ -179,7 +179,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             
             // should also verify the private key hash as enveloped private key is not signed(unauthenticated)
             final MessageDigest md = MessageDigest.getInstance(
-                    hashAlgorithmMap.get(pkcs10.getSignatureAlgorithm().getAlgorithm())); 
+                    hashAlgorithmMap.get(pkcs10.getSignatureAlgorithm().getAlgorithm())); // may be sha1 always
             envelopedPrivKeyHash = md.digest(encryptedPrivateKey);
             final String envelopedPrivKeyHashStr = Hex.toHexString(envelopedPrivKeyHash);
             

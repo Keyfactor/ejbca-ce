@@ -51,6 +51,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
@@ -70,6 +71,7 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSTypedData;
+import org.bouncycastle.cms.PKCS7ProcessableObject;
 import org.bouncycastle.cms.SimpleAttributeTableGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.its.ETSISignedData;
@@ -1594,6 +1596,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @Override
     public byte[] createCmcFullPkiResponse(AuthenticationToken admin, int caId, X509Certificate cert, MsKeyArchivalRequestMessage request)
             throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+        // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/2524682a-9587-4ac1-8adf-7e8094baa321
         if (log.isTraceEnabled()) {
             log.trace(">createCmcFullPkiResponse");
         }
@@ -1644,22 +1647,26 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         
         Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
                 new DERSet(new DEROctetString(request.getEnvelopedPrivKeyHash())));
-
+        
+        ASN1Encodable wrappedAttributes = new DERSequence(
+                new ASN1Encodable[]{new ASN1Integer(0),  
+                        new DERSequence(new ASN1Integer(1)), new DERSet(new ASN1Encodable[]{certHash, encryptedKeyHash})});
+        
         String szOID_CMC_ADD_ATTRIBUTES = "1.3.6.1.4.1.311.10.10.1"; // TODO: find place to collect oids
         TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
                 new ASN1ObjectIdentifier(szOID_CMC_ADD_ATTRIBUTES),
-                new DERSet(new DERSequence(new ASN1Encodable[]{certHash, encryptedKeyHash}))); 
+                new DERSet(wrappedAttributes)); 
         
+        // search "payload" in MS docs signerinfo section
+        DERSequence payload = new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2});
         DERSequence pkiRespAsSequence = new DERSequence(
-                        new ASN1Encodable[]{
-                                new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2}), 
-                        new DERSequence(), new DERSequence()});
+                        new ASN1Encodable[]{payload, new DERSequence(), new DERSequence()});
         // TODO: grab beta release to use added constructor
         PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence);
         //ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
         try {
             byte[] encapInfoEncoded = pkiResponse.getEncoded();
-            byte[] encapInfoHash = CertTools.generateSHA1Fingerprint(encapInfoEncoded);
+            byte[] payloadHash = CertTools.generateSHA256Fingerprint(payload.getEncoded());// TODO: parametrize
             
             // signerInfo
             JcaSignerInfoGeneratorBuilder signerInfobuilder = new JcaSignerInfoGeneratorBuilder(
@@ -1670,7 +1677,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                                                         new DERSet(CMCObjectIdentifiers.id_cct_PKIResponse));
             String szOID_PKCS_9_MESSAGE_DIGEST = "1.2.840.113549.1.9.4";
             Attribute contentHashAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
-                    new DERSet(new DEROctetString(encapInfoHash)));
+                    new DERSet(new DEROctetString(payloadHash)));
     
             AttributeTable attrTable = new AttributeTable(new DERSet(
                     new ASN1Encodable[]{ contentTypeAttribute.toASN1Primitive(), 
@@ -1703,7 +1710,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         
             // gen.addCRL(null); // add only if error, may be multiple - MS compatible CA??
             
-            CMSTypedData data = new CMSProcessableByteArray(CMCObjectIdentifiers.id_cct_PKIResponse, encapInfoEncoded);
+            CMSTypedData data = new PKCS7ProcessableObject(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
             CMSSignedData cmsResponse = gen.generate(data, true);
             return cmsResponse.getEncoded();
             
