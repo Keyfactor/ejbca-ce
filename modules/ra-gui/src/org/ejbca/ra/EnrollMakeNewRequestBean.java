@@ -12,52 +12,13 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.cert.Certificate;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.component.html.HtmlSelectOneMenu;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.ComponentSystemEvent;
-import javax.faces.model.SelectItem;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.Part;
-
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -92,8 +53,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.config.WebConfiguration;
@@ -111,15 +72,49 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.util.cert.OID;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.component.html.HtmlSelectOneMenu;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.event.ComponentSystemEvent;
+import javax.faces.model.SelectItem;
+import javax.faces.validator.ValidatorException;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.Part;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page.
@@ -132,7 +127,6 @@ import com.keyfactor.util.keys.KeyTools;
  * (The normal pattern would be that changes/actions should calculate and modify everything that is
  * effected by this change. This would be harder to code and maintain since you have to think about
  * all permutations that could potentially be affected down the line.)
- *
  */
 @Named
 @ViewScoped
@@ -145,9 +139,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD = "enroll_invalid_certificate_request_not_parsable_subject_dn_field";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
-    
+
     private static final String ENROLL_INVALID_SSH_PUB_KEY = "enroll_invalid_ssh_pub_key";
-    
+
     private static final String APPLICATION_X_PKCS12 = "application/x-pkcs12";
     private static final String APPLICATION_OCTET_STREAM = "application/octet-stream";
     public static String PARAM_REQUESTID = "requestId";
@@ -182,17 +176,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private Integer selectedIssuanceRevocationReason;
     private String validity = StringUtils.EMPTY;
     private EABConfiguration eabConfiguration;
-    
+
     // SSH certificate enrollment fields
     private String sshKeyId;
     private String sshCertificateComment;
     private byte[] sshPublicKey;
     private String sshPublicKeyString;
     private String sshPubKeyFileName;
-    List<EndEntityProfile.FieldInstance> sshPrincipals;
+    private List<EndEntityProfile.FieldInstance> sshPrincipals;
     private String criticalOptionsForceCommand;
     private String criticalOptionsSourceAddress;
-    private Optional<Boolean> criticalOptionsVerifyRequired = Optional.empty();
+    private transient Optional<Boolean> criticalOptionsVerifyRequired = Optional.empty();
     private String sshAdditionalExtensions;
     private String sshPubKeyDescription;
     private boolean useClearPassword;
@@ -251,17 +245,33 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String nameConstraintExcluded;
     private Boolean sendNotification;
 
-    private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
-    private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
-    private int numberOfOptionalSdaFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW; 
-    
+    private int numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+    private int numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+    private int numberOfOptionalSdaFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
+
     @PostConstruct
     private void postContruct() {
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
         this.authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
         this.authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
     }
-    
+
+
+    /**
+     * SelectItem comparator, compares items by label, with the exception that an item with null value ends up first.
+     */
+    static Comparator<SelectItem> selectItemComparator = (item1, item2) -> {
+        if (item1.getValue() == null || (item1.getValue() instanceof String && ((String) item1.getValue()).isEmpty())) {
+            return Integer.MIN_VALUE;
+        } else if (item2.getValue() == null || (item2.getValue() instanceof String && ((String) item2.getValue()).isEmpty())) {
+            return Integer.MAX_VALUE;
+        }
+        if (item1.getLabel() == null) {
+            return Integer.MIN_VALUE;
+        }
+        return item1.getLabel().compareToIgnoreCase(item2.getLabel());
+    };
+
     /**
      * @return current number of optional subject dn fields to show in the GUI
      */
@@ -275,19 +285,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public int getNumberOfOptionalSanFieldsToShow() {
         return numberOfOptionalSanFieldsToShow;
     }
-    
+
     /**
      * @return current number of optional subject directory attribute fields to show in the GUI
      */
     public int getNumberOfOptionalSdaFieldsToShow() {
         return numberOfOptionalSdaFieldsToShow;
     }
-    
+
     /**
      * Toggles between showing full optional fields or minimum optional fields for subject dn fields
      */
     public void showFullOptionalSdnFieldsToggle() {
-        if(numberOfOptionalSdnFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+        if (numberOfOptionalSdnFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
             numberOfOptionalSdnFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
         } else {
             numberOfOptionalSdnFieldsToShow = subjectDn.getOptionalFieldInstances().size();
@@ -298,18 +308,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Toggles between showing full optional fields or minimum optional fields for subject alternative name fields
      */
     public void showFullOptionalSanFieldsToggle() {
-        if(numberOfOptionalSanFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+        if (numberOfOptionalSanFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
             numberOfOptionalSanFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
         } else {
             numberOfOptionalSanFieldsToShow = subjectAlternativeName.getOptionalFieldInstances().size();
         }
     }
-    
+
     /**
      * Toggles between showing full optional fields or minimum optional fields for subject directory attribute fields
      */
     public void showFullOptionalSdaFieldsToggle() {
-        if(numberOfOptionalSdaFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
+        if (numberOfOptionalSdaFieldsToShow != MIN_OPTIONAL_FIELDS_TO_SHOW) {
             numberOfOptionalSdaFieldsToShow = MIN_OPTIONAL_FIELDS_TO_SHOW;
         } else {
             numberOfOptionalSdaFieldsToShow = subjectDirectoryAttributes.getOptionalFieldInstances().size();
@@ -317,21 +327,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     /**
-     * @return true when the size of optional subject dn fields becomes bigger than current value 
+     * @return true when the size of optional subject dn fields becomes bigger than current value
      */
     public boolean isShowMoreOptionalSdnFields() {
         return subjectDn.getOptionalFieldInstances().size() > numberOfOptionalSdnFieldsToShow;
     }
-    
+
     /**
-     * @return true when the size of optional subject alternative name fields becomes bigger than current value 
+     * @return true when the size of optional subject alternative name fields becomes bigger than current value
      */
     public boolean isShowMoreOptionalSanFields() {
         return subjectAlternativeName.getOptionalFieldInstances().size() > numberOfOptionalSanFieldsToShow;
     }
-    
+
     /**
-     * @return true when the size of optional subject directory attribute fields becomes bigger than current value 
+     * @return true when the size of optional subject directory attribute fields becomes bigger than current value
      */
     public boolean isShowMoreOptionalSdaFields() {
         return subjectDirectoryAttributes.getOptionalFieldInstances().size() > numberOfOptionalSdaFieldsToShow;
@@ -513,7 +523,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     /**
      * @return true if the selection of certificate authority should be rendered
      */
-    public boolean isSelectCertificateAuthorityRendered() {        
+    public boolean isSelectCertificateAuthorityRendered() {
         return StringUtils.isNotEmpty(getSelectedCertificateProfile()) && (getAvailableCertificateAuthorities().size() > 1 ||
                 (getAvailableCertificateAuthorities().size() == 1 && isRenderNonModifiableTemplates()));
     }
@@ -540,27 +550,27 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (validity == null || validity.isEmpty()) {
             return raLocaleBean.getMessage("enroll_validity_help_empty");
         }
-        
+
         final Date validityDate = parseValidity();
         if (validityDate == null) {
             return raLocaleBean.getMessage("enroll_validity_help_unparsable");
         }
-        
+
         final Date now = new Date();
         final Date maxDate = ValidityDate.getDate(getCertificateProfile().getEncodedValidity(), now, true);
         if (validityDate.after(maxDate)) {
             return raLocaleBean.getMessage("enroll_validity_help_too_long");
         }
-        
+
         // No help needed
         return StringUtils.EMPTY;
     }
-    
+
     private Date parseValidity() {
-        
-        if(!ValidityDate.isAbsoluteTimeOrDaysHoursMinutes(validity))
+
+        if (!ValidityDate.isAbsoluteTimeOrDaysHoursMinutes(validity))
             return null;
-        
+
         final Date now = new Date();
         Date validityDate = ValidityDate.getDateFromRelativeTime(validity, now, true);
         if (validityDate == null) {
@@ -677,7 +687,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (userDate.after(maxDate)) {
             return null;
         }
-        
+
         return ValidityDate.formatAsUTCSecondsGranularity(userDate);
     }
 
@@ -703,8 +713,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
-    
-    /** 
+
+    /**
      * @return true if number of optional subject dn fields is greater than {@value #MIN_OPTIONAL_FIELDS_TO_SHOW}
      */
     public boolean isRenderOptionalSdnFieldToggler() {
@@ -717,7 +727,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isRenderOptionalSanFieldToggler() {
         return subjectAlternativeName.getOptionalFieldInstances().size() > MIN_OPTIONAL_FIELDS_TO_SHOW;
     }
-    
+
     /**
      * @return true if number of optional subject directory attribute fields is greater than {@value #MIN_OPTIONAL_FIELDS_TO_SHOW}
      */
@@ -734,7 +744,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return true;
     }
 
-    public boolean isEABrendered(){
+    public boolean isEABrendered() {
         final boolean result = (isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (getCertificateProfile() != null
                 && getCertificateProfile().getEabNamespaces() != null && !getCertificateProfile().getEabNamespaces().isEmpty());
         if (result && eabConfiguration == null) {
@@ -743,36 +753,28 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return result;
     }
 
-    public boolean isOtherDataRendered(){
+    public boolean isOtherDataRendered() {
         return (isRenderSshEnrolmentFields() || isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && isSendNotificationRendered();
     }
 
-    public boolean isSendNotificationRendered(){
+    public boolean isSendNotificationRendered() {
         return getEndEntityProfile().isSendNotificationUsed();
     }
-    public boolean isSendNotificationDisabled(){
+
+    public boolean isSendNotificationDisabled() {
         return getEndEntityProfile().isSendNotificationRequired();
     }
 
-    /**
-     * @return the provideRequestMetadataRendered
-     */
     public boolean isProvideUserCredentialsRendered() {
-        return ( isRenderSshEnrolmentFields() || isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
+        return (isRenderSshEnrolmentFields() || isKeyAlgorithmAvailable() || isTokenTypeAvailable()) && (isUsernameRendered() || isPasswordRendered() || isEmailRendered());
     }
 
-    /**
-     * @return the confirmRequestRendered
-     */
     public boolean isConfirmRequestRendered() {
-        return  isRenderSshEnrolmentFields() || isKeyAlgorithmAvailable() || isTokenTypeAvailable();
+        return isRenderSshEnrolmentFields() || isKeyAlgorithmAvailable() || isTokenTypeAvailable();
     }
 
-    /**
-     * @return the provideRequestInfoRendered
-     */
     public boolean isProvideRequestInfoRendered() {
-        return  !isRenderSshEnrolmentFields() && (isKeyAlgorithmAvailable() || isTokenTypeAvailable());
+        return !isRenderSshEnrolmentFields() && (isKeyAlgorithmAvailable() || isTokenTypeAvailable());
     }
 
     /**
@@ -843,7 +845,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public boolean isRenderOtherCertificateData() {
-        return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed() || 
+        return getEndEntityProfile().getUseExtensiondata() || getEndEntityProfile().isPsd2QcStatementUsed() ||
                 isCabfOrganizationIdentifierRendered() || getEndEntityProfile().isIssuanceRevocationReasonUsed() ||
                 getEndEntityProfile().isValidityStartTimeUsed() || getEndEntityProfile().isValidityEndTimeUsed();
     }
@@ -851,7 +853,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isRenderOtherData() {
         return getEndEntityProfile().isKeyRecoverableUsed();
     }
-    
+
     public boolean isRenderCertExtensionDataField() {
         return getEndEntityProfile().getUseExtensiondata();
     }
@@ -863,7 +865,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isRenderIssuanceRevocationReason() {
         return getEndEntityProfile().isIssuanceRevocationReasonUsed();
     }
-    
+
     public boolean isRenderCertValidityStartTime() {
         return getEndEntityProfile().isValidityStartTimeUsed();
     }
@@ -871,15 +873,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isRenderCertValidityEndTime() {
         return getEndEntityProfile().isValidityEndTimeUsed();
     }
-    
+
     public boolean isCertValidityStartTimeModifiable() {
         return getEndEntityProfile().isValidityStartTimeModifiable();
     }
-    
+
     public boolean isCertValidityEndTimeModifiable() {
         return getEndEntityProfile().isValidityEndTimeModifiable();
     }
-    
+
     public void setRenderCsrDetailedInfo(boolean renderCsrDetailedInfo) {
         this.renderCsrDetailedInfo = renderCsrDetailedInfo;
     }
@@ -954,31 +956,40 @@ public class EnrollMakeNewRequestBean implements Serializable {
         DN,
         AN,
         DIRATTR
-      }
+    }
 
     /**
      * Populate the fieldInstances parameter with values from the CSR when the instances are modifiable
      */
     private void populateRequestFields(final RequestFieldType type, final String subject, final Collection<FieldInstance> fieldInstances) {
         final List<String> subjectFieldsFromParsedCsr = CertTools.getX500NameComponents(subject);
+
+        final int eepId = getEndEntityInformation().getEndEntityProfileId();
+
         bothLoops:
         for (final String subjectField : subjectFieldsFromParsedCsr) {
             if (log.isDebugEnabled()) {
-                log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
+                if (RequestFieldType.DN.equals(type)) {
+                    log.debug("Parsing the subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId) + "'...");
+                } else if (RequestFieldType.AN.equals(type)) {
+                    log.debug("Parsing the subject " + type + " field '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId) + "'...");
+                } else {
+                    log.debug("Parsing the subject " + type + " field '" + subjectField + "'...");
+                }
             }
             final String[] nameValue = subjectField.split("=");
             if (nameValue != null && nameValue.length == 2) {
                 Integer dnId = null;
                 switch (type) {
-                case DN:
-                    dnId = DnComponents.getDnIdFromDnName(nameValue[0]);
-                    break;
-                case AN:
-                    dnId = DnComponents.getDnIdFromAltName(nameValue[0]);
-                    break;
-                case DIRATTR:
-                    dnId = DnComponents.getDnIdFromDirAttr(nameValue[0]);
-                    break;
+                    case DN:
+                        dnId = DnComponents.getDnIdFromDnName(nameValue[0]);
+                        break;
+                    case AN:
+                        dnId = DnComponents.getDnIdFromAltName(nameValue[0]);
+                        break;
+                    case DIRATTR:
+                        dnId = DnComponents.getDnIdFromDirAttr(nameValue[0]);
+                        break;
                 }
                 if (log.isDebugEnabled()) {
                     log.debug(" dnId=" + dnId);
@@ -989,23 +1000,25 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         if (DnComponents.profileIdToDnId(fieldInstance.getProfileId()) == dnId.intValue()) {
                             if (fieldInstance.isModifiable()) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
+                                    logRedactedInfo(type, eepId, fieldInstance);
                                 }
                                 if (StringUtils.isEmpty(fieldInstance.getValue()) || fieldInstance.getValue().equals(fieldInstance.getDefaultValue())) {
                                     fieldInstance.setValue(nameValue[1]);
                                     if (log.isDebugEnabled()) {
-                                        log.debug("Modifiable subject field '" + subjectField + "' successfully parsed from CSR");
+                                        log.debug("Modifiable subject field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+                                                + "' successfully parsed from CSR");
                                     }
                                     continue bothLoops;
                                 }
                             } else if (fieldInstance.isSelectable()) {
                                 if (log.isDebugEnabled()) {
-                                    log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
+                                    logRedactedInfo(type, eepId, fieldInstance);
                                 }
                                 if (fieldInstance.getSelectableValues().contains(nameValue[1])) {
                                     fieldInstance.setValue(nameValue[1]);
                                     if (log.isDebugEnabled()) {
-                                        log.debug("Selectable subject field '" + subjectField + "' successfully parsed from CSR");
+                                        log.debug("Modifiable subject field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+                                                + "' successfully parsed from CSR");
                                     }
                                     continue bothLoops;
                                 }
@@ -1019,9 +1032,29 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
             }
             if (log.isDebugEnabled()) {
-                log.debug("Unparsable subject " + type + " field '" + subjectField +
-                        "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                if (RequestFieldType.DN.equals(type)) {
+                    log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
+                            + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                } else if (RequestFieldType.AN.equals(type)) {
+                    log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectField, eepId)
+                            + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                } else {
+                    log.debug("Unparsable subject " + type + " field '" + subjectField
+                            + "' from CSR, field is invalid or not a modifiable option in the end entity profile.");
+                }
             }
+        }
+    }
+
+    private void logRedactedInfo(final RequestFieldType type, final int eepId, final FieldInstance fieldInstance) {
+        if (RequestFieldType.DN.equals(type)) {
+            log.debug(" fieldInstance.value=" + LogRedactionUtils.getSubjectDnLogSafe(fieldInstance.getValue(), eepId)
+                    + " fieldInstance.defaultValue=" + LogRedactionUtils.getSubjectDnLogSafe(fieldInstance.getDefaultValue(), eepId));
+        } else if (RequestFieldType.AN.equals(type)) {
+            log.debug(" fieldInstance.value=" + LogRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getValue(), eepId)
+                    + " fieldInstance.defaultValue=" + LogRedactionUtils.getSubjectAltNameLogSafe(fieldInstance.getDefaultValue(), eepId));
+        } else {
+            log.debug(" fieldInstance.value=" + fieldInstance.getValue() + " fieldInstance.defaultValue=" + fieldInstance.getDefaultValue());
         }
     }
 
@@ -1042,7 +1075,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             raLocaleBean.addMessageError(ENROLL_USERNAME_ALREADY_EXISTS, username);
         }
     }
-    
+
     /**
      * Calculate the summary of holders from the current state for the certificate Subjects
      */
@@ -1053,7 +1086,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public void addEndEntity() {
-        if(isRenderSshEnrolmentFields()) {
+        if (isRenderSshEnrolmentFields()) {
             enrollSshCertificate();
         } else {
             addEndEntityAndGenerateToken(EndEntityConstants.TOKEN_USERGEN, null);
@@ -1103,10 +1136,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private ExtendedInformation getProcessedExtendedInformation() throws CertificateExtensionException {
         final ExtendedInformation extendedInformation = new ExtendedInformation();
         final Properties properties = new Properties();
-        
+
         extendedInformation.setMaxLoginAttempts(getEndEntityProfile().getMaxFailedLogins());
         extendedInformation.setRemainingLoginAttempts(getEndEntityProfile().getMaxFailedLogins());
-        
+
         if (getEndEntityProfile().isValidityStartTimeUsed() && certValidityStartTime != null) {
             certValidityStartTime = certValidityStartTime.trim();
             if (certValidityStartTime.length() > 0) {
@@ -1124,7 +1157,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 getEndEntityProfile().setValidityStartTime(certValidityStartTimeValue);
             }
         }
-        
+
         if (getEndEntityProfile().isValidityEndTimeUsed() && certValidityEndTime != null) {
             certValidityEndTime = certValidityEndTime.trim();
             if (certValidityEndTime.length() > 0) {
@@ -1142,11 +1175,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 getEndEntityProfile().setValidityEndTime(certValidityEndTimeValue);
             }
         }
-        
+
         if (getUserDefinedValidityIfSpecified() != null) {
             extendedInformation.setCertificateEndTime(getUserDefinedValidityIfSpecified());
         }
-        
+
         if (getSubjectDirectoryAttributes() != null) {
             extendedInformation.setSubjectDirectoryAttributes(getSubjectDirectoryAttributes().toString());
         }
@@ -1183,7 +1216,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             extendedInformation.setQCEtsiPSD2RolesOfPSP(psd2RoleOfPSPStatements);
         }
         extendedInformation.setCabfOrganizationIdentifier(cabfOrganizationIdentifier);
-        
+
         // Add issuance revocation reason
         if (getEndEntityProfile().isIssuanceRevocationReasonUsed()) {
             if (getEndEntityProfile().isIssuanceRevocationReasonModifiable()) {
@@ -1192,21 +1225,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 extendedInformation.setIssuanceRevocationReason(getEndEntityProfile().getIssuanceRevocationReason().getDatabaseValue());
             }
         }
-        
 
-        if(nameConstraintPermitted!=null && !StringUtils.isBlank(nameConstraintPermitted)) {
+
+        if (nameConstraintPermitted != null && !StringUtils.isBlank(nameConstraintPermitted)) {
             extendedInformation.setNameConstraintsPermitted(
                     NameConstraint.parseNameConstraintsList(nameConstraintPermitted));
         }
-        
-        if(nameConstraintExcluded!=null && !StringUtils.isBlank(nameConstraintExcluded)) {
+
+        if (nameConstraintExcluded != null && !StringUtils.isBlank(nameConstraintExcluded)) {
             extendedInformation.setNameConstraintsExcluded(
                     NameConstraint.parseNameConstraintsList(nameConstraintExcluded));
         }
-        
+
         return extendedInformation;
     }
-    
+
     private String getImpliedUTCFromISO8601OrRelative(final String certValidityTime) throws ParseException {
         if (StringUtils.isEmpty(certValidityTime)) {
             return "";
@@ -1216,11 +1249,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return certValidityTime;
     }
-    
+
     private String getImpliedUTCFromISO8601(final String dateString) throws ParseException {
         return ValidityDate.getImpliedUTCFromISO8601(dateString);
     }
-    
+
     private boolean isRelativeDateTime(final String dateString) {
         return dateString.matches("^\\d+:\\d?\\d:\\d?\\d$");
     }
@@ -1231,11 +1264,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param tokenType         the type of the token that will be created (one of: TOKEN_USERGEN, TOKEN_SOFT_P12, TOKEN_SOFT_JKS from EndEntityConstants)
      * @param tokenDownloadType the download type/format of the token. This is used only with TOKEN_USERGEN since this is the only one that have different formats: PEM, DER,...)
      * @return generated token as byte array or null if token could not be generated
-     * @throws ParseException 
+     * @throws ParseException
      */
     private byte[] addEndEntityAndGenerateToken(int tokenType, TokenDownloadType tokenDownloadType) {
         // Fill subjectDn email fields
-        for(EndEntityProfile.FieldInstance instance: getSubjectDn().getFieldInstances()) {
+        for (EndEntityProfile.FieldInstance instance : getSubjectDn().getFieldInstances()) {
             if (instance.isUseDataFromEmailField()) {
                 instance.setValue(getEndEntityInformation().getEmail());
             }
@@ -1245,7 +1278,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         getSubjectDn().update();
         getSubjectAlternativeName().update();
         getSubjectDirectoryAttributes().update();
-        
+
         // Workaround.
         // Corrections for SAN rfc822name and UPN (which might be a valid e-mail)
         for (EndEntityProfile.FieldInstance field : getSubjectAlternativeName().getOptionalFieldInstances()) {
@@ -1259,7 +1292,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 field.setValue("");
             }
         }
-        
+
         final EndEntityInformation endEntityInformation = getEndEntityInformation();
 
         endEntityInformation.setCAId(getCAInfo().getCAId());
@@ -1267,12 +1300,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile())).getId());
         endEntityInformation.setDN(getSubjectDn().toString());
         endEntityInformation.setEndEntityProfileId(authorizedEndEntityProfiles.get(Integer.parseInt(getSelectedEndEntityProfile())).getId());
-        
+
         try {
             endEntityInformation.setExtendedInformation(getProcessedExtendedInformation());
-        } catch(CertificateExtensionException e) {
+        } catch (CertificateExtensionException e) {
             reportGenericError(null, e);
-            return null;
+            return new byte[0];
         }
         endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
         endEntityInformation.setSubjectAltName(getSubjectAlternativeName().toString());
@@ -1283,7 +1316,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setKeyRecoverable(getKeyRecoverableUse());
         endEntityInformation.setSendNotification(getSendNotification());
         endEntityInformation.setTokenType(tokenType);
-        
+
         // Fill end-entity information (Username and Password)
         final byte[] randomData = new byte[16];
         final Random random = new SecureRandom();
@@ -1323,7 +1356,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 endEntityInformation.getExtendedInformation().setCertificateRequest(getCertificateRequestBytes());
             } catch (IOException e) {
                 raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST);
-                return null;
+                return new byte[0];
             }
         }
 
@@ -1384,22 +1417,24 @@ public class EnrollMakeNewRequestBean implements Serializable {
             log.info("Request with ID " + requestId + " is still waiting for approval");
         } catch (EjbcaException e) {
             errorCode = EjbcaException.getErrorCode(e);
+
             if (errorCode != null) {
+                final int eepId = endEntityInformation.getEndEntityProfileId();
                 if (errorCode.equals(ErrorCode.USER_ALREADY_EXISTS)) {
                     raLocaleBean.addMessageError(ENROLL_USERNAME_ALREADY_EXISTS, endEntityInformation.getUsername());
                     log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
                 } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                     raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
-                    log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
+
+                    log.info("Subject DN " + LogRedactionUtils.getSubjectDnLogSafe(subjectDn.getValue(), eepId) + " already exists for another user",
+                            LogRedactionUtils.getRedactedThrowable(e, eepId));
                 } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
                     raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e));
-                    log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
+                    log.info("End entity information does not fulfill profile: " + LogRedactionUtils.getRedactedThrowable(e, eepId).getMessage() + ", " + errorCode);
                 } else if (errorCode.equals(ErrorCode.NAMECONSTRAINT_VIOLATION)) {
                     raLocaleBean.addMessageError("enroll_invalid_name_constraint_violation", e.getMessage().replaceFirst("^[^:]*Exception: ", ""));
-                    log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
-                }
-                
-                else {
+                    log.info("End entity information does not fulfill profile: " + LogRedactionUtils.getRedactedThrowable(e, eepId).getMessage() + ", " + errorCode);
+                } else {
                     reportGenericError(errorCode, e);
                 }
             } else {
@@ -1415,36 +1450,38 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     /**
      * Reports an error message in the GUI and in the server log.
+     *
      * @param errorCode Error code, may be null
      * @param exception Exception
      */
     private void reportGenericError(final ErrorCode errorCode, final Exception exception) {
         switch (getSelectedKeyPairGenerationEnum()) {
-        case ON_SERVER:
-            reportGenericError("enroll_keystore_could_not_be_generated",
-                    "Keystore could not be generated for user " + getEndEntityInformation().getUsername(),
-                    errorCode, exception);
-            return;
-        case POSTPONE:
-            reportGenericError("enroll_end_entity_could_not_be_added",
-                    "End entity " + getEndEntityInformation().getUsername() + " could not be added",
-                    errorCode, exception);
-            return;
-        case PROVIDED_BY_USER:
-            reportGenericError("enroll_certificate_could_not_be_generated",
-                    "Certificate could not be generated for end entity with username " + getEndEntityInformation().getUsername(),
-                    errorCode, exception);
-            return;
+            case ON_SERVER:
+                reportGenericError("enroll_keystore_could_not_be_generated",
+                        "Keystore could not be generated for user " + getEndEntityInformation().getUsername(),
+                        errorCode, exception);
+                return;
+            case POSTPONE:
+                reportGenericError("enroll_end_entity_could_not_be_added",
+                        "End entity " + getEndEntityInformation().getUsername() + " could not be added",
+                        errorCode, exception);
+                return;
+            case PROVIDED_BY_USER:
+                reportGenericError("enroll_certificate_could_not_be_generated",
+                        "Certificate could not be generated for end entity with username " + getEndEntityInformation().getUsername(),
+                        errorCode, exception);
+                return;
         }
         throw new IllegalStateException("Unhandled key pair generation option");
     }
 
     /**
      * Reports an error message in the GUI and in the server log.
+     *
      * @param messageKey Language string key
      * @param logMessage Message to log at INFO level
-     * @param errorCode Error code, may be null
-     * @param exception Exception
+     * @param errorCode  Error code, may be null
+     * @param exception  Exception
      */
     private void reportGenericError(final String messageKey, final String logMessage, final ErrorCode errorCode, final Exception exception) {
         if (errorCode != null) {
@@ -1459,10 +1496,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
             sb.append(", ");
             sb.append(errorCode);
         }
-        log.info(sb.toString(), exception);
+        log.info(sb.toString(), LogRedactionUtils.getRedactedThrowable(exception, getEndEntityInformation().getEndEntityProfileId()));
     }
 
-    /** Removes exception name so it's not shown to the user. */
+    /**
+     * Removes exception name so it's not shown to the user.
+     */
     private String cleanExceptionMessage(final Throwable e) {
         String message = ExceptionUtils.getRootCauseMessage(e);
         if (message != null) {
@@ -1475,7 +1514,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Send a file to the client if token parameter is not set to null
      */
     private void downloadToken(byte[] token, String responseContentType, String fileExtension) {
-        if (token == null) {
+        if (token == null || token.length == 0) {
             return;
         }
         //Download the token
@@ -1485,6 +1524,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         ec.setResponseContentType(responseContentType);
         ec.setResponseContentLength(token.length);
         final String fileName = getFileName();
+        final int eepId = getEndEntityInformation().getEndEntityProfileId();
         ec.setResponseHeader("Content-Disposition",
                 "attachment; filename=\"" + fileName + fileExtension + "\""); // The Save As popup magic is done here. You can give it any file name you want, this only won't work in MSIE, it will use current request URL as file name instead.
         try (final OutputStream output = ec.getResponseOutputStream()) {
@@ -1493,7 +1533,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             fc.responseComplete(); // Important! Otherwise JSF will attempt to render the response which obviously will fail since it's already written with a file and closed.
         } catch (IOException e) {
             raLocaleBean.addMessageError(raLocaleBean.getMessage("enroll_token_could_not_be_downloaded", fileName), e);
-            log.info("Token " + fileName + " could not be downloaded", e);
+            log.info("Token " + LogRedactionUtils.getSubjectDnLogSafe(fileName, eepId) + " could not be downloaded", LogRedactionUtils.getRedactedThrowable(e, eepId));
         }
     }
 
@@ -1505,7 +1545,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     private String getFileName() {
         String commonName = CertTools.getPartFromDN(getEndEntityInformation().getDN(), "CN");
-        if(isRenderSshEnrolmentFields()) {
+        if (isRenderSshEnrolmentFields()) {
             commonName = getSshKeyId();
         }
         if (StringUtils.isEmpty(commonName)) {
@@ -1522,17 +1562,17 @@ public class EnrollMakeNewRequestBean implements Serializable {
         // Split the clientId on ':', the second to last substring is the loop index
         final String[] split = input.getClientId().split(":");
         final int index = Integer.parseInt(split[split.length - 2]);
-    
+
         EndEntityProfile.FieldInstance rfc822Name = null;
         if (input.getClientId().startsWith("requestInfoForm:subjectAlternativeNameOptional")) {
             List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getOptionalFieldInstances();
             if (index >= 0 && index < fi.size()) {
-                rfc822Name = fi.get(index); 
+                rfc822Name = fi.get(index);
             }
         } else {
             List<FieldInstance> fi = (List<EndEntityProfile.FieldInstance>) subjectAlternativeName.getRequiredFieldInstances();
             if (index >= 0 && index < fi.size()) {
-                rfc822Name = fi.get(index); 
+                rfc822Name = fi.get(index);
             }
         }
         if (rfc822Name != null) {
@@ -1544,7 +1584,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             rfc822Name.setValue("");
         }
     }
-    
+
     /**
      * Update RFC822NAME with value from end entity email
      */
@@ -1555,13 +1595,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (emailInput != null) {
             updateRfcAltNameField(emailInput);
         } else if (emailInput2 != null) {
-        	// Workaround to render an unmodifiable e-mail as h:outputtext 
+            // Workaround to render an unmodifiable e-mail as h:outputtext
             updateRfcAltNameField(emailInput2);
         } else {
             // If triggered with releasing focus on the EE e-mail field, updates all
             final String email = getEndEntityInformation().getEmail();
             if (email != null) {
-                final Map<Integer,FieldInstance> map = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME);
+                final Map<Integer, FieldInstance> map = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME);
                 for (FieldInstance fi : map.values()) {
                     if (fi.isRfcUseEmail()) {
                         fi.setValue(email);
@@ -1597,20 +1637,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Update the current state of the EE-holder and validate the subject DN via the RA API.
      */
     public final void checkSubjectDn() {
+        final EndEntityInformation eEInformation = getEndEntityInformation();
+        final int eepId = eEInformation.getEndEntityProfileId();
         try {
-            final EndEntityInformation endEntityInformation = getEndEntityInformation();
-            endEntityInformation.setCAId(getCAInfo().getCAId());
+            eEInformation.setCAId(getCAInfo().getCAId());
             if (log.isDebugEnabled()) {
-                log.debug("checkSubjectDn: '" + subjectDn.getUpdatedValue() + "'");
+                log.debug("checkSubjectDn: '" + LogRedactionUtils.getSubjectDnLogSafe(subjectDn.getUpdatedValue(), eepId) + "'");
             }
-            endEntityInformation.setDN(subjectDn.getUpdatedValue());
-            raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), endEntityInformation);
+            eEInformation.setDN(subjectDn.getUpdatedValue());
+            raMasterApiProxyBean.checkSubjectDn(raAuthenticationBean.getAuthenticationToken(), eEInformation);
         } catch (AuthorizationDeniedException e) {
             log.error(e);
         } catch (EjbcaException e) {
             if (ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode())) {
-                FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(), new FacesMessage(FacesMessage.SEVERITY_WARN,
-                        raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists", subjectDn.getValue()), null));
+                FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(),
+                        new FacesMessage(FacesMessage.SEVERITY_WARN, raLocaleBean.getMessage("enroll_certificate_with_subject_dn_already_exists",
+                                subjectDn.getUpdatedValue()), null));
             } else {
                 FacesContext.getCurrentInstance().addMessage(subjectDnMessagesComponent.getClientId(),
                         new FacesMessage(FacesMessage.SEVERITY_WARN, raLocaleBean.getErrorCodeMessage(e.getErrorCode()), null));
@@ -1628,7 +1670,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
             UIInput uiInputPassword = (UIInput) components.findComponent("passwordField");
             String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
             UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
-            String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
+            String confirmPassword = uiInputConfirmPassword.getLocalValue() == null
+                    ? ""
+                    : uiInputConfirmPassword.getLocalValue().toString();
             if (password.isEmpty()) {
                 fc.addMessage(confirmPasswordComponent.getClientId(fc), raLocaleBean.getFacesMessage("enroll_password_can_not_be_empty"));
                 fc.renderResponse();
@@ -1639,7 +1683,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
     }
-    
+
     public final void validateUpnRfcEmail(ComponentSystemEvent event) {
         final FacesContext fc = FacesContext.getCurrentInstance();
         final UIComponent components = event.getComponent();
@@ -1653,7 +1697,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             final UIComponent domainField = (UIComponent) components.findComponent("upnRfcDomain");
             if (domainField != null && domainField.isRendered()) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Validate SAN rfc822name e-mail user part: " + value);
+                    log.debug("Validate SAN rfc822name e-mail user part: " + LogRedactionUtils.getRedactedMessage(value));
                 }
                 if (!StringTools.isValidEmailUserPart(value)) {
                     fc.addMessage(field.getClientId(fc), raLocaleBean.getFacesMessage("enroll_san_email_user_part_invalid"));
@@ -1661,7 +1705,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 }
             } else {
                 if (log.isDebugEnabled()) {
-                    log.debug("Validate SAN rfc822name e-mail: " + value);
+                    log.debug("Validate SAN rfc822name e-mail: " + LogRedactionUtils.getRedactedMessage(value));
                 }
                 if (!StringTools.isValidEmail(value)) {
                     field.setValue(value);
@@ -1673,7 +1717,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     }
 
     public void actionUpdateCsrInfoFields() {
-        String fileName = uploadFile.getName();
+        String fileName = uploadFile.getSubmittedFileName();
 
         csrFileName = fileName;
         byte[] fileContents;
@@ -1681,7 +1725,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         try {
             fileContents = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
             String fileContentString = new String(fileContents);
-            if (fileContentString.startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST)||
+            if (fileContentString.startsWith(CertTools.BEGIN_CERTIFICATE_REQUEST) ||
                     fileContentString.startsWith(CertTools.BEGIN_KEYTOOL_CERTIFICATE_REQUEST)) {
                 pemEncodedCsr = new String(fileContents);
             } else {
@@ -1697,6 +1741,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             uploadCsr();
         }
     }
+
     /**
      * Validate an uploaded CSR and store the extracted key algorithm and CSR for later use.
      */
@@ -1743,13 +1788,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
             throw new IllegalStateException(e);
         }
     }
-    
-    private String getKeyAlgorithmMessageString(String alg, String spec ) {
-        return alg.equals(spec)? alg : alg + "_" + spec;
+
+    private String getKeyAlgorithmMessageString(String alg, String spec) {
+        return alg.equals(spec) ? alg : alg + "_" + spec;
     }
 
-    private String getAlgorithmUiRepresentationString(String alg, String spec ) {
-        return alg.equals(spec)? alg : alg + " " + spec;
+    private String getAlgorithmUiRepresentationString(String alg, String spec) {
+        return alg.equals(spec) ? alg : alg + " " + spec;
     }
 
     private String extractSignatureFromCsr(final RequestMessage certRequest) {
@@ -1811,21 +1856,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isNameConstraintPermittedRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null) {
+        if (endEntityProfile == null) {
             return false;
         }
-        
+
         return endEntityProfile.isNameConstraintsPermittedUsed();
     }
-    
+
     public boolean isNameConstraintPermittedRequired() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null) {
+        if (endEntityProfile == null) {
             return false;
         }
-        
+
         return endEntityProfile.isNameConstraintsPermittedRequired();
-    }    
+    }
 
     public String getNameConstraintPermitted() {
         return nameConstraintPermitted;
@@ -1834,24 +1879,24 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setNameConstraintPermitted(String nameConstraintPermitted) {
         this.nameConstraintPermitted = nameConstraintPermitted;
     }
-    
+
     public boolean isNameConstraintExcludedRendered() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null) {
+        if (endEntityProfile == null) {
             return false;
         }
-        
+
         return endEntityProfile.isNameConstraintsExcludedUsed();
     }
-    
+
     public boolean isNameConstraintExcludedRequired() {
         EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if(endEntityProfile == null) {
+        if (endEntityProfile == null) {
             return false;
         }
-        
+
         return endEntityProfile.isNameConstraintsExcludedRequired();
-    }    
+    }
 
     public String getNameConstraintExcluded() {
         return nameConstraintExcluded;
@@ -1860,7 +1905,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setNameConstraintExcluded(String nameConstraintExcluded) {
         this.nameConstraintExcluded = nameConstraintExcluded;
     }
-    
+
     /**
      * @return The user-defined validity for the private key.
      */
@@ -1911,7 +1956,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             return algorithmFromCsr;
         }
     }
-    
+
     /**
      * @return the current key algorithm as UI representation
      */
@@ -1968,12 +2013,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param selectedKeyStoreGeneration the selectedKeyPairGeneration to set
      */
     public void setSelectedKeyPairGeneration(final String selectedKeyStoreGeneration) {
-        final String currentSelection = this.selectedKeyPairGeneration == null ? null : this.selectedKeyPairGeneration.name();
+        final String currentSelection = this.selectedKeyPairGeneration == null
+                ? null
+                : this.selectedKeyPairGeneration.name();
         if (!StringUtils.equals(selectedKeyStoreGeneration, currentSelection)) {
             resetAlgorithmCsrUpload();
         }
         if (StringUtils.isNotEmpty(selectedKeyStoreGeneration)) {
             this.selectedKeyPairGeneration = KeyPairGeneration.valueOf(selectedKeyStoreGeneration);
+            //To render "Provide request info" because we do not have "empty" elements in "Key algorithm"
+            selectFirstKeyAlgorithm();
         } else {
             this.selectedKeyPairGeneration = null;
         }
@@ -1997,9 +2046,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private List<KeyPairGeneration> getAvailableKeyPairGenerations() {
         final List<KeyPairGeneration> ret = new ArrayList<>();
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
-        if (endEntityProfile != null && getSelectedCertificateProfile()!=null) {
+        if (endEntityProfile != null && getSelectedCertificateProfile() != null) {
             final String availableKeyStores = endEntityProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0);
-            if(this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile()))
+            if (this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile()))
                     .getType() != CertificateConstants.CERTTYPE_SSH) {
                 if (availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_P12))
                         || availableKeyStores.contains(String.valueOf(SecConst.TOKEN_SOFT_JKS))
@@ -2026,7 +2075,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (ret.size() > 1 && StringUtils.isEmpty(getSelectedEndEntityProfile())) {
             ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_eep_nochoice"), raLocaleBean.getMessage("enroll_select_eep_nochoice"), true));
         }
-        EnrollMakeNewRequestBean.sortSelectItemsByLabel(ret);
+        ret.sort(selectItemComparator);
         return ret;
     }
 
@@ -2054,7 +2103,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (ret.size() > 1 && StringUtils.isEmpty(getSelectedCertificateProfile())) {
             ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_cp_nochoice"), raLocaleBean.getMessage("enroll_select_cp_nochoice"), true));
         }
-        EnrollMakeNewRequestBean.sortSelectItemsByLabel(ret);
+        ret.sort(selectItemComparator);
         return ret;
     }
 
@@ -2093,7 +2142,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (ret.size() > 1 && StringUtils.isEmpty(getSelectedCertificateAuthority())) {
             ret.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ca_nochoice"), raLocaleBean.getMessage("enroll_select_ca_nochoice"), true));
         }
-        EnrollMakeNewRequestBean.sortSelectItemsByLabel(ret);
+        ret.sort(selectItemComparator);
         return ret;
     }
 
@@ -2146,7 +2195,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         );
         return ret;
     }
-    
+
     public List<SelectItem> getAvailableRevocationReasons() {
         final List<SelectItem> revocationReasonSelectItems = new ArrayList<>();
         for (RevocationReasons revocationReason : RevocationReasons.values()) {
@@ -2154,16 +2203,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (revocationReason == RevocationReasons.NOT_REVOKED) {
                 revocationReasonSelectItems.add(0, new SelectItem(revocationReason.getDatabaseValue(), raLocaleBean.getMessage("component_certdetails_status_active")));
             } else if (revocationReason == RevocationReasons.CERTIFICATEHOLD) {
-                revocationReasonSelectItems.add(1, new SelectItem(revocationReason.getDatabaseValue(), 
-                        raLocaleBean.getMessage("component_certdetails_status_revoked_reason_suspended")+ ": " + humanReadable));
+                revocationReasonSelectItems.add(1, new SelectItem(revocationReason.getDatabaseValue(),
+                        raLocaleBean.getMessage("component_certdetails_status_revoked_reason_suspended") + ": " + humanReadable));
             } else {
-                revocationReasonSelectItems.add(new SelectItem(revocationReason.getDatabaseValue(), 
+                revocationReasonSelectItems.add(new SelectItem(revocationReason.getDatabaseValue(),
                         raLocaleBean.getMessage("search_certs_page_criteria_status_option_revoked") + ": " + humanReadable));
             }
         }
         return revocationReasonSelectItems;
     }
-    
+
     private List<Integer> getAvilableTokenTypes() {
         List<Integer> ret = new ArrayList<>();
         final EndEntityProfile endEntityProfile = getEndEntityProfile();
@@ -2207,113 +2256,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
      */
     public List<SelectItem> getAvailableAlgorithmSelectItems() {
         if (this.availableAlgorithmSelectItems == null) {
-            final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
-            final CertificateProfile certificateProfile = getCertificateProfile();
-            if (certificateProfile != null) {
-                final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
-                final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                    for (final int availableBitLength : availableBitLengths) {
-                        if (availableBitLength == 1024) {
-                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                    AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                        }
-                    }
-                }
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
-                    for (final int availableBitLength : availableBitLengths) {
-                        if (availableBitLength >= 1024) {
-                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + "_" + availableBitLength,
-                                    AlgorithmConstants.KEYALGORITHM_RSA + " " + availableBitLength + " bits"));
-                        }
-                    }
-                }
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED25519)) {
-                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519,
-                            AlgorithmConstants.KEYALGORITHM_ED25519));
-                }
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ED448)) {
-                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448,
-                            AlgorithmConstants.KEYALGORITHM_ED448));
-                }
-                if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
-                    final Set<String> ecChoices = new HashSet<>();
-                    if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
-                        for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap(false).keySet()) {
-                            if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
-                                continue;
-                            }
-                            final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(ecNamedCurve);
-                            if (availableBitLengths.contains(bitLength)) {
-                                ecChoices.add(ecNamedCurve);
-                            }
-                        }
-                    }
-                    ecChoices.addAll(certificateProfile.getAvailableEcCurvesAsList());
-                    ecChoices.remove(CertificateProfile.ANY_EC_CURVE);
-                    final List<String> ecChoicesList = new ArrayList<>(ecChoices);
-                    Collections.sort(ecChoicesList);
-                    for (final String ecNamedCurve : ecChoicesList) {
-                        if (!AlgorithmTools.isKnownAlias(ecNamedCurve)) {
-                            log.warn("Ignoring unknown curve " + ecNamedCurve + " from being displayed in the RA web.");
-                            continue;
-                        }
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                                + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
-                    }
-                }
-                if (WebConfiguration.isPQCEnabled()) {
-                    for (String algorithm : availableKeyAlgorithms) {
-                        if (AlgorithmTools.isPQC(algorithm)) {
-                            availableAlgorithmSelectItems.add(new SelectItem(algorithm));
-                        }
-                    }
-                }
-                for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
-                    if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
-                        for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
-                            final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
-                            final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                            if (availableBitLengths.contains(bitLength)) {
-                                availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
-                                        CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
-                            } else {
-                                if (log.isTraceEnabled()) {
-                                    log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
-                                }
-                            }
-                        }
-                    }
-                }
-                if (availableAlgorithmSelectItems.size() > 1 && StringUtils.isEmpty(getSelectedAlgorithm(availableAlgorithmSelectItems))) {
-                    availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage(ENROLL_SELECT_KA_NOCHOICE), raLocaleBean.getMessage(ENROLL_SELECT_KA_NOCHOICE), true));
-                }
-            }
-            EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
+            final List<SelectItem> availableAlgorithmSelectItems =
+                    RaAvailableAlgorithmsTool.getAvailableAlgorithmSelectItems(getCertificateProfile(), raLocaleBean.getMessage("ENROLL_SELECT_KA_NOCHOICE"));
+            availableAlgorithmSelectItems.sort(selectItemComparator);
             this.availableAlgorithmSelectItems = availableAlgorithmSelectItems;
         }
         return availableAlgorithmSelectItems;
     }
 
-    /**
-     * Sort the provided list by label with the exception of any item with null value that ends up first.
-     */
-    protected static void sortSelectItemsByLabel(final List<SelectItem> items) {
-        items.sort(new Comparator<SelectItem>() {
-            @Override
-            public int compare(final SelectItem item1, final SelectItem item2) {
-                if (item1.getValue() == null || (item1.getValue() instanceof String && ((String) item1.getValue()).isEmpty())) {
-                    return Integer.MIN_VALUE;
-                } else if (item2.getValue() == null || (item2.getValue() instanceof String && ((String) item2.getValue()).isEmpty())) {
-                    return Integer.MAX_VALUE;
-                }
-                if (item1.getLabel() == null) {
-                    return Integer.MIN_VALUE;
-                }
-                return item1.getLabel().compareToIgnoreCase(item2.getLabel());
-            }
-        });
-    }
 
     public void setSelectedTokenType(int tokenType) {
         this.selectedTokenType = tokenType;
@@ -2334,12 +2284,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
         return getSelectedAlgorithm(getAvailableAlgorithmSelectItems());
     }
 
+    private void selectFirstKeyAlgorithm() {
+        if (getAvailableAlgorithmSelectItems() != null && !getAvailableAlgorithmSelectItems().isEmpty()) {
+            selectedAlgorithm = String.valueOf(getAvailableAlgorithmSelectItems().get(0).getValue());
+        }
+    }
+
     /**
      * @return the current selectedAlgorithm as determined by state of dependencies
      */
     private String getSelectedAlgorithm(final List<SelectItem> availableAlgorithmSelectItems) {
         if (availableAlgorithmSelectItems.size() == 1) {
-            selectedAlgorithm = String.valueOf(availableAlgorithmSelectItems.get(0).getValue());
+            selectFirstKeyAlgorithm();
         }
         if (StringUtils.isNotEmpty(selectedAlgorithm)) {
             boolean found = false;
@@ -2453,7 +2409,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         this.certValidityEndTime = certValidityEndTime;
     }
 
-    
+
     public String getCabfOrganizationIdentifier() {
         return cabfOrganizationIdentifier;
     }
@@ -2473,7 +2429,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public boolean isCabfOrganizationIdentifierRequired() {
         return getEndEntityProfile().isCabfOrganizationIdentifierRequired();
     }
-    
+
     public Integer getSelectedIssuanceRevocationReason() {
         if (selectedIssuanceRevocationReason == null) {
             return getEndEntityProfile().getIssuanceRevocationReason().getDatabaseValue();
@@ -2484,7 +2440,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setSelectedIssuanceRevocationReason(Integer selectedIssuanceRevocationReason) {
         this.selectedIssuanceRevocationReason = selectedIssuanceRevocationReason;
     }
-    
+
     public boolean isIssuanceRevocationReasonModifable() {
         return getEndEntityProfile().isIssuanceRevocationReasonModifiable();
     }
@@ -2495,9 +2451,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public String getCabfOrganizationIdentifierRegex() {
         return CabForumOrganizationIdentifier.VALIDATION_REGEX;
     }
-    
+
     public boolean isUseKeyRecoverable() {
-        if (getEndEntityProfile()!= null) {
+        if (getEndEntityProfile() != null) {
             return getEndEntityProfile().isKeyRecoverableUsed();
         }
         return false;
@@ -2509,7 +2465,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
-    
+
     public boolean getKeyRecoverableUse() {
         if (useKeyRecoverable != null) {
             return useKeyRecoverable;
@@ -2518,7 +2474,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
-    
+
     public void setKeyRecoverableUse(boolean keyRecoverable) {
         useKeyRecoverable = keyRecoverable;
     }
@@ -2562,10 +2518,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 selectedCertificateAuthority = null;
             }
         }
-        if (StringUtils.isBlank(selectedCertificateAuthority) && !availableCertificateAuthorities.isEmpty()){
-            for (int certAuth: availableCertificateAuthorities){
-                if (certAuth == getEndEntityProfile().getDefaultCA()){
-                    selectedCertificateAuthority= String.valueOf(getEndEntityProfile().getDefaultCA());
+        if (StringUtils.isBlank(selectedCertificateAuthority) && !availableCertificateAuthorities.isEmpty()) {
+            for (int certAuth : availableCertificateAuthorities) {
+                if (certAuth == getEndEntityProfile().getDefaultCA()) {
+                    selectedCertificateAuthority = String.valueOf(getEndEntityProfile().getDefaultCA());
                 }
             }
         }
@@ -2624,9 +2580,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 if (cainfo instanceof X509CAInfo) {
                     final X509CAInfo x509cainfo = (X509CAInfo) cainfo;
                     subjectDn.setLdapOrder(x509cainfo.getUseLdapDnOrder() && certificateProfile.getUseLdapDnOrder());
-                    subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN() ? PrintableStringNameStyle.INSTANCE : CeSecoreNameStyle.INSTANCE);
+                    subjectDn.setNameStyle(x509cainfo.getUsePrintableStringSubjectDN()
+                            ? PrintableStringNameStyle.INSTANCE
+                            : CeSecoreNameStyle.INSTANCE);
                 }
-                for (EndEntityProfile.FieldInstance instance: subjectDn.getRequiredFieldInstances()) {
+                for (EndEntityProfile.FieldInstance instance : subjectDn.getRequiredFieldInstances()) {
                     if (isDnEmail(instance)) {
                         instance.setUseDataFromEmailField(true);
                     }
@@ -2660,8 +2618,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
         EndEntityProfile profile = getEndEntityProfile();
         if (profile != null) {
             boolean allowClearPwd = profile.isClearTextPasswordUsed() && (selectedTokenType > 1);
-            if(!clearPasswordDirty) {
-                if(!allowClearPwd) {
+            if (!clearPasswordDirty) {
+                if (!allowClearPwd) {
                     useClearPassword = false;
                 } else {
                     useClearPassword = profile.isClearTextPasswordDefault();
@@ -2671,12 +2629,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
-    
+
     public boolean isClearPasswordRequired() {
         EndEntityProfile profile = getEndEntityProfile();
         if (profile != null) {
             boolean requireClearPwd = profile.isClearTextPasswordUsed() && profile.isClearTextPasswordRequired();
-            if(requireClearPwd && !clearPasswordDirty) {
+            if (requireClearPwd && !clearPasswordDirty) {
                 useClearPassword = profile.isClearTextPasswordDefault();
                 clearPasswordDirty = true;
             }
@@ -2684,14 +2642,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return false;
     }
-    
+
     public boolean getClearPassword() {
-         if(!clearPasswordDirty) {
+        if (!clearPasswordDirty) {
             isClearPasswordAllowed();
         }
         return useClearPassword;
     }
-    
+
     public void setClearPassword(boolean clearPwd) {
         clearPasswordDirty = true;
         useClearPassword = clearPwd;
@@ -2721,13 +2679,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return true if the field instance should be rendered
      */
     public boolean isFieldInstanceRendered(final FieldInstance fieldInstance) {
-        
-        if(fieldInstance == null) {
+
+        if (fieldInstance == null) {
             return false;
         }
         if (log.isTraceEnabled()) {
             log.trace("isFieldInstanceRendered name=" + fieldInstance.getName() + " used=" + fieldInstance.isUsed() + " selectable=" + fieldInstance.isSelectable() +
-                    " modifiable=" + fieldInstance.isModifiable() + " selectableValues.size=" + (fieldInstance.getSelectableValues() == null ? 0 : fieldInstance.getSelectableValues().size()));
+                    " modifiable=" + fieldInstance.isModifiable() + " selectableValues.size=" + (fieldInstance.getSelectableValues() == null
+                    ? 0
+                    : fieldInstance.getSelectableValues().size()));
         }
         // For the email fields "used" means use EE email address
         if (fieldInstance.isUsed() || DnComponents.DNEMAILADDRESS.equals(fieldInstance.getName()) || DnComponents.RFC822NAME.equals(fieldInstance.getName())
@@ -2915,16 +2875,19 @@ public class EnrollMakeNewRequestBean implements Serializable {
             // Split the clientId on ':', the second to last substring is the loop index
             String[] split = emailInput.getClientId().split(":");
             index = Integer.parseInt(split[split.length - 2]);
-            // log.debug("Index " + index + " for clientId '" + emailInput.getClientId() + "'.");
         }
         if (emailInput != null && emailInput.getValue() != null) {
             email = emailInput.getValue().toString();
-            log.debug("Index " + index + " mail part '" + email + "'.");
+            if (!LogRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+                log.debug("Index " + index + " mail part '" + email + "'.");
+            }
         }
         String domain = "";
         if (domainInput != null && domainInput.getValue() != null) {
             domain = domainInput.getValue().toString();
-            log.debug("Index " + index + " domain part '" + domain + "'.");
+            if (!LogRedactionUtils.isRedactPii(endEntityInformation.getEndEntityProfileId())) {
+                log.debug("Index " + index + " domain part '" + domain + "'.");
+            }
         }
         String concatenated = "";
         if (!email.trim().isEmpty() && !domain.trim().isEmpty()) {
@@ -2947,13 +2910,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 fi.get(index).setValue(concatenated);
             }
         }
-        log.debug("Index " + index + " set to rfc822mail '" + email + "' / domain '" + domain + "' / conc. " + concatenated + ".");
+        log.debug("Index " + index + " set to rfc822mail '" + LogRedactionUtils.getRedactedMessage(email) + "' / domain '" + LogRedactionUtils.getRedactedMessage(domain) + "' / conc. " + concatenated + ".");
     }
 
     /**
-     * Clears or populates the auto completion menu list below the EAB ID 
-     * field (max. 32 entries).  
-     * 
+     * Clears or populates the auto completion menu list below the EAB ID
+     * field (max. 32 entries).
+     *
      * @param event the AJAX event.
      */
     public void autoCompleteEabId(final AjaxBehaviorEvent event) {
@@ -2984,15 +2947,15 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 if (log.isTraceEnabled()) {
                     String namespaces = String.join(",", eabNamespaces);
                     log.trace("Result set for EAB ID auto complete for namespaces '" + namespaces + "': "
-                            + eabIdAutoCompleteSelectItems.stream().map(e -> e.getValue()).toArray());
+                            + eabIdAutoCompleteSelectItems.stream().map(SelectItem::getValue).toArray());
                 }
             }
         }
     }
-    
+
     /**
      * Copies the selected value from the auto complete menu into he EAB ID text field.
-     * 
+     *
      * @param event the AJAX event.
      */
     public void setAutoCompleteForEabId(final AjaxBehaviorEvent event) {
@@ -3003,10 +2966,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         eabIdAutoComplete = "...";
     }
-    
+
     private String eabIdAutoComplete;
-    
-    private List<SelectItem> eabIdAutoCompleteSelectItems = new ArrayList<>() ;
+
+    private List<SelectItem> eabIdAutoCompleteSelectItems = new ArrayList<>();
 
     public String getEabIdAutoComplete() {
         return eabIdAutoComplete;
@@ -3023,19 +2986,20 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setEabIdAutoCompleteSelectItems(List<SelectItem> accountBindingIdAutoCompleteSelectItems) {
         this.eabIdAutoCompleteSelectItems = accountBindingIdAutoCompleteSelectItems;
     }
-    
+
     public boolean getHasEabIdAutoCompleteSelectItems() {
         return eabIdAutoCompleteSelectItems.size() > 0;
     }
-    
+
     // SSH enrollment fields
+
     /**
      * @return true if the current certificate profile is of type SSH
      */
     public boolean isRenderSshEnrolmentFields() {
-        if(StringUtils.isNotEmpty(getSelectedCertificateProfile()) && getSelectedKeyPairGenerationEnum()!=null &&
+        if (StringUtils.isNotEmpty(getSelectedCertificateProfile()) && getSelectedKeyPairGenerationEnum() != null &&
                 this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile()))
-                    .getType() == CertificateConstants.CERTTYPE_SSH) {
+                        .getType() == CertificateConstants.CERTTYPE_SSH) {
             return true;
         } else {
             return false;
@@ -3065,37 +3029,37 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void getSshPubKeyFileName(String sshPubKeyFileName) {
         this.sshPubKeyFileName = sshPubKeyFileName;
     }
-    
-    
+
+
     private EndEntityProfile getSelectedEndEntityProfileContent() {
-        if(StringUtils.isNotEmpty(getSelectedEndEntityProfile())) {
+        if (StringUtils.isNotEmpty(getSelectedEndEntityProfile())) {
             return this.authorizedEndEntityProfiles.getValue(Integer.parseInt(getSelectedEndEntityProfile()));
-        } 
+        }
         return null;
     }
-    
+
     private CertificateProfile getSelectedCertificateProfileContent() {
-        if(StringUtils.isNotEmpty(getSelectedCertificateProfile())) {
+        if (StringUtils.isNotEmpty(getSelectedCertificateProfile())) {
             return this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile()));
-        } 
+        }
         return null;
     }
 
     public boolean isModifiableCriticalOptionsForceCommand() {
         EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
-        return eeProfile!=null ? eeProfile.isSshForceCommandModifiable() : false;
+        return eeProfile != null ? eeProfile.isSshForceCommandModifiable() : false;
     }
-    
+
     public boolean isRequiredCriticalOptionsForceCommand() {
         EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
-        return eeProfile!=null ? eeProfile.isSshForceCommandRequired() : false;
+        return eeProfile != null ? eeProfile.isSshForceCommandRequired() : false;
     }
 
     public String getCriticalOptionsForceCommand() {
-        if(criticalOptionsForceCommand==null 
+        if (criticalOptionsForceCommand == null
                 && StringUtils.isNotEmpty(getSelectedEndEntityProfile())) {
             criticalOptionsForceCommand = getSelectedEndEntityProfileContent().getSshForceCommand();
-            if(criticalOptionsForceCommand==null) {
+            if (criticalOptionsForceCommand == null) {
                 criticalOptionsForceCommand = "";
             }
         }
@@ -3105,22 +3069,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setCriticalOptionsForceCommand(String criticalOptionsForceCommand) {
         this.criticalOptionsForceCommand = criticalOptionsForceCommand;
     }
-    
+
     public boolean isModifiableCriticalOptionsSourceAddress() {
         EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
-        return eeProfile!=null ? eeProfile.isSshSourceAddressModifiable() : false;
+        return eeProfile != null ? eeProfile.isSshSourceAddressModifiable() : false;
     }
-    
+
     public boolean isRequiredCriticalOptionsSourceAddress() {
         EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
-        return eeProfile!=null ? eeProfile.isSshSourceAddressRequired() : false;
+        return eeProfile != null ? eeProfile.isSshSourceAddressRequired() : false;
     }
 
     public String getCriticalOptionsSourceAddress() {
-        if(criticalOptionsSourceAddress==null 
+        if (criticalOptionsSourceAddress == null
                 && StringUtils.isNotEmpty(getSelectedEndEntityProfile())) {
             criticalOptionsSourceAddress = getSelectedEndEntityProfileContent().getSshSourceAddress();
-            if(criticalOptionsSourceAddress==null) {
+            if (criticalOptionsSourceAddress == null) {
                 criticalOptionsSourceAddress = "";
             }
         }
@@ -3140,12 +3104,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     public boolean isModifiableCriticalOptionsVerifyRequired() {
         EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
-        return eeProfile!=null ? eeProfile.isSshVerifyRequiredModifiable() : false;
+        return eeProfile != null ? eeProfile.isSshVerifyRequiredModifiable() : false;
     }
-    
+
     public boolean isRequiredCriticalOptionsVerifyRequired() {
         EndEntityProfile eeProfile = getSelectedEndEntityProfileContent();
-        return eeProfile!=null ? eeProfile.isSshVerifyRequiredRequired() : false;
+        return eeProfile != null ? eeProfile.isSshVerifyRequiredRequired() : false;
     }
 
     public boolean getCriticalOptionsVerifyRequired() {
@@ -3161,7 +3125,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setCriticalOptionsVerifyRequired(final boolean criticalOptionsVerifyRequired) {
         this.criticalOptionsVerifyRequired = Optional.of(criticalOptionsVerifyRequired);
     }
-    
+
     public boolean isRenderedSshAdditionalExtensions() {
         return true; // will change soon
     }
@@ -3173,12 +3137,12 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setSshAdditionalExtensions(String sshAdditionalExtensions) {
         this.sshAdditionalExtensions = sshAdditionalExtensions;
     }
-    
+
     public List<EndEntityProfile.FieldInstance> getSshPrincipals() {
-        if(getSelectedEndEntityProfileContent()==null) {
+        if (getSelectedEndEntityProfileContent() == null) {
             return null;
         }
-        if(sshPrincipals==null) {
+        if (sshPrincipals == null) {
             sshPrincipals = new ArrayList<>();
             final Field field = getSelectedEndEntityProfileContent().new Field(SshEndEntityProfileFields.SSH_PRINCIPAL);
             for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
@@ -3187,33 +3151,33 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         return sshPrincipals;
     }
-    
+
     public String getSshPrincipalsString() {
         StringBuilder sb = new StringBuilder();
-        for(EndEntityProfile.FieldInstance instance: getSshPrincipals()) {
-            if(StringUtils.isNotEmpty(instance.getValue())){
+        for (EndEntityProfile.FieldInstance instance : getSshPrincipals()) {
+            if (StringUtils.isNotEmpty(instance.getValue())) {
                 sb.append(instance.getValue() + ",");
             }
         }
         return sb.toString();
     }
-    
+
     public boolean isEnabledDownloadSshCertificate() {
-        return isRenderSshEnrolmentFields() && sshPubKeyDescription!=null;
+        return isRenderSshEnrolmentFields() && sshPubKeyDescription != null;
     }
-    
+
     public boolean isRenderedDownloadSshCertificate() {
         // TODO: add validations later
         // TODO approval
-        return isRenderSshEnrolmentFields() && getSelectedKeyPairGenerationEnum()==KeyPairGeneration.PROVIDED_BY_USER;
+        return isRenderSshEnrolmentFields() && getSelectedKeyPairGenerationEnum() == KeyPairGeneration.PROVIDED_BY_USER;
     }
-    
+
     public boolean isUploadSshPubKeyRequestRendered() {
-        return isRenderSshEnrolmentFields() && getSelectedKeyPairGenerationEnum()==KeyPairGeneration.PROVIDED_BY_USER;
+        return isRenderSshEnrolmentFields() && getSelectedKeyPairGenerationEnum() == KeyPairGeneration.PROVIDED_BY_USER;
     }
-        
+
     public void uploadSshPubKey() {
-        if(uploadFile!=null) {
+        if (uploadFile != null) {
             try {
                 final byte[] fileBytes = IOUtils.toByteArray(uploadFile.getInputStream(), uploadFile.getSize());
                 sshPublicKeyString = new String(fileBytes);
@@ -3223,13 +3187,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 // NOPMD
             }
         }
-        if(StringUtils.isNotEmpty(sshPublicKeyString)) {
+        if (StringUtils.isNotEmpty(sshPublicKeyString)) {
             updateSshPublicKey();
             return;
         }
         raLocaleBean.addMessageError(ENROLL_INVALID_SSH_PUB_KEY);
     }
-    
+
     private void updateSshPublicKey() {
         try {
             SshPublicKey pubKey = SshKeyFactory.INSTANCE.extractSshPublicKeyFromFile(sshPublicKeyString.getBytes());
@@ -3237,28 +3201,29 @@ public class EnrollMakeNewRequestBean implements Serializable {
             algorithmFromCsr = pubKey.getKeyAlgorithm();
             sshPubKeyDescription = "Algorithm: " + pubKey.getKeyAlgorithm() + ", encoded key: " + Base64.encodeBase64String(sshPublicKey);
             sshPubKeyDescription = sshPubKeyDescription.substring(0, Math.min(100, sshPubKeyDescription.length()));
-            
-            int certEnd = sshPublicKeyString.indexOf(" ", sshPublicKeyString.indexOf(" ")+1);
-            if(certEnd!=-1) {
-                sshCertificateComment = sshPublicKeyString.substring(certEnd+1).trim();
+
+            int certEnd = sshPublicKeyString.indexOf(" ", sshPublicKeyString.indexOf(" ") + 1);
+            if (certEnd != -1) {
+                sshCertificateComment = sshPublicKeyString.substring(certEnd + 1).trim();
                 log.info("sshCertificateComment: " + sshCertificateComment);
             }
-            
+
         } catch (Exception e) {
             sshPublicKey = null;
-            sshPubKeyDescription = raLocaleBean.getMessage("enroll_invalid_ssh_pub_key");;
+            sshPubKeyDescription = raLocaleBean.getMessage("enroll_invalid_ssh_pub_key");
+            ;
             sshPublicKeyString = null;
             log.error("error: ", e);
         }
     }
-    
+
     public String getSshPubKeyDescription() {
         return sshPubKeyDescription;
     }
-    
+
     public String getSshPubKeyRequest() {
-       if (StringUtils.isEmpty(sshPublicKeyString)) {
-           sshPublicKeyString = raLocaleBean.getMessage("enroll_upload_ssh_pubkey_placeholder");
+        if (StringUtils.isEmpty(sshPublicKeyString)) {
+            sshPublicKeyString = raLocaleBean.getMessage("enroll_upload_ssh_pubkey_placeholder");
         }
         return sshPublicKeyString;
     }
@@ -3269,56 +3234,56 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public void setSshPubKeyRequest(final String sshPublicKeyString) {
         this.sshPublicKeyString = sshPublicKeyString;
     }
-    
-    private List<String> getSshPrincipalsList(){
-        
+
+    private List<String> getSshPrincipalsList() {
+
         List<String> principals = new ArrayList<>();
-        for(EndEntityProfile.FieldInstance instance: getSshPrincipals()) {
-            if(StringUtils.isNotEmpty(instance.getValue())){
+        for (EndEntityProfile.FieldInstance instance : getSshPrincipals()) {
+            if (StringUtils.isNotEmpty(instance.getValue())) {
                 principals.add(instance.getValue());
             }
         }
         return principals;
     }
-    
+
     public void downloadSshCertificate() {
         byte[] token = enrollSshCertificate();
         downloadToken(token, APPLICATION_OCTET_STREAM, "-cert.pub");
     }
 
     private byte[] enrollSshCertificate() {
-        
-        if(StringUtils.isEmpty(getEndEntityInformation().getUsername())) {
-            return null;
-        }
-        
-        if(sshPublicKey==null && getSelectedKeyPairGenerationEnum()!=KeyPairGeneration.POSTPONE) {
-            raLocaleBean.addMessageError(ENROLL_INVALID_SSH_PUB_KEY);
-            return null;
-        }
-        
-        if(StringUtils.isEmpty(getSshKeyId())) {
-            raLocaleBean.addMessageError("enroll_ssh_keyid_required");
-            return null;
-        }
-        
-        final Properties additionalExtensionDataParser = new Properties();
-        Map<String, String> criticalOptionsToAdd = new HashMap<String, String>();
-        Map<String, byte[]> additionalExtensionsToAdd = new HashMap<String, byte[]>();
 
-        if(StringUtils.isNotEmpty(getCriticalOptionsForceCommand())) {
+        if (StringUtils.isEmpty(getEndEntityInformation().getUsername())) {
+            return new byte[0];
+        }
+
+        if (sshPublicKey == null && getSelectedKeyPairGenerationEnum() != KeyPairGeneration.POSTPONE) {
+            raLocaleBean.addMessageError(ENROLL_INVALID_SSH_PUB_KEY);
+            return new byte[0];
+        }
+
+        if (StringUtils.isEmpty(getSshKeyId())) {
+            raLocaleBean.addMessageError("enroll_ssh_keyid_required");
+            return new byte[0];
+        }
+
+        final Properties additionalExtensionDataParser = new Properties();
+        Map<String, String> criticalOptionsToAdd = new HashMap<>();
+        Map<String, byte[]> additionalExtensionsToAdd = new HashMap<>();
+
+        if (StringUtils.isNotEmpty(getCriticalOptionsForceCommand())) {
             criticalOptionsToAdd.put(
                     SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, getCriticalOptionsForceCommand());
         }
-        
-        if(StringUtils.isNotEmpty(getCriticalOptionsSourceAddress())) {
+
+        if (StringUtils.isNotEmpty(getCriticalOptionsSourceAddress())) {
             criticalOptionsToAdd.put(
                     SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, getCriticalOptionsSourceAddress());
         }
 
         if (criticalOptionsVerifyRequired.isPresent() && criticalOptionsVerifyRequired.get()) {
             criticalOptionsToAdd.put(
-                SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
+                    SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP, null);
         }
 
         if (getSshAdditionalExtensions() != null) {
@@ -3331,7 +3296,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             for (Object o : additionalExtensionDataParser.keySet()) {
                 if (o instanceof String) {
                     String key = (String) o;
-                    if(key.isEmpty()) {
+                    if (key.isEmpty()) {
                         continue;
                     }
                     additionalExtensionsToAdd.put(key, additionalExtensionDataParser.getProperty(key).getBytes());
@@ -3339,11 +3304,11 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
         }
 
-        
-        SshRequestMessage requestMessage = new SshRequestMessage(sshPublicKey, sshKeyId, 
+
+        SshRequestMessage requestMessage = new SshRequestMessage(sshPublicKey, sshKeyId,
                 getSshPrincipalsList(), additionalExtensionsToAdd, criticalOptionsToAdd, sshCertificateComment);
         String password = getEndEntityInformation().getPassword();
-        if(StringUtils.isEmpty(password)) {
+        if (StringUtils.isEmpty(password)) {
             final byte[] randomData = new byte[16];
             final Random random = new SecureRandom();
             random.nextBytes(randomData);
@@ -3351,7 +3316,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
         requestMessage.setUsername(getEndEntityInformation().getUsername());
         requestMessage.setPassword(password);
-        
+
         endEntityInformation.setPassword(password);
         endEntityInformation.setCAId(getCAInfo().getCAId());
         endEntityInformation.setCertificateProfileId(authorizedCertificateProfiles.get(Integer.parseInt(getSelectedCertificateProfile())).getId());
@@ -3362,22 +3327,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
         endEntityInformation.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
         endEntityInformation.setTimeCreated(new Date());
         endEntityInformation.setTimeModified(new Date());
-        
+
         try {
-            if(getSelectedKeyPairGenerationEnum()==KeyPairGeneration.PROVIDED_BY_USER) {
-                if(raMasterApiProxyBean.searchUser(
-                        raAuthenticationBean.getAuthenticationToken(), getEndEntityInformation().getUsername())!=null){
+            if (getSelectedKeyPairGenerationEnum() == KeyPairGeneration.PROVIDED_BY_USER) {
+                if (raMasterApiProxyBean.searchUser(
+                        raAuthenticationBean.getAuthenticationToken(), getEndEntityInformation().getUsername()) != null) {
                     throw new EjbcaException(ErrorCode.USER_ALREADY_EXISTS);
                 }
                 return raMasterApiProxyBean.enrollAndIssueSshCertificate(
                         raAuthenticationBean.getAuthenticationToken(), endEntityInformation, requestMessage);
-            } else {                
+            } else {
                 requestMessage.populateEndEntityData(endEntityInformation, getSelectedCertificateProfileContent());
                 // for SSH enroll we do not need clearPwd as public key is always generated by client(POSTPONE case)
                 raMasterApiProxyBean.addUser(raAuthenticationBean.getAuthenticationToken(), endEntityInformation, false);
                 raLocaleBean.addMessageInfo("enroll_end_entity_has_been_successfully_added", endEntityInformation.getUsername());
                 //TODO approval
-                return null;
+                return new byte[0];
             }
         } catch (AuthorizationDeniedException e) {
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
@@ -3390,8 +3355,10 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     log.info("Client " + raAuthenticationBean.getAuthenticationToken() + " failed to add end entity since the username " + endEntityInformation.getUsername() + " already exists");
                 } else if (errorCode.equals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER)) {
                     // TODO update error messages
+                    final int eepId = endEntityInformation.getEndEntityProfileId();
                     raLocaleBean.addMessageError("enroll_subject_dn_already_exists_for_another_user", subjectDn.getValue());
-                    log.info("Subject DN " + subjectDn.getValue() + " already exists for another user", e);
+                    log.info("Subject DN " + LogRedactionUtils.getSubjectDnLogSafe(subjectDn.getValue(), eepId) + " already exists for another user",
+                            LogRedactionUtils.getRedactedThrowable(e, eepId));
                 } else if (errorCode.equals(ErrorCode.USER_DOESNT_FULFILL_END_ENTITY_PROFILE)) {
                     raLocaleBean.addMessageError("enroll_user_does_not_fulfill_profile", cleanExceptionMessage(e));
                     log.info("End entity information does not fulfill profile: " + e.getMessage() + ", " + errorCode);
@@ -3406,9 +3373,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } finally {
             endEntityInformation.setUsername(StringUtils.EMPTY);
         }
-        
-        return null;
+
+        return new byte[0];
     }
-    
+
 }
 

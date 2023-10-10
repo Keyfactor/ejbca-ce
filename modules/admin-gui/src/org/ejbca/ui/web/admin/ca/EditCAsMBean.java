@@ -13,49 +13,15 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.FacesException;
-import javax.faces.component.UIInput;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
@@ -113,15 +79,47 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 import org.ejbca.ui.web.admin.certprof.CertProfileBean.ApprovalRequestItem;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.FacesException;
+import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -157,10 +155,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private String editCaName;
     private int caid = 0;
 
-    private final TreeMap<String,Integer> rootCaProfiles = getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames();
-    private final TreeMap<String,Integer> subCaProfiles = getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames();
+    private final Map<String,Integer> rootCaProfiles = getEjbcaWebBean().getAuthorizedRootCACertificateProfileNames();
+    private final Map<String,Integer> subCaProfiles = getEjbcaWebBean().getAuthorizedSubCACertificateProfileNames();
     //TODO: reconsider if IEEE 1609 RCA is implemented
-    private final TreeMap<String,Integer> itsEcaProfiles = getEjbcaWebBean().getAuthorizedItsCACertificateProfileNames();
+    private final Map<String,Integer> itsEcaProfiles = getEjbcaWebBean().getAuthorizedItsCACertificateProfileNames();
 
     private CaInfoDto caInfoDto = new CaInfoDto();
     private boolean isEditCA;
@@ -1057,9 +1055,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             resultList.add(new SelectItem(current, current, ""));
         }
 
-        // "0" is the first "Create a new Crypto Token..." option in the select list.
         // There is no information to filter signing algorithms by.
-        if (!StringUtils.isEmpty(cryptoTokenIdParam) && !cryptoTokenIdParam.equals("0")) {
+        if (!StringUtils.isEmpty(cryptoTokenIdParam) && !cryptoTokenIdParam.equals(CAInterfaceBean.PLACEHOLDER_CRYPTO_TOKEN_ID + "")) {
             try {
                 final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), Integer.parseInt(cryptoTokenIdParam));
                 return resultList.stream()
@@ -1859,7 +1856,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 addNonTranslatedErrorMessage("CITS CA updating imported certificate is not supported yet.");
                 return EditCaUtil.MANAGE_CA_NAV;
             }
-            importCACertUpdate(caid, fileBuffer);
+            importCACertUpdate(caid, fileBuffer, fileRecieveFileImportRenewal.getSubmittedFileName());
             addInfoMessage(getEjbcaWebBean().getText("CARENEWED"));
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (final Exception e) {
@@ -1868,16 +1865,23 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
     }
     
-    private void importCACertUpdate(int caId, byte[] certbytes) throws CertificateParsingException, CADoesntExistsException,
+    private void importCACertUpdate(int caId, byte[] certbytes, String fileName) throws CertificateParsingException,
             AuthorizationDeniedException, CertificateImportException, CmsCertificatePathMissingException {
-        Collection<Certificate> certs = null;
+        Collection<Certificate> certs;
         try {
             certs = CertTools.getCertsFromPEM(new ByteArrayInputStream(certbytes), Certificate.class);
         } catch (CertificateException e) {
             log.debug("Input stream is not PEM certificate(s): " + e.getMessage());
             // See if it is a single binary certificate
+            Certificate cert = CertTools.getCertfromByteArray(certbytes, Certificate.class);
+            if (cert == null) {
+                throw new CertificateParsingException(fileName + " does not contain a certificate to import");
+            }
             certs = new ArrayList<>();
-            certs.add(CertTools.getCertfromByteArray(certbytes, Certificate.class));
+            certs.add(cert);
+        }
+        if (certs.isEmpty()) {
+            throw new CertificateImportException("No certificates to import found in " + fileName);
         }
         caAdminSession.updateCACertificate(administrator, caId, EJBTools.wrapCertCollection(certs));
     }
@@ -2465,7 +2469,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
             for (final Entry<String, String> entry : availableCryptoTokens) {
                 // Ensure that we have a default for the next section
-                if (isCryptoTokenIdParamNull() || caInfoDto.getCryptoTokenIdParam().length() == 0) {
+                if (isCryptoTokenIdParamNull() || caInfoDto.getCryptoTokenIdParam().isEmpty()) {
                     caInfoDto.setCryptoTokenIdParam(entry.getKey());
                 }
 
@@ -2474,7 +2478,8 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 if (currentCryptoTokenId == 0 || selectCurrent) {
                     currentCryptoTokenId = Integer.parseInt(entry.getKey());
                 }
-                resultList.add(new SelectItem(entry.getKey(), entry.getValue(), ""));
+                final boolean itemSelectionDisabled = currentCryptoTokenId == CAInterfaceBean.PLACEHOLDER_CRYPTO_TOKEN_ID;
+                resultList.add(new SelectItem(entry.getKey(), entry.getValue(), "", itemSelectionDisabled));
             }
 
             if (numSelected == 0) {

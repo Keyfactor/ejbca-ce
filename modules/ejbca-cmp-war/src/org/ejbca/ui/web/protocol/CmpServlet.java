@@ -60,6 +60,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.ConcurrentCache;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.provider.EkuPKIXCertPathChecker;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -169,8 +170,8 @@ public class CmpServlet extends HttpServlet {
                 }
                 final PKIHeader header = pkiMessage.getHeader();
                 String messageInformation = "CMP message: pvno = " + header.getPvno() +
-                        ", sender = " + header.getSender().toString() +
-                        ", recipient = " + header.getRecipient().toString() +
+                        ", sender = " + LogRedactionUtils.getRedactedMessage(header.getSender().toString()) + // GeneralName
+                        ", recipient = " + LogRedactionUtils.getRedactedMessage(header.getRecipient().toString()) +
                         ", transactionID = " + header.getTransactionID();
                 log.info("Validating CMP message: " + messageInformation);
                 if (pkiMessage.getProtection() == null) {
@@ -456,7 +457,7 @@ public class CmpServlet extends HttpServlet {
             } 
         } else {
             // CMP Client mode, get secret from end entity clear text password
-            final String requestDN = getSubjectDNFromPkiMessage(pkiMessage, cmpConfiguration, alias);
+            final String requestDN = getSubjectDNFromPkiMessage(pkiMessage);
             if (requestDN != null) {
                 String extractedUsername = CertTools.getPartFromDN(requestDN, cmpConfiguration.getExtractUsernameComponent(alias));
                 if (log.isDebugEnabled()) {
@@ -485,7 +486,7 @@ public class CmpServlet extends HttpServlet {
                 throw new CmpServletValidationError(errmsg);
             }
             try {
-                if (verifier.verify(passwd) == false) {
+                if (!verifier.verify(passwd)) {
                     String msg = intres.getLocalizedMessage("cmp.errorauthmessage", "Failed to verify message using both Global Shared Secret and CMP RA Authentication Secret");
                     log.info(msg);
                     throw new CmpServletValidationError(msg);
@@ -536,14 +537,14 @@ public class CmpServlet extends HttpServlet {
                 if (log.isDebugEnabled()) {
                     log.debug("Using revocation status from the cache");
                 }
-                if (!invokerEntry.getValue()) { // 'true' value => certificate is OK => NOT revoked
+                if (Boolean.FALSE.equals(invokerEntry.getValue())) { // 'true' value => certificate is OK => NOT revoked
                     log.info(msg + " " + messageInformation);
                     throw new CmpServletValidationError(msg);
                 }
             } else {
                 CertificateStatus certificateStatus = null;
                 try {
-                    certificateStatus = raMasterApiProxyBean.getCertificateStatus(raCmpAuthCheckToken, cert.getIssuerDN().getName(), certSerialnumber);
+                    certificateStatus = raMasterApiProxyBean.getCertificateStatus(raCmpAuthCheckToken, cert.getIssuerX500Principal().getName(), certSerialnumber);
                 } catch (CADoesntExistsException | AuthorizationDeniedException e) {
                     log.info(e.getLocalizedMessage());
                     throw new CmpServletValidationError(msg);
@@ -696,7 +697,7 @@ public class CmpServlet extends HttpServlet {
         return null;
      }
      
-     private String getSubjectDNFromPkiMessage(final PKIMessage pkiMessage, CmpConfiguration cmpConfiguration, String alias )  {
+     private String getSubjectDNFromPkiMessage(final PKIMessage pkiMessage)  {
          final int tagnr = pkiMessage.getBody().getType();
          if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST 
                  || tagnr==CmpPKIBodyConstants.CERTIFICATAIONREQUEST

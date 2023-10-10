@@ -274,6 +274,33 @@
                  size="20" title="#{web.text.FORMAT_MILLISECONDS}"/>
 
 		</h:panelGrid>
+		
+		<!-- Redact PII -->
+		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
+			<h:outputLabel for="header_redact_pii" value="#{web.text.REDACT_SUBJECT}" style="font-weight: bold; font-size:1.2em;"/>
+			<h:panelGroup id="header_redact_pii"/>
+			
+			<h:panelGroup>
+				<h:outputLabel for="redactpiidefault" value="#{web.text.REDACT_SUBJECT_DEFAULT}" styleClass="titles"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Overview.html')}" escape="false"/>
+				<br/>
+				<h:outputText value="#{web.text.REDACTPIIDEFAULT_HELP}" styleClass="help"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="redactpiidefault" value="#{systemConfigMBean.currentConfig.redactPiiByDefault}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:outputLabel for="redactpiidefault" value="#{web.text.PC_ACTION_ENABLE}" />
+			</h:panelGroup>
+			
+			<h:panelGroup>
+				<h:outputLabel for="redactpiienforced" value="#{web.text.REDACT_SUBJECT_ENFORCED}" styleClass="titles"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Overview.html')}" escape="false"/>
+			</h:panelGroup>
+			<h:panelGroup>
+				<h:selectBooleanCheckbox id="redactpiienforced" value="#{systemConfigMBean.currentConfig.redactPiiEnforced}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+				<h:outputLabel for="redactpiienforced" value="#{web.text.PC_ACTION_ENABLE}" />
+			</h:panelGroup>
+		</h:panelGrid>
+			
 
 		<!-- Command Line Interface -->
 
