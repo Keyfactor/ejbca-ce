@@ -163,7 +163,9 @@
 	<property name="mod.ejbca-rest-endentity.lib" location="${mod.dist.path}/ejbca-rest-endentity.jar" />
 	<property name="mod.ejbca-rest-ssh.path" location="${mod.path}/ejbca-rest-ssh" />
 	<property name="mod.ejbca-rest-ssh.lib" location="${mod.dist.path}/ejbca-rest-ssh.jar" />
-    <property name="mod.ejbca-rest-api.war" location="${mod.dist.path}/ejbca-rest-api.war" />
+	<property name="mod.ejbca-rest-system.path" location="${mod.path}/ejbca-rest-system" />
+	<property name="mod.ejbca-rest-system.lib" location="${mod.dist.path}/ejbca-rest-system.jar" />
+ 	<property name="mod.ejbca-rest-api.war" location="${mod.dist.path}/ejbca-rest-api.war" />
     <property name="swagger-ui.war" location="${ejbca.home}/lib/swagger/swagger-ui.war" />
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
 	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
@@ -482,6 +484,13 @@
 		<path refid="lib.bouncycastle-util.classpath"/>
 	</path>
 
+	<path id="lib.hibernate.validator">
+		<fileset dir="${ejbca.home}/lib/hibernate">
+			<include name="hibernate-validator-6.2.5.Final.jar"/>
+		</fileset>
+		<fileset dir="${ejbca.home}/lib" includes="el-impl-2.2.jar"/>
+	</path>
+
 	<path id="lib.jpa.classpath">
         <fileset dir="${ejbca.home}/lib/hibernate">
             <include name="antlr-*.jar"/>
@@ -609,6 +618,10 @@
 	
 	 <condition property="mod.ejbca-rest-ssh.exists">
 	        <available file="${mod.ejbca-rest-ssh.path}/build.xml"/>
+	 </condition>
+
+	<condition property="mod.ejbca-rest-system.exists">
+	        <available file="${mod.ejbca-rest-system.path}/build.xml"/>
 	 </condition>
     
     <condition property="mod.statedump.exists">

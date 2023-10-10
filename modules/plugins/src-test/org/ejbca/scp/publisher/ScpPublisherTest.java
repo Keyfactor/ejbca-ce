@@ -162,4 +162,63 @@ public class ScpPublisherTest {
         //To check that publisher works, verify that the published CRL exists at the location
     }
 
+    @Ignore
+    @Test
+    public void testPublishCertificateWithCustomPorts() throws Exception {
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        CAInfo cainfo = caSession.getCAInfo(internalAdmin, CA_NAME);
+        CAToken catoken = cainfo.getCAToken();
+        catoken.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, "foo");
+        cainfo.setCAToken(catoken);
+        caSession.editCA(internalAdmin, cainfo);
+        ScpPublisher scpPublisher = new ScpPublisher();
+        Properties properties = new Properties();
+        properties.setProperty(ScpPublisher.SIGNING_CA_PROPERTY_NAME, Integer.toString(CA_DN.hashCode()));
+        properties.setProperty(ScpPublisher.ANONYMIZE_CERTIFICATES_PROPERTY_NAME, "false");
+        properties.setProperty(ScpPublisher.CERT_SCP_DESTINATION_PROPERTY_NAME, "download.primekey.com:tmp");
+        properties.setProperty(ScpPublisher.CRL_SCP_DESTINATION_PROPERTY_NAME, "download.primekey.com:tmp");
+        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PROPERTY_NAME, "/Users/mikek/.ssh/id_rsa");
+        properties.setProperty(ScpPublisher.SCP_KNOWN_HOSTS_PROPERTY_NAME, "/Users/mikek/.ssh/known_hosts");
+        properties.setProperty(ScpPublisher.SSH_USERNAME, "mikek");
+        properties.setProperty(ScpPublisher.SSH_PORT, "22");
+        String password = "";
+        String encryptionKey = "supersecretpassword";
+        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password, encryptionKey, false));
+        scpPublisher.init(properties);
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final int reason = RevocationReasons.KEYCOMPROMISE.getDatabaseValue();
+        final long date = 1541434399560L;
+        final String subjectDn = "C=SE,O=PrimeKey,CN=ScpPublisherTest";
+        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=PrimeKey,CN=ScpPublisherTest", 365, null, keys.getPrivate(), keys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        TestAlwaysAllowLocalAuthenticationToken testAlwaysAllowLocalAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken("testPublishCertificate");
+        final String username = "ScpContainer";
+        final long lastUpdate = 4711L;
+        final int certificateProfileId = 1337;
+        scpPublisher.storeCertificate(testAlwaysAllowLocalAuthenticationToken, certificate, username, null, subjectDn, null, CertificateConstants.CERT_REVOKED,
+                CertificateConstants.CERTTYPE_ENDENTITY, date, reason, null, certificateProfileId, lastUpdate, null);
+        //To check that publisher works, verify that the published certificate exists at the location
+    }
+
+    @Ignore
+    @Test
+    public void testPublishCrlWithCustomPorts() throws PublisherException {
+        ScpPublisher scpPublisher = new ScpPublisher();
+        Properties properties = new Properties();
+        properties.setProperty(ScpPublisher.ANONYMIZE_CERTIFICATES_PROPERTY_NAME, "false");
+        properties.setProperty(ScpPublisher.CERT_SCP_DESTINATION_PROPERTY_NAME, "download.primekey.com:tmp");
+        properties.setProperty(ScpPublisher.CRL_SCP_DESTINATION_PROPERTY_NAME, "download.primekey.com:tmp");
+        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PROPERTY_NAME, "/Users/mikek/.ssh/id_rsa");
+        properties.setProperty(ScpPublisher.SCP_KNOWN_HOSTS_PROPERTY_NAME, "/Users/mikek/.ssh/known_hosts");
+        properties.setProperty(ScpPublisher.SSH_USERNAME, "mikek");
+        properties.setProperty(ScpPublisher.SSH_PORT, "22");
+        String password = "";
+        final String encryptionKey = "supersecretpassword";
+        properties.setProperty(ScpPublisher.SCP_PRIVATE_KEY_PASSWORD_NAME, StringTools.pbeEncryptStringWithSha256Aes192(password, encryptionKey, false));
+        scpPublisher.init(properties);
+        TestAlwaysAllowLocalAuthenticationToken testAlwaysAllowLocalAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken("testPublishCrl");
+        scpPublisher.storeCRL(testAlwaysAllowLocalAuthenticationToken, testCrl, null, 0, null);
+        //To check that publisher works, verify that the published CRL exists at the location
+    }
+
 }

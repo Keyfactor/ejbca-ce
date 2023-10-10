@@ -62,6 +62,7 @@ import org.junit.runner.RunWith;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
 import static org.easymock.EasyMock.expect;
@@ -426,7 +427,7 @@ public class EjbcaRestHelperUnitTest {
     public void shouldParseCorrectAn() {
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(csr);
         String actualResult = testClass.getSubjectAltName(pkcs10CertificateRequest);
-        String expectedResult = "dNSName=somedns.com, iPAddress=192.168.1.7, dNSName=some.other.dns.com, directoryName=CN=Test\\,L=XX";
+        String expectedResult = DnComponents.DNS + "=somedns.com, " + DnComponents.IPADDR + "=192.168.1.7, " + DnComponents.DNS+ "=some.other.dns.com, " + DnComponents.DIRECTORYNAME + "=CN=Test\\,L=XX";
         assertEquals("Subject AN got incorrectly parsed from pkcs10 certificate request", expectedResult, actualResult);
     }
 }

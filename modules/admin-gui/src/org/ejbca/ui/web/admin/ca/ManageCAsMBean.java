@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipInputStream;
 
@@ -113,7 +112,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
-    private TreeMap<String, Integer> canames = getEjbcaWebBean().getCANames();
+    private final Map<String, Integer> caNames = getEjbcaWebBean().getCANames();
     private CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
@@ -261,8 +260,8 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public Map<Integer, String> getListOfCas() {
         final Map<Integer, String> caMap = new LinkedHashMap<>();
-        for (final String nameofca : canames.keySet()) {
-            int caId = canames.get(nameofca);
+        for (final String nameofca : caNames.keySet()) {
+            int caId = caNames.get(nameofca);
             int caStatus = caBean.getCAStatusNoAuth(caId);
 
             String nameandstatus = nameofca + ", (" + getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus)) + ")";
@@ -355,7 +354,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("CA_NAME_EMPTY");
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        if (canames.containsKey(createCaName)) {
+        if (caNames.containsKey(createCaName)) {
             addErrorMessage("CAALREADYEXISTS", createCaName);
             return EditCaUtil.MANAGE_CA_NAV;
         }
@@ -443,6 +442,10 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     }
 
     public String deleteCA() {
+        if (selectedCaId == 0) {
+            addErrorMessage("YOUMUSTSELECTCA");
+            return EditCaUtil.MANAGE_CA_NAV;
+        }
         try {
             if (!removeCA(selectedCaId)) {
                 addErrorMessage("COULDNTDELETECA");
@@ -502,7 +505,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isBlank(createCaName)) {
             addErrorMessage("CA_NAME_EMPTY");
             return EditCaUtil.MANAGE_CA_NAV;
-        } else if (canames.containsKey(createCaName)) {
+        } else if (caNames.containsKey(createCaName)) {
             addErrorMessage("CAALREADYEXISTS", createCaName);
             return EditCaUtil.MANAGE_CA_NAV;
         } else if (selectedCaId == 0) {

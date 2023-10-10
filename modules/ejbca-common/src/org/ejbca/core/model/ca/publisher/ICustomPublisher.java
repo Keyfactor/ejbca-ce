@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.publisher;
 
 import java.security.cert.Certificate;
 import java.util.Properties;
+import java.util.Set;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -88,5 +89,25 @@ public interface ICustomPublisher {
      * @return true if this publisher type shouldn't be editable
      */
     boolean isReadOnly();
+
+    /**
+     * Validates value of given property identified by its name.
+     *
+     * @param name the name of the validated property
+     * @param value the value of the property to validate
+     * @throws PublisherException if value shall be considered invalid
+     */
+    default void validateProperty(String name, String value) throws PublisherException {
+    }
+
+    /**
+     *
+     * @return set of property names supported by the publisher – used for validation purposes;
+     *         yields empty set by default – override in implementers to indicate allowed keys
+     *         (remember to remove old keys only when keeping the backward compatibility is not necessary!)
+     */
+    default Set<String> getDeclaredPropertyNames() {
+        return Set.of();
+    }
 
 }

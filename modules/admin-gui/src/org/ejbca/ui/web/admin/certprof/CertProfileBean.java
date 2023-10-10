@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.certprof;
 
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -46,18 +50,12 @@ import org.ejbca.cvc.AccessRightAuthTerm;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-
 import javax.annotation.PostConstruct;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -194,6 +192,11 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
             if (prof.getAvailableBitLengthsAsList().isEmpty() && prof.isKeyAlgorithmsRequireKeySizes()) {
                 addErrorMessage("ONEAVAILABLEBITLENGTH");
+                success = false;
+            }
+            if (prof.isKeyAlgorithmsRequireSecurityLevel() &&
+                    (prof.getAvailableSecurityLevelsAsList() == null || prof.getAvailableSecurityLevelsAsList().isEmpty())) {
+                addErrorMessage("ONEAVAILABLESECURITYLEVEL");
                 success = false;
             }
             if (isCtEnabled()) {
@@ -439,6 +442,22 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    public List<SelectItem> getAvailableSecurityLevel() {
+        Set<Integer> availableSecurityLevel = new TreeSet<>();
+        if (certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
+            availableSecurityLevel.addAll(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU);
+        }
+        final List<SelectItem> ret = new ArrayList<>();
+        if (!availableSecurityLevel.isEmpty() && certificateProfile.isKeyAlgorithmsRequireSecurityLevel()) {
+            for (final Integer current : availableSecurityLevel) {
+                ret.add(new SelectItem(current, current.toString()));
+            }
+        } else {
+            ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOALGORITHMWITHSELECTABLESECURITYLEVEL")));
+        }
+        return ret;
+    }
+
     // SelectItem<Integer, String>
     public List<SelectItem> getAvailableBitLengthsAvailable() {
         Set<Integer> availableBitLengths = new TreeSet<>();
@@ -454,9 +473,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSTU);
-        }
-        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
-            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_NTRU);
         }
         final List<SelectItem> ret = new ArrayList<>();
         if (availableBitLengths.size() > 0 && certificateProfile.isKeyAlgorithmsRequireKeySizes()) {
@@ -1376,7 +1392,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
-    public static class ApprovalRequestItem {
+    public static class ApprovalRequestItem implements Serializable {
+        private static final long serialVersionUID = 1487649698300582095L;
+
         private final ApprovalRequestType requestType;
         private int approvalProfileId;
 

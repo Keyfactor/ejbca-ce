@@ -32,7 +32,6 @@ import com.keyfactor.util.CertTools;
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
  * 
- * @version $Id$
  */
 public class GeneralCmpMessage extends BaseCmpMessage {
 

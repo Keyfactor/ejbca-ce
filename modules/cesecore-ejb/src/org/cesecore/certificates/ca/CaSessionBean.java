@@ -93,8 +93,6 @@ import static java.util.Objects.nonNull;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
- *
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -242,6 +240,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 }
             }
             logSession.log(EventTypes.CA_CREATION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), null, null, details);
+            log.info("Created CA with subject DN: " + ca.getSubjectDN());
         } else {
             log.debug("Trying to add null CA, nothing done.");
         }
@@ -1008,7 +1007,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 // Since getCAData has already run upgradeAndMergeToDatabase we can just get the CA here..
                 final CACommon ca = caData.getCA();
                 if (ca != null) {
-                    // CaCache.INSTANCE.removeEntry(caId); // TODO: remove later
                     // Note that we store using the "real" CAId in the cache.
                     CaCache.INSTANCE.updateWith(caData.getCaId(), digest, ca.getName(), ca);
                 }

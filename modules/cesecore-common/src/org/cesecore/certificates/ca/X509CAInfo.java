@@ -51,7 +51,9 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SimpleTime;
 
 import com.keyfactor.util.CertTools;
@@ -102,6 +104,15 @@ public class X509CAInfo extends CAInfo {
     /**
      * This constructor can be used when creating a CA.
      * This constructor uses defaults for the fields that are not specified.
+     * 
+     * @param subjectdn the Subject DN of the CA certificate
+     * @param name the name of the CA
+     * @param status a value from {@link CAConstantsn}
+     * @param certificateProfileId the certificate profile for the CA's certificate. May be a value from {@link CertificateProfileConstants}
+     * @param The validity, expressed in y, d, m, e.g: "365d"
+     * @param the ID of the CA signing this CA. CAInfo.SELFSIGNED for Root CAs.
+     * @param certificatechain the chain of CA certificates. May be null for a Root CA. 
+     * @param catoken the CAToken of this CA
      */
     public static X509CAInfo getDefaultX509CAInfo(final String subjectdn, final String name, final int status,
             final int certificateProfileId, final String encodedValidity, int signedby, final Collection<Certificate> certificatechain, final CAToken catoken) {
@@ -170,6 +181,7 @@ public class X509CAInfo extends CAInfo {
                 .setCrlPartitions(0)
                 .setSuspendedCrlPartitions(0)
                 .setRequestPreProcessor(null)
+                .setExternalCrlDistPoint(null)
                 ;
          return caInfoBuilder.build();
     }
@@ -191,7 +203,8 @@ public class X509CAInfo extends CAInfo {
                       final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand, final boolean acceptRevocationNonExistingEntry, 
                       final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId, 
                       final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions, 
-                      final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains) {
+                      final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains,
+                      final String externalCDP) {
         this.encodedValidity = encodedValidity;
         this.catoken = catoken;
         this.description = description;
@@ -210,6 +223,7 @@ public class X509CAInfo extends CAInfo {
         this.authoritykeyidentifiercritical = authoritykeyidentifiercritical;
         this.usecrlnumber = usecrlnumber;
         this.crlnumbercritical = crlnumbercritical;
+        this.externalCdp = externalCDP;
         this.defaultcrldistpoint = defaultcrldistpoint;
         this.defaultcrlissuer = defaultcrlissuer;
         this.defaultocsplocator = defaultocspservicelocator;
@@ -657,6 +671,7 @@ public class X509CAInfo extends CAInfo {
         private boolean authorityKeyIdentifierCritical = false;
         private boolean useCrlNumber = true;
         private boolean crlNumberCritical = false;
+        private String externalCrlDistPoint = null;
         private String defaultCrlDistPoint = null;
         private String defaultCrlIssuer = null;
         private String defaultOcspCerviceLocator = null;
@@ -937,7 +952,11 @@ public class X509CAInfo extends CAInfo {
 
         /**
          * @param defaultCrlDistPoint the URI of the default CRL distribution point
-         */
+         */ 
+        public X509CAInfoBuilder setExternalCrlDistPoint(String externalCrlDistPoint) {
+            this.externalCrlDistPoint = externalCrlDistPoint;
+            return this;
+        }
         public X509CAInfoBuilder setDefaultCrlDistPoint(String defaultCrlDistPoint) {
             this.defaultCrlDistPoint = defaultCrlDistPoint;
             return this;
@@ -1150,7 +1169,7 @@ public class X509CAInfo extends CAInfo {
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
                                                acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, 
-                                               requestPreProcessor, msCaCompatible, alternateCertificateChains);
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setSubjectDN(subjectDn);
             caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
             caInfo.setName(name);
@@ -1189,7 +1208,7 @@ public class X509CAInfo extends CAInfo {
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
                                                acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, 
-                                               requestPreProcessor, msCaCompatible, alternateCertificateChains);
+                                               requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);
             caInfo.setSubjectAltName(subjectAltName);
@@ -1224,13 +1243,13 @@ public class X509CAInfo extends CAInfo {
                     certlist.add(crt);
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Certlist already contains certificate with subject "+CertTools.getSubjectDN(crt)+", not adding to list");
+                        log.debug("Certlist already contains certificate with subject " + LogRedactionUtils.getSubjectDnLogSafe(crt) + ", not adding to list");
                     }
                 }
             } else {
                 rootcert = (X509Certificate)crt;
                 if (log.isDebugEnabled()) {
-                    log.debug("Using certificate with subject "+CertTools.getSubjectDN(crt)+", as trust anchor, removing from certlist if it is there");
+                    log.debug("Using certificate with subject " + LogRedactionUtils.getSubjectDnLogSafe(crt) + ", as trust anchor, removing from certlist if it is there");
                 }
                 // Don't have the trust anchor in the cert path, remove doesn't do anything if rootcert doesn't exist in certlist
                 certlist.remove(rootcert);

@@ -51,6 +51,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -92,8 +93,9 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String oauthBearerToken) throws AuthorizationDeniedException {
-        if (!raMasterApiProxyBean.isAuthorizedNoLogging(raRestAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST)) {
+    public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String oauthBearerToken, boolean allowNoActiveCa) throws AuthorizationDeniedException {
+        if ((!allowNoActiveCa && !raMasterApiProxyBean.isAuthorizedNoLogging(raRestAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST))
+                || (allowNoActiveCa && !raMasterApiProxyBean.isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(raRestAuthCheckToken, AccessRulesConstants.REGULAR_PEERPROTOCOL_REST))) {
             throw new AuthorizationDeniedException("REST resources is not authorized for this Peer connection");
         }
 
@@ -104,7 +106,8 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             final AuthenticationToken admin = authenticationSession.authenticate(subject);
 
             if ((admin != null) && (!allowNonAdmins)) {
-                if(!raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+                if ((!allowNoActiveCa && !raMasterApiProxyBean.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR))
+                        || (allowNoActiveCa && !raMasterApiProxyBean.isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(raRestAuthCheckToken, AccessRulesConstants.ROLE_ADMINISTRATOR))) {
                     final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
                     throw new AuthorizationDeniedException(msg);
                 }
@@ -119,7 +122,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             final AuthenticationToken admin;
             final OAuthConfiguration oauthConfiguration = raMasterApiProxyBean.getGlobalConfiguration(OAuthConfiguration.class);
             try {
-                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken);
+                admin = authenticationSession.authenticateUsingOAuthBearerToken(oauthConfiguration, oauthBearerToken, null);
                 if (admin == null) {
                     throw new AuthorizationDeniedException("Authentication failed using OAuth Bearer Token");
                 }
@@ -224,7 +227,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
             try {
                 subjectDirectoryAttributeString = SubjectDirAttrExtension.getSubjectDirectoryAttribute(parsedValue);
             } catch (ParseException | IllegalArgumentException e) {
-                throw new EjbcaException(ErrorCode.BAD_REQUEST, e.getMessage());
+                throw new EjbcaException(ErrorCode.BAD_REQUEST, LogRedactionUtils.getRedactedMessage(e.getMessage()));
             }
         }
         return subjectDirectoryAttributeString;
@@ -257,9 +260,5 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     private int getCertificateProfileId(String certificateProfileName) {
         int certificateProfileId = certificateProfileSessionBean.getCertificateProfileId(certificateProfileName);
         return certificateProfileId;
-    }
-
-    public byte[] createCertificateRest(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest request) {
-        return new byte[1337]; // TODO To the happy programmer who called this method without defining it first. Implement it!
     }
 }

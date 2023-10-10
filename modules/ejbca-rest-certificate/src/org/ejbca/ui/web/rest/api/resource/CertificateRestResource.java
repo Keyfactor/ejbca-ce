@@ -12,38 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
-import static org.ejbca.ui.web.rest.api.resource.CertificateRestResourceUtil.authorizeSearchCertificatesRestRequestReferences;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.bind.DatatypeConverter;
-
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -52,12 +27,14 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStatus;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -93,13 +70,41 @@ import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.keyfactor.ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS;
+import static com.keyfactor.ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER;
+import static com.keyfactor.ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER;
+import static com.keyfactor.ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR;
+import static org.ejbca.ui.web.rest.api.resource.CertificateRestResourceUtil.authorizeSearchCertificatesRestRequestReferences;
 
 
 /**
@@ -127,7 +132,7 @@ public class CertificateRestResource extends BaseRestResource {
                     authenticationToken,
                     EnrollCertificateRestRequest.converter().toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest)
             );
-            final X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
             final List<Certificate> certificateChain = enrollCertificateRestRequest.getIncludeChain()
                     ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest.getCertificateAuthorityName())
                     .stream()
@@ -140,13 +145,13 @@ public class CertificateRestResource extends BaseRestResource {
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
-            log.info("exception during enrollPkcs10Certificate: ", e);
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
+            log.info("exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
         }
     }
 
     public Response certificateRequest(final HttpServletRequest requestContext, final CertificateRequestRestRequest certificateRequestRestRequest)
-            throws RestException, AuthorizationDeniedException, CesecoreException, IOException, SignatureException, ConstructionException, NoSuchFieldException {
+            throws RestException, AuthorizationDeniedException, CesecoreException, IOException, SignatureException, NoSuchFieldException {
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
             EnrollPkcs10CertificateRequest requestData = CertificateRequestRestRequest.converter().toEnrollPkcs10CertificateRequest(certificateRequestRestRequest);
@@ -168,21 +173,40 @@ public class CertificateRestResource extends BaseRestResource {
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException |
                  CertificateException | EjbcaException | ParseException e) {
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getMessage());
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+        } catch (ConstructionException e) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "An incorrect certificate request has been passed.");
+        } catch (IllegalKeyException e) {
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "An incorrect certificate key has been passed contain rather too large key or having any other issue.");
         } catch (CertificateExtensionException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
         } catch (IOException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to malformed CSR.");
         } catch (CertificateCreateException e) {
-            if (ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR.equals(e.getErrorCode())) {
-                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
-            } else if (ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode()) ||
-                    ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(e.getErrorCode()) ||
-                    ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS.equals(e.getErrorCode())) {
-                throw new RestException(Status.CONFLICT.getStatusCode(), "Failed to generate certificate due to the new certificate conflicting with an existing one.");
-            } else {
-                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Certificate could not be generated.");
-            }
+            throw makeCertificateCreationException(e);
+        }
+    }
+
+    private RestException makeCertificateCreationException(CertificateCreateException exception) {
+        ErrorCode errorCode = exception.getErrorCode();
+        if (CUSTOM_CERTIFICATE_EXTENSION_ERROR.equals(errorCode)) {
+            return new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
+        } else {
+            return makeWhenSomeOfTheAttributesDoNotExist(errorCode);
+        }
+    }
+
+    private RestException makeWhenSomeOfTheAttributesDoNotExist(ErrorCode errorCode) {
+
+        boolean isSubjectExist = CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(errorCode);
+        boolean isSubjectForTheKeyExist = CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS_FOR_ANOTHER_USER.equals(errorCode);
+        boolean isCertificateForTheKeyExist = CERTIFICATE_FOR_THIS_KEY_ALREADY_EXISTS.equals(errorCode);
+
+        if (isSubjectExist || isSubjectForTheKeyExist || isCertificateForTheKeyExist) {
+            return new RestException(Status.CONFLICT.getStatusCode(),
+                    "Failed to generate certificate due to the new certificate conflicting with an existing one.");
+        } else {
+            return new RestException(Status.BAD_REQUEST.getStatusCode(), "Certificate could not be generated.");
         }
     }
 
@@ -449,10 +473,9 @@ public class CertificateRestResource extends BaseRestResource {
 
     public Response searchCertificates(
             final HttpServletRequest requestContext,
-            final SearchCertificatesRestRequest searchCertificatesRestRequest
+            @Valid final SearchCertificatesRestRequest searchCertificatesRestRequest
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException {
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
-        validateObject(searchCertificatesRestRequest);
         
         Map<Integer, String> availableEndEntityProfiles = 
                 CertificateRestResourceUtil.loadAuthorizedEndEntityProfiles(authenticationToken, raMasterApi);

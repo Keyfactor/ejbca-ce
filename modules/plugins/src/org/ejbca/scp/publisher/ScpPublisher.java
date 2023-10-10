@@ -55,6 +55,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * This class is used for publishing certificates and CRLs to a remote destination over scp. 
@@ -67,17 +68,18 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
 
     public static final String SIGNING_CA_PROPERTY_NAME = "signing.ca.id";
     public static final String SSH_USERNAME = "ssh.username";
+    public static final String SSH_PORT = "ssh.port";
     public static final String CRL_SCP_DESTINATION_PROPERTY_NAME = "crl.scp.destination";
     public static final String CERT_SCP_DESTINATION_PROPERTY_NAME = "cert.scp.destination";
     public static final String SCP_PRIVATE_KEY_PASSWORD_NAME = "scp.privatekey.password";
     public static final String SCP_PRIVATE_KEY_PROPERTY_NAME = "scp.privatekey";
-
     public static final String SCP_KNOWN_HOSTS_PROPERTY_NAME = "scp.knownhosts";
+    public static final int DEFAULT_SSH_PORT_NUMBER = 22;
 
     private static final String EKU_PKIX_OCSPSIGNING = "1.3.6.1.5.5.7.3.9";
 
     private int signingCaId = -1;
-    
+
     private boolean anonymizeCertificates;
 
     private String crlSCPDestination = null;
@@ -85,6 +87,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     private String scpPrivateKey = null;
     private String scpKnownHosts = null;
     private String sshUsername = null;
+    private Integer sshPort = null;
     private String privateKeyPassword = null;
     
     private  Map<String, CustomPublisherProperty> properties = new LinkedHashMap<>();
@@ -113,25 +116,25 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         scpPrivateKey = getProperty(properties, SCP_PRIVATE_KEY_PROPERTY_NAME);
         scpKnownHosts = getProperty(properties, SCP_KNOWN_HOSTS_PROPERTY_NAME);
         sshUsername = getProperty(properties, SSH_USERNAME);
-        String encryptedPassword = getProperty(properties, SCP_PRIVATE_KEY_PASSWORD_NAME);
-        //Password is encrypted on the database, using the key password.encryption.key
-        if (StringUtils.isNotEmpty(encryptedPassword)) {
-            try {
-                privateKeyPassword = StringTools.pbeDecryptStringWithSha256Aes192(encryptedPassword);
-            } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException | InvalidKeySpecException e) {
-                throw new IllegalStateException("Could not decrypt encoded private key password.", e);
-            }
-        } else {
-            privateKeyPassword = "";
+        try {
+            sshPort = parsePort(getProperty(properties, SSH_PORT));
+        } catch (PublisherException e) {
+            sshPort = null;
         }
-        
+        try {
+            privateKeyPassword = decryptPassword(getProperty(properties, SCP_PRIVATE_KEY_PASSWORD_NAME));
+        } catch (PublisherException e) {
+            // TODO: could go for passing with `privateKeyPassword = null` if validation was in place
+            //       telling that password being stored is wrong; but that needs a little bit more work
+            throw new IllegalStateException("Could not decrypt encoded private key password.", e);
+        }
+
         this.properties.put(SIGNING_CA_PROPERTY_NAME, new CustomPublisherProperty(SIGNING_CA_PROPERTY_NAME, CustomPublisherProperty.UI_SELECTONE, null,
                 null, Integer.valueOf(signingCaId).toString()));
         this.properties.put(ANONYMIZE_CERTIFICATES_PROPERTY_NAME, new CustomPublisherProperty(ANONYMIZE_CERTIFICATES_PROPERTY_NAME,
                 CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(anonymizeCertificates).toString()));
-        this.properties.put(ANONYMIZE_CERTIFICATES_PROPERTY_NAME, new CustomPublisherProperty(ANONYMIZE_CERTIFICATES_PROPERTY_NAME,
-                CustomPublisherProperty.UI_BOOLEAN, Boolean.valueOf(anonymizeCertificates).toString()));
         this.properties.put(SSH_USERNAME, new CustomPublisherProperty(SSH_USERNAME, CustomPublisherProperty.UI_TEXTINPUT, sshUsername));
+        this.properties.put(SSH_PORT, new CustomPublisherProperty(SSH_PORT, CustomPublisherProperty.UI_TEXTINPUT, sshPort != null ? Integer.toString(sshPort) : ""));
         this.properties.put(CRL_SCP_DESTINATION_PROPERTY_NAME,
                 new CustomPublisherProperty(CRL_SCP_DESTINATION_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, crlSCPDestination));
         this.properties.put(CERT_SCP_DESTINATION_PROPERTY_NAME,
@@ -144,8 +147,36 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 new CustomPublisherProperty(SCP_KNOWN_HOSTS_PROPERTY_NAME, CustomPublisherProperty.UI_TEXTINPUT, scpKnownHosts));
 
     }
-    
-    
+
+    @Override
+    public Set<String> getDeclaredPropertyNames() {
+        return Set.of(
+                SIGNING_CA_PROPERTY_NAME,
+                ANONYMIZE_CERTIFICATES_PROPERTY_NAME,
+                SSH_USERNAME,
+                SSH_PORT,
+                CRL_SCP_DESTINATION_PROPERTY_NAME,
+                CERT_SCP_DESTINATION_PROPERTY_NAME,
+                SCP_PRIVATE_KEY_PROPERTY_NAME,
+                SCP_PRIVATE_KEY_PASSWORD_NAME,
+                SCP_KNOWN_HOSTS_PROPERTY_NAME
+        );
+    }
+
+
+    private String decryptPassword(String encryptedPassword) throws PublisherException {
+        // Password is encrypted on the database, using the key password.encryption.key
+        if (StringUtils.isNotEmpty(encryptedPassword)) {
+            try {
+                return StringTools.pbeDecryptStringWithSha256Aes192(encryptedPassword);
+            } catch (InvalidKeyException | IllegalBlockSizeException | BadPaddingException |
+                     InvalidKeySpecException e) {
+                throw new PublisherException("Could not decrypt encoded private key password.", e);
+            }
+        }
+        return "";
+    }
+
     @Override
     public List<CustomPublisherProperty> getCustomUiPropertyList(AuthenticationToken authenticationToken) {
         List<CustomPublisherProperty> customProperties = new ArrayList<>();
@@ -174,6 +205,17 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
     @Override
     public List<String> getCustomUiPropertyNames() {
         return new ArrayList<>(properties.keySet());
+    }
+
+    @Override
+    public void validateProperty(String name, String value) throws PublisherException {
+        validate(name, value);
+    }
+
+    public static void validate(String name, String value) throws PublisherException {
+        if (SSH_PORT.equals(name)) {
+            parsePort(value);
+        }
     }
 
     @Override
@@ -256,7 +298,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 // @formatter:on
                 byte[] encodedObject = scpContainer.getEncoded();              
                 final String fileName = CertTools.getFingerprintAsString(certBlob);
-                performScp(signingCaId, fileName, sshUsername, encodedObject, certSCPDestination, scpPrivateKey, privateKeyPassword, scpKnownHosts);
+                performScp(signingCaId, fileName, sshUsername, sshPort, encodedObject, certSCPDestination, scpPrivateKey, privateKeyPassword, scpKnownHosts);
             } catch (GeneralSecurityException | IOException | JSchException e) {
                 String msg = e.getMessage();
                 log.error(msg);
@@ -276,8 +318,8 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         }
         String fileName = CertTools.getFingerprintAsString(incrl) + ".crl";
         try {
-            //No use in signing a CRL - it's already signed - just write it in cleartext. 
-            performScp(-1, fileName, sshUsername, incrl, crlSCPDestination, scpPrivateKey, privateKeyPassword, scpKnownHosts);
+            // No use in signing a CRL - it's already signed - just write it in cleartext.
+            performScp(-1, fileName, sshUsername, sshPort, incrl, crlSCPDestination, scpPrivateKey, privateKeyPassword, scpKnownHosts);
         } catch (JSchException | IOException e) {
             String msg = e.getMessage();
             log.error(msg == null ? "Unknown error" : msg, e);
@@ -319,21 +361,22 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
 
         List<PublisherConnectionException> caughtExceptions = new ArrayList<>();
         if (StringUtils.isNotEmpty(certSCPDestination)) {
-            String destination = certSCPDestination;
-            //clean out any usernames which may have been added to the destination by mistake
-            destination = destination.substring(destination.indexOf('@') + 1);
-            String host = (destination.indexOf(':') != -1 ? destination.substring(0, destination.indexOf(':')) : destination);            
             Session session = null;
             try {
-                session = jsch.getSession(sshUsername, host, 22);
+                Destination destination = buildDestination(certSCPDestination, sshPort);
+                session = destination.port != null
+                    ? jsch.getSession(sshUsername, destination.host, destination.port)
+                    : jsch.getSession(sshUsername, destination.host);
                 session.connect();
             } catch (JSchException e) {
                 String msg = "Could not connect to certificate destination.";
                 if(e.getMessage().contains("USERAUTH fail")) {
                     msg += "Private key file could not be accessed.";
-                } 
+                }
                 log.info(msg + e.getMessage());
                 caughtExceptions.add(new PublisherConnectionException(msg, e));
+            } catch (PublisherException e) {
+                caughtExceptions.add(new PublisherConnectionException(e.getMessage(), e.getCause()));
             } finally {
                 if (session != null) {
                     session.disconnect();
@@ -341,13 +384,12 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             }
         }
         if (StringUtils.isNotEmpty(crlSCPDestination)) {
-            String destination = crlSCPDestination;
-            //clean out any usernames which may have been added to the destination by mistake
-            destination = destination.substring(destination.indexOf('@') + 1);
-            String host = (destination.indexOf(':') != -1 ? destination.substring(0, destination.indexOf(':')) : destination);
             Session session = null;
             try {
-                session = jsch.getSession(sshUsername, host, 22);
+                Destination destination = buildDestination(crlSCPDestination, sshPort);
+                session = destination.port != null
+                    ? jsch.getSession(sshUsername, destination.host, destination.port)
+                    : jsch.getSession(sshUsername, destination.host);
                 session.connect();
             } catch (JSchException e) {
                 String msg = "Could not connect to CRL destination. ";
@@ -356,21 +398,23 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 } 
                 log.info(msg + e.getMessage());
                 caughtExceptions.add(new PublisherConnectionException(msg, e));
+            } catch (PublisherException e) {
+                caughtExceptions.add(new PublisherConnectionException(e.getMessage(), e.getCause()));
             } finally {
                 if (session != null) {
                     session.disconnect();
                 }
             }
         }
-        if(!caughtExceptions.isEmpty()) {
-            String msg = "Could not connect to destination(s). Reasons: ";
-            for(PublisherConnectionException e :caughtExceptions) {
-                msg += e.getMessage();
+
+        if (!caughtExceptions.isEmpty()) {
+            StringBuilder msg = new StringBuilder("Could not connect to destination(s). Reasons: ");
+            for (PublisherConnectionException e : caughtExceptions) {
+                msg.append("\n");
+                msg.append(e.getMessage());
             }
-            throw new PublisherConnectionException(msg);
+            throw new PublisherConnectionException(msg.toString());
         }
-
-
     }
 
     @Override
@@ -399,8 +443,9 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
      * @param signingCaId The signing CA ID. May be -1 if no signing is required. 
      * @param destinationFileName The filename at the destination
      * @param username the username connected to the private key
+     * @param port the port to be used for given host
      * @param data a byte array containing the data to be written
-     * @param destination the full path to the destination in the format host:path
+     * @param destinationPath the full path to the destination in the format host[:path]
      * @param privateKeyPassword the password required to unlock the private key. May be null if the private key is not locked.
      * @param privateKeyPath path to the local private key. This is also used as the identifying name of the key. The corresponding public key is 
      *  assumed to be in a file with the same name with suffix .pub.
@@ -410,7 +455,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
      * @throws PublisherException is signing was required by failed for whatever reason
      */
     private void performScp(final int signingCaId, final String destinationFileName,
-            final String username, final byte[] data, String destination, final String privateKeyPath, final String privateKeyPassword,
+            final String username, final Integer port, final byte[] data, String destinationPath, final String privateKeyPath, final String privateKeyPassword,
             final String knownHostsFile) throws JSchException, IOException, PublisherException {
         if(!(new File(privateKeyPath)).exists()) {
             throw new IllegalArgumentException("Private key file " + privateKeyPath + " was not found");
@@ -436,13 +481,10 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
             if(log.isDebugEnabled()) {
                 log.debug("Signing CA not defined, publishing raw certificate.");
             }
-            //If no signing CA is defined, just publish the ScpContainer in its raw form 
+            // If no signing CA is defined, just publish the ScpContainer in its raw form
             signedBytes = data;
-        } 
-        //clean out any usernames which may have been added to the destination by mistake
-        destination = destination.substring(destination.indexOf('@') + 1);
-        String host = destination.substring(0, destination.indexOf(':'));
-        String rfile = destination.substring(destination.indexOf(':') + 1);
+        }
+        Destination destination = buildDestination(destinationPath, port);
         JSch jsch = new JSch();
         if (privateKeyPassword != null) {
             jsch.addIdentity(privateKeyPath, privateKeyPassword);
@@ -454,10 +496,14 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         Channel channel = null;
         OutputStream out = null;
         try {
-            session = jsch.getSession(username, host, 22);
+            session = destination.port != null
+                ? jsch.getSession(username, destination.host, destination.port)
+                : jsch.getSession(username, destination.host);
             session.connect();
-            // exec 'scp -t rfile' remotely
-            String command = "scp -p -t " + rfile;
+            // exec 'scp [-P port] -t path' remotely
+            String command = destination.port != null
+                ? String.format("scp -P %d -p -t %s", destination.port, destination.path)
+                : String.format("scp -p -t %s", destination.path);
             channel = session.openChannel("exec");
             ((ChannelExec) channel).setCommand(command);
             // get I/O streams for remote scp
@@ -508,4 +554,50 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         } while (c != '\n');
         throw new IOException("SCP error: " + sb.toString());
     }
+
+    private Destination buildDestination(String destination, Integer port) throws PublisherException {
+        // clean out any usernames which may have been added to the destination by mistake
+        destination = destination.substring(destination.indexOf('@') + 1);
+        int firstColonIndex = destination.indexOf(':');
+        String host = firstColonIndex < 0 ? destination : destination.substring(0, firstColonIndex);
+        String path = firstColonIndex < 0 ? "" : destination.substring(firstColonIndex + 1);
+
+        return new Destination(host, path, port);
+    }
+
+    // used in ConfigDump
+    public Integer getSshPort() {
+        return sshPort;
+    }
+
+    private static Integer parsePort(String portInput) throws PublisherException {
+        if (portInput.matches("0*\\d{1,5}")) {
+            int port = Integer.parseInt(portInput);
+
+            if (port > 0 && port < 65536) {
+                return port;
+            }
+
+        } else if (portInput.isBlank()) {
+            return null;
+        }
+
+        throw new PublisherException("Port needs to be a whole number between 1 and 65535");
+    }
+
+    // TODO: use the following instead when possible (Java 14+/17) or apply for Lombok:
+    //   private record Destination(String host, String path, int port) {}
+    private static final class Destination {
+
+        private final String host;
+        private final String path;
+        private final Integer port;
+
+        private Destination(String host, String path, Integer port) {
+            this.host = host;
+            this.path = path;
+            this.port = port;
+        }
+    }
+
 }

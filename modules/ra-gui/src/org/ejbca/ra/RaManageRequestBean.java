@@ -34,6 +34,7 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.keys.validation.ValidationResult;
 import org.cesecore.roles.Role;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -255,7 +256,7 @@ public class RaManageRequestBean implements Serializable {
                     if (approvalProfile.canAnyoneViewPartition(approvalPartition)) {
                         canView = true;
                     }
-                    if (canApprove == false) {
+                    if (!canApprove) {
                         List<Integer> roleIdsWhichCanApprove = approvalProfile.getAllowedRoleIds(approvalPartition);
                         List<Integer> roleIdsWhichCanView = approvalProfile.getAllowedRoleIdsForViewingPartition(approvalPartition);
                         for (Role role: roles) {
@@ -304,7 +305,7 @@ public class RaManageRequestBean implements Serializable {
      * @return true if there already exists an approval for this partition
      */
     public boolean isPartitionHandled(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
-        return getPartitionApproval(partition.getPartitionId(), partition.getStepId()).size() > 0;
+        return !getPartitionApproval(partition.getPartitionId(), partition.getStepId()).isEmpty();
     }
     public boolean canApproveParition(final ApprovalRequestGUIInfo.ApprovalPartitionProfileGuiObject partition) {
         if (partitionsAuthorizedToApprove == null) {
@@ -596,6 +597,8 @@ public class RaManageRequestBean implements Serializable {
                     // TODO validation (ECA-5235)
                     editData.setEmail(email);
                     break;
+                default:
+                    break;
                 }
             }
 
@@ -659,7 +662,7 @@ public class RaManageRequestBean implements Serializable {
         return requestData.getApprovalRequest()
                 .getValidationResults()
                 .stream()
-                .map(result -> result.getMessage())
+                .map(ValidationResult::getMessage)
                 .collect(Collectors.toList());
     }
 

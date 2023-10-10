@@ -36,6 +36,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.validation.ValidationResult;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -53,8 +54,6 @@ import com.keyfactor.util.CertTools;
 
 /**
  * Approval Request created when trying to edit an end entity.
- *
- * @version $Id$
  */
 public class EditEndEntityApprovalRequest extends ApprovalRequest implements EndEntityApprovalRequest {
 
@@ -175,8 +174,9 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
             }
         }
         retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
-        retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
-        retval.add(getTextWithNoValueString("SUBJECTALTNAME",newuserdata.getSubjectAltName()));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
+        retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, newuserdata.getSubjectAltName()));
         String dirattrs = newuserdata.getExtendedInformation() != null ? newuserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
         retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
         retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
@@ -201,8 +201,9 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 			}
 		}
 		retval.add(new ApprovalDataText("PASSWORD",passwordtext,true,true));
-		retval.add(new ApprovalDataText("SUBJECTDN",CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
-		retval.add(getTextWithNoValueString("SUBJECTALTNAME",newuserdata.getSubjectAltName()));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.stringToBCDNString(newuserdata.getDN()),true,false));
+		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, newuserdata.getSubjectAltName()));
 		String dirattrs = newuserdata.getExtendedInformation() != null ? newuserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL",newuserdata.getEmail()));
@@ -214,7 +215,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 			caname = "NotExist";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(newuserdata.getEndEntityProfileId()),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.END_ENTITY_PROFILE_NAME, endEntityProfileSession.getEndEntityProfileName(newuserdata.getEndEntityProfileId()),true,false));
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(newuserdata.getCertificateProfileId()),true,false));
 		final ExtendedInformation neweei = newuserdata.getExtendedInformation();
 		if (neweei != null && neweei.getKeyStoreAlgorithmType() != null) {
@@ -247,8 +248,9 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
 		final List<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME", orguserdata.getUsername(), true, false));
 		retval.add(new ApprovalDataText("PASSWORD", "NOTSHOWN", true, true));
-		retval.add(new ApprovalDataText("SUBJECTDN", CertTools.stringToBCDNString(orguserdata.getDN()), true, false));
-		retval.add(getTextWithNoValueString("SUBJECTALTNAME", orguserdata.getSubjectAltName()));
+		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(newuserdata.getEndEntityProfileId())), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.stringToBCDNString(orguserdata.getDN()), true, false));
+		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, orguserdata.getSubjectAltName()));
 		String dirattrs = orguserdata.getExtendedInformation() != null ? orguserdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES", dirattrs));
 		retval.add(getTextWithNoValueString("EMAIL", orguserdata.getEmail()));
@@ -264,7 +266,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest implements End
             caname = "AuthDenied";
         }
 		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));
+		retval.add(new ApprovalDataText(ApprovalDataText.END_ENTITY_PROFILE_NAME, endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(orguserdata.getCertificateProfileId()), true, false));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE", orguserdata.getKeyRecoverable() ? "YES" : "NO", true, true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION", orguserdata.getSendNotification() ? "YES" : "NO", true, true));

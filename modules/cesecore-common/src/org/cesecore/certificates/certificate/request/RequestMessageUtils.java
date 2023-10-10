@@ -36,6 +36,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.DecoderException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -173,8 +174,8 @@ public abstract class RequestMessageUtils {
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_SPKAC) {
             byte[] reqBytes = req.getBytes();
             if (reqBytes != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Received NS request: "+new String(reqBytes));
+                if (log.isDebugEnabled() && !LogRedactionUtils.redactPii()) {
+                    log.debug("Received NS request: " + new String(reqBytes));
                 }
                 byte[] buffer = Base64.decode(reqBytes);
                 if (buffer == null) {

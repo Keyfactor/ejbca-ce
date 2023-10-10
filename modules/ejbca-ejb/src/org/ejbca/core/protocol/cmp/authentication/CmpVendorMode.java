@@ -29,11 +29,11 @@ import org.ejbca.config.CmpConfiguration;
  */
 public interface CmpVendorMode {
 
-    void setCertificateDataSession(CertificateStoreSession certificateDataSession);
+    default void setCertificateDataSession(CertificateStoreSession certificateDataSession) {};
 
-    void setCaSession(final CaSession caSession);
+    default void setCaSession(final CaSession caSession) {};
 
-    void setCmpConfiguration(final CmpConfiguration cmpConfiguration);
+    default void setCmpConfiguration(final CmpConfiguration cmpConfiguration) {};
     
     /** Checks if the certificate is issued by a configured Vendor CA, and that it can be verified using that Vendor CA certificate
      * @param admin administrator making the call, must have access to get CAInfo for the Vendor CA

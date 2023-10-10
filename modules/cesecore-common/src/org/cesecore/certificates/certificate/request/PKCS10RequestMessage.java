@@ -50,6 +50,7 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
+import org.cesecore.util.LogRedactionUtils;
 
 /**
  * <p>Class to handle PKCS10 request messages sent to the CA.
@@ -233,7 +234,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         } else {
             RDN[] cnValues = xname.getRDNs(CeSecoreNameStyle.CN);
             if (cnValues.length == 0) {
-            	log.info("No CN in DN: "+xname.toString());
+            	log.info("No CN in DN: " + LogRedactionUtils.getSubjectDnLogSafe(xname.toString()));
             } else {
                 AttributeTypeAndValue[] tavs = cnValues[0].getTypesAndValues();
                 for(AttributeTypeAndValue tav : tavs) {
@@ -297,7 +298,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     		ret = dn;
     	}
         if (log.isDebugEnabled()) {
-        	log.debug("getRequestDN: "+ret);
+        	log.debug("getRequestDN: " + LogRedactionUtils.getSubjectDnLogSafe(ret));
         }
         return ret;
     }

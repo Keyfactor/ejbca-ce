@@ -16,6 +16,7 @@ package org.ejbca.core.model.ra;
 import java.util.Arrays;
 import java.util.List;
 
+import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
@@ -26,24 +27,8 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  */
 public class UsernameGeneratorParams {
 
-	/** Create a completely random username */
-	protected static final int MODE_RANDOM = 0;
-	/** Use the input as the base username */
-	protected static final int MODE_USERNAME = 1;
-	/** Use a part of the DN as pase username */
-	protected static final int MODE_DN = 2;
-	/** use a fixed (set as dNGeneratorComponent) username */
-	protected static final int MODE_FIXED = 3;
-
-	public static final String RANDOM = "RANDOM";
-	public static final String USERNAME = "USERNAME";
-	public static final String DN = "DN";
-	public static final String FIXED = "FIXED";
-	
-	private static final List<String> modeList = Arrays.asList(RANDOM, USERNAME, DN, FIXED);
-
 	// Generator configuration parameters, with good default values
-	private int mode = MODE_RANDOM;
+	private UsernameGenerateMode mode = UsernameGenerateMode.RANDOM;
 	private int randomNameLength = 12;
 	private String randomGeneratorType = PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS;
 	private String dNGeneratorComponent = "CN"; // Can be CN, UID, SN etc, or CN;UID;SN
@@ -92,18 +77,15 @@ public class UsernameGeneratorParams {
 		this.randomPrefixLength = randomPrefixLength;
 	}
 
-	public int getMode() {
+	public UsernameGenerateMode getMode() {
 		return mode;
 	}
 
-	public void setMode(int mode) {
-		this.mode = mode;
-	}
-
 	public void setMode(String mode) {
-		if (!modeList.contains(mode)) {
-			throw new IllegalArgumentException("Mode " + mode + " is not supported");
-		}
-		this.mode = modeList.indexOf(mode);
+		UsernameGenerateMode.fromString(mode)
+				.ifPresentOrElse( item ->  this.mode = item,
+						() -> {throw new IllegalArgumentException("Mode " + mode + " is not supported");}
+				);
+
 	}
 }
