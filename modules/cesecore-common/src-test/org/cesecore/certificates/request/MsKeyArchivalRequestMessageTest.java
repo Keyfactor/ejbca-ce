@@ -66,6 +66,8 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.keys.KeyPairWrapper;
 import com.keyfactor.util.keys.KeyTools;
 
 public class MsKeyArchivalRequestMessageTest {
@@ -492,6 +494,9 @@ public class MsKeyArchivalRequestMessageTest {
                         
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
+        
+        KeyPairWrapper wrapped = EJBTools.wrap(msg.getKeyPairToArchive());
+        EJBTools.unwrap(wrapped);
     }
     
     @Test
