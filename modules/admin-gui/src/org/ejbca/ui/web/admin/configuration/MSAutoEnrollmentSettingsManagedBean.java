@@ -269,14 +269,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
-        if (availableTemplates == null) {
-            final String selectedAlias = getDto().getAlias();
-            if (selectedAlias == null) {
-                return List.of();
-            }
-            availableTemplates = adConnection.getCertificateTemplateSettings(selectedAlias);
-        }
-        return availableTemplates;
+        return getDto().getAlias().isEmpty() ? List.of() : adConnection.getCertificateTemplateSettings(getDto().getAlias());
     }
 
     public List<SelectItem> getAvailableTemplates() {
@@ -286,7 +279,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                         .sorted(Comparator.comparing(MSAutoEnrollmentSettingsTemplate::getDisplayName))
                         .map(template -> new SelectItem(template.getOid(), template.getDisplayName()))
         ).collect(Collectors.toList());
-
     }
 
     /**
