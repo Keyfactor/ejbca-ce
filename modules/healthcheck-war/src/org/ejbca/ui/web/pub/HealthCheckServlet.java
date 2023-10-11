@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.security.InvalidKeyException;
 import java.util.Properties;
 
 import javax.ejb.EJB;
@@ -33,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -41,6 +43,8 @@ import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Servlet used to check the health of an EJBCA instance and can be used to
@@ -83,6 +87,8 @@ public class HealthCheckServlet extends HttpServlet {
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -186,13 +192,21 @@ public class HealthCheckServlet extends HttpServlet {
     }
     
     public String doAllHealthChecks(HttpServletRequest request) {
-        boolean checkCas = safeGetParameter(request, "ca", true);
+        String[] caNames = request.getParameterValues("ca");
+        // deal with possible null return
+        if (caNames == null)
+            caNames = new String[0];
+        boolean checkAllCas = caNames.length == 0;
         boolean checkOcsp = safeGetParameter(request, "ocsp", true);
         boolean checkPublishers = safeGetParameter(request, "publishers", EjbcaConfiguration.getHealthCheckPublisherConnections());
         
+        // these may be null
+        final String cryptoTokenName = request.getParameter("token");
+        final String testKeyName = request.getParameter("key");
+        
         if (log.isDebugEnabled()) {
             log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
-            log.debug(String.format("Checking cas=%b ocsp=%b publishers=%b", checkCas, checkOcsp, checkPublishers));
+            log.debug(String.format("Checking cas=%b ocsp=%b publishers=%b", checkAllCas, checkOcsp, checkPublishers));
         }
         // Start by checking if we are in maintenance mode
         final Properties maintenanceProperties = getMaintenanceProperties();
@@ -224,11 +238,25 @@ public class HealthCheckServlet extends HttpServlet {
             if (minfreememory >= currentFreeMemory) {
                 sb.append("\nMEM: Error Virtual Memory is about to run out, currently free memory :").append(String.valueOf(Runtime.getRuntime().freeMemory()));    
             }
-            if (checkCas) {
+            if (checkAllCas) {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking CAs.");
                 }
                 sb.append(caAdminSession.healthCheck());
+            }
+            // if checkAllCas not specified, maybe specific cas were
+            else if (caNames.length > 0 && !caNames[0].equals("none")) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Checking specified CAs: " + String.join(",", caNames));
+                }
+
+                sb.append(caAdminSession.healthCheck(caNames));
+            }
+            if (cryptoTokenName != null && testKeyName != null) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Checking cryptotoken.");
+                }
+                sb.append(cryptoTokenHealthCheck(cryptoTokenName, testKeyName));
             }
             if (checkPublishers) {
                 if (log.isDebugEnabled()) {
@@ -253,6 +281,29 @@ public class HealthCheckServlet extends HttpServlet {
             
         }
         return sb.length()==0 ? null : sb.toString();
+    }
+
+    /**
+     * Test the named cryptotoken and key
+     * 
+     * @return "" if no error occurred, otherwise a descriptive error string.
+     */
+    private String cryptoTokenHealthCheck(String cryptoTokenName, String testKeyName) {
+        Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (cryptoTokenId == null) {
+            return "\nTOKEN: " + cryptoTokenName + " unknown";
+        }
+        CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+        if (cryptoToken == null) {
+            return "\nTOKEN: " + cryptoTokenName + " unknown";
+        }
+        try {
+            cryptoToken.testKeyPair(testKeyName);
+        } catch (InvalidKeyException | CryptoTokenOfflineException e) {
+            log.error("Test key failed for token = " + cryptoTokenName + " and key = " + testKeyName, e);
+            return "\nTOKEN: Test key failed for token=" + cryptoTokenName + " key=" + testKeyName;
+        }
+        return "";
     }
 
     /** Create the maintenance file if it should be used and does not exists */
