@@ -2366,7 +2366,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         String caName = caSession.getCAInfo(authenticationToken, caId).getName();
         X509Certificate certificate = certificateStoreSession.findLatestX509CertificateBySubject("CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
         if (Objects.nonNull(certificate) && certificate.getNotAfter().getTime()>System.currentTimeMillis()) {
-            log.debug("Found certificate with subjectDN=[ CN=" + caId + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
+            log.debug("Found certificate with subjectDN=[ CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
             return certificate.getEncoded();
         }
 
