@@ -49,6 +49,14 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      */
     String healthCheck();
   
+    /**
+     * Used by health-check. Validate that specified CAs are online and optionally performs
+     * a signature test.
+     * 
+     * @return an error message or an empty String if all are ok.
+     */
+    String healthCheck(String[] caNames);
+    
     /** 
      * This method returns a set containing IDs of all authorized key validators. This set will be the sum of the following:
      * 
