@@ -13,27 +13,15 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import java.security.SignatureException;
-import java.security.cert.Certificate;
 import java.util.Set;
 
 import javax.ejb.Local;
 
-import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.IllegalNameException;
-import org.cesecore.certificates.ca.IllegalValidityException;
-import org.cesecore.certificates.ca.InvalidAlgorithmException;
-import org.cesecore.certificates.certificate.CertificateCreateException;
-import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 
 @Local
 public interface CAAdminSessionLocal extends CAAdminSession {
@@ -84,6 +72,4 @@ public interface CAAdminSessionLocal extends CAAdminSession {
     
     public byte[] makeRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, String nextSignKeyAlias) 
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
-
-    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, CertificateProfile cp) throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException;
 }

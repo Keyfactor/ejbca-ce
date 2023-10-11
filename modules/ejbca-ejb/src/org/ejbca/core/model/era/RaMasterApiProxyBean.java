@@ -1579,7 +1579,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (log.isDebugEnabled()) {
                 log.debug("raMasterApi calling createCertificateWS: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
             }
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 0) { // TODO: should be 17
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 17) {
                 try {
                     return raMasterApi.getKeyExchangeCertificate(authenticationToken, caId, cpId);
                 } catch (AuthorizationDeniedException e) {

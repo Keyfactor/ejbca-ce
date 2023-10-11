@@ -787,5 +787,26 @@ public interface CAAdminSession {
     void importItsCACertificate(AuthenticationToken admin, String caname, byte[] certificate)
             throws AuthorizationDeniedException, CAExistsException, CertificateImportException, IllegalCryptoTokenException;
 
-    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, CertificateProfile cp) throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException;
+    /**
+     * Generates key exchange certificate for the specified CA with the specified certificate profile
+     * @param authenticationToken authentication token
+     * @param ca certificate authority
+     * @param cp certificate profile
+     * @return generated key exchange certificate
+     * @throws AuthorizationDeniedException if not authorized
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid
+     * @throws CryptoTokenOfflineException if crypto token is offline
+     * @throws CertificateCreateException if an error occurred when trying to create a certificate
+     * @throws CertificateExtensionException if extensions configured with bad properties
+     * @throws CAOfflineException if the CA wasn't active
+     * @throws IllegalValidityException if validity period is invalid
+     * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
+     * @throws IllegalKeyException if the using public key is not allowed to be used by specified certProfile
+     * @throws OperatorCreationException if CA's private key contained an unknown algorithm or provider
+     * @throws IllegalNameException if the Subject DN failed constraints
+     */
+    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, CertificateProfile cp)
+        throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException,
+        CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException,
+        IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException;
 }
