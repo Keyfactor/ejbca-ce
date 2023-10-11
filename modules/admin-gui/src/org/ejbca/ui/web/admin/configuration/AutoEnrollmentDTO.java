@@ -16,6 +16,7 @@ import com.keyfactor.util.StringTools;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class AutoEnrollmentDTO {
@@ -38,7 +39,7 @@ public class AutoEnrollmentDTO {
     private String adLoginPassword;
     private Integer authKeyBinding;
     private String caName;
-    private List<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates;
+    private List<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = new ArrayList<>();
 
     public AutoEnrollmentDTO() {
     }
