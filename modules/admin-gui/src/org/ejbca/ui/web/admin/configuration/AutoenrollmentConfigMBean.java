@@ -77,10 +77,7 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
         selectedAlias = null;
         return "done";
     }
-
-    /**
-     * Delete action.
-     */
+    
     public String actionDelete(final String alias) {
         selectedAlias = alias;
         return "delete";
@@ -91,9 +88,6 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
         return "clone";
     }
 
-    /**
-     * Cancel action.
-     */
     public void actionCancel() {
         selectedAlias = null;
         newAlias = null;
