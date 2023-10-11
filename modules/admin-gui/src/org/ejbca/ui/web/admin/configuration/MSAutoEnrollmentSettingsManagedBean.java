@@ -342,8 +342,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         List<Integer> allCaIds = caSession.getAllCaIds();
         for (int caid : allCaIds) {
             if (caSession.authorizedToCANoLogging(getAdmin(), caid)) {
-                String caname = caidToName.get(caid);
-                ret.add(new SelectItem(caid, caname));
+                ret.add(new SelectItem(caid, caidToName.get(caid)));
             } else {
                 ret.add(new SelectItem(0, "<Unauthorized CA>", "A CA that the current admin lack access to.", true));
             }
