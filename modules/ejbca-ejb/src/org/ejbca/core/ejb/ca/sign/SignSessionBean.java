@@ -1665,7 +1665,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence);
         //ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
         try {
-            byte[] encapInfoEncoded = pkiResponse.getEncoded();
             byte[] payloadHash = CertTools.generateSHA256Fingerprint(payload.getEncoded());// TODO: parametrize
             
             // signerInfo

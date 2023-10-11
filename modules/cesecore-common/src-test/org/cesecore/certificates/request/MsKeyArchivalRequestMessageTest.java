@@ -290,6 +290,16 @@ public class MsKeyArchivalRequestMessageTest {
                 
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
+        
+        try {
+            // this works
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            kf.generatePrivate(new PKCS8EncodedKeySpec(msg.getKeyPairToArchive().getPrivate().getEncoded()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); // this fails
     }
     
     @Test
@@ -367,7 +377,7 @@ public class MsKeyArchivalRequestMessageTest {
         
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
-        
+                
     }
     
     @Test
@@ -430,6 +440,7 @@ public class MsKeyArchivalRequestMessageTest {
         assertTrue(msg.verify());
         assertEquals("", msg.getRequestDN());
         assertNotNull(msg.getRequestPublicKey());
+        
     }
     
     @Test
@@ -491,12 +502,10 @@ public class MsKeyArchivalRequestMessageTest {
         assertTrue(msg.verify());
         assertEquals("", msg.getRequestDN());
         assertNotNull(msg.getRequestPublicKey());
-                        
+        
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
-        
-        KeyPairWrapper wrapped = EJBTools.wrap(msg.getKeyPairToArchive());
-        EJBTools.unwrap(wrapped);
+                                
     }
     
     @Test
@@ -512,11 +521,11 @@ public class MsKeyArchivalRequestMessageTest {
         String szOID_ISSUED_CERT_HASH =  "1.3.6.1.4.1.311.21.17";
         Attribute certHash;
             certHash = new Attribute(new ASN1ObjectIdentifier(szOID_ISSUED_CERT_HASH), 
-                                    new DERSet(new DEROctetString("xyqw".getBytes())));
+                                    new DERSet(new DEROctetString(Hex.decode("3B4938CC150F9B2BDD48533BB9EFA1B072A3B7A8"))));
 
         
         Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
-                new DERSet(new DEROctetString("abcd".getBytes()))); // TODO: from request message
+                new DERSet(new DEROctetString(Hex.decode("69E3FB7F2416E07779034EC64EE7DF7E68A9C581")))); // TODO: from request message
 
         ASN1Encodable wrappedAttributes = new DERSequence(
                 new ASN1Encodable[]{new ASN1Integer(0),  
@@ -592,4 +601,5 @@ public class MsKeyArchivalRequestMessageTest {
             e.printStackTrace();
         }
     }
+    
 }
