@@ -17,12 +17,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.Arrays;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
@@ -153,16 +155,18 @@ public class CreateCACommand extends EJBCAWSRABaseCommand implements IAdminComma
                 + "\"2.5.29.32.0 http://foo.bar.com/mycps.txt 1.1.1.1.1 http://foo.bar.com/111cps.txt\".");
         getPrintStream().println();
         getPrintStream().println("The properties file should follow the java 'key=value' properties files format.  The following fields can be set:");
-        getPrintStream().println(wrap(CAConstants.CA_PROPERTY_FIELD_NAMES, 80, 2));
+        getPrintStream().println(sortAndWrap(CAConstants.CA_PROPERTY_FIELD_NAMES, 80, 2));
     }
     
-    static private String wrap(String[] words, int width, int leftPad) {
+    static private String sortAndWrap(String[] words, int width, int leftPad) {
+        String[] sortedWords = words.clone();
+        java.util.Arrays.sort(sortedWords);
         String out = "";
         String line = "";
         String padString = "";
         for (int i = 0; i < leftPad; ++i)
             padString += " ";
-        for (String word : words) {
+        for (String word : sortedWords) {
             if (line.equals("") || line.length() + word.length() < width - leftPad + 1)
                 if (line.equals(""))
                     line += word;
