@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import com.keyfactor.util.StringTools;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -20,7 +21,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
@@ -46,10 +46,10 @@ import javax.servlet.http.Part;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -257,7 +257,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @param templateOid template oid
      * @return
      */
-    private MSAutoEnrollmentSettingsTemplate findMsTemplateByOid(List<MSAutoEnrollmentSettingsTemplate> templates, final String templateOid) {
+    private static MSAutoEnrollmentSettingsTemplate findMsTemplateByOid(List<MSAutoEnrollmentSettingsTemplate> templates, final String templateOid) {
         return templates.stream()
                 .filter(template -> template.getOid().equals(templateOid))
                 .findAny().orElse(null);
@@ -320,14 +320,11 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     public List<SelectItem> getAvailableEndEntityProfiles() {
-        List<SelectItem> availableEndEntityProfiles = new ArrayList<>();
-        availableEndEntityProfiles.add(new SelectItem(-1, SELECT_EEP));
-
-        for (final Integer id : authorizedEndEntityProfiles.idKeySet()) {
-            availableEndEntityProfiles.add(new SelectItem(String.valueOf(id), authorizedEndEntityProfiles.get(id).getName()));
-        }
-
-        return availableEndEntityProfiles;
+        return Stream.concat(
+                Stream.of(new SelectItem(-1, SELECT_EEP)),
+                authorizedEndEntityProfiles.entrySet().stream()
+                        .map(item -> new SelectItem(String.valueOf(item.getKey()), item.getValue().getName()))
+        ).collect(Collectors.toList());
     }
 
     public List<SelectItem> getAvailableAuthenticationKeyBindings() {
@@ -564,8 +561,49 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
     }
 
-    public void save() {
+    public boolean renameOrAddAlias() throws AuthorizationDeniedException {
+
+        String oldAlias = autoenrollmentConfigMBean.getSelectedAlias();
+        String newAlias = getDto().getAlias();
+
+        if (StringUtils.isNotEmpty(oldAlias) && Objects.equals(oldAlias, newAlias)) {
+            return true;
+        }
+
+        if (StringUtils.isEmpty(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        }
+
+        if (!StringTools.checkFieldForLegalChars(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        }
+
+        if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(newAlias)) {
+            addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
+            return false;
+        }
+
+        if (StringUtils.isEmpty(oldAlias)) {
+            getEjbcaWebBean().addAutoenrollAlias(newAlias);
+        } else {
+            getEjbcaWebBean().renameAutoenrollAlias(oldAlias, newAlias);
+        }
+
+        autoenrollmentConfigMBean.setSelectedAlias(newAlias);
+        getEjbcaWebBean().clearAutoenrollCache();
+        getEjbcaWebBean().reloadAutoenrollmentConfiguration();
+        return true;
+    }
+
+
+    public String save() {
         try {
+            if (!renameOrAddAlias()) {
+                return null;
+            }
+
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
                     globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
 
@@ -601,11 +639,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
             addInfoMessage("MSAE_AUTOENROLLMENT_SAVE_OK");
-
+            return "done";
         } catch (AuthorizationDeniedException e) {
             log.error("Cannot save the configuration for the MS Auto Enrollment because the current "
                     + "administrator is not authorized. Error description: " + e.getMessage());
             addErrorMessage("MSAE_AUTOENROLLMENT_SAVE_ERROR");
+            return null;
         }
     }
 
