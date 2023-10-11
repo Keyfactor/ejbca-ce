@@ -547,6 +547,7 @@ public class MsKeyArchivalRequestMessageTest {
         try {
             byte[] encapInfoEncoded = pkiResponse.getEncoded();
             System.out.println("encapInfoEncoded: " + Hex.toHexString(encapInfoEncoded));
+            System.out.println("encapInfoEncoded: " + Hex.toHexString(new DEROctetString(encapInfoEncoded).getEncoded()));
             byte[] payloadHash = CertTools.generateSHA256Fingerprint(payload.getEncoded());// TODO: parametrize
             
             // signerInfo
