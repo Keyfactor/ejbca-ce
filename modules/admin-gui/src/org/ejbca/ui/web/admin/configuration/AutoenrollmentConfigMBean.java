@@ -36,11 +36,6 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
     private String newAlias;
     private boolean viewOnly = true;
 
-    /**
-     * Indicates a delete action in progress to render its view.
-     */
-    private boolean deleteInProgress = false;
-
     public AutoenrollmentConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
     }
@@ -74,7 +69,7 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
         return "done";
     }
 
-    public String deleteAlias() throws AuthorizationDeniedException {
+    public String deleteAliasAction() throws AuthorizationDeniedException {
         getEjbcaWebBean().removeAutoenrollAlias(selectedAlias);
         if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(selectedAlias)) {
             addErrorMessage("MSAE_COULD_NOT_DELETE_ALIAS");
@@ -139,10 +134,6 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
 
     public void setSelectedAlias(String selectedAlias) {
         this.selectedAlias = selectedAlias;
-    }
-
-    public boolean isDeleteInProgress() {
-        return deleteInProgress;
     }
 
     public String getNewAlias() {
