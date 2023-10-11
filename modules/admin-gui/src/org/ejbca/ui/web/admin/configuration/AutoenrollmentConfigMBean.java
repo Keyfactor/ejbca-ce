@@ -50,7 +50,7 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
         return "edit";
     }
 
-    public String cloneAlias() throws AuthorizationDeniedException {
+    public String cloneAliasAction() throws AuthorizationDeniedException {
         if (StringUtils.isEmpty(newAlias)) {
             addErrorMessage("ONLYCHARACTERS");
             return null;
