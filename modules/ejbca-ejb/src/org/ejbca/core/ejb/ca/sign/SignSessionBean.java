@@ -1709,7 +1709,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         
             // gen.addCRL(null); // add only if error, may be multiple - MS compatible CA??
             
-            CMSTypedData data = new PKCS7ProcessableObject(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
+            CMSTypedData data = new CMSProcessableByteArray(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse.getEncoded());
             CMSSignedData cmsResponse = gen.generate(data, true);
             return cmsResponse.getEncoded();
             
