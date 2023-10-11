@@ -586,7 +586,8 @@ public class MsKeyArchivalRequestMessageTest {
             
             ASN1Sequence.getInstance(pkiResponse);
             
-            CMSTypedData data = new PKCS7ProcessableObject(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
+            CMSTypedData data = new CMSProcessableByteArray(CMCObjectIdentifiers.id_cct_PKIResponse, 
+                                                pkiResponse.getEncoded());
             CMSSignedData cmsResponse = gen.generate(data, true);
             byte[] resp = cmsResponse.getEncoded();
             System.out.println(Hex.toHexString(resp));
