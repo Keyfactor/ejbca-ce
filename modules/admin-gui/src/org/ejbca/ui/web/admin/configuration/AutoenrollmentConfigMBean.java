@@ -12,21 +12,17 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.enterprise.context.SessionScoped;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
-
+import com.keyfactor.util.StringTools;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import com.keyfactor.util.StringTools;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -57,21 +53,6 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
         selectedAlias = null;
         viewOnly = false;
         return "edit";
-    }
-
-    public void renameAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(newAlias) && StringUtils.isNotEmpty(selectedAlias)) {
-            if (!StringTools.checkFieldForLegalChars(newAlias)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else {
-                if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(newAlias)) {
-                    addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
-                } else {
-                    getEjbcaWebBean().renameAutoenrollAlias(selectedAlias, newAlias);
-                    newAlias = null;
-                }
-            }
-        }
     }
 
     public String cloneAlias() throws AuthorizationDeniedException {
