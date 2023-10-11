@@ -30,7 +30,7 @@ In our Community we welcome contributions. The Community software is open source
 * Read more on the open source project website: **[EJBCA website](https://www.ejbca.org/)**.   
 
 ## Commercial Support
-Commercial support is available for **[EJBCA Enterprise](https://www.primekey.com/products/ejbca-enterprise/)**.
+Commercial support is available for **[EJBCA Enterprise](https://www.keyfactor.com/products/ejbca-enterprise/)**.
 
 ## License
 EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICENSE)**. 
