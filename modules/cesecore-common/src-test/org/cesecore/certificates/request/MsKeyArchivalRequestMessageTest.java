@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 
@@ -30,8 +29,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.keys.KeyTools;
 
 public class MsKeyArchivalRequestMessageTest {
     
@@ -257,9 +254,17 @@ public class MsKeyArchivalRequestMessageTest {
         // this works
         KeyFactory kf = KeyFactory.getInstance(msg.getKeyPairToArchive().getPublic().getAlgorithm());
         kf.generatePrivate(new PKCS8EncodedKeySpec(msg.getKeyPairToArchive().getPrivate().getEncoded()));
-        System.out.println(msg.getKeyPairToArchive().getPrivate().getClass().getName());
         
-        // EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); // this fails cause spec validation in BC
+//        final KeyPair caEncKeyPair = KeyTools.genKeys("2048", "RSA");
+//        X509Certificate caCert = CertTools.genSelfCert("CN=IssuerCa", 10L, "1.1.1.1", caEncKeyPair.getPrivate(),
+//                caEncKeyPair.getPublic(), "SHA256WithRSA", false);
+//        X509Certificate eeCert = CertTools.genSelfCert("CN=User", 2L, "1.1.1.1", 
+//                caEncKeyPair.getPrivate(),
+//                msg.getKeyPairToArchive().getPublic(), "SHA256WithRSA", false);
+        
+        // these fails cause spec validation in BC
+        // KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert); 
+        // EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
         
     }
     

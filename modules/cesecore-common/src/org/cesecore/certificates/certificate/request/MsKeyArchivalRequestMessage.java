@@ -22,8 +22,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
@@ -44,7 +42,6 @@ import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.cms.SignedData;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -68,6 +65,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
 
@@ -84,23 +82,6 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
     // optional: for later use
     public static final ASN1ObjectIdentifier szOID_REQUEST_CLIENT_INFO = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.20");
     
-    private static final Map<ASN1ObjectIdentifier, String> hashAlgorithmMap = new HashMap<>();
-    
-    static {
-        // TODO: move to x509-common-utils
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha1WithRSAEncryption,"SHA1");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha224WithRSAEncryption,"SHA224");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha256WithRSAEncryption,"SHA256");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha384WithRSAEncryption,"SHA384");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha512WithRSAEncryption,"SHA512");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha512_224WithRSAEncryption,"SHA512(224)");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha512_256WithRSAEncryption,"SHA512(256)");
-        hashAlgorithmMap.put(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_224,"SHA3-224");
-        hashAlgorithmMap.put(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256,"SHA3-256");
-        hashAlgorithmMap.put(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_384,"SHA3-384");
-        hashAlgorithmMap.put(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512,"SHA3-512");
-    }
-
     private byte[] message;
     private byte[] encryptedPrivateKey;
     private byte[] envelopedPrivKeyHash;
@@ -184,7 +165,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             
             // should also verify the private key hash as enveloped private key is not signed(unauthenticated)
             final MessageDigest md = MessageDigest.getInstance(
-                    hashAlgorithmMap.get(pkcs10.getSignatureAlgorithm().getAlgorithm())); // may be sha1 always
+                    AlgorithmTools.getDigestFromSigAlg(pkcs10.getSignatureAlgorithm().getAlgorithm().getId())
+                            ); // may be sha1 always
             envelopedPrivKeyHash = md.digest(encryptedPrivateKey);
             final String envelopedPrivKeyHashStr = Hex.toHexString(envelopedPrivKeyHash);
             
