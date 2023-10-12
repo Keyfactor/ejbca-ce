@@ -634,17 +634,22 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public void deactivate(final AuthenticationToken authenticationToken, final int cryptoTokenId) throws AuthorizationDeniedException {
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.DEACTIVATE.resource() + "/" + cryptoTokenId);
-        final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
-        cryptoToken.deactivate();
-        securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
-                authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
-                "Deactivated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
-        if (cryptoToken.isAutoActivationPinPresent()) {
-            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_REACTIVATION, EventStatus.VOID, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
-                    authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Reactivated CryptoToken '" + cryptoToken.getTokenName()
-                            + "' with id " + cryptoTokenId);
+        try {
+            final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
+            cryptoToken.deactivate();
+            securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_DEACTIVATION, EventStatus.SUCCESS, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                    authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null,
+                    "Deactivated CryptoToken '" + cryptoToken.getTokenName() + "' with id " + cryptoTokenId);
+            if (cryptoToken.isAutoActivationPinPresent()) {
+                securityEventsLoggerSession.log(EventTypes.CRYPTOTOKEN_REACTIVATION, EventStatus.VOID, ModuleTypes.CRYPTOTOKEN, ServiceTypes.CORE,
+                        authenticationToken.toString(), String.valueOf(cryptoTokenId), null, null, "Reactivated CryptoToken '" + cryptoToken.getTokenName()
+                                + "' with id " + cryptoTokenId);
+            }
+        }            
+        catch (CryptoTokenOfflineException e) {
+            throw new IllegalStateException(e);
+            
         }
-
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -998,8 +1003,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     public void removeKeyPairPlaceholder(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias)
             throws AuthorizationDeniedException, InvalidKeyException {
         assertAuthorization(authenticationToken, cryptoTokenId, CryptoTokenRules.REMOVE_KEYS.resource() + "/" + cryptoTokenId);
-        final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
-
+        CryptoToken cryptoToken = null;
+        try {
+            cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
+        } catch (CryptoTokenOfflineException e) {
+            throw new IllegalStateException(e);
+        }
         boolean removed = false;
         final Properties props = new Properties();
         props.putAll(cryptoToken.getProperties());
@@ -1063,11 +1072,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }
     }
 
-    /** @return a CryptoToken for the requested Id if exists. Never returns null. */
-    private CryptoToken getCryptoTokenAndAssertExistence(int cryptoTokenId) {
+    /** @return a CryptoToken for the requested Id if exists. Never returns null. 
+     * @throws CryptoTokenOfflineException */
+    private CryptoToken getCryptoTokenAndAssertExistence(int cryptoTokenId) throws CryptoTokenOfflineException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         if (cryptoToken == null) {
-            throw new IllegalStateException("No such CryptoToken for id " + cryptoTokenId);
+            throw new CryptoTokenOfflineException("No such CryptoToken for id " + cryptoTokenId);
         }
         return cryptoToken;
     }

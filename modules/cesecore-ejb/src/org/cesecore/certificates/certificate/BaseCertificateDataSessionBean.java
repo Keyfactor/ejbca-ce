@@ -44,7 +44,7 @@ public abstract class BaseCertificateDataSessionBean {
             query.setFirstResult(firstResult);
             @SuppressWarnings("unchecked")
             final List<Object[]> incompleteCertificateDatas = query.getResultList();
-            if (incompleteCertificateDatas.size()==0) {
+            if (incompleteCertificateDatas.isEmpty()) {
                 break;
             }
             if (log.isDebugEnabled()) {
@@ -61,7 +61,10 @@ public abstract class BaseCertificateDataSessionBean {
                     revocationReason = RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL;
                 }
                 if (allowInvalidityDate) {
-                    final Long invalidityDate = ValueExtractor.extractLongValue(current[5]) == -1L ? null : ValueExtractor.extractLongValue(current[5]);
+                    Long invalidityDate = null;
+                    if (current[5] != null && ValueExtractor.extractLongValue(current[5]) != -1L){
+                        invalidityDate = ValueExtractor.extractLongValue(current[5]);
+                    }
                     revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate, invalidityDate));
                 } else {
                     revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
