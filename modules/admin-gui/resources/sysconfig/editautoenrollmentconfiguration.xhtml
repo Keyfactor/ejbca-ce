@@ -123,9 +123,12 @@
                 <h:panelGroup>
                     <h:panelGroup>
                         <br/>
-                        <h:inputFile id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}"/>
+                        <h:inputFile id="msaeKeyTabFile"
+                                     value="#{msAutoEnrollmentSettings.keyTabFile}"
+                                     disabled="#{autoenrollmentConfigMBean.viewOnly}"/>
                         <h:commandButton value="#{web.text.IMPORT}"
-                                         action="#{msAutoEnrollmentSettings.importKeyTabFile}"/>
+                                         action="#{msAutoEnrollmentSettings.importKeyTabFile}"
+                                         disabled="#{autoenrollmentConfigMBean.viewOnly}"/>
                         <br/>
                     </h:panelGroup>
                     <h:panelGroup rendered="#{msAutoEnrollmentSettings.keyTabUploaded}">
@@ -145,9 +148,12 @@
                 <h:panelGroup>
                     <h:panelGroup>
                         <br/>
-                        <h:inputFile id="msaeKrb5ConfFile" value="#{msAutoEnrollmentSettings.krb5ConfFile}"/>
+                        <h:inputFile id="msaeKrb5ConfFile"
+                                     value="#{msAutoEnrollmentSettings.krb5ConfFile}"
+                                     disabled="#{autoenrollmentConfigMBean.viewOnly}"/>
                         <h:commandButton value="#{web.text.IMPORT}"
-                                         action="#{msAutoEnrollmentSettings.importKrb5ConfFile}"/>
+                                         action="#{msAutoEnrollmentSettings.importKrb5ConfFile}"
+                                         disabled="#{autoenrollmentConfigMBean.viewOnly}"/>
                         <br/>
                     </h:panelGroup>
                     <h:panelGroup rendered="#{msAutoEnrollmentSettings.krb5ConfFileUploaded}">
@@ -283,6 +289,18 @@
                     </h:selectOneMenu>
                 </h:panelGroup>
 
+                <!-- Certificate profile used for Key Exchange Certificate -->
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.MSAE_EXCHANGE_CERT_PROFILE}" styleClass="titles"/> <br/>
+                    <h:outputText value="#{web.text.MSAE_EXCHANGE_CERT_PROFILE_HELP}" styleClass="help"/>
+                </h:panelGroup>
+                <h:panelGroup id="msaeExchangeCertProfile">
+                    <h:selectOneMenu disabled="#{autoenrollmentConfigMBean.viewOnly or not msAutoEnrollmentSettings.keyArchivalEnabledInMappedTemplates}"
+                                     value="#{msAutoEnrollmentSettings.dto.kECCertificateProfileName}">
+                        <f:selectItems value="#{msAutoEnrollmentSettings.availableKECCertificateProfiles}"/>
+                    </h:selectOneMenu>
+                </h:panelGroup>
+
                 <!-- AD Test Connection -->
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.MSAE_AD_TEST_CONNECTION}" styleClass="titles"/>
@@ -293,6 +311,7 @@
                     <br/>
                     <h:commandButton id="msaeAdTestConnection" value="#{web.text.TEST_CONNECTION}"
                                      action="#{msAutoEnrollmentSettings.testAdConnection}"
+                                     disabled="#{autoenrollmentConfigMBean.viewOnly}"
                                      onclick="setTimeout('document.getElementById(\'' + this.id + '\').disabled=true;', 50);">
                     </h:commandButton>
                 </h:panelGroup>
