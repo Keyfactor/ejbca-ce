@@ -2634,8 +2634,20 @@ public class EjbcaWSTest extends CommonEjbcaWs {
                 }
                 CaTestCase.removeTestCA(existingTestCA);
             }
+            
+            // set some non-default settings
+            List<KeyValuePair> caSettings = new ArrayList<>();
+            add(caSettings, "certificateAiaDefaultCaIssuerUri", "http://www.example.com/600/cacerts");
+            add(caSettings, "defaultCRLDistPoint", "http://www.example.com/600/cdp");
+            add(caSettings, "defaultOCSPServiceLocator", "http://www.example.com/600/ocsp");
+            add(caSettings, "useAuthorityKeyIdentifier", "true");
+            add(caSettings, "deltaCRLPeriod", "0");
+            add(caSettings, "doEnforceUniqueDistinguishedName", "false");
+            add(caSettings, "doEnforceUniquePublicKeys", "false");
+            add(caSettings, "generateCrlUponRevocation", "true");
+            
             // Try to create a CA. It should succeed (Happy path test)
-            ejbcaraws.createCA(caName, "CN="+caName, "x509", 3L, null, "SHA256WithRSA", CAInfo.SELFSIGNED, cryptoTokenName, purposeKeyMapping, null);
+            ejbcaraws.createCA(caName, "CN="+caName, "x509", 3L, null, "SHA256WithRSA", CAInfo.SELFSIGNED, cryptoTokenName, purposeKeyMapping, caSettings);
             // Verify the new CA's parameters
             final CAInfo caInfo = caSession.getCAInfo(intAdmin, caName);
             assertNotNull(caInfo);
@@ -2644,6 +2656,20 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, caInfo.getCertificateProfileId());
             assertEquals(CAInfo.SELFSIGNED, caInfo.getSignedBy());
             assertEquals(CAInfo.CATYPE_X509, caInfo.getCAType());
+            
+            // confirm settings were set
+            X509CAInfo x509CaInfo = (X509CAInfo) caInfo;
+            assertNotNull(x509CaInfo);
+            assertEquals(true, x509CaInfo.getUseAuthorityKeyIdentifier());
+            assertEquals(0, x509CaInfo.getDeltaCRLPeriod());
+            assertEquals(false, x509CaInfo.isDoEnforceUniqueDistinguishedName());
+            assertEquals(false, x509CaInfo.isDoEnforceUniquePublicKeys());
+            assertEquals(true, x509CaInfo.isGenerateCrlUponRevocation());
+            assertEquals("http://www.example.com/600/cdp", x509CaInfo.getDefaultCRLDistPoint());
+            assertEquals("http://www.example.com/600/ocsp", x509CaInfo.getDefaultOCSPServiceLocator());
+            assertEquals(1, x509CaInfo.getCertificateAiaDefaultCaIssuerUri().size());
+            assertEquals("http://www.example.com/600/cacerts", x509CaInfo.getCertificateAiaDefaultCaIssuerUri().get(0));
+            
         } finally {
             if (caSession.existsCa(caName)) {
                 CaTestUtils.removeCa(intAdmin, caSession.getCAInfo(intAdmin, caName));
@@ -2656,6 +2682,13 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         log.trace("<test72CreateCA()");
     }
     
+    private void add(List<KeyValuePair> keyValuePairs, String key, String value) {
+        KeyValuePair keyValuePair = new KeyValuePair();
+        keyValuePair.setKey(key);
+        keyValuePair.setValue(value);
+        keyValuePairs.add(keyValuePair);
+    }
+
     /**
      * Create an externally signed CA through WS
      * 
