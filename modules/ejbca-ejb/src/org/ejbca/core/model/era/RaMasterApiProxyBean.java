@@ -1577,7 +1577,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (log.isDebugEnabled()) {
-                log.debug("raMasterApi calling createCertificateWS: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+                log.debug("raMasterApi calling getKeyExchangeCertificate: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
             }
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 17) {
                 try {
@@ -1595,7 +1595,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
-        return null;
+        return new byte[] {};
     }
 
     private byte[] generateKeyStoreForceLocalKeyRecovery(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
