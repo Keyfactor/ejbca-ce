@@ -2358,7 +2358,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+    public Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
         throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
         CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
         SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException {
@@ -2367,15 +2367,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         X509Certificate certificate = certificateStoreSession.findLatestX509CertificateBySubject("CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
         if (Objects.nonNull(certificate) && certificate.getNotAfter().getTime()>System.currentTimeMillis()) {
             log.debug("Found certificate with subjectDN=[ CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
-            return certificate.getEncoded();
+            return certificate;
         }
 
         CA ca = (CA)caSession.getCA(authenticationToken, caId);
         CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
         log.debug("Creating KEC as certificate not found with subjectDN=[ CN=" + caId + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
-        Certificate keyExchangeCertificate = caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
-
-        return keyExchangeCertificate.getEncoded();
+        return caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
     }
 
     @Override
