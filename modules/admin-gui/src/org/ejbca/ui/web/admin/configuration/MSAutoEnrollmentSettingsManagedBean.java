@@ -59,6 +59,7 @@ import java.util.stream.Stream;
 @Named("msAutoEnrollmentSettings")
 @ViewScoped
 public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
+    private static final String SZOID_KP_CA_EXCHANGE = "1.3.6.1.4.1.311.21.5";
 
     @Inject
     private AutoenrollmentConfigMBean autoenrollmentConfigMBean;
@@ -78,7 +79,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     // MSAE Krb5Conf Settings
     private Part krb5ConfFile;
-    private List<MSAutoEnrollmentSettingsTemplate> availableTemplates;
     private String selectedTemplateOid;
     private String selectedCertificateProfileName;
     private Integer selectedCertificateProfileId;
@@ -105,6 +105,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
         this.authorizedCertificateProfiles = raMasterApiProxyBean.getAuthorizedCertificateProfiles(getAdmin());
     }
+
 
     public AutoEnrollmentDTO getDto() {
         String aliasName = autoenrollmentConfigMBean.getSelectedAlias();
@@ -304,7 +305,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         return availableCertificateProfiles;
     }
-
+    
+    public List<SelectItem> getAvailableKECCertificateProfiles() {
+        return Stream.concat(
+                Stream.of(new SelectItem(-1, SELECT_EEP)),
+                authorizedCertificateProfiles.entrySet().stream()
+                        .map(item -> new SelectItem(String.valueOf(item.getKey()), item.getValue().getName()))
+        ).collect(Collectors.toList());
+    }
 
     /**
      * Return the available End Entity Profile id and names.
@@ -471,7 +479,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             }
         }
         try {
-            availableTemplates = null;
             adConnection.testConnection(getDto().getMsaeDomain(), getDto().getAdConnectionPort(), getDto().getAdLoginDN(), adLoginPass, getDto().isUseSSL(), getDto().isFollowLdapReferral(),
                     getDto().getLdapReadTimeout(), getDto().getLdapConnectTimeout(), getDto().getAlias());
             addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
@@ -528,7 +535,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     // Updates persisted template mappings with new values from AD
     public void updateMappedTemplates() {
         // Force reload from AD
-        availableTemplates = null;
         List<MSAutoEnrollmentSettingsTemplate> newTemplates = getAvailableTemplateSettingsFromAD();
         for (MSAutoEnrollmentSettingsTemplate persistedTemplate : getDto().getMappedMsTemplates()) {
             MSAutoEnrollmentSettingsTemplate newTemplateSettings = findMsTemplateByOid(newTemplates, persistedTemplate.getOid());
@@ -549,6 +555,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             persistedTemplate.setIncludeSPNInSubjectSAN(newTemplateSettings.isIncludeSPNInSubjectSAN());
             persistedTemplate.setIncludeUPNInSubjectSAN(newTemplateSettings.isIncludeUPNInSubjectSAN());
             persistedTemplate.setPublishToActiveDirectory(newTemplateSettings.isPublishToActiveDirectory());
+            persistedTemplate.setArchivePrivateKey(newTemplateSettings.isArchivePrivateKey());
         }
     }
 
@@ -620,9 +627,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             }
 
             autoEnrollmentConfiguration.setAuthKeyBinding(getDto().getAlias(), getDto().getAuthKeyBinding());
-
-            // MS Servlet Settings
             autoEnrollmentConfiguration.setCaName(getDto().getAlias(), getDto().getCaName());
+            autoEnrollmentConfiguration.setKeyExchangeCertProfileName(getDto().getAlias(), getDto().getkECCertificateProfileName());
 
             // MS Template Settings
             updateMappedTemplates();
@@ -657,4 +663,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.autoenrollmentConfigMBean = autoenrollmentConfigMBean;
     }
 
+    public boolean isKeyArchivalEnabledInMappedTemplates() {
+        return getDto().getMappedMsTemplates().stream().anyMatch(MSAutoEnrollmentSettingsTemplate::isArchivePrivateKey);
+    }
 }
