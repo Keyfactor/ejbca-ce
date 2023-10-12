@@ -39,6 +39,7 @@ public class AutoEnrollmentDTO {
     private String adLoginPassword;
     private Integer authKeyBinding;
     private String caName;
+    private String kECCertificateProfileName;
     private List<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = new ArrayList<>();
 
     public AutoEnrollmentDTO() {
@@ -64,6 +65,7 @@ public class AutoEnrollmentDTO {
             adLoginPassword = MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD;
             authKeyBinding = autoEnrollmentConfiguration.getAuthKeyBinding(alias);
             caName = autoEnrollmentConfiguration.getCaName(alias);
+            kECCertificateProfileName = autoEnrollmentConfiguration.getKeyExchangeCertProfileName(alias);
             mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings(alias);
         }
     }
@@ -210,6 +212,14 @@ public class AutoEnrollmentDTO {
 
     public void setCaName(String caName) {
         this.caName = caName;
+    }
+
+    public String getkECCertificateProfileName() {
+        return kECCertificateProfileName;
+    }
+
+    public void setkECCertificateProfileName(String kECCertificateProfileName) {
+        this.kECCertificateProfileName = kECCertificateProfileName;
     }
 
     public List<MSAutoEnrollmentSettingsTemplate> getMappedMsTemplates() {
