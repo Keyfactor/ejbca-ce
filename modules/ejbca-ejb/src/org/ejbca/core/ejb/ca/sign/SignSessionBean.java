@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.ca.sign;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
@@ -1659,8 +1660,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         new ASN1Encodable[]{payload, new DERSequence(), new DERSequence()});
         PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence);
         try {
-            // TODO: parametrize based on CA signing algorithm
-            byte[] payloadHash = CertTools.generateSHA256Fingerprint(pkiResponse.getEncoded());
+            String hashAlgorithm = AlgorithmTools.getHashAlgorithm(ca.getCAInfo().getCAToken().getSignatureAlgorithm());
+            final MessageDigest md = MessageDigest.getInstance(hashAlgorithm); // may be sha256 always
+            byte[] payloadHash = md.digest(pkiResponse.getEncoded());
             
             // signerInfo
             JcaSignerInfoGeneratorBuilder signerInfobuilder = new JcaSignerInfoGeneratorBuilder(
