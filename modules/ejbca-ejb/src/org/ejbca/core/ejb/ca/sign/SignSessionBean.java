@@ -52,7 +52,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -71,7 +70,6 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSTypedData;
-import org.bouncycastle.cms.PKCS7ProcessableObject;
 import org.bouncycastle.cms.SimpleAttributeTableGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.its.ETSISignedData;
@@ -1622,11 +1620,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
     
     private byte[] createCmcFullPkiResponse(X509CA ca, CryptoToken cryptoToken, X509Certificate cert, MsKeyArchivalRequestMessage request) throws SignRequestSignatureException {
-        // TODO: failure status here and add otherInfo when approval support is added over MSAE
+        // future add otherInfo when approval support is added over MSAE
         CMCStatusInfoBuilder cmcStatusInfoBuilder = null;
         if(cert!=null) {
             cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.success, new BodyPartID(0x01));
-            cmcStatusInfoBuilder.setStatusString("Issued"); // TODO: error i.e. cert=null, human readable string
+            cmcStatusInfoBuilder.setStatusString("Issued"); // human readble string
         } else {
             cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.failed, new BodyPartID(0x01));
             cmcStatusInfoBuilder.setStatusString("Failed"); 
@@ -1636,13 +1634,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 CMCObjectIdentifiers.id_cmc_statusInfo,
                 new DERSet(cmcStatusInfoBuilder.build()));
         
-        String szOID_ISSUED_CERT_HASH =  "1.3.6.1.4.1.311.21.17";
         Attribute certHash = null;
         try {
-            certHash = new Attribute(new ASN1ObjectIdentifier(szOID_ISSUED_CERT_HASH), 
+            certHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ISSUED_CERT_HASH, 
                                     new DERSet(new DEROctetString(CertTools.generateSHA1Fingerprint(cert.getEncoded()))));
         } catch (CertificateEncodingException e) {
-            // nopmd
+            log.debug("Error during marshalling issued certificate hash", e);
+            throw new IllegalStateException(e);
         }
         
         Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
@@ -1652,31 +1650,25 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 new ASN1Encodable[]{new ASN1Integer(0),  
                         new DERSequence(new ASN1Integer(1)), new DERSet(new ASN1Encodable[]{certHash, encryptedKeyHash})});
         
-        String szOID_CMC_ADD_ATTRIBUTES = "1.3.6.1.4.1.311.10.10.1"; // TODO: find place to collect oids
         TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
-                new ASN1ObjectIdentifier(szOID_CMC_ADD_ATTRIBUTES),
+                MsKeyArchivalRequestMessage.szOID_CMC_ADD_ATTRIBUTES,
                 new DERSet(wrappedAttributes)); 
         
-        // search "payload" in MS docs signerinfo section
         DERSequence payload = new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2});
         DERSequence pkiRespAsSequence = new DERSequence(
                         new ASN1Encodable[]{payload, new DERSequence(), new DERSequence()});
-        // TODO: grab beta release to use added constructor
         PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence);
-        //ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
         try {
-            byte[] payloadHash = CertTools.generateSHA256Fingerprint(pkiResponse.getEncoded());// TODO: parametrize
-            //payloadHash = CertTools.generateSHA256Fingerprint((new DEROctetString(pkiResponse).getEncoded()));
+            // TODO: parametrize based on CA signing algorithm
+            byte[] payloadHash = CertTools.generateSHA256Fingerprint(pkiResponse.getEncoded());
             
             // signerInfo
             JcaSignerInfoGeneratorBuilder signerInfobuilder = new JcaSignerInfoGeneratorBuilder(
                     new JcaDigestCalculatorProviderBuilder().setProvider("BC").build());
             
-            String szOID_PKCS_9_CONTENT_TYPE = "1.2.840.113549.1.9.3";
-            Attribute contentTypeAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_CONTENT_TYPE), 
+            Attribute contentTypeAttribute = new Attribute(MsKeyArchivalRequestMessage.szOID_PKCS_9_CONTENT_TYPE, 
                                                         new DERSet(CMCObjectIdentifiers.id_cct_PKIResponse));
-            String szOID_PKCS_9_MESSAGE_DIGEST = "1.2.840.113549.1.9.4";
-            Attribute contentHashAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
+            Attribute contentHashAttribute = new Attribute(MsKeyArchivalRequestMessage.szOID_PKCS_9_MESSAGE_DIGEST, 
                     new DERSet(new DEROctetString(payloadHash)));
     
             AttributeTable attrTable = new AttributeTable(new DERSet(
@@ -1700,7 +1692,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 try {
                     certChain.add(new X509CertificateHolder(x.getEncoded()));
                 } catch (CertificateEncodingException | IOException e) {
-                    log.debug("error during ca cert chain encoding");
+                    log.debug("Error during ca cert chain encoding", e);
                     throw new IllegalStateException(e);
                 }
             });
@@ -1708,8 +1700,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CollectionStore<X509CertificateHolder> store = new CollectionStore<>(certChain);
             gen.addCertificates(store);
                         
-            // gen.addCRL(null); // add only if error, may be multiple - MS compatible CA??
-            
             CMSTypedData data = new CMSProcessableByteArray(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse.getEncoded());
             CMSSignedData cmsResponse = gen.generate(data, true);
             return cmsResponse.getEncoded();
