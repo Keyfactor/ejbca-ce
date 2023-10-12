@@ -75,11 +75,11 @@ import java.math.BigInteger;
 import java.security.Key;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -156,7 +156,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     @Override
     public X509CertificateAuthenticationToken authenticateUsingClientCertificate(final X509Certificate x509Certificate) {
-        return (X509CertificateAuthenticationToken) authenticate(new AuthenticationSubject(null, new HashSet<>( Arrays.asList(new X509Certificate[]{ x509Certificate }))));
+        return (X509CertificateAuthenticationToken) authenticate(new AuthenticationSubject(null, new HashSet<>(List.of(x509Certificate))));
     }
 
     @Override
@@ -248,19 +248,30 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private SignedJWT getSignedJwt(String encodedOauthBearerToken, String oauthIdToken) throws ParseException {
-        final JWT accessJwt = JWTParser.parse(encodedOauthBearerToken);
-        if (accessJwt instanceof SignedJWT) {
-            LOG.debug("Using access_token");
-            return (SignedJWT) accessJwt;
+        JWT accessJwt = null;
+        try {
+            accessJwt = JWTParser.parse(encodedOauthBearerToken);
+            if (accessJwt instanceof SignedJWT) {
+                LOG.debug("Using access_token");
+                return (SignedJWT) accessJwt;
+            }
+        } catch (ParseException e) {
+            LOG.debug("Parse exception of access_token", e);
         }
+        JWT idJwt = null;
         if (StringUtils.isNotEmpty(oauthIdToken)) {
-            final JWT idJwt = JWTParser.parse(oauthIdToken);
+            idJwt = JWTParser.parse(oauthIdToken);
             if (idJwt instanceof SignedJWT) {
                 LOG.debug("Using id_token");
                 return (SignedJWT) idJwt;
             }
         }
-        reportUnsupportedJwtType(accessJwt);
+        if (accessJwt != null) {
+            reportUnsupportedJwtType(accessJwt);
+        }
+        if (idJwt != null) {
+            reportUnsupportedJwtType(idJwt);
+        }
         return null;
     }
 
@@ -355,7 +366,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     @Override
     public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String oauthIdToken, final String refreshToken) {
-        OAuthGrantResponseInfo oAuthGrantResponseInfo = null;
+        OAuthGrantResponseInfo oAuthGrantResponseInfo;
         try {
             final SignedJWT jwt = getSignedJwt(encodedOauthBearerToken, oauthIdToken);
             if (LOG.isDebugEnabled()) {
