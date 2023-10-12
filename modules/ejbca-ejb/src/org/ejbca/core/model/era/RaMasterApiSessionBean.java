@@ -63,6 +63,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -80,6 +81,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -362,9 +364,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>14<td>=<td>7.10.0
      * <tr><th>15<td>=<td>7.11.0
      * <tr><th>16<td>=<td>8.1.0
+     * <tr><th>17<td>=<td>8.2.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 16;
+    private static final int RA_MASTER_API_VERSION = 17;
 
     /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
     private int activeCaIdCache = -1;
@@ -2352,6 +2355,27 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return true; // Assume X.509
         }
         return caInfo.isExpirationInclusive();
+    }
+
+    @Override
+    public byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+        throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
+        CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
+        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException {
+
+        String caName = caSession.getCAInfo(authenticationToken, caId).getName();
+        X509Certificate certificate = certificateStoreSession.findLatestX509CertificateBySubject("CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
+        if (Objects.nonNull(certificate) && certificate.getNotAfter().getTime()>System.currentTimeMillis()) {
+            log.debug("Found certificate with subjectDN=[ CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
+            return certificate.getEncoded();
+        }
+
+        CA ca = (CA)caSession.getCA(authenticationToken, caId);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
+        log.debug("Creating KEC as certificate not found with subjectDN=[ CN=" + caId + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
+        Certificate keyExchangeCertificate = caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
+
+        return keyExchangeCertificate.getEncoded();
     }
 
     @Override
