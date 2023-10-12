@@ -105,8 +105,8 @@
 				<h:panelGroup>
 					<h:panelGroup>
 						<br/>
-						<h:inputFile id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}"/>
-						<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKeyTabFile}"/>
+						<h:inputFile id="msaeKeyTabFile" value="#{msAutoEnrollmentSettings.keyTabFile}" disabled="#{autoenrollmentConfigMBean.viewOnly}"/>
+						<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKeyTabFile}" disabled="#{autoenrollmentConfigMBean.viewOnly}"/>
 						<br/>
 					</h:panelGroup>
 					<h:panelGroup rendered="#{msAutoEnrollmentSettings.keyTabUploaded}">
@@ -124,8 +124,8 @@
 				<h:panelGroup>
 					<h:panelGroup>
 						<br/>
-						<h:inputFile id="msaeKrb5ConfFile" value="#{msAutoEnrollmentSettings.krb5ConfFile}"/>
-						<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKrb5ConfFile}"/>
+						<h:inputFile id="msaeKrb5ConfFile" value="#{msAutoEnrollmentSettings.krb5ConfFile}" disabled="#{autoenrollmentConfigMBean.viewOnly}"/>
+						<h:commandButton value="#{web.text.IMPORT}" action="#{msAutoEnrollmentSettings.importKrb5ConfFile}" disabled="#{autoenrollmentConfigMBean.viewOnly}"/>
 						<br/>
 					</h:panelGroup>
 					<h:panelGroup rendered="#{msAutoEnrollmentSettings.krb5ConfFileUploaded}">
@@ -269,6 +269,7 @@
 				<h:panelGroup>
 					<br/>
 					<h:commandButton id="msaeAdTestConnection" value="#{web.text.TEST_CONNECTION}"
+									 disabled="#{autoenrollmentConfigMBean.viewOnly}"
 									 action="#{msAutoEnrollmentSettings.testAdConnection}"
 									 onclick="setTimeout('document.getElementById(\'' + this.id + '\').disabled=true;', 50);" >
 					 </h:commandButton>

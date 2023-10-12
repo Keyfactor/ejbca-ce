@@ -20,7 +20,6 @@ import java.io.UnsupportedEncodingException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -87,7 +86,6 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -113,13 +111,10 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -131,9 +126,8 @@ public class CAInterfaceBean implements Serializable {
 	private static final long serialVersionUID = 3L;
 	private static final Logger log = Logger.getLogger(CAInterfaceBean.class);
 	private static final String LIST_SEPARATOR = ";";
-	
-    private static final String DEFAULT_KEY_SIZE = "2048";
 
+	public static final int PLACEHOLDER_CRYPTO_TOKEN_ID = 0;
 
 	private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private AuthorizationSessionLocal authorizationSession;
@@ -329,7 +323,7 @@ public class CAInterfaceBean implements Serializable {
 	}
 
 	/**
-	 * Returns a List of CertReqHistUserData from the certreqhist database in an collection sorted by timestamp.
+	 * Returns a List of CertReqHistUserData from the certreqhist database in a collection sorted by timestamp.
 	 */
 	public List<CertReqHistory> getCertReqUserDatas(String username){
 		List<CertReqHistory> history = this.certreqhistorysession.retrieveCertReqHistory(username);
@@ -352,79 +346,13 @@ public class CAInterfaceBean implements Serializable {
         // This will occur if administrator has insufficient access to crypto tokens, which won't provide any
         // selectable items for Crypto Token when creating a CA.
         if (StringUtils.isEmpty(caInfoDto.getCryptoTokenIdParam())) {
-            log.info("No selected crypto token. Check crypto token access rules for administrator " + authenticationToken);
+            log.info("No crypto token selected. Check crypto token access rules for administrator " + authenticationToken);
             throw new CryptoTokenAuthenticationFailedException("Crypto token authentication failed for administrator " + authenticationToken);
         }
         caInfoDto.setCaSubjectDN(StringTools.capitalizeCountryCodeInSubjectDN(caInfoDto.getCaSubjectDN()));
         int cryptoTokenId = Integer.parseInt(caInfoDto.getCryptoTokenIdParam());
-        try {
-            if (cryptoTokenId==0) {
-                // The admin has requested a quick setup and wants to generate a soft keystore with some usable keys
-                caInfoDto.setCryptoTokenDefaultKey("defaultKey");
-                caInfoDto.setCryptoTokenCertSignKey("signKey");
-                caInfoDto.setSelectedKeyEncryptKey("");
-                caInfoDto.setTestKey("testKey");
-                // First create a new soft auto-activated CryptoToken with the same name as the CA
-                final Properties cryptoTokenProperties = new Properties();
-                cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CesecoreConfiguration.getCaKeyStorePass());
-                try {
-                    cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caInfoDto.getCaName(), SoftCryptoToken.class.getName(),
-                            cryptoTokenProperties, null, null);
-                } catch (CryptoTokenNameInUseException e) {
-                    // If the name was already in use we simply add a timestamp to the name to manke it unique
-                    final String postfix = "_" + new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
-                    cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, caInfoDto.getCaName() + postfix, SoftCryptoToken.class.getName(),
-                            cryptoTokenProperties, null, null);
-                }
-                // Next, create a CA signing key
-                final String caSignKeyAlgo = AlgorithmTools.getKeyAlgorithmFromSigAlg(caInfoDto.getSignatureAlgorithmParam());
-                String caSignKeySpec = AlgorithmConstants.KEYALGORITHM_RSA + DEFAULT_KEY_SIZE;
-                if (AlgorithmConstants.KEYALGORITHM_DSA.equals(caSignKeyAlgo)) {
-                    caSignKeySpec = AlgorithmConstants.KEYALGORITHM_DSA + "1024";
-                } else if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(caSignKeyAlgo)) {
-                    // ECDSA curves can only sign compatible digest sizes
-                    if(caInfoDto.getSignatureAlgorithmParam().contains("384")) {
-                        // for SHA384withECDSA
-                        caSignKeySpec = "brainpoolP384R1";
-                    } else if(caInfoDto.getSignatureAlgorithmParam().contains("256")){
-                        // for SHA256withECDSA
-                        caSignKeySpec = "secp256r1";
-                    } else {
-                        log.error("No matching curve for signing algorithm: " + caInfoDto.getSignatureAlgorithmParam());
-                        throw new Exception("No matching curve for ECDSA signing algorithm.");
-                    }
-                } else if(AlgorithmConstants.KEYALGORITHM_ED25519.equals(caSignKeyAlgo)) {
-                    caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED25519;
-                } else if(AlgorithmConstants.KEYALGORITHM_ED448.equals(caSignKeyAlgo)) {
-                    caSignKeySpec = AlgorithmConstants.KEYALGORITHM_ED448;
-                } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && AlgorithmConstants.KEYALGORITHM_ECGOST3410.equals(caSignKeyAlgo)) {
-                    caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-                } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && AlgorithmConstants.KEYALGORITHM_DSTU4145.equals(caSignKeyAlgo)) {
-                    caSignKeySpec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-                }
-                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenCertSignKey(), KeyGenParams.builder(caSignKeySpec).build());
-                if(caInfoDto.getCaType()!=CAInfo.CATYPE_CITS) {
-                    // Next generate recommended RSA key pairs for decryption and test
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_RSA + "2048").build());
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_RSA + "1024").build());
-                } else {
-                    // encryption key is only 256bit for now
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getCryptoTokenDefaultKey(), KeyGenParams.builder("secp256r1").build());
-                    cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, caInfoDto.getTestKey(), KeyGenParams.builder("secp256r1").build());
-                }
-            }
-            return actionCreateCaMakeRequestInternal(caInfoDto, approvals, availablePublisherValues, availableKeyValidatorValues,
-                    buttonCreateCa, buttonMakeRequest, cryptoTokenId, fileBuffer);
-        } catch (Exception e) {
-            // If we failed during the creation we manually roll back any created soft CryptoToken
-            // The more proper way of doing it would be to implement a CaAdminSession call for one-shot
-            // CryptoToken and CA creation, but this would currently push a lot of GUI specific code
-            // to the business logic. Until we have a new GUI this is probably the best way of doing it.
-            if (cryptoTokenId != 0 && "0".equals(caInfoDto.getCryptoTokenIdParam())) {
-                cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, cryptoTokenId);
-            }
-            throw e;
-        }
+        return actionCreateCaMakeRequestInternal(caInfoDto, approvals, availablePublisherValues, availableKeyValidatorValues,
+                buttonCreateCa, buttonMakeRequest, cryptoTokenId, fileBuffer);
     }
 
 	private boolean actionCreateCaMakeRequestInternal(CaInfoDto caInfoDto, Map<ApprovalRequestType, Integer> approvals,
@@ -1187,13 +1115,13 @@ public class CAInterfaceBean implements Serializable {
         return getAvailableCryptoTokens(isEditingCA, false);
     }
 
-	public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA, boolean citsElligibleTokensOnly)
+	public List<Entry<String, String>> getAvailableCryptoTokens(boolean isEditingCA, boolean citsEligibleTokensOnly)
             throws AuthorizationDeniedException {
         final List<Entry<String, String>> availableCryptoTokens = new ArrayList<>();
         final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
         
-        Set<String> eccKeysForCurvePresent = new HashSet<String>();
-        boolean citsElligible = false;
+        Set<String> eccKeysForCurvePresent = new HashSet<>();
+        boolean citsEligible = false;
         String keySpec;
         for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
             // Make sure we may use it
@@ -1205,9 +1133,9 @@ public class CAInterfaceBean implements Serializable {
                     final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
                     // Only allow tokens with at least one keypair
                     if (!cryptoTokenKeyPairInfos.isEmpty()) {
-                        if(citsElligibleTokensOnly) {
+                        if(citsEligibleTokensOnly) {
                             eccKeysForCurvePresent.clear();
-                            citsElligible = false;
+                            citsEligible = false;
                             for(KeyPairInfo keyPairInfo: cryptoTokenKeyPairInfos) {
                                 keySpec = keyPairInfo.getKeySpecification();
                                 if(!keyPairInfo.getKeyAlgorithm().contains("EC")) {
@@ -1217,14 +1145,14 @@ public class CAInterfaceBean implements Serializable {
                                     eccKeysForCurvePresent.add(keySpec);
                                 } else {
                                     // at least one EC key of same key spec is already present
-                                    citsElligible = true;
+                                    citsEligible = true;
                                     break;
                                 }
                             }
                         }
                         // we expect two key pairs of same curve family in EC family to be useful i.e. sign and encryption key
                         // there can be two keys with same size but different curve family
-                        if(!citsElligibleTokensOnly || citsElligible) {
+                        if(!citsEligibleTokensOnly || citsEligible) {
                             availableCryptoTokens.add(new AbstractMap.SimpleEntry<>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
                         }
                     }
@@ -1235,9 +1163,9 @@ public class CAInterfaceBean implements Serializable {
         }
 
         availableCryptoTokens.sort(new EntryValueComparator<>(new AsStringComparator()));
-        if (!isEditingCA && authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.MODIFY_CRYPTOTOKEN.resource())) {
-            // Add a quick setup option for key generation (not visible when editing an uninitialized CA)
-            availableCryptoTokens.add(0, new AbstractMap.SimpleEntry<>(Integer.toString(0), ejbcawebbean.getText("CRYPTOTOKEN_NEWFROMCA")));
+        if (!isEditingCA && !availableCryptoTokens.isEmpty()) {
+            // Add a dummy placeholder option
+            availableCryptoTokens.add(0, new AbstractMap.SimpleEntry<>(Integer.toString(PLACEHOLDER_CRYPTO_TOKEN_ID), ejbcawebbean.getText("PLEASE_SELECT_CRYPTO_TOKEN")));
         }
         return availableCryptoTokens;
     }
