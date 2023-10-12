@@ -48,6 +48,16 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -156,6 +166,7 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
+import org.ejbca.core.ejb.ocsp.PreSigningOcspResponseSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -185,17 +196,6 @@ import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
-
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Creates and signs certificates.
@@ -237,7 +237,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private RevocationSessionLocal revocationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-    
+    @EJB
+    private PreSigningOcspResponseSessionLocal ocspResponseSigningSession;
+
     // Re-factor: Remove Cyclic module dependency.
     @EJB
     private EjbcaWSHelperSessionLocal ejbcaWSHelperSession;
@@ -1445,6 +1447,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(certificateWrapper.getCertificate(), endEntity);
         }
+        final BaseCertificateData certData = certificateWrapper.getBaseCertificateData();
         final int certProfileId = endEntity.getCertificateProfileId();
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         final Collection<Integer> publishers = certProfile.getPublisherList();
@@ -1459,9 +1462,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
         }
         // At this point, it is safe to remove the certificate from "incomplete issuance journal". This runs in the same transaction as the certificate creation
-        final BaseCertificateData certData = certificateWrapper.getBaseCertificateData();
         if (certData != null) {
             certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), new BigInteger(certData.getSerialNumber()), storePreCert);
+            ocspResponseSigningSession.preSignOcspResponse(ca, certData);
         }
     }
 

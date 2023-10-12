@@ -28,6 +28,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
+import org.cesecore.util.ValueExtractor;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -38,7 +39,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import java.math.BigInteger;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -203,10 +203,10 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             
             // Check SQL result set mapping in CRLData class for explanation.
             final Object[] fields = thisNextUpdateList.get(0);
-            final BigInteger thisUpdate = (BigInteger) fields[0];
-            final BigInteger nextUpdate = (BigInteger) fields[1];
+            final long thisUpdate = ValueExtractor.extractLongValue(fields[0]);
+            final long nextUpdate = ValueExtractor.extractLongValue(fields[1]);
 
-            return new CRLInfo(issuerDn, crlPartitionIndex, crlNumber, thisUpdate.longValue(), nextUpdate.longValue());
+            return new CRLInfo(issuerDn, crlPartitionIndex, crlNumber, thisUpdate, nextUpdate);
         } catch (final Exception e) {
             log.info(intres.getLocalizedMessage("store.errorgetcrlinfo", issuerDn));
             throw new EJBException(e);

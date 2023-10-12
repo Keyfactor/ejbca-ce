@@ -63,6 +63,7 @@
 	<classpathentry kind="src" path="modules/ejbca-rest-camanagement/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-endentity/src"/>
 	<classpathentry kind="src" path="modules/ejbca-rest-ssh/src"/>
+	<classpathentry kind="src" path="modules/ejbca-rest-system/src"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-webdist-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ws/src"/>
@@ -115,7 +116,7 @@
 	<classpathentry kind="lib" path="lib/httpmime-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-5.12.1.jar"/>
-	<classpathentry kind="lib" path="lib/jacknji11-1.2-pk3.jar"/>
+	<classpathentry kind="lib" path="lib/jacknji11-1.2.8.jar"/>
 	<classpathentry kind="lib" path="lib/ext/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-4.13.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/javax.ws.rs-api-2.1.1.jar"/>
