@@ -1575,7 +1575,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
         SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException {
         AuthorizationDeniedException authorizationDeniedException = null;
-        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
             if (log.isDebugEnabled()) {
                 log.debug("raMasterApi calling createCertificateWS: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
             }
