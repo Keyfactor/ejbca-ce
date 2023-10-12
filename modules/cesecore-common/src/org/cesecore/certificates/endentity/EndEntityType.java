@@ -24,7 +24,7 @@ import java.security.InvalidParameterException;
 public class EndEntityType implements Serializable{
 
     private static final long serialVersionUID = 730921129476820912L;
-    private int type = EndEntityTypes.INVALID.hexValue();
+    private int type;
     
     /**
      * Creates an EndEntityType of type USER_INVALID (0x0)
@@ -57,8 +57,7 @@ public class EndEntityType implements Serializable{
     /**
      * Creates an amalgam of all types given as parameters using binary OR on their hex values.   
      * 
-     * @param type First type to add. Separate parameter to avoid empty instantiation. 
-     * @param types varargs list of types. 
+     * @param types First type to add. Separate parameter to avoid empty instantiation.
      */
     public EndEntityType(EndEntityTypes ... types) {
         if(types.length == 0) {
