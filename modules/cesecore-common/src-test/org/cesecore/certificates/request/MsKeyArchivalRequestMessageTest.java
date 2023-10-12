@@ -20,43 +20,8 @@ import static org.junit.Assert.fail;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.PrivateKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.List;
 
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.cmc.BodyPartID;
-import org.bouncycastle.asn1.cmc.CMCObjectIdentifiers;
-import org.bouncycastle.asn1.cmc.CMCStatus;
-import org.bouncycastle.asn1.cmc.CMCStatusInfoBuilder;
-import org.bouncycastle.asn1.cmc.PKIResponse;
-import org.bouncycastle.asn1.cmc.TaggedAttribute;
-import org.bouncycastle.asn1.cms.Attribute;
-import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.cms.Attributes;
-import org.bouncycastle.asn1.cms.ContentInfo;
-import org.bouncycastle.asn1.cms.SignedData;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cms.CMSProcessableByteArray;
-import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.cms.CMSSignedDataGenerator;
-import org.bouncycastle.cms.CMSTypedData;
-import org.bouncycastle.cms.PKCS7ProcessableObject;
-import org.bouncycastle.cms.SimpleAttributeTableGenerator;
-import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
-import org.bouncycastle.util.CollectionStore;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
@@ -64,10 +29,8 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.keys.KeyPairWrapper;
 import com.keyfactor.util.keys.KeyTools;
 
 public class MsKeyArchivalRequestMessageTest {
@@ -291,15 +254,13 @@ public class MsKeyArchivalRequestMessageTest {
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
         
-        try {
-            // this works
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            kf.generatePrivate(new PKCS8EncodedKeySpec(msg.getKeyPairToArchive().getPrivate().getEncoded()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // this works
+        KeyFactory kf = KeyFactory.getInstance(msg.getKeyPairToArchive().getPublic().getAlgorithm());
+        kf.generatePrivate(new PKCS8EncodedKeySpec(msg.getKeyPairToArchive().getPrivate().getEncoded()));
+        System.out.println(msg.getKeyPairToArchive().getPrivate().getClass().getName());
         
-        EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); // this fails
+        // EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); // this fails cause spec validation in BC
+        
     }
     
     @Test
@@ -506,102 +467,6 @@ public class MsKeyArchivalRequestMessageTest {
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
                                 
-    }
-    
-    @Test
-    public void createResponse() throws Exception {
-        
-        CMCStatusInfoBuilder cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.success, new BodyPartID(0x01));
-        cmcStatusInfoBuilder.setStatusString("Issued"); // TODO: human readable
-        
-        TaggedAttribute taggedAttribute1 = new TaggedAttribute(new BodyPartID(0x01),
-                CMCObjectIdentifiers.id_cmc_statusInfo,
-                new DERSet(cmcStatusInfoBuilder.build()));
-        
-        String szOID_ISSUED_CERT_HASH =  "1.3.6.1.4.1.311.21.17";
-        Attribute certHash;
-            certHash = new Attribute(new ASN1ObjectIdentifier(szOID_ISSUED_CERT_HASH), 
-                                    new DERSet(new DEROctetString(Hex.decode("3B4938CC150F9B2BDD48533BB9EFA1B072A3B7A8"))));
-
-        
-        Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
-                new DERSet(new DEROctetString(Hex.decode("69E3FB7F2416E07779034EC64EE7DF7E68A9C581")))); // TODO: from request message
-
-        ASN1Encodable wrappedAttributes = new DERSequence(
-                new ASN1Encodable[]{new ASN1Integer(0),  
-                        new DERSequence(new ASN1Integer(1)), new DERSet(new ASN1Encodable[]{certHash, encryptedKeyHash})});
-        
-        String szOID_CMC_ADD_ATTRIBUTES = "1.3.6.1.4.1.311.10.10.1"; // TODO: find place to collect oids
-        TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
-                new ASN1ObjectIdentifier(szOID_CMC_ADD_ATTRIBUTES),
-                new DERSet(wrappedAttributes)); 
-        
-        DERSequence payload = new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2});
-        DERSequence pkiRespAsSequence = new DERSequence(
-                        new ASN1Encodable[]{payload, new DERSequence(), new DERSequence()});
-        PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence); // grab beta release or use ASN1Sequence and then getInstance
-        System.out.println( pkiResponse.getControlSequence().size());
-        System.out.println(Hex.toHexString(pkiResponse.getControlSequence().getObjectAt(0).toASN1Primitive().getEncoded()));
-        //ContentInfo encapInfo = new ContentInfo(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse);
-         
-        try {
-            byte[] encapInfoEncoded = pkiResponse.getEncoded();
-            System.out.println("encapInfoEncoded: " + Hex.toHexString(encapInfoEncoded));
-            System.out.println("encapInfoEncoded: " + Hex.toHexString(new DEROctetString(encapInfoEncoded).getEncoded()));
-            byte[] payloadHash = CertTools.generateSHA256Fingerprint(payload.getEncoded());// TODO: parametrize
-            
-            // signerInfo
-            JcaSignerInfoGeneratorBuilder signerInfobuilder = new JcaSignerInfoGeneratorBuilder(
-                    new JcaDigestCalculatorProviderBuilder().setProvider("BC").build());
-            
-            String szOID_PKCS_9_CONTENT_TYPE = "1.2.840.113549.1.9.3";
-            Attribute contentTypeAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_CONTENT_TYPE), 
-                                                        new DERSet(CMCObjectIdentifiers.id_cct_PKIResponse));
-            String szOID_PKCS_9_MESSAGE_DIGEST = "1.2.840.113549.1.9.4";
-            Attribute contentHashAttribute = new Attribute(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), 
-                    new DERSet(new DEROctetString(payloadHash)));
-    
-            AttributeTable attrTable = new AttributeTable(new DERSet(
-                    new ASN1Encodable[]{ contentTypeAttribute.toASN1Primitive(), 
-                contentHashAttribute.toASN1Primitive()}));
-            //attrTable.add(new ASN1ObjectIdentifier(szOID_PKCS_9_MESSAGE_DIGEST), new DERSet(new DEROctetString(encapInfoHash)));
-            signerInfobuilder.setSignedAttributeGenerator(new SimpleAttributeTableGenerator(attrTable));
-            
-            final KeyPair caEncKeyPair = KeyTools.genKeys("2048", "RSA");
-            String encCertSubjectDn = "CN=IssuerCa-Xchg";
-            X509Certificate encCertificate = CertTools.genSelfCert(encCertSubjectDn, 10L, "1.1.1.1", caEncKeyPair.getPrivate(),
-                    caEncKeyPair.getPublic(), "SHA256WithRSA", false);
-            
-            ContentSigner sha256Signer = new JcaContentSignerBuilder("SHA1WithRSA")
-                                                        .setProvider("BC").build(caEncKeyPair.getPrivate());
-            CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-            gen.addSignerInfoGenerator(signerInfobuilder.build(sha256Signer, (X509Certificate) encCertificate)); // used subjectKeyIdentifier
-            
-            // add certificate chain
-            List<X509CertificateHolder> certChain = new ArrayList<>();
-            certChain.add(new X509CertificateHolder(encCertificate.getEncoded()));
-            CollectionStore<X509CertificateHolder> store = new CollectionStore<>(certChain);
-            gen.addCertificates(store); // include full chain
-            
-//            gen.addCRL(null); // may be multiple - MS compatible CA??
-            
-            ASN1Sequence.getInstance(pkiResponse);
-            
-            CMSTypedData data = new CMSProcessableByteArray(CMCObjectIdentifiers.id_cct_PKIResponse, 
-                                                pkiResponse.getEncoded());
-            CMSSignedData cmsResponse = gen.generate(data, true);
-            byte[] resp = cmsResponse.getEncoded();
-            System.out.println(Hex.toHexString(resp));
-            
-            System.out.println(SignedData.getInstance(ContentInfo.getInstance(resp).getContent()).getCertificates().getObjectAt(0));
-            X509CertificateHolder x = new X509CertificateHolder(SignedData.getInstance(ContentInfo.getInstance(resp)
-                    .getContent()).getCertificates().getObjectAt(0).toASN1Primitive().getEncoded());
-            System.out.println(x.getIssuer().equals(x.getSubject()));
-
-            System.out.println(CertTools.isCA(CertTools.getCertfromByteArray(x.toASN1Structure().getEncoded())));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
     
 }

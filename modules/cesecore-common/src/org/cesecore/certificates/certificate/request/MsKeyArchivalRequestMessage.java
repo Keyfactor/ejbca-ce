@@ -76,6 +76,11 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
     
     public static final ASN1ObjectIdentifier szOID_ARCHIVED_KEY_ATTR = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.13");
     public static final ASN1ObjectIdentifier szOID_ENCRYPTED_KEY_HASH = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.21");
+    public static final ASN1ObjectIdentifier szOID_ISSUED_CERT_HASH = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.17");
+    public static final ASN1ObjectIdentifier szOID_CMC_ADD_ATTRIBUTES = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.10.10.1");
+    public static final ASN1ObjectIdentifier szOID_PKCS_9_CONTENT_TYPE = new ASN1ObjectIdentifier("1.2.840.113549.1.9.3");
+    public static final ASN1ObjectIdentifier szOID_PKCS_9_MESSAGE_DIGEST = new ASN1ObjectIdentifier("1.2.840.113549.1.9.4");
+
     // optional: for later use
     public static final ASN1ObjectIdentifier szOID_REQUEST_CLIENT_INFO = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.20");
     
@@ -268,6 +273,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
      * @return
      */
     private PrivateKey parsePrivateKeyBlob(byte[] encodedPrivateKey) {
+        // TODO: move to x509-common-utils or some other common place
         if (encodedPrivateKey[0]!=0x07 || encodedPrivateKey[1]!=0x02 ) { // only parsing normal RSA keys
             return null;
         }
@@ -306,15 +312,17 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             end=start + byteLen;
             BigInteger privateExp = bigIntFromByteArray(encodedPrivateKey, start, end);
             
-            
-            System.out.println(pubExp);
-            System.out.println(modulus);
-            System.out.println(prime1);
-            System.out.println(prime2);
-            System.out.println(exponent1);
-            System.out.println(exponent2);
-            System.out.println(coefficient);
-            System.out.println(privateExp);
+            if(log.isTraceEnabled()) {
+                log.trace("Decrypted end entity private key params:");
+                log.trace("pubexp:" + pubExp);
+                log.trace("modulus:" + modulus);
+                log.trace("prime1:" + prime1);
+                log.trace("prime2:" + prime2);
+                log.trace("exponent1:" + exponent1);
+                log.trace("exponent2:" + exponent2);
+                log.trace("coefficient:" + coefficient);
+                log.trace("privateExp:" + privateExp);
+            }
             
             RSAPrivateKey privKey = new RSAPrivateKey(modulus, pubExp, privateExp, prime1, prime2, 
                                                                         exponent1, exponent2, coefficient);
@@ -323,11 +331,21 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             AlgorithmIdentifier algorithmIdentifier = new AlgorithmIdentifier(
                                                 PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE);
             byte[] derEncodedPrivKey = KeyUtil.getEncodedPrivateKeyInfo(algorithmIdentifier, privKey);
-            KeyFactory kf = KeyFactory.getInstance("RSA");
+            // TODO: remove
+//            BigInteger SMALL_PRIMES_PRODUCT = new BigInteger(
+//                    "8138e8a0fcf3a4e84a771d40fd305d7f4aa59306d7251de54d98af8fe95729a1f"
+//                  + "73d893fa424cd2edc8636a6c3285e022b0e3866a565ae8108eed8591cd4fe8d2"
+//                  + "ce86165a978d719ebf647f362d33fca29cd179fb42401cbaf3df0c614056f9c8"
+//                  + "f3cfd51e474afb6bc6974f78db8aba8e9e517fded658591ab7502bd41849462f",
+//              16);
+            // log.info(modulus.gcd(SMALL_PRIMES_PRODUCT));
+            // TODO: hard coding "SunRsaSign" here may not be required but BC is placed after SUN in provider list
+            // KeyFactory kf = KeyFactory.getInstance("RSA", "SunRsaSign");
+            KeyFactory kf = KeyFactory.getInstance("RSA"); // KeyFactory.getInstance("RSA", "BC");
             PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(derEncodedPrivKey));            
             return requestPrivatekey;
         } catch (Exception e) {
-            log.info("Exception during private key blob processing: ", e);
+            log.error("Exception during private key blob processing: ", e);
             return null;
         }
     }
