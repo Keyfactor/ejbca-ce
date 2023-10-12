@@ -638,7 +638,7 @@ public interface RaMasterApi {
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateEncodingException if the certificate couldn't be encoded
      */
-    byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+    Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
         throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
         CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
         SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException;
