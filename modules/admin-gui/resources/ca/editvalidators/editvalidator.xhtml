@@ -43,10 +43,12 @@
 					<h:outputLabel for="validatorName" value="#{web.text.NAME}"/>
 				</h:panelGroup>
 				<h:panelGroup id="name">
-					<h:inputText rendered="#{!validatorsBean.viewOnly}" value="#{validatorBean.validatorName}" required="true" 
-						requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.INTERNALKEYBINDING_FIELD_NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}">
-							<f:ajax event="change" render="validators" />
-						</h:inputText>
+					<h:inputText rendered="#{!validatorsBean.viewOnly}" value="#{validatorBean.validatorName}"
+								 required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.INTERNALKEYBINDING_FIELD_NAME}"
+								 size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}">
+						<f:ajax event="change" render="validators" />
+						<f:converter converterId="trimConverter"/>
+					</h:inputText>
 					<h:outputText rendered="#{validatorsBean.viewOnly}" value="#{validatorBean.validatorName}"/>
 					<h:message for="name"/>
 					
