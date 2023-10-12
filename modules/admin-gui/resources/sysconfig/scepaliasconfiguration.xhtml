@@ -25,23 +25,19 @@
 <ui:composition template="/WEB-INF/include/template.xhtml">
     <ui:param name="resourceBean" value="#{scepConfigMBean}" />
 	<ui:define name="content">
-	
-	<h1>
-		<h:outputText value="#{scepConfigMBean.currentAlias.alias}" />
-	</h1>
+	<h2>
+		<h:outputText value="#{(scepConfigMBean.currentAliasEditMode) ? web.text.SCEP_EDIT_ALIAS : web.text.SCEP_VIEW_ALIAS}"/>
+		<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/SCEP.html')}" escape="false"/>
+	</h2>
 	<h:form id="currentAliasForm">
 	<h:panelGrid columns="2">
-		<h:outputLink value="scepconfiguration.xhtml">
-		<h:outputText value="#{web.text.SCEP_ALIAS_NAV_BACK}"/></h:outputLink>
-		<h:commandButton action="#{scepConfigMBean.toggleCurrentAliasEditMode}" value="#{web.text.CRYPTOTOKEN_NAV_EDIT}" 
-			rendered="#{!scepConfigMBean.currentAliasEditMode and scepConfigMBean.allowedToEdit}"/>
-		
-		<h:panelGroup id="placeholder1" />
-		<h:panelGroup id="placeholder2" rendered="#{!scepConfigMBean.currentAliasEditMode and scepConfigMBean.allowedToEdit}"/>
-		
-		<h:outputLabel for="currentAlias" value="#{web.text.SCEP_ALIAS}:"/>
+		<h:outputLabel for="currentAlias" value="#{web.text.NAME}:"/>
 		<h:panelGroup id="currentAlias">
-	    	<h:outputText value="#{scepConfigMBean.currentAlias.alias}" />
+	    	<h:outputText value="#{scepConfigMBean.currentAlias.alias}" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
+			<h:inputText value="#{scepConfigMBean.currentAlias.alias}" rendered="#{scepConfigMBean.currentAliasEditMode}"
+						 required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}">
+				<f:converter converterId="trimConverter"/>
+			</h:inputText>
 		</h:panelGroup>
  
 		<h:outputLabel for="currentMode" value="#{web.text.SCEP_OPERATIONAL_MODE}"/>
@@ -274,10 +270,10 @@
 		</h:panelGroup>
 		
 	</h:panelGrid>
-	<h:panelGrid columns="2" id="actions" rendered="#{scepConfigMBean.currentAliasEditMode}">
+	<h:panelGrid columns="2" id="actions">
 		<h:panelGroup>
-			<h:commandButton action="#{scepConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>
 			<h:commandButton action="#{scepConfigMBean.saveCurrentAlias}" value="#{web.text.SAVE}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>
+			<h:commandButton action="#{scepConfigMBean.cancelCurrentAlias}" value="#{web.text.CANCEL}" immediate="true"/>
 		</h:panelGroup>
 	</h:panelGrid>
 	</h:form>
