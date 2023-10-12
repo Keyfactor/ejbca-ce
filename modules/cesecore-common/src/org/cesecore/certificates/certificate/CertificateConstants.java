@@ -73,6 +73,7 @@ public final class CertificateConstants {
     public static final int CERTTYPE_ITS        =     0xc;
     /** Certificate belongs to an CA cross chain. These are not loaded in CaCertificateCache. */
     public static final int CERTTYPE_CROSS_CA_CHAIN   =     0xf0;
+    // Username used for creating key exchange certificate
     /** Certificate is CA certificate intended to be used as internal or external CA in EJBCA */
     public static final String CERT_USERNAME_SYSTEMCA = "SYSTEMCA";
     
