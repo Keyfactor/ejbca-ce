@@ -12,15 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
-
+import com.keyfactor.util.StringTools;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -29,15 +21,17 @@ import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import com.keyfactor.util.StringTools;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
+import java.io.Serializable;
+import java.util.List;
 
-/**
- */
 @Named
 @SessionScoped
 public class EstConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-    
+
     @EJB
     private GlobalConfigurationSessionLocal globalConfigSession;
 
@@ -45,123 +39,100 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
     private String newAlias;
     private boolean viewOnly = true;
 
-    /**
-     * Indicates a delete action in progress to render its view.
-     */
-    private boolean deleteInProgress = false;
-
     public EstConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
     }
-    
+
     public EstConfiguration getEstConfiguration() {
         getEjbcaWebBean().reloadEstConfiguration();
         return (EstConfiguration) globalConfigSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-    } 
-
-    public List<SelectItem> getEstConfigAliasesSeletItemList() {
-        List<String> aliasList = getEstConfiguration().getSortedAliasList();
-        final List<SelectItem> ret = new ArrayList<>();
-        for (String alias : aliasList) {
-            ret.add(new SelectItem(alias));
-        }
-        return ret;
     }
 
-    public void addAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(newAlias)) {
-            if (!StringTools.checkFieldForLegalChars(newAlias)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else {
-                if (getEstConfiguration().aliasExists(newAlias)) {
-                    addErrorMessage("ESTALIASEXISTS");
-                } else {
-                    getEjbcaWebBean().addEstAlias(newAlias);
-                    newAlias = null;
-                }
-            }
-        }
+    public List<String> getEstConfigAliasesSelectItemList() {
+        return getEstConfiguration().getSortedAliasList();
     }
 
-    public void renameAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(newAlias) && StringUtils.isNotEmpty(selectedAlias)) {
-            if (!StringTools.checkFieldForLegalChars(newAlias)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else {
-                if (getEstConfiguration().aliasExists(newAlias)) {
-                    addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
-                } else {
-                    getEjbcaWebBean().renameEstAlias(selectedAlias, newAlias);
-                    newAlias = null;
-                }
-            }
-        }
-
+    /**
+     * @return true if no aliases have been configured yet
+     */
+    public boolean isAliasListEmpty(){
+        return getEstConfiguration().getAliasList().isEmpty();
     }
 
-    public void cloneAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(newAlias) && StringUtils.isNotEmpty(selectedAlias)) {
-            if (!StringTools.checkFieldForLegalChars(newAlias)) {
-                addErrorMessage("ONLYCHARACTERS");
-            } else {
-                if (getEstConfiguration().aliasExists(newAlias)) {
-                    addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
-                } else {
-                    getEjbcaWebBean().cloneEstAlias(selectedAlias, newAlias);
-                    newAlias = null;
-                }
-            }
-        }
+    public String addAlias() throws AuthorizationDeniedException {
+        selectedAlias = null;
+        viewOnly = false;
+        return "edit";
     }
 
-    public void deleteEstAlias() throws AuthorizationDeniedException {
-        if (StringUtils.isNotEmpty(selectedAlias)) {
-            getEjbcaWebBean().removeEstAlias(selectedAlias);
-            if (getEstConfiguration().aliasExists(selectedAlias)) {
-                addErrorMessage("ESTCOULDNOTDELETEALIAS");
-            }
+    public String cloneAliasAction() throws AuthorizationDeniedException {
+        if (StringUtils.isEmpty(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return null;
         }
-        actionCancel();
+
+        if (!StringTools.checkFieldForLegalChars(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return null;
+        }
+
+        if (getEstConfiguration().aliasExists(newAlias)) {
+            addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
+            return null;
+        }
+
+        getEjbcaWebBean().cloneEstAlias(selectedAlias, newAlias);
+        newAlias = null;
+        selectedAlias = null;
+        return "done";
+    }
+
+    public String cloneAlias(final String alias) {
+        selectedAlias = alias;
+        return "clone";
+    }
+
+    public String deleteAlias(final String alias) {
+        selectedAlias = alias;
+        return "delete";
     }
 
     /**
      * Delete action.
      */
-    public void actionDelete() {
-        if (StringUtils.isNotEmpty(selectedAlias)) {
-            deleteInProgress = true;
-        } else {
-            addErrorMessage("ESTNOTSELECTED");
+    public String deleteAliasAction() throws AuthorizationDeniedException {
+        getEjbcaWebBean().removeEstAlias(selectedAlias);
+        if (getEstConfiguration().aliasExists(selectedAlias)) {
+            addErrorMessage("ESTCOULDNOTDELETEALIAS");
         }
+        selectedAlias = null;
+        return "done";
     }
 
     /**
      * Cancel action.
      */
     public void actionCancel() {
-        deleteInProgress = false;
         selectedAlias = null;
         newAlias = null;
     }
 
-    /** @return the navigation outcome defined in faces-config.xml */
-    public String actionView() {
-        if (StringUtils.isNotEmpty(selectedAlias)) {
-            viewOnly = true;
-            return "view";
-        }
-        addErrorMessage("ESTNOTSELECTED");
-        return "";
+    /**
+     * @return the navigation outcome defined in faces-config.xml
+     */
+    public String actionView(final String alias) {
+        selectedAlias = alias;
+        viewOnly = true;
+        return "view";
     }
 
-    /** @return the navigation outcome defined in faces-config.xml */
-    public String actionEdit() {
-        if (StringUtils.isNotEmpty(selectedAlias)) {
-            viewOnly = false;
-            return "edit";
-        }
-        addErrorMessage("ESTNOTSELECTED");
-        return "";
+    /**
+     * @return the navigation outcome defined in faces-config.xml
+     */
+    public String actionEdit(final String alias) {
+        selectedAlias = alias;
+        viewOnly = false;
+        return "edit";
     }
 
     public boolean isAuthorizedToEdit() {
@@ -174,10 +145,6 @@ public class EstConfigMBean extends BaseManagedBean implements Serializable {
 
     public void setSelectedAlias(String selectedAlias) {
         this.selectedAlias = selectedAlias;
-    }
-
-    public boolean isDeleteInProgress() {
-        return deleteInProgress;
     }
 
     public String getNewAlias() {

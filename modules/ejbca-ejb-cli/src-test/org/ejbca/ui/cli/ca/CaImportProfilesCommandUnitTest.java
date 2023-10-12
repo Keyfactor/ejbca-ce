@@ -2,9 +2,18 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Layout;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.apache.log4j.PatternLayout;
+import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.message.SimpleMessage;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -20,13 +29,13 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.ui.cli.TestFileResource;
-import org.ejbca.ui.cli.TestLogAppenderResource;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.powermock.api.easymock.PowerMock;
@@ -50,19 +59,16 @@ import static org.junit.Assert.assertTrue;
  * Unit tests for the CaImportProfilesCommand class.
  * <br/>
  * Check resources-test/readme.txt for files definition.
- *
- * @version $Id$
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({JndiHelper.class})
-@PowerMockIgnore(value = {"com.sun.org.apache.xerces.*" })
+@PowerMockIgnore(value = {"com.sun.org.apache.xerces.*", "javax.management.*" })
 public class CaImportProfilesCommandUnitTest {
 
     @Rule
-    public TestLogAppenderResource testLog = new TestLogAppenderResource(Logger.getLogger(CaImportProfilesCommand.class));
+    public TestLogAppenderResource testLog = new TestLogAppenderResource(LogManager.getLogger(CaImportProfilesCommand.class));
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
 
     private static CaSessionRemote caSessionRemoteMock = createMock(CaSessionRemote.class);
     private static CertificateProfileSessionRemote certificateProfileSessionMock = createMock(CertificateProfileSessionRemote.class);
@@ -109,8 +115,7 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.CLI_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - Directory parameter is mandatory."));
+        assertLog("ERROR - Directory parameter is mandatory.");
     }
 
     @Test
@@ -126,8 +131,7 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - CA '" + caName + "' does not exist."));
+        assertLog("ERROR - CA '" + caName + "' does not exist.");
         verify(caSessionRemoteMock);
     }
 
@@ -144,8 +148,7 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.AUTHORIZATION_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - CLI user not authorized to CA '" + caName  + "'."));
+        assertLog("ERROR - CLI user not authorized to CA '" + caName  + "'.");
         verify(caSessionRemoteMock);
     }
 
@@ -158,8 +161,7 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - 'some' cannot be read."));
+        assertLog("ERROR - 'some' cannot be read.");
     }
 
     @Test
@@ -173,7 +175,7 @@ public class CaImportProfilesCommandUnitTest {
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - '" + inputFile.getAbsolutePath() + "' is not a directory."));
+        assertLog("ERROR - '" + inputFile.getAbsolutePath() + "' is not a directory.");
     }
 
     @Test
@@ -186,8 +188,7 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - '" + inputDir.getAbsolutePath() + "' is empty."));
+        assertLog("ERROR - '" + inputDir.getAbsolutePath() + "' is empty.");
     }
 
     @Test
@@ -201,9 +202,8 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Skipped: '" + fileName + "'"));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("INFO - Skipped: '" + fileName + "'");
     }
 
     @Test
@@ -217,10 +217,9 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - Filename not as expected (cert/entityprofile_<name>-<id>.xml)."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Skipped: '" + fileName + "'"));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("ERROR - Filename not as expected (cert/entityprofile_<name>-<id>.xml).");
+        assertLog("INFO - Skipped: '" + fileName + "'");
     }
 
     @Test
@@ -234,10 +233,9 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - Filename not as expected (cert/entityprofile_<name>-<id>.xml)."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Skipped: '" + fileName + "'"));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("ERROR - Filename not as expected (cert/entityprofile_<name>-<id>.xml).");
+        assertLog("INFO - Skipped: '" + fileName + "'");
     }
 
     @Test
@@ -252,9 +250,8 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - Not adding fixed certificate profile '" + profileName + "'."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("ERROR - Not adding fixed certificate profile '" + profileName + "'.");
     }
 
     @Test
@@ -269,9 +266,8 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - Not adding fixed entity profile '" + profileName + "'."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("ERROR - Not adding fixed entity profile '" + profileName + "'.");
     }
 
     @Test
@@ -289,9 +285,8 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - Certificate profile '" + profileName + "' already exist in database."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("ERROR - Certificate profile '" + profileName + "' already exist in database.");
         verify(certificateProfileSessionMock);
     }
 
@@ -314,9 +309,8 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - Certificate profile id '" + profileId + "' already exist in database. Adding with a new profile id instead."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("WARN - Certificate profile id '" + profileId + "' already exist in database. Adding with a new profile id instead.");
         verify(certificateProfileSessionMock);
     }
 
@@ -335,9 +329,8 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - Entity profile '" + profileName + "' already exist in database."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("ERROR - Entity profile '" + profileName + "' already exist in database.");
         verify(endEntityProfileSessionMock);
     }
 
@@ -365,9 +358,8 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - Entity profileid '" + profileId + "' already exist in database. Using '" + freeEndEntityProfileId + "' instead."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("WARN - Entity profileid '" + profileId + "' already exist in database. Using '" + freeEndEntityProfileId + "' instead.");
         verify(certificateProfileSessionMock);
         verify(endEntityProfileSessionMock);
     }
@@ -394,10 +386,9 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - CA with id " + caToRemove + " was not found and will not be used in certificate profile '" + profileName + "'."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - No CAs left in certificate profile '" + profileName + "' and no CA specified on command line. Using ANYCA."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database."));
+        assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
+        assertLog("ERROR - No CAs left in certificate profile '" + profileName + "' and no CA specified on command line. Using ANYCA.");
+        assertLog("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database.");
         verify(caSessionRemoteMock);
         verify(certificateProfileSessionMock);
     }
@@ -431,10 +422,9 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - CA with id " + caToRemove + " was not found and will not be used in certificate profile '" + profileName + "'."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - No CAs left in certificate profile '" + profileName + "'. Using CA supplied on command line with id '" + caId + "'."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database."));
+        assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
+        assertLog("WARN - No CAs left in certificate profile '" + profileName + "'. Using CA supplied on command line with id '" + caId + "'.");
+        assertLog("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database.");
         verify(caSessionRemoteMock);
         verify(certificateProfileSessionMock);
     }
@@ -461,9 +451,8 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - Publisher with id " + publisherToRemove + " was not found and will not be used in certificate profile '" + profileName + "'."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database."));
+        assertLog("WARN - Publisher with id " + publisherToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
+        assertLog("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database.");
         verify(certificateProfileSessionMock);
         verify(publisherSessionMock);
     }
@@ -490,10 +479,9 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - End Entity Profile '" + profileName + "' references certificate profile 609758752 that does not exist."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - End Entity Profile '" + profileName + "' only references certificate profile(s) that does not exist. Using ENDUSER profile."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("WARN - End Entity Profile '" + profileName + "' references certificate profile 609758752 that does not exist.");
+        assertLog("WARN - End Entity Profile '" + profileName + "' only references certificate profile(s) that does not exist. Using ENDUSER profile.");
         verify(certificateProfileSessionMock);
         verify(endEntityProfileSessionMock);
     }
@@ -522,11 +510,10 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - CA with id -1027462528 was not found and will not be used in end entity profile '" + profileName + "'."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("ERROR - No CAs left in end entity profile '" + profileName + "' and no CA specified on command line. Using ALLCAs."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - Changing default CA in end entity profile '" + profileName + "' to 1."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("WARN - CA with id -1027462528 was not found and will not be used in end entity profile '" + profileName + "'.");
+        assertLog("ERROR - No CAs left in end entity profile '" + profileName + "' and no CA specified on command line. Using ALLCAs.");
+        assertLog("WARN - Changing default CA in end entity profile '" + profileName + "' to 1.");
         verify(caSessionRemoteMock);
         verify(certificateProfileSessionMock);
         verify(endEntityProfileSessionMock);
@@ -564,13 +551,77 @@ public class CaImportProfilesCommandUnitTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
-        // ECA-10510 Requires fix for Appender / LogEvent (CommandBase.getLogger())
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("INFO - Filename: '" + fileName + "'"));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - CA with id " + caToRemove + " was not found and will not be used in end entity profile '" + profileName + "'."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - No CAs left in end entity profile 'CaImportProfilesCommandUnitTest'. Using CA supplied on command line with id '" + caId + "'."));
-        // assertTrue("Event log is missing.", testLog.getOutput().contains("WARN - Changing default CA in end entity profile '" + profileName + "' to " + caId + "."));
+        assertLog("INFO - Filename: '" + fileName + "'");
+        assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in end entity profile '" + profileName + "'.");
+        assertLog("WARN - No CAs left in end entity profile 'CaImportProfilesCommandUnitTest'. Using CA supplied on command line with id '" + caId + "'.");
+        assertLog("WARN - Changing default CA in end entity profile '" + profileName + "' to " + caId + ".");
         verify(caSessionRemoteMock);
         verify(certificateProfileSessionMock);
         verify(endEntityProfileSessionMock);
+    }
+    
+    private void assertLog(final String log) {
+        assertTrue("Event log is missing.", testLog.getAppender().getMessages().contains(log));
+    }
+    
+    // Uses log4j compatibility mode. Do not reuse.
+    
+    // Use local class due to EasyMock.
+    static class TestLogAppenderResource extends ExternalResource {
+
+        private static final String APPENDER_NAME = "log4jRuleAppender";
+        private static final Layout LAYOUT = new PatternLayout("%-4r [%t] %-5p %c %x - %m%n");
+
+        private final Logger logger;
+        
+        private static TestAppender appender = new TestAppender(); 
+
+        public TestLogAppenderResource(final Logger logger) {
+            this.logger = logger;
+            logger.setLevel(Level.DEBUG);
+        }
+
+        @Override
+        protected void before() {
+            appender.setName(APPENDER_NAME);
+            appender.setLayout(LAYOUT);
+            logger.addAppender(appender);
+        }
+
+        @Override
+        protected void after() {
+            logger.removeAppender(APPENDER_NAME);
+        }
+
+        public TestAppender getAppender() {
+            return appender;
+        }
+        
+    }
+
+    static class TestAppender extends AppenderSkeleton {
+        
+        private final List<LoggingEvent> log = new ArrayList<>();
+        private final List<String> messages = new ArrayList<>();
+
+        @Override
+        public boolean requiresLayout() {
+            return false;
+        }
+
+        @Override
+        protected void append(final LoggingEvent loggingEvent) {
+            final String logMessage = loggingEvent.getLevel() + " - " + ((SimpleMessage) loggingEvent.getMessage()).getFormattedMessage();
+            messages.add(logMessage);
+            log.add(loggingEvent);
+        }
+
+        @Override
+        public void close() {
+        }
+        
+        public List<String> getMessages() {
+            return new ArrayList<String>(messages);
+        }
     }
 }
