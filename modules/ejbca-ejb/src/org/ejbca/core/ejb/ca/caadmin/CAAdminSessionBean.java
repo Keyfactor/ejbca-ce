@@ -108,6 +108,8 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -122,11 +124,13 @@ import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceReq
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -855,6 +859,44 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     }
 
+    @Override
+    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, CertificateProfile cp)
+        throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException,
+        CertificateExtensionException, CAOfflineException, IllegalValidityException,
+        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException {
+        CAToken caToken = ca.getCAToken();
+        String caName = ca.getName();
+        final String sequence = caToken.getKeySequence();
+        CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
+        String encryptKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+        PublicKey publicKey = cryptoToken.getPublicKey(encryptKeyAlias);
+        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
+            .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+        EndEntityInformation eeInfo = new EndEntityInformation();
+        eeInfo.setDN("CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
+        eeInfo.setCAId(ca.getCAId());
+
+        final Certificate cert = ca.generateCertificate(
+            cryptoToken,
+            eeInfo,
+            publicKey,
+            X509KeyUsage.keyEncipherment,
+            null,
+            null,
+            cp,
+            sequence,
+            cceConfig
+        );
+
+        certificateStoreSession.storeCertificate(authenticationToken, cert, CertificateConstants.CERT_USERNAME_SYSTEMCA,
+            CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_TYPE_ENCRYPTION,
+            CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
+            CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
+
+        log.info("Key Exchange Certificate is created for " + caName + ".");
+        return cert;
+    }
+
     private EndEntityInformation makeEndEntityInformation(final CAInfo cainfo) {
         String caAltName = null;
         ExtendedInformation extendedinfo = null;
@@ -891,7 +933,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
             }
         }
-        
+
         // Get CA from database
         try {
             caSession.editCA(admin, cainfo);

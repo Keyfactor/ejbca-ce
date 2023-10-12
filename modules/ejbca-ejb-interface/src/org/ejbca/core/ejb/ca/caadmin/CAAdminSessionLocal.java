@@ -72,5 +72,4 @@ public interface CAAdminSessionLocal extends CAAdminSession {
     
     public byte[] makeRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, String nextSignKeyAlias) 
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException;
-    
 }
