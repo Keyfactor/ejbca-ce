@@ -178,24 +178,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
         } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(type)) {
             className = CryptoTokenFactory.AWSKMS_NAME;
-            if (parameters.get(AWSKMS_REGION) == null) {
-                getLogger().info("You need to specify all parameters for AWS KMS Vault.");
+            if (!setAwsKmsProperties(parameters, cryptoTokenPropertes)) {
                 return CommandResult.CLI_FAILURE;
-            }
-            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_REGION, parameters.get(AWSKMS_REGION));
-
-            // if not using a service account, confirm that the access key id is specified
-            if (parameters.get(AWSKMS_USE_SERVICE_ACCOUNT) == null) {
-                if (parameters.get(AWSKMS_ACCESSKEYID) == null) {
-                    getLogger().info("You need to specify " + AWSKMS_ACCESSKEYID + " for AWS KMS Vault if not using a service account.");
-                    return CommandResult.CLI_FAILURE;
-                }
-                cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, parameters.get(AWSKMS_ACCESSKEYID));
-                cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE,
-                        AwsKmsAuthenticationType.KEY_ID_AND_SECRET.toString());
-            } else {
-                cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE,
-                        AwsKmsAuthenticationType.SERVICE_ACCOUNT_ROLE.toString());
             }
         } else if (CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(type)) {
             className = CryptoTokenFactory.FORTANIX_NAME;
@@ -327,6 +311,34 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             getLogger().info("Operation failed: " + e.getMessage());
         }
         return CommandResult.FUNCTIONAL_FAILURE;
+    }
+
+    /**
+     * convert AWSKMS CLI parameters to cryptoTokenPropertes
+     * 
+     * @return false if parameters are invalid
+     */
+    private boolean setAwsKmsProperties(ParameterContainer parameters, Properties cryptoTokenPropertes) {
+        if (parameters.get(AWSKMS_REGION) == null) {
+            getLogger().info("You need to specify all parameters for AWS KMS Vault.");
+            return false;
+        }
+        cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_REGION, parameters.get(AWSKMS_REGION));
+
+        // if not using a service account, confirm that the access key id is specified
+        if (parameters.get(AWSKMS_USE_SERVICE_ACCOUNT) == null) {
+            if (parameters.get(AWSKMS_ACCESSKEYID) == null) {
+                getLogger().info("You need to specify " + AWSKMS_ACCESSKEYID + " for AWS KMS Vault if not using a service account.");
+                return false;
+            }
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, parameters.get(AWSKMS_ACCESSKEYID));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE,
+                    AwsKmsAuthenticationType.KEY_ID_AND_SECRET.toString());
+        } else {
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE,
+                    AwsKmsAuthenticationType.SERVICE_ACCOUNT_ROLE.toString());
+        }
+        return true;
     }
 
     @Override

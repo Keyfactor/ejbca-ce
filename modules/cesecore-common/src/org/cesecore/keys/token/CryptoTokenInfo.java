@@ -148,10 +148,12 @@ public class CryptoTokenInfo implements Named, Serializable {
      * or a AWS KMS Key Vault Token using service credentials.
      */
     public boolean requiresSecretToActivate() {
-        if (getType().equals(AzureCryptoToken.class.getSimpleName()) && getAzureAuthenticationType() != AzureAuthenticationType.APP_ID_AND_SECRET)
+        if (getType().equals(AzureCryptoToken.class.getSimpleName()) && getAzureAuthenticationType() != AzureAuthenticationType.APP_ID_AND_SECRET) {
             return false;
-        if (getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && getAWSKMSAuthenticationType() != AwsKmsAuthenticationType.KEY_ID_AND_SECRET)
+        }
+        if (getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && getAWSKMSAuthenticationType() != AwsKmsAuthenticationType.KEY_ID_AND_SECRET) {
             return false;
+        }
         return true;
     }
 }
