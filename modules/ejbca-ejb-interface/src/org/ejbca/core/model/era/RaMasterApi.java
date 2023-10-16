@@ -108,6 +108,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
@@ -637,11 +638,13 @@ public interface RaMasterApi {
      * @throws OperatorCreationException if CA's private key contained an unknown algorithm or provider
      * @throws IllegalNameException if the Subject DN failed constraints
      * @throws CertificateEncodingException if the certificate couldn't be encoded
+     * @throws CertificateNotYetValidException 
+     * @throws CertificateExpiredException 
      */
     Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
         throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
         CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
-        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException;
+        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException, CertificateExpiredException, CertificateNotYetValidException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
