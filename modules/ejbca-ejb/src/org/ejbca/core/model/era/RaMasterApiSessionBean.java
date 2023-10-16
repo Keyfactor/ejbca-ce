@@ -2359,10 +2359,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId) throws AuthorizationDeniedException,
-            InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException, CertificateExtensionException, CAOfflineException,
-            IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException,
-            CertificateEncodingException, CertificateExpiredException, CertificateNotYetValidException {
+    public Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+            throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
+            CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException,
+            OperatorCreationException, IllegalNameException, CertificateEncodingException {
 
         String caName = caSession.getCAInfo(authenticationToken, caId).getName();
         X509Certificate certificate = certificateStoreSession
@@ -2370,9 +2370,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         if (Objects.nonNull(certificate)
                 && certificateStoreSession.getStatus(caSession.getCaSubjectDn(caName), certificate.getSerialNumber()).equals(CertificateStatus.OK)) {
-            certificate.checkValidity();
-            log.debug("Found certificate with subjectDN=[ CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
-            return certificate;
+            try {
+                certificate.checkValidity();
+                log.debug("Found certificate with subjectDN=[ CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
+                return certificate;
+            } catch (CertificateExpiredException | CertificateNotYetValidException e) {
+                // We continue to generate another valid cert!
+                log.debug("Found an expired cert in db, will create a new one!");
+            }
         }
 
         CA ca = (CA) caSession.getCA(authenticationToken, caId);
