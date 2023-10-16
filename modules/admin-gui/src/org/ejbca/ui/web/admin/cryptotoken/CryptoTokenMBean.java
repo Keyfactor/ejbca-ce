@@ -42,6 +42,7 @@ import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
 import org.cesecore.keys.token.AvailableCryptoToken;
+import org.cesecore.keys.token.AwsKmsAuthenticationType;
 import org.cesecore.keys.token.AzureAuthenticationType;
 import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.CryptoTokenConstants;
@@ -251,6 +252,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             this.requiresSecretToActivate = requiresSecretToActivate;
         }
 
+        public boolean isCanReactivate() {
+            // if its not an auto-activate token, we show the activate/deactivate buttons, no the reactivate button
+            if (!isAutoActivation())
+                return false;
+            
+            // for AWSKMS auto-activate tokens that don't take a secret, it makes no sense to show a reactivate button
+            if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType()) && !requiresSecretToActivate)
+                return false;
+            
+            // for now, show reactivate for all other token types
+            return true;
+        }
     }
 
     /**
@@ -281,12 +294,17 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String awsKMSRegion = "us-east-1"; // default value
         private String awsKMSAccessKeyID = ""; // default value
         private AzureAuthenticationType azureAuthenticationType = AzureAuthenticationType.APP_ID_AND_SECRET;
+        private AwsKmsAuthenticationType awsKmsAuthenticationType = AwsKmsAuthenticationType.KEY_ID_AND_SECRET;
 
         private CurrentCryptoTokenGuiInfo() {
         }
 
         public AzureAuthenticationType[] getAzureAuthenticationTypes() {
             return AzureAuthenticationType.values();
+        }
+        
+        public AwsKmsAuthenticationType[] getAwsKmsAuthenticationTypes() {
+            return AwsKmsAuthenticationType.values();
         }
         
         public String getName() {
@@ -493,7 +511,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isShowAWSKMSCryptoToken() {
             return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getType());
         }
-
+        
         public boolean isShowFortanixCryptoToken() {
             return CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getType());
         }
@@ -523,6 +541,17 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             this.keyVaultKeyBinding = keyVaultKeyBinding;
         }
 
+        public String getAwsKmsAuthenticationType() {
+            return awsKmsAuthenticationType.toString();
+        }
+
+        public void setAwsKmsAuthenticationType(AwsKmsAuthenticationType awsKmsAuthenticationType) {
+            this.awsKmsAuthenticationType = awsKmsAuthenticationType;
+        }
+
+        public void setAwsKmsAuthenticationType(String awsKmsAuthenticationType) {
+            this.awsKmsAuthenticationType = AwsKmsAuthenticationType.valueOf(awsKmsAuthenticationType);
+        }
 
         public String getAzureAuthenticationType() {
             return azureAuthenticationType.toString();
@@ -537,10 +566,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
 
         public boolean getRequiresSecret() {
-            // true if not azure or not using azure app id and secret
-            return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType == AzureAuthenticationType.APP_ID_AND_SECRET;
+            // true for crypto tokens that require some kind of activation code.  Azure and AWS may not
+            if (type.equals(AzureCryptoToken.class.getSimpleName()) && azureAuthenticationType != AzureAuthenticationType.APP_ID_AND_SECRET)
+                return false;
+            else if (type.equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME) && awsKmsAuthenticationType != AwsKmsAuthenticationType.KEY_ID_AND_SECRET)
+                return false;
+            else
+                return true;
         }
-        
+
         public boolean getShowKeyBinding() {
             return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType == AzureAuthenticationType.KEY_BINDING;
         }
@@ -1135,6 +1169,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 String keyid = getCurrentCryptoToken().getAWSKMSAccessKeyID().trim();
                 properties.setProperty(CryptoTokenConstants.AWSKMS_REGION, region);
                 properties.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, keyid);
+                properties.setProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE, getCurrentCryptoToken().getAwsKmsAuthenticationType());
             } else if (CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
                 className = CryptoTokenFactory.FORTANIX_NAME;
                 final String fortanixBaseAddress = getCurrentCryptoToken().getFortanixBaseAddress().trim();
@@ -1445,6 +1480,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.AWSKMS_SIMPLE_NAME)) {
                     currentCryptoToken.setAWSKMSRegion(cryptoTokenInfo.getAWSKMSRegion());
+                    currentCryptoToken.setAwsKmsAuthenticationType(cryptoTokenInfo.getAWSKMSAuthenticationType());
                     currentCryptoToken.setAWSKMSAccessKeyID(cryptoTokenInfo.getAWSKMSAccessKeyID());
                 }
                 if (cryptoTokenInfo.getType().equals(CryptoTokenFactory.FORTANIX_SIMPLE_NAME)) {

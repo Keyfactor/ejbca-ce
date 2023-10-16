@@ -149,6 +149,39 @@
                         rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode}"/>
                 </h:panelGroup>
 
+				<!-- AWS Authentication Type - this hides and shows the dependent controls below -->
+				<h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+					<h:outputLabel for="currentCryptoTokenAwsAuthenticationType" value="#{web.text.CRYPTOTOKEN_AWSKMS_AUTH} "/>
+                    <h:outputText id="currentCryptoTokenAwsAuthenticationTypeHelp" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+				</h:panelGroup>
+                <h:panelGroup
+                	id="currentCryptoTokenAwsAuthenticationTypePanelGroup"
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    <h:selectOneMenu
+                        value="#{cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationType}"
+                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+                        disabled="#{!cryptoTokenMBean.allowedToModify}">
+                        <f:selectItems 
+                        	value="#{cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationTypes}"
+                        	var="awsKmsAuthenticationType"
+                        	itemValue="#{awsKmsAuthenticationType}"
+                        	itemLabel="#{cryptoTokenMBean.localize('AWSKMSAUTHENTICATIONTYPE.' += awsKmsAuthenticationType)}"/>
+						<f:ajax render="currentCryptoTokenForm:currentCryptoTokenSecret1LabelGroup
+										currentCryptoTokenForm:currentCryptoTokenSecret1ValueGroup
+										currentCryptoTokenForm:currentCryptoTokenSecret2LabelGroup
+										currentCryptoTokenForm:currentCryptoTokenSecret2ValueGroup
+										currentCryptoTokenForm:currentCryptoTokenAWSKMSAccessKeyIDPanelGroup
+										currentCryptoTokenForm:currentCryptoTokenAWSKMSAccessKeyIDValuePanelGroup
+										currentCryptoTokenForm:currentCryptoTokenSecret1Label
+										currentCryptoTokenForm:currentCryptoTokenSecret1
+										currentCryptoTokenForm:currentCryptoTokenSecret2Label
+										currentCryptoTokenForm:currentCryptoTokenSecret2"/>
+                    </h:selectOneMenu>
+                    <h:outputText
+                        value="#{cryptoTokenMBean.localize('AWSKMSAUTHENTICATIONTYPE.' += cryptoTokenMBean.currentCryptoToken.awsKmsAuthenticationType)}"
+                        rendered="#{not cryptoTokenMBean.currentCryptoTokenEditMode}"/>
+                </h:panelGroup>
+
 				<!-- Client ID - Azure only and not shown when using Managed Identity -->
                 <h:panelGroup id="currentCryptoTokenKeyVaultClientIDPanelGroup"
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAzureCryptoToken}">
@@ -331,9 +364,9 @@
 						value="#{cryptoTokenMBean.currentCryptoToken.p11AttributeFileAlias}"
 						rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
 				</h:panelGroup>
-
+				
                 <h:panelGroup id="currentCryptoTokenAWSKMSRegionPanelGroup"
-                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
+                    rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}"> 
                     <h:outputText id="currentCryptoTokenAWSKMSRegionLabel"
                         for="currentCryptoTokenAWSKMSRegion"
                         value="#{web.text.CRYPTOTOKEN_AWSKMS_REGION} " />
@@ -351,20 +384,24 @@
                 </h:panelGroup>
                 <h:panelGroup id="currentCryptoTokenAWSKMSAccessKeyIDPanelGroup"
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
-                    <h:outputLabel id="currentCryptoTokenAWSKMSAccessKeyIDLabel"
-                        for="currentCryptoTokenAWSKMSAccessKeyID"
-                        value="#{web.text.CRYPTOTOKEN_AWSKMS_ACCESSKEYID} " />
-                    <h:outputText id="currentCryptoTokenAWSKMSAccessKeyID" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+	                <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.requiresSecret}">
+	                    <h:outputLabel id="currentCryptoTokenAWSKMSAccessKeyIDLabel"
+	                        for="currentCryptoTokenAWSKMSAccessKeyID"
+	                        value="#{web.text.CRYPTOTOKEN_AWSKMS_ACCESSKEYID} " />
+	                    <h:outputText id="currentCryptoTokenAWSKMSAccessKeyID" value="#{web.ejbcaWebBean.getHelpReference('/Crypto_Tokens_Overview.html')}" escape="false"/>
+                    </h:panelGroup>
                 </h:panelGroup>
-                <h:panelGroup
+                <h:panelGroup id="currentCryptoTokenAWSKMSAccessKeyIDValuePanelGroup"
                     rendered="#{cryptoTokenMBean.currentCryptoToken.showAWSKMSCryptoToken}">
-                    <h:inputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}"
-                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
-                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
-                    <h:outputText
-                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}"
-                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                    <h:panelGroup rendered="#{cryptoTokenMBean.currentCryptoToken.requiresSecret}">
+	                    <h:inputText
+	                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}"
+	                        rendered="#{cryptoTokenMBean.currentCryptoTokenEditMode}"
+	                        disabled="#{!cryptoTokenMBean.allowedToModify}" />
+	                    <h:outputText
+	                        value="#{cryptoTokenMBean.currentCryptoToken.AWSKMSAccessKeyID}"
+	                        rendered="#{!cryptoTokenMBean.currentCryptoTokenEditMode}" />
+                    </h:panelGroup>
                 </h:panelGroup>
 
                 <h:panelGroup id="currentCryptoTokenKeyVaultTypePanelGroup"
