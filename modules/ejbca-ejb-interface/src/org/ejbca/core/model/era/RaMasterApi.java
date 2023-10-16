@@ -644,7 +644,7 @@ public interface RaMasterApi {
     Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
         throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
         CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
-        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException, CertificateExpiredException, CertificateNotYetValidException;
+        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.
