@@ -32,6 +32,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
@@ -1573,7 +1574,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
             throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
             CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException,
-            OperatorCreationException, IllegalNameException, CertificateEncodingException {
+            OperatorCreationException, IllegalNameException, CertificateEncodingException, CertificateExpiredException, CertificateNotYetValidException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (log.isDebugEnabled()) {
