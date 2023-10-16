@@ -18,9 +18,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 
+import org.bouncycastle.util.Properties;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
@@ -28,7 +31,10 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.keys.KeyTools;
 
 public class MsKeyArchivalRequestMessageTest {
     
@@ -255,17 +261,27 @@ public class MsKeyArchivalRequestMessageTest {
         KeyFactory kf = KeyFactory.getInstance(msg.getKeyPairToArchive().getPublic().getAlgorithm());
         kf.generatePrivate(new PKCS8EncodedKeySpec(msg.getKeyPairToArchive().getPrivate().getEncoded()));
         
-//        final KeyPair caEncKeyPair = KeyTools.genKeys("2048", "RSA");
-//        X509Certificate caCert = CertTools.genSelfCert("CN=IssuerCa", 10L, "1.1.1.1", caEncKeyPair.getPrivate(),
-//                caEncKeyPair.getPublic(), "SHA256WithRSA", false);
-//        X509Certificate eeCert = CertTools.genSelfCert("CN=User", 2L, "1.1.1.1", 
-//                caEncKeyPair.getPrivate(),
-//                msg.getKeyPairToArchive().getPublic(), "SHA256WithRSA", false);
+        Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
+        
+        final KeyPair caEncKeyPair = KeyTools.genKeys("2048", "RSA");
+        X509Certificate caCert = CertTools.genSelfCert("CN=IssuerCa", 10L, "1.1.1.1", caEncKeyPair.getPrivate(),
+                caEncKeyPair.getPublic(), "SHA256WithRSA", false);
+        X509Certificate eeCert = CertTools.genSelfCert("CN=User", 2L, "1.1.1.1", 
+                caEncKeyPair.getPrivate(),
+                msg.getKeyPairToArchive().getPublic(), "SHA256WithRSA", false);
         
         // these fails cause spec validation in BC
-        // KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert); 
-        // EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
+         KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert); 
+         EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
+         
+         Properties.removeThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod");
         
+         try {
+             EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
+             fail("failed to remove allow_unsafe_mod");
+         } catch (Exception e) {
+             
+         }
     }
     
     @Test

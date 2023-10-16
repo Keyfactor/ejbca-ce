@@ -182,7 +182,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                     }
                     if (attr.getAttributeValues().length!=1 || 
                             !Hex.toHexString(attr.getAttributeValues()[0].toASN1Primitive().getEncoded())
-                                .endsWith(envelopedPrivKeyHashStr)) { // not unwrapping ASN1String
+                                .endsWith(envelopedPrivKeyHashStr)) { 
+                        // direct content comparison on ASN1String instead of parsing
                         log.debug("MS Key archival request is private key hash did not match.");
                         return false;
                     }
@@ -313,17 +314,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             AlgorithmIdentifier algorithmIdentifier = new AlgorithmIdentifier(
                                                 PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE);
             byte[] derEncodedPrivKey = KeyUtil.getEncodedPrivateKeyInfo(algorithmIdentifier, privKey);
-            // TODO: remove
-//            BigInteger SMALL_PRIMES_PRODUCT = new BigInteger(
-//                    "8138e8a0fcf3a4e84a771d40fd305d7f4aa59306d7251de54d98af8fe95729a1f"
-//                  + "73d893fa424cd2edc8636a6c3285e022b0e3866a565ae8108eed8591cd4fe8d2"
-//                  + "ce86165a978d719ebf647f362d33fca29cd179fb42401cbaf3df0c614056f9c8"
-//                  + "f3cfd51e474afb6bc6974f78db8aba8e9e517fded658591ab7502bd41849462f",
-//              16);
-            // log.info(modulus.gcd(SMALL_PRIMES_PRODUCT));
-            // TODO: hard coding "SunRsaSign" here may not be required but BC is placed after SUN in provider list
-            // KeyFactory kf = KeyFactory.getInstance("RSA", "SunRsaSign");
-            KeyFactory kf = KeyFactory.getInstance("RSA"); // KeyFactory.getInstance("RSA", "BC");
+            // TODO: need to decide for using BC or system default provider
+            KeyFactory kf = KeyFactory.getInstance("RSA");
             PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(derEncodedPrivKey));            
             return requestPrivatekey;
         } catch (Exception e) {
@@ -346,7 +338,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         byte[] decryptedBytes = null;
         try {
             new Random().nextBytes(randomBytes);
-            log.info("randomBytes: " + Hex.toHexString(randomBytes));
+            log.debug("randomBytes: " + Hex.toHexString(randomBytes));
             Cipher encCipher = Cipher.getInstance("RSA");
             encCipher.init(Cipher.ENCRYPT_MODE, requestKeyPair.getPublic());
             byte[] encryptedBytes = encCipher.doFinal(randomBytes);
@@ -354,7 +346,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             Cipher decCipher = Cipher.getInstance("RSA");
             decCipher.init(Cipher.DECRYPT_MODE, requestKeyPair.getPrivate());
             decryptedBytes = decCipher.doFinal(encryptedBytes);
-            log.info("decryptedBytes: " + Hex.toHexString(decryptedBytes));
+            log.debug("decryptedBytes: " + Hex.toHexString(decryptedBytes));
         } catch (Exception e) {
             log.info("MS key archival key testing failed", e);
         }

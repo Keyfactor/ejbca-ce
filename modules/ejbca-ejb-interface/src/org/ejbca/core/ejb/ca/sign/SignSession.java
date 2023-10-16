@@ -124,8 +124,11 @@ public interface SignSession {
      * provided client certificate.
      *
      * @param admin Information about the administrator or admin performing the event.
-     * @param cert  client certificate which we want encapsulated in a PKCS7 together with
-     *              certificate chain.
+     * @param caId  Database ID of the CA.
+     * @param cert  optional client certificate which we want encapsulated in a PKCS7 together with
+     *              certificate chain. Null in case issuance failed.
+     * @param request  Key archival request message to read encryptedPrvateKeyHash
+     *  
      * @return The CMC full PKI response.
      * @throws CADoesntExistsException       if the CA does not exist or is expired, or has an invalid cert
      * @throws SignRequestSignatureException if the certificate is not signed by the CA
