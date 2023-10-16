@@ -1572,8 +1572,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA testCa = createTestCA(cryptoToken, caDn);
         Method generateCertificate = X509CAImpl.class.getDeclaredMethod("generateCertificate", EndEntityInformation.class, RequestMessage.class,
-                PublicKey.class, int.class, Date.class, Date.class, CertificateProfile.class, Extensions.class, PublicKey.class, PrivateKey.class,
-                String.class, CertificateGenerationParams.class, AvailableCustomCertificateExtensionsConfiguration.class, boolean.class,
+                PublicKey.class, int.class, Date.class, Date.class, CertificateProfile.class, Extensions.class, SigningKeyContainer.class, CertificateGenerationParams.class, AvailableCustomCertificateExtensionsConfiguration.class, boolean.class,
                 boolean.class);
         generateCertificate.setAccessible(true);
         CAToken caToken = testCa.getCAToken();       
@@ -1582,8 +1581,10 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final EndEntityInformation cadata = new EndEntityInformation("nobody", testCa.getSubjectDN(), testCa.getSubjectDN().hashCode(), testCa.getSubjectAltName(), null,
                 0, new EndEntityType(EndEntityTypes.INVALID), 0, testCa.getCertificateProfileId(), null, null, 0, null);
         try {
+            SigningKeyContainer signingKeyContainer = new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, BouncyCastleProvider.PROVIDER_NAME);
+            
             generateCertificate.invoke(testCa, cadata, null, cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)), 0, notBefore, notAfter, certificateProfile,
-                    null, previousCaPublicKey, previousCaPrivateKey, BouncyCastleProvider.PROVIDER_NAME, null, cceConfig, true, false);
+                    null, signingKeyContainer, null, cceConfig, true, false);
         } catch (InvocationTargetException e) {
             if(e.getCause() instanceof IllegalValidityException) {
             fail("Back dated revoked certificate should have been created.");
