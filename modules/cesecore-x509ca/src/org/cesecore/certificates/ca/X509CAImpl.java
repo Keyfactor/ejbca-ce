@@ -83,9 +83,11 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.CertException;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v2CRLBuilder;
@@ -1090,8 +1092,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 final PublicKey previousCaPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final PrivateKey previousCaPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final String provider = cryptoToken.getSignProviderName();
+                SigningKeyContainer caSigningPackage = new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, provider);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
-                        certProfile, null, previousCaPublicKey, previousCaPrivateKey, provider, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
+                        certProfile, null, caSigningPackage, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
@@ -1123,15 +1126,28 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
 
-    /* (non-Javadoc)
-     * @see org.cesecore.certificates.ca.X509CA#generateCertificate(om.keyfactor.util.keys.token.CryptoToken, org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.certificate.request.RequestMessage, java.security.PublicKey, int, java.util.Date, java.util.Date, org.cesecore.certificates.certificateprofile.CertificateProfile, org.bouncycastle.asn1.x509.Extensions, java.lang.String, org.cesecore.certificates.ca.CertificateGenerationParams, org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration)
-     */
+
     @Override
-    public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
+    public Certificate generateCertificate(final CryptoToken cryptoToken, final EndEntityInformation subject, final RequestMessage request,
             final PublicKey publicKey, final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile,
-            final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams, final AvailableCustomCertificateExtensionsConfiguration cceConfig)
-            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException,
-            IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException {
+            final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams,
+            final AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException {
+        return generateCertificate(cryptoToken, null, subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
+                certGenParams, cceConfig);
+
+    }
+    
+    
+    @Override
+    public Certificate generateCertificate(CryptoToken cryptoToken, CryptoToken alternativeCryptoToken, EndEntityInformation subject,
+            RequestMessage request, PublicKey publicKey, int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile,
+            Extensions extensions, String sequence, CertificateGenerationParams certGenParams,
+            AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException {
+
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
         final CAToken catoken = getCAToken();
@@ -1139,8 +1155,44 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         final PublicKey caPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(purpose));
         final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(purpose));
         final String provider = cryptoToken.getSignProviderName();
-        return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions,
-                caPublicKey, caPrivateKey, provider, certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
+        final SigningKeyContainer caSigningPackage;
+        if(catoken.getAlternativeCryptoTokenId() == CAToken.NO_ALTERNATIVE_CRYPTOTOKEN_CONFIGURED) {
+            caSigningPackage = new SigningKeyContainer(caPublicKey, caPrivateKey, provider);           
+        } else {
+            if(alternativeCryptoToken == null) {
+                throw new CryptoTokenOfflineException("Use of alternative keys was defined for CA " + getName() + " with ID "
+                        + getSubjectDN().hashCode() + ", but no crypto token for them was defined.");
+            }
+            
+            final int alternativeKeyPurpose = getUseNextCACert(request) ? CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN_NEXT : CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN;
+            final PublicKey alternativeCaPublicKey = alternativeCryptoToken.getPublicKey(catoken.getAliasFromPurpose(alternativeKeyPurpose));
+            final PrivateKey alternativeCaPrivateKey = alternativeCryptoToken.getPrivateKey(catoken.getAliasFromPurpose(alternativeKeyPurpose));
+            final String alternativeProvider = alternativeCryptoToken.getSignProviderName();
+            caSigningPackage = new SigningKeyContainer(caPublicKey, caPrivateKey, provider, alternativeCaPublicKey, alternativeCaPrivateKey, alternativeProvider);     
+        }
+        
+        return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, caSigningPackage,
+                certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
+    }
+    
+    @Override
+    public Certificate generateCertificate(CryptoToken cryptoToken, CryptoToken alternativeCryptoToken, EndEntityInformation subject,
+            PublicKey publicKey, int keyusage, Date notBefore, String encodedValidity, CertificateProfile certProfile, String sequence,
+            AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+        // Calculate the notAfter date
+        if (notBefore == null) {
+            notBefore = new Date();
+        }
+        final Date notAfter;
+        if (StringUtils.isNotBlank(encodedValidity)) {
+            notAfter = ValidityDate.getDate(encodedValidity, notBefore, getCAInfo().isExpirationInclusive());
+        } else {
+            notAfter = null;
+        }
+        return generateCertificate(cryptoToken,alternativeCryptoToken, subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence, null,
+                cceConfig);
     }
 
     /**
@@ -1152,6 +1204,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
      * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
      * Otherwise, providedRequestMessage will be used.
+     * @param caSigningPackage a holder class containing the CA's public and private keys, and signing algorithm(s)
      *
      * @throws CAOfflineException if the CA wasn't active
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid.
@@ -1165,7 +1218,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      */
     protected Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
-                                            final PublicKey caPublicKey, final PrivateKey caPrivateKey, final String provider,
+                                            final SigningKeyContainer caSigningPackage,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException {
@@ -1462,7 +1515,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (overridenexts.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
                 final CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
                 if (certExt != null) {
-                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val);
+                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caSigningPackage.getPrimaryPublicKey(), val);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }
@@ -1504,7 +1557,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
                 if (overridenexts.getExtension(new ASN1ObjectIdentifier(certExt.getOID())) == null) {
-                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val);
+                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caSigningPackage.getPrimaryPublicKey(), val);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                         requestOids.remove(certExt.getOID());
@@ -1527,7 +1580,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     // Match requested OID with wildcard in CCE configuration 
                     if (oid.matches(CertTools.getOidWildcardPattern(certExt.getOID()))) {
                         if (overridenexts.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
-                            final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey, val, oid);
+                            final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caSigningPackage.getPrimaryPublicKey(), val, oid);
                             if (value != null) {
                                 extgen.addExtension(new ASN1ObjectIdentifier(oid), certExt.isCriticalFlag(), value);
                                 requestOids.remove(oid);
@@ -1592,7 +1645,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             if (certGenParams != null && certGenParams.getAuthenticationToken() != null && 
                     certGenParams.getCertificateValidationDomainService() != null && certGenParams.getCertificateValidationDomainService().willValidateInPhase(IssuancePhase.PRESIGN_CERTIFICATE_VALIDATION, this)) {
                 try {
-                    PrivateKey presignKey = CAConstants.getPreSignPrivateKey(sigAlg, caPublicKey);
+                    PrivateKey presignKey = CAConstants.getPreSignPrivateKey(sigAlg, caSigningPackage.getPrimaryPublicKey());
                     if (presignKey == null) {
                         throw new CertificateCreateException("No pre-sign key exist usable with algorithm " + sigAlg + ", PRESIGN_CERTIFICATE_VALIDATION is not possible with this CA.");
                     }
@@ -1610,7 +1663,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                         // Create a new authorityKeyIdentifier for the fake key
                         // SHA1 used here, but it's not security relevant here as this is the RFC5280 Key Identifier
                         JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
-                        AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(CAConstants.getPreSignPublicKey(sigAlg, caPublicKey));
+                        AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(CAConstants.getPreSignPublicKey(sigAlg, caSigningPackage.getPrimaryPublicKey()));
                         certbuilder.replaceExtension(Extension.authorityKeyIdentifier, ext.isCritical(), aki.getEncoded());
                     }
                     X509CertificateHolder presignCertHolder = certbuilder.build(presignSigner);
@@ -1651,16 +1704,34 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                  *  and should not have any other key usages (see RFC 6962, section 3.1)
                  */
                 final String prov;
-                if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+                if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getPrimaryProvider())) {
                     // Ability to use the PQC provider
                     prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
                 } else {
-                    prov = provider;
+                    prov = caSigningPackage.getPrimaryProvider();
                 }
                 final ContentSigner signer = new BufferingContentSigner(
-                        new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
+                        new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caSigningPackage.getPrimaryPrivateKey()), X509CAImpl.SIGN_BUFFER_SIZE);
+                
+                final String alternativeSigningAlgorithm; 
+                if (certProfile.getAlternativeSignatureAlgorithm() == null) {
+                    alternativeSigningAlgorithm = getCAToken().getAlternativeSignatureAlgorithm();
+                } else {
+                    alternativeSigningAlgorithm = certProfile.getAlternativeSignatureAlgorithm();
+                }
+                
+                final String altProv;
+                if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getAlternativeProvider())) {
+                    altProv = CryptoProviderTools.getProviderNameFromAlg(alternativeSigningAlgorithm);
+                } else {
+                    altProv = caSigningPackage.getAlternativeProvider();
+                }
+                ContentSigner alternativeSigner = new BufferingContentSigner(
+                        new JcaContentSignerBuilder(alternativeSigningAlgorithm).setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey()),
+                        X509CAImpl.SIGN_BUFFER_SIZE);
+                
                 // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
-                final X509CertificateHolder certHolder = precertbuilder.build(signer);
+                final X509CertificateHolder certHolder = precertbuilder.build(signer, false, alternativeSigner);
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 // ECA-6051 Re-Factored with Domain Service Layer.
                 if (certGenParams.getAuthenticationToken() != null && certGenParams.getCertificateValidationDomainService() != null) {
@@ -1726,6 +1797,15 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         } catch (CTLogException e) {
             throw new CertificateCreateException("An exception occurred because too many CT servers were down to satisfy the certificate profile.", e);
         }
+        
+        //Add alternative ("hybrid") signature to certificate if defined 
+        try {
+            if(caSigningPackage.getAlternativePublicKey() != null) {
+                certbuilder.addExtension(Extension.subjectAltPublicKeyInfo, false, SubjectAltPublicKeyInfo.getInstance(caSigningPackage.getAlternativePublicKey().getEncoded()));
+            }
+        } catch (CertIOException e) {
+            throw new CertificateCreateException("Could not as alternative key extension to certificate builder.", e);
+        }
 
         //
         // End of extensions
@@ -1735,13 +1815,35 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             log.trace(">certgen.generate");
         }
         final String prov;
-        if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
+        if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getPrimaryProvider())) {
             prov = CryptoProviderTools.getProviderNameFromAlg(sigAlg);
         } else {
-            prov = provider;
+            prov = caSigningPackage.getPrimaryProvider();
         }
-        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caPrivateKey), X509CAImpl.SIGN_BUFFER_SIZE);
-        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caSigningPackage.getPrimaryPrivateKey()), X509CAImpl.SIGN_BUFFER_SIZE);
+        final X509CertificateHolder certHolder;
+        if (caSigningPackage.getAlternativePrivateKey() == null) {
+            certHolder = certbuilder.build(signer);
+        } else {
+            final String alternativeSigningAlgorithm; 
+            if (certProfile.getAlternativeSignatureAlgorithm() == null) {
+                alternativeSigningAlgorithm = getCAToken().getAlternativeSignatureAlgorithm();
+            } else {
+                alternativeSigningAlgorithm = certProfile.getAlternativeSignatureAlgorithm();
+            }
+            
+            final String altProv;
+            if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getAlternativeProvider())) {
+                altProv = CryptoProviderTools.getProviderNameFromAlg(alternativeSigningAlgorithm);
+            } else {
+                altProv = caSigningPackage.getAlternativeProvider();
+            }
+  
+            ContentSigner alternativeSigner = new BufferingContentSigner(
+                    new JcaContentSignerBuilder(alternativeSigningAlgorithm).setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey()),
+                    X509CAImpl.SIGN_BUFFER_SIZE);
+            certHolder = certbuilder.build(signer, false, alternativeSigner);
+        }
         X509Certificate cert;
         try {
             cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
@@ -1763,7 +1865,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         if ((cacert != null) && (!isRootCA) && (!linkCertificate)) {
             verifyKey = cacert.getPublicKey();
         } else {
-            verifyKey = caPublicKey;
+            verifyKey = caSigningPackage.getPrimaryPublicKey();
         }
         try {
             cert.verify(verifyKey);
@@ -1817,7 +1919,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
         // Before returning from this method, we will set the private key and provider in the request message, in case the response  message needs to be signed
         if (request != null) {
-            request.setResponseKeyInfo(caPrivateKey, provider);
+            request.setResponseKeyInfo(caSigningPackage.getPrimaryPrivateKey(), caSigningPackage.getPrimaryProvider());
         }
         if (log.isDebugEnabled()) {
             log.debug("X509CA: generated certificate, CA " + this.getCAId() + " for DN: " + LogRedactionUtils.getSubjectDnLogSafe(subject.getCertificateDN(), subject.getEndEntityProfileId()) );
@@ -2423,4 +2525,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         return CA_TYPE;
     }
 
+
+
+
+
 }
+
+
