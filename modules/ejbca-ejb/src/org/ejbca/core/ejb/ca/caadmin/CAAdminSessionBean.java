@@ -3594,7 +3594,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String healthCheck(String[] caNames) {
+    public String healthCheck(Collection<String> caNames) {
         HashSet<String> caNamesSet = new HashSet<>();
         for (String caName : caNames) {
             caNamesSet.add(caName);

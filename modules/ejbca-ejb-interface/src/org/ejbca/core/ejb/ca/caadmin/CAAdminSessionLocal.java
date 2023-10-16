@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.util.Collection;
 import java.util.Set;
 
 import javax.ejb.Local;
@@ -55,7 +56,7 @@ public interface CAAdminSessionLocal extends CAAdminSession {
      * 
      * @return an error message or an empty String if all are ok.
      */
-    String healthCheck(String[] caNames);
+    String healthCheck(Collection<String> caNames);
     
     /** 
      * This method returns a set containing IDs of all authorized key validators. This set will be the sum of the following:
