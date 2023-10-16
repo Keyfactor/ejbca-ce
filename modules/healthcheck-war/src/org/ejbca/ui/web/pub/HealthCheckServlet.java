@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.security.InvalidKeyException;
+import java.util.Arrays;
 import java.util.Properties;
 
 import javax.ejb.EJB;
@@ -240,7 +241,7 @@ public class HealthCheckServlet extends HttpServlet {
             }
             if (checkAllCas) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Checking CAs.");
+                    log.debug("Checking all CAs with 'include in health check' enabled.");
                 }
                 sb.append(caAdminSession.healthCheck());
             }
@@ -250,7 +251,7 @@ public class HealthCheckServlet extends HttpServlet {
                     log.debug("Checking specified CAs: " + String.join(",", caNames));
                 }
 
-                sb.append(caAdminSession.healthCheck(caNames));
+                sb.append(caAdminSession.healthCheck(Arrays.asList(caNames)));
             }
             if (cryptoTokenName != null && testKeyName != null) {
                 if (log.isDebugEnabled()) {
