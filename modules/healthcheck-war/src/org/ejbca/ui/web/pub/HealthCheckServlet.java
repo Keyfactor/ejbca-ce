@@ -20,7 +20,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
 import java.security.InvalidKeyException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ejb.EJB;
@@ -200,10 +203,7 @@ public class HealthCheckServlet extends HttpServlet {
         boolean checkAllCas = caNames.length == 0;
         boolean checkOcsp = safeGetParameter(request, "ocsp", true);
         boolean checkPublishers = safeGetParameter(request, "publishers", EjbcaConfiguration.getHealthCheckPublisherConnections());
-        
-        // these may be null
-        final String cryptoTokenName = request.getParameter("token");
-        final String testKeyName = request.getParameter("key");
+        Map<String, String> cryptoTokensAndKeys = collectTokenAndKeyParameters(request);
         
         if (log.isDebugEnabled()) {
             log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
@@ -253,11 +253,11 @@ public class HealthCheckServlet extends HttpServlet {
 
                 sb.append(caAdminSession.healthCheck(Arrays.asList(caNames)));
             }
-            if (cryptoTokenName != null && testKeyName != null) {
+            if (cryptoTokensAndKeys.size() > 0) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Checking cryptotoken.");
+                    log.debug("Checking cryptotoken(s).");
                 }
-                sb.append(cryptoTokenHealthCheck(cryptoTokenName, testKeyName));
+                sb.append(cryptoTokenHealthCheck(cryptoTokensAndKeys));
             }
             if (checkPublishers) {
                 if (log.isDebugEnabled()) {
@@ -284,27 +284,55 @@ public class HealthCheckServlet extends HttpServlet {
         return sb.length()==0 ? null : sb.toString();
     }
 
+
     /**
-     * Test the named cryptotoken and key
-     * 
-     * @return "" if no error occurred, otherwise a descriptive error string.
+     * pair up all "tokenXYZ" and "keyXYZ" pairs as a list of token/key pairs for testing
      */
-    private String cryptoTokenHealthCheck(String cryptoTokenName, String testKeyName) {
-        Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
-        if (cryptoTokenId == null) {
-            return "\nTOKEN: " + cryptoTokenName + " unknown";
+    private Map<String, String> collectTokenAndKeyParameters(HttpServletRequest request) {
+        ArrayList<String> parameterNames = new ArrayList<>();
+        request.getParameterNames().asIterator().forEachRemaining(parameterNames::add);
+
+        Map<String, String> cryptoTokensAndKeys = new LinkedHashMap<>();
+        for (String parameterName : parameterNames) {
+            if (parameterName.startsWith("token")) {
+                String suffix = parameterName.substring("token".length());
+                if (parameterNames.contains("key" + suffix)) {
+                    String tokenName = request.getParameter(parameterName);
+                    String keyName = request.getParameter("key" + suffix);
+                    if (tokenName != null && keyName != null) {
+                        cryptoTokensAndKeys.put(tokenName, keyName);
+                    }
+                }
+            }
         }
-        CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
-        if (cryptoToken == null) {
-            return "\nTOKEN: " + cryptoTokenName + " unknown";
+        return cryptoTokensAndKeys;
+    }
+
+    /**
+     * Test the named cryptotoken(s) and key(s)
+     * 
+     * @return "" if no errors occurred, otherwise a descriptive error string.
+     */
+    private String cryptoTokenHealthCheck(Map<String, String> cryptoTokensAndKeys) {
+        StringBuilder out = new StringBuilder();
+        for (String cryptoTokenName : cryptoTokensAndKeys.keySet()) {
+            String testKeyName = cryptoTokensAndKeys.get(cryptoTokenName);
+            Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+            if (cryptoTokenId == null) {
+                out.append("\nTOKEN: " + cryptoTokenName + " unknown");
+            }
+            CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+            if (cryptoToken == null) {
+                out.append("\nTOKEN: " + cryptoTokenName + " unknown");
+            }
+            try {
+                cryptoToken.testKeyPair(testKeyName);
+            } catch (InvalidKeyException | CryptoTokenOfflineException e) {
+                log.error("Test key failed for token = " + cryptoTokenName + " and key = " + testKeyName, e);
+                out.append("\nTOKEN: Test key failed for token=" + cryptoTokenName + " key=" + testKeyName);
+            }
         }
-        try {
-            cryptoToken.testKeyPair(testKeyName);
-        } catch (InvalidKeyException | CryptoTokenOfflineException e) {
-            log.error("Test key failed for token = " + cryptoTokenName + " and key = " + testKeyName, e);
-            return "\nTOKEN: Test key failed for token=" + cryptoTokenName + " key=" + testKeyName;
-        }
-        return "";
+        return out.toString();
     }
 
     /** Create the maintenance file if it should be used and does not exists */
