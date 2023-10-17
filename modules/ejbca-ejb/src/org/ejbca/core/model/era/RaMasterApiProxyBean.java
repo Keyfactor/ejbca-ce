@@ -1568,7 +1568,36 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
-    
+
+    @Override
+    public byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+        throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
+        CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
+        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (log.isDebugEnabled()) {
+                log.debug("raMasterApi calling getKeyExchangeCertificate: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+            }
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 17) {
+                try {
+                    return raMasterApi.getKeyExchangeCertificate(authenticationToken, caId, cpId);
+                } catch (AuthorizationDeniedException e) {
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        return new byte[] {};
+    }
+
     private byte[] generateKeyStoreForceLocalKeyRecovery(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
             final String username, final EndEntityInformation storedEndEntity, GlobalConfiguration globalConfig)
             throws AuthorizationDeniedException, EjbcaException {
