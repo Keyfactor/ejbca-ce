@@ -164,6 +164,26 @@ public class HealthCheckSystemTest {
         }
     }
     
+    @Test
+    public void testHealthCheckMultipleCryptoToken() throws Exception {
+        String tokenName1 = "healthCheckTest";
+        int tokenId1 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName1);
+        String tokenName2 = "healthCheckTest2";
+        int tokenId2 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName2);
+        
+        try {
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId1, "testKey", KeyGenParams.builder("RSA2048").build());
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId2, "testKey", KeyGenParams.builder("RSA2048").build());
+            final HttpURLConnection response = performHealthCheckGetRequestWithParams(
+                    "token=" + tokenName1 + "&key=testKey&token2=" + tokenName2 + "&key2=testKey");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId1);
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId2);
+        }
+    }
+    
+    
     /**
      * This test creates a non-auto activated crypto token, sets it offline then verifies that healthcheck fails
      */
@@ -187,6 +207,35 @@ public class HealthCheckSystemTest {
             assertEquals("Response code was not 500", 500, response.getResponseCode());
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(admin, tokenId);
+        }
+    }
+    
+    @Test
+    public void testHealthCheckMultipleCryptoTokensOneOffline() throws Exception {
+        String tokenName1 = "healthCheckTest";
+        int tokenId1 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName1);
+        String tokenName2 = "healthCheckTest2";
+        int tokenId2 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName2);
+        
+        try {
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId1, "testKey", KeyGenParams.builder("RSA2048").build());
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId2, "testKey", KeyGenParams.builder("RSA2048").build());
+            
+            // Set one crypto token offline
+            final CryptoToken cryptoToken = CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.getCryptoToken(tokenId1);
+            final Properties props = cryptoToken.getProperties();
+            props.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+            cryptoToken.setProperties(props);
+            CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.mergeCryptoToken(cryptoToken);
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.deactivate(admin, tokenId1);
+            
+            final HttpURLConnection response = performHealthCheckGetRequestWithParams(
+                    "token=" + tokenName1 + "&key=testKey&token2=" + tokenName2 + "&key2=testKey");
+            
+            assertEquals("Response code was not 500", 500, response.getResponseCode());
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId1);
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId2);
         }
     }
     
