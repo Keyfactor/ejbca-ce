@@ -20,8 +20,6 @@ import java.util.Set;
 
 /**
  * Provides looking up operation with two separate keys (id or name) over a map.
- *
- * @version $Id$
  */
 public class IdNameHashMap<T extends Serializable> implements Serializable {
 
