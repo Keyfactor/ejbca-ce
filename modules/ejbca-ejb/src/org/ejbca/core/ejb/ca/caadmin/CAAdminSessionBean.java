@@ -48,6 +48,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -156,7 +157,6 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -3588,14 +3588,38 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public String healthCheck() {
-        final StringBuilder sb = new StringBuilder();
+        return healthCheckInternal(caSession.getAllCaIds());
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public String healthCheck(Collection<String> caNames) {
+        HashSet<String> caNamesSet = new HashSet<>();
+        for (String caName : caNames) {
+            caNamesSet.add(caName);
+        }
+        
+        //@formatter:off
+        List<Integer> caIds = caSession.getCAIdToNameMap()
+                .entrySet().stream()
+                .filter(entry -> caNamesSet.contains(entry.getValue()))
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toList());
+        //@formatter:on
+
+        return healthCheckInternal(caIds);
+    }
+    
+    private String healthCheckInternal(List<Integer> caIds) {
         final boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
         if (log.isDebugEnabled()) {
             log.debug("CaTokenSignTest: " + caTokenSignTest);
         }
+
+        final StringBuilder sb = new StringBuilder();
         final HashMap<Integer, CryptoToken> cryptoTokenMap = new HashMap<>();
         final Set<Integer> testedKeys = new HashSet<>();
-        for (final Integer caid : caSession.getAllCaIds()) {
+        for (Integer caid : caIds) {
             final CAInfo cainfo = caSession.getCAInfoInternal(caid);
             if (cainfo.getStatus() == CAConstants.CA_ACTIVE && cainfo.getIncludeInHealthCheck()) {
                 // Verify that the CA's mapped keys exist and optionally that the test-key is usable
@@ -3623,10 +3647,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     }
                 }
             }
-        }
+        }   
         return sb.toString();
+    
     }
-
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ExtendedCAServiceResponse extendedService(AuthenticationToken admin, int caid, ExtendedCAServiceRequest request)
@@ -4144,4 +4169,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         //TODO: Persist ("Publish") the CA certificates to the local CertificateData database.
         
     }
+
+
 }
