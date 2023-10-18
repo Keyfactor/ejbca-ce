@@ -99,6 +99,7 @@ public final class CertificateConstants {
     public static final int CERT_RES_TYPE_CERTIFICATE    = 0;
     public static final int CERT_RES_TYPE_PKCS7          = 1;
     public static final int CERT_RES_TYPE_PKCS7WITHCHAIN = 2;
+    public static final int CERT_RES_TYPE_CMCFULLPKI = 3;
 
 	/** KeyUsage constants */
 	public static final int DIGITALSIGNATURE = 0;

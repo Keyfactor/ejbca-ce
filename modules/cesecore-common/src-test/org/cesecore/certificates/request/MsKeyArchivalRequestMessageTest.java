@@ -18,9 +18,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.KeyFactory;
+import java.security.KeyPair;
 import java.security.PrivateKey;
+import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 
+import org.bouncycastle.util.Properties;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
@@ -28,7 +31,10 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.keys.KeyTools;
 
 public class MsKeyArchivalRequestMessageTest {
     
@@ -250,13 +256,39 @@ public class MsKeyArchivalRequestMessageTest {
                 
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
+        
+        // this works
+        KeyFactory kf = KeyFactory.getInstance(msg.getKeyPairToArchive().getPublic().getAlgorithm());
+        kf.generatePrivate(new PKCS8EncodedKeySpec(msg.getKeyPairToArchive().getPrivate().getEncoded()));
+        
+        Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
+        
+        final KeyPair caEncKeyPair = KeyTools.genKeys("2048", "RSA");
+        X509Certificate caCert = CertTools.genSelfCert("CN=IssuerCa", 10L, "1.1.1.1", caEncKeyPair.getPrivate(),
+                caEncKeyPair.getPublic(), "SHA256WithRSA", false);
+        X509Certificate eeCert = CertTools.genSelfCert("CN=User", 2L, "1.1.1.1", 
+                caEncKeyPair.getPrivate(),
+                msg.getKeyPairToArchive().getPublic(), "SHA256WithRSA", false);
+        
+        // these fails cause spec validation in BC
+         KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert); 
+         EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
+         
+         Properties.removeThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod");
+        
+         try {
+             EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
+             fail("failed to remove allow_unsafe_mod");
+         } catch (Exception e) {
+             
+         }
     }
     
     @Test
     public void testParseUserEnrollKeyArchivalAsPkcs10() throws Exception { 
         try {
             // fails as expected
-            PKCS10RequestMessage msg = new PKCS10RequestMessage(Base64.decode(USER_ENROLL_REQ));
+            new PKCS10RequestMessage(Base64.decode(USER_ENROLL_REQ));
             fail("should have failed to parse CMC request as PKCS10");
         } catch (Exception e) {
             
@@ -327,6 +359,69 @@ public class MsKeyArchivalRequestMessageTest {
         
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
+                
+    }
+    
+    @Test
+    public void testUserEnroll4() throws Exception {
+        String req = "MIILxgYJKoZIhvcNAQcCoIILtzCCC7MCAQMxCzAJBgUrDgMCGgUAMIID5AYIKwYBBQUHDAKgggPW\n"
+                + "BIID0jCCA84wRDBCAgECBgorBgEEAYI3CgoBMTEwLwIBADADAgEBMSUwIwYJKwYBBAGCNxUVMRYE\n"
+                + "FNRIME9F+o9LkKj3d6u+lWGmdCSbMIIDgKCCA3wCAQEwggN1MIICXQIBADAAMIIBIjANBgkqhkiG\n"
+                + "9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7Un6dClmpqqD0FpgBf5qZwH6PWEqJMHDPYl3YKzUoquab0qj\n"
+                + "35MTlghH4oHODR1SgHu75lNXUcro/YdIsblrRRjjmT0Gd1Q/dpzCeWfzAcsyesUKRJm8SwiLMLJk\n"
+                + "8WbnqEAOV9s19UUSn8ekcP2sXjHLINpfQXbw+TSeDboeR7Huadu1OfJIKyOe9clJRa524TS8JIvF\n"
+                + "HxTMeoBjuFZPv5GjlqEfGM+52td8ln9DouXz9staCgQQ12gvurYQ348hPkm0rzFzS30XHBZL3Uge\n"
+                + "A2FGtiUMoirT3WX4seYTRvn02ezfXnuOh224cNumd37m2zonP520pQglbY34G4KbPQIDAQABoIIB\n"
+                + "LjCCASoGCSqGSIb3DQEJDjGCARswggEXMD4GCSsGAQQBgjcVBwQxMC8GJisGAQQBgjcVCIWfoX+C\n"
+                + "gJ5Kg6WFGYXI6iaE/JsggQCF9M9h7O17AgFkAgIAiTApBgNVHSUEIjAgBggrBgEFBQcDAgYIKwYB\n"
+                + "BQUHAwQGCisGAQQBgjcKAwQwDgYDVR0PAQH/BAQDAgWgMDUGCSsGAQQBgjcVCgQoMCYwCgYIKwYB\n"
+                + "BQUHAwIwCgYIKwYBBQUHAwQwDAYKKwYBBAGCNwoDBDBEBgkqhkiG9w0BCQ8ENzA1MA4GCCqGSIb3\n"
+                + "DQMCAgIAgDAOBggqhkiG9w0DBAICAIAwBwYFKw4DAgcwCgYIKoZIhvcNAwcwHQYDVR0OBBYEFDPM\n"
+                + "TguKAAswxs12xAj7OYrvOk4jMA0GCSqGSIb3DQEBBQUAA4IBAQBOlM1cn368oyXgC7nUocEfB7Nj\n"
+                + "m8xXDLjk1+9ocpu/FKtAceGFl/kO9SxAPC2pzhWkGVFM76KgNFsct1179o5vfBUz3CihMmwrtbK1\n"
+                + "co3XbmBZaulVbyC2RgDi3LqkJs4vfoRwXWVsFl6NyvWYfK7WFFPKMluYIhAM64nEepJg6RnodHD8\n"
+                + "F7TKqMcIi9xOkQexwJlK+xyxFr+YK3SDWHmJKl4Pzv5XbeQgrTQlaCYmGZGJH+2/euX/TL+ojpUN\n"
+                + "bGlfxfIWzpRzsJd5vGDIkKoudQ7Lg8GxE8IUqwoblEjbVtV9AreJ8Ch8oywgg9D280eYFAQ8iu6D\n"
+                + "3IK0fEdkvVBmMAAwADGCB7cwggezAgEDgBQzzE4LigALMMbNdsQI+zmK7zpOIzAJBgUrDgMCGgUA\n"
+                + "oD4wFwYJKoZIhvcNAQkDMQoGCCsGAQUFBwwCMCMGCSqGSIb3DQEJBDEWBBTNyex1ZHnjSqEA+lQN\n"
+                + "FeUkafPqFTANBgkqhkiG9w0BAQEFAASCAQC6yO9WUnd9/VPyzzedw62CYdPVFf0NXQGryEWI5frb\n"
+                + "bWuWVLYH/gFeIvK/28ShsFw+dzKYtF17TTxIEnWJM/XkQH22HNdVsWvQTCDRJbGtOjQWQkMrmFUH\n"
+                + "h9IuB2xdDSqZK7h0EWA8KjZQl2ATRvInPap2HrkPE8nPf11vAE6f4x4WN7De4BX5XgV7tqz65v4h\n"
+                + "kNEdpN2/+RfoxW6/LTxsBYDbWyzbUzKX4yKY7BFqe/heT5PvBw5zxhWSXwRm9dZIVRpr6CFtUiZX\n"
+                + "45k43t9DX4Ji3xTlQbMObj3caeCpE8rjqJ6OTV+EfnyLnDKuB7YpV/aoO4POdxldlMRel5LnoYIG\n"
+                + "ODCCBjQGCSsGAQQBgjcVDTGCBiUwggYhBgkqhkiG9w0BBwOgggYSMIIGDgIBADGCAUYwggFCAgEA\n"
+                + "MCowEjEQMA4GA1UEAwwHbXNhZV9jYQIUZM9YAz3u1w6mZkA4kpTseLWFz/gwDQYJKoZIhvcNAQEB\n"
+                + "BQAEggEAPKdCDgnnyRuyznJD2bH6H5K01lsVNC1xXou5OgHvWdmk+qm9A+ZaLwzK4+dSRr1VkvI8\n"
+                + "6Sb4o/p27wG4tuhuxCUR6PsGfZ0plSTFvlOhzQmIeT0oV+pvPpZjMNWkq7T2ZT+nBv9BEWVdg+yF\n"
+                + "WHP0siBvjXDjBnVGjszy6gIjWQzlu0iUUoWU8A1t3eFNweRRCZAh/8hS7D6Tk5V9nm1ev+zQvPkt\n"
+                + "brqdkwOPZkkLk8DobITxvht+rt6ipIOyQG+iYX5MlKTv3ZdDlwiwAxfvmf3OZo6HNPc7OCwFIDlU\n"
+                + "eR3jlDt0npqW5xh604cDtGQRqJ5veGpC37otcfN4rX0pnTCCBL0GCSqGSIb3DQEHATAUBggqhkiG\n"
+                + "9w0DBwQIN4uuW6VRQdSAggSY2MQIxBuDHhWnB0NNL4VtuWIcAxBFdGOdg4rwts/+a1Q/iWq2zbxP\n"
+                + "foU2J1jzmwlojtqVzBEYWfgbD8xkjzrdRpd41rBQDosT2OhFzAaSKZs6UehiXOAyiF6Jn96csy0M\n"
+                + "4qMiv4gD2ExP0XORMIsQPwY4DfxNlKZr56345m+4gcKjzLfKT6bi3kbk6kl9DyEAZc4TP5UuvQgs\n"
+                + "wzY9w5eQfVbCpGfH76SdbPEBdkyd26OCqAX15oTRpP1Rut4JfjIu0D9VL6s5y6RVHB6dqpTXT7lk\n"
+                + "FBggB7Kr9rPdsLGsrMo+1BeYLut6EcdA+d9exi7wPl/nkizBSLpXLA0/jnABUF3tGej7iH9kDgTU\n"
+                + "nHoBkJvxJ2tvYslvZjn+87h9bBjMqkjdT3TArYxnjPR6Z8tHPD33ZhiSzl3xzQluO7vL6E40ctD6\n"
+                + "JVxxecAFxmOfzaSBZvxVxSC5inoA4wKZ991fPyajsCuMmE+PXRtc+rlZ5UQKDMYVeYjJAHqYj9S/\n"
+                + "R8XV29bzmYt+R9eZlyMtwoxDRbW/AvyZtT+g/Zf5kxdXB1y+bIlnBGaed7tc5BYXpagQRrkG91ei\n"
+                + "5JoMBmAXqyCF10VfHt7EOqhs1vDvKby/pj/cmv3km/Z8zgfi/vuPWud3RPeDneotZI5xfL1OUqOK\n"
+                + "wuTdAiFeZfVBAL6DrrGAhSBAtHAj078WvtOHUb0dj6DTVjzpzdaGX9BZKu2dJ21H1WVWEfWgad2U\n"
+                + "DzbWaZcfXBnL7Oc+16NWDZE5Ptk88YlIXrWpCASk2kuAO/ADjjUOS4P6lhRsZCoEDu6CTrJFAsDG\n"
+                + "uquYBGGrtuRdZZO9Ezsp8EF0FoQ/8eN0ibGwBQvLonyrLqO9NMcaCHhFPm7cRHCqIdLseJpzHfJo\n"
+                + "Lo0BgmC6T6JCgUfsvKdMHfdEAmQ63h3XPXM3As4YcQNCSyYlHe86kdogFDyqJjus8tc/pRzUMhd7\n"
+                + "DY9/bxLryJKbjA6naZs38NTcSqHVFHosth+7SWV6BGJN4nUA4QU96YiEplebC3DMUltui5yeY7wa\n"
+                + "p1ET/u7XPQDdM05Ieixe2Xp0qxuN2dOexuTNO5CL9YfNtLdDIgY7pp6y7cgbsZ/teu/h8C14S6Ac\n"
+                + "Mfn5BNwR0hLstoWVzwRIKUj6cX0iuDPp9sXTNGUuGiv7NUWtnxxZ3WoCMhwU3NLC7fC7MAeIC1Gk\n"
+                + "swshL6T6OUGryGwDCEsXVW3zITr3PRfbMKCJOdesRtOqUItSxkW9hvkqqOmRv7jk+5TG+5lzq8Gp\n"
+                + "JLAPQTxrx96UX/Zo6lhyQY7rv10F8cDI32shDfamusk/VkNQQFHIjycMTdq3ZZeZU/2/a89yXg2O\n"
+                + "g6JmFWNWZrkQvy53YbrGi6WzM5WuJAJeiL1Q/a9WuufkJCjeqd/ovvX6sI0ZkS5CyyYhLp+0LSa4\n"
+                + "wHj8ZmEq2yTG/vjvpCtg1rXpLARZQIThkAK0Pcnd7c7JsJr65VCqCL/N01xhvwWqOXHrQErQlqxi\n"
+                + "xGe+iRAXJfal89fMlkeib1ZSIUZaGf2bw+N57lgF2riFqyqdk1+uFdhFFvkzju93naLNTwA1";
+        
+        MsKeyArchivalRequestMessage msg = new MsKeyArchivalRequestMessage(Base64.decode(req));
+        assertTrue(msg.verify());
+        assertEquals("", msg.getRequestDN());
+        assertNotNull(msg.getRequestPublicKey());
         
     }
     
@@ -389,8 +484,10 @@ public class MsKeyArchivalRequestMessageTest {
         assertTrue(msg.verify());
         assertEquals("", msg.getRequestDN());
         assertNotNull(msg.getRequestPublicKey());
-                        
+        
         msg.decryptPrivateKey("BC", exchangePrivKey);
         assertNotNull(msg.getKeyPairToArchive()); 
+                                
     }
+    
 }

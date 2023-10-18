@@ -13,6 +13,41 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.InvalidKeyException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.Base64;
@@ -26,11 +61,27 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.cmc.BodyPartID;
+import org.bouncycastle.asn1.cmc.CMCObjectIdentifiers;
+import org.bouncycastle.asn1.cmc.CMCStatus;
+import org.bouncycastle.asn1.cmc.CMCStatusInfoBuilder;
+import org.bouncycastle.asn1.cmc.PKIResponse;
+import org.bouncycastle.asn1.cmc.TaggedAttribute;
+import org.bouncycastle.asn1.cms.Attribute;
+import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
+import org.bouncycastle.cms.CMSTypedData;
+import org.bouncycastle.cms.SimpleAttributeTableGenerator;
 import org.bouncycastle.cms.jcajce.JcaSignerInfoGeneratorBuilder;
 import org.bouncycastle.its.ETSISignedData;
 import org.bouncycastle.its.ETSISignedDataBuilder;
@@ -69,6 +120,7 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.BaseCertificateData;
@@ -84,6 +136,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -143,39 +196,6 @@ import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
-
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Creates and signs certificates.
@@ -1572,6 +1592,126 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             // high level catch block
             log.debug("ITS payload could not be signed.", e);
             throw new SignRequestSignatureException("ITS payload could not be signed.", e);
+        }
+    }
+
+    @Override
+    public byte[] createCmcFullPkiResponse(AuthenticationToken admin, int caId, X509Certificate cert, MsKeyArchivalRequestMessage request)
+            throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+        // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/2524682a-9587-4ac1-8adf-7e8094baa321
+        if (log.isTraceEnabled()) {
+            log.trace(">createCmcFullPkiResponse");
+        }
+        final X509CA ca = (X509CA) caSession.getCA(admin, caId);
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+        final byte[] returnval = createCmcFullPkiResponse(ca, cryptoToken, cert, request);
+
+        // Audit log that we used the CA's signing key to create a CMS signature
+        final String detailsMsg = intres.getLocalizedMessage("caadmin.signedcms", ca.getName());
+        final Map<String, Object> details = new LinkedHashMap<>();
+        if (cert != null) {
+            details.put("leafSubject", LogRedactionUtils.getSubjectDnLogSafe(cert));
+            details.put("leafFingerprint", CertTools.getFingerprintAsString(cert));
+        }
+        details.put("msg", detailsMsg);
+        securityEventsLoggerSession.log(EjbcaEventTypes.CA_SIGNCMS, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+                String.valueOf(caId), null, null, details);
+
+        if (log.isTraceEnabled()) {
+            log.trace("<createCmcFullPkiResponse()");
+        }
+        return returnval;
+    }
+    
+    private byte[] createCmcFullPkiResponse(X509CA ca, CryptoToken cryptoToken, X509Certificate cert, MsKeyArchivalRequestMessage request) throws SignRequestSignatureException {
+        // future add otherInfo when approval support is added over MSAE
+        CMCStatusInfoBuilder cmcStatusInfoBuilder = null;
+        if(cert!=null) {
+            cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.success, new BodyPartID(0x01));
+            cmcStatusInfoBuilder.setStatusString("Issued"); // human readble string
+        } else {
+            cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.failed, new BodyPartID(0x01));
+            cmcStatusInfoBuilder.setStatusString("Failed"); 
+        }
+        
+        TaggedAttribute taggedAttribute1 = new TaggedAttribute(new BodyPartID(0x01),
+                CMCObjectIdentifiers.id_cmc_statusInfo,
+                new DERSet(cmcStatusInfoBuilder.build()));
+        
+        Attribute certHash = null;
+        try {
+            certHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ISSUED_CERT_HASH, 
+                                    new DERSet(new DEROctetString(CertTools.generateSHA1Fingerprint(cert.getEncoded()))));
+        } catch (CertificateEncodingException e) {
+            log.debug("Error during marshalling issued certificate hash", e);
+            throw new IllegalStateException(e);
+        }
+        
+        Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
+                new DERSet(new DEROctetString(request.getEnvelopedPrivKeyHash())));
+        
+        ASN1Encodable wrappedAttributes = new DERSequence(
+                new ASN1Encodable[]{new ASN1Integer(0),  
+                        new DERSequence(new ASN1Integer(1)), new DERSet(new ASN1Encodable[]{certHash, encryptedKeyHash})});
+        
+        TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
+                MsKeyArchivalRequestMessage.szOID_CMC_ADD_ATTRIBUTES,
+                new DERSet(wrappedAttributes)); 
+        
+        DERSequence payload = new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2});
+        DERSequence pkiRespAsSequence = new DERSequence(
+                        new ASN1Encodable[]{payload, new DERSequence(), new DERSequence()});
+        PKIResponse pkiResponse = PKIResponse.getInstance(pkiRespAsSequence);
+        try {
+            String hashAlgorithm = AlgorithmTools.getHashAlgorithm(ca.getCAInfo().getCAToken().getSignatureAlgorithm());
+            final MessageDigest md = MessageDigest.getInstance(hashAlgorithm); // may be sha256 always
+            byte[] payloadHash = md.digest(pkiResponse.getEncoded());
+            
+            // signerInfo
+            JcaSignerInfoGeneratorBuilder signerInfobuilder = new JcaSignerInfoGeneratorBuilder(
+                    new JcaDigestCalculatorProviderBuilder().setProvider("BC").build());
+            
+            Attribute contentTypeAttribute = new Attribute(MsKeyArchivalRequestMessage.szOID_PKCS_9_CONTENT_TYPE, 
+                                                        new DERSet(CMCObjectIdentifiers.id_cct_PKIResponse));
+            Attribute contentHashAttribute = new Attribute(MsKeyArchivalRequestMessage.szOID_PKCS_9_MESSAGE_DIGEST, 
+                    new DERSet(new DEROctetString(payloadHash)));
+    
+            AttributeTable attrTable = new AttributeTable(new DERSet(
+                    new ASN1Encodable[]{ contentTypeAttribute.toASN1Primitive(), 
+                                                    contentHashAttribute.toASN1Primitive()}));
+            signerInfobuilder.setSignedAttributeGenerator(new SimpleAttributeTableGenerator(attrTable));
+            
+            final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            ContentSigner caSigner = new JcaContentSignerBuilder(ca.getCAInfo().getCAToken().getSignatureAlgorithm())
+                                                        .setProvider(cryptoToken.getSignProviderName())
+                                                                                .build(caPrivateKey);
+            CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+            gen.addSignerInfoGenerator(signerInfobuilder.build(caSigner, (X509Certificate) ca.getCACertificate()));
+            
+            // add certificate chain
+            List<X509CertificateHolder> certChain = new ArrayList<>();
+            if (cert!=null) {
+                certChain.add(new X509CertificateHolder(cert.getEncoded()));
+            }
+            ca.getCertificateChain().forEach(x -> {
+                try {
+                    certChain.add(new X509CertificateHolder(x.getEncoded()));
+                } catch (CertificateEncodingException | IOException e) {
+                    log.debug("Error during ca cert chain encoding", e);
+                    throw new IllegalStateException(e);
+                }
+            });
+            
+            CollectionStore<X509CertificateHolder> store = new CollectionStore<>(certChain);
+            gen.addCertificates(store);
+                        
+            CMSTypedData data = new CMSProcessableByteArray(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse.getEncoded());
+            CMSSignedData cmsResponse = gen.generate(data, true);
+            return cmsResponse.getEncoded();
+            
+        } catch (Exception e) {
+            log.info("CMC signing failed: ", e);
+            throw new SignRequestSignatureException("CMC signing failed: ", e);
         }
     }
 }
