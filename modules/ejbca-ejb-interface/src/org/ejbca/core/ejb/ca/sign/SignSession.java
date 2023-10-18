@@ -43,6 +43,7 @@ import org.cesecore.certificates.certificate.exception.CertificateSerialNumberEx
 import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
+import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -117,6 +118,24 @@ public interface SignSession {
      * @throws AuthorizationDeniedException
      */
     byte[] createPKCS7(AuthenticationToken admin, int caId, boolean includeChain) throws CADoesntExistsException, AuthorizationDeniedException;
+    
+    /**
+     * Creates a signed CMC full PKI response containing the whole certificate chain, including the
+     * provided client certificate.
+     *
+     * @param admin Information about the administrator or admin performing the event.
+     * @param caId  Database ID of the CA.
+     * @param cert  optional client certificate which we want encapsulated in a PKCS7 together with
+     *              certificate chain. Null in case issuance failed.
+     * @param request  Key archival request message to read encryptedPrivateKeyHash
+     *  
+     * @return The CMC full PKI response.
+     * @throws CADoesntExistsException       if the CA does not exist or is expired, or has an invalid cert
+     * @throws SignRequestSignatureException if the certificate is not signed by the CA
+     * @throws AuthorizationDeniedException
+     */
+    byte[] createCmcFullPkiResponse(AuthenticationToken admin, int caId, X509Certificate cert, MsKeyArchivalRequestMessage request) throws CADoesntExistsException,
+            SignRequestSignatureException, AuthorizationDeniedException;
 
     /**
      * Creates a roll over PKCS7 for the next CA certificate, signed by the current CA key. Used by ScepServlet.
