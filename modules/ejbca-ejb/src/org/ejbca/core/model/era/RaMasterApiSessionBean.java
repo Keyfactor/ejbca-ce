@@ -2488,6 +2488,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 }
                 else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
                     responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN;
+                } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CMC_FULL_PKI)) {
+                    responseTypeInt = CertificateConstants.CERT_RES_TYPE_CMCFULLPKI;
                 }
                 else{
                     throw new NoSuchAlgorithmException("Bad responseType:" + responseType);
