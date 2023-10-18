@@ -308,7 +308,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     
     public List<SelectItem> getAvailableKECCertificateProfiles() {
         return Stream.concat(
-                Stream.of(new SelectItem(-1, SELECT_EEP)),
+                Stream.of(new SelectItem(-1, SELECT_CEP)),
                 authorizedCertificateProfiles.entrySet().stream()
                         .map(item -> new SelectItem(String.valueOf(item.getKey()), item.getValue().getName()))
         ).collect(Collectors.toList());
