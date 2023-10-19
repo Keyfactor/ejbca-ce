@@ -45,9 +45,11 @@ import com.keyfactor.ErrorCode;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.keys.token.CryptoToken;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
@@ -59,6 +61,8 @@ import org.cesecore.certificates.ca.ExtendedUserDataHandler;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -75,6 +79,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -114,6 +119,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     private CaSessionLocal caSession;
     @EJB
     private CertificateProfileSessionLocal certificateProfileSession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSessionLocal;
     @EJB
     private EndEntityAuthenticationSessionLocal authenticationSession;
     @EJB
@@ -191,9 +198,24 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             KeyPair keyPairToArchive = null;
             log.info("reqtype: " + reqType + ", resptype: " + responseType);
             if (reqType==CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) { 
+                if (!keyRecoverySession.authorizedToKeyRecover(admin, userdata.getEndEntityProfileId()))
+                        throw new AuthorizationDeniedException("Admin not authorized for key recovery");
+                if (!profile.isKeyRecoverableUsed()
+                || !((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
+                        .getEnableKeyRecovery()) {
+                    throw new CertificateCreateException("MS Key Archival request was received but key recovery needs to be enabled " +
+                            "in the System Configuration and for the End Entity Profile");
+                }
+                final CAToken caToken = caSession.getCA(admin, userdata.getCAId()).getCAToken();
+                final CryptoToken caCryptoToken =
+                        cryptoTokenSessionLocal.getCryptoToken(caSession.getCA(admin, userdata.getCAId()).getCAToken().getCryptoTokenId());
+                if (!caCryptoToken.doesPrivateKeyExist(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT))) {
+                    throw new CertificateCreateException("The private key to decrypt the private key in the request does not exist for the CA");
+                }
+                final PrivateKey caKeyEncryptPrivateKey = caCryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
                 log.info("decrypting private key for archival");
-                keyPairToArchive = null; //TODO
-                validateAndGetMsaeKeyPairToArchive((MsKeyArchivalRequestMessage)requestMessage);
+                Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
+                keyPairToArchive = validateAndGetMsaeKeyPairToArchive((MsKeyArchivalRequestMessage)requestMessage, caKeyEncryptPrivateKey);
                 log.info("Verified and retrieved private key for archival");
             }
             
@@ -222,12 +244,15 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         } catch (CesecoreException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw LogRedactionUtils.getRedactedException(e);
+        } finally {
+            Properties.removeThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod");
         }
         return retval;
     }
     
-    private KeyPair validateAndGetMsaeKeyPairToArchive(MsKeyArchivalRequestMessage requestMessage) throws CertificateCreateException {
-        // make sure global config and EE profile allows key archival i.e. recovery is enabled(use??) etc
+    private KeyPair validateAndGetMsaeKeyPairToArchive(final MsKeyArchivalRequestMessage requestMessage, final PrivateKey decryptPrivateKey)
+            throws CertificateCreateException {
+        // make sure global config and EE profile allows key archival i.e. recovery is enabled(use??) etc Done!
         // see KeyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray
         // also encryption key usage in the CSR, RSA key etc
         
@@ -239,10 +264,10 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         // and CAAdminSessionBean.extendedService
         // but we may keep it simple
         
-        requestMessage.decryptPrivateKey("BC", getDummyPrivateKey());
+        requestMessage.decryptPrivateKey("BC", decryptPrivateKey);
         return requestMessage.getKeyPairToArchive();
     }
-    
+
     private PrivateKey getDummyPrivateKey() {
         String encodedPrivateKey = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDRTiJtDwsRgozw\n"
                 + "atZb4/X/HNB/xaOdiSukZRkJ5tNVOEuWV5fjYxALQcnuSW+uUHkwYyniZWO527Ct\n"
