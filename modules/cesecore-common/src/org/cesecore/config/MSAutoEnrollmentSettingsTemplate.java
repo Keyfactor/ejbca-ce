@@ -67,7 +67,6 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     }
 
 
-
     // Getters and Setters
     public String getOid() {
         return oid;

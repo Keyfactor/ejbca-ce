@@ -20,17 +20,15 @@ import java.util.Set;
 
 /**
  * Provides looking up operation with two separate keys (id or name) over a map.
- * 
- * @version $Id$
  */
-public class IdNameHashMap<T extends Serializable> implements Serializable{
-	
-	private static final long serialVersionUID = 1L;
+public class IdNameHashMap<T extends Serializable> implements Serializable {
 
-    private Map<String, KeyToValueHolder<T>> nameMap = new HashMap<>();
-	private Map<Integer, KeyToValueHolder<T>> idMap = new HashMap<>();
- 
-	public Map<String, KeyToValueHolder<T>> getNameMap() {
+    private static final long serialVersionUID = 1L;
+
+    private final Map<String, KeyToValueHolder<T>> nameMap = new HashMap<>();
+    private final Map<Integer, KeyToValueHolder<T>> idMap = new HashMap<>();
+
+    public Map<String, KeyToValueHolder<T>> getNameMap() {
         return nameMap;
     }
 
@@ -38,64 +36,68 @@ public class IdNameHashMap<T extends Serializable> implements Serializable{
         return idMap;
     }
 
-    public KeyToValueHolder<T> put(int id, String name, T value){
-        if(nameMap.containsKey(name) || idMap.containsKey(id)){
+    public KeyToValueHolder<T> put(int id, String name, T value) {
+        if (nameMap.containsKey(name) || idMap.containsKey(id)) {
             return null;
         }
         KeyToValueHolder<T> newValue = new KeyToValueHolder<>(id, name, value);
-		nameMap.put(name, newValue);
-		idMap.put(id, newValue);
-		return newValue;
-	}
-	
-	public KeyToValueHolder<T> get(int id){
-		return idMap.get(id);
-	}
-	
-    public T getValue(int id){
-        final KeyToValueHolder<T> keyToValueHolder = idMap.get(id);
-        return keyToValueHolder==null ? null : keyToValueHolder.getValue();
+        nameMap.put(name, newValue);
+        idMap.put(id, newValue);
+        return newValue;
     }
-    
-	public KeyToValueHolder<T> get(String name){
-		return nameMap.get(name);
-	}
-	
-	public void putAll(IdNameHashMap<T> m){
-	    nameMap.putAll(m.getNameMap());
-	    idMap.putAll(m.getIdMap());
-	}
-	
-	public Set<String> nameKeySet(){
-	    return nameMap.keySet();
-	}
-	
-	public Set<Integer> idKeySet(){
-	    return idMap.keySet();
-	}
-	
-	public boolean containsKey(int key){
-	    return idMap.containsKey(key);
-	}
-	
-	public boolean containsKey(String key){
-	    return nameMap.containsKey(key);
-	}
-	
-	public Collection<KeyToValueHolder<T>> values(){
-	    return idMap.values();
-	}
-	
-	public int size(){
-	    return idMap.size();
-	}
-	
-	public void clear(){
-	    idMap.clear();
-	    nameMap.clear();
-	}
-	
-	public boolean isEmpty(){
-	    return idMap.isEmpty();
-	}
+
+    public KeyToValueHolder<T> get(int id) {
+        return idMap.get(id);
+    }
+
+    public T getValue(int id) {
+        final KeyToValueHolder<T> keyToValueHolder = idMap.get(id);
+        return keyToValueHolder == null ? null : keyToValueHolder.getValue();
+    }
+
+    public KeyToValueHolder<T> get(String name) {
+        return nameMap.get(name);
+    }
+
+    public void putAll(IdNameHashMap<T> m) {
+        nameMap.putAll(m.getNameMap());
+        idMap.putAll(m.getIdMap());
+    }
+
+    public Set<String> nameKeySet() {
+        return nameMap.keySet();
+    }
+
+    public Set<Integer> idKeySet() {
+        return idMap.keySet();
+    }
+
+    public boolean containsKey(int key) {
+        return idMap.containsKey(key);
+    }
+
+    public boolean containsKey(String key) {
+        return nameMap.containsKey(key);
+    }
+
+    public Collection<KeyToValueHolder<T>> values() {
+        return idMap.values();
+    }
+
+    public Set<Map.Entry<Integer, KeyToValueHolder<T>>> entrySet() {
+        return idMap.entrySet();
+    }
+
+    public int size() {
+        return idMap.size();
+    }
+
+    public void clear() {
+        idMap.clear();
+        nameMap.clear();
+    }
+
+    public boolean isEmpty() {
+        return idMap.isEmpty();
+    }
 }

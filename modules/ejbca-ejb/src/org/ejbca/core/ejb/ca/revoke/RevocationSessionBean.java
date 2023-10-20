@@ -216,17 +216,17 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             Optional.ofNullable(ca).ifPresent(cAuthority -> {
                 CertificateDataWrapper revokedCdw = certificateStoreSession.getCertificateData(
                         cdw.getBaseCertificateData().getFingerprint());
-                CertificateData revokedCertData = revokedCdw.getCertificateData();
-                preSignOcspIfCertIsPresent(caId, cAuthority, revokedCertData);
+                preSignOcspResponse(caId, cAuthority, revokedCdw);
             });
         }
     }
 
-    private void preSignOcspIfCertIsPresent(int caId, CA cAuthority, CertificateData revokedCertData) {
-        Optional.ofNullable(revokedCertData).ifPresent(cert -> {
-            deleteOcspIfExists(caId, revokedCertData);
-            ocspResponseSigningSession.preSignOcspResponse(cAuthority, revokedCertData);
-        });
+    private void preSignOcspResponse(int caId, CA cAuthority, CertificateDataWrapper revokedCdw) {
+        Optional.ofNullable(revokedCdw.getCertificateData())
+                .ifPresent(cert -> {
+                    deleteOcspIfExists(caId, cert);
+                    ocspResponseSigningSession.preSignOcspResponse(cAuthority, cert);
+                });
     }
 
     private void deleteOcspIfExists(int caId, BaseCertificateData baseCertificateData) {
