@@ -16,10 +16,19 @@ import java.io.File;
 import java.util.List;
 import java.util.Properties;
 
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.keys.token.AwsKmsAuthenticationType;
 import org.cesecore.keys.token.AzureCryptoToken;
 import org.cesecore.keys.token.CryptoTokenConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
@@ -35,14 +44,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
-
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
@@ -66,6 +67,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String PKCS11_SLOTCOLLIDE_IGNORE= "--forceusedslots";
     private static final String AWSKMS_ACCESSKEYID= "--awskmsaccesskeyid";
     private static final String AWSKMS_REGION= "--awskmsregion";
+    private static final String AWSKMS_USE_SERVICE_ACCOUNT = "--awskmsuseserviceaccount";
     private static final String AZUREVAULT_TYPE= "--azurevaulttype";
     private static final String AZUREVAULT_USE_KEY_BINDING = "--azurevaultusekeybinding";
     private static final String AZUREVAULT_KEY_BINDING = "--azurevaultkeybinding";
@@ -102,6 +104,8 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(AWSKMSCryptoToken) Access Key ID for AWS KMS, example AKIA2I6NL4C3YGQJ6YY3"));
         registerParameter(new Parameter(AWSKMS_REGION, "Region", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(AWSKMSCryptoToken) AWS KMS region, example us-east-1."));
+        registerParameter(new Parameter(AWSKMS_USE_SERVICE_ACCOUNT, "Use Service Account", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "(AzureCryptoToken) Whether or not to use the current service's assigned role when authenticating to AWS KMS."));
         registerParameter(new Parameter(AZUREVAULT_NAME, "Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(AzureCryptoToken)  Key Vault name as chosen when creating the Azure Key Vault, example ejbca-keyvault."));
         registerParameter(new Parameter(AZUREVAULT_TYPE, "Type", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -174,12 +178,9 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             cryptoTokenPropertes.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
         } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(type)) {
             className = CryptoTokenFactory.AWSKMS_NAME;
-            if (parameters.get(AWSKMS_REGION) == null || parameters.get(AWSKMS_ACCESSKEYID) == null) {
-                getLogger().info("You need to specify all parameters for AWS KMS Vault.");
-                return CommandResult.CLI_FAILURE;                
+            if (!setAwsKmsProperties(parameters, cryptoTokenPropertes)) {
+                return CommandResult.CLI_FAILURE;
             }
-            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_REGION, parameters.get(AWSKMS_REGION));
-            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, parameters.get(AWSKMS_ACCESSKEYID));
         } else if (CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(type)) {
             className = CryptoTokenFactory.FORTANIX_NAME;
             String baseAddress = parameters.get(FORTANIX_BASE_ADDRESS);
@@ -310,6 +311,34 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             getLogger().info("Operation failed: " + e.getMessage());
         }
         return CommandResult.FUNCTIONAL_FAILURE;
+    }
+
+    /**
+     * convert AWSKMS CLI parameters to cryptoTokenPropertes
+     * 
+     * @return false if parameters are invalid
+     */
+    private boolean setAwsKmsProperties(ParameterContainer parameters, Properties cryptoTokenPropertes) {
+        if (parameters.get(AWSKMS_REGION) == null) {
+            getLogger().info("You need to specify all parameters for AWS KMS Vault.");
+            return false;
+        }
+        cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_REGION, parameters.get(AWSKMS_REGION));
+
+        // if not using a service account, confirm that the access key id is specified
+        if (parameters.get(AWSKMS_USE_SERVICE_ACCOUNT) == null) {
+            if (parameters.get(AWSKMS_ACCESSKEYID) == null) {
+                getLogger().info("You need to specify " + AWSKMS_ACCESSKEYID + " for AWS KMS Vault if not using a service account.");
+                return false;
+            }
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID, parameters.get(AWSKMS_ACCESSKEYID));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE,
+                    AwsKmsAuthenticationType.KEY_ID_AND_SECRET.toString());
+        } else {
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.AWSKMS_AUTHENTICATION_TYPE,
+                    AwsKmsAuthenticationType.SERVICE_ACCOUNT_ROLE.toString());
+        }
+        return true;
     }
 
     @Override
