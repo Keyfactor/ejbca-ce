@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 import java.security.KeyPair;
+import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -31,7 +32,9 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
+import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.crypto.CryptoTools;
 
@@ -39,6 +42,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /** Handles and maintains the CA-part of the Key Recovery functionality
  * 
@@ -128,57 +132,70 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 			} catch(Exception e) {
 				throw new IllegalExtendedCAServiceRequestException(e);
 			}
-		} else {
-			if (serviceReq.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS) {
-				try {
-				    String keyAlias = serviceReq.getKeyAlias();
-				    final String defaultAlias = getCa().getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-				    if (StringUtils.isEmpty(keyAlias)) {
-				        // If we haven't stored any key alias, in the entry, use the default one
-                        keyAlias = defaultAlias;				        
-				    }
-				    KeyPair keys = null;
-				    try {
-				        if (log.isDebugEnabled()) {
-				            log.debug("Trying to decrypt using alias '"+keyAlias+"' from crypto token " +cryptoToken.getId());
-				        }
-                        keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), (X509Certificate) getCa().getCACertificate(),
-                                cryptoToken.getPrivateKey(keyAlias), serviceReq.getKeyData());
-			
-				    } catch (Exception e) { // NOPMD: we have to catch wide here, using the wrong key to decrypt can result in several different errors
-				        if (log.isDebugEnabled()) {
-				            log.debug("Decryption with alias '"+keyAlias+"' failed, trying defaultAlias: ", e);
-				        }
-				        // Did we use the wrong key alias? Try with the default one, if we din't do that already
-				        if (!StringUtils.equals(keyAlias, defaultAlias)) {
-	                        if (log.isDebugEnabled()) {
-	                            log.debug("Trying to decrypt using default alias '"+defaultAlias+"' from crypto token "+cryptoToken.getId());
-	                        }
-	                        keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), (X509Certificate) getCa().getCACertificate(),
-	                                cryptoToken.getPrivateKey(defaultAlias), serviceReq.getKeyData());
-                   
-				        } else {
-				            // Just re-throw if we have nothing to test here
-				            throw e;
-				        }
-				    }
-	                // Creating the KeyId in String format may just throw an exception, we will log this but store the cert and ignore the error
-	                String keyId = null;
-	                try {
-	                    keyId = new String(Base64.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier(), false));
-	                } catch (Exception e) {
-	                    log.warn("Error creating subjectKeyId for key recovery, cryptoToken: " + cryptoToken.getId() + ", keyAlias: " + keyAlias, e);
-	                }
-					returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE, 
-							keys, cryptoToken.getId(), keyAlias, keyId);
-                } catch(RuntimeException e) {
-                    throw e; // Rethrow RuntimeExceptions, they always cause rollback
-				} catch(Exception e) {
-					throw new IllegalExtendedCAServiceRequestException(e);
+		} else if (serviceReq.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS) {
+			try {
+				String keyAlias = serviceReq.getKeyAlias();
+				final String defaultAlias = getCa().getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+				if (StringUtils.isEmpty(keyAlias)) {
+					// If we haven't stored any key alias, in the entry, use the default one
+					keyAlias = defaultAlias;
 				}
-			} else {
-				throw new IllegalExtendedCAServiceRequestException("Illegal command: "+serviceReq.getCommand()); 
+				KeyPair keys = null;
+				try {
+					if (log.isDebugEnabled()) {
+						log.debug("Trying to decrypt using alias '"+keyAlias+"' from crypto token " +cryptoToken.getId());
+					}
+					keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), (X509Certificate) getCa().getCACertificate(),
+							cryptoToken.getPrivateKey(keyAlias), serviceReq.getKeyData());
+				} catch (Exception e) { // NOPMD: we have to catch wide here, using the wrong key to decrypt can result in several different errors
+					if (log.isDebugEnabled()) {
+						log.debug("Decryption with alias '"+keyAlias+"' failed, trying defaultAlias: ", e);
+					}
+					// Did we use the wrong key alias? Try with the default one, if we din't do that already
+					if (!StringUtils.equals(keyAlias, defaultAlias)) {
+						if (log.isDebugEnabled()) {
+							log.debug("Trying to decrypt using default alias '"+defaultAlias+"' from crypto token "+cryptoToken.getId());
+						}
+						keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), (X509Certificate) getCa().getCACertificate(),
+								cryptoToken.getPrivateKey(defaultAlias), serviceReq.getKeyData());
+					} else {
+						// Just re-throw if we have nothing to test here
+						throw e;
+					}
+				}
+				// Creating the KeyId in String format may just throw an exception, we will log this but store the cert and ignore the error
+				String keyId = null;
+				try {
+					keyId = new String(Base64.encode(KeyTools.createSubjectKeyId(cryptoToken.getPublicKey(keyAlias)).getKeyIdentifier(), false));
+				} catch (Exception e) {
+					log.warn("Error creating subjectKeyId for key recovery, cryptoToken: " + cryptoToken.getId() + ", keyAlias: " + keyAlias, e);
+				}
+				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE, 
+						keys, cryptoToken.getId(), keyAlias, keyId);
+			} catch(RuntimeException e) {
+				throw e; // Rethrow RuntimeExceptions, they always cause rollback
+			} catch(Exception e) {
+				throw new IllegalExtendedCAServiceRequestException(e);
 			}
+		} else if (serviceReq.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPT_MS_KEY_ARCHIVAL_PRIVKEY) {
+			String keyAlias = serviceReq.getKeyAlias();
+			try {
+				final String defaultAlias = getCa().getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+				if (StringUtils.isEmpty(keyAlias)) {
+					// If we haven't stored any key alias, in the entry, use the default one
+					keyAlias = defaultAlias;
+				}
+				final PrivateKey decryptionKey = cryptoToken.getPrivateKey(keyAlias);
+				final MsKeyArchivalRequestMessage msKeyArchivalRequestMessage = serviceReq.getMsKeyArchivalRequestMessage();
+				msKeyArchivalRequestMessage.decryptPrivateKey("BC", decryptionKey);
+				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE,
+						msKeyArchivalRequestMessage.getKeyPairToArchive(), cryptoToken.getId(), keyAlias, null);
+			} catch (CryptoTokenOfflineException | CertificateCreateException e) {
+				throw new IllegalExtendedCAServiceRequestException(e);
+			}
+		}
+		else {
+			throw new IllegalExtendedCAServiceRequestException("Illegal command: "+serviceReq.getCommand());
 		}
         if (log.isTraceEnabled()) {
             log.trace("<extendedService");
