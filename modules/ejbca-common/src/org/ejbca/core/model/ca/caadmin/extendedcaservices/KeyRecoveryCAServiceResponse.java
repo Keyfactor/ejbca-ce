@@ -28,7 +28,8 @@ public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse impl
              
 	private static final long serialVersionUID = -6164842390930090876L;
     public static final int TYPE_ENCRYPTKEYSRESPONSE = 1;
-	public static final int TYPE_DECRYPTKEYSRESPONSE = 1;
+	public static final int TYPE_DECRYPTKEYSRESPONSE = 2;
+    public static final int TYPE_MS_KEY_ARCHIVAL_DECRYPT_RESPOMSE = 3;
     
     private int type;
     private byte[] keydata;
@@ -86,6 +87,12 @@ public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse impl
     	}
     	return ret;
     }
+
+    /**
+     * Method returning the decrypted private key if the type of response
+     * is TYPE_DECRYPT_PRIVKEY_RESPONSE
+     * @return
+     */
 
     public String getKeyAlias() {
         return keyAlias;
