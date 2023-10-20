@@ -46,9 +46,11 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -63,6 +65,9 @@ import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
+import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -84,6 +89,7 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -93,6 +99,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.WrongTokenTypeException;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceResponse;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -115,6 +123,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CAAdminSessionLocal caAdminSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -198,24 +208,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             KeyPair keyPairToArchive = null;
             log.info("reqtype: " + reqType + ", resptype: " + responseType);
             if (reqType==CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) { 
-                if (!keyRecoverySession.authorizedToKeyRecover(admin, userdata.getEndEntityProfileId()))
-                        throw new AuthorizationDeniedException("Admin not authorized for key recovery");
-                if (!profile.isKeyRecoverableUsed()
-                || !((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
-                        .getEnableKeyRecovery()) {
-                    throw new CertificateCreateException("MS Key Archival request was received but key recovery needs to be enabled " +
-                            "in the System Configuration and for the End Entity Profile");
-                }
-                final CAToken caToken = caSession.getCA(admin, userdata.getCAId()).getCAToken();
-                final CryptoToken caCryptoToken =
-                        cryptoTokenSessionLocal.getCryptoToken(caSession.getCA(admin, userdata.getCAId()).getCAToken().getCryptoTokenId());
-                if (!caCryptoToken.doesPrivateKeyExist(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT))) {
-                    throw new CertificateCreateException("The private key to decrypt the private key in the request does not exist for the CA");
-                }
-                final PrivateKey caKeyEncryptPrivateKey = caCryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
-                log.info("decrypting private key for archival");
-                Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
-                keyPairToArchive = validateAndGetMsaeKeyPairToArchive((MsKeyArchivalRequestMessage)requestMessage, caKeyEncryptPrivateKey);
+                keyPairToArchive = validateAndGetMsaeKeyPairToArchive(admin, (MsKeyArchivalRequestMessage)requestMessage, userdata);
                 log.info("Verified and retrieved private key for archival");
             }
             
@@ -245,12 +238,14 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw LogRedactionUtils.getRedactedException(e);
         } finally {
+            /* BC property may be overriden by {@link validateAndGetMsaeKeyPairToArchive}, make sure to always remove*/
             Properties.removeThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod");
         }
         return retval;
     }
     
-    private KeyPair validateAndGetMsaeKeyPairToArchive(final MsKeyArchivalRequestMessage requestMessage, final PrivateKey decryptPrivateKey)
+    private KeyPair validateAndGetMsaeKeyPairToArchive(final AuthenticationToken admin, final MsKeyArchivalRequestMessage requestMessage,
+            final EndEntityInformation userData)
             throws CertificateCreateException {
         // make sure global config and EE profile allows key archival i.e. recovery is enabled(use??) etc Done!
         // see KeyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray
@@ -263,9 +258,29 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         // existing: see KeyRecoveryCAService(add a new command and send the request message -> decryptPrivateKey) 
         // and CAAdminSessionBean.extendedService
         // but we may keep it simple
-        
-        requestMessage.decryptPrivateKey("BC", decryptPrivateKey);
-        return requestMessage.getKeyPairToArchive();
+        try {
+            if (!keyRecoverySession.authorizedToKeyRecover(admin, userData.getEndEntityProfileId()))
+                    throw new AuthorizationDeniedException("Admin not authorized for key recovery");
+            if (!endEntityProfileSession.getEndEntityProfile(userData.getEndEntityProfileId()).isKeyRecoverableUsed()
+                    || !((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
+                    .getEnableKeyRecovery()) {
+                throw new CertificateCreateException("MS Key Archival request was received but key recovery needs to be enabled " +
+                        "in the System Configuration and for the End Entity Profile");
+            }
+            final CAToken caToken = caSession.getCA(admin, userData.getCAId()).getCAToken();
+            log.info("decrypting private key for archival");
+            Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
+            final KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, userData.getCAId(),
+                    new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPT_MS_KEY_ARCHIVAL_PRIVKEY,
+                    requestMessage,
+                    caSession.getCA(admin, userData.getCAId()).getCAToken().getCryptoTokenId(),
+                    caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)));
+            return response.getKeyPair();
+        } catch (AuthorizationDeniedException | CADoesntExistsException | CertificateException | OperatorCreationException
+                | CryptoTokenOfflineException | ExtendedCAServiceRequestException | IllegalExtendedCAServiceRequestException
+                | ExtendedCAServiceNotActiveException e) {
+            throw new CertificateCreateException(e);
+        }
     }
 
     private PrivateKey getDummyPrivateKey() {
