@@ -22,8 +22,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 
@@ -44,7 +42,6 @@ import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.ContentInfo;
 import org.bouncycastle.asn1.cms.SignedData;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -68,6 +65,7 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
 
@@ -76,28 +74,17 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
     
     public static final ASN1ObjectIdentifier szOID_ARCHIVED_KEY_ATTR = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.13");
     public static final ASN1ObjectIdentifier szOID_ENCRYPTED_KEY_HASH = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.21");
+    public static final ASN1ObjectIdentifier szOID_ISSUED_CERT_HASH = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.17");
+    public static final ASN1ObjectIdentifier szOID_CMC_ADD_ATTRIBUTES = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.10.10.1");
+    public static final ASN1ObjectIdentifier szOID_PKCS_9_CONTENT_TYPE = new ASN1ObjectIdentifier("1.2.840.113549.1.9.3");
+    public static final ASN1ObjectIdentifier szOID_PKCS_9_MESSAGE_DIGEST = new ASN1ObjectIdentifier("1.2.840.113549.1.9.4");
+
     // optional: for later use
     public static final ASN1ObjectIdentifier szOID_REQUEST_CLIENT_INFO = new ASN1ObjectIdentifier("1.3.6.1.4.1.311.21.20");
     
-    private static final Map<ASN1ObjectIdentifier, String> hashAlgorithmMap = new HashMap<>();
-    
-    static {
-        // TODO: move to x509-common-utils
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha1WithRSAEncryption,"SHA1");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha224WithRSAEncryption,"SHA224");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha256WithRSAEncryption,"SHA256");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha384WithRSAEncryption,"SHA384");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha512WithRSAEncryption,"SHA512");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha512_224WithRSAEncryption,"SHA512(224)");
-        hashAlgorithmMap.put(PKCSObjectIdentifiers.sha512_256WithRSAEncryption,"SHA512(256)");
-        hashAlgorithmMap.put(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_224,"SHA3-224");
-        hashAlgorithmMap.put(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_256,"SHA3-256");
-        hashAlgorithmMap.put(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_384,"SHA3-384");
-        hashAlgorithmMap.put(NISTObjectIdentifiers.id_rsassa_pkcs1_v1_5_with_sha3_512,"SHA3-512");
-    }
-
     private byte[] message;
     private byte[] encryptedPrivateKey;
+    private byte[] envelopedPrivKeyHash;
     private PKIData pkiData;
     private KeyPair requestKeyPair;
     
@@ -172,14 +159,16 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             }
             
             if (encryptedPrivateKey==null) {
-                log.debug("MS Key archival request is malforemd does not contain the encrpyted private key.");
+                log.debug("MS Key archival request is malformed does not contain the encrpyted private key.");
                 return false;
             }
             
             // should also verify the private key hash as enveloped private key is not signed(unauthenticated)
             final MessageDigest md = MessageDigest.getInstance(
-                    hashAlgorithmMap.get(pkcs10.getSignatureAlgorithm().getAlgorithm())); 
-            final String envelopedPrivKeyHash = Hex.toHexString(md.digest(encryptedPrivateKey));
+                    AlgorithmTools.getDigestFromSigAlg(pkcs10.getSignatureAlgorithm().getAlgorithm().getId())
+                            ); // may be sha1 always
+            envelopedPrivKeyHash = md.digest(encryptedPrivateKey);
+            final String envelopedPrivKeyHashStr = Hex.toHexString(envelopedPrivKeyHash);
             
             for (TaggedAttribute ta: pkiData.getControlSequence()) {
                 org.bouncycastle.asn1.ASN1Sequence asnseq = 
@@ -193,7 +182,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
                     }
                     if (attr.getAttributeValues().length!=1 || 
                             !Hex.toHexString(attr.getAttributeValues()[0].toASN1Primitive().getEncoded())
-                                .endsWith(envelopedPrivKeyHash)) { // not unwrapping ASN1String
+                                .endsWith(envelopedPrivKeyHashStr)) { 
+                        // direct content comparison on ASN1String instead of parsing
                         log.debug("MS Key archival request is private key hash did not match.");
                         return false;
                     }
@@ -219,7 +209,6 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
     }
     
     public void decryptPrivateKey(String provider, PrivateKey caEncryptionKey) throws CertificateCreateException {
-        // TODO: untested
         if (log.isTraceEnabled()) {
             log.trace("<decryptPrivateKey()");
         }
@@ -267,6 +256,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
      * @return
      */
     private PrivateKey parsePrivateKeyBlob(byte[] encodedPrivateKey) {
+        // TODO: move to x509-common-utils or some other common place
         if (encodedPrivateKey[0]!=0x07 || encodedPrivateKey[1]!=0x02 ) { // only parsing normal RSA keys
             return null;
         }
@@ -276,27 +266,46 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             ArrayUtils.reverse(buffer);
             int byteLen = ByteBuffer.wrap(buffer).getInt()/8;
             BigInteger pubExp = bigIntFromByteArray(encodedPrivateKey, 16, 20);
+            
             int start = 20;
             int end = 20+byteLen;
             BigInteger modulus = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger prime1 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger prime2 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger exponent1 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger exponent2 = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen/2;
             BigInteger coefficient = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
             start=end;
             end=start + byteLen;
             BigInteger privateExp = bigIntFromByteArray(encodedPrivateKey, start, end);
+            
+            if(log.isTraceEnabled()) {
+                log.trace("Decrypted end entity private key params:");
+                log.trace("pubexp:" + pubExp);
+                log.trace("modulus:" + modulus);
+                log.trace("prime1:" + prime1);
+                log.trace("prime2:" + prime2);
+                log.trace("exponent1:" + exponent1);
+                log.trace("exponent2:" + exponent2);
+                log.trace("coefficient:" + coefficient);
+                log.trace("privateExp:" + privateExp);
+            }
             
             RSAPrivateKey privKey = new RSAPrivateKey(modulus, pubExp, privateExp, prime1, prime2, 
                                                                         exponent1, exponent2, coefficient);
@@ -305,11 +314,12 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             AlgorithmIdentifier algorithmIdentifier = new AlgorithmIdentifier(
                                                 PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE);
             byte[] derEncodedPrivKey = KeyUtil.getEncodedPrivateKeyInfo(algorithmIdentifier, privKey);
+            // TODO: need to decide for using BC or system default provider
             KeyFactory kf = KeyFactory.getInstance("RSA");
             PrivateKey requestPrivatekey = kf.generatePrivate(new PKCS8EncodedKeySpec(derEncodedPrivKey));            
             return requestPrivatekey;
         } catch (Exception e) {
-            log.info("Exception during private key blob processing: ", e);
+            log.error("Exception during private key blob processing: ", e);
             return null;
         }
     }
@@ -328,6 +338,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
         byte[] decryptedBytes = null;
         try {
             new Random().nextBytes(randomBytes);
+            log.debug("randomBytes: " + Hex.toHexString(randomBytes));
             Cipher encCipher = Cipher.getInstance("RSA");
             encCipher.init(Cipher.ENCRYPT_MODE, requestKeyPair.getPublic());
             byte[] encryptedBytes = encCipher.doFinal(randomBytes);
@@ -335,7 +346,7 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             Cipher decCipher = Cipher.getInstance("RSA");
             decCipher.init(Cipher.DECRYPT_MODE, requestKeyPair.getPrivate());
             decryptedBytes = decCipher.doFinal(encryptedBytes);
-           
+            log.debug("decryptedBytes: " + Hex.toHexString(decryptedBytes));
         } catch (Exception e) {
             log.info("MS key archival key testing failed", e);
         }
@@ -350,6 +361,10 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
     
     public KeyPair getKeyPairToArchive() {
         return requestKeyPair;
+    }
+    
+    public byte[] getEnvelopedPrivKeyHash() {
+        return envelopedPrivKeyHash;
     }
 
 }

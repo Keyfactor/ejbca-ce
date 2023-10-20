@@ -114,7 +114,7 @@ public class AvailableExtendedKeyUsagesConfiguration extends ConfigurationBase i
        // http://www.idmanagement.gov/sites/default/files/documents/pivi_certificate_crl_profile.pdf
        addExtKeyUsage("2.16.840.1.101.3.6.8", "EKU_NIST_PIVCARDAUTH");
        // RFC9336. https://www.rfc-editor.org/rfc/rfc9336.html
-       addExtKeyUsage("1.3.6.1.5.5.7.3.36", "EKU_DOCUMENT_SIGNING_RFC9336");
+       addExtKeyUsage("1.3.6.1.5.5.7.3.36", "EKU_PKIX_DOCUMENTSIGNING");
     }
 
     @SuppressWarnings("unchecked")
