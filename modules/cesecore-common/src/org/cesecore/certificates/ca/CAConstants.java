@@ -834,6 +834,11 @@ public final class CAConstants {
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String USE_AUTHORITY_KEY_IDENTIFIER = "useAuthorityKeyIdentifier";
     
+    /**
+     * List of supported fields when calling the WS createCa method.
+     * 
+     * See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation.
+     */
     public static final String[] CA_PROPERTY_FIELD_NAMES = {
             //@formatter:off
             INCLUDE_IN_HEALTH_CHECK,
