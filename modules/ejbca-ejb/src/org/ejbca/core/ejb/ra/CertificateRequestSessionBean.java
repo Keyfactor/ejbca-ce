@@ -206,7 +206,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 return retval;
             }
             KeyPair keyPairToArchive = null;
-            log.info("reqtype: " + reqType + ", resptype: " + responseType);
+            log.debug("reqtype: " + reqType + ", resptype: " + responseType);
             if (reqType==CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) { 
                 keyPairToArchive = validateAndGetMsaeKeyPairToArchive(admin, (MsKeyArchivalRequestMessage)requestMessage, userdata);
                 log.info("Verified and retrieved private key for archival");
