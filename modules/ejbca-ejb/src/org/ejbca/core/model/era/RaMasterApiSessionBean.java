@@ -2377,21 +2377,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new IllegalStateException("Unable to extrace the CN from full CA's subject DN!");
         }
         
-        X509Certificate certificate = certificateStoreSession
-                .findLatestX509CertificateBySubject("CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
+        List<Certificate> activeNotExpiredCaKecCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(
+                "CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING, caSubjectDN, true);
 
-        if (Objects.nonNull(certificate)
-                && certificateStoreSession.getStatus(caSubjectDN, certificate.getSerialNumber()).equals(CertificateStatus.OK)) {
-            try {
-                certificate.checkValidity();
-                log.debug("Found certificate with subjectDN=[ CN=" + caSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
+        for (Certificate certificate : activeNotExpiredCaKecCertificates) {
+            if (Objects.nonNull(certificate)) {
                 return certificate;
-            } catch (CertificateExpiredException | CertificateNotYetValidException e) {
-                // We continue to generate another valid cert!
-                log.debug("Found an expired cert in db, will create a new one!");
             }
         }
-
         CA ca = (CA) caSession.getCA(authenticationToken, caId);
         CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
         log.debug("Creating KEC as certificate not found with subjectDN=[ CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
