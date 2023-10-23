@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ra;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -26,6 +27,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -142,30 +144,35 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             log.debug("userdata.getStatus(): " + endEntity.getStatus());
             log.debug("savekeys: " + saveKeys);
         }
-        final boolean loadKeys = (endEntity.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
-        if (log.isDebugEnabled()) {
-            log.debug("loadkeys: " + loadKeys);
-        }
-        final int endEntityProfileId = endEntity.getEndEntityProfileId();
-        final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
-        final boolean reuseCertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
-        if (log.isDebugEnabled()) {
-            log.debug("reusecertificate: " + reuseCertificate);
-        }
         try {
-            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId,
-                    keySpecification, keyAlgorithm, null, null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
-            return KeyStoreTools.getAsByteArray(keyStore, password);
-        } catch (AuthLoginException e) { // Is handled as EjbcaException at caller (EjbcaWS).
-            throw e;
-        } catch (AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
-            throw e;
-        } catch (Exception e) {
+            final boolean loadKeys = (endEntity.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
             if (log.isDebugEnabled()) {
-                log.debug("Re-throw exception in RA master API: " + LogRedactionUtils.getRedactedMessage(e.getMessage()),
-                        LogRedactionUtils.getRedactedException(e));
+                log.debug("loadkeys: " + loadKeys);
             }
-            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
+            if (loadKeys && !saveKeys) {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+            }
+            final int endEntityProfileId = endEntity.getEndEntityProfileId();
+            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+            final boolean reuseCertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
+            if (log.isDebugEnabled()) {
+                log.debug("reusecertificate: " + reuseCertificate);
+            }
+            try {
+                final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm,
+                        null, null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
+                return KeyStoreTools.getAsByteArray(keyStore, password);
+            } catch (AuthLoginException | AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
+                throw e;
+            } catch (Exception e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Re-throw exception in RA master API: " + LogRedactionUtils.getRedactedMessage(e.getMessage()),
+                            LogRedactionUtils.getRedactedException(e));
+                }
+                throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
+            }
+        } finally {
+            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
         }
     }
 
@@ -207,16 +214,22 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     	    isNewToken = true;
     	}
     	if (loadkeys) {
-    	    if (log.isDebugEnabled()) {
-    	        log.debug("Recovering keys for user: "+ username);
-    	    }
-            // used saved keys.
-			keyData = keyRecoverySession.recoverKeys(administrator, username, endEntityProfileId);
-    		if (keyData == null) {
-                throw new KeyStoreException("No key recovery data exists for the user '" + username + "', or access to key recovery for the "
-                        + "end entity profile with ID '" + endEntityProfileId + "' has not been granted to the role member '" + administrator + "'.");
-    		}
-    		rsaKeys = keyData.getKeyPair();
+            try {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+                if (log.isDebugEnabled()) {
+                    log.debug("Recovering keys for user: " + username);
+                }
+                // used saved keys.
+                keyData = keyRecoverySession.recoverKeys(administrator, username, endEntityProfileId);
+                if (keyData == null) {
+                    throw new KeyStoreException("No key recovery data exists for the user '" + username + "', or access to key recovery for the "
+                            + "end entity profile with ID '" + endEntityProfileId + "' has not been granted to the role member '" + administrator
+                            + "'.");
+                }
+                rsaKeys = keyData.getKeyPair();
+            } finally {
+                Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+            }
     		if (reusecertificate) {
     			// This is only done if reusecertificate == true because if you don't re-use certificate
     		    // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
@@ -265,9 +278,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     	}
     	// Clear password from database
     	userdata = endEntityAccessSession.findUser(administrator, username); //Get GENERATED end entity information
-        KeyStore ks = finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys,
-                userdata, cert);
-    	return ks;
+        return finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys, userdata,
+                cert);
     }
     
     @Override
@@ -294,28 +306,34 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             isNewToken = true;
         }
         if (loadkeys) {
-            if (log.isDebugEnabled()) {
-                log.debug("Recovering keys for user: "+ username);
-            }
-            // used saved keys.
-            keyData = keyRecoverySession.recoverKeys(administrator, username, endEntityProfileId);
-            if (keyData == null) {
-                throw new KeyStoreException("No key recovery data exists for the user '" + username + "', or access to key recovery for the "
-                        + "end entity profile with ID '" + endEntityProfileId + "' has not been granted to the role member '" + administrator + "'.");
-            }
-            rsaKeys = keyData.getKeyPair();
-            if (reusecertificate) {
-                // This is only done if reusecertificate == true because if you don't re-use certificate
-                // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
+            try {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
                 if (log.isDebugEnabled()) {
-                    log.debug("Re-using old certificate for user: "+ username);
+                    log.debug("Recovering keys for user: " + username);
                 }
-                keyRecoverySession.unmarkUser(administrator,username);
+                // used saved keys.
+                keyData = keyRecoverySession.recoverKeys(administrator, username, endEntityProfileId);
+                if (keyData == null) {
+                    throw new KeyStoreException("No key recovery data exists for the user '" + username + "', or access to key recovery for the "
+                            + "end entity profile with ID '" + endEntityProfileId + "' has not been granted to the role member '" + administrator
+                            + "'.");
+                }
+                rsaKeys = keyData.getKeyPair();
+                if (reusecertificate) {
+                    // This is only done if reusecertificate == true because if you don't re-use certificate
+                    // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
+                    if (log.isDebugEnabled()) {
+                        log.debug("Re-using old certificate for user: " + username);
+                    }
+                    keyRecoverySession.unmarkUser(administrator, username);
+                }
+            } finally {
+                Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
             }
             caid = keyData.getIssuerDN().hashCode(); // always use the CA of the certificate
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Generating new keys for user: "+ username);
+                log.debug("Generating new keys for user: " + username);
             }
 
             //KeyStore algorithm specification inside endEntityInformation has priority since its algorithm is approved
