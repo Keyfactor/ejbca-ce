@@ -144,35 +144,28 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             log.debug("userdata.getStatus(): " + endEntity.getStatus());
             log.debug("savekeys: " + saveKeys);
         }
+        final boolean loadKeys = (endEntity.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
+        if (log.isDebugEnabled()) {
+            log.debug("loadkeys: " + loadKeys);
+        }
+        final int endEntityProfileId = endEntity.getEndEntityProfileId();
+        final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+        final boolean reuseCertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
+        if (log.isDebugEnabled()) {
+            log.debug("reusecertificate: " + reuseCertificate);
+        }
         try {
-            final boolean loadKeys = (endEntity.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
+            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm, null,
+                    null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
+            return KeyStoreTools.getAsByteArray(keyStore, password);
+        } catch (AuthLoginException | AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
+            throw e;
+        } catch (Exception e) {
             if (log.isDebugEnabled()) {
-                log.debug("loadkeys: " + loadKeys);
+                log.debug("Re-throw exception in RA master API: " + LogRedactionUtils.getRedactedMessage(e.getMessage()),
+                        LogRedactionUtils.getRedactedException(e));
             }
-            if (loadKeys && !saveKeys) {
-                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
-            }
-            final int endEntityProfileId = endEntity.getEndEntityProfileId();
-            final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
-            final boolean reuseCertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
-            if (log.isDebugEnabled()) {
-                log.debug("reusecertificate: " + reuseCertificate);
-            }
-            try {
-                final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm,
-                        null, null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
-                return KeyStoreTools.getAsByteArray(keyStore, password);
-            } catch (AuthLoginException | AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
-                throw e;
-            } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Re-throw exception in RA master API: " + LogRedactionUtils.getRedactedMessage(e.getMessage()),
-                            LogRedactionUtils.getRedactedException(e));
-                }
-                throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
-            }
-        } finally {
-            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
 
