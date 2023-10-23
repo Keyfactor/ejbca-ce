@@ -235,6 +235,14 @@
         }
     };
 
+    function click(id){
+        document.getElementById(id).click();
+    }
+
+    function growToContentHeight(id) {
+        const element = document.getElementById(id);
+        element.style.height = element.scrollHeight + "px";
+    }
 
     // Setup name space...
     window.ejbca = window.ejbca || {};
@@ -247,4 +255,6 @@
     ejbca.ra.onAjaxError = onAjaxError;
     ejbca.ra.toggleDetails = toggleDetails;
     ejbca.ra.toggleElements = toggleElements;
+    ejbca.ra.click = click;
+    ejbca.ra.growToContentHeight = growToContentHeight;
 }());
