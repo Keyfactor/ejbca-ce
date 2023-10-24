@@ -2515,10 +2515,6 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
     margin-right: 1em;
 }
 
-label[for="inspect-form\:file-picker"] {
-    color: #212021;
-}
-
 #inspect-form\:inspect-detail-grid {
     display: grid;
     grid-template-columns: auto 1fr;
