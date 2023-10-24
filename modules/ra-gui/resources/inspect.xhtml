@@ -46,14 +46,14 @@
                             <f:ajax event="keyup" render="inspect-plain-text-button"/>
                         </h:inputTextarea>
                     </h:panelGroup>
-                    <h:panelGroup id="file-upload-button"
-                                  onclick="ejbca.ra.click('inspect-form:file-picker')"
-                                  styleClass="pure-button ra-button">
-                        <h:outputLabel for="file-picker" value="#{msg.inspect_page_upload}"/>
-                        <h:inputFile id="file-picker" value="#{raInspectBean.uploadedFile}"
-                                     onchange="ejbca.ra.click('inspect-form:hidden-inspect-file-action')"
-                                     styleClass="hidden"/>
-                    </h:panelGroup>
+                    <h:commandButton id="file-upload-button"
+                                     value="#{msg.inspect_page_upload}"
+                                     type="button"
+                                     onclick="ejbca.ra.click('inspect-form:file-picker')"
+                                     styleClass="pure-button ra-button"/>
+                    <h:inputFile id="file-picker" value="#{raInspectBean.uploadedFile}"
+                                 onchange="ejbca.ra.click('inspect-form:hidden-inspect-file-action')"
+                                 styleClass="hidden"/>
                     <h:commandButton id="hidden-inspect-file-action"
                                      action="#{raInspectBean.processFile()}"
                                      styleClass="hidden"/>
