@@ -14,6 +14,7 @@
 package org.ejbca.core.ejb.ra;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -26,6 +27,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
@@ -207,16 +209,23 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     	    isNewToken = true;
     	}
     	if (loadkeys) {
-    	    if (log.isDebugEnabled()) {
-    	        log.debug("Recovering keys for user: "+ username);
-    	    }
-            // used saved keys.
-			keyData = keyRecoverySession.recoverKeys(administrator, username, endEntityProfileId);
-    		if (keyData == null) {
-                throw new KeyStoreException("No key recovery data exists for the user '" + username + "', or access to key recovery for the "
-                        + "end entity profile with ID '" + endEntityProfileId + "' has not been granted to the role member '" + administrator + "'.");
-    		}
-    		rsaKeys = keyData.getKeyPair();
+
+            try {
+                Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
+                if (log.isDebugEnabled()) {
+                    log.debug("Recovering keys for user: " + username);
+                }
+                // used saved keys.
+                keyData = keyRecoverySession.recoverKeys(administrator, username, endEntityProfileId);
+                if (keyData == null) {
+                    throw new KeyStoreException("No key recovery data exists for the user '" + username + "', or access to key recovery for the "
+                            + "end entity profile with ID '" + endEntityProfileId + "' has not been granted to the role member '" + administrator
+                            + "'.");
+                }
+                rsaKeys = keyData.getKeyPair();
+            } finally {
+                Properties.removeThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod");
+            }
     		if (reusecertificate) {
     			// This is only done if reusecertificate == true because if you don't re-use certificate
     		    // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
@@ -414,21 +423,26 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
         // Store keys and certificates in keystore.
         KeyStore ks = null;
-        if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
-            if (log.isDebugEnabled()) {
-                log.debug("Generating JKS for user: "+ username);
+        try {
+            Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
+            if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Generating JKS for user: "+ username);
+                }
+                ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
+            } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Generating FIPS compliant PKCS12 for user: " + username);
+                }
+                ks = KeyTools.createBcfks(alias, rsaKeys.getPrivate(), cert, cachain);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Generating PKCS12 for user: "+ username);
+                }
+                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
             }
-            ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
-        } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
-            if (log.isDebugEnabled()) {
-                log.debug("Generating FIPS compliant PKCS12 for user: " + username);
-            }
-            ks = KeyTools.createBcfks(alias, rsaKeys.getPrivate(), cert, cachain);
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Generating PKCS12 for user: "+ username);
-            }
-            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
+        } finally {
+            Properties.removeThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod");
         }
         if (log.isTraceEnabled()) {
             log.trace("<generateOrKeyRecoverToken");
