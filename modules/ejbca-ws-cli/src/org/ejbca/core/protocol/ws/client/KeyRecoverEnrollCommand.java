@@ -102,11 +102,11 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                         throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
                     }
                     
-                    FileOutputStream fos = new FileOutputStream(filepath);
-                    java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), keyStoreType, password);
-                    ks.store(fos, password.toCharArray());
-                    fos.close();                    
-                    getPrintStream().println("Key recovery sucessfull!\nKeystore generated, written to " + filepath);
+                    try (FileOutputStream fos = new FileOutputStream(filepath)) {
+                        java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), keyStoreType, password);
+                        ks.store(fos, password.toCharArray());
+                        getPrintStream().println("Key recovery sucessfull!\nKeystore generated, written to " + filepath);
+                    } 
                 }
             } catch (AuthorizationDeniedException_Exception e) {
                 getPrintStream().println("Authentication failed :\n" + e.getMessage());

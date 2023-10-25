@@ -26,7 +26,6 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Request a keystore given a pkcs12
  *
- * @version $Id$
  */
 public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -91,11 +90,11 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             			filepath = outputPath + "/" + filepath;
             		}
             		            		
-            		FileOutputStream fos = new FileOutputStream(filepath);
-            		java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(),"PKCS12",password);
-            		ks.store(fos, password.toCharArray());
-            		fos.close();            		
-            		getPrintStream().println("Keystore generated, written to " + filepath);
+                    try (final FileOutputStream fos = new FileOutputStream(filepath)) {
+                        java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), "PKCS12", password);
+                        ks.store(fos, password.toCharArray());
+                        getPrintStream().println("Keystore generated, written to " + filepath);
+                    }
             	}
             	             
             }catch(AuthorizationDeniedException_Exception e){
