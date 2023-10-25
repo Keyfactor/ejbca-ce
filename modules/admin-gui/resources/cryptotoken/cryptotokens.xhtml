@@ -150,7 +150,7 @@
 								rendered="#{!cryptoTokenGuiInfo.autoActivation}" />
 							<h:commandButton value="#{web.text.CRYPTOTOKEN_REACTIVATE}"
 								action="#{cryptoTokenMBean.deactivateCryptoToken}"
-								rendered="#{cryptoTokenGuiInfo.autoActivation}" />
+								rendered="#{cryptoTokenGuiInfo.canReactivate}" />
 						</h:panelGroup>
 						<h:commandButton value="#{web.text.DELETE}"
 							action="#{cryptoTokenMBean.deleteCryptoToken}"

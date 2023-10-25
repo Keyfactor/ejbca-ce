@@ -19,6 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.security.InvalidKeyException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ejb.EJB;
@@ -33,6 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -41,6 +47,8 @@ import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Servlet used to check the health of an EJBCA instance and can be used to
@@ -83,6 +91,8 @@ public class HealthCheckServlet extends HttpServlet {
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -175,9 +185,29 @@ public class HealthCheckServlet extends HttpServlet {
         
     }
     
+    /**
+     * Fetch a boolean query parameter from request, returning defaultValue if not present.
+     */
+    static private boolean safeGetParameter(HttpServletRequest request, String name, boolean defaultValue) {
+        String value = request.getParameter(name);
+        if (value == null)
+            return defaultValue;
+        return Boolean.parseBoolean(value);
+    }
+    
     public String doAllHealthChecks(HttpServletRequest request) {
+        String[] caNames = request.getParameterValues("ca");
+        // deal with possible null return
+        if (caNames == null)
+            caNames = new String[0];
+        boolean checkAllCas = caNames.length == 0;
+        boolean checkOcsp = safeGetParameter(request, "ocsp", true);
+        boolean checkPublishers = safeGetParameter(request, "publishers", EjbcaConfiguration.getHealthCheckPublisherConnections());
+        Map<String, String> cryptoTokensAndKeys = collectTokenAndKeyParameters(request);
+        
         if (log.isDebugEnabled()) {
             log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
+            log.debug(String.format("Checking cas=%b ocsp=%b publishers=%b", checkAllCas, checkOcsp, checkPublishers));
         }
         // Start by checking if we are in maintenance mode
         final Properties maintenanceProperties = getMaintenanceProperties();
@@ -209,20 +239,38 @@ public class HealthCheckServlet extends HttpServlet {
             if (minfreememory >= currentFreeMemory) {
                 sb.append("\nMEM: Error Virtual Memory is about to run out, currently free memory :").append(String.valueOf(Runtime.getRuntime().freeMemory()));    
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Checking CAs.");
+            if (checkAllCas) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Checking all CAs with 'include in health check' enabled.");
+                }
+                sb.append(caAdminSession.healthCheck());
             }
-            sb.append(caAdminSession.healthCheck());
-            if (EjbcaConfiguration.getHealthCheckPublisherConnections()) {
+            // if checkAllCas not specified, maybe specific cas were
+            else if (caNames.length > 0 && !caNames[0].equals("none")) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Checking specified CAs: " + String.join(",", caNames));
+                }
+
+                sb.append(caAdminSession.healthCheck(Arrays.asList(caNames)));
+            }
+            if (cryptoTokensAndKeys.size() > 0) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Checking cryptotoken(s).");
+                }
+                sb.append(cryptoTokenHealthCheck(cryptoTokensAndKeys));
+            }
+            if (checkPublishers) {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking publishers.");
                 }
                 sb.append(publisherSession.testAllConnections());
             }
-            if (log.isDebugEnabled()) {
-                log.debug("Checking OcspKeyBindings.");
+            if (checkOcsp) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Checking OcspKeyBindings.");
+                }
+                sb.append(ocspResponseGeneratorSession.healthCheck());
             }
-            sb.append(ocspResponseGeneratorSession.healthCheck());
             try {
                 if(log.isDebugEnabled()) {
                     log.debug("Perfoming health check on audit logs.");
@@ -234,6 +282,57 @@ public class HealthCheckServlet extends HttpServlet {
             
         }
         return sb.length()==0 ? null : sb.toString();
+    }
+
+
+    /**
+     * pair up all "tokenXYZ" and "keyXYZ" pairs as a list of token/key pairs for testing
+     */
+    private Map<String, String> collectTokenAndKeyParameters(HttpServletRequest request) {
+        ArrayList<String> parameterNames = new ArrayList<>();
+        request.getParameterNames().asIterator().forEachRemaining(parameterNames::add);
+
+        Map<String, String> cryptoTokensAndKeys = new LinkedHashMap<>();
+        for (String parameterName : parameterNames) {
+            if (parameterName.startsWith("token")) {
+                String suffix = parameterName.substring("token".length());
+                if (parameterNames.contains("key" + suffix)) {
+                    String tokenName = request.getParameter(parameterName);
+                    String keyName = request.getParameter("key" + suffix);
+                    if (tokenName != null && keyName != null) {
+                        cryptoTokensAndKeys.put(tokenName, keyName);
+                    }
+                }
+            }
+        }
+        return cryptoTokensAndKeys;
+    }
+
+    /**
+     * Test the named cryptotoken(s) and key(s)
+     * 
+     * @return "" if no errors occurred, otherwise a descriptive error string.
+     */
+    private String cryptoTokenHealthCheck(Map<String, String> cryptoTokensAndKeys) {
+        StringBuilder out = new StringBuilder();
+        for (String cryptoTokenName : cryptoTokensAndKeys.keySet()) {
+            String testKeyName = cryptoTokensAndKeys.get(cryptoTokenName);
+            Integer cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+            if (cryptoTokenId == null) {
+                out.append("\nTOKEN: " + cryptoTokenName + " unknown");
+            }
+            CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId);
+            if (cryptoToken == null) {
+                out.append("\nTOKEN: " + cryptoTokenName + " unknown");
+            }
+            try {
+                cryptoToken.testKeyPair(testKeyName);
+            } catch (InvalidKeyException | CryptoTokenOfflineException e) {
+                log.error("Test key failed for token = " + cryptoTokenName + " and key = " + testKeyName, e);
+                out.append("\nTOKEN: Test key failed for token=" + cryptoTokenName + " key=" + testKeyName);
+            }
+        }
+        return out.toString();
     }
 
     /** Create the maintenance file if it should be used and does not exists */
