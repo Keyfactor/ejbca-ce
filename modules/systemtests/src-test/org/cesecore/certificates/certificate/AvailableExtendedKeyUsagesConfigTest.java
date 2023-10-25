@@ -147,6 +147,6 @@ public class AvailableExtendedKeyUsagesConfigTest {
         assertTrue("MS smart card logon key usage should be available", oids.contains("1.3.6.1.4.1.311.20.2.2"));
         assertEquals("Incorrect language string for oid 1.3.6.1.4.1.311.20.2.2", "EKU_MS_SMARTCARDLOGON", ekuConfig.getExtKeyUsageName("1.3.6.1.4.1.311.20.2.2"));
         assertTrue("RFC9336 document signing key usage should be available", oids.contains("1.3.6.1.5.5.7.3.36"));
-        assertEquals("Incorrect language string for oid 1.3.6.1.5.5.7.3.36", "EKU_DOCUMENT_SIGNING_RFC9336", ekuConfig.getExtKeyUsageName("1.3.6.1.5.5.7.3.36"));
+        assertEquals("Incorrect language string for oid 1.3.6.1.5.5.7.3.36", "EKU_PKIX_DOCUMENTSIGNING", ekuConfig.getExtKeyUsageName("1.3.6.1.5.5.7.3.36"));
     }
 }
