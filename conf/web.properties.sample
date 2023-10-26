@@ -273,8 +273,14 @@ httpsserver.tokentype=JKS
 #cryptotoken.p11.lib.135.file=/opt/gcp/libkmsp11-1.1-linux-amd64/libkmsp11.so
 #cryptotoken.p11.lib.140.name=IBM HPCS P11
 #cryptotoken.p11.lib.140.file=/opt/grep11/pkcs11-grep11-amd64.so
-
-
+#cryptotoken.p11.lib.145.name=IronCap ICC
+#cryptotoken.p11.lib.145.file=/opt/ironcap/lib/libsofthsm2.so
+#cryptotoken.p11.lib.150.name=FutureX
+#cryptotoken.p11.lib.150.file=/opt/fxpkcs11/x64/OpenSSL-3.x/libfxpkcs11.so
+#cryptotoken.p11.lib.155.name=Crypto4A QxHSM
+#cryptotoken.p11.lib.155.file=/usr/local/share/lib/c4a-pkcs11/libpkcs11rest.so
+#cryptotoken.p11.lib.156.name=Crypto4A QxHSM
+#cryptotoken.p11.lib.156.file=C:/Windows/System32/Pkcs11REST.dll
 
 #
 # You can add your own values with an available number, or override numbers from defaults...
