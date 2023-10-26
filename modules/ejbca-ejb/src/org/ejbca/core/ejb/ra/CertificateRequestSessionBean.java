@@ -45,7 +45,6 @@ import com.keyfactor.ErrorCode;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.StringUtils;
@@ -208,7 +207,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             KeyPair keyPairToArchive = null;
             log.debug("reqtype: " + reqType + ", resptype: " + responseType);
             if (reqType==CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) { 
-                keyPairToArchive = validateAndGetMsaeKeyPairToArchive(admin, (MsKeyArchivalRequestMessage)requestMessage, userdata);
+                keyPairToArchive = validatePermissionsAndDecryptMsaeKeyPairToArchive(admin, (MsKeyArchivalRequestMessage)requestMessage, userdata);
                 log.info("Verified and retrieved private key for archival");
             }
             
@@ -244,20 +243,14 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         return retval;
     }
     
-    private KeyPair validateAndGetMsaeKeyPairToArchive(final AuthenticationToken admin, final MsKeyArchivalRequestMessage requestMessage,
+    /**
+     * Performs checks that the admin is authorized for key recovery and that Key Recovery is enabled in the EEP and system config setting.
+     * If the checks pass the KeyRecoveryCAService is called to decrypt the encrypted private key from the MS Key Archival request.
+     * @return the KeyPair, including the decrypted private key from the MS Key Archival request
+     */
+    private KeyPair validatePermissionsAndDecryptMsaeKeyPairToArchive(final AuthenticationToken admin, final MsKeyArchivalRequestMessage requestMessage,
             final EndEntityInformation userData)
             throws CertificateCreateException {
-        // make sure global config and EE profile allows key archival i.e. recovery is enabled(use??) etc Done!
-        // see KeyStoreCreateSessionBean.generateOrKeyRecoverTokenAsByteArray
-        // also encryption key usage in the CSR, RSA key etc
-        
-        // check AccessRulesConstants.REGULAR_KEYRECOVERY to avoid failure during key recovery data storage
-        
-        // to decrypt
-        // should do CA_ACCESS check first and retrieve the private key from CAToken
-        // existing: see KeyRecoveryCAService(add a new command and send the request message -> decryptPrivateKey) 
-        // and CAAdminSessionBean.extendedService
-        // but we may keep it simple
         try {
             if (!keyRecoverySession.authorizedToKeyRecover(admin, userData.getEndEntityProfileId()))
                     throw new AuthorizationDeniedException("Admin not authorized for key recovery");
@@ -280,68 +273,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 | CryptoTokenOfflineException | ExtendedCAServiceRequestException | IllegalExtendedCAServiceRequestException
                 | ExtendedCAServiceNotActiveException e) {
             throw new CertificateCreateException(e);
-        }
-    }
-
-    private PrivateKey getDummyPrivateKey() {
-        String encodedPrivateKey = "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDRTiJtDwsRgozw\n"
-                + "atZb4/X/HNB/xaOdiSukZRkJ5tNVOEuWV5fjYxALQcnuSW+uUHkwYyniZWO527Ct\n"
-                + "lDEJ55TsI/PSXLJ7kFJCiAD4IpkaUyZ7XXpkmWd6SA7jp2EACIc8UIBJaMTuLpmL\n"
-                + "ElgrDnu58Rwz652lbqPKqOYLFjkNr/y+JEtrOog8Lk+UPhsUPmXlx940RvWTkfHT\n"
-                + "+K7FQC/tFO+4D5boonrH1VtJFd51ZDxsFDhrl2v3yuV8M3AAar516Td8DGe6Tqb6\n"
-                + "88LYI4wTVcEBNFkR4ITC8d6721vR5rkihuzvB+XtYGZVlCekEySuM7dA6PcxZ5O6\n"
-                + "evmhMGBHAgMBAAECggEAQ4kVJaB9f0xjIq4udZ8EQKlxA1Fn3kyk9toiLqY62Zwd\n"
-                + "E6k22smboy46tHcgoJvZxsmweZsihxWCmDehbSM608k0AtQjSSiDynDs8yPix/I9\n"
-                + "j//VHsG6+GNo3n8jFuopjMYi5sz2Ai6qH4wvQ9FcDd7lLUGg8ADXu+wssjYc+bOS\n"
-                + "NyY9M7tn2oxj6cZkJW5sVgV7EekkAg21o2XB7EJ4NCudKtXmPrqI55G7f6/g1ekK\n"
-                + "/+5G09dNqpRLFcWJphZVuU2n526EG6qIySLniFClwgvod/qK8hqgqINAGSOouDIO\n"
-                + "OW3zKUlnBvWq4rn8nWFzt+UjdO42byRcUU0h9U13tQKBgQD4UvvXkzl9ASsuZUTD\n"
-                + "P++NDLRNiAy+wx2Ch6k2ak4wR/8VfiJPK9HWofGMWSk0bpJjDgX1yf6u7fl0i+mD\n"
-                + "+7+odrwaWG5xbGgSKKYJDwcBHRBRMuH1EIs0drydv0qW0HtTffzLplOx0ehyHk+9\n"
-                + "OpXEaPlGxrgxdlXWAEsoCyAhqwKBgQDXxmO5s7DVmfTxG8UpOSmU3HfkhsTRI7Yb\n"
-                + "jB3RyEB7fmvCPSJYk1MD8RNgzbuE/aagKSSa2K1tct/rALu5vxheiM4UO+1JTpnj\n"
-                + "6HeqPSIovMilzmTzOUY4Z53+aropaJoULnYckmeUqqZy8vXna6NERu/crI45+Xpz\n"
-                + "4OutQ0oX1QKBgFxpXWmDU4COn8g7TZSvxXEjSjIUMFIJgIDkBXfHpeNX17ji4Ne/\n"
-                + "we5zA9YsFCZ8A6QzQsqOamYlD5Fsw/EnDdMepK/VOvyg0DX5xJhYbE3gyAK/wdEW\n"
-                + "YAedLGI0Hwjy+wI+P4Z2Fm11ZWCaoSgVlkiqnCHXsBJQLG9gWpfDVCjTAoGAZ0r8\n"
-                + "gHBpzcc2v5lIp/RKWI22AzsUyv1qdwN7XuqbG8MoOMLlRzu3eOKWITg7dW2rr24i\n"
-                + "rNHfK87bLHecZk35j3+0D3GkpPwwpS6q4l8DlDbTYrRMFTcsy2Gm+50B40LEx7Z6\n"
-                + "KjFXzo5mwg5W82LOtKe0uZINP+mS2hgpGjdlJ8UCgYBrkGcASe18yKscrWis02bx\n"
-                + "3d+ror5tdATqmuJDJR31g/lSpC3w+sBvOleHcXkX36LSxZUqZyaHJowNoXYathbs\n"
-                + "tgNgD2tp2hDBEHdJOcx5Vo7HGHRSAbJjeSBtjc8kJuSVmEvUNBST5Tt5DWzcOloJ\n"
-                + "SSPpWa3QgFphkWUYxVi2Gw=="; // TODO
-        String encodedPrivateKey125 = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCv6WTq3YWCeKXk\n"
-                + "t4ca7EsOpjylnhMstaoPoFIrj4nN1aOgR3MzQMY9xpf5rKkYpuJSZ4R0byZrL0Mm\n"
-                + "7um5A/4eawq93YA2bEvzp7poYfpfc0j4bgD6kb4ksn1zC9NBH4r5J4yqM3vNoqkt\n"
-                + "Xqx9WIzwWk61RKB7ugws3ap+aLQJ1sFBbCaUKqJTb3d21o+PcM3m3FAiaXu+NiC+\n"
-                + "hAQB7G8xSM8VqHQ8MYFvhZNS2QOUq5pd/aR0B6231pIt08CAc1H7hr+aCGUUC/P9\n"
-                + "5MOUH6pgcvb6FuJgklY/+GSrIHgoYBJ9BxLmxVB/36oXZAfuI5nzbRyoYfTCmtGB\n"
-                + "6clGUJebAgMBAAECggEAEzikb0lfQj9emRw4pgd1uBcP/2TDYZpEB8sTz3CytQwI\n"
-                + "AgZsnwgP4UYm6wAjxe7OQgTPo01V3FZgtwtZ/H5kMPyvQsnGLawtrGUCaE90ZSOa\n"
-                + "sJKMhtSP+0CJlp2PKsmAjPL2Ws6fU3vXkn6KyHN5ivXDLelew8YzeF+MNp3INl7S\n"
-                + "9pOM34IiYwFB2HYMOlRh6ei5yFo9wKsgo6x3LiHUQD8PdKAnnVyAIG4GkZr28e/8\n"
-                + "XXsBUKJRM0A5UmDQ7+8JsNo7F7euyoR4ofzyzbA2jzqW0PBJAKuyUcOx8UshfFLv\n"
-                + "4TMzYbm34PLesEk6x9I1EcI2hdr/Fp5U8D9hOtZ94QKBgQD3tKJXjpPjImiVp6tK\n"
-                + "5I2nCzJ1sGZ2mSxVzzw/DwyxE2bW+yob0h1c7Hmon+fvKESrb236vyqawwiXgMKL\n"
-                + "ptmFE9Kv5/J4aOCV7SKDGpbb5CdYp9N0BqQdcg46J4eQFj+iEZ08yfHIn96PYR5F\n"
-                + "BBevfLYF4qOhXWPDI+R+5Qy3CwKBgQC1zVVADwbAuUehE9jXedp0vsFZ/uYGE8+5\n"
-                + "mnrAvqTiwcgY7rb2qFmDrcLqv3h6YjdN+OpLYJSCVJjoLBRFBIAugRsg0kSYQfM8\n"
-                + "X5CjsRaLFR4t+n7ZK+V2tJqQJkDmX9SScqrqNM94MWoKjDv/3WRKs6hQgUPjA39b\n"
-                + "Wa8CuxO7sQKBgQDl42/zYLCh0TJNCjJwLFPG3x5ymUdO9HNwJAfe4kG+Kap9BNcc\n"
-                + "wNFdh16Vf+qKS84HaUAhwb9xqGZV7TsgzrX7ytzzQooG9BbTLiSklk3CQCnAHumh\n"
-                + "OfSgG1VW5Y7ry6o86KoMW8OYlb7BRLoKBXVR+aUZKzD/tqO63JnYpw045wKBgBcu\n"
-                + "wNEzWVQYDEdBBaSseCvs6zDzrRdXTWTIiyCq7tGvjjmHrzMS0p9U+AcBNXa9sXmy\n"
-                + "5QWJokZgTUNF46vNYB8N/YyY44Ba4I5xTTtiaJKBteB9EdHVpCQX8aGyDxKRY8Ts\n"
-                + "9Fh7NX2JJ5GCwl/lNlXERRFG+oYnOwVGEWgSvPhxAoGBAKbXsNZisgS9GnNX4O4B\n"
-                + "P0UP1uYo0Q6p+byXBVLTzbDy3ABTaZP72YN3OTfOTFbDH+xcMPox3mjEW2h93hng\n"
-                + "+xEXhHJCGU65RyBGYIjmDvUpL1aOnlGSHWvikvO4Nz6mYf34zM7r/VNfUGJszWt0\n"
-                + "d3UPY8K+dVYrgp7d7pGvRybA";
-        try {
-            KeyFactory kf = KeyFactory.getInstance("RSA");
-            return kf.generatePrivate(new PKCS8EncodedKeySpec(Base64.decode(encodedPrivateKey125.getBytes())));
-        } catch (Exception e) {
-            log.error("Unable to reconstruct dummy private key", e);
-            return null;
         }
     }
 
