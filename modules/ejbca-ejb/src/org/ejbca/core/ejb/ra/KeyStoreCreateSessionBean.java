@@ -131,8 +131,9 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             throw new AuthorizationDeniedException(msg);
         }
         // Check token type.
-        if (endEntity.getTokenType() != SecConst.TOKEN_SOFT_P12) { // logger
-            throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE, "Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests");
+        if (endEntity.getTokenType() != EndEntityConstants.TOKEN_SOFT_P12 || endEntity.getTokenType() != EndEntityConstants.TOKEN_USERGEN) { // logger
+            throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE,
+                    "Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests and 'USER_GENERATED' for MSAE key archival request.");
         }
         final boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
         if (log.isDebugEnabled()) {
@@ -363,9 +364,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
         // Clear password from database
         userdata = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(administrator, username); //Get GENERATED end entity information
-        KeyStore ks = finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys,
+        return finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys,
                 userdata, cert);
-        return ks;
     }
 
     private KeyStore finishProcessingAndStoreKeys(AuthenticationToken administrator, String username, String password, int caid, int keystoreType,
@@ -425,21 +425,29 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
         // Store keys and certificates in keystore.
         KeyStore ks = null;
-        if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
-            if (log.isDebugEnabled()) {
-                log.debug("Generating JKS for user: "+ username);
+        try {
+            if (loadkeys) {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
             }
-            ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
-        } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
-            if (log.isDebugEnabled()) {
-                log.debug("Generating FIPS compliant PKCS12 for user: " + username);
+            if (keystoreType == SecConst.TOKEN_SOFT_JKS) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Generating JKS for user: " + username);
+                }
+                ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
+            } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Generating FIPS compliant PKCS12 for user: " + username);
+                }
+                ks = KeyTools.createBcfks(alias, rsaKeys.getPrivate(), cert, cachain);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Generating PKCS12 for user: " + username);
+                }
+                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
             }
-            ks = KeyTools.createBcfks(alias, rsaKeys.getPrivate(), cert, cachain);
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Generating PKCS12 for user: "+ username);
-            }
-            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
+
+        } finally {
+            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
         }
         if (log.isTraceEnabled()) {
             log.trace("<generateOrKeyRecoverToken");
