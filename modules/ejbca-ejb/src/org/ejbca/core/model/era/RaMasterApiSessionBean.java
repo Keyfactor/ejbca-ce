@@ -64,6 +64,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.Properties;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -2291,6 +2292,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] generateKeyStoreWithoutViewEndEntityAccessRule(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException {
         KeyStore keyStore;
+        try { // bad indentation
         try {
             final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntity.getEndEntityProfileId());
             boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
@@ -2300,6 +2302,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             final boolean saveKeysFlag = data.getKeyRecoverable() && useKeyRecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
+            if (loadKeysFlag) {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+            }
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
             if (ei == null) {
@@ -2344,6 +2349,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             } catch (IOException | KeyStoreException | NoSuchAlgorithmException | CertificateException e) {
                 log.error(LogRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
+        }
+        } finally {
+            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
         }
         return null;
     }
