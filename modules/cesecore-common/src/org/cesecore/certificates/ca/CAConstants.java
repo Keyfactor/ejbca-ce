@@ -835,9 +835,11 @@ public final class CAConstants {
     public static final String USE_AUTHORITY_KEY_IDENTIFIER = "useAuthorityKeyIdentifier";
     
     /**
-     * List of supported fields when calling the WS createCa method.
+     * List of supported fields when calling the WS createCa method.  This list allows the caller to set fields 
+     * on {@link org.cesecore.certificates.ca.X509CAInfo} during CA createion and may be changed when new fields
+     * are added that should be exposed to WS clients.
      * 
-     * See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation.
+     * @see org.cesecore.certificates.ca.X509CAInfo
      */
     public static final String[] CA_PROPERTY_FIELD_NAMES = {
             //@formatter:off
