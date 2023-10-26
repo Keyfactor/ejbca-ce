@@ -307,11 +307,11 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
     
     public List<SelectItem> getAvailableKECCertificateProfiles() {
-        return Stream.concat(
-                Stream.of(new SelectItem(-1, SELECT_CEP)),
+        return Stream.concat(Stream.of(new SelectItem(-1, SELECT_CEP)),
                 authorizedCertificateProfiles.entrySet().stream()
-                        .map(item -> new SelectItem(String.valueOf(item.getKey()), item.getValue().getName()))
-        ).collect(Collectors.toList());
+                        .filter(item -> item.getValue().getValue().getExtendedKeyUsageOids().contains(SZOID_KP_CA_EXCHANGE))
+                        .map(item -> new SelectItem(String.valueOf(item.getKey()), item.getValue().getName())))
+                .collect(Collectors.toList());
     }
 
     /**
