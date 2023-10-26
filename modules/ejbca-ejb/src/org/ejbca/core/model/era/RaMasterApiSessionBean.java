@@ -2396,7 +2396,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * @return extracted CN part of CA's full DN
      */
     private static String extractCommonName(String caFullSubjectDN) {
-
+        log.debug("Extracting common name from CA's full Subject DN: " + LogRedactionUtils.getRedactedMessage(caFullSubjectDN));
         Pattern pattern = Pattern.compile("CN=(.*?),");
         Matcher matcher = pattern.matcher(caFullSubjectDN);
         if (matcher.find()) {
