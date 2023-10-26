@@ -836,7 +836,7 @@ public final class CAConstants {
     
     /**
      * List of supported fields when calling the WS createCa method.  This list allows the caller to set fields 
-     * on {@link org.cesecore.certificates.ca.X509CAInfo} during CA createion and may be changed when new fields
+     * on {@link org.cesecore.certificates.ca.X509CAInfo} during CA creation and may be changed when new fields
      * are added that should be exposed to WS clients.
      * 
      * @see org.cesecore.certificates.ca.X509CAInfo
