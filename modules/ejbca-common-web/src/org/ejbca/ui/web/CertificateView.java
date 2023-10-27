@@ -13,8 +13,13 @@
  
 package org.ejbca.ui.web;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
@@ -24,12 +29,19 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.AltSignatureAlgorithm;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -46,6 +58,8 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.HTMLTools;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -274,15 +288,69 @@ public class CertificateView implements Serializable {
         return certificate.getPublicKey().getAlgorithm();
     }
     
+    public String getPublicAlternativeKeyAlgorithm() {
+        if (certificate == null || !(certificate instanceof X509Certificate)) {
+            return UNKNOWN;
+        } else {
+            try {
+                X509CertificateHolder certHolder = new JcaX509CertificateHolder((X509Certificate) certificate);
+                SubjectAltPublicKeyInfo subjectAltPublicKeyInfo = SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions());
+                if (subjectAltPublicKeyInfo == null) {
+                    return UNKNOWN;
+                } else {
+                    AlgorithmIdentifier algorithmIdentifier = subjectAltPublicKeyInfo.getAlgorithm();
+                    return AlgorithmTools.getAlgorithmNameFromOID(algorithmIdentifier.getAlgorithm());
+                }
+            } catch (CertificateEncodingException e) {
+                throw new IllegalStateException("Could not parse certificate in spite of nominally being an X509Certificate.", e);
+            }
+
+        }
+    }
+    
     public String getKeySpec(String localizedBitsText) {
         if (certificate==null) {
             return UNKNOWN;
-        }
+        } 
     	if (certificate.getPublicKey() instanceof ECPublicKey) {
     		return AlgorithmTools.getKeySpecification(certificate.getPublicKey());
     	} else {
     		return "" + KeyTools.getKeyLength(certificate.getPublicKey()) + " " + localizedBitsText;
     	}
+    }
+    
+    public String getAlternateKeySpec(final String localizedBitsText) {
+        if (certificate == null || !(certificate instanceof X509Certificate)) {
+            return UNKNOWN;
+        } else {
+            try {
+                PublicKey publicKey  = getAlternativeSigningKeyFromCertificate((X509Certificate) certificate);
+                if(publicKey == null) {
+                    return UNKNOWN;
+                } else if (publicKey instanceof ECPublicKey) {
+                    return AlgorithmTools.getKeySpecification(publicKey);
+                } else {
+                    return "" + KeyTools.getKeyLength(publicKey) + " " + localizedBitsText;
+                }
+            } catch (CertificateEncodingException | IOException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException e) {
+                throw new IllegalStateException("Could not parse alternative signing key from certificate.", e);
+            }
+        }
+    }
+    
+    private PublicKey getAlternativeSigningKeyFromCertificate(final X509Certificate x509Certificate)
+            throws CertificateEncodingException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException, IOException {
+        X509CertificateHolder certHolder = new JcaX509CertificateHolder(x509Certificate);
+        SubjectAltPublicKeyInfo subjectAltPublicKeyInfo = SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions());
+        if (subjectAltPublicKeyInfo == null) {
+            return null;
+        } else {
+            final AlgorithmIdentifier keyAlgorithm = subjectAltPublicKeyInfo.getAlgorithm();
+            final X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(subjectAltPublicKeyInfo.getEncoded());
+            KeyFactory keyFactory = KeyFactory.getInstance(keyAlgorithm.getAlgorithm().getId(),
+                    CryptoProviderTools.getProviderNameFromAlg(keyAlgorithm.getAlgorithm().getId()));
+            return keyFactory.generatePublic(x509EncodedKeySpec);
+        }
     }
 
     public String getPublicKeyLength(){
@@ -314,6 +382,39 @@ public class CertificateView implements Serializable {
     	}
     	return mod;
     }
+    
+    
+    
+    public String getPublicAlternativeKeyModulus() {
+        if (certificate == null || !(certificate instanceof X509Certificate)) {
+            return UNKNOWN;
+        }
+        try {
+            PublicKey publicKey = getAlternativeSigningKeyFromCertificate((X509Certificate) certificate);
+            if (publicKey == null) {
+                return UNKNOWN;
+            } else {
+                String mod = null;
+                if (publicKey instanceof RSAPublicKey) {
+                    mod = "" + ((RSAPublicKey) certificate.getPublicKey()).getModulus().toString(16);
+                    mod = mod.toUpperCase();
+                    mod = StringUtils.abbreviate(mod, 50);
+                } else if (publicKey instanceof DSAPublicKey) {
+                    mod = "" + ((DSAPublicKey) certificate.getPublicKey()).getY().toString(16);
+                    mod = mod.toUpperCase();
+                    mod = StringUtils.abbreviate(mod, 50);
+                } else if (publicKey instanceof ECPublicKey) {
+                    mod = "" + ((ECPublicKey) certificate.getPublicKey()).getW().getAffineX().toString(16);
+                    mod = mod + ((ECPublicKey) certificate.getPublicKey()).getW().getAffineY().toString(16);
+                    mod = mod.toUpperCase();
+                    mod = StringUtils.abbreviate(mod, 50);
+                }
+                return mod;
+            }
+        } catch (CertificateEncodingException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException | IOException e) {
+            throw new IllegalStateException("Could not parse alternative signing key from certificate.", e);
+        }
+    }
 
     public String getSignatureAlgoritm() {
         if (certificate==null) {
@@ -322,6 +423,26 @@ public class CertificateView implements Serializable {
         }
     	// Only used for displaying to user so we can use this value that always works
     	return CertTools.getCertSignatureAlgorithmNameAsString(certificate);
+    }
+    
+    public String getAlternativeSignatureAlgoritm() {
+        if (certificate == null || !(certificate instanceof X509Certificate)) {
+            return UNKNOWN;
+        } else {
+            X509CertificateHolder certHolder;
+            try {
+                certHolder = new JcaX509CertificateHolder((X509Certificate) certificate);
+                AltSignatureAlgorithm altSignatureAlgorithm = AltSignatureAlgorithm.fromExtensions(certHolder.getExtensions());
+                if (altSignatureAlgorithm != null) {
+                    return AlgorithmTools.getAlgorithmNameFromOID(altSignatureAlgorithm.getAlgorithm().getAlgorithm());
+                } else {
+                    return UNKNOWN;
+                }
+            } catch (CertificateEncodingException e) {
+                throw new IllegalStateException("Could not parse alternative signature algorithm from certificate.", e);
+            }
+        }
+
     }
 
     /** Method that returns if key is allowed for given usage. Usage must be one of this class key usage constants. */
@@ -496,7 +617,7 @@ public class CertificateView implements Serializable {
             return UNKNOWN;
         }
         if (subjectaltnamestring == null) {
-            subjectaltnamestring = CertTools.getSubjectAlternativeName(certificate);
+            subjectaltnamestring = DnComponents.getSubjectAlternativeName(certificate);
         }        
         return subjectaltnamestring; 	
     }
