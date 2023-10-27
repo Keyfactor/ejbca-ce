@@ -180,11 +180,11 @@ public class RaInspectBean implements Serializable {
         Certificate certificate;
         try {
             certificate = CertTools.getCertsFromPEM(new ByteArrayInputStream(bytes), Certificate.class).get(0);
-        } catch (CertificateException e) {
+        } catch (CertificateException | IllegalArgumentException e) {
             // See if it's a single binary certificate
             try {
                 certificate = CertTools.getCertfromByteArray(bytes, Certificate.class);
-            } catch (CertificateException e1) {
+            } catch (CertificateException | IllegalArgumentException e1) {
                 // ignore & move on to the next type
                 return null;
             }
