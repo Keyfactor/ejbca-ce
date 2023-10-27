@@ -26,3 +26,4 @@ defaultKey defaultRoot
 certSignKey signRoot
 crlSignKey signRoot
 testKey testRoot
+alternativeCertSignKey alternativeSignRoot
