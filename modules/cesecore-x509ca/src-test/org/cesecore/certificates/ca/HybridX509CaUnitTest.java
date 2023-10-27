@@ -148,10 +148,8 @@ public class HybridX509CaUnitTest {
         PublicKey alternativePublicKey = cryptoToken.getPublicKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
         assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativePublicKey.getEncoded()),
                 SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()));
-
         assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
                 new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(alternativePublicKey)));
-
     }
 
     /**

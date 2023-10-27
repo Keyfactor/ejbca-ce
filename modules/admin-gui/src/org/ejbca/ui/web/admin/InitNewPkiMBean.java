@@ -97,8 +97,8 @@ import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -508,6 +508,9 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenCertSignKey())) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
         }
+        if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING, caInfoDto.getCryptoTokenAlternativeCertSignKey());
+        }
         if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenCertSignKey())) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
         }
@@ -531,7 +534,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         
         caAdminSession.createCA(getAdmin(), caInfo);
         authorizationSystemSession.initializeAuthorizationModuleWithSuperAdmin(getAdmin(), getCaDn().hashCode(),
-                CertTools.getCommonNameFromSubjectDn(getAdminDn()));
+                DnComponents.getCommonNameFromSubjectDn(getAdminDn()));
         
     }
     
@@ -652,7 +655,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     private String getFileName() {
-        final String commonName = CertTools.getPartFromDN(getAdminDn(), "CN");
+        final String commonName = DnComponents.getPartFromDN(getAdminDn(), "CN");
         if (StringUtils.isEmpty(commonName)) {
             return "certificatetoken";
         }

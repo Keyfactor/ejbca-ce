@@ -580,7 +580,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                         cert = ((HybridCa) ca).generateCertificate(cryptoToken, alternativeCryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
                                 extensions, sequence, certGenParams, cceConfig);
                     } else {
-
                         cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
                                 extensions, sequence, certGenParams, cceConfig);
                     }
