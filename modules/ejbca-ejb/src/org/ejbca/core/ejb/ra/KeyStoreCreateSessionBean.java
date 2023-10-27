@@ -131,7 +131,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             throw new AuthorizationDeniedException(msg);
         }
         // Check token type.
-        if (endEntity.getTokenType() != EndEntityConstants.TOKEN_SOFT_P12 || endEntity.getTokenType() != EndEntityConstants.TOKEN_USERGEN) { // logger
+        if (endEntity.getTokenType() != EndEntityConstants.TOKEN_SOFT_P12 && endEntity.getTokenType() != EndEntityConstants.TOKEN_USERGEN) { // logger
             throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE,
                     "Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests and 'USER_GENERATED' for MSAE key archival request.");
         }
@@ -440,6 +440,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 }
                 ks = KeyTools.createBcfks(alias, rsaKeys.getPrivate(), cert, cachain);
             } else {
+                // for USERGENERATED tokens too - MS key archival
                 if (log.isDebugEnabled()) {
                     log.debug("Generating PKCS12 for user: " + username);
                 }
