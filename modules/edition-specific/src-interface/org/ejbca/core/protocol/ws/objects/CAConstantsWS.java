@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws.objects;
 
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 
 /**
@@ -48,4 +49,88 @@ public class CAConstantsWS {
     public static final String CAKEYPURPOSE_TESTKEY_STRING = CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING;
     /** Default key. If any of the other aliases are not specified, this will be used in their place. Must be an RSA key if decryption key aliases are not specified.*/
     public static final String CAKEYPURPOSE_DEFAULT_STRING = CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING;
+    
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String INCLUDE_IN_HEALTH_CHECK = CAConstants.INCLUDE_IN_HEALTH_CHECK;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String REQUEST_PRE_PROCESSOR = CAConstants.REQUEST_PRE_PROCESSOR;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_USER_STORAGE = CAConstants.USE_USER_STORAGE;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String FINISH_USER = CAConstants.FINISH_USER;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String ALLOW_CHANGING_REVOCATION_REASON = CAConstants.ALLOW_CHANGING_REVOCATION_REASON;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_PARTITIONED_CRL = CAConstants.USE_PARTITIONED_CRL;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_LDAP_DN_ORDER = CAConstants.USE_LDAP_DN_ORDER;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_UTF8_POLICY_TEXT = CAConstants.USE_UTF8_POLICY_TEXT;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String ACCEPT_REVOCATION_NON_EXISTING_ENTRY = CAConstants.ACCEPT_REVOCATION_NON_EXISTING_ENTRY;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_CERTIFICATE_STORAGE = CAConstants.USE_CERTIFICATE_STORAGE;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_ENFORCE_KEY_RENEWAL = CAConstants.DO_ENFORCE_KEY_RENEWAL;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_STORE_OCSP_RESPONSES_ON_DEMAND = CAConstants.DO_STORE_OCSP_RESPONSES_ON_DEMAND;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String MS_CA_COMPATIBLE = CAConstants.MS_CA_COMPATIBLE;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_PRE_PRODUCE_OCSP_RESPONSES = CAConstants.DO_PRE_PRODUCE_OCSP_RESPONSES;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CA_SERIAL_NUMBER_OCTET_SIZE = CAConstants.CA_SERIAL_NUMBER_OCTET_SIZE;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_APPEND_ONLY_TABLE = CAConstants.USE_APPEND_ONLY_TABLE;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CRL_OVERLAP_MILLISECONDS = CAConstants.CRL_OVERLAP_MILLISECONDS;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CRL_NUMBER_USED = CAConstants.CRL_NUMBER_USED;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CRL_ISSUANCE_INTERVAL_MILLISECONDS = CAConstants.CRL_ISSUANCE_INTERVAL_MILLISECONDS;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CRL_EXPIRATION_PERIOD_MILLISECONDS = CAConstants.CRL_EXPIRATION_PERIOD_MILLISECONDS;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String POLICY_OIDS = CAConstants.POLICY_OIDS;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DEFAULT_OCSP_SERVICE_LOCATOR = CAConstants.DEFAULT_OCSP_SERVICE_LOCATOR;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String GENERATE_CRL_UPON_REVOCATION = CAConstants.GENERATE_CRL_UPON_REVOCATION;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS = CAConstants.DO_ENFORCE_UNIQUE_PUBLIC_KEYS;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = CAConstants.DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DELTA_CRL_MILLISECONDS = CAConstants.DELTA_CRL_MILLISECONDS;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DEFAULT_CRL_DIST_POINT = CAConstants.DEFAULT_CRL_DIST_POINT;
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_AUTHORITY_KEY_IDENTIFIER = CAConstants.USE_AUTHORITY_KEY_IDENTIFIER;
 }

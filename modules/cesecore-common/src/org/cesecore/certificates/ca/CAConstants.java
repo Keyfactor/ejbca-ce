@@ -749,4 +749,129 @@ public final class CAConstants {
                 return null;
         }
     }
+    
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String INCLUDE_IN_HEALTH_CHECK = "includeInHealthCheck";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String REQUEST_PRE_PROCESSOR = "requestPreProcessor";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_USER_STORAGE = "useUserStorage";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String FINISH_USER = "finishUser";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String ALLOW_CHANGING_REVOCATION_REASON = "allowChangingRevocationReason";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_PARTITIONED_CRL = "usePartitionedCrl";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_LDAP_DN_ORDER = "useLdapDnOrder";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_UTF8_POLICY_TEXT = "useUTF8PolicyText";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String ACCEPT_REVOCATION_NON_EXISTING_ENTRY = "acceptRevocationNonExistingEntry";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_ENFORCE_KEY_RENEWAL = "doEnforceKeyRenewal";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_STORE_OCSP_RESPONSES_ON_DEMAND = "doStoreOcspResponsesOnDemand";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String MS_CA_COMPATIBLE = "msCaCompatible";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_PRE_PRODUCE_OCSP_RESPONSES = "doPreProduceOcspResponses";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CA_SERIAL_NUMBER_OCTET_SIZE = "caSerialNumberOctetSize";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_APPEND_ONLY_TABLE = "useAppendOnlyTable";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CRL_OVERLAP_MILLISECONDS = "crlOverlapMilliseconds";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CRL_NUMBER_USED = "crlNumberUsed";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CRL_ISSUANCE_INTERVAL_MILLISECONDS = "crlIssuanceIntervalMilliseconds";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String CRL_EXPIRATION_PERIOD_MILLISECONDS = "crlExpirationPeriodMilliseconds";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String POLICY_OIDS = "policyOids";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DEFAULT_OCSP_SERVICE_LOCATOR = "defaultOCSPServiceLocator";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String GENERATE_CRL_UPON_REVOCATION = "generateCrlUponRevocation";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_ENFORCE_UNIQUE_PUBLIC_KEYS = "doEnforceUniquePublicKeys";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME = "doEnforceUniqueDistinguishedName";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DELTA_CRL_MILLISECONDS = "deltaCRLMilliseconds";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String DEFAULT_CRL_DIST_POINT = "defaultCRLDistPoint";
+
+    /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
+    public static final String USE_AUTHORITY_KEY_IDENTIFIER = "useAuthorityKeyIdentifier";
+    
+    /**
+     * List of supported fields when calling the WS createCa method.  This list allows the caller to set fields 
+     * on {@link org.cesecore.certificates.ca.X509CAInfo} during CA creation and may be changed when new fields
+     * are added that should be exposed to WS clients.
+     * 
+     * @see org.cesecore.certificates.ca.X509CAInfo
+     */
+    public static final String[] CA_PROPERTY_FIELD_NAMES = {
+            //@formatter:off
+            INCLUDE_IN_HEALTH_CHECK,
+            REQUEST_PRE_PROCESSOR,
+            USE_USER_STORAGE,
+            FINISH_USER,
+            ALLOW_CHANGING_REVOCATION_REASON,
+            USE_PARTITIONED_CRL,
+            USE_LDAP_DN_ORDER,
+            USE_UTF8_POLICY_TEXT,
+            ACCEPT_REVOCATION_NON_EXISTING_ENTRY,
+            USE_CERTIFICATE_STORAGE,
+            DO_ENFORCE_KEY_RENEWAL,
+            DO_STORE_OCSP_RESPONSES_ON_DEMAND,
+            MS_CA_COMPATIBLE,
+            DO_PRE_PRODUCE_OCSP_RESPONSES,
+            CA_SERIAL_NUMBER_OCTET_SIZE,
+            USE_APPEND_ONLY_TABLE,
+            CRL_OVERLAP_MILLISECONDS,
+            CRL_NUMBER_USED,
+            CRL_ISSUANCE_INTERVAL_MILLISECONDS,
+            CRL_EXPIRATION_PERIOD_MILLISECONDS,
+            POLICY_OIDS,
+            DEFAULT_OCSP_SERVICE_LOCATOR,
+            GENERATE_CRL_UPON_REVOCATION,
+            DO_ENFORCE_UNIQUE_PUBLIC_KEYS,
+            DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME,
+            DELTA_CRL_MILLISECONDS,
+            DEFAULT_CRL_DIST_POINT,
+            USE_AUTHORITY_KEY_IDENTIFIER
+            //@formatter:on
+    };
+
 }
