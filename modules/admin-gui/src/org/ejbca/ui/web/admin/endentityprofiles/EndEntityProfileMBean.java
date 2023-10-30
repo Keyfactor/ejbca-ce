@@ -1186,7 +1186,7 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
     }
 
     public boolean isNotificationAdded() {
-        return getUserNotifications().size() > 0;
+        return !getUserNotifications().isEmpty();
     }
 
     public void addNotification() {
