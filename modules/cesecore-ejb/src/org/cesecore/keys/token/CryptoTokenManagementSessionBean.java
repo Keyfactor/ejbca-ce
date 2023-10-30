@@ -256,7 +256,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     @Override
     public void keyAuthorizeInit(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias,
-            String selectedPaddingScheme) throws CryptoTokenOfflineException {
+            String selectedPaddingScheme) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         final CryptoToken kakCryptoToken = cryptoTokenSession.getCryptoToken(kakTokenid);
         if (cryptoToken == null || kakCryptoToken == null) {
@@ -289,7 +289,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     
     @Override
     public void keyAuthorize(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, final int kakTokenid, final String kakTokenKeyAlias, 
-            final long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException {
+            final long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         final CryptoToken kakCryptoToken = cryptoTokenSession.getCryptoToken(kakTokenid);
         if (cryptoToken == null || kakCryptoToken == null) {
@@ -324,7 +324,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public void changeAuthData(final AuthenticationToken authenticationToken, final int cryptoTokenId, final String alias, 
             final int currentKakTokenId, int newKakTokenId, final String currentKakTokenKeyAlias, 
-            final String newKakTokenKeyAlias, final String selectedPaddingScheme) throws CryptoTokenOfflineException {
+            final String newKakTokenKeyAlias, final String selectedPaddingScheme) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
         final CryptoToken currentKakCryptoToken = cryptoTokenSession.getCryptoToken(currentKakTokenId);
         final CryptoToken newKakCryptoToken = cryptoTokenSession.getCryptoToken(newKakTokenId);
