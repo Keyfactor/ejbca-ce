@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import com.keyfactor.util.CertTools;
 import io.swagger.annotations.ApiModelProperty;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
@@ -20,7 +21,7 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
  *
  */
 public class EnrollCertificateRestRequest {
-    @ApiModelProperty(value = "Certificate request", example = "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
+    @ApiModelProperty(value = "Certificate request", example = "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     private String certificateRequest;
     @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
     private String certificateProfileName;
@@ -134,7 +135,7 @@ public class EnrollCertificateRestRequest {
          */
         public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final EnrollCertificateRestRequest enrollCertificateRestRequest) {
             return new EnrollPkcs10CertificateRequest.Builder()
-                    .certificateRequest(enrollCertificateRestRequest.getCertificateRequest())
+                    .certificateRequest(CertTools.encapsulateCsr(enrollCertificateRestRequest.getCertificateRequest()))
                     .certificateProfileName(enrollCertificateRestRequest.getCertificateProfileName())
                     .endEntityProfileName(enrollCertificateRestRequest.getEndEntityProfileName())
                     .certificateAuthorityName(enrollCertificateRestRequest.getCertificateAuthorityName())
