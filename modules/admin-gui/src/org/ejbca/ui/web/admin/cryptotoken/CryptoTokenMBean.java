@@ -88,12 +88,11 @@ import java.util.stream.Collectors;
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
  * Session scoped and will cache the list of tokens and keys.
- *
  */
 @Named
 @ViewScoped
 public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
-    
+
     public String localize(String stringId) {
         return getEjbcaWebBean().getText(stringId);
     }
@@ -107,7 +106,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public CryptoTokenMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, CryptoTokenRules.VIEW.resource());
     }
-    
+
     public void onload() {
         FacesContext fc = FacesContext.getCurrentInstance();
         Map<String, String> params = fc.getExternalContext().getRequestParameterMap();
@@ -116,7 +115,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             initNewPki = true;
         }
     }
-    
+
     /**
      * GUI table representation of a CryptoToken that can be interacted with.
      */
@@ -256,11 +255,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             // if its not an auto-activate token, we show the activate/deactivate buttons, no the reactivate button
             if (!isAutoActivation())
                 return false;
-            
+
             // for AWSKMS auto-activate tokens that don't take a secret, it makes no sense to show a reactivate button
             if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(cryptoTokenInfo.getType()) && !requiresSecretToActivate)
                 return false;
-            
+
             // for now, show reactivate for all other token types
             return true;
         }
@@ -290,7 +289,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private String keyVaultName = "ejbca-keyvault";
         private String keyVaultClientID = "";
         private String keyVaultKeyBinding = "";
-        private String fortanixBaseAddress =  "https://apps.smartkey.io"; // default value
+        private String fortanixBaseAddress = "https://apps.smartkey.io"; // default value
         private String awsKMSRegion = "us-east-1"; // default value
         private String awsKMSAccessKeyID = ""; // default value
         private AzureAuthenticationType azureAuthenticationType = AzureAuthenticationType.APP_ID_AND_SECRET;
@@ -302,11 +301,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public AzureAuthenticationType[] getAzureAuthenticationTypes() {
             return AzureAuthenticationType.values();
         }
-        
+
         public AwsKmsAuthenticationType[] getAwsKmsAuthenticationTypes() {
             return AwsKmsAuthenticationType.values();
         }
-        
+
         public String getName() {
             return name;
         }
@@ -491,6 +490,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public String getFortanixBaseAddress() {
             return fortanixBaseAddress;
         }
+
         public boolean isShowSoftCryptoToken() {
             return SoftCryptoToken.class.getSimpleName().equals(getType());
         }
@@ -511,7 +511,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean isShowAWSKMSCryptoToken() {
             return CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(getType());
         }
-        
+
         public boolean isShowFortanixCryptoToken() {
             return CryptoTokenFactory.FORTANIX_SIMPLE_NAME.equals(getType());
         }
@@ -578,7 +578,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public boolean getShowKeyBinding() {
             return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType == AzureAuthenticationType.KEY_BINDING;
         }
-        
+
         public boolean getShowClientId() {
             return !type.equals(AzureCryptoToken.class.getSimpleName()) || azureAuthenticationType != AzureAuthenticationType.MANAGED_IDENTITY;
         }
@@ -654,7 +654,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             availableKeyAliases.add(0, new SelectItem(null, "-Select Key Alias-"));
             return availableKeyAliases;
         }
-        
+
         public List<SelectItem> getAvailablePaddingSchemes() {
             availablePaddingSchemes = new ArrayList<>();
             availablePaddingSchemes.add(0, new SelectItem("PKCS#1"));
@@ -680,14 +680,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public String getSubjectKeyID() {
             return subjectKeyID;
-        }        
+        }
 
         public String getSelectedKakKeyAlias() {
             return selectedKakKeyAlias;
         }
-        
-        public String getSelectedPaddingScheme() { 
-            return selectedPaddingScheme; 
+
+        public String getSelectedPaddingScheme() {
+            return selectedPaddingScheme;
         }
 
         public boolean isPlaceholder() {
@@ -713,9 +713,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         public void setSelectedKakKeyAlias(String selectedKakKeyAlias) {
             this.selectedKakKeyAlias = selectedKakKeyAlias;
         }
-        
-        public void setSelectedPaddingScheme(String selectedPaddingScheme) { 
-            this.selectedPaddingScheme = selectedPaddingScheme; 
+
+        public void setSelectedPaddingScheme(String selectedPaddingScheme) {
+            this.selectedPaddingScheme = selectedPaddingScheme;
         }
 
         public boolean isInitialized() {
@@ -797,7 +797,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         initNewPki = false;
         return "back";
     }
-    
+
     public boolean isInitNewPki() {
         return initNewPki;
     }
@@ -913,18 +913,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         setCurrentCryptoTokenEditMode(false);
         return cryptoTokenGuiList;
     }
-    
+
     /**
      * Build a list sorted by name of the internal key bindings that can be used for public key authentication to Azure crypto tokens.
      */
     public List<SelectItem> getInternalKeyBindings() {
         if (internalKeyBindings == null) {
             internalKeyBindings = internalKeyBindingMgmtSession
-                .getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS)
-                .stream()
-                .sorted((b1, b2) -> b1.getName().compareTo(b2.getName()))
-                .map(b -> new SelectItem(b.getId(), b.getName()))
-                .collect(Collectors.toList());
+                    .getAllInternalKeyBindingInfos(AuthenticationKeyBinding.IMPLEMENTATION_ALIAS)
+                    .stream()
+                    .sorted((b1, b2) -> b1.getName().compareTo(b2.getName()))
+                    .map(b -> new SelectItem(b.getId(), b.getName()))
+                    .collect(Collectors.toList());
         }
         return internalKeyBindings;
     }
@@ -973,7 +973,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (cryptoTokenGuiList != null) {
             final CryptoTokenGuiInfo rowData = cryptoTokenGuiList.getRowData();
             // Check references in ACME EAB with symmetric key.
-            final List<String> references = referencedAcmeConfigurationIDs(rowData.getCryptoTokenId()); 
+            final List<String> references = referencedAcmeConfigurationIDs(rowData.getCryptoTokenId());
             if (references.size() == 0) {
                 cryptoTokenManagementSession.deleteCryptoToken(authenticationToken, rowData.getCryptoTokenId());
             } else {
@@ -982,17 +982,17 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             flushCaches();
         }
     }
-    
+
     /**
-     * Returns a list of all crypto token references in ACME configurations external account bindings 
-     * of type AcmeEabWithHMac, if key encryption is enabled. 
-     * 
+     * Returns a list of all crypto token references in ACME configurations external account bindings
+     * of type AcmeEabWithHMac, if key encryption is enabled.
+     *
      * @param cryptoTokenId the ID of the crypto tokens entity.
      * @return a list containing all ACME configuration IDs or an empty list.
      */
     private List<String> referencedAcmeConfigurationIDs(final int cryptoTokenId) {
         final List<String> result = new ArrayList<>();
-        final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration) 
+        final GlobalAcmeConfiguration globalConfig = (GlobalAcmeConfiguration)
                 globalConfigSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
         AcmeConfiguration acmeAlias;
         if (globalConfig == null) {
@@ -1004,17 +1004,17 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 try {
                     final List<AcmeExternalAccountBinding> eabs = acmeAlias.getExternalAccountBinding();
                     if (eabs != null) {
-                        for (AcmeExternalAccountBinding eab :eabs) {
+                        for (AcmeExternalAccountBinding eab : eabs) {
                             final Object encryptKey = eab.getDataMap().get("encryptKey");
                             if ("ACME_EAB_RFC_COMPLIANT".equals(eab.getAccountBindingTypeIdentifier())
-                                    && encryptKey != null && (Boolean)encryptKey
+                                    && encryptKey != null && (Boolean) encryptKey
                                     && Integer.toString(cryptoTokenId).equals(eab.getDataMap().get("encryptionKeyId"))) {
                                 result.add(acmeAlias.getConfigurationId());
                             }
                         }
                     }
                 } catch (AccountBindingException e) {
-                    log.warn("Could not load ACME EAB '" + acmeAliasId 
+                    log.warn("Could not load ACME EAB '" + acmeAliasId
                             + "' to verify if it contains a reference to the crypto token to be deleted.");
                 }
             }
@@ -1058,7 +1058,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             String className = null;
             if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) ||
                     CryptoTokenFactory.JACKNJI_SIMPLE_NAME.equals(getCurrentCryptoToken().getType())) {
-                className = getCurrentCryptoToken().getType().equals("PKCS11CryptoToken") ? PKCS11CryptoToken.class.getName() : CryptoTokenFactory.JACKNJI_NAME;
+                className = getCurrentCryptoToken().getType().equals("PKCS11CryptoToken")
+                        ? PKCS11CryptoToken.class.getName()
+                        : CryptoTokenFactory.JACKNJI_NAME;
                 String library = getCurrentCryptoToken().getP11Library();
                 properties.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, library);
                 String slotTextValue = getCurrentCryptoToken().getP11Slot().trim();
@@ -1352,13 +1354,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 continue;
             }
             if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName()) ||
-                availableCryptoToken.getClassPath().equals(CryptoTokenFactory.JACKNJI_NAME)) {
+                    availableCryptoToken.getClassPath().equals(CryptoTokenFactory.JACKNJI_NAME)) {
                 // Never expose the PKCS11 or "PKCS11 NG" crypto tokens when creating new tokens if not enabled in web.properties
                 if (availableCryptoToken.getClassPath().equals(PKCS11CryptoToken.class.getName()) && !WebConfiguration.isSunP11Enabled()) {
                     if (log.isDebugEnabled()) {
                         log.debug("SunP11 Crypto Token support is not enabled in GUI. See web.properties for enabling Sun PKCS#11.");
                     }
-                    continue;                    
+                    continue;
                 }
                 // Special case: Never expose the PKCS11CryptoToken when creating new tokens if no libraries are detected
                 if (!isAnyP11LibraryAvailable()) {
@@ -1497,7 +1499,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void selectCryptoTokenType() {
         // NOOP: Only for page reload
     }
-    
+
     public void selectKeyVaultUseBinding() {
         // NOOP: Only for page reload
     }
@@ -1532,8 +1534,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
      */
     public List<SelectItem> getAvailableKeySpecs() {
         final List<SelectItem> availableKeySpecs = new ArrayList<>();
-        final int[] SIZES_RSA = {1024, 1536, 2048, 3072, 4096, 6144, 8192};
-        final int[] SIZES_DSA = {1024};
+        final int[] SIZES_RSA = { 1024, 1536, 2048, 3072, 4096, 6144, 8192 };
+        final int[] SIZES_DSA = { 1024 };
         for (int size : SIZES_RSA) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + size, AlgorithmConstants.KEYALGORITHM_RSA + " " + size));
         }
@@ -1755,7 +1757,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 cryptoTokenManagementSession.keyAuthorizeInit(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, kakAlias, selectedPaddingScheme);
                 keyPairGuiInfo.initialized = true;
                 addNonTranslatedInfoMessage("Key '" + alias + "' initialized successfully.");
-            } catch (CryptoTokenOfflineException | EJBException e) {
+            } catch (CryptoTokenOfflineException | EJBException | CryptoTokenAuthenticationFailedException e) {
                 addNonTranslatedErrorMessage(e);
                 keyPairGuiInfo.initialized = false;
             }
@@ -1781,14 +1783,14 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             return;
         }
         try {
-            cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId, 
+            cryptoTokenManagementSession.keyAuthorize(authenticationToken, getCurrentCryptoTokenId(), alias, kakTokenId,
                     kakAlias, Long.parseLong(getMaxOperationCount()), selectedPaddingScheme);
             addNonTranslatedInfoMessage("Key '" + alias + "' authorized successfully.");
-        } catch (CryptoTokenOfflineException | EJBException e) {
+        } catch (CryptoTokenOfflineException | EJBException | CryptoTokenAuthenticationFailedException e) {
             addNonTranslatedErrorMessage(e);
         }
     }
-    
+
 
     /**
      * Invoked when admin requests a test of a key pair.
