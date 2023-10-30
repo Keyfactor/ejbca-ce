@@ -2192,7 +2192,7 @@
       "properties": {
         "certificate_request": {
           "type": "string",
-          "example": "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+          "example": "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
           "description": "Certificate request"
         },
         "certificate_profile_name": {
@@ -2240,7 +2240,7 @@
       "properties": {
         "certificate_request": {
           "type": "string",
-          "example": "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+          "example": "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
           "description": "Certificate request"
         },
         "username": {
