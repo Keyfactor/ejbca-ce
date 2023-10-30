@@ -91,9 +91,11 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      * Identifier for Custom data holding a end time when the users certificate should be valid extInfo.setCustomData(EndEntityProfile.ENDTIME, "");
      */
     public  static final String CUSTOM_ENDTIME = "ENDTIME"; // EndEntityProfile.ENDTIME;
+    public static final String CUSTOM_REQUESTCOUNTER = "REQUESTCOUNTER"; //ExtendedInformationFields.CUSTOM_REQUESTCOUNTER;
 
     /** The (optional) revocation status a certificate issued to this user will have, immediately upon issuance. */
     public  static final String CUSTOM_REVOCATIONREASON = "REVOCATIONREASON";
+    public static final String CERTSERIALNR       = "CERTSERIALNR";// EndEntityProfile.CERTSERIALNR;
 
     /** The subject DN exactly as requested in the UserDataVOWS object.
      * Should be stored B64 encoded to avoid possible XML/database encoding issues, getRawSubjectDn does decoding if it is encoded */
@@ -300,6 +302,30 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return getCustomData(CUSTOM_STARTTIME);
     }
 
+    public String getCustomSerialNumber() {
+        return getCustomData(CERTSERIALNR);
+    }
+
+    public void setCustomSerialNumber(final String value) {
+        setCustomData(CERTSERIALNR, value);
+    }
+
+    public void removeCustomSerialNumber() {
+        removeCustomData(CERTSERIALNR);
+    }
+
+    public String getAllowedRequests() {
+        return getCustomData(CUSTOM_REQUESTCOUNTER);
+    }
+
+    public void setAllowedRequests(final String value) {
+        setCustomData(CUSTOM_REQUESTCOUNTER, value);
+    }
+
+    public void removeAllowedRequests() {
+        removeCustomData(CUSTOM_REQUESTCOUNTER);
+    }
+
     /**
      * Set the certificate validity end time to a user-defined value.
      * @param value The certificate validity
@@ -380,6 +406,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      */
     public void setIssuanceRevocationReason(int reason) {
     	setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, "" + reason);
+    }
+
+    public void removeIssuanceRevocationReason() {
+        removeCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON);
     }
 
     /** @return Encoded name constraints to permit */
@@ -645,6 +675,10 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
      */
     public void setCustomData(String key, String value) {
         data.put(CUSTOMDATA + key, value);
+    }
+
+    public void removeCustomData(String key) {
+        data.remove(CUSTOMDATA + key);
     }
 
     /**
