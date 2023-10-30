@@ -139,12 +139,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     public static final String DEFAULTTOKENISSUER = "DEFAULTTOKENISSUER";
     public static final String AVAILTOKENISSUER   = "AVAILTOKENISSUER";
     public static final String SENDNOTIFICATION   = "SENDNOTIFICATION";
+    //Stored in separate column, NOT IN HashMap !!!
     public static final String CARDNUMBER         = "CARDNUMBER";
     public static final String DEFAULTCA          = "DEFAULTCA";
     public static final String AVAILCAS           = "AVAILCAS";
-    public static final String STARTTIME          = ExtendedInformation.CUSTOM_STARTTIME;	//"STARTTIME"
+    public static final String STARTTIME          = ExtendedInformation.CUSTOM_STARTTIME;//"STARTTIME"
     public static final String ENDTIME            = ExtendedInformation.CUSTOM_ENDTIME;	//"ENDTIME"
-    private static final String CERTSERIALNR       = "CERTSERIALNR";
+    private static final String CERTSERIALNR       = ExtendedInformation.CERTSERIALNR; //CERTSERIALNR
     private static final String NAMECONSTRAINTS_PERMITTED = "NAMECONSTRAINTS_PERMITTED";
     private static final String NAMECONSTRAINTS_EXCLUDED  = "NAMECONSTRAINTS_EXCLUDED";
     /** A maximum value of the (optional) counter specifying how many certificate requests can be processed
@@ -1280,6 +1281,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         return Integer.parseInt(value);
     }
 
+    public boolean isAllowedRequestsModifiable() {
+        return isModifyable(ALLOWEDREQUESTS, 0);
+    }
+
     public void setAllowedRequests(final int allowedRequests) {
         setValue(ALLOWEDREQUESTS, 0, String.valueOf(allowedRequests));
     }
@@ -1386,6 +1391,18 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setUse(CERTSERIALNR, 0, use);
     }
 
+    public boolean isCustomSerialNumberRequired() {
+        return isRequired(CERTSERIALNR, 0);
+    }
+
+    public void setCustomSerialNumberRequired(final boolean required) {
+        setRequired(CERTSERIALNR, 0, required);
+    }
+
+    public boolean isCustomSerialNumberModifiable() {
+        return isModifyable(CERTSERIALNR, 0);
+    }
+
     public boolean isPsd2QcStatementUsed() {
         return getValueDefaultFalse(PSD2QCSTATEMENT);
     }
@@ -1464,6 +1481,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public void setCardNumberRequired(final boolean required) {
         setRequired(CARDNUMBER, 0, required);
+    }
+
+    public boolean isCardNumberModifiable() {
+        return isModifyable(CARDNUMBER, 0);
+    }
+
+    public void setCardNumberModifiable(final boolean modifiable) {
+        setModifyable(CARDNUMBER, 0, modifiable);
     }
 
     /** @see #getReUseKeyRecoveredCertificate */
@@ -2617,9 +2642,6 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             if (getVersion() < 10) {
                 setAllowMergeDn(false);
             }
-            if (getVersion() < 16) {
-                setAllowMergeDn(getBoolean(ALLOW_MERGEDN_WEBSERVICES, false));
-            }
             // Support for issuance revocation status in profile version 11
             if (getVersion() < 11) {
                 setRequired(ISSUANCEREVOCATIONREASON, 0, false);
@@ -2710,6 +2732,9 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             if (getVersion() < 15) {
                 setAllowMultiValueRDNs(false);
             }
+            if (getVersion() < 16) {
+                setAllowMergeDn(getBoolean(ALLOW_MERGEDN_WEBSERVICES, false));
+            }
             if (getVersion() < 17) {
                 setProfileType(PROFILE_TYPE_DEFAULT);
             }
@@ -2722,7 +2747,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     /** @return true if argument is null, empty or in the relative time format. */
     private boolean isEmptyOrRelative(final String time) {
-    	return (time == null || time.length() == 0 || time.matches(RELATIVE_TIME_FORMAT));
+    	return (time == null || time.isEmpty() || time.matches(RELATIVE_TIME_FORMAT));
     }
 
     public static boolean isFieldImplemented(final int field) {
