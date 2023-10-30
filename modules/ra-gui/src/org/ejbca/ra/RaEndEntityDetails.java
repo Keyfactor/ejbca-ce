@@ -81,7 +81,7 @@ public class RaEndEntityDetails implements Serializable {
     private final String subjectDn;
     private final String subjectAn;
     private final String subjectDa;
-    private final int eepId;
+    private int eepId;
     private final String eepName;
     private final int cpId;
     private final String cpName;
@@ -114,9 +114,9 @@ public class RaEndEntityDetails implements Serializable {
     
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
             final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<Integer,String> caIdToNameMap) {
-        this(endEntity, callbacks, cpIdToNameMap.get(Integer.valueOf(endEntity.getCertificateProfileId())),
-                String.valueOf(eepIdToNameMap.get(Integer.valueOf(endEntity.getEndEntityProfileId()))),
-                String.valueOf(caIdToNameMap.get(Integer.valueOf(endEntity.getCAId()))));
+        this(endEntity, callbacks, cpIdToNameMap.get(endEntity.getCertificateProfileId()),
+                String.valueOf(eepIdToNameMap.get(endEntity.getEndEntityProfileId())),
+                String.valueOf(caIdToNameMap.get(endEntity.getCAId())));
     }
 
     public RaEndEntityDetails(final EndEntityInformation endEntity, final Callbacks callbacks,
@@ -489,17 +489,26 @@ public class RaEndEntityDetails implements Serializable {
         return "";
     }
 
-    public boolean isOverrideNotBeforeEnabled() {
+    public boolean isValidityStartTimeUsed() {
         return getEndEntityProfile() != null && getEndEntityProfile().isValidityStartTimeUsed();
     }
-    public String getOverrideNotBefore() {
-        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+
+    public boolean isValidityStartTimeModifiable() {
+        return getEndEntityProfile() != null && getEndEntityProfile().isValidityStartTimeModifiable();
     }
-    public boolean isOverrideNotAfterEnabled() {
+    public String getValidityStartTime() {
+        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);//From EE
+    }
+    public boolean isValidityEndTimeUsed() {
         return getEndEntityProfile() != null && getEndEntityProfile().isValidityEndTimeUsed();
     }
-    public String getOverrideNotAfter() {
-        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+
+    public boolean isValidityEndTimeModifiable() {
+        return getEndEntityProfile() != null && getEndEntityProfile().isValidityEndTimeModifiable();
+    }
+
+    public String getValidityEndTime() {
+        return extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);//From EE;
     }
 
     public boolean isCardNumberEnabled() {
@@ -686,7 +695,14 @@ public class RaEndEntityDetails implements Serializable {
         }
         return false;
     }
-    
+
+    public void setEepId(int eepId){
+        if (this.eepId == eepId)
+            return;
+        this.eepId = eepId;
+        this.endEntityProfile = null;
+    }
+
     /**
      * @return Certificate extension data read from extended information
      */

@@ -358,10 +358,10 @@ public class RaRenewBean implements Serializable {
                     }
                 }
             }
-            if (availableAlgorithmSelectItems.size() < 1) {
+            if (availableAlgorithmSelectItems.isEmpty()) {
                 availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
             }
-        EnrollMakeNewRequestBean.sortSelectItemsByLabel(availableAlgorithmSelectItems);
+        availableAlgorithmSelectItems.sort(EnrollMakeNewRequestBean.selectItemComparator);
         return availableAlgorithmSelectItems;
     }
 

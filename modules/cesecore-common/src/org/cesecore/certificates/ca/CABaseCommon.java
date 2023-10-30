@@ -843,8 +843,8 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
                         }
                     }
                     if (implClassname != null && !deprecatedServiceImplementations.contains(implClassname)) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("implementation classname for extended service type: "+type+" is "+implClassname);
+                        if (log.isTraceEnabled()) {
+                            log.trace("implementation classname for extended service type: "+type+" is "+implClassname);
                         }
                         Class<?> implClass = Class.forName(implClassname);
                         returnval = (ExtendedCAService) implClass.getConstructor(HashMap.class).newInstance(serviceData);
