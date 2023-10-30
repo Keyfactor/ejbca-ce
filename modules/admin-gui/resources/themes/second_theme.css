@@ -355,7 +355,7 @@ input.selectButton.enabled:hover {
 	color: HighlightText;
 }
 input[type=number] {
-	height: 1em;
+	height: 1.6em;
 }
 div.message {
 	margin-top: 1.0em;
