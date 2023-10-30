@@ -28,6 +28,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -44,6 +45,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 
 import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -55,7 +57,7 @@ import static org.junit.Assert.assertTrue;
  */
 
 public class HealthCheckSystemTest {
-
+    
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HealthCheckTest"));
 
 
@@ -91,6 +93,26 @@ public class HealthCheckSystemTest {
         return connection;
     }
 
+    private HttpURLConnection performHealthCheckGetRequestWithFalseFlag(String flagName) throws IOException {
+        final URL url = new URL(HTTP_REQ_PATH + "?" + flagName + "=false");
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.getDoOutput();
+        connection.connect();
+        connection.disconnect();
+        return connection;
+    }
+    
+    private HttpURLConnection performHealthCheckGetRequestWithParams(String paramString) throws IOException {
+        final URL url = new URL(HTTP_REQ_PATH + "?" + paramString);
+        final HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.getDoOutput();
+        connection.connect();
+        connection.disconnect();
+        return connection;
+    }
+    
     /**
      * This is a basic happy-path test of the health check servlet.
      */
@@ -102,6 +124,121 @@ public class HealthCheckSystemTest {
         assertTrue("Response did not contain OK, was: " + responseStr, responseStr.contains("ALLOK"));
     }
 
+    /**
+     * This test creates a CA with a non-auto activated crypto token, sets it offline then verifies that healthcheck doesn't care when "ca=false"
+     */
+    @Test
+    public void testHealthCheckWithCaCheckDisabled() throws Exception {
+        final String caName = "testCaHealthCheck";
+        CaTestCase.createTestCA(caName);
+        CAInfo caInfo = CA_SESSION.getCAInfo(admin, caName);
+        try {
+            // Remove auto activate
+            final CryptoToken cryptoToken = CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.getCryptoToken(caInfo.getCAToken().getCryptoTokenId());
+            final Properties props = cryptoToken.getProperties();
+            props.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+            cryptoToken.setProperties(props);
+            CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.mergeCryptoToken(cryptoToken);
+            // Set CA's crypto token offline
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.deactivate(admin, caInfo.getCAToken().getCryptoTokenId());
+            final HttpURLConnection response = performHealthCheckGetRequestWithFalseFlag("ca");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+        } finally {
+            CaTestCase.removeTestCA(caName);
+        }
+    }
+    
+    /**
+     * This test creates a non-auto activated crypto token, sets it offline then verifies that healthcheck fails
+     */
+    @Test
+    public void testHealthCheckCryptoToken() throws Exception {
+        String tokenName = "healthCheckTest";
+        int tokenId = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName);
+        try {
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId, "testKey", KeyGenParams.builder("RSA2048").build());
+            final HttpURLConnection response = performHealthCheckGetRequestWithParams("token=" + tokenName + "&key=testKey");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId);
+        }
+    }
+    
+    @Test
+    public void testHealthCheckMultipleCryptoToken() throws Exception {
+        String tokenName1 = "healthCheckTest";
+        int tokenId1 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName1);
+        String tokenName2 = "healthCheckTest2";
+        int tokenId2 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName2);
+        
+        try {
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId1, "testKey", KeyGenParams.builder("RSA2048").build());
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId2, "testKey", KeyGenParams.builder("RSA2048").build());
+            final HttpURLConnection response = performHealthCheckGetRequestWithParams(
+                    "token=" + tokenName1 + "&key=testKey&token2=" + tokenName2 + "&key2=testKey");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId1);
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId2);
+        }
+    }
+    
+    
+    /**
+     * This test creates a non-auto activated crypto token, sets it offline then verifies that healthcheck fails
+     */
+    @Test
+    public void testHealthCheckCryptoTokenOffline() throws Exception {
+        String tokenName = "healthCheckTest";
+        int tokenId = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName);
+        try {
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId, "testKey", KeyGenParams.builder("RSA2048").build());
+            
+            // Set crypto token offline
+            final CryptoToken cryptoToken = CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.getCryptoToken(tokenId);
+            final Properties props = cryptoToken.getProperties();
+            props.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+            cryptoToken.setProperties(props);
+            CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.mergeCryptoToken(cryptoToken);
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.deactivate(admin, tokenId);
+            
+            final HttpURLConnection response = performHealthCheckGetRequestWithParams("token=" + tokenName + "&key=testKey");
+            
+            assertEquals("Response code was not 500", 500, response.getResponseCode());
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId);
+        }
+    }
+    
+    @Test
+    public void testHealthCheckMultipleCryptoTokensOneOffline() throws Exception {
+        String tokenName1 = "healthCheckTest";
+        int tokenId1 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName1);
+        String tokenName2 = "healthCheckTest2";
+        int tokenId2 = CryptoTokenTestUtils.createSoftCryptoToken(admin, tokenName2);
+        
+        try {
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId1, "testKey", KeyGenParams.builder("RSA2048").build());
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.createKeyPair(admin, tokenId2, "testKey", KeyGenParams.builder("RSA2048").build());
+            
+            // Set one crypto token offline
+            final CryptoToken cryptoToken = CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.getCryptoToken(tokenId1);
+            final Properties props = cryptoToken.getProperties();
+            props.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+            cryptoToken.setProperties(props);
+            CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.mergeCryptoToken(cryptoToken);
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.deactivate(admin, tokenId1);
+            
+            final HttpURLConnection response = performHealthCheckGetRequestWithParams(
+                    "token=" + tokenName1 + "&key=testKey&token2=" + tokenName2 + "&key2=testKey");
+            
+            assertEquals("Response code was not 500", 500, response.getResponseCode());
+        } finally {
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId1);
+            CryptoTokenTestUtils.removeCryptoToken(admin, tokenId2);
+        }
+    }
+    
     /**
      * This test creates a CA with a non-auto activated crypto token, sets it offline then verifies that healthcheck tosses its cookies.
      */
@@ -127,7 +264,55 @@ public class HealthCheckSystemTest {
             CaTestCase.removeTestCA(caName);
         }
     }
-
+    
+    /**
+     * This test creates two CAs and checks them both
+     */
+    @Test
+    public void testHealthCheckWithMultipleCasAndOneOffline() throws Exception {
+        CaTestCase.createTestCA("testHealthCheck1");
+        CaTestCase.createTestCA("testHealthCheck2");
+        try {
+            // Set CA's crypto token offline
+            CAInfo caInfo = CA_SESSION.getCAInfo(admin, "testHealthCheck2");
+            final CryptoToken cryptoToken = CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.getCryptoToken(caInfo.getCAToken().getCryptoTokenId());
+            final Properties props = cryptoToken.getProperties();
+            props.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
+            cryptoToken.setProperties(props);
+            CRYPTO_TOKEN_MANAGEMENT_PROXY_SESSION.mergeCryptoToken(cryptoToken);
+            CRYPTO_TOKEN_MANAGEMENT_SESSION.deactivate(admin, caInfo.getCAToken().getCryptoTokenId());
+            
+            // testHealthCheck1 is fine
+            final HttpURLConnection response1 = performHealthCheckGetRequestWithParams("ca=testHealthCheck1");
+            assertEquals("Response code was not 200", 200, response1.getResponseCode());
+            
+            // testHealthCheck1 is offline
+            final HttpURLConnection response2 = performHealthCheckGetRequestWithParams("ca=testHealthCheck1&ca=testHealthCheck2");
+            assertEquals("Response code was not 500", 500, response2.getResponseCode());
+        } finally {
+            CaTestCase.removeTestCA("testHealthCheck1");
+            CaTestCase.removeTestCA("testHealthCheck2");
+        }
+    }
+    
+    /**
+     * This test creates two CAs and checks them both
+     */
+    @Test
+    public void testHealthCheckWithMultipleCas() throws Exception {
+        CaTestCase.createTestCA("testHealthCheck1");
+        CaTestCase.createTestCA("testHealthCheck2");
+        try {
+            // Remove auto activate
+            final HttpURLConnection response = performHealthCheckGetRequestWithParams("ca=testHealthCheck1&ca=testHealthCheck2");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+        } finally {
+            CaTestCase.removeTestCA("testHealthCheck1");
+            CaTestCase.removeTestCA("testHealthCheck2");
+        }
+    }
+    
+    
     @Test
     public void testPublisherHealthCheck() throws Exception {
         // Make sure that publishers are checked by health check
@@ -158,6 +343,35 @@ public class HealthCheckSystemTest {
         }
     }
 
+    @Test
+    public void testHealthCheckWithPublisherCheckDisabled() throws Exception {
+        // Make sure that publishers are not checked by health check when disabled
+        String originalValue = CONFIG_SESSION.getProperty(KEY_HEALTHCHECK_PUBLISHERCONNECTIONS);
+        if (!"true".equals(originalValue)) {
+            CONFIG_SESSION.updateProperty(KEY_HEALTHCHECK_PUBLISHERCONNECTIONS, "true");
+        }
+        // Create a random publisher that's not connected to anything.
+        final LdapPublisher ldapPublisher = new LdapPublisher();
+        ldapPublisher.setHostnames("nowhere");
+        final String publisherName = "testPublisherHealthCheck";
+        int publisherId = PUBLISHER_PROXY_SESSION.addPublisher(admin, publisherName, ldapPublisher);
+        final String caName = "testPublisherHealthCheck";
+        CaTestCase.createTestCA(caName);
+        final CAInfo caInfo = CA_SESSION.getCAInfo(admin, caName);
+        caInfo.setCRLPublishers(Collections.singletonList(publisherId));
+        CA_SESSION.editCA(admin, caInfo);
+        try {
+            final HttpURLConnection response = performHealthCheckGetRequestWithFalseFlag("publishers");
+            assertEquals("Response code was not 200", 200, response.getResponseCode());
+            final String responseStr = Streams.asString(response.getInputStream());
+            assertTrue("Response did not contain correct error message, was: " + responseStr, responseStr.contains("ALLOK"));
+        } finally {
+            PUBLISHER_PROXY_SESSION.removePublisherInternal(admin, publisherName);
+            CaTestCase.removeTestCA(caName);
+            CONFIG_SESSION.updateProperty(KEY_HEALTHCHECK_PUBLISHERCONNECTIONS, originalValue);
+        }
+    }
+    
     @Test
     public void testAuditLogHealthCheck() throws Exception {
         Assume.assumeTrue("This test does not support Community Edition", ENTERPRISE_EJB_BRIDGE_SESSION.isRunningEnterprise());

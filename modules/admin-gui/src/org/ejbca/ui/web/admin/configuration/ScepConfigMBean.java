@@ -12,21 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-
-import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
-
-import org.apache.commons.lang.StringUtils;
+import com.keyfactor.util.StringTools;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -44,9 +31,20 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.SelectItemComparator;
 
+import javax.enterprise.context.SessionScoped;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+import javax.inject.Named;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 /**
  * JavaServer Faces Managed Bean for managing SCEP configuration.
- * 
  */
 @Named
 @SessionScoped
@@ -54,7 +52,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final String HIDDEN_PWD = "**********";
 
-    /** GUI table representation of a SCEP alias that can be interacted with. */
     public class ScepAliasGuiInfo {
         private String alias;
         private String mode;
@@ -72,7 +69,6 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String raNameGenPostfix;
         private boolean clientCertificateRenewal;
         private boolean allowClientCertificateRenewaWithOldKey;
-        
         private boolean useIntune;
         private String intuneAuthority;
         private String intuneAadAppId;
@@ -88,72 +84,70 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         private String intuneProxyUser;
         private String intuneProxyPass;
 
-        private ScepAliasGuiInfo(ScepConfiguration scepConfig, String alias) {
-            if (alias != null) {
-                this.alias = alias;
-                if (scepConfig.aliasExists(alias)) {
-                    this.mode = (scepConfig.getRAMode(alias) ? ScepConfiguration.Mode.RA.getResource() : ScepConfiguration.Mode.CA.getResource());
-                    this.includeCA = scepConfig.getIncludeCA(alias);
-                    this.returnCaChainInGetCaCert = scepConfig.getReturnCaChainInGetCaCert(alias);
-                    this.rootFirst = scepConfig.getCaChainRootFirstOrder(alias);
-                    this.allowLegacyDigestAlgorithm = scepConfig.getAllowLegacyDigestAlgorithm(alias);
-                    this.raCertProfile = scepConfig.getRACertProfile(alias);
-                    this.raEEProfile = scepConfig.getRAEndEntityProfile(alias);
-                    this.raAuthPassword = ScepConfigMBean.HIDDEN_PWD;
-                    this.raDefaultCA = scepConfig.getRADefaultCA(alias);
-                    this.raNameGenScheme = scepConfig.getRANameGenerationScheme(alias);
-                    this.raNameGenParameters = scepConfig.getRANameGenerationParameters(alias);
-                    this.raNameGenPrefix = scepConfig.getRANameGenerationPrefix(alias);
-                    this.raNameGenPostfix = scepConfig.getRANameGenerationPostfix(alias);
-                    this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
-                    this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
-                    this.setUseIntune(scepConfig.getUseIntune(alias));
-                    this.intuneAadUseKeyBinding = scepConfig.getIntuneAadUseKeyBinding(alias);
-                    this.intuneAadAppKeyBinding = scepConfig.getIntuneAadAppKeyBinding(alias);
-                    this.intuneAuthority = scepConfig.getIntuneAuthority(alias);
-                    this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
-                    this.intuneAadAppKey = ScepConfigMBean.HIDDEN_PWD;
-                    this.intuneTenant = scepConfig.getIntuneTenant(alias);
-                    this.intuneResourceUrl = scepConfig.getIntuneResourceUrl(alias);
-                    this.intuneGraphApiVersion = scepConfig.getIntuneGraphApiVersion(alias);
-                    this.intuneGraphResourceUrl = scepConfig.getIntuneGraphResourceUrl(alias);
-                    this.intuneProxyHost = scepConfig.getIntuneProxyHost(alias);
-                    this.intuneProxyPort = scepConfig.getIntuneProxyPort(alias);
-                    this.intuneProxyUser = scepConfig.getIntuneProxyUser(alias);
-                    this.intuneProxyPass = ScepConfigMBean.HIDDEN_PWD;
-                } else {
-                    this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE.toUpperCase();
-                    this.includeCA = Boolean.valueOf(ScepConfiguration.DEFAULT_INCLUDE_CA);
-                    this.rootFirst = Boolean.valueOf(ScepConfiguration.DEFAULT_CHAIN_ROOT_FIRST);
-                    this.returnCaChainInGetCaCert = Boolean.valueOf(ScepConfiguration.DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT);
-                    this.allowLegacyDigestAlgorithm = Boolean.valueOf(ScepConfiguration.DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
-                    this.raCertProfile = ScepConfiguration.DEFAULT_RA_CERTPROFILE;
-                    this.raEEProfile = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
-                    this.raAuthPassword = ScepConfiguration.DEFAULT_RA_AUTHPWD;
-                    this.raDefaultCA = ScepConfiguration.DEFAULT_RA_DEFAULTCA;
-                    this.raNameGenScheme = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_SCHEME;
-                    this.raNameGenParameters = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_PARAMETERS;
-                    this.raNameGenPrefix = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_PREFIX;
-                    this.raNameGenPostfix = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_POSTFIX;
-                    this.clientCertificateRenewal = Boolean.valueOf(ScepConfiguration.DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
-                    this.allowClientCertificateRenewaWithOldKey = Boolean
-                            .valueOf(ScepConfiguration.DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
-                    this.setUseIntune(false);
-                    this.intuneAuthority = "";
-                    this.intuneAadAppId = "";
-                    this.intuneAadAppKey = "";
-                    this.intuneAadAppKeyBinding = "";
-                    this.intuneAadUseKeyBinding = false;
-                    this.intuneTenant = "";
-                    this.intuneResourceUrl = "";
-                    this.intuneGraphApiVersion = "";
-                    this.intuneGraphResourceUrl = "";
-                    this.intuneProxyHost = "";
-                    this.intuneProxyPort = "";
-                    this.intuneProxyUser = "";
-                    this.intuneProxyPass = "";
-                }
-            }
+        public ScepAliasGuiInfo(final String alias) {
+            this.alias = alias;
+            this.mode = (scepConfig.getRAMode(alias) ? ScepConfiguration.Mode.RA.getResource() : ScepConfiguration.Mode.CA.getResource());
+            this.includeCA = scepConfig.getIncludeCA(alias);
+            this.returnCaChainInGetCaCert = scepConfig.getReturnCaChainInGetCaCert(alias);
+            this.rootFirst = scepConfig.getCaChainRootFirstOrder(alias);
+            this.allowLegacyDigestAlgorithm = scepConfig.getAllowLegacyDigestAlgorithm(alias);
+            this.raCertProfile = scepConfig.getRACertProfile(alias);
+            this.raEEProfile = scepConfig.getRAEndEntityProfile(alias);
+            this.raAuthPassword = ScepConfigMBean.HIDDEN_PWD;
+            this.raDefaultCA = scepConfig.getRADefaultCA(alias);
+            this.raNameGenScheme = scepConfig.getRANameGenerationScheme(alias);
+            this.raNameGenParameters = scepConfig.getRANameGenerationParameters(alias);
+            this.raNameGenPrefix = scepConfig.getRANameGenerationPrefix(alias);
+            this.raNameGenPostfix = scepConfig.getRANameGenerationPostfix(alias);
+            this.clientCertificateRenewal = scepConfig.getClientCertificateRenewal(alias);
+            this.allowClientCertificateRenewaWithOldKey = scepConfig.getAllowClientCertificateRenewalWithOldKey(alias);
+            this.setUseIntune(scepConfig.getUseIntune(alias));
+            this.intuneAadUseKeyBinding = scepConfig.getIntuneAadUseKeyBinding(alias);
+            this.intuneAadAppKeyBinding = scepConfig.getIntuneAadAppKeyBinding(alias);
+            this.intuneAuthority = scepConfig.getIntuneAuthority(alias);
+            this.intuneAadAppId = scepConfig.getIntuneAadAppId(alias);
+            this.intuneAadAppKey = ScepConfigMBean.HIDDEN_PWD;
+            this.intuneTenant = scepConfig.getIntuneTenant(alias);
+            this.intuneResourceUrl = scepConfig.getIntuneResourceUrl(alias);
+            this.intuneGraphApiVersion = scepConfig.getIntuneGraphApiVersion(alias);
+            this.intuneGraphResourceUrl = scepConfig.getIntuneGraphResourceUrl(alias);
+            this.intuneProxyHost = scepConfig.getIntuneProxyHost(alias);
+            this.intuneProxyPort = scepConfig.getIntuneProxyPort(alias);
+            this.intuneProxyUser = scepConfig.getIntuneProxyUser(alias);
+            this.intuneProxyPass = ScepConfigMBean.HIDDEN_PWD;
+        }
+
+        public ScepAliasGuiInfo() {
+            this.mode = ScepConfiguration.DEFAULT_OPERATION_MODE.toUpperCase();
+            this.includeCA = Boolean.valueOf(ScepConfiguration.DEFAULT_INCLUDE_CA);
+            this.rootFirst = Boolean.valueOf(ScepConfiguration.DEFAULT_CHAIN_ROOT_FIRST);
+            this.returnCaChainInGetCaCert = Boolean.valueOf(ScepConfiguration.DEFAULT_RETURN_CA_CHAIN_IN_GETCACERT);
+            this.allowLegacyDigestAlgorithm = Boolean.valueOf(ScepConfiguration.DEFAULT_ALLOW_LEGACY_DIGEST_ALGORITHM);
+            this.raCertProfile = ScepConfiguration.DEFAULT_RA_CERTPROFILE;
+            this.raEEProfile = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
+            this.raAuthPassword = ScepConfiguration.DEFAULT_RA_AUTHPWD;
+            this.raDefaultCA = ScepConfiguration.DEFAULT_RA_DEFAULTCA;
+            this.raNameGenScheme = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_SCHEME;
+            this.raNameGenParameters = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_PARAMETERS;
+            this.raNameGenPrefix = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_PREFIX;
+            this.raNameGenPostfix = ScepConfiguration.DEFAULT_RA_NAME_GENERATION_POSTFIX;
+            this.clientCertificateRenewal = Boolean.valueOf(ScepConfiguration.DEFAULT_CLIENT_CERTIFICATE_RENEWAL);
+            this.allowClientCertificateRenewaWithOldKey = Boolean
+                    .valueOf(ScepConfiguration.DEFAULT_ALLOW_CLIENT_CERTIFICATE_RENEWAL_WITH_OLD_KEY);
+            this.setUseIntune(false);
+            this.intuneAuthority = "";
+            this.intuneAadAppId = "";
+            this.intuneAadAppKey = "";
+            this.intuneAadAppKeyBinding = "";
+            this.intuneAadUseKeyBinding = false;
+            this.intuneTenant = "";
+            this.intuneResourceUrl = "";
+            this.intuneGraphApiVersion = "";
+            this.intuneGraphResourceUrl = "";
+            this.intuneProxyHost = "";
+            this.intuneProxyPort = "";
+            this.intuneProxyUser = "";
+            this.intuneProxyPass = "";
         }
 
         public String getAlias() {
@@ -171,10 +165,11 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setMode(String mode) {
             this.mode = mode;
         }
-        
+
         public boolean isModeRa() {
             return ScepConfiguration.Mode.RA.getResource().equals(mode);
         }
+
         public boolean isModeCa() {
             return ScepConfiguration.Mode.CA.getResource().equals(mode);
         }
@@ -186,15 +181,15 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIncludeCA(boolean includeca) {
             this.includeCA = includeca;
         }
-        
+
         public boolean isAllowLegacyDigestAlgorithm() {
             return allowLegacyDigestAlgorithm;
         }
-        
+
         public void setAllowLegacyDigestAlgorithm(boolean allowLegacyDigestAlgorithm) {
             this.allowLegacyDigestAlgorithm = allowLegacyDigestAlgorithm;
         }
-        
+
         public String getRaCertProfile() {
             return raCertProfile;
         }
@@ -290,7 +285,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setUseIntune(boolean useIntune) {
             this.useIntune = useIntune;
         }
-        
+
         public String getIntuneAuthority() {
             return intuneAuthority;
         }
@@ -298,7 +293,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIntuneAuthority(String intuneAuthority) {
             this.intuneAuthority = intuneAuthority;
         }
-        
+
         public String getIntuneAadAppId() {
             return intuneAadAppId;
         }
@@ -322,7 +317,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIntuneTenant(String intuneTenant) {
             this.intuneTenant = intuneTenant;
         }
-       
+
         public String getIntuneResourceUrl() {
             return intuneResourceUrl;
         }
@@ -346,7 +341,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         public void setIntuneGraphResourceUrl(String intuneGraphResourceUrl) {
             this.intuneGraphResourceUrl = intuneGraphResourceUrl;
         }
-            
+
         public String getIntuneProxyHost() {
             return intuneProxyHost;
         }
@@ -414,41 +409,38 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 2L;
     private static final Logger log = Logger.getLogger(ScepConfigMBean.class);
-
-    private ListDataModel<ScepAliasGuiInfo> aliasGuiList = null;
-    private String currentAliasStr;
     private ScepAliasGuiInfo currentAlias = null;
-    private String newAlias = "";
+    private String selectedAlias;
     private ScepConfiguration scepConfig;
     private boolean currentAliasEditMode = false;
-
     private final GlobalConfigurationSessionLocal globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
     private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
     private final AuthenticationToken authenticationToken = getAdmin();
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
     private final CertificateProfileSessionLocal certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
     private final EndEntityProfileSessionLocal endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
-    private final EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession = (EnterpriseEditionEjbBridgeSessionLocal)getEjbcaWebBean().getEnterpriseEjb();
-    
+    private final EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession = (EnterpriseEditionEjbBridgeSessionLocal) getEjbcaWebBean().getEnterpriseEjb();
+
     public ScepConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
         scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
     }
 
-    /** Force reload from underlying (cache) layer for the current SCEP configuration alias */
+    /**
+     * Force reload from underlying (cache) layer for the current SCEP configuration alias
+     */
     private void flushCache() {
         currentAlias = null;
-        aliasGuiList = null;
         currentAliasEditMode = false;
         scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
     }
 
-    public String getNewAlias() {
-        return newAlias;
+    public String getSelectedAlias() {
+        return selectedAlias;
     }
 
-    public void setNewAlias(String na) {
-        newAlias = na;
+    public void setSelectedAlias(String alias) {
+        selectedAlias = alias;
     }
 
     public boolean isCurrentAliasEditMode() {
@@ -458,65 +450,77 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     public boolean isAllowedToEdit() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     }
-    
+
     public void setCurrentAliasEditMode(boolean currentAliasEditMode) {
         this.currentAliasEditMode = currentAliasEditMode && isAllowedToEdit();
     }
 
-    public void toggleCurrentAliasEditMode() {
-        currentAliasEditMode ^= true;
-        currentAliasEditMode = currentAliasEditMode && isAllowedToEdit();
-    }
-
-    /** Build a list sorted by name from the existing SCEP configuration aliases */
+    /**
+     * Build a list sorted by name from the existing SCEP configuration aliases
+     */
     public ListDataModel<ScepAliasGuiInfo> getAliasGuiList() {
         flushCache();
-        final List<ScepAliasGuiInfo> list = new ArrayList<>();
-        for (String alias : scepConfig.getAliasList()) {
-            list.add(new ScepAliasGuiInfo(scepConfig, alias));
-            Collections.sort(list, new Comparator<ScepAliasGuiInfo>() {
-                @Override
-                public int compare(ScepAliasGuiInfo alias1, ScepAliasGuiInfo alias2) {
-                    return alias1.getAlias().compareToIgnoreCase(alias2.getAlias());
-                }
-            });
-            aliasGuiList = new ListDataModel<>(list);
-        }
-        // If show the list, then we are on the main page and want to flush the cache
-        currentAlias = null;
-        return aliasGuiList;
+        return new ListDataModel<>(
+                scepConfig.getAliasList()
+                        .stream()
+                        .sorted(String::compareToIgnoreCase)
+                        .map(ScepAliasGuiInfo::new)
+                        .collect(Collectors.toList())
+        );
     }
 
-    public void setCurrentAliasStr(String as) {
-        currentAliasStr = as;
+    public boolean isAliasListEmpty(){
+        return scepConfig.getAliasList().isEmpty();
     }
 
-    /** @return the name of the Scep alias that is subject to view or edit */
-    public String getCurrentAliasStr() {
-        // Get the HTTP GET/POST parameter named "alias"
-        final String inputAlias = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("alias");
-        if (inputAlias != null && inputAlias.length() > 0) {
-            if (!inputAlias.equals(currentAliasStr)) {
-                flushCache();
-                this.currentAliasStr = inputAlias;
-            }
-        }
-        return currentAliasStr;
-    }
-
-    /** @return cached or populate a new SCEP alias GUI representation for view or edit */
     public ScepAliasGuiInfo getCurrentAlias() {
-        if (this.currentAlias == null) {
-            final String alias = getCurrentAliasStr();
-            this.currentAlias = new ScepAliasGuiInfo(scepConfig, alias);
+        if (this.currentAlias == null && selectedAlias != null && scepConfig.aliasExists(selectedAlias)) {
+            this.currentAlias = new ScepAliasGuiInfo(selectedAlias);
         }
-
         return this.currentAlias;
     }
 
-    /** Invoked when admin saves the SCEP alias configurations */
-    public void saveCurrentAlias() {
+    protected boolean renameOrAddAlias() {
+
+        String oldAlias = selectedAlias;
+        String newAlias = currentAlias.getAlias();
+
+        if (StringUtils.isNotEmpty(oldAlias) && Objects.equals(oldAlias, newAlias)) {
+            return true;
+        }
+
+        if (StringUtils.isEmpty(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        }
+
+        if (!StringTools.checkFieldForLegalChars(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        }
+
+        if (scepConfig.aliasExists(newAlias)) {
+            addErrorMessage("SCEP_ALIAS_ALREADY_EXISTS");
+            return false;
+        }
+
+        if(StringUtils.isEmpty(oldAlias)){
+            scepConfig.addAlias(newAlias);
+        }else {
+            scepConfig.renameAlias(oldAlias, newAlias);
+        }
+
+        selectedAlias = currentAlias.getAlias();
+        return true;
+    }
+
+    public String saveCurrentAlias() {
         if (currentAlias != null) {
+
+            if (!renameOrAddAlias()) {
+                return null;
+            }
+
             String alias = currentAlias.getAlias();
             scepConfig.setRAMode(alias, "ra".equalsIgnoreCase(currentAlias.getMode()));
             scepConfig.setIncludeCA(alias, currentAlias.isIncludeCA());
@@ -566,11 +570,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             }
         }
         flushCache();
+        return "done";
     }
 
-    public void deleteAlias() {
-        if (scepConfig.aliasExists(currentAliasStr)) {
-            scepConfig.removeAlias(currentAliasStr);
+    public String deleteAlias() {
+        if (scepConfig.aliasExists(selectedAlias)) {
+            scepConfig.removeAlias(selectedAlias);
             try {
                 globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
             } catch (AuthorizationDeniedException e) {
@@ -584,55 +589,51 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             super.addNonTranslatedErrorMessage(msg);
         }
         flushCache();
+        return "done";
     }
 
-    public void renameAlias() {
-        if (StringUtils.isNotEmpty(newAlias) && !scepConfig.aliasExists(newAlias)) {
-            scepConfig.renameAlias(currentAliasStr, newAlias);
-            try {
-                globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
-            } catch (AuthorizationDeniedException e) {
-                String msg = "Failed to rename alias: " + e.getLocalizedMessage();
-                log.info(msg, e);
-                super.addNonTranslatedErrorMessage(msg);
-            }
-        } else {
-            String msg = "Cannot rename alias. Either the new alias is empty or it already exists.";
-            log.info(msg);
-            super.addNonTranslatedErrorMessage(msg);
-        }
+    public String addAliasAction() {
+        selectedAlias = null;
+        currentAlias = new ScepAliasGuiInfo();
+        currentAliasEditMode = true;
+        return "edit";
+    }
+
+    public String editAliasAction(String alias) {
+        selectedAlias = alias;
+        currentAlias = new ScepAliasGuiInfo(alias);
+        currentAliasEditMode = true;
+        return "edit";
+    }
+
+    public String viewAliasAction(String alias) {
+        selectedAlias = alias;
+        currentAlias = null;
+        currentAliasEditMode = false;
+        return "edit";
+    }
+
+    public String deleteAliasAction(String alias) {
+        selectedAlias = alias;
+        return "delete";
+    }
+
+    /**
+     * Invoked when admin cancels a SCEP alias create or edit.
+     */
+    public String cancelCurrentAlias() {
         flushCache();
+        return "cancel";
     }
 
-    public void addAlias() {
-        if (StringUtils.isNotEmpty(newAlias) && !scepConfig.aliasExists(newAlias)) {
-            scepConfig.addAlias(newAlias);
-            try {
-                globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
-            } catch (AuthorizationDeniedException e) {
-                String msg = "Failed to add alias: " + e.getLocalizedMessage();
-                log.info(msg, e);
-                super.addNonTranslatedErrorMessage(msg);
-            }
-        } else {
-            String msg = "Cannot add alias. Alias '" + newAlias + "' already exists.";
-            log.info(msg);
-            super.addNonTranslatedErrorMessage(msg);
-        }
-        flushCache();
-    }
-
-    /** Invoked when admin cancels a SCEP alias create or edit. */
-    public void cancelCurrentAlias() {
-        flushCache();
-    }
-
-    /** @return a list of usable operational modes */
+    /**
+     * @return a list of usable operational modes
+     */
     public List<SelectItem> getAvailableModes() {
-        final List<SelectItem> ret = new ArrayList<>();
-        ret.add(new SelectItem(ScepConfiguration.Mode.RA.getResource(), ScepConfiguration.Mode.RA.getResource()));
-        ret.add(new SelectItem(ScepConfiguration.Mode.CA.getResource(), ScepConfiguration.Mode.CA.getResource()));
-        return ret;
+        return List.of(
+                new SelectItem(ScepConfiguration.Mode.RA.getResource()),
+                new SelectItem(ScepConfiguration.Mode.CA.getResource())
+        );
     }
     
     /** @return a list of usable operational modes */
@@ -643,69 +644,71 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
-    /** @return a list of all CA names */
+    /**
+     * @return a list of all CA names
+     */
     public List<SelectItem> getAvailableCAs() {
-        final List<SelectItem> ret = new ArrayList<>();
         final Collection<String> cas = caSession.getAuthorizedCaNames(authenticationToken);
-        for (String caname : cas) {
-            ret.add(new SelectItem(caname, caname));
-        }
-        ret.sort(new SelectItemComparator());
-        return ret;
+        return cas.stream()
+                .map(SelectItem::new)
+                .sorted(new SelectItemComparator())
+                .collect(Collectors.toList());
     }
 
-    /** @return a list of EndEntity profiles that this admin is authorized to */
+    /**
+     * @return a list of EndEntity profiles that this admin is authorized to
+     */
     public List<SelectItem> getAuthorizedEEProfileNames() {
-        Collection<Integer> endEntityProfileIds = endentityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
-        Map<Integer, String> nameMap = endentityProfileSession.getEndEntityProfileIdToNameMap();
-        final List<SelectItem> ret = new ArrayList<>();
-        for (Integer id: endEntityProfileIds) {
-            String name = nameMap.get(id);
-            ret.add(new SelectItem(name, name));
-        }
-        ret.sort(new SelectItemComparator());
-        return ret;
+        final Collection<Integer> endEntityProfileIds = endentityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
+        final Map<Integer, String> nameMap = endentityProfileSession.getEndEntityProfileIdToNameMap();
+        return endEntityProfileIds.stream()
+                .map(nameMap::get)
+                .map(SelectItem::new)
+                .sorted(new SelectItemComparator())
+                .collect(Collectors.toList());
     }
 
-    /** @return a list of certificate profiles that are available for the current end entity profile */
+    /**
+     * @return a list of certificate profiles that are available for the current end entity profile
+     */
     public List<SelectItem> getAvailableCertProfilesOfEEProfile() {
         String eep = currentAlias.getRaEEProfile();
-        if ((eep == null) || (eep.length() <= 0)) {
+        if (StringUtils.isEmpty(eep)) {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
         final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
-        final List<SelectItem> ret = new ArrayList<>();
         if (p != null) {
-            final Collection<Integer> cpids = p.getAvailableCertificateProfileIds();
-            for(final int cpid : cpids) {
-                String cpname = certProfileSession.getCertificateProfileName(cpid);
-                ret.add(new SelectItem(cpname, cpname));
-            }            
+            return p.getAvailableCertificateProfileIds().stream()
+                    .map(certProfileSession::getCertificateProfileName)
+                    .map(SelectItem::new)
+                    .sorted(new SelectItemComparator())
+                    .collect(Collectors.toList());
         }
-        ret.sort(new SelectItemComparator());
-        return ret;
+        return List.of();
     }
 
-    /** @return a list of CAs that are available for the current end entity profile */
+    /**
+     * @return a list of CAs that are available for the current end entity profile
+     */
     public List<SelectItem> getAvailableCAsOfEEProfile() {
         String eep = currentAlias.getRaEEProfile();
-        if ((eep == null) || (eep.length() <= 0)) {
+        if (StringUtils.isEmpty(eep)) {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
         final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
-        final List<SelectItem> ret = new ArrayList<>();
         if (p != null) {
-            Map<Integer, String> caidname = caSession.getCAIdToNameMap();
-            for (int caid : p.getAvailableCAs()) {
-                if (caid == CAConstants.ALLCAS) {
-                    return getAvailableCAs();
-                }
-                String caname = caidname.get(caid);
-                ret.add(new SelectItem(caname, caname));
-            }            
+            if (p.getAvailableCAs().contains(CAConstants.ALLCAS)) {
+                return getAvailableCAs();
+            } else {
+                final Map<Integer, String> caidname = caSession.getCAIdToNameMap();
+                return p.getAvailableCAs().stream()
+                        .map(caidname::get)
+                        .map(SelectItem::new)
+                        .sorted(new SelectItemComparator())
+                        .collect(Collectors.toList());
+            }
         }
-        ret.sort(new SelectItemComparator());
-        return ret;
+        return List.of();
     }
 
     public List<SelectItem> getAvailableSchemes() {

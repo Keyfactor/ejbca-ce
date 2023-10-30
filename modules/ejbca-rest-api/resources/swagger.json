@@ -33,6 +33,9 @@
     },
     {
       "name": "v1/ssh"
+    },
+    {
+      "name": "v1/system"    
     }
   ],
   "schemes": [
@@ -1773,6 +1776,33 @@
           }
         }
       }
+    },
+    "/v1/system/service/{service_name}/run": {
+      "put": {
+        "tags": [
+          "v1/system"
+          ],
+        "summary": "Run service worker",
+        "description": "Runs specified service worker.",
+        "operationId": "runServiceNoTimer",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "service_name",
+            "in": "path",
+            "description": "Name of the service to run",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK Successful request"
+          }
+        }
+      }  
     }
   },
   "definitions": {
@@ -2293,7 +2323,7 @@
           "type": "integer",
           "format": "int32",
           "example": -1,
-          "description": "Revocation reson",
+          "description": "Revocation reason",
           "readOnly": true,
           "enum": [
             -1,
@@ -2383,6 +2413,24 @@
           "format": "int32",
           "example": 1,
           "description": "CRL partition index",
+          "readOnly": true
+        },
+        "invalidity_date": {
+          "type": "integer",
+          "format": "int64",
+          "example": -1,
+          "description": "Invalidity date"
+        },
+        "certificate_profile": {
+          "type": "string",
+          "example": "ENDUSER",
+          "description": "Certificate Profile Name",
+          "readOnly": true
+        },
+        "end_entity_profile": {
+          "type": "string",
+          "example": "EMPTY",
+          "description": "End Entity Profile Name",
           "readOnly": true
         }
       }

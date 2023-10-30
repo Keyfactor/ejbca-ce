@@ -17,6 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.bouncycastle.asn1.x500.X500Name;
+import org.ejbca.core.model.UsernameGenerateMode;
 import org.junit.Test;
 
 /**
@@ -58,7 +59,7 @@ public class UserNameGeneratorTest {
 	 */
 	@Test
 	public void testUsernameGeneratorRandom() {
-		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGeneratorParams.RANDOM);
+		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGenerateMode.RANDOM.name());
 		String u = gen.generateUsername();
 		assertEquals(u.length(), 12);
 		
@@ -109,7 +110,7 @@ public class UserNameGeneratorTest {
 	public void testUsernameGeneratorDN() {
 		String dn = "C=SE, O=FooO, UID=foo, CN=bar";
         String dnReverse = "CN=bar,UID=foo,O=FooO,C=SE";
-		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGeneratorParams.DN);
+		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGenerateMode.DN.name());
 		String u = gen.generateUsername(dn);
 		assertEquals(u, "bar");
         u = gen.generateUsername(dnReverse);
@@ -161,7 +162,7 @@ public class UserNameGeneratorTest {
 	@Test
 	public void testUsernameGeneratorUsername() {
 		String username = "foo";
-		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGeneratorParams.USERNAME);
+		UsernameGenerator gen = UsernameGenerator.getInstance(UsernameGenerateMode.USERNAME.name());
 		String u = gen.generateUsername(username);
 		assertEquals(u, "foo");
 		

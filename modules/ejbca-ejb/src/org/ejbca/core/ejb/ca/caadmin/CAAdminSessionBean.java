@@ -48,6 +48,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -156,7 +157,6 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -1443,11 +1443,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     private void activateNextKeyAndCert(AuthenticationToken authenticationToken, int caid, String nextKeyAlias, final CA ca, final Certificate cacert,
-                                        final List<Certificate> chain, PublicKey caCertPublicKey) throws CryptoTokenOfflineException, EjbcaException, InvalidAlgorithmException,
-            CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
+                                        final List<Certificate> chain, PublicKey caCertPublicKey)
+            throws CryptoTokenOfflineException, EjbcaException, InvalidAlgorithmException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
         final CAToken catoken = ca.getCAToken();
         final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
-        final String currentSignKeyAlias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
         boolean activatedNextSignKey = false;
         if (nextKeyAlias != null) {
             try {
@@ -1558,7 +1557,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         ca.setExpireTime(CertTools.getNotAfter(cacert));
         
         // Before editing the CA, check if it is MS compatible and set parameters accordingly
-        if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && !nextKeyAlias.equals(currentSignKeyAlias)) {
+        if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible()) {
             setMsCompatCAParams(ca);
         }
         
@@ -1576,20 +1575,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (!x509Ca.getUsePartitionedCrl() && x509Ca.getCrlPartitions() == 0) {
             // First time enabling MS Compatibility Mode.
             log.debug("Enabling CRL partitions for MS Compatibility Mode");
-            ((X509CA)ca).setUsePartitionedCrl(true);
-            ((X509CA)ca).setCrlPartitions(1);
-            ((X509CA)ca).setSuspendedCrlPartitions(0);
+            x509Ca.setUsePartitionedCrl(true);
+            x509Ca.setCrlPartitions(1);
+            x509Ca.setSuspendedCrlPartitions(0);
             // Set in CAInfo for immediate effect during CA certificate renewal
-            ((X509CAInfo)ca.getCAInfo()).setUsePartitionedCrl(true);
-            ((X509CAInfo)ca.getCAInfo()).setCrlPartitions(1);
-            ((X509CAInfo)ca.getCAInfo()).setSuspendedCrlPartitions(0);
+            ((X509CAInfo)x509Ca.getCAInfo()).setUsePartitionedCrl(true);
+            ((X509CAInfo)x509Ca.getCAInfo()).setCrlPartitions(1);
+            ((X509CAInfo)x509Ca.getCAInfo()).setSuspendedCrlPartitions(0);
         } else {
             // Suspend previous partition and open a new one.
             log.debug("MS Compatible CA re-keyed. Suspending previous CRL partition");
-            ((X509CA)ca).setCrlPartitions(x509Ca.getCrlPartitions() + 1);
-            ((X509CA)ca).setSuspendedCrlPartitions(x509Ca.getSuspendedCrlPartitions() + 1);
-            ((X509CAInfo)ca.getCAInfo()).setCrlPartitions(((X509CAInfo)ca.getCAInfo()).getCrlPartitions() + 1);
-            ((X509CAInfo)ca.getCAInfo()).setSuspendedCrlPartitions(((X509CAInfo)ca.getCAInfo()).getSuspendedCrlPartitions() + 1);
+            x509Ca.setCrlPartitions(x509Ca.getCrlPartitions() + 1);
+            x509Ca.setSuspendedCrlPartitions(x509Ca.getSuspendedCrlPartitions() + 1);
+            ((X509CAInfo)x509Ca.getCAInfo()).setCrlPartitions(((X509CAInfo)ca.getCAInfo()).getCrlPartitions() + 1);
+            ((X509CAInfo)x509Ca.getCAInfo()).setSuspendedCrlPartitions(((X509CAInfo)ca.getCAInfo()).getSuspendedCrlPartitions() + 1);
         }
     }
 
@@ -3589,14 +3588,38 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public String healthCheck() {
-        final StringBuilder sb = new StringBuilder();
+        return healthCheckInternal(caSession.getAllCaIds());
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public String healthCheck(Collection<String> caNames) {
+        HashSet<String> caNamesSet = new HashSet<>();
+        for (String caName : caNames) {
+            caNamesSet.add(caName);
+        }
+        
+        //@formatter:off
+        List<Integer> caIds = caSession.getCAIdToNameMap()
+                .entrySet().stream()
+                .filter(entry -> caNamesSet.contains(entry.getValue()))
+                .map(entry -> entry.getKey())
+                .collect(Collectors.toList());
+        //@formatter:on
+
+        return healthCheckInternal(caIds);
+    }
+    
+    private String healthCheckInternal(List<Integer> caIds) {
         final boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
         if (log.isDebugEnabled()) {
             log.debug("CaTokenSignTest: " + caTokenSignTest);
         }
+
+        final StringBuilder sb = new StringBuilder();
         final HashMap<Integer, CryptoToken> cryptoTokenMap = new HashMap<>();
         final Set<Integer> testedKeys = new HashSet<>();
-        for (final Integer caid : caSession.getAllCaIds()) {
+        for (Integer caid : caIds) {
             final CAInfo cainfo = caSession.getCAInfoInternal(caid);
             if (cainfo.getStatus() == CAConstants.CA_ACTIVE && cainfo.getIncludeInHealthCheck()) {
                 // Verify that the CA's mapped keys exist and optionally that the test-key is usable
@@ -3624,10 +3647,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     }
                 }
             }
-        }
+        }   
         return sb.toString();
+    
     }
-
+    
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ExtendedCAServiceResponse extendedService(AuthenticationToken admin, int caid, ExtendedCAServiceRequest request)
@@ -4145,4 +4169,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         //TODO: Persist ("Publish") the CA certificates to the local CertificateData database.
         
     }
+
+
 }

@@ -65,6 +65,10 @@ public interface AcmeOrder {
     void setUsername(String name);
 
     String getUsername();
+    
+    List<String> getAuthorizationUrls();
+    
+    void setAuthorizationUrls(List<String> urls);
 
     float getLatestVersion();
 

@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertEqualJsonPropertyAsLong;
+import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
@@ -55,6 +58,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -155,7 +159,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindByUserNameEqual() throws Exception {
-        ///given
+        //given
         String expectedCn = "searchCertCn";
         String username = "searchCerUsername";
         X509Certificate certificate = createCertificate(username, "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
@@ -211,7 +215,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindByCnLike() throws Exception {
-        ///given
+        //given
         String expectedCn = "searchCertCn";
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
         String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
@@ -266,7 +270,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindByEndEntityProfile() throws Exception {
-        ///given
+        //given
         String expectedCn = "searchCertCn";
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
         String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
@@ -320,7 +324,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindByCertificateProfile() throws Exception {
-        ///given
+        //given
         String expectedCn = "searchCertCn";
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
         String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
@@ -382,7 +386,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindByCA() throws Exception {
-        ///given
+        //given
         String expectedCn = "searchCertCn";
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
         String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
@@ -435,7 +439,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindByCertificateStatus() throws Exception {
-        ///given
+        //given
         String expectedCn = "searchCertCn";
         // Create a new certificate, will have status active (20)
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
@@ -516,7 +520,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindCertificateByIssueDate() throws Exception {
-        ///given
+        //given
         String expectedCn = "searchCertCn";
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, keys.getPublic());
         String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
@@ -587,7 +591,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindByCertificateByExpirationDate() throws Exception {
-        ///given
+        //given
         String expectedCn = "searchCertCn";
         Date date = new Date(System.currentTimeMillis() + 10 * 24 * 3600 * 1000);
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=" + expectedCn, date);
@@ -659,7 +663,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindCertificateByUpdateTime() throws Exception {
-        ///given
+        //given
         String username = "searchByUpdateTimeUsername";
         Date updateTimeAfter = new Date(System.currentTimeMillis() - 1000);
         X509Certificate expectedCertificate = createCertificate(username, "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
@@ -713,7 +717,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFindCertificateByUpdateTime_Negative() throws Exception {
-        ///given
+        //given
         Date updateTimeBefore = new Date(System.currentTimeMillis() - 1000);
         String username = "searchByUpdateTimeUsername2";
         X509Certificate certificate = createCertificate(username, "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
@@ -753,7 +757,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldFillMoreResultsFlagProperly() throws Exception {
-        ///given
+        //given
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
         certificates.add(certificate);
         KeyPair keys1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -779,13 +783,14 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
 
         //then
-        assertEquals("Shpuld have one result certificate",1, actualCertificates.size());
+        assertEquals("Should have one result certificate",1, actualCertificates.size());
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertTrue("Should have more result", moreResults);
     }
 
     @Test
     public void shouldReturnEmptyList() throws Exception {
+        //given
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
                 .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.END_ENTITY_PROFILE.name())
                 .value(TEST_EEP_NAME)
@@ -795,8 +800,8 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
                 .maxNumberOfResults(10)
                 .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
                 .build();
+
         //when
-//                .post();
         final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
         final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -809,7 +814,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
 
     @Test
     public void shouldReturnMoreThanOneResult() throws Exception {
-        ///given
+        //given
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
         certificates.add(certificate);
         KeyPair keys1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -834,8 +839,44 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
 
         //then
-        assertEquals("Shpuld have one result certificate",2, actualCertificates.size());
+        assertEquals("Should have one result certificate",2, actualCertificates.size());
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+    }
+
+    @Test
+    public void shouldReturnDefaultInvalidityDate() throws Exception {
+        //given
+        final long expectedInvalidityDate = -1;
+        final String username = "invalidityDateTestUser";
+        final X509Certificate certificate = createCertificate(username, "CN=" + username);
+        certificates.add(certificate);
+
+        //when
+        final JSONArray responseCertificates = performRestV2SearchByUsername(username);
+
+        //then
+        assertEquals("Response should contain only one certificate", 1, responseCertificates.size());
+        final JSONObject responseCertificate = (JSONObject) responseCertificates.get(0);
+        assertEqualJsonPropertyAsLong(responseCertificate, "invalidity_date", expectedInvalidityDate);
+    }
+
+    @Test
+    public void shouldReturnStoredInvalidityDate() throws Exception {
+        //given
+        final long expectedInvalidityDateTimestamp = 1000000000;
+        final String username = "revokedInvalidityDateTestUser";
+        final X509Certificate certificate = createCertificate(username, "CN=" + username);
+        certificates.add(certificate);
+        CaTestUtils.setAllowInvalidityDate(INTERNAL_ADMIN_TOKEN, TEST_CA_NAME, true);
+        setCertificateRevokeStatus(certificate, new Date(), new Date(expectedInvalidityDateTimestamp), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+
+        //when
+        final JSONArray responseCertificates = performRestV2SearchByUsername(username);
+
+        //then
+        assertEquals("Response should contain only one certificate", 1, responseCertificates.size());
+        final JSONObject responseCertificate = (JSONObject) responseCertificates.get(0);
+        assertEqualJsonPropertyAsLong(responseCertificate, "invalidity_date", expectedInvalidityDateTimestamp);
     }
 
     private X509Certificate createCertificate(String username, String subjectDn, PublicKey publicKey) throws CertificateExtensionException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateSerialNumberException, CertificateRevokeException, AuthorizationDeniedException, CADoesntExistsException, IllegalValidityException, CertificateCreateException, CryptoTokenOfflineException, IllegalNameException, InvalidAlgorithmException, SignRequestSignatureException, CAOfflineException {
@@ -864,12 +905,62 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         return cert;
     }
 
+    /**
+     * Creates a test certificate with the given username and subject DN.
+     */
+    private X509Certificate createCertificate(String username, String subjectDn) throws Exception {
+        final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        return createCertificate(username, subjectDn, keyPair.getPublic());
+    }
+
+    /**
+     * Performs a v2 certificate search using username as criteria
+     */
+    private JSONArray performRestV2SearchByUsername(String username) throws Exception {
+        final Pagination pagination = new Pagination();
+        pagination.setPageSize(10);
+        pagination.setCurrentPage(1);
+
+        final SearchCertificateCriteriaRestRequest criteria = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.QUERY.name())
+                .value(username)
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+
+        final SearchCertificateCriteriaRequest searchCertificatesRestRequest = SearchCertificatesRestRequestV2.builder()
+                .criteria(List.of(criteria))
+                .pagination(pagination)
+                .build();
+
+        final String requestJsonString = objectMapper.writeValueAsString(searchCertificatesRestRequest);
+        final Entity<String> requestEntity = Entity.entity(requestJsonString, MediaType.APPLICATION_JSON);
+        final Response response = newRequest("/v2/certificate/search").request().post(requestEntity);
+        assertJsonContentType(response);
+        final JSONObject responseJson = (JSONObject) jsonParser.parse(response.readEntity(String.class));
+        final JSONArray responseCertificates = (JSONArray) responseJson.get("certificates");
+        assertNotNull("Response should contain certificate entries", responseCertificates);
+        return responseCertificates;
+    }
+
     private void removeCertificate(String fingerprint) {
         internalCertStoreSession.removeCertificate(fingerprint);
     }
 
     private void setCertificateStatus(String fingerprint, int status) throws AuthorizationDeniedException {
         internalCertStoreSession.setStatus(INTERNAL_ADMIN_TOKEN, fingerprint, status);
+    }
+
+    /**
+     * Sets the revoke status for a certificate
+     *
+     * @param certificate the certificate to revoke
+     * @param revokedDate the date of revocation
+     * @param invalidityDate the date when certificate became invalid
+     * @param reasonCode the revocation reason code
+     */
+    private void setCertificateRevokeStatus(final Certificate certificate, final Date revokedDate, final Date invalidityDate, final int reasonCode)
+            throws AuthorizationDeniedException, CertificateRevokeException {
+        internalCertStoreSession.setRevokeStatus(INTERNAL_ADMIN_TOKEN, certificate, revokedDate, invalidityDate, reasonCode);
     }
 
 }

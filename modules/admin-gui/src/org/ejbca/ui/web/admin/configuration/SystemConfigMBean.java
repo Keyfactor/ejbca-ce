@@ -1146,7 +1146,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                     return o1.getLabel().compareToIgnoreCase(o1.getLabel());
                 }
             });
-            availableCryptoTokens.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT_ENCRYPTION_CRYPTOTOKEN")));
+            availableCryptoTokens.add(0, new SelectItem(null, getEjbcaWebBean().getText("PLEASE_SELECT_ENCRYPTION_CRYPTO_TOKEN")));
         }
         return availableCryptoTokens;
     }
@@ -1372,6 +1372,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.REST_SSH_V1.getName()) && !isRunningEnterprise()) {
+                available = false;
+            }
+            if (protocol.equals(AvailableProtocols.REST_SYSTEM_V1.getName()) && !isRunningEnterprise()) {
                 available = false;
             }
             if (protocol.equals(AvailableProtocols.ACME.getName()) && !isAcmeAvailable()) {

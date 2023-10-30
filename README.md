@@ -30,7 +30,7 @@ In our Community we welcome contributions. The Community software is open source
 * Read more on the open source project website: **[EJBCA website](https://www.ejbca.org/)**.   
 
 ## Commercial Support
-Commercial support is available for **[EJBCA Enterprise](https://www.primekey.com/products/ejbca-enterprise/)**.
+Commercial support is available for **[EJBCA Enterprise](https://www.keyfactor.com/products/ejbca-enterprise/)**.
 
 ## License
 EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICENSE)**. 
@@ -42,4 +42,4 @@ EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICEN
 * [Keyfactor/ejbca-vault-plugin](https://github.com/Keyfactor/ejbca-vault-plugin) 
 * [Keyfactor/ejbca-vault-monitor](https://github.com/Keyfactor/ejbca-vault-monitor) 
 * [Keyfactor/ejbca-cert-cvc](https://github.com/Keyfactor/ejbca-cert-cvc) 
-* [Keyfactor/ejbca-containers](https://github.com/Keyfactor/ejbca-containers) 
+* [Keyfactor/keyfactorcommunity](https://github.com/Keyfactor/keyfactorcommunity) 

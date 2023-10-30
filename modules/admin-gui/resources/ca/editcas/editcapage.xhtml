@@ -142,7 +142,8 @@
 					<h:selectOneMenu name="selectcryptotoken"
 									 id="selectcryptotoken"
 									 rendered="#{editCAsMBean.cryptoTokenSuitable}"
-									 value="#{editCAsMBean.cryptoTokenIdParam}">
+									 value="#{editCAsMBean.cryptoTokenIdParam}"
+									 required="true" label="#{web.text.CRYPTOTOKEN}" styleClass="mandatory">
 						<f:selectItems value="#{editCAsMBean.availableCryptoTokenList}" />
 						<f:ajax listener="#{editCAsMBean.resetSigningAlgorithmTokenParam()}" render="@form"/>
 					</h:selectOneMenu>
@@ -161,7 +162,7 @@
 					<h:outputLabel
 							value="You need to select a Crypto Token that exists, or generate keys if it exists, before you can initialize!"
 							style="font-weight: bold;"
-							rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenIdParamNull}" />
+							rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.cryptoTokenIdParamNull and editCAsMBean.caUninitialized}" />
 				</h:panelGroup>
 
                 <h:panelGroup

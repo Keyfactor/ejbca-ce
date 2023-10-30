@@ -149,6 +149,7 @@ import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -302,8 +303,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), CertTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
         assertEquals("user@user.com", CertTools.getEMailAddress(usercert));
-        // directoryName is turned around, but it's just for string reasons in cert objects because it is gotten (internally in BC) getRFC2253Name().
-        assertEquals("rfc822name=user@user.com, dNSName=foo.bar.com, directoryName=c=SE\\,o=PrimeKey\\,cn=Tomas", CertTools.getSubjectAlternativeName(usercert));
+        assertEquals("rfc822name=user@user.com, dNSName=foo.bar.com, " + DnComponents.DIRECTORYNAME + "=c=SE\\,o=PrimeKey\\,cn=Tomas", CertTools.getSubjectAlternativeName(usercert));
         assertNull(CertTools.getUPNAltName(usercert));
         assertFalse(CertTools.isSelfSigned(usercert));
         usercert.verify(cryptoToken.getPublicKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)));
@@ -582,7 +582,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertNotNull("A subjectAltName extension should be present", genext);
         assertNull("No CT redated extension should be present", ctext);
         String altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
+        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, " + DnComponents.DIRECTORYNAME + "=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
         // Test with CT publishing
         gen = ca.getSubjectAltNameExtensionForCert(ext, true);
         exts = gen.generate();
@@ -599,7 +599,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         derInt = ASN1Integer.getInstance(seq.getObjectAt(2));
         assertEquals("third dnsName should have 2 redacted labels", 2, derInt.getValue().intValue());
         altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
+        assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, " + DnComponents.DIRECTORYNAME + "=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
     }
 
     @Test
@@ -616,7 +616,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertNotNull("A subjectAltName extension should be present", genext);
         assertNull("No CT redated extension should be present", ctext);
         String altName = CertTools.getAltNameStringFromExtension(genext);
-        assertEquals("altName is not what it should be", "directoryName=CN=Tomas\\,O=PrimeKey\\,C=SE, iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=(PRIVATE).secret.se, dNSName=(PRIVATE).ultrasecret.no, rfc822name=foo@bar.com", altName);
+        assertEquals("altName is not what it should be", DnComponents.DIRECTORYNAME + "=CN=Tomas\\,O=PrimeKey\\,C=SE, iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=(PRIVATE).secret.se, dNSName=(PRIVATE).ultrasecret.no, rfc822name=foo@bar.com", altName);
     }
 
     class TestValidator implements CertificateValidationDomainService {
@@ -1572,7 +1572,8 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA testCa = createTestCA(cryptoToken, caDn);
         Method generateCertificate = X509CAImpl.class.getDeclaredMethod("generateCertificate", EndEntityInformation.class, RequestMessage.class,
-                PublicKey.class, int.class, Date.class, Date.class, CertificateProfile.class, Extensions.class, SigningKeyContainer.class, CertificateGenerationParams.class, AvailableCustomCertificateExtensionsConfiguration.class, boolean.class,
+                PublicKey.class, int.class, Date.class, Date.class, CertificateProfile.class, Extensions.class, PublicKey.class, PrivateKey.class,
+                String.class, CertificateGenerationParams.class, AvailableCustomCertificateExtensionsConfiguration.class, boolean.class,
                 boolean.class);
         generateCertificate.setAccessible(true);
         CAToken caToken = testCa.getCAToken();       
@@ -1581,10 +1582,8 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final EndEntityInformation cadata = new EndEntityInformation("nobody", testCa.getSubjectDN(), testCa.getSubjectDN().hashCode(), testCa.getSubjectAltName(), null,
                 0, new EndEntityType(EndEntityTypes.INVALID), 0, testCa.getCertificateProfileId(), null, null, 0, null);
         try {
-            SigningKeyContainer signingKeyContainer = new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, BouncyCastleProvider.PROVIDER_NAME);
-            
             generateCertificate.invoke(testCa, cadata, null, cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)), 0, notBefore, notAfter, certificateProfile,
-                    null, signingKeyContainer, null, cceConfig, true, false);
+                    null, previousCaPublicKey, previousCaPrivateKey, BouncyCastleProvider.PROVIDER_NAME, null, cceConfig, true, false);
         } catch (InvocationTargetException e) {
             if(e.getCause() instanceof IllegalValidityException) {
             fail("Back dated revoked certificate should have been created.");

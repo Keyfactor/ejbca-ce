@@ -996,8 +996,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         }
         // 1. Check (new) CaCache if it is time to sync-up with database (or it does not exist)
         if (CaCache.INSTANCE.shouldCheckForUpdates(caId)) {
-            if (log.isDebugEnabled()) {
-                log.debug("CA with ID " + caId + " will be checked for updates.");
+            if (log.isTraceEnabled()) {
+                log.trace("CA with ID " + caId + " will be checked for updates.");
             }
             // 2. If cache is expired or missing, first thread to discover this reloads item from database and sends it to the cache         
             final CAData caData = getCAData(caId, null, keySequence);
@@ -1020,8 +1020,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             // 4. If database is different from cache, replace it in the cache
         }
         // 5. Get CA from cache (or null) and be merry
-        if (log.isDebugEnabled()) {
-            log.debug("Returning CA from cache for CA ID: " + caId);
+        if (log.isTraceEnabled()) {
+            log.trace("Returning CA from cache for CA ID: " + caId);
         }
         return CaCache.INSTANCE.getEntry(caId);
     }

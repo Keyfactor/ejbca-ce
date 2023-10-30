@@ -49,6 +49,7 @@ import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorBase;
 import org.cesecore.keys.validation.KeyValidatorDateConditions;
 import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
+import org.cesecore.keys.validation.KeyValidatorExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
 import org.cesecore.keys.validation.Validator;
@@ -551,6 +552,8 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage("Not authorized to edit validator " + stagedValidator.getProfileName());
         } catch (KeyValidatorDoesntExistsException e) {
             // NOPMD: ignore do nothing
+        } catch (KeyValidatorExistsException e) {
+            addNonTranslatedErrorMessage("Validator of name " + stagedValidator.getProfileName() + " already exists.");
         } catch (CesecoreException e) {
             if (e.getErrorCode().equals(ErrorCode.DOMAIN_BLACKLIST_FILE_PARSING_FAILED)) {
                 addNonTranslatedErrorMessage("Failed to save domain list validator. " + e.getMessage());
