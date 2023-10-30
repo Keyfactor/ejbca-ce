@@ -13,14 +13,13 @@
 package org.cesecore.certificates.certificateprofile;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,6 +57,9 @@ import com.keyfactor.util.keys.KeyTools;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
+ *
+ * Note that all classes that are serialized to database (such as this one) MUST use deterministic data types.
+ * So LinkedHashMap/LinkedHashSet must be used instead of HashMap/HashSet.
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);
@@ -189,7 +191,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final String ALTERNATIVE_MINIMUMAVAILABLEBITLENGTH = "alternativeMinimumAvailableBitlength";
     private static final String ALTERNATIVE_MAXIMUMAVAILABLEBITLENGTH = "alternativeMaximumAvailableBitlength";
     
-    protected static final String TYPE = "type";
+    public static final String TYPE = "type";
     protected static final String AVAILABLECAS = "availablecas";
     protected static final String USEDPUBLISHERS = "usedpublishers";
     protected static final String USECNPOSTFIX = "usecnpostfix";
@@ -391,9 +393,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public static final String OID_CARDNUMBER = "1.2.752.34.2.1";
 
-    /** Constants holding the use properties for certificate extensions */
-    protected static final HashMap<String, String> useStandardCertificateExtensions = new HashMap<>();
+    protected static final Map<String, String> useStandardCertificateExtensions = new LinkedHashMap<>();
     {
+        // Please keep the cert extensions ordered in this order
+        // in order to not break assumptions made by clients/other software.
+        // (This used to be a plain HashMap, hence the strange ordering)
+        useStandardCertificateExtensions.put(USEDOCUMENTTYPELIST, "2.23.136.1.1.6.2");
         useStandardCertificateExtensions.put(USEBASICCONSTRAINTS, Extension.basicConstraints.getId());
         useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
         useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, Extension.subjectKeyIdentifier.getId());
@@ -401,12 +406,18 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME, Extension.subjectAlternativeName.getId());
         useStandardCertificateExtensions.put(USEISSUERALTERNATIVENAME, Extension.issuerAlternativeName.getId());
         useStandardCertificateExtensions.put(USECRLDISTRIBUTIONPOINT, Extension.cRLDistributionPoints.getId());
+        useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS, Extension.authorityInfoAccess.getId());
         useStandardCertificateExtensions.put(USEFRESHESTCRL, Extension.freshestCRL.getId());
         useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
         useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, Extension.extendedKeyUsage.getId());
         useStandardCertificateExtensions.put(USEDOCUMENTTYPELIST, "2.23.136.1.1.6.2");
         useStandardCertificateExtensions.put(USEQCSTATEMENT, Extension.qCStatements.getId());
+        useStandardCertificateExtensions.put(USEISSUERALTERNATIVENAME, Extension.issuerAlternativeName.getId());
+        useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
+        useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME, Extension.subjectAlternativeName.getId());
+        useStandardCertificateExtensions.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT);
         useStandardCertificateExtensions.put(USENAMECONSTRAINTS, Extension.nameConstraints.getId());
+        useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
         useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES, Extension.subjectDirectoryAttributes.getId());
         useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS, Extension.authorityInfoAccess.getId());
         useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
@@ -414,8 +425,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
         useStandardCertificateExtensions.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT);
         useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
+        useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, Extension.extendedKeyUsage.getId());
+        useStandardCertificateExtensions.put(USEQCSTATEMENT, Extension.qCStatements.getId());
         useStandardCertificateExtensions.put(USECABFORGANIZATIONIDENTIFIER, CabForumOrganizationIdentifier.OID);
+        useStandardCertificateExtensions.put(USECRLDISTRIBUTIONPOINT, Extension.cRLDistributionPoints.getId());
+        useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
+        useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, Extension.subjectKeyIdentifier.getId());
+        useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
+        useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
     }
+
 
     // Old values used to upgrade from v22 to v23
     protected static final String CERTIFICATEPOLICYID = "certificatepolicyid";
@@ -1449,7 +1468,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
         return returnval;
     }
-
 
     @SuppressWarnings("unchecked")
     public List<Integer> getAvailableSecurityLevelsAsList() {
@@ -2651,7 +2669,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** Returns the names of all allowed built-in extensions in the profile. The keys are used in the ExtendedInformation class. */
     public Set<String> getUsedStandardCertificateExtensionKeys() {
-        final Set<String> ret = new HashSet<>();
+        final Set<String> ret = new LinkedHashSet<>();
         for (final String key : useStandardCertificateExtensions.keySet()) {
             if (data.get(key) != null && (Boolean) data.get(key)) {
                 // All extension use keys in the Certificate Profile are named "use" + name of extension
@@ -2663,7 +2681,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     /** Returns the names of all supported (i.e. not only used) built-in certificate extensions. The keys are used in the ExtendedInformation class. */
     public static Set<String> getAllStandardCertificateExtensionKeys() {
-        final Set<String> ret = new HashSet<>();
+        final Set<String> ret = new LinkedHashSet<>();
         for (final String key : useStandardCertificateExtensions.keySet()) {
             // All extension use keys in the Certificate Profile are named "use" + name of extension
             ret.add(StringUtils.removeStart(key, "use"));
@@ -3200,28 +3218,43 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(SSH_CERTIFICATE_TYPE, certificateType);
     }
 
-    @SuppressWarnings("unchecked")
-    public Map<String, byte[]> getSshExtensionsMap() {
-        if(!data.containsKey(SSH_EXTENSIONS)) {
-            Map<String, byte[]> extensions = new HashMap<>();
-            for(SshExtension sshExtension : SshExtension.values()) {
-                extensions.put(sshExtension.getLabel(), sshExtension.getValue());
-            }
-            data.put(SSH_EXTENSIONS, extensions);
+    public Map<String, String> getSshExtensionsMap() {
+        final Map<?,?> extensionsInDb = (Map<?,?>) data.get(SSH_EXTENSIONS);
+        if (extensionsInDb == null) {
+            return SshExtension.EXTENSIONS_MAP;
         }
-        return (Map<String, byte[]>) data.get(SSH_EXTENSIONS);
+        // Versions prior to 8.1 sometimes stored the map values as an empty byte[],
+        // and sometimes as String. In practice, the byte[] code path probably couldn't
+        // be reached.
+        //
+        // byte[] does not work in toString() properly, which breaks database protection.
+        // so we have to change byte[] to String here.
+        final Map<String,String> extensions = new LinkedHashMap<>();
+        for (final Entry<?,?> entry : extensionsInDb.entrySet()) {
+            final String value = (entry.getValue() instanceof String ? (String) entry.getValue() : "");
+            extensions.put((String) entry.getKey(), value);
+        }
+        return extensions;
+    }
+
+    public Map<String, byte[]> getSshExtensionsBytesMap() {
+        final Map<String,byte[]> extensions = new LinkedHashMap<>();
+        for (final Entry<String,String> entry : getSshExtensionsMap().entrySet()) {
+            extensions.put(entry.getKey(), entry.getValue().getBytes(StandardCharsets.UTF_8));
+        }
+        return extensions;
     }
 
     public List<String> getSshExtensions() {
         return new ArrayList<>(getSshExtensionsMap().keySet());
     }
 
-    public void setSshExtensionsMap(Map<String, byte[]> extensions) {
+    public void setSshExtensionsMap(Map<String, String> extensions) {
         data.put(SSH_EXTENSIONS, extensions);
     }
 
     public void setSshExtensions(List<String> extensionsList) {
-        Map<String, String> extensions = new HashMap<>();
+        Map<String, String> extensions = new LinkedHashMap<>();
         for(String extension : extensionsList) {
             extensions.put(extension, "");
         }
@@ -3415,7 +3448,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @Override
     public CertificateProfile clone() throws CloneNotSupportedException {
         final CertificateProfile clone = new CertificateProfile(0);
-        // We need to make a deep copy of the hashmap here
+        // We need to make a deep copy of the LinkedHashMap here
         clone.data = new LinkedHashMap<>((int)Math.ceil(data.size()/MAP_LOAD_FACTOR));
         for (final Entry<Object,Object> entry : data.entrySet()) {
                 Object value = entry.getValue();
