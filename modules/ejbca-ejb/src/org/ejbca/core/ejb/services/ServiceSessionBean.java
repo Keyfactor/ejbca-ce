@@ -618,12 +618,51 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         timerConfig.setInfo(serviceId);
         timerService.createSingleActionTimer(1, timerConfig);
     }
+    
+    @Override
+    public void runServiceNoTimer(int serviceId) throws ServiceExecutionFailedException {
+        final long runTime = System.currentTimeMillis();
+        IWorker worker = getWorkerAndRunService(serviceId, runTime);
+        if (!canWorkerRun(worker)) {
+            if (log.isDebugEnabled()) {
+                log.debug("Service was deemed unable to run, timer interval left unchanged");
+            }
+            throw new ServiceExecutionFailedException("Service could not run.");
+        }
+        String serviceName = getServiceName(serviceId);
+        ServiceExecutionResult result = executeServiceInNoTransactionOrThrowException(worker, serviceName);
+        if (!result.getResult().equals(ServiceExecutionResult.Result.SUCCESS)) {
+            if (log.isDebugEnabled()) {
+                log.debug("The service " + serviceName + " could not execute or resulted in no action: " + result.getMessage());
+            }
+            throw new ServiceExecutionFailedException(result.getResult().toString());
+        } else {
+            if (log.isDebugEnabled()) {
+                log.debug("The service " + serviceName + " executed with the following result: " + result.getResult());
+            }            
+        }
+    }
 
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public IWorker getWorkerAndRunService(final Integer serviceId, final long nextTimeout) {
+        IWorker worker = null;
+        ServiceData serviceData = serviceDataSession.findById(serviceId);
+        ServiceConfiguration serviceConfiguration = serviceData.getServiceConfiguration();
+        worker = getWorker(serviceConfiguration, getServiceName(serviceId), serviceData.getRunTimeStamp(), nextTimeout);
+        long oldRunTimeStamp = serviceData.getRunTimeStamp();
+        long oldNextRunTimeStamp = serviceData.getNextRunTimeStamp();
+        final Date runDateCheck = new Date(nextTimeout); 
+        serviceDataSession.updateTimestamps(serviceId, oldRunTimeStamp, oldNextRunTimeStamp, runDateCheck.getTime(), oldNextRunTimeStamp);
+        return worker;
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout) {
         return getWorkerIfItShouldRun(serviceId, nextTimeout, false);
     }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IWorker getWorkerIfItShouldRun(final Integer serviceId, final long nextTimeout, final boolean testRunOnOtherNode) {
@@ -768,6 +807,51 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @Override
+    public ServiceExecutionResult executeServiceInNoTransactionOrThrowException(IWorker worker, String serviceName) throws ServiceExecutionFailedException {
+        log.info("Attempting to run service: " + serviceName);
+            // Awkward way of letting POJOs get interfaces, but shows dependencies on the EJB level for all used classes. Injection wont work, since
+            // we have circular dependencies!
+            Map<Class<?>, Object> ejbs = new HashMap<>();
+            ejbs.put(ApprovalSessionLocal.class, approvalSession);
+            ejbs.put(ApprovalProfileSessionLocal.class, approvalProfileSession);
+            ejbs.put(EndEntityAuthenticationSessionLocal.class, authenticationSession);
+            ejbs.put(AuthorizationSessionLocal.class, authorizationSession);
+            ejbs.put(CAAdminSessionLocal.class, caAdminSession);
+            ejbs.put(CaSessionLocal.class, caSession);
+            ejbs.put(CertificateProfileSessionLocal.class, certificateProfileSession);
+            ejbs.put(CertificateStoreSessionLocal.class, certificateStoreSession);
+            ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
+            ejbs.put(CrlStoreSessionLocal.class, crlStoreSession);
+            ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
+            ejbs.put(SecurityEventsLoggerSessionLocal.class, auditSession);
+            ejbs.put(InternalSecurityEventsLoggerSessionLocal.class, internalAuditSession);
+            ejbs.put(KeyRecoverySessionLocal.class, keyRecoverySession);
+            ejbs.put(AdminPreferenceSessionLocal.class, raAdminSession);
+            ejbs.put(GlobalConfigurationSessionLocal.class, globalConfigurationSession);
+            ejbs.put(SignSessionLocal.class, signSession);
+            ejbs.put(EndEntityManagementSessionLocal.class, endEntityManagementSession);
+            ejbs.put(PublisherQueueSessionLocal.class, publisherQueueSession);
+            ejbs.put(PublisherSessionLocal.class, publisherSession);
+            ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);
+            ejbs.put(EndEntityAccessSessionLocal.class, endEntityAccessSession);
+            ejbs.put(WebAuthenticationProviderSessionLocal.class, webAuthenticationSession);
+            ejbs.put(PublishingCrlSessionLocal.class, publishingCrlSession);
+            ejbs.put(CryptoTokenManagementSessionLocal.class, cryptoTokenSession);
+            ejbs.put(CmpMessageDispatcherSessionLocal.class, cmpMsgDispatcherSession);
+            ejbs.put(ImportCrlSessionLocal.class, importCrlSession);
+            ejbs.put(KeyStoreCreateSessionLocal.class, keyStoreCreateSession);
+            ejbs.put(InternalKeyBindingMgmtSessionLocal.class, internalKeyBindingMgmtSession);
+            ejbs.put(OcspResponseGeneratorSessionLocal.class, ocspGeneratorResponseSessionLocal);
+            ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
+            ejbs.put(RevocationSessionLocal.class, revocationSession);
+            ServiceExecutionResult result = worker.work(ejbs);            
+            final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName, result.getResult().getOutput(), result.getMessage());
+            log.info(msg);
+            return result;
+    }
+    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void changeService(AuthenticationToken admin, String name, ServiceConfiguration serviceConfiguration, boolean noLogging) {
