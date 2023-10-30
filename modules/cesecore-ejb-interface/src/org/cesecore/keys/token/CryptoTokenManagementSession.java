@@ -266,7 +266,7 @@ public interface CryptoTokenManagementSession {
      * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
     void keyAuthorizeInit(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenId, String kakTokenKeyAlias, String selectedPaddingScheme)
-            throws CryptoTokenOfflineException;
+            throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
 
     /**
      * Operation specific for CP5 crypto tokens.
@@ -280,7 +280,7 @@ public interface CryptoTokenManagementSession {
      * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
     void keyAuthorize(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int kakTokenid, String kakTokenKeyAlias,
-            long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException;
+            long maxOperationCount, String selectedPaddingScheme) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
     
     /**
      * Operation specific for CP5 crypto tokens.
@@ -318,6 +318,6 @@ public interface CryptoTokenManagementSession {
      * @param selectedPaddingScheme Name of the padding scheme to be used.
      */
     void changeAuthData(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, int currentKakTokenId, int newKakTokenId, String currentKakTokenKeyAlias,
-            String newKakTokenKeyAlias, String selectedPaddingScheme) throws CryptoTokenOfflineException;
+            String newKakTokenKeyAlias, String selectedPaddingScheme) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
 
 }
