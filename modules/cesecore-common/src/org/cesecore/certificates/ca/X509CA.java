@@ -30,7 +30,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * CA operations used for X509 implementations specifically.
  *
  */
-public interface X509CA extends CA, HybridCa {
+public interface X509CA extends CA {
 
     static final String CA_TYPE = "X509CA";
     
