@@ -58,8 +58,6 @@ public class CAToken extends UpgradeableDataHashMap {
     /** Latest version of the UpgradeableHashMap, this determines if we need to auto-upgrade any data. */
     public static final float LATEST_VERSION = 8;
     
-    public static final int NO_ALTERNATIVE_CRYPTOTOKEN_CONFIGURED = -1;
-
     @Deprecated // Used by upgrade code
     public static final String CLASSPATH = "classpath";
     public static final String PROPERTYDATA = "propertydata";
@@ -86,8 +84,6 @@ public class CAToken extends UpgradeableDataHashMap {
     public static final String ENCRYPTIONALGORITHM = "encryptionalgorithm";
     public static final String CRYPTOTOKENID = "cryptotokenid";
     
-    //The crypto token containing the alternative key for a hybrid certificate. May be the same as the above, but may be different as well. 
-    private static final String ALTERNATIVE_CRYPTOTOKEN_ID = "alternativeCryptoTokenId";
     //For quantum safe keys the signature alg is derived from the key type, but ISO 15118 allows non-quantum safe keys to be used as the alternative key
     private static final String ALTERNATIVE_SIGNATURE_ALGORITHM = "alternativeSignatureAlgorithm";
     
@@ -253,23 +249,8 @@ public class CAToken extends UpgradeableDataHashMap {
         this.cryptoTokenId = cryptoTokenId;
         data.put(CAToken.CRYPTOTOKENID, String.valueOf(cryptoTokenId));
     }
-    
-    /** @return the crypto token ID of the alternative crypto token */
-    public int getAlternativeCryptoTokenId() throws CryptoTokenOfflineException {
-        if(data.containsKey(ALTERNATIVE_CRYPTOTOKEN_ID)) {
-            return Integer.valueOf((String) data.get(ALTERNATIVE_CRYPTOTOKEN_ID));
-        } else {
-            return NO_ALTERNATIVE_CRYPTOTOKEN_CONFIGURED;
-        }
-    }
-    
-    
-    public void setAlternativeCryptoTokenId(final int alternativeCryptoTokenId) {
-        data.put(ALTERNATIVE_CRYPTOTOKEN_ID, String.valueOf(alternativeCryptoTokenId)); 
-    }
-    
-
-    /** Set a property and update underlying Map */
+  
+  /** Set a property and update underlying Map */
     public void setProperty(String key, String value) {
         final Properties caTokenProperties = getProperties();
         caTokenProperties.setProperty(key, value);
