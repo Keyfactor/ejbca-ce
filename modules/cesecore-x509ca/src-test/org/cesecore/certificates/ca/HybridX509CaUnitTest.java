@@ -37,6 +37,7 @@ import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AltSignatureAlgorithm;
 import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -224,6 +225,7 @@ public class HybridX509CaUnitTest {
         assertEquals("Incorrect alternative signature value", altSigGen.getAlgorithmIdentifier(),
                 AltSignatureAlgorithm.fromExtensions(certHolder.getExtensions()));
         PublicKey alternativePublicKey = alternativeKeyPair.getPublic();
+
         assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativePublicKey.getEncoded()),
                 SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()));
         PublicKey caAlternativePublicKey = cryptoToken.getPublicKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
