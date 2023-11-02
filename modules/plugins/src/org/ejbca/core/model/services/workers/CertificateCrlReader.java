@@ -369,7 +369,7 @@ public class CertificateCrlReader extends BaseWorker implements CustomServiceWor
         BigInteger crlnumber = CrlExtensions.getCrlNumber(crl);
         final String issuerDn = CertTools.getIssuerDN(crl);
         final int crlPartitionIndex = caInfo.determineCrlPartitionIndex(crl);
-        int isDeltaCrl = (crl.getExtensionValue(Extension.deltaCRLIndicator.getId()) != null ? -1 : 1);
+        int isDeltaCrl = (crl.getExtensionValue(Extension.deltaCRLIndicator.getId()) == null ? -1 : 1);
         if(crlStoreSession.getCRL(issuerDn, crlPartitionIndex, crlnumber.intValue()) == null) {
             try {
                 crlStoreSession.storeCRL(admin, crlData, caFingerprint, crlnumber.intValue(), issuerDn, crlPartitionIndex, crl.getThisUpdate(), crl.getNextUpdate(), isDeltaCrl);
