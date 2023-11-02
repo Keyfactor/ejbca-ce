@@ -479,7 +479,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
 
     @Override
     public void setCertificateChain(final List<Certificate> certificatechain) {
-        final ArrayList<String> storechain = new ArrayList<>();
+        final List<String> storechain = new ArrayList<>();
         for (final Certificate cert : certificatechain) {
             try {
                 storechain.add(new String(Base64.encode(cert.getEncoded())));
