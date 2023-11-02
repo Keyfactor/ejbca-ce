@@ -230,7 +230,7 @@ public class HybridX509CaUnitTest {
             extendedinfo.setNameConstraintsExcluded(x509cainfo.getNameConstraintsExcluded());
         }
 
-        return new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName, null, 0,
+        return new EndEntityInformation(testName.getMethodName(), cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName, null, 0,
                 new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, extendedinfo);
     }
 }
