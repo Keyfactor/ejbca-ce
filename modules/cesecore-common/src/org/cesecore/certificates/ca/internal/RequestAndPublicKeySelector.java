@@ -12,16 +12,17 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca.internal;
 
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.RequestMessageUtils;
-import org.cesecore.certificates.endentity.ExtendedInformation;
-
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 
 /** Class used to select which request message and public key to use to issue a certificate, by looking
  * at the various input in priority order. 
@@ -38,21 +39,29 @@ public class RequestAndPublicKeySelector {
     
     private PublicKey publicKey;
     private RequestMessage requestMessage;
+    private PublicKey alternativePublicKey = null;
     
     /** Constructor taking input needed to make decision on which public key and request message to use. After construction caller can use the methods
      * {@link #getPublicKey()} and {@link #getRequestMessage()} to retrieve the selected objects.
      * 
      * @param providedRequestMessage
      * @param providedPublicKey
+     * @param alternativePublicKey alternative Public Key, if creating a hybrid certificate
      * @param endEntityInformation
      */
-    public RequestAndPublicKeySelector(final RequestMessage providedRequestMessage, final PublicKey providedPublicKey, final ExtendedInformation endEntityInformation) {
+    public RequestAndPublicKeySelector(final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
+            final PublicKey alternativePublicKey, final ExtendedInformation endEntityInformation) {
         requestMessage = providedRequestMessage; //The request message was provided outside of endEntityInformation
         String debugPublicKeySource = null;
         String debugRequestMessageSource = null;
         if (providedRequestMessage != null){
             try {
                 publicKey = providedRequestMessage.getRequestPublicKey();
+                
+                if(requestMessage instanceof PKCS10RequestMessage) {
+                    PKCS10RequestMessage pkcs10RequestMessage = (PKCS10RequestMessage) requestMessage;
+                    this.alternativePublicKey = pkcs10RequestMessage.getAlternativePublicKey();
+                }         
                 debugPublicKeySource = "from providedRequestMessage";
                 debugRequestMessageSource = "from providedRequestMessage";
             } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e1) {
@@ -63,6 +72,9 @@ public class RequestAndPublicKeySelector {
         if (providedPublicKey != null){
             publicKey = providedPublicKey;
             debugPublicKeySource = "separately";
+        }
+        if(alternativePublicKey != null) {
+            this.alternativePublicKey = alternativePublicKey;
         }
         //Request inside endEntityInformation has priority over providedPublicKey and providedRequestMessage
         if (endEntityInformation != null && endEntityInformation.getCertificateRequest() != null) {
@@ -86,6 +98,11 @@ public class RequestAndPublicKeySelector {
     public PublicKey getPublicKey() {
         return publicKey;
     }
+    
+    public PublicKey getAlternativePublicKey() {
+        return alternativePublicKey;
+    }
+
 
     public RequestMessage getRequestMessage() {
         return requestMessage;
