@@ -1095,7 +1095,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 final PrivateKey previousCaPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
                 final String provider = cryptoToken.getSignProviderName();
                 SigningKeyContainer caSigningPackage = new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, provider);
-                final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
+                final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), null, -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
                         certProfile, null, caSigningPackage, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
                 log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
                 ret = retcert.getEncoded();
@@ -1126,10 +1126,40 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             final AvailableCustomCertificateExtensionsConfiguration cceConfig, final Certificate oldCaCert) throws CryptoTokenOfflineException {
         createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certProfile, cceConfig, /*caNameChange*/false, oldCaCert);
     }
+    
+    @Override
+    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, PublicKey alternativePublicKey,
+            int keyusage, Date notBefore, String encodedValidity, CertificateProfile certProfile, String sequence,
+            AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+        // Calculate the notAfter date
+        if (notBefore == null) {
+            notBefore = new Date();
+        }
+        final Date notAfter;
+        if (StringUtils.isNotBlank(encodedValidity)) {
+            notAfter = ValidityDate.getDate(encodedValidity, notBefore, getCAInfo().isExpirationInclusive());
+        } else {
+            notAfter = null;
+        }
+        return generateCertificate(cryptoToken, subject, null, publicKey, alternativePublicKey, keyusage, notBefore, notAfter, certProfile, null, sequence, null,
+                cceConfig);
+    }
   
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken,  EndEntityInformation subject,
             RequestMessage request, PublicKey publicKey, int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile,
+            Extensions extensions, String sequence, CertificateGenerationParams certGenParams,
+            AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, CertificateExtensionException, SignatureException, IllegalKeyException {
+        return generateCertificate(cryptoToken, subject, request, publicKey, null, keyusage, notBefore, notAfter, certProfile, extensions, sequence, certGenParams, cceConfig);
+    }
+    
+    @Override
+    public Certificate generateCertificate(CryptoToken cryptoToken,  EndEntityInformation subject,
+            RequestMessage request, PublicKey publicKey, final PublicKey alternativePublicKey, int keyusage, Date notBefore, Date notAfter, CertificateProfile certProfile,
             Extensions extensions, String sequence, CertificateGenerationParams certGenParams,
             AvailableCustomCertificateExtensionsConfiguration cceConfig)
             throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
@@ -1154,7 +1184,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             caSigningPackage = new SigningKeyContainer(caPublicKey, caPrivateKey, provider, alternativeCaPublicKey, alternativeCaPrivateKey, alternativeProvider);     
         }
         
-        return generateCertificate(subject, request, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, caSigningPackage,
+        return generateCertificate(subject, request, publicKey, alternativePublicKey, keyusage, notBefore, notAfter, certProfile, extensions, caSigningPackage,
                 certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
     }
 
@@ -1166,6 +1196,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * If the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN. Its public key is going to be used if
      * providedPublicKey == null && subject.extendedInformation.certificateRequest == null. Can be null.
      * @param providedPublicKey provided public key which will have precedence over public key from providedRequestMessage but not over subject.extendedInformation.certificateRequest
+     * @param providedAlternativePublicKey alternative key, if the intention is to create a hybrid certificate
      * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of providedRequestMessage and providedPublicKey
      * Otherwise, providedRequestMessage will be used.
      * @param caSigningPackage a holder class containing the CA's public and private keys, and signing algorithm(s)
@@ -1180,7 +1211,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
      * @throws IllegalKeyException if selected public key (check providedRequestMessage, providedPublicKey, subject) is not allowed with certProfile
      */
-    protected Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey,
+    protected Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey, final PublicKey providedAlternativePublicKey,
             final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
                                             final SigningKeyContainer caSigningPackage,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
@@ -1198,9 +1229,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         // Which public key and request shall we use?
         final ExtendedInformation ei = subject.getExtendedInformation();
-        final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(providedRequestMessage, providedPublicKey, ei);
+        final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(providedRequestMessage, providedPublicKey, providedAlternativePublicKey, ei);
         final PublicKey publicKey = pkSelector.getPublicKey();
         final RequestMessage request = pkSelector.getRequestMessage();
+        final PublicKey alternativePublicKey = pkSelector.getAlternativePublicKey();
 
         // ECA-11391 and "Forbid encryption usage for ECC keys" flag in Certificate Profile allow creating certificates
         // using the same Certificate Profile (relevant key usages) where for example both RSA and ECDSA key algorithms are selected in the profile.
@@ -1783,8 +1815,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         
         //Add alternative ("hybrid") signature to certificate if defined 
         try {
-            if(caSigningPackage.getAlternativePublicKey() != null) {
-                certbuilder.addExtension(Extension.subjectAltPublicKeyInfo, false, SubjectAltPublicKeyInfo.getInstance(caSigningPackage.getAlternativePublicKey().getEncoded()));
+            if(alternativePublicKey != null) {
+                certbuilder.addExtension(Extension.subjectAltPublicKeyInfo, false, SubjectAltPublicKeyInfo.getInstance(alternativePublicKey.getEncoded()));
             }
         } catch (CertIOException e) {
             throw new CertificateCreateException("Could not as alternative key extension to certificate builder.", e);
@@ -2507,6 +2539,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     public String getCaImplType() {
         return CA_TYPE;
     }
+
+
 
 
 

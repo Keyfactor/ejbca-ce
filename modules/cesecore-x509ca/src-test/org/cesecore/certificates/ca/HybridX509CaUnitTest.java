@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -30,14 +31,16 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Properties;
 
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AltSignatureAlgorithm;
 import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -134,14 +137,14 @@ public class HybridX509CaUnitTest {
 
         x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         x509ca.setCAToken(caToken);
-        
 
         EndEntityInformation endEntityInformation = makeEndEntityInformation((X509CAInfo) x509ca.getCAInfo());
 
         CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-        
+
         X509Certificate caCertificate = (X509Certificate) x509ca.generateCertificate(cryptoToken, endEntityInformation,
-                cryptoToken.getPublicKey(CAToken.SOFTPRIVATESIGNKEYALIAS), -1, null, x509ca.getCAInfo().getEncodedValidity(), certificateProfile, "0000", null);
+                cryptoToken.getPublicKey(CAToken.SOFTPRIVATESIGNKEYALIAS), cryptoToken.getPublicKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS), -1, null, x509ca.getCAInfo().getEncodedValidity(), certificateProfile,
+                "0000", null);
         x509ca.setCertificateChain(Arrays.asList(caCertificate));
     }
 
@@ -153,7 +156,6 @@ public class HybridX509CaUnitTest {
             InvalidAlgorithmException, CAOfflineException, IllegalValidityException, IllegalNameException, OperatorCreationException,
             CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, CertificateEncodingException,
             IOException, CertException {
-
 
         X509Certificate caCertificate = (X509Certificate) x509ca.getCertificateChain().get(0);
 
@@ -187,9 +189,10 @@ public class HybridX509CaUnitTest {
     @Test
     public void testEnrollHybridEndEntity() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException,
             OperatorCreationException, CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException,
-            IllegalNameException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, IOException, CertificateEncodingException, CertException {
+            IllegalNameException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, IOException,
+            CertificateEncodingException, CertException, InvalidKeySpecException {
         final String subjectDn = "CN=" + testName.getMethodName() + "_ee";
-        
+
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_EC, BouncyCastleProvider.PROVIDER_NAME);
         keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
@@ -199,35 +202,42 @@ public class HybridX509CaUnitTest {
         alternativeKeyPairGenerator.initialize(DilithiumParameterSpec.dilithium2);
         KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
 
-        JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(
-                new X500Name(subjectDn), keyPair.getPublic());
+        JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name(subjectDn),
+                keyPair.getPublic());
 
-        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_DILITHIUM2)
-                .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(alternativeKeyPair.getPrivate());
+        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_DILITHIUM2).setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .build(alternativeKeyPair.getPrivate());
 
         PKCS10CertificationRequest pkcs10CertificationRequest = jcaPKCS10CertificationRequestBuilder
                 .build(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA).setProvider(BouncyCastleProvider.PROVIDER_NAME)
                         .build(keyPair.getPrivate()), alternativeKeyPair.getPublic(), altSigner);
-        
+
         PKCS10RequestMessage request = new PKCS10RequestMessage(pkcs10CertificationRequest.toASN1Structure().getEncoded());
-        
+
         CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        
-        EndEntityInformation endEntityInformation = new EndEntityInformation(testName.getMethodName(), subjectDn, x509ca.getSubjectDN().hashCode(), null, null, 0,
-                new EndEntityType(EndEntityTypes.INVALID), 0, 0, null, null, 0, null);
-        
-        X509Certificate x509Certificate = (X509Certificate) x509ca.generateCertificate(cryptoToken, endEntityInformation, request, null, 0, null, null, certificateProfile, null,  "00000", null);
-        
+
+        EndEntityInformation endEntityInformation = new EndEntityInformation(testName.getMethodName(), subjectDn, x509ca.getSubjectDN().hashCode(),
+                null, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, 0, null, null, 0, null);
+
+        X509Certificate x509Certificate = (X509Certificate) x509ca.generateCertificate(cryptoToken, endEntityInformation, request, null, 0, null,
+                null, certificateProfile, null, "00000", null);
+
         X509CertificateHolder certHolder = new JcaX509CertificateHolder(x509Certificate);
         PrivateKey caAlternativePrivateKey = cryptoToken.getPrivateKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
-        ContentSigner altSigGen = new JcaContentSignerBuilder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2).setProvider(BouncyCastlePQCProvider.PROVIDER_NAME)
-                .build(caAlternativePrivateKey);
+        ContentSigner altSigGen = new JcaContentSignerBuilder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2)
+                .setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePrivateKey);
         assertEquals("Incorrect alternative signature value", altSigGen.getAlgorithmIdentifier(),
                 AltSignatureAlgorithm.fromExtensions(certHolder.getExtensions()));
-        PublicKey alternativePublicKey = alternativeKeyPair.getPublic();
 
-        assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativePublicKey.getEncoded()),
-                SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()));
+        SubjectAltPublicKeyInfo subjectAltPublicKeyInfo = SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions());
+
+        final AlgorithmIdentifier keyAlgorithm = subjectAltPublicKeyInfo.getAlgorithm();
+        final X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(subjectAltPublicKeyInfo.getEncoded());
+        KeyFactory keyFactory = KeyFactory.getInstance(keyAlgorithm.getAlgorithm().getId(),
+                CryptoProviderTools.getProviderNameFromAlg(keyAlgorithm.getAlgorithm().getId()));
+        PublicKey alternativePublicKey = keyFactory.generatePublic(x509EncodedKeySpec);
+
+        assertEquals("Incorrect alternative public key", alternativeKeyPair.getPublic(), alternativePublicKey);
         PublicKey caAlternativePublicKey = cryptoToken.getPublicKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
         assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
                 new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePublicKey)));

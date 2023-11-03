@@ -76,6 +76,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -138,9 +139,13 @@ public class HybridCertificateTest {
             .getRemoteSession(EndEntityManagementSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     private int cryptoTokenId;
     private X509CAInfo hybridRoot;
+
+    private final String username = testName.getMethodName() + "_EE";
+    private final String subjectDn = "CN=" + username;
 
     @BeforeClass
     public static void setUpCryptoProvider() {
@@ -150,7 +155,7 @@ public class HybridCertificateTest {
     @Before
     public void setUp() throws Exception {
         final String cryptoTokenPin = "foo123";
-        final String cryptoTokenName = testName + "CryptoToken";
+        final String cryptoTokenName = testName.getMethodName() + "CryptoToken";
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
@@ -161,7 +166,7 @@ public class HybridCertificateTest {
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS,
                 KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2).build());
 
-        final String caDn = "CN=" + testName + "_CA";
+        final String caDn = "CN=" + testName.getMethodName() + "_CA";
 
         // Create CAToken
         Properties caTokenProperties = constructCaTokenProperties();
@@ -181,7 +186,13 @@ public class HybridCertificateTest {
 
     @After
     public void tearDown() throws Exception {
+        //Delete the end entity 
+        if (endEntityManagementSession.existsUser(username)) {
+            endEntityManagementSession.deleteUser(alwaysAllowToken, username);
+        }
+        internalCertificateStoreSession.removeCertificatesByUsername(username);
 
+        //Delete the CA
         if (cryptoTokenManagementSession.isCryptoTokenPresent(alwaysAllowToken, cryptoTokenId)) {
             try {
                 for (KeyPairInfo keyPairInfo : cryptoTokenManagementSession.getKeyPairInfos(alwaysAllowToken, cryptoTokenId)) {
@@ -194,11 +205,11 @@ public class HybridCertificateTest {
         }
 
         if (hybridRoot != null) {
-            caSession.removeCA(alwaysAllowToken, hybridRoot.getCAId());
-            Certificate caCertificate = hybridRoot.getCertificateChain().get(0);
-            if (caCertificate != null) {
-                internalCertificateStoreSession.removeCertificate(caCertificate);
+            CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, hybridRoot.getCAId());
+            if (caInfo != null) {
+                internalCertificateStoreSession.removeCertificate(caInfo.getCertificateChain().get(0));
             }
+            caSession.removeCA(alwaysAllowToken, hybridRoot.getCAId());
         }
     }
 
@@ -214,8 +225,6 @@ public class HybridCertificateTest {
             CryptoTokenOfflineException, SignRequestSignatureException, CertificateRevokeException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CertificateExtensionException, NoSuchAlgorithmException, NoSuchProviderException,
             InvalidAlgorithmParameterException, OperatorCreationException, IOException, PKCSException, CertificateEncodingException, CertException {
-        final String username = testName + "_EE";
-        final String subjectDn = "CN=" + username;
 
         EndEntityInformation endEntityInformation = new EndEntityInformation(username, subjectDn, hybridRoot.getCAId(), null, null,
                 EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
@@ -251,17 +260,17 @@ public class HybridCertificateTest {
 
             PKCS10RequestMessage request = new PKCS10RequestMessage(pkcs10CertificationRequest.toASN1Structure().getEncoded());
             X509ResponseMessage response = (X509ResponseMessage) certificateCreateSession.createCertificate(alwaysAllowToken, endEntityInformation,
-                    request, X509ResponseMessage.class, null);
-            
+                    request, X509ResponseMessage.class, signSession.fetchCertGenParams());
+
             X509Certificate responseCertificate = (X509Certificate) response.getCertificate();
             X509CertificateHolder certHolder = new JcaX509CertificateHolder(responseCertificate);
 
             assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativeKeyPair.getPublic().getEncoded()),
                     SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()));
 
-            PublicKey caPublicKey = caSession.getCAInfo(alwaysAllowToken, hybridRoot.getName()).getCertificateChain().get(0).getPublicKey();
+            PublicKey caAlternativePublicKey = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
             assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
-                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caPublicKey)));
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
         } finally {
             try {
                 endEntityManagementSession.deleteUser(alwaysAllowToken, username);
