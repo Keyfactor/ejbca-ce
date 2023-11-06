@@ -45,8 +45,6 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /** Handles and maintains the CA-part of the Key Recovery functionality
- * 
- * @version $Id$
  */
 public class KeyRecoveryCAService extends ExtendedCAService implements Serializable {
 
