@@ -184,6 +184,13 @@
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.publicKey}"/>
                 </h:panelGroup>
+                
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.CERT_PUBLICKEY_ALTERNATIVE}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.publicKeyAlternative}"/>
+                </h:panelGroup>
             </h:panelGrid>
                 
             <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
@@ -256,6 +263,12 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.certificateData.signatureAlgoritm}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.SIGNATUREALGORITHMALTERNATIVE}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateData.alternativeSignatureAlgoritm}"/>
                 </h:panelGroup>
                 
                 <ui:remove>
