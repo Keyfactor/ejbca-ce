@@ -18,20 +18,17 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.PKCS8EncodedKeySpec;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -42,7 +39,6 @@ import javax.ejb.TransactionAttributeType;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -252,22 +248,27 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             final EndEntityInformation userData)
             throws CertificateCreateException {
         try {
-            if (!keyRecoverySession.authorizedToKeyRecover(admin, userData.getEndEntityProfileId()))
-                    throw new AuthorizationDeniedException("Admin not authorized for key recovery");
-            if (!endEntityProfileSession.getEndEntityProfile(userData.getEndEntityProfileId()).isKeyRecoverableUsed()
-                    || !((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID))
-                    .getEnableKeyRecovery()) {
+            if (!keyRecoverySession.authorizedToKeyRecover(admin, userData.getEndEntityProfileId())) {
+                throw new AuthorizationDeniedException("Admin not authorized for key recovery");
+            }
+            final boolean keyRecoveryEnabledInEndEntityProfile =
+                    endEntityProfileSession.getEndEntityProfile(userData.getEndEntityProfileId()).isKeyRecoverableUsed();
+            final boolean keyRecoveryEnabledInSystemConfig =
+                    ((GlobalConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
+            if (!keyRecoveryEnabledInEndEntityProfile  || !keyRecoveryEnabledInSystemConfig) {
                 throw new CertificateCreateException("MS Key Archival request was received but key recovery needs to be enabled " +
                         "in the System Configuration and for the End Entity Profile");
             }
             final CAToken caToken = caSession.getCA(admin, userData.getCAId()).getCAToken();
+            final KeyRecoveryCAServiceRequest decryptMsPrivateKeyRequest =
+                    new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPT_MS_KEY_ARCHIVAL_PRIVKEY, requestMessage,
+                    caSession.getCA(admin, userData.getCAId()).getCAToken().getCryptoTokenId(),
+                    caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
             log.info("decrypting private key for archival");
             Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
             final KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, userData.getCAId(),
-                    new KeyRecoveryCAServiceRequest(KeyRecoveryCAServiceRequest.COMMAND_DECRYPT_MS_KEY_ARCHIVAL_PRIVKEY,
-                    requestMessage,
-                    caSession.getCA(admin, userData.getCAId()).getCAToken().getCryptoTokenId(),
-                    caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)));
+                    decryptMsPrivateKeyRequest);
             return response.getKeyPair();
         } catch (AuthorizationDeniedException | CADoesntExistsException | CertificateException | OperatorCreationException
                 | CryptoTokenOfflineException | ExtendedCAServiceRequestException | IllegalExtendedCAServiceRequestException
