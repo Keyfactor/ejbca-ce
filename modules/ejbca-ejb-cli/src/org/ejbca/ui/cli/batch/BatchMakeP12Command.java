@@ -15,7 +15,9 @@ package org.ejbca.ui.cli.batch;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.Properties;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -397,23 +399,29 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         KeyPair rsaKeys = null;
         X509Certificate orgCert = null;
         if (getUseKeyRecovery() && keyrecoverflag) {
-            boolean reusecertificate = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
-                    .getEndEntityProfile(data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
-            // Recover Keys
+            try {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+                boolean reusecertificate = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class)
+                        .getEndEntityProfile(data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
+                // Recover Keys
 
-            KeyRecoveryInformation recoveryData = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class).recoverKeys(
-                    getAuthenticationToken(), data.getUsername(), data.getEndEntityProfileId());
-            if (reusecertificate) {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class).unmarkUser(getAuthenticationToken(), data.getUsername());
-            }
-            if (recoveryData != null) {
-                rsaKeys = recoveryData.getKeyPair();
+                KeyRecoveryInformation recoveryData = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class)
+                        .recoverKeys(getAuthenticationToken(), data.getUsername(), data.getEndEntityProfileId());
                 if (reusecertificate) {
-                    orgCert = (X509Certificate) recoveryData.getCertificate();
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class).unmarkUser(getAuthenticationToken(),
+                            data.getUsername());
                 }
-            } else {
-                String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errornokeyrecoverydata", data.getUsername());
-                throw new Exception(errMsg);
+                if (recoveryData != null) {
+                    rsaKeys = recoveryData.getKeyPair();
+                    if (reusecertificate) {
+                        orgCert = (X509Certificate) recoveryData.getCertificate();
+                    }
+                } else {
+                    String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errornokeyrecoverydata", data.getUsername());
+                    throw new Exception(errMsg);
+                }
+            } finally {
+                Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
             }
         } else {
             rsaKeys = KeyTools.genKeys(getProps().getKeySpec(), getProps().getKeyAlg());
