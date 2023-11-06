@@ -109,6 +109,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
+import org.cesecore.certificates.ca.HybridCa;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -781,7 +782,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 }
-                EndEntityInformation cadata = makeEndEntityInformation(cainfo);
+                EndEntityInformation cadata = makeEndEntityInformation(cainfo);                
                 cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
                         cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
                 if (log.isDebugEnabled()) {
