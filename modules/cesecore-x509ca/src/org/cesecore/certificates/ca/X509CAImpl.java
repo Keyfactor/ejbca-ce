@@ -160,6 +160,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -1042,7 +1043,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         } else {
             nameStyle = CeSecoreNameStyle.INSTANCE;
         }
-        X500Name x509dn = CertTools.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
+        X500Name x509dn = DnComponents.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
         PKCS10CertificationRequest req;
         try {
             final CAToken catoken = getCAToken();
@@ -1340,7 +1341,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 final String stripped = StringTools.strip(ei.getRawSubjectDn());
                 // Since support for multi-value RDNs in EJBCA 7.0.0, see ECA-3934, we don't automatically escape + signs anymore
                 final String emptiesRemoved = DNFieldsUtil.removeAllEmpties(stripped);
-                final X500Name subjectDNNameFromEei = CertTools.stringToUnorderedX500Name(emptiesRemoved, CeSecoreNameStyle.INSTANCE);
+                final X500Name subjectDNNameFromEei = DnComponents.stringToUnorderedX500Name(emptiesRemoved, CeSecoreNameStyle.INSTANCE);
                 if (subjectDNNameFromEei.toString().length()>0) {
                     subjectDNName = subjectDNNameFromEei;
                     if (log.isDebugEnabled()) {
@@ -1348,10 +1349,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                         log.debug("ExtendedInformation.getRawSubjectDn(): " + LogRedactionUtils.getSubjectDnLogSafe(ei.getRawSubjectDn(), subject.getEndEntityProfileId()) + " will use: " + LogRedactionUtils.getSubjectDnLogSafe(CeSecoreNameStyle.INSTANCE.toString(subjectDNName), subject.getEndEntityProfileId()));
                     }
                 } else {
-                    subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
+                    subjectDNName = DnComponents.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
                 }
             } else {
-                subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
+                subjectDNName = DnComponents.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
             }
         }
         // Make sure the DN does not contain dangerous characters
@@ -1411,7 +1412,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 altName = certProfile.createSubjectAltNameSubSet(altName);
             }
             if (altName != null && altName.length() > 0) {
-                altNameGNs = CertTools.getGeneralNamesFromAltName(altName);
+                altNameGNs = DnComponents.getGeneralNamesFromAltName(altName);
             }
             CABase.checkNameConstraints(cacert, subjectDNName, altNameGNs);
         }
@@ -2039,7 +2040,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
     @Override
     public ExtensionsGenerator getSubjectAltNameExtensionForCert(Extension subAltNameExt, boolean publishToCT) throws IOException {
-        GeneralNames names = CertTools.getGeneralNamesFromExtension(subAltNameExt);
+        GeneralNames names = DnComponents.getGeneralNamesFromExtension(subAltNameExt);
         GeneralName[] gns = names !=null ? names.getNames() : new GeneralName[0];
         boolean sanEdited = false;
         ASN1EncodableVector nrOfRecactedLables = new ASN1EncodableVector();
@@ -2047,7 +2048,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             GeneralName generalName = gns[j];
             // Look for DNS name
             if (generalName.getTagNo() == 2) {
-                final String str = CertTools.getGeneralNameString(2, generalName.getName());
+                final String str = DnComponents.getGeneralNameString(2, generalName.getName());
                 if(StringUtils.contains(str, "(") && StringUtils.contains(str, ")") ) { // if it contains parts that should be redacted
                     // Remove the parentheses from the SubjectAltName that will end up on the certificate
                     String certBuilderDNSValue = StringUtils.remove(str, "dNSName=");
@@ -2066,7 +2067,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
             // Look for rfc822Name
             if(generalName.getTagNo() == 1) {
-                final String str = CertTools.getGeneralNameString(1, generalName.getName());
+                final String str = DnComponents.getGeneralNameString(1, generalName.getName());
                 if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
                     String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
@@ -2091,7 +2092,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     public ExtensionsGenerator getSubjectAltNameExtensionForCTCert(Extension subAltNameExt) throws IOException {
         Pattern parenthesesRegex = Pattern.compile("\\(.*\\)"); // greedy match, so against "(a).(b).example.com" it will match "(a).(b)", like the old code did
-        GeneralNames names = CertTools.getGeneralNamesFromExtension(subAltNameExt);
+        GeneralNames names = DnComponents.getGeneralNamesFromExtension(subAltNameExt);
         GeneralName[] gns = names != null ? names.getNames() : new GeneralName[0];
         for (int j = 0; j<gns.length; j++) {
             GeneralName generalName = gns[j];
@@ -2105,7 +2106,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 }
             }
             if(generalName.getTagNo() == 1) {
-                final String str = CertTools.getGeneralNameString(1, generalName.getName());
+                final String str = DnComponents.getGeneralNameString(1, generalName.getName());
                 if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
                     String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
@@ -2163,7 +2164,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             } else {
                 nameStyle = CeSecoreNameStyle.INSTANCE;
             }
-            issuer = CertTools.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
+            issuer = DnComponents.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
         } else {
             issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
         }

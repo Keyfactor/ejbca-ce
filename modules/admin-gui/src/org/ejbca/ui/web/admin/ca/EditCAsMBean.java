@@ -13,17 +13,51 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.PrivateKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.FacesException;
+import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -79,47 +113,16 @@ import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
 import org.ejbca.ui.web.admin.cainterface.CaInfoDto;
 import org.ejbca.ui.web.admin.certprof.CertProfileBean.ApprovalRequestItem;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.FacesException;
-import javax.faces.component.UIInput;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.PrivateKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateParsingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  *
@@ -171,6 +174,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private List<String> availableCryptoTokenKeyAliases;
     private List<String> availableCryptoTokenMixedAliases;
     private List<String> availableCryptoTokenEncryptionAliases;
+    private List<String> availableCryptoTokenAlternativeKeyAliases;
     private boolean createLinkCertificate;
 
     private CAInfo cainfo = null;
@@ -500,6 +504,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         return StringUtils.EMPTY;
     }
+    
+    public String getCurrentCaAlternativeSigningAlgorithm() {
+        if (this.cainfo != null) {
+            final String signAlgorithm = cainfo.getCAToken().getAlternativeSignatureAlgorithm();
+            if (signAlgorithm != null) {
+                return signAlgorithm;
+            }
+            return getEjbcaWebBean().getText("NOTUSED");
+        }
+        return StringUtils.EMPTY;
+    }
 
     public String getEditCAPageTitle() {
         if (this.isEditCA && caBean.hasEditRight()) {
@@ -536,7 +551,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return StringUtils.EMPTY;
@@ -547,7 +562,22 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
+            }
+        }
+        return StringUtils.EMPTY;
+    }
+    
+    public String getCurrentCaCryptoTokenAlternativeCertSignKey() {
+        if(catoken != null) {
+            try {
+                if (StringUtils.isNotEmpty(catoken.getAlternativeSignatureAlgorithm())) {
+                    return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                } else {
+                    return getEjbcaWebBean().getText("NOTUSED");
+                }
+            } catch (final CryptoTokenOfflineException e) {
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return StringUtils.EMPTY;
@@ -558,7 +588,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return StringUtils.EMPTY;
@@ -569,7 +599,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return this.caCryptoTokenKeyEncryptKey;
@@ -580,7 +610,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return this.caCryptoTokenTestKey;
@@ -1060,13 +1090,19 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), Integer.parseInt(cryptoTokenIdParam));
                 return resultList.stream()
-                                 .filter(sa -> signingAlgorithmApplicableForCT(sa.getLabel(), cryptoTokenKeyPairInfos))
+                                 .filter(sa -> getSigningAlgorithmsApplicableForCryptoToken(sa.getLabel(), cryptoTokenKeyPairInfos))
                                  .collect(Collectors.toList());
             } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
                 log.error("Crypto token key pair infos could not be fetched.", e);
             }
         }
 
+        return resultList;
+    }
+    
+    public List<SelectItem> getAvailableSigningAlgListNoneOption() {
+        final List<SelectItem> resultList = getAvailableSigningAlgList();
+        resultList.add(0, new SelectItem(null, "Select an algorithm to activate hybrid certificates."));
         return resultList;
     }
 
@@ -1077,7 +1113,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @param cryptoTokenKeyPairInfos Key pairs in a crypto token
      * @return true if found
      */
-    private boolean signingAlgorithmApplicableForCT(String signingAlgorithm, List<KeyPairInfo> cryptoTokenKeyPairInfos) {
+    private boolean getSigningAlgorithmsApplicableForCryptoToken(String signingAlgorithm, List<KeyPairInfo> cryptoTokenKeyPairInfos) {
         String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm);
         for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
             if (requiredKeyAlgorithm.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
@@ -1165,6 +1201,28 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             updateKeyAliases();
         }
     }
+    
+    public String getAlternativeSignatureAlgorithmParam() {
+        return caInfoDto.getAlternativeSignatureAlgorithmParam();
+    }
+    
+
+    public void setAlternativeSignatureAlgorithmParam(final String alternativeSignatureAlgorithmParam) {
+        caInfoDto.setAlternativeSignatureAlgorithmParam(alternativeSignatureAlgorithmParam);
+
+        if(StringUtils.isEmpty(alternativeSignatureAlgorithmParam)) {
+            caInfoDto.setCryptoTokenAlternativeCertSignKey(StringUtils.EMPTY);
+        }
+        
+        // Create already in use key map
+        if (!isEditCA || isCaUninitialized) {
+            updateKeyAliases();
+        }
+    }
+    
+    public boolean isAlternativeSignatureAlgorithmSelected() {
+        return StringUtils.isNotBlank(caInfoDto.getAlternativeSignatureAlgorithmParam());
+    }
 
     private void setDefaultKeyAliases() {
         // Make up defaults based on key alias names
@@ -1206,18 +1264,23 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getKeyAliasesList(final String keyType) {
         final List<SelectItem> resultList = new ArrayList<>();
         switch (keyType) {
-        case "defaultKey":
+        case CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING:
             for (final String alias : availableCryptoTokenMixedAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
             return resultList;
-        case "certSignKey":
-        case "testKey":
+        case CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING:
+        case CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING:    
             for (final String alias : availableCryptoTokenKeyAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
             return resultList;
-        case "keyEncryptKey":
+        case CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING:
+            for (final String alias : availableCryptoTokenAlternativeKeyAliases) {
+                resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
+            }
+            return resultList;     
+        case CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING:
             for (final String alias : availableCryptoTokenEncryptionAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
@@ -1255,6 +1318,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void setSelectedCryptoTokenCertSignKey(final String selectedCryptoTokenCertSignKey) {
         caInfoDto.setCryptoTokenCertSignKey(StringUtils.defaultString(selectedCryptoTokenCertSignKey));
+    }
+    
+    public String getSelectedCryptoTokenAlternativeCertSignKey() {
+        if (StringUtils.isNotEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
+            return caInfoDto.getCryptoTokenAlternativeCertSignKey();
+        } else {
+            return getEjbcaWebBean().getText("NOTUSED");
+        }
+    }
+
+    public void setSelectedCryptoTokenAlternativeCertSignKey(final String selectedCryptoTokenAlternativeCertSignKey) {
+        caInfoDto.setCryptoTokenAlternativeCertSignKey(StringUtils.defaultString(selectedCryptoTokenAlternativeCertSignKey));
     }
 
     public String getSelectedKeyEncryptKey() {
@@ -1458,40 +1533,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return EditCaUtil.MANAGE_CA_NAV;
     }
     
-    private void validateCitsFields() throws Exception {
-        
-        // external ca
-        
-        // max validity 5 years + pattern
-        
-        // certificate id regex
-        
-        // signkey and default key are different and both ECC or both null(create then)
-        if(catoken!=null) {
-            final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), catoken.getCryptoTokenId());
-            String certSignKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-            String encryptionKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT);
-            
-            if(certSignKey.equals(encryptionKey)) {
-                addErrorMessage("CITS_KEYS_SAME");
-            }
-            
-            String signKeySpec = "";
-            String encKeySpec = "";
-            
-            for(KeyPairInfo keyPairInfo: cryptoTokenKeyPairInfos) {
-                if(keyPairInfo.getAlias().equals(certSignKey)) {
-                    signKeySpec = keyPairInfo.getKeySpecification();
-                }
-                if(keyPairInfo.getAlias().equals(encryptionKey)) {
-                    encKeySpec = keyPairInfo.getKeySpecification();
-                }
-            }
-
-        }
-        
-    }
-
     // ======================================= Helpers ===================================================================//
     private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
         boolean illegalDnOrAltName;
@@ -1502,7 +1543,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 if (isCaTypeCits()) {
                     // only applicable to externally signed ca
                     try {
-                        validateCitsFields();
                         caInfoDto.setCaSubjectDN(CAInfo.CITS_SUBJECTDN_PREFIX + caInfoDto.getCertificateId());
                         ItsGeographicElement geoElement = EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
                         if (geoElement != null) {
@@ -1534,7 +1574,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             return EditCaUtil.MANAGE_CA_NAV;
         }
         if (caInfoDto.getCaType() == CAInfo.CATYPE_CVC && !illegalDnOrAltName && createCa) {
-            caid = CertTools.stringToBCDNString(caInfoDto.getCaSubjectDN()).hashCode();
+            caid = DnComponents.stringToBCDNString(caInfoDto.getCaSubjectDN()).hashCode();
             return EditCaUtil.MANAGE_CA_NAV;
         }
 
@@ -2057,6 +2097,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
                 }
+                if(StringUtils.isNotEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
+                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING, caInfoDto.getCryptoTokenAlternativeCertSignKey());
+                }
+                
                 if (caInfoDto.getSelectedKeyEncryptKey().length() > 0) {
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, caInfoDto.getSelectedKeyEncryptKey());
                 }
@@ -2533,6 +2577,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         availableCryptoTokenKeyAliases = new ArrayList<>(); // Avoids NPE in getters if the code below fails.
         availableCryptoTokenMixedAliases = new ArrayList<>();
         availableCryptoTokenEncryptionAliases = new ArrayList<>();
+        availableCryptoTokenAlternativeKeyAliases = new ArrayList<>();
         if (!isCaexternal) {
             updateCryptoTokenInfo();
             if (currentCryptoTokenId != 0) {
@@ -2557,11 +2602,20 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         availableCryptoTokenKeyAliases = caBean.getAvailableCryptoTokenAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
         availableCryptoTokenMixedAliases = caBean.getAvailableCryptoTokenMixedAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
         availableCryptoTokenEncryptionAliases = caBean.getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        if (StringUtils.isNotEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
+            availableCryptoTokenAlternativeKeyAliases = caBean.getAvailableCryptoTokenAliases(keyPairInfos,
+                    caInfoDto.getAlternativeSignatureAlgorithmParam());
+        }
     }
 
     private void generateKeyAlreadyInUseMap() {
         // Create already in use key map
         for (final String alias : availableCryptoTokenMixedAliases) {
+            final String alreadyInUse = isKeyInUse(caSession.getAuthorizedCaIds(getAdmin()), alias, currentCryptoTokenId) ? " (Already in use)"
+                    : StringUtils.EMPTY;
+            aliasUsedMap.put(alias, alreadyInUse);
+        }
+        for(final String alias : availableCryptoTokenAlternativeKeyAliases) {
             final String alreadyInUse = isKeyInUse(caSession.getAuthorizedCaIds(getAdmin()), alias, currentCryptoTokenId) ? " (Already in use)"
                     : StringUtils.EMPTY;
             aliasUsedMap.put(alias, alreadyInUse);
