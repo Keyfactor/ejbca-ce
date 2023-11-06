@@ -214,13 +214,21 @@ public class CertificateValidity {
     		// Update lastDate if we use maximum validity
     	}
 
-    	
-		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
+		// Limit validity: We do not allow a certificate to be valid after the validity of the certificate profile
     	if (lastDate.after(certProfileLastDate)) {
     		log.info(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
     		lastDate = certProfileLastDate;
+
+            // Combination of Validity Override and firstDate in past beyond Encoded Validity might result in
+            // a certificateProfileLastDate and create an already expired certificate.
+            if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate) {
+                final String msg = intres.getLocalizedMessage("createcert.erroralreadyexpired", firstDate);
+                log.error(msg);
+                throw new IllegalValidityException(msg);
+            }
     	}
-		// Limit validity: We do not allow a certificate to be valid after the the validity of the CA (unless it's RootCA during renewal)
+
+		// Limit validity: We do not allow a certificate to be valid after the validity of the CA (unless it's RootCA during renewal)
     	if (cacert != null && !isRootCA) {
     	    final Date caNotAfter = CertTools.getNotAfter(cacert);
     	    if (lastDate.after(caNotAfter)) {
