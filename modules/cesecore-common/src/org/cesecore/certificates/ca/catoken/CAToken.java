@@ -349,7 +349,7 @@ public class CAToken extends UpgradeableDataHashMap {
         return (String) data.get(CAToken.SIGNATUREALGORITHM);
     }
 
-    /** Sets the alternative SignatureAlgoritm */
+    /** Sets the SignatureAlgoritm */
     public void setSignatureAlgorithm(String signaturealgoritm) {
         data.put(CAToken.SIGNATUREALGORITHM, signaturealgoritm);
     }
@@ -359,7 +359,7 @@ public class CAToken extends UpgradeableDataHashMap {
         return (String) data.get(CAToken.ALTERNATIVE_SIGNATURE_ALGORITHM);
     }
 
-    /** Sets the SignatureAlgoritm */
+    /** Sets the alternative SignatureAlgoritm */
     public void setAlternativeSignatureAlgorithm(String signaturealgoritm) {
         data.put(CAToken.ALTERNATIVE_SIGNATURE_ALGORITHM, signaturealgoritm);
     }
