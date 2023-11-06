@@ -1570,14 +1570,15 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
-        throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
-        CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
-        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException {
+    public Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+            throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
+            CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException,
+            OperatorCreationException, IllegalNameException, CertificateEncodingException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (log.isDebugEnabled()) {
-                log.debug("raMasterApi calling getKeyExchangeCertificate: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+                log.debug("raMasterApi calling getKeyExchangeCertificate: " + raMasterApi.getApiVersion() + ", " + raMasterApi.isBackendAvailable()
+                        + ", " + raMasterApi.getClass());
             }
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 17) {
                 try {
@@ -1595,7 +1596,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
-        return new byte[] {};
+        return null;
     }
 
     private byte[] generateKeyStoreForceLocalKeyRecovery(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
