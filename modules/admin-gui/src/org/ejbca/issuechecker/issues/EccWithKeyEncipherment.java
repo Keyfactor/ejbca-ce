@@ -66,7 +66,7 @@ public class EccWithKeyEncipherment extends ConfigurationIssue {
         return certificateProfileSession.getCertificateProfileIdToNameMap()
                 .entrySet()
                 .stream()
-                .map(mapEntry -> new CertificateProfileEntry(mapEntry))
+                .map(CertificateProfileEntry::new)
                 .filter(entry -> isCertificateProfileCreatedByUser(entry.certificateProfileId))
                 .filter(entry -> entry.certificateProfile.isEccCapable())
                 .filter(entry -> entry.certificateProfile.getKeyUsage(CertificateConstants.KEYENCIPHERMENT))
