@@ -1,0 +1,133 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+<ui:remove>
+    <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     -->
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <ui:define name="content">
+        <h:panelGroup layout="block" styleClass="header" id="title">
+            <h1>
+                <h:outputText value="#{msg.inspect_page_title}"/>
+            </h1>
+        </h:panelGroup>
+        <h:panelGroup layout="block" styleClass="content-body">
+            <h:form id="inspect-form" enctype="multipart/form-data" styleClass="pure-form">
+                <ui:remove><!-- inputs --></ui:remove>
+                <h:panelGroup rendered="#{not raInspectBean.showInspectionResults}" layout="block"
+                              styleClass="internal-frame inspect-container">
+                    <h:panelGroup layout="block" styleClass="pure-u-1">
+                        <h:outputText value="#{msg.inspect_page_input}"/>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="pure-u-1">
+                        <h:inputTextarea id="input-field"
+                                         value="#{raInspectBean.uploadedPlainTextContent}"
+                                         pt:placeholder="#{msg.inspect_page_certificate_placeholder}"
+                                         pt:spellcheck="false"
+                                         styleClass="monospace jsAutoFocusLast">
+                            <f:ajax event="keyup" render="inspect-plain-text-button"/>
+                        </h:inputTextarea>
+                    </h:panelGroup>
+                    <h:commandButton id="file-upload-button"
+                                     value="#{msg.inspect_page_upload}"
+                                     type="button"
+                                     onclick="ejbca.ra.click('inspect-form:file-picker')"
+                                     styleClass="pure-button ra-button"/>
+                    <h:inputFile id="file-picker" value="#{raInspectBean.uploadedFile}"
+                                 onchange="ejbca.ra.click('inspect-form:hidden-inspect-file-action')"
+                                 styleClass="hidden"/>
+                    <h:commandButton id="hidden-inspect-file-action"
+                                     action="#{raInspectBean.processFile()}"
+                                     styleClass="hidden"/>
+                    <h:commandButton id="inspect-plain-text-button"
+                                     value="#{msg.inspect_page_inspect_button}"
+                                     action="#{raInspectBean.processPlainTextContent()}"
+                                     disabled="#{empty raInspectBean.uploadedPlainTextContent}"
+                                     styleClass="pure-button ra-button executeActionButton"/>
+                </h:panelGroup>
+                <ui:remove><!-- inspection result --></ui:remove>
+                <h:panelGroup rendered="#{raInspectBean.showInspectionResults}" layout="block"
+                              styleClass="internal-frame inspect-container">
+                    <h:panelGroup layout="block" styleClass="pure-u-1">
+                        <h2><h:outputText value="#{msg.generic_details}"/></h2>
+                    </h:panelGroup>
+                    <h:panelGroup id="inspect-detail-grid" layout="block" styleClass="pure-u-1">
+                        <ui:remove><!-- type --></ui:remove>
+                        <h:outputText value="#{msg.generic_type}" styleClass="inspect-field-name"/>
+                        <h:outputText value="#{raInspectBean.inspectedObject.type.name}"
+                                      styleClass="inspect-field-value"/>
+                        <ui:remove><!-- filename --></ui:remove>
+                        <h:outputText value="#{msg.generic_filename}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.filename}"
+                                      styleClass="inspect-field-name"/>
+                        <h:outputText value="#{raInspectBean.inspectedObject.filename}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.filename}"
+                                      styleClass="inspect-field-value"/>
+                        <ui:remove><!-- serial number (hex) --></ui:remove>
+                        <h:outputText value="#{msg.inspect_page_serial_number_hex}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.serialNumberHex}"
+                                      styleClass="inspect-field-name"/>
+                        <h:outputText value="#{raInspectBean.inspectedObject.serialNumberHex}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.serialNumberHex}"
+                                      styleClass="inspect-field-value"/>
+                        <ui:remove><!-- serial number (decimal) --></ui:remove>
+                        <h:outputText value="#{msg.inspect_page_serial_number_decimal}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.serialNumberDecimal}"
+                                      styleClass="inspect-field-name"/>
+                        <h:outputText value="#{raInspectBean.inspectedObject.serialNumberDecimal}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.serialNumberDecimal}"
+                                      styleClass="inspect-field-value"/>
+                        <ui:remove><!-- fingerprint SHA 1 --></ui:remove>
+                        <h:outputText value="#{msg.component_certdetails_field_fingerprint}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.fingerprintSha1}"
+                                      styleClass="inspect-field-name"/>
+                        <h:outputText value="#{raInspectBean.inspectedObject.fingerprintSha1}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.fingerprintSha1}"
+                                      styleClass="inspect-field-value"/>
+                        <ui:remove><!-- fingerprint SHA 256 --></ui:remove>
+                        <h:outputText value="#{msg.component_certdetails_field_fingerprintSha256}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.fingerprintSha256}"
+                                      styleClass="inspect-field-name"/>
+                        <h:outputText value="#{raInspectBean.inspectedObject.fingerprintSha256}"
+                                      rendered="#{not empty raInspectBean.inspectedObject.fingerprintSha256}"
+                                      styleClass="inspect-field-value"/>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="pure-u-1">
+                        <h2><h:outputText value="#{msg.generic_raw_data}"/></h2>
+                    </h:panelGroup>
+                    <h:panelGroup layout="block" styleClass="pure-u-1">
+                        <h:inputTextarea id="output-field"
+                                         value="#{raInspectBean.inspectedObject.content}"
+                                         readonly="true"/>
+                    </h:panelGroup>
+                    <script type="application/javascript">
+                        ejbca.ra.growToContentHeight('inspect-form:output-field');
+                    </script>
+                    <h:commandButton id="inspect-another-button"
+                                     value="${msg.generic_reset}"
+                                     action="${raInspectBean.reset()}"
+                                     styleClass="pure-button ra-button"/>
+                </h:panelGroup>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
+</html>
