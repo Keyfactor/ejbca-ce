@@ -45,8 +45,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -130,6 +128,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
@@ -2377,7 +2376,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         // Using CA subject DN's common name part to stay compatible with Microsoft KA cert format
         // Check here for more info: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/bcae68c1-5b26-4a9d-8f28-eb2fdc209c65
-        final String cNPartOfSubjectDN = extractCommonName(caSubjectDN);
+        final String cNPartOfSubjectDN = DNFieldsUtil.extractCommonName(caSubjectDN);
         
         if (cNPartOfSubjectDN == null) {
             log.debug("Could not extrace the CN from CA's subject DN!");
@@ -2396,29 +2395,6 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
         log.debug("Creating KEC as certificate not found with subjectDN=[ CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
         return caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
-    }
-    
-    /**
-     * Extracts the CN part of the subject DN to be used in the KEC DN
-     * @param caFullSubjectDN
-     * @return extracted CN part of CA's full DN
-     */
-    private static String extractCommonName(String caFullSubjectDN) {
-        log.debug("Extracting common name from CA's full Subject DN: " + LogRedactionUtils.getRedactedMessage(caFullSubjectDN));
-        
-        Pattern pattern = null;
-
-        if (caFullSubjectDN.contains(",")) { // SDN has more than CN in it!
-            pattern = Pattern.compile("CN=(.*?),");
-        } else {
-            pattern = Pattern.compile("CN=(.*)");
-        }
-
-        Matcher matcher = pattern.matcher(caFullSubjectDN);
-        if (matcher.find()) {
-            return matcher.group(1).trim();
-        }
-        return null;
     }
 
     @Override
