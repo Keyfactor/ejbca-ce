@@ -1,11 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <ui:remove>
-	<!--
+    <!--
     /*************************************************************************
      *                                                                       *
      *  EJBCA: The OpenSource Certificate Authority                          *
@@ -18,81 +19,63 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-     $Id$
      -->
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{cmpConfigMBean}" />
-	<ui:define name="content">
-		<h1>
-			<h:outputText value="#{cmpConfigMBean.authorizedToEdit ? web.text.CMPMANAGEALIASES : web.text.CMP_VIEW_ALIASES}"/>
-			<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
-		</h1>
-		
-        <h:form id="cmpaliasesform">
-            <h:panelGrid rendered="#{!cmpConfigMBean.deleteInProgress}">
-                <h:panelGrid styleClass="list" columns="1" columnClasses="listColumn1">
-                    <h:panelGroup>
-                        <h3><h:outputText value="#{web.text.CMPLISTOFALIASES}"/></h3>
-                    </h:panelGroup>
-                    <h:panelGroup>
-                    </h:panelGroup>
+    <ui:param name="resourceBean" value="#{cmpConfigMBean}"/>
+    <ui:define name="content">
+        <h1>
+            <h:outputText
+                    value="#{cmpConfigMBean.authorizedToEdit ? web.text.CMPMANAGEALIASES : web.text.CMP_VIEW_ALIASES}"/>
+            <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
+        </h1>
 
-                    <h:panelGroup>
-                        <h:selectOneListbox id="selectaliaslist" styleClass="select-list" name="selectcmpalias" value="#{cmpConfigMBean.selectedCmpAlias}" style="width: 55em" size="15">
-                            <f:selectItems value="#{cmpConfigMBean.cmpAliasSelectItems}"/>
-                        </h:selectOneListbox>
-                    </h:panelGroup>
+        <h3>
+            <h:outputText value="#{web.text.CMPLISTOFALIASES}"/>
+        </h3>
+        <h:form id="cmpaliasesform" rendered="#{web.ejbcaWebBean.runningEnterprise}">
+            <h:dataTable value="#{cmpConfigMBean.cmpConfig.sortedAliasList}" var="alias" styleClass="grid"
+                         rendered="#{!cmpConfigMBean.aliasListEmpty}">
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CMPALIAS}"/>
+                    </f:facet>
+                    <h:outputText value="#{alias}" title="#{alias}"/>
+                </h:column>
+                <h:column>
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.ACTIONS}"/>
+                    </f:facet>
+                    <h:commandButton id="buttonviewalias"
+                                     value="#{web.text.VIEW}"
+                                     action="#{cmpConfigMBean.actionView(alias)}">
+                    </h:commandButton>
+                    <h:commandButton value="#{web.text.EDIT}"
+                                     action="#{cmpConfigMBean.actionEdit(alias)}"
+                                     disabled="#{!cmpConfigMBean.authorizedToEdit}">
+                    </h:commandButton>
+                    <h:commandButton value="#{web.text.DELETE}"
+                                     action="#{cmpConfigMBean.deleteAlias(alias)}"
+                                     disabled="#{!cmpConfigMBean.authorizedToEdit}"/>
+                    <h:commandButton value="#{web.text.CLONE}"
+                                     action="#{cmpConfigMBean.cloneAlias(alias)}"
+                                     disabled="#{!cmpConfigMBean.authorizedToEdit}"/>
+                </h:column>
+            </h:dataTable>
 
-                    <h:panelGroup>
-                    </h:panelGroup>
-
-					<h:panelGrid columns="3">
-	                    <h:commandButton id="buttonviewcmpalias"
-	                                     action="#{cmpConfigMBean.actionView}"
-	                                     value="#{web.text.CMP_VIEW_ALIAS}"/>
-	                    <h:commandButton id="buttoneditcmpalias"
-	                                     action="#{cmpConfigMBean.actionEdit}"
-	                                     value="#{web.text.CMPEDITALIAS}"
-	                                     rendered="#{cmpConfigMBean.authorizedToEdit}"/>
-	                    <h:commandButton id="buttondeletecmpalias" action="#{cmpConfigMBean.actionDelete}"
-	                                     value="#{web.text.CMPDELETEALIAS}"
-	                                     rendered="#{cmpConfigMBean.authorizedToEdit}"/>
-					</h:panelGrid>
-					
-                    <h:panelGroup>
-                    </h:panelGroup>
-                </h:panelGrid>
-                <h:panelGrid styleClass="actions margin-top" rendered="#{cmpConfigMBean.authorizedToEdit}">
-                    <h:panelGroup>
-                        <h3><h:outputText value="#{web.text.CMPADDALIAS}"/></h3>
-                    </h:panelGroup>
-                    <h:panelGroup>
-                        <h:inputText id="textfielcmpaliasname" name="textfielcmpaliasname"
-                                     value="#{cmpConfigMBean.newCmpAlias}" size="40" title="#{web.text.FORMAT_ID_STR}"/><h:outputText value=" "/>
-                        <h:commandButton id="buttonaddcmpalias" name="buttonaddcmpalias"
-                                         action="#{cmpConfigMBean.addCmpAlias}" value="#{web.text.ADD}"/>&nbsp;&nbsp;
-                        <h:commandButton id="buttonrenamecmpalias" name="buttonrenamecmpalias"
-                                         action="#{cmpConfigMBean.renameCmpAlias}" value="#{web.text.RENAME_SELECTED}"/>&nbsp;&nbsp;&nbsp;
-                        <h:commandButton id="buttonclonecmpalias" name="buttonclonecmpalias" action="#{cmpConfigMBean.cloneCmpAlias}" value="#{web.text.CLONE_SELECTED}"/>
-                    </h:panelGroup>
-                </h:panelGrid>
+            <h:panelGrid styleClass="actions margin-top" width="100%" rendered="#{cmpConfigMBean.authorizedToEdit}">
+                <h:outputText value="#{web.text.CMP_ALIASES_NOT_CONFIGURED}"
+                              rendered="#{estConfigMBean.aliasListEmpty}"/>
+                <h:panelGroup>
+                    <h:commandButton id="buttonaliasadd" name="buttonaliasadd" action="#{cmpConfigMBean.addAlias}"
+                                     value="#{web.text.ADD}">
+                        <f:param name="faces-redirect" value="true"/>
+                        <f:param name="mode" value="edit"/>
+                    </h:commandButton>
+                </h:panelGroup>
             </h:panelGrid>
-
-            <h:panelGroup rendered="#{cmpConfigMBean.deleteInProgress}">
-                <h3><h:outputText value="#{web.text.CMPDELETEALIAS}"/></h3>
-                <h:panelGrid columns="2">
-                    <h:outputLabel for="deleteValidatorName" value="#{web.text.VALIDATORNAME}:"/>
-                    <h:outputText id="deleteValidatorName" value="#{cmpConfigMBean.selectedCmpAlias}"/>
-                    <h:panelGroup/>
-                    <h:panelGroup>
-                        <h:commandButton id="buttonconfirmdeletecmpalias" value="#{web.text.DELETE_CONFIRM}" action="#{cmpConfigMBean.deleteCmpAlias}"/>
-                        <h:commandButton id="buttoncanceldeletecmpalias" value="#{web.text.CANCEL}" action="#{cmpConfigMBean.actionCancel}"/>
-                    </h:panelGroup>
-                </h:panelGrid>
-            </h:panelGroup>
         </h:form>
-	</ui:define>
+    </ui:define>
 </ui:composition>
 </html>
