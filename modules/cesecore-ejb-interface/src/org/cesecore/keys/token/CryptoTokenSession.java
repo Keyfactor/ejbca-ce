@@ -28,7 +28,7 @@ public interface CryptoTokenSession {
     /** @return the name of the given crypto token, or null if it doesn't exist */
     String getCryptoTokenName(int cryptoTokenId);
     
-    /** @return the specified CryptoToken or null if it does not exis.
+    /** @return the specified CryptoToken or null if it does not exist.
      * Throws RuntimeException if allow.nonexisting.slot=false (default) and a PKCS#11 slot does not exist. */
     CryptoToken getCryptoToken(int cryptoTokenId);
 
