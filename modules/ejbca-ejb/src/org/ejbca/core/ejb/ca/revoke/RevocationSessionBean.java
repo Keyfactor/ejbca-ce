@@ -214,18 +214,18 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         if (caInfo != null) {
             CA ca = (CA) caSession.getCANoLog(admin, caInfo.getCAId(), null);
             Optional.ofNullable(ca).ifPresent(cAuthority -> {
-                CertificateDataWrapper revokedCdw = certificateStoreSession.getCertificateData(
+                CertificateDataWrapper revokedCdw = noConflictCertificateStoreSession.getCertificateData(
                         cdw.getBaseCertificateData().getFingerprint());
                 preSignOcspResponse(caId, cAuthority, revokedCdw);
             });
         }
     }
 
-    private void preSignOcspResponse(int caId, CA cAuthority, CertificateDataWrapper revokedCdw) {
-        Optional.ofNullable(revokedCdw.getCertificateData())
-                .ifPresent(cert -> {
-                    deleteOcspIfExists(caId, cert);
-                    ocspResponseSigningSession.preSignOcspResponse(cAuthority, cert);
+    private void preSignOcspResponse(int caId, CA cAuthority, CertificateDataWrapper revokedCertWrapper) {
+        Optional.ofNullable(revokedCertWrapper)
+                .ifPresent(revokedCdw -> {
+                    deleteOcspIfExists(caId, revokedCdw.getBaseCertificateData());
+                    ocspResponseSigningSession.preSignOcspResponse(cAuthority, revokedCdw.getBaseCertificateData());
                 });
     }
 
