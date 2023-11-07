@@ -780,7 +780,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Test
     public void test09CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException, WaitingForApprovalException, Exception {
         this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;foo123");
-        this.cmpConfiguration.setOmitVerificationsInECC(cmpAlias, true);
+        this.cmpConfiguration.setOmitVerificationsInEEC(cmpAlias, true);
         this.globalConfigurationSession.saveConfiguration(this.admin, this.cmpConfiguration);
         //-----------------Creating CRMF request
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
