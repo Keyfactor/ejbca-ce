@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,26 +10,36 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+package org.ejbca.ra.dto;
 
-/* version: $Id$ */
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-.rtlDirection { direction: rtl; }
-.ltrDirection { direction: ltr; }
+/**
+ * Enum for the different types of objects that can be inspected on the inspect.xhtml page.
+ */
+public enum InspectType {
 
-.nopadding td { padding: 0px; }
-.noborder td { border: 0px; }
+    X509("X.509"),
+    CVC("CVC"),
+    PKCS10("PKCS#10"),
+    ASN1("ASN.1"),
+    UNKNOWN("Unknown");
 
-.fineprint { font-size: xx-small; }
-.fineprintMono { font-size: xx-small; font-family: monospace; }
+    private final String name;
 
-.monospace { font-family: monospace; }
-.ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.pre { white-space: pre; }
+    InspectType(final String name) {
+        this.name = name;
+    }
 
-label.invalidInput { color: red; }
+    public String getName() {
+        return name;
+    }
 
-.jsShow { display: none; }
-
-.plainDiv { width: 100%; }
-
-.hidden { display: none; }
+    public static List<InspectType> getSupportedTypes() {
+        return Arrays.stream(values())
+                .filter(type -> !type.equals(UNKNOWN))
+                .collect(Collectors.toList());
+    }
+}
