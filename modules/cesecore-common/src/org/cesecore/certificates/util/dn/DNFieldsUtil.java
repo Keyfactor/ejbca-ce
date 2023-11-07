@@ -16,11 +16,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.keyfactor.util.CeSecoreNameStyle;
+import org.cesecore.util.LogRedactionUtils;
 
 /**
  * DN string utilities.
@@ -30,7 +33,6 @@ import com.keyfactor.util.CeSecoreNameStyle;
  * Not built to handle '+' char separators or take special consideration to Unicode.
  * Current implementation will treat unescaped '=' in values as ok (backwards compatible).
  * 
- * @version $Id$
  */
 public abstract class DNFieldsUtil {
 
@@ -293,4 +295,28 @@ public abstract class DNFieldsUtil {
     	}
     	return false;
     }
+
+	/**
+	 * Extracts the CN part of the subject DN field.
+	 *
+	 * @param 		fullSubjectDn (Might contain O, OU etc)
+	 * @return 		extracted CN part of full Subject DN
+	 */
+	public static String extractCommonName(String fullSubjectDn) {
+		LOG.debug("Extracting common name from CA's full Subject DN: " + LogRedactionUtils.getRedactedMessage(fullSubjectDn));
+
+		Pattern pattern = null;
+
+		if (fullSubjectDn.contains(",")) { // SDN has more than CN in it!
+			pattern = Pattern.compile("CN=(.*?),");
+		} else {
+			pattern = Pattern.compile("CN=(.*)");
+		}
+
+		Matcher matcher = pattern.matcher(fullSubjectDn);
+		if (matcher.find()) {
+			return matcher.group(1).trim();
+		}
+		return null;
+	}
 }
