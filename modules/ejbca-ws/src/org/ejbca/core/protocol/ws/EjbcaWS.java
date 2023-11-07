@@ -52,6 +52,7 @@ import javax.xml.ws.handler.MessageContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.Properties;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -1749,8 +1750,14 @@ public class EjbcaWS implements IEjbcaWS {
                 throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
             }
 
-            ks.load(new ByteArrayInputStream(keyStoreBytes), password.toCharArray());
-            keyStore = new KeyStore(ks, password);
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(keyStoreBytes)) {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+                ks.load(bais, password.toCharArray());
+                keyStore = new KeyStore(ks, password);
+            } finally {
+                Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+            }
+            
             return keyStore;
         } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
             throw getEjbcaException(e, logger, ErrorCode.NOT_SUPPORTED_KEY_STORE, null);
@@ -2713,7 +2720,12 @@ public class EjbcaWS implements IEjbcaWS {
 	            // BC PKCS12 uses 3DES for key protection and 40 bit RC2 for protecting the certificates
 	        	ks = java.security.KeyStore.getInstance("PKCS12", "BC");
 	        }
-	        ks.load(new ByteArrayInputStream(encodedKeyStore), userData.getPassword().toCharArray());
+            try (final ByteArrayInputStream bais = new ByteArrayInputStream(encodedKeyStore)) {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+                ks.load(bais, userData.getPassword().toCharArray());
+            } finally {
+                Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+            }
             return new KeyStore(ks, userData.getPassword());
         } catch(CADoesntExistsException | AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
