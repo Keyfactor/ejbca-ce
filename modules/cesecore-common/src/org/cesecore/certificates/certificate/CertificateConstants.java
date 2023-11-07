@@ -133,4 +133,6 @@ public final class CertificateConstants {
     public static final String SHA512 = HashAlgorithm.getName(HashAlgorithm.sha512).toUpperCase();
     public static final String[] AVAILABLE_CERTID_HASH_ALGORITHMS = {SHA1, SHA256, SHA384, SHA512};
     public static final String DEFAULT_CERTID_HASH_ALGORITHM = AVAILABLE_CERTID_HASH_ALGORITHMS[0];
+    
+    public static final String ENABLE_UNSAFE_RSA_KEYS = "org.bouncycastle.rsa.allow_unsafe_mod";
 }

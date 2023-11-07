@@ -464,10 +464,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             keyStore.store(baos, password.toCharArray());
             ret = baos.toByteArray();
-        } catch (NoSuchAlgorithmException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
-        } catch (InvalidKeySpecException e) {
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidAlgorithmParameterException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (IOException e) {
@@ -476,9 +473,6 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         } catch (CertificateException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw LogRedactionUtils.getRedactedException(e);
-        } catch (InvalidAlgorithmParameterException e) {
-            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
-            throw e;
         } catch (RuntimeException e) {
             throw new RuntimeException(LogRedactionUtils.getRedactedException(e));
         } catch (Exception e) {
