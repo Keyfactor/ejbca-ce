@@ -78,7 +78,7 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     @Override
     public List<AccessMatchType> getAvailableAccessMatchTypes() {
         if (numericValue == 16) {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         } else {
             return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
         }
