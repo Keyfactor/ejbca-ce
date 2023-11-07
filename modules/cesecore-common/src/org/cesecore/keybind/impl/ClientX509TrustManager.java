@@ -93,7 +93,7 @@ public class ClientX509TrustManager implements X509TrustManager {
 
     @Override
     public X509Certificate[] getAcceptedIssuers() {
-        return trustEntries.stream().map(trustEntry -> trustEntry.getIssuer()).toArray(X509Certificate[]::new);
+        return trustEntries.stream().map(TrustEntry::getIssuer).toArray(X509Certificate[]::new);
     }
 
     /** @return the encountered server side certificate chain that this class has been asked to verify or null if none has been encountered yet. */

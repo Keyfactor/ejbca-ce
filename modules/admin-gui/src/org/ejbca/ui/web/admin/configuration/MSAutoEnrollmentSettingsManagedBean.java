@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -506,7 +507,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         templatesAvailable.add(new SelectItem(SELECT_MST));
 
         getAvailableTemplateSettingsFromAD().stream()
-                .sorted((template1, template2) -> template1.getDisplayName().compareTo(template2.getDisplayName()))
+                .sorted(Comparator.comparing(MSAutoEnrollmentSettingsTemplate::getDisplayName))
                 .map(template -> new SelectItem(template.getOid(), template.getDisplayName())).forEach(templatesAvailable::add);
 
         return templatesAvailable;

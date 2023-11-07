@@ -1250,7 +1250,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 .map(entry -> new SelectItem(entry.getKey(), entry.getValue().getAlias()))
                 .collect(Collectors.toList());
         // Sort by display name
-        Collections.sort(ret, (s0, s1) -> String.valueOf(s0.getValue()).compareTo(String.valueOf(s1)));
+        ret.sort((s0, s1) -> String.valueOf(s0.getValue()).compareTo(String.valueOf(s1)));
         return ret;
     }
 
