@@ -45,6 +45,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -64,6 +66,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.Properties;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -2291,6 +2294,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] generateKeyStoreWithoutViewEndEntityAccessRule(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException {
         KeyStore keyStore;
+        try { // bad indentation
         try {
             final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntity.getEndEntityProfileId());
             boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
@@ -2300,6 +2304,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             final boolean saveKeysFlag = data.getKeyRecoverable() && useKeyRecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
+            if (loadKeysFlag) {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+            }
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
             if (ei == null) {
@@ -2345,6 +2352,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.error(LogRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         }
+        } finally {
+            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+        }
         return null;
     }
 
@@ -2358,24 +2368,57 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
-        throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
-        CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
-        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException {
+    public Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+            throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
+            CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException,
+            OperatorCreationException, IllegalNameException, CertificateEncodingException {
 
-        String caName = caSession.getCAInfo(authenticationToken, caId).getName();
-        X509Certificate certificate = certificateStoreSession.findLatestX509CertificateBySubject("CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
-        if (Objects.nonNull(certificate) && certificate.getNotAfter().getTime()>System.currentTimeMillis()) {
-            log.debug("Found certificate with subjectDN=[ CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
-            return certificate.getEncoded();
+        final String caSubjectDN = caSession.getCAInfo(authenticationToken, caId).getSubjectDN();
+
+        // Using CA subject DN's common name part to stay compatible with Microsoft KA cert format
+        // Check here for more info: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/bcae68c1-5b26-4a9d-8f28-eb2fdc209c65
+        final String cNPartOfSubjectDN = extractCommonName(caSubjectDN);
+        
+        if (cNPartOfSubjectDN == null) {
+            log.debug("Could not extrace the CN from CA's subject DN!");
+            throw new IllegalStateException("Unable to extrace the CN from full CA's subject DN!");
+        }
+        
+        List<Certificate> activeNotExpiredCaKecCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(
+                "CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING, caSubjectDN, true);
+
+        for (Certificate certificate : activeNotExpiredCaKecCertificates) {
+            if (Objects.nonNull(certificate)) {
+                return certificate;
+            }
+        }
+        CA ca = (CA) caSession.getCA(authenticationToken, caId);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
+        log.debug("Creating KEC as certificate not found with subjectDN=[ CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
+        return caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
+    }
+    
+    /**
+     * Extracts the CN part of the subject DN to be used in the KEC DN
+     * @param caFullSubjectDN
+     * @return extracted CN part of CA's full DN
+     */
+    private static String extractCommonName(String caFullSubjectDN) {
+        log.debug("Extracting common name from CA's full Subject DN: " + LogRedactionUtils.getRedactedMessage(caFullSubjectDN));
+        
+        Pattern pattern = null;
+
+        if (caFullSubjectDN.contains(",")) { // SDN has more than CN in it!
+            pattern = Pattern.compile("CN=(.*?),");
+        } else {
+            pattern = Pattern.compile("CN=(.*)");
         }
 
-        CA ca = (CA)caSession.getCA(authenticationToken, caId);
-        CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
-        log.debug("Creating KEC as certificate not found with subjectDN=[ CN=" + caId + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
-        Certificate keyExchangeCertificate = caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
-
-        return keyExchangeCertificate.getEncoded();
+        Matcher matcher = pattern.matcher(caFullSubjectDN);
+        if (matcher.find()) {
+            return matcher.group(1).trim();
+        }
+        return null;
     }
 
     @Override
