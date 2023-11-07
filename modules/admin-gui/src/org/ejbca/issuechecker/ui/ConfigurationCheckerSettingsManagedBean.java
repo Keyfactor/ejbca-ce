@@ -87,7 +87,7 @@ public class ConfigurationCheckerSettingsManagedBean extends BaseManagedBean {
                     .getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID);
             final Set<String> configurationIssueSets = allConfigurationIssueSetsAndTheirStatus
                     .stream()
-                    .filter(configurationIssueSetStatus -> configurationIssueSetStatus.isEnabled())
+                    .filter(ConfigurationIssueSetStatus::isEnabled)
                     .map(configurationIssueSetStatus -> configurationIssueSetStatus.getConfigurationIssueSet().getDatabaseValue())
                     .collect(Collectors.toSet());
             configurationCheckerConfiguration.setConfigurationCheckerEnabled(isConfigurationCheckerEnabled);
