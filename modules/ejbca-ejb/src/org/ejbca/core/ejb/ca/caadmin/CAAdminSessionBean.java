@@ -864,16 +864,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException,
         CertificateExtensionException, CAOfflineException, IllegalValidityException,
         SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException {
+
+        final String caCommonName = "CN=" + DNFieldsUtil.extractCommonName(ca.getSubjectDN());
+
         CAToken caToken = ca.getCAToken();
-        String caName = ca.getName();
         final String sequence = caToken.getKeySequence();
         CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(caToken.getCryptoTokenId());
         String encryptKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
         PublicKey publicKey = cryptoToken.getPublicKey(encryptKeyAlias);
-        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession
-            .getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+        final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
+
         EndEntityInformation eeInfo = new EndEntityInformation();
-        eeInfo.setDN("CN=" + caName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
+        eeInfo.setDN(caCommonName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
         eeInfo.setCAId(ca.getCAId());
 
         final Certificate cert = ca.generateCertificate(
@@ -889,11 +891,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         );
 
         certificateStoreSession.storeCertificate(authenticationToken, cert, CertificateConstants.CERT_USERNAME_SYSTEMCA,
-            CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_TYPE_ENCRYPTION,
-            CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
-            CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
+                                                 CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE,
+                                                 CertificateConstants.CERT_TYPE_ENCRYPTION, CertificateProfileConstants.NO_CERTIFICATE_PROFILE,
+                                                 EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, null,
+                                                 System.currentTimeMillis(), null);
 
-        log.info("Key Exchange Certificate is created for " + caName + ".");
+        log.info("Key Exchange Certificate is created for CA:" + ca.getSubjectDN());
         return cert;
     }
 

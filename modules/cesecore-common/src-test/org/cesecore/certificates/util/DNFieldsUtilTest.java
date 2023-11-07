@@ -137,6 +137,13 @@ public class DNFieldsUtilTest {
     	}
     }
 
+    @Test
+    public void testExtractCommonNameFromFullSND() {
+        assertEquals("Extracted CN is wrong.","CommonNameA", DNFieldsUtil.extractCommonName("CN=CommonNameA"));
+        assertEquals("Extracted CN is wrong.","CommonNameB", DNFieldsUtil.extractCommonName("CN=CommonNameB , O=Organisation"));
+        assertEquals("Extracted CN is wrong.","CommonNameC", DNFieldsUtil.extractCommonName("CN=CommonNameC, O=Organisation, OU=OrganisationalUnit"));
+    }
+
     private String removeEmpties(String dn, boolean onlyTrailing) {
     	final StringBuilder sb2 = new StringBuilder();
     	final StringBuilder sb1 = DNFieldsUtil.removeEmpties(dn, sb2, true);
