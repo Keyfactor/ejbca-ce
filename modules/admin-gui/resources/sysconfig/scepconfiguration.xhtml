@@ -39,7 +39,7 @@
         </h3>
         <h:form id="aliases">
             <h:dataTable value="#{scepConfigMBean.aliasGuiList}" var="alias" styleClass="grid" rendered="#{!scepConfigMBean.aliasListEmpty}">
-                <h:column headerClass="listColumn1">
+                <h:column>
                     <f:facet name="header">
                         <h:outputText value="#{web.text.SCEP_ALIAS}"/>
                     </f:facet>
