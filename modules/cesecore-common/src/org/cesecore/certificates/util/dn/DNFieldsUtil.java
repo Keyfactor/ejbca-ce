@@ -305,15 +305,9 @@ public abstract class DNFieldsUtil {
 	public static String extractCommonName(String fullSubjectDn) {
 		LOG.debug("Extracting common name from CA's full Subject DN: " + LogRedactionUtils.getRedactedMessage(fullSubjectDn));
 
-		Pattern pattern = null;
-
-		if (fullSubjectDn.contains(",")) { // SDN has more than CN in it!
-			pattern = Pattern.compile("CN=(.*?),");
-		} else {
-			pattern = Pattern.compile("CN=(.*)");
-		}
-
+		Pattern pattern = Pattern.compile("CN=(.*?)(,|$)");
 		Matcher matcher = pattern.matcher(fullSubjectDn);
+
 		if (matcher.find()) {
 			return matcher.group(1).trim();
 		}
