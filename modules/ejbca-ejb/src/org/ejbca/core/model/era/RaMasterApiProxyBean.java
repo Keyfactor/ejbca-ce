@@ -66,6 +66,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.util.Properties;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -1570,14 +1571,15 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
-        throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
-        CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
-        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException {
+    public Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+            throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
+            CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException,
+            OperatorCreationException, IllegalNameException, CertificateEncodingException {
         AuthorizationDeniedException authorizationDeniedException = null;
         for (final RaMasterApi raMasterApi : raMasterApis) {
             if (log.isDebugEnabled()) {
-                log.debug("raMasterApi calling getKeyExchangeCertificate: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+                log.debug("raMasterApi calling getKeyExchangeCertificate: " + raMasterApi.getApiVersion() + ", " + raMasterApi.isBackendAvailable()
+                        + ", " + raMasterApi.getClass());
             }
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 17) {
                 try {
@@ -1595,7 +1597,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (authorizationDeniedException != null) {
             throw authorizationDeniedException;
         }
-        return new byte[] {};
+        return null;
     }
 
     private byte[] generateKeyStoreForceLocalKeyRecovery(AuthenticationToken authenticationToken, EndEntityInformation endEntity,
@@ -1632,7 +1634,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                 cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
                 // Store key pair
                 if (cryptoTokenId == null || keyAlias == null) {
-                    log.warn("No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
+                    log.warn(
+                            "No key has been configured for local key recovery. Please select a crypto token and key alias in System Configuration!");
                     throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                 }
                 if (!localNodeKeyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(caInfo.getCertificateChain().get(0)),
@@ -1641,31 +1644,40 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     throw new EjbcaException(ErrorCode.INTERNAL_ERROR);
                 }
             } else {
-                // Recover existing key pair
-                if (log.isDebugEnabled()) {
-                    log.debug("Recovering locally stored key pair for end entity '" + username + "'");
-                }
-                final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId, keyAlias, (X509Certificate) caInfo.getCertificateChain().get(0));
-                if (kri == null) {
-                    // This should not happen when the user has its status set to KEYRECOVERY
-                    final String message = "Could not find key recovery data for end entity '" + username + "'";
-                    log.debug(message);
-                    throw new EjbcaException(ErrorCode.INTERNAL_ERROR, message);
-                }
-                kp = kri.getKeyPair();
-                if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
-                    final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(), kri.getCertificateSN().toString(16));
-                    if (cdw == null) {
-                        final String msg = "Key recovery data exists for user '" + username + "', but certificate does not: " + kri.getCertificateSN().toString(16);
-                        log.info(msg);
-                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, msg);
+                try {
+                    Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+                    // Recover existing key pair
+                    if (log.isDebugEnabled()) {
+                        log.debug("Recovering locally stored key pair for end entity '" + username + "'");
                     }
-                    cert = (X509Certificate) cdw.getCertificate();
-                    // Verify password and finish user
-                    finishUserAfterLocalKeyRecovery(authenticationToken, username, endEntity.getPassword());
-                } else {
-                    // requestCertForEndEntity verifies the password and performs the finishUser operation
-                    cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
+                    final KeyRecoveryInformation kri = localNodeKeyRecoverySession.recoverKeysInternal(authenticationToken, username, cryptoTokenId,
+                            keyAlias, (X509Certificate) caInfo.getCertificateChain().get(0));
+                    if (kri == null) {
+                        // This should not happen when the user has its status set to KEYRECOVERY
+                        final String message = "Could not find key recovery data for end entity '" + username + "'";
+                        log.debug(message);
+                        throw new EjbcaException(ErrorCode.INTERNAL_ERROR, message);
+                    }
+                    kp = kri.getKeyPair();
+
+                    if (endEntityProfile.getReUseKeyRecoveredCertificate()) {
+                        final CertificateDataWrapper cdw = searchForCertificateByIssuerAndSerial(authenticationToken, kri.getIssuerDN(),
+                                kri.getCertificateSN().toString(16));
+                        if (cdw == null) {
+                            final String msg = "Key recovery data exists for user '" + username + "', but certificate does not: "
+                                    + kri.getCertificateSN().toString(16);
+                            log.info(msg);
+                            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, msg);
+                        }
+                        cert = (X509Certificate) cdw.getCertificate();
+                        // Verify password and finish user
+                        finishUserAfterLocalKeyRecovery(authenticationToken, username, endEntity.getPassword());
+                    } else {
+                        // requestCertForEndEntity verifies the password and performs the finishUser operation
+                        cert = requestCertForEndEntity(authenticationToken, storedEndEntity, endEntity.getPassword(), kp);
+                    }
+                } finally {
+                    Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
                 }
                 localNodeKeyRecoverySession.unmarkUser(authenticationToken, username);
             }
