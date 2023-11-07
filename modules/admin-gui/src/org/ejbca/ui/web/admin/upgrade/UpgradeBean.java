@@ -104,7 +104,7 @@ public class UpgradeBean extends BaseManagedBean implements Serializable {
 
     /** @return true if an upgrade is currently in progress on this node */
     public boolean isPostUpgradeFailed() {
-        return isActionStartUpgradeAllowed() && getLogged().stream().anyMatch(logEvent -> logEvent.isLevelError());
+        return isActionStartUpgradeAllowed() && getLogged().stream().anyMatch(LogEvent::isLevelError);
     }
 
     /** @return true if an upgrade is currently in progress on any node */
