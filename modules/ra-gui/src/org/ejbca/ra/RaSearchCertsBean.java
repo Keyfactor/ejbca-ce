@@ -12,31 +12,7 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TimeZone;
-
-import javax.ejb.EJB;
-import javax.faces.component.UIComponent;
-import javax.faces.component.html.HtmlOutputLabel;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-
+import com.keyfactor.util.EJBTools;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -60,11 +36,30 @@ import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaCertificateDetails.Callbacks;
 
-import com.keyfactor.util.EJBTools;
+import javax.ejb.EJB;
+import javax.faces.component.UIComponent;
+import javax.faces.component.html.HtmlOutputLabel;
+import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TimeZone;
 
 /**
  * Backing bean for Search Certificates page.
- *
  */
 @Named
 @ViewScoped
@@ -73,49 +68,58 @@ public class RaSearchCertsBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RaSearchCertsBean.class);
     private static final String EXPIRED_STATUS = "EXPIRED";
+    private static final int KEY_UP_DELAY = 400; // milliseconds
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
     @Inject
     private RaAuthenticationBean raAuthenticationBean;
-    public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) { this.raAuthenticationBean = raAuthenticationBean; }
+
+    public void setRaAuthenticationBean(final RaAuthenticationBean raAuthenticationBean) {
+        this.raAuthenticationBean = raAuthenticationBean;
+    }
 
     @Inject
     private RaLocaleBean raLocaleBean;
-    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) { this.raLocaleBean = raLocaleBean; }
+
+    public void setRaLocaleBean(final RaLocaleBean raLocaleBean) {
+        this.raLocaleBean = raLocaleBean;
+    }
 
     private final List<RaCertificateDetails> resultsFiltered = new ArrayList<>();
-    private Map<Integer,String> eepIdToNameMap = null;
-    private Map<Integer,String> cpIdToNameMap = null;
-    private Map<String,String> caSubjectToNameMap = new HashMap<>();
-    private Map<String, Boolean> caNameToAllowsChangeOfRevocationReason = new HashMap<>();
-    private Map<String, Boolean> caNameToAllowsInvalidityDate = new HashMap<>();
-    private Map<String, Boolean> cpNameToAllowsRevocationBackdating = new HashMap<>();
-    private List<SelectItem> availableEeps = new ArrayList<>();
-    private List<SelectItem> availableCps = new ArrayList<>();
-    private List<SelectItem> availableCas = new ArrayList<>();
-
+    private Map<Integer, String> eepIdToNameMap = null;
+    private Map<Integer, String> cpIdToNameMap = null;
+    private final Map<String, String> caSubjectToNameMap = new HashMap<>();
+    private final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason = new HashMap<>();
+    private final Map<String, Boolean> caNameToAllowsInvalidityDate = new HashMap<>();
+    private final Map<String, Boolean> cpNameToAllowsRevocationBackdating = new HashMap<>();
+    private final List<SelectItem> availableEeps = new ArrayList<>();
+    private final List<SelectItem> availableCps = new ArrayList<>();
+    private final List<SelectItem> availableCas = new ArrayList<>();
     private RaCertificateSearchRequest stagedRequest = new RaCertificateSearchRequest();
     private RaCertificateSearchRequest lastExecutedRequest = null;
     private RaCertificateSearchResponse lastExecutedResponse = null;
-
+    private boolean initialized = false;
+    private String httpSearchQueryParameter = null; // GET request query parameter - certsGenericSearchString
     private String genericSearchString = "";
-
     private String issuedAfter = "";
     private String issuedBefore = "";
     private String expiresAfter = "";
     private String expiresBefore = "";
     private String revokedAfter = "";
     private String revokedBefore = "";
-
     private UIComponent confirmPasswordComponent;
 
-    private enum SortOrder { PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS, EXTERNAL_ACCOUNT };
+    private enum SortOrder {PROFILE, CA, SERIALNUMBER, SUBJECT, USERNAME, ISSUANCE, EXPIRATION, STATUS, EXTERNAL_ACCOUNT}
 
     private SortOrder sortBy = SortOrder.USERNAME;
     private boolean sortAscending = true;
 
+    private boolean searchSubjectDistinguishedName = true;
+    private boolean searchSubjectAlternativeName = false;
+    private boolean searchUsername = false;
+    private boolean searchExternalAccountId = false;
     private boolean moreOptions = false;
 
     private RaCertificateDetails currentCertificateDetails = null;
@@ -125,10 +129,12 @@ public class RaSearchCertsBean implements Serializable {
         public RaLocaleBean getRaLocaleBean() {
             return raLocaleBean;
         }
+
         @Override
         public UIComponent getConfirmPasswordComponent() {
             return confirmPasswordComponent;
         }
+
         @Override
         public boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException {
             final boolean ret = raMasterApiProxyBean.changeCertificateStatus(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getFingerprint(),
@@ -142,71 +148,82 @@ public class RaSearchCertsBean implements Serializable {
             }
             return ret;
         }
+
         @Override
         public void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason,
-                final Date newDate, final String issuerDn)
+                                           final Date newDate, final String issuerDn)
                 throws NoSuchEndEntityException, CertificateProfileDoesNotExistException, ApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException,
                 CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException/*, ParseException*/ {
             //We can implement invalidityDate in RA GUI in the future, for now send null..
             BigInteger bintSN = new BigInteger(raCertificateDetails.getSerialnumberRaw());
             String serialNumberHexString = bintSN.toString(16);
-            CertRevocationDto certRevocationMetadata = new CertRevocationDto(issuerDn, serialNumberHexString); 
+            CertRevocationDto certRevocationMetadata = new CertRevocationDto(issuerDn, serialNumberHexString);
             certRevocationMetadata.setRevocationDate(newDate);
             certRevocationMetadata.setReason(newRevocationReason);
-            certRevocationMetadata.setCheckDate(newDate == null ? false : true);
+            certRevocationMetadata.setCheckDate(newDate != null);
             raMasterApiProxyBean.revokeCertWithMetadata(raAuthenticationBean.getAuthenticationToken(), certRevocationMetadata);
             final CertificateDataWrapper cdw = raMasterApiProxyBean.searchForCertificate(raAuthenticationBean.getAuthenticationToken(),
                     raCertificateDetails.getFingerprint());
             raCertificateDetails.reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,
                     caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
         }
+
         @Override
         public boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException,
-                                    NoSuchEndEntityException, EndEntityProfileValidationException {
-            final boolean ret = raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getUsername(), raCertificateDetails.getPassword(),
+                NoSuchEndEntityException, EndEntityProfileValidationException {
+            return raMasterApiProxyBean.markForRecovery(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getUsername(), raCertificateDetails.getPassword(),
                     EJBTools.wrap(raCertificateDetails.getCertificate()), false);
-            return ret;
         }
+
         @Override
         public boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails) {
-            final boolean ret = raMasterApiProxyBean.keyRecoveryPossible(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getCertificate(), raCertificateDetails.getUsername());
-            return ret;
+            return raMasterApiProxyBean.keyRecoveryPossible(raAuthenticationBean.getAuthenticationToken(), raCertificateDetails.getCertificate(), raCertificateDetails.getUsername());
         }
     };
 
-    /** Invoked when the page is loaded */
+    /**
+     * Invoked when the page is loaded
+     */
     public void initialize() {
         // Perform a search if parameters where passed in the query string
-        if (genericSearchString != null) {
+        if (!initialized && httpSearchQueryParameter != null) {
+            setGenericSearchString(httpSearchQueryParameter);
             searchAndFilterCommon();
         }
+        initialized = true;
     }
 
-    /** Invoked action on search form post */
+    /**
+     * Invoked action on search form post
+     */
     public void searchAndFilterAction() {
         searchAndFilterCommon();
     }
 
-    /** Invoked on criteria changes */
+    /**
+     * Invoked on criteria changes
+     */
     public void searchAndFilterAjaxListener(final AjaxBehaviorEvent event) {
         searchAndFilterCommon();
     }
 
-    /** Determine if we need to query back end or just filter and execute the required action. */
+    /**
+     * Determine if we need to query back end or just filter and execute the required action.
+     */
     private void searchAndFilterCommon() {
         final int compared = stagedRequest.compareTo(lastExecutedRequest);
         boolean search = compared > 0;
         if (compared != 0) {
             stagedRequest.setPageNumber(0);
         }
-        if (compared<=0 && lastExecutedResponse!=null) {
+        if (compared <= 0 && lastExecutedResponse != null) {
             // More narrow search → filter and check if there are sufficient results left
             if (log.isDebugEnabled()) {
                 log.debug("More narrow criteria → Filter");
             }
             filterTransformSort();
             // Check if there are sufficient results to fill screen and search for more
-            if (resultsFiltered.size()<lastExecutedRequest.getMaxResults() && lastExecutedResponse.isMightHaveMoreResults()) {
+            if (resultsFiltered.size() < lastExecutedRequest.getMaxResults() && lastExecutedResponse.isMightHaveMoreResults()) {
                 if (log.isDebugEnabled()) {
                     log.debug("Trying to load more results since filter left too few results → Query");
                 }
@@ -226,18 +243,17 @@ public class RaSearchCertsBean implements Serializable {
 
     private void searchForCertificates() {
         lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
-        if (!lastExecutedResponse.isMightHaveMoreResults() || !lastExecutedResponse.getCdws().isEmpty()) {
-            // Only update last executed request when there is no timeout
-            lastExecutedRequest = stagedRequest;
-            stagedRequest = new RaCertificateSearchRequest(stagedRequest);
-            filterTransformSort();
-        }
+        lastExecutedRequest = stagedRequest;
+        stagedRequest = new RaCertificateSearchRequest(stagedRequest);
+        filterTransformSort();
     }
 
-    /** Perform in memory filtering using the current search criteria of the last result set from the back end. */
+    /**
+     * Perform in memory filtering using the current search criteria of the last result set from the back end.
+     */
     private void filterTransformSort() {
         resultsFiltered.clear();
-        if (eepIdToNameMap==null || cpIdToNameMap==null || caSubjectToNameMap==null) {
+        if (eepIdToNameMap == null || cpIdToNameMap == null || caSubjectToNameMap == null) {
             // If the session has been discontinued we need to ensure that we repopulate the objects
             getAvailableEeps();
             getAvailableCps();
@@ -248,20 +264,34 @@ public class RaSearchCertsBean implements Serializable {
                 // ...we don't filter if the requested maxResults is lower than the search request
                 if (!genericSearchString.isEmpty() && (
                         !stagedRequest.matchSerialNumber(cdw.getCertificateData().getSerialNumber()) &&
-                        !stagedRequest.matchUsername(cdw.getCertificateData().getUsername()) &&
-                        !stagedRequest.matchSubjectDn(cdw.getCertificateData().getSubjectDnNeverNull()) &&
-                        !stagedRequest.matchSubjectAn(cdw.getCertificateData().getSubjectAltNameNeverNull()) &&
-                        !stagedRequest.matchExternalAccountId(cdw.getCertificateData().getAccountBindingId())
-                        )) {
+                                !stagedRequest.matchUsername(cdw.getCertificateData().getUsername()) &&
+                                !stagedRequest.matchSubjectDn(cdw.getCertificateData().getSubjectDnNeverNull()) &&
+                                !stagedRequest.matchSubjectAn(cdw.getCertificateData().getSubjectAltNameNeverNull()) &&
+                                !stagedRequest.matchExternalAccountId(cdw.getCertificateData().getAccountBindingId())
+                )) {
                     continue;
                 }
-                if (!stagedRequest.matchEep(cdw.getCertificateData().getEndEntityProfileIdOrZero())) { continue; }
-                if (!stagedRequest.matchCp(cdw.getCertificateData().getCertificateProfileId())) { continue; }
-                if (!stagedRequest.matchCa(cdw.getCertificateData().getIssuerDN().hashCode())) { continue; }
-                if (!stagedRequest.matchIssuedInterval(cdw.getCertificateData().getNotBefore())) { continue; }
-                if (!stagedRequest.matchExpiresInterval(cdw.getCertificateData().getExpireDate())) { continue; }
-                if (!stagedRequest.matchRevokedInterval(cdw.getCertificateData().getRevocationDate())) { continue; }
-                if (!stagedRequest.matchStatusAndReason(cdw.getCertificateData().getStatus(), cdw.getCertificateData().getRevocationReason())) { continue; }
+                if (!stagedRequest.matchEep(cdw.getCertificateData().getEndEntityProfileIdOrZero())) {
+                    continue;
+                }
+                if (!stagedRequest.matchCp(cdw.getCertificateData().getCertificateProfileId())) {
+                    continue;
+                }
+                if (!stagedRequest.matchCa(cdw.getCertificateData().getIssuerDN().hashCode())) {
+                    continue;
+                }
+                if (!stagedRequest.matchIssuedInterval(cdw.getCertificateData().getNotBefore())) {
+                    continue;
+                }
+                if (!stagedRequest.matchExpiresInterval(cdw.getCertificateData().getExpireDate())) {
+                    continue;
+                }
+                if (!stagedRequest.matchRevokedInterval(cdw.getCertificateData().getRevocationDate())) {
+                    continue;
+                }
+                if (!stagedRequest.matchStatusAndReason(cdw.getCertificateData().getStatus(), cdw.getCertificateData().getRevocationReason())) {
+                    continue;
+                }
                 resultsFiltered.add(new RaCertificateDetails(cdw, raCertificateDetailsCallbacks, cpIdToNameMap, eepIdToNameMap,
                         caSubjectToNameMap, caNameToAllowsInvalidityDate, caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating));
             }
@@ -273,20 +303,28 @@ public class RaSearchCertsBean implements Serializable {
         }
     }
 
-    /** Sort the filtered result set based on the select column and sort order. */
+    /**
+     * Sort the filtered result set based on the select column and sort order.
+     */
     private void sort() {
-        Collections.sort(resultsFiltered, new Comparator<RaCertificateDetails>() {
-            @Override
-            public int compare(RaCertificateDetails o1, RaCertificateDetails o2) {
-                switch (sortBy) {
+        resultsFiltered.sort((o1, o2) -> {
+            switch (sortBy) {
                 case PROFILE:
-                    return o1.getEepName().concat(o1.getCpName()).compareToIgnoreCase(o2.getEepName().concat(o2.getCpName())) * (sortAscending ? 1 : -1);
+                    return o1.getEepName().concat(o1.getCpName()).compareToIgnoreCase(o2.getEepName().concat(o2.getCpName())) * (
+                            sortAscending
+                                    ? 1
+                                    : -1);
                 case CA:
                     return o1.getCaName().compareToIgnoreCase(o2.getCaName()) * (sortAscending ? 1 : -1);
                 case SERIALNUMBER:
-                    return o1.getSerialnumber().compareToIgnoreCase(o2.getSerialnumber()) * (sortAscending ? 1 : -1);
+                    return o1.getSerialnumber().compareToIgnoreCase(o2.getSerialnumber()) * (sortAscending
+                            ? 1
+                            : -1);
                 case SUBJECT:
-                    return (o1.getSubjectDn()+o1.getSubjectAn()).compareToIgnoreCase(o2.getSubjectDn()+o2.getSubjectAn()) * (sortAscending ? 1 : -1);
+                    return (o1.getSubjectDn() + o1.getSubjectAn()).compareToIgnoreCase(o2.getSubjectDn() + o2.getSubjectAn()) * (
+                            sortAscending
+                                    ? 1
+                                    : -1);
                 case ISSUANCE:
                     return o1.getCreated().compareTo(o2.getCreated()) * (sortAscending ? 1 : -1);
                 case EXPIRATION:
@@ -301,57 +339,124 @@ public class RaSearchCertsBean implements Serializable {
                     } else if (o2.getAccountBindingId() == null) {
                         return sortAscending ? -1 : 1;
                     } else {
-                        return o1.getAccountBindingId().compareTo(o2.getAccountBindingId()) * (sortAscending ? 1 : -1);
+                        return o1.getAccountBindingId().compareTo(o2.getAccountBindingId()) * (sortAscending
+                                ? 1
+                                : -1);
                     }
                 }
                 case USERNAME:
                 default:
                     return o1.getUsername().compareToIgnoreCase(o2.getUsername()) * (sortAscending ? 1 : -1);
-                }
             }
         });
     }
 
-    /** @return true if there were no matching search results for the current criteria. */
+    /**
+     * @return true if there were no matching search results for the current criteria.
+     */
     public boolean isResultsNone() {
         return getFilteredResults().isEmpty() && !isMoreResultsAvailable();
     }
-    /** @return true if there might be more search results for the current criteria than shown here. */
+
+    /**
+     * @return true if there might be more search results for the current criteria than shown here.
+     */
     public boolean isResultsMoreAvailable() {
         return !getFilteredResults().isEmpty() && isMoreResultsAvailable();
     }
-    /** @return true if there more search results for the given criteria, but there are no result which we assume is caused by a search or peer timeout. */
+
+    /**
+     * @return true if there are more search results for the given criteria, but there are no results which we assume is caused by a search or peer timeout.
+     */
     public boolean isResultsTimeout() {
         return getFilteredResults().isEmpty() && isMoreResultsAvailable();
     }
 
-    public String getSortedByProfile() { return getSortedBy(SortOrder.PROFILE); }
-    public void sortByProfile() { sortBy(SortOrder.PROFILE, true); }
-    public String getSortedByCa() { return getSortedBy(SortOrder.CA); }
-    public void sortByCa() { sortBy(SortOrder.CA, true); }
-    public String getSortedBySerialNumber() { return getSortedBy(SortOrder.SERIALNUMBER); }
-    public void sortBySerialNumber() { sortBy(SortOrder.SERIALNUMBER, true); }
-    public String getSortedBySubject() { return getSortedBy(SortOrder.SUBJECT); }
-    public void sortBySubject() { sortBy(SortOrder.SUBJECT, true); }
-    public String getSortedByIssuance() { return getSortedBy(SortOrder.ISSUANCE); }
-    public void sortByIssuance() { sortBy(SortOrder.ISSUANCE, false); }
-    public String getSortedByExpiration() { return getSortedBy(SortOrder.EXPIRATION); }
-    public void sortByExpiration() { sortBy(SortOrder.EXPIRATION, false); }
-    public String getSortedByStatus() { return getSortedBy(SortOrder.STATUS); }
-    public void sortByStatus() { sortBy(SortOrder.STATUS, true); }
-    public String getSortedByExternalAccount() { return getSortedBy(SortOrder.EXTERNAL_ACCOUNT); }
-    public void sortByExternalAccount() { sortBy(SortOrder.EXTERNAL_ACCOUNT, true); }
-    public String getSortedByUsername() { return getSortedBy(SortOrder.USERNAME); }
-    public void sortByUsername() { sortBy(SortOrder.USERNAME, true); }
+    public String getSortedByProfile() {
+        return getSortedBy(SortOrder.PROFILE);
+    }
 
-    /** @return an up or down arrow character depending on sort order if the sort column matches */
+    public void sortByProfile() {
+        sortBy(SortOrder.PROFILE, true);
+    }
+
+    public String getSortedByCa() {
+        return getSortedBy(SortOrder.CA);
+    }
+
+    public void sortByCa() {
+        sortBy(SortOrder.CA, true);
+    }
+
+    public String getSortedBySerialNumber() {
+        return getSortedBy(SortOrder.SERIALNUMBER);
+    }
+
+    public void sortBySerialNumber() {
+        sortBy(SortOrder.SERIALNUMBER, true);
+    }
+
+    public String getSortedBySubject() {
+        return getSortedBy(SortOrder.SUBJECT);
+    }
+
+    public void sortBySubject() {
+        sortBy(SortOrder.SUBJECT, true);
+    }
+
+    public String getSortedByIssuance() {
+        return getSortedBy(SortOrder.ISSUANCE);
+    }
+
+    public void sortByIssuance() {
+        sortBy(SortOrder.ISSUANCE, false);
+    }
+
+    public String getSortedByExpiration() {
+        return getSortedBy(SortOrder.EXPIRATION);
+    }
+
+    public void sortByExpiration() {
+        sortBy(SortOrder.EXPIRATION, false);
+    }
+
+    public String getSortedByStatus() {
+        return getSortedBy(SortOrder.STATUS);
+    }
+
+    public void sortByStatus() {
+        sortBy(SortOrder.STATUS, true);
+    }
+
+    public String getSortedByExternalAccount() {
+        return getSortedBy(SortOrder.EXTERNAL_ACCOUNT);
+    }
+
+    public void sortByExternalAccount() {
+        sortBy(SortOrder.EXTERNAL_ACCOUNT, true);
+    }
+
+    public String getSortedByUsername() {
+        return getSortedBy(SortOrder.USERNAME);
+    }
+
+    public void sortByUsername() {
+        sortBy(SortOrder.USERNAME, true);
+    }
+
+    /**
+     * @return an up or down arrow character depending on sort order if the sort column matches
+     */
     private String getSortedBy(final SortOrder sortOrder) {
         if (sortBy.equals(sortOrder)) {
             return sortAscending ? "\u25bc" : "\u25b2";
         }
         return "";
     }
-    /** Set current sort column. Flip the order if the column was already selected. */
+
+    /**
+     * Set current sort column. Flip the order if the column was already selected.
+     */
     private void sortBy(final SortOrder sortOrder, final boolean defaultAscending) {
         if (sortBy.equals(sortOrder)) {
             sortAscending = !sortAscending;
@@ -362,15 +467,55 @@ public class RaSearchCertsBean implements Serializable {
         sort();
     }
 
-    /** @return true if there might be more results in the back end than retrieved based on the current criteria. */
+    /**
+     * @return true if there might be more results in the back end than retrieved based on the current criteria.
+     */
     public boolean isMoreResultsAvailable() {
-        return lastExecutedResponse!=null && lastExecutedResponse.isMightHaveMoreResults();
+        return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults();
     }
 
-    /** @return true of more search criteria than just the basics should be shown */
-    public boolean isMoreOptions() { return moreOptions; };
+    /**
+     * @return true of more search criteria than just the basics should be shown
+     */
+    public boolean isMoreOptions() {
+        return moreOptions;
+    }
 
-    /** Invoked when more or less options action is invoked. */
+    public boolean isSearchSubjectDistinguishedName() {
+        return searchSubjectDistinguishedName;
+    }
+
+    public void setSearchSubjectDistinguishedName(boolean searchSubjectDistinguishedName) {
+        this.searchSubjectDistinguishedName = searchSubjectDistinguishedName;
+    }
+
+    public boolean isSearchSubjectAlternativeName() {
+        return searchSubjectAlternativeName;
+    }
+
+    public void setSearchSubjectAlternativeName(boolean searchSubjectAlternativeName) {
+        this.searchSubjectAlternativeName = searchSubjectAlternativeName;
+    }
+
+    public boolean isSearchUsername() {
+        return searchUsername;
+    }
+
+    public void setSearchUsername(boolean searchUsername) {
+        this.searchUsername = searchUsername;
+    }
+
+    public boolean isSearchExternalAccountId() {
+        return searchExternalAccountId;
+    }
+
+    public void setSearchExternalAccountId(boolean searchExternalAccountId) {
+        this.searchExternalAccountId = searchExternalAccountId;
+    }
+
+    /**
+     * Invoked when more or less options action is invoked.
+     */
     public void moreOptionsAction() {
         moreOptions = !moreOptions;
         // Reset any criteria in the advanced section
@@ -394,22 +539,39 @@ public class RaSearchCertsBean implements Serializable {
         return resultsFiltered;
     }
 
-    public String getGenericSearchString() { return this.genericSearchString; }
-    public void setGenericSearchString(final String genericSearchString) {
-        this.genericSearchString = genericSearchString;
-        stagedRequest.setSubjectDnSearchString(genericSearchString);
-        stagedRequest.setSubjectAnSearchString(genericSearchString);
-        stagedRequest.setUsernameSearchString(genericSearchString);
-        stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
-        stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
-        stagedRequest.setExternalAccountIdSearchString(genericSearchString);
+    public String getGenericSearchString() {
+        return this.genericSearchString;
     }
 
-    public int getCriteriaMaxResults() { return stagedRequest.getMaxResults(); }
-    public void setCriteriaMaxResults(final int criteriaMaxResults) { stagedRequest.setMaxResults(criteriaMaxResults); }
+    public void setGenericSearchString(final String genericSearchString) {
+        this.genericSearchString = genericSearchString;
+        stagedRequest.setSubjectDnSearchString(this.searchSubjectDistinguishedName ? genericSearchString : null);
+        stagedRequest.setSubjectAnSearchString(this.searchSubjectAlternativeName ? genericSearchString : null);
+        stagedRequest.setUsernameSearchString(this.searchUsername ? genericSearchString : null);
+        stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
+        stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
+        stagedRequest.setExternalAccountIdSearchString(this.searchExternalAccountId ? genericSearchString : null);
+    }
+
+    public String getHttpSearchQueryParameter() {
+        return this.httpSearchQueryParameter;
+    }
+
+    public void setHttpSearchQueryParameter(final String httpSearchQueryParameter) {
+        this.httpSearchQueryParameter = httpSearchQueryParameter;
+    }
+
+    public int getCriteriaMaxResults() {
+        return stagedRequest.getMaxResults();
+    }
+
+    public void setCriteriaMaxResults(final int criteriaMaxResults) {
+        stagedRequest.setMaxResults(criteriaMaxResults);
+    }
+
     public List<SelectItem> getAvailableMaxResults() {
         List<SelectItem> ret = new ArrayList<>();
-        for (final int value : new int[]{ RaCertificateSearchRequest.DEFAULT_MAX_RESULTS, 50, 100, 200, 400}) {
+        for (final int value : new int[]{RaCertificateSearchRequest.DEFAULT_MAX_RESULTS, 50, 100, 200, 400}) {
             ret.add(new SelectItem(value, raLocaleBean.getMessage("search_certs_page_criteria_results_option", value)));
         }
         return ret;
@@ -418,19 +580,24 @@ public class RaSearchCertsBean implements Serializable {
     public int getCriteriaEepId() {
         return stagedRequest.getEepIds().isEmpty() ? 0 : stagedRequest.getEepIds().get(0);
     }
+
     public void setCriteriaEepId(final int criteriaEepId) {
-        if (criteriaEepId==0) {
-            stagedRequest.setEepIds(new ArrayList<Integer>());
+        if (criteriaEepId == 0) {
+            stagedRequest.setEepIds(new ArrayList<>());
         } else {
-            stagedRequest.setEepIds(new ArrayList<>(Arrays.asList(new Integer[]{ criteriaEepId })));
+            stagedRequest.setEepIds(new ArrayList<>(List.of(criteriaEepId)));
         }
     }
-    public boolean isOnlyOneEepAvailable() { return getAvailableEeps().size()==1; }
+
+    public boolean isOnlyOneEepAvailable() {
+        return getAvailableEeps().size() == 1;
+    }
+
     public List<SelectItem> getAvailableEeps() {
         if (availableEeps.isEmpty()) {
             eepIdToNameMap = raMasterApiProxyBean.getAuthorizedEndEntityProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
             availableEeps.add(new SelectItem(0, raLocaleBean.getMessage("search_certs_page_criteria_eep_optionany")));
-            for (final Entry<Integer,String> entry : getAsSortedByValue(eepIdToNameMap.entrySet())) {
+            for (final Entry<Integer, String> entry : getAsSortedByValue(eepIdToNameMap.entrySet())) {
                 availableEeps.add(new SelectItem(entry.getKey(), "- " + entry.getValue()));
             }
         }
@@ -440,21 +607,26 @@ public class RaSearchCertsBean implements Serializable {
     public int getCriteriaCpId() {
         return stagedRequest.getCpIds().isEmpty() ? 0 : stagedRequest.getCpIds().get(0);
     }
+
     public void setCriteriaCpId(final int criteriaCpId) {
-        if (criteriaCpId==0) {
-            stagedRequest.setCpIds(new ArrayList<Integer>());
+        if (criteriaCpId == 0) {
+            stagedRequest.setCpIds(new ArrayList<>());
         } else {
-            stagedRequest.setCpIds(new ArrayList<>(Arrays.asList(new Integer[]{ criteriaCpId })));
+            stagedRequest.setCpIds(new ArrayList<>(List.of(criteriaCpId)));
         }
     }
-    public boolean isOnlyOneCpAvailable() { return getAvailableCps().size()==1; }
+
+    public boolean isOnlyOneCpAvailable() {
+        return getAvailableCps().size() == 1;
+    }
+
     public List<SelectItem> getAvailableCps() {
         if (availableCps.isEmpty()) {
             cpIdToNameMap = raMasterApiProxyBean.getAuthorizedCertificateProfileIdsToNameMap(raAuthenticationBean.getAuthenticationToken());
             final IdNameHashMap<CertificateProfile> cpMap = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(
                     raAuthenticationBean.getAuthenticationToken());
             availableCps.add(new SelectItem(0, raLocaleBean.getMessage("search_certs_page_criteria_cp_optionany")));
-            for (final Entry<Integer,String> entry : getAsSortedByValue(cpIdToNameMap.entrySet())) {
+            for (final Entry<Integer, String> entry : getAsSortedByValue(cpIdToNameMap.entrySet())) {
                 final CertificateProfile currentCp = cpMap.getValue(entry.getKey());
                 cpNameToAllowsRevocationBackdating.put(entry.getValue(), currentCp.getAllowBackdatedRevocation());
                 availableCps.add(new SelectItem(entry.getKey(), "- " + entry.getValue()));
@@ -466,23 +638,23 @@ public class RaSearchCertsBean implements Serializable {
     public int getCriteriaCaId() {
         return stagedRequest.getCaIds().isEmpty() ? 0 : stagedRequest.getCaIds().get(0);
     }
+
     public void setCriteriaCaId(int criteriaCaId) {
-        if (criteriaCaId==0) {
-            stagedRequest.setCaIds(new ArrayList<Integer>());
+        if (criteriaCaId == 0) {
+            stagedRequest.setCaIds(new ArrayList<>());
         } else {
-            stagedRequest.setCaIds(new ArrayList<>(Arrays.asList(new Integer[]{ criteriaCaId })));
+            stagedRequest.setCaIds(new ArrayList<>(List.of(criteriaCaId)));
         }
     }
-    public boolean isOnlyOneCaAvailable() { return getAvailableCas().size()==1; }
+
+    public boolean isOnlyOneCaAvailable() {
+        return getAvailableCas().size() == 1;
+    }
+
     public List<SelectItem> getAvailableCas() {
         if (availableCas.isEmpty()) {
             final List<CAInfo> caInfos = new ArrayList<>(raMasterApiProxyBean.getAuthorizedCas(raAuthenticationBean.getAuthenticationToken()));
-            Collections.sort(caInfos, new Comparator<CAInfo>() {
-                @Override
-                public int compare(final CAInfo caInfo1, final CAInfo caInfo2) {
-                    return caInfo1.getName().compareToIgnoreCase(caInfo2.getName());
-                }
-            });
+            caInfos.sort((caInfo1, caInfo2) -> caInfo1.getName().compareToIgnoreCase(caInfo2.getName()));
             for (final CAInfo caInfo : caInfos) {
                 caSubjectToNameMap.put(caInfo.getSubjectDN(), caInfo.getName());
                 caNameToAllowsChangeOfRevocationReason.put(caInfo.getName(), caInfo.isAllowChangingRevocationReason());
@@ -497,51 +669,62 @@ public class RaSearchCertsBean implements Serializable {
     }
 
     public boolean isShowNextPageButton() {
-        return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults();
+        return lastExecutedResponse != null && lastExecutedResponse.isMightHaveMoreResults() && !isResultsTimeout();
     }
 
     public boolean isShowPreviousPageButton() {
-        return stagedRequest != null && stagedRequest.getPageNumber() > 0;
+        return stagedRequest != null && stagedRequest.getPageNumber() > 0 && !isResultsTimeout();
     }
 
     public String getIssuedAfter() {
         return getDateAsString(issuedAfter, stagedRequest.getIssuedAfter(), 0L);
     }
+
     public void setIssuedAfter(final String issuedAfter) {
         this.issuedAfter = issuedAfter;
         stagedRequest.setIssuedAfter(parseDateAndUseDefaultOnFail(issuedAfter, 0L));
     }
+
     public String getIssuedBefore() {
         return getDateAsString(issuedBefore, stagedRequest.getIssuedBefore(), Long.MAX_VALUE);
     }
+
     public void setIssuedBefore(final String issuedBefore) {
         this.issuedBefore = issuedBefore;
         stagedRequest.setIssuedBefore(parseDateAndUseDefaultOnFail(issuedBefore, Long.MAX_VALUE));
     }
+
     public String getExpiresAfter() {
         return getDateAsString(expiresAfter, stagedRequest.getExpiresAfter(), 0L);
     }
+
     public void setExpiresAfter(final String expiresAfter) {
         this.expiresAfter = expiresAfter;
         stagedRequest.setExpiresAfter(parseDateAndUseDefaultOnFail(expiresAfter, 0L));
     }
+
     public String getExpiresBefore() {
         return getDateAsString(expiresBefore, stagedRequest.getExpiresBefore(), Long.MAX_VALUE);
     }
+
     public void setExpiresBefore(final String expiresBefore) {
         this.expiresBefore = expiresBefore;
         stagedRequest.setExpiresBefore(parseDateAndUseDefaultOnFail(expiresBefore, Long.MAX_VALUE));
     }
+
     public String getRevokedAfter() {
         return getDateAsString(revokedAfter, stagedRequest.getRevokedAfter(), 0L);
     }
+
     public void setRevokedAfter(final String revokedAfter) {
         this.revokedAfter = revokedAfter;
         stagedRequest.setRevokedAfter(parseDateAndUseDefaultOnFail(revokedAfter, 0L));
     }
+
     public String getRevokedBefore() {
         return getDateAsString(revokedBefore, stagedRequest.getRevokedBefore(), Long.MAX_VALUE);
     }
+
     public void setRevokedBefore(final String revokedBefore) {
         this.revokedBefore = revokedBefore;
         stagedRequest.setRevokedBefore(parseDateAndUseDefaultOnFail(revokedBefore, Long.MAX_VALUE));
@@ -563,14 +746,19 @@ public class RaSearchCertsBean implements Serializable {
         searchForCertificates();
     }
 
-    /** @return the current value if the staged request value if the default value */
+    /**
+     * @return the current value if the staged request value if the default value
+     */
     private String getDateAsString(final String stagedValue, final long value, final long defaultValue) {
-        if (value==defaultValue) {
+        if (value == defaultValue) {
             return stagedValue;
         }
         return ValidityDate.formatAsISO8601ServerTZ(value, TimeZone.getDefault());
     }
-    /** @return the staged request value if it is a parsable date and the default value otherwise */
+
+    /**
+     * @return the staged request value if it is a parsable date and the default value otherwise
+     */
     private long parseDateAndUseDefaultOnFail(final String input, final long defaultValue) {
         markCurrentComponentAsValid(true);
         if (!input.trim().isEmpty()) {
@@ -584,7 +772,9 @@ public class RaSearchCertsBean implements Serializable {
         return defaultValue;
     }
 
-    /** Set or remove the styleClass "invalidInput" on the label with a for-attribute matching the current input component. */
+    /**
+     * Set or remove the styleClass "invalidInput" on the label with a for-attribute matching the current input component.
+     */
     private void markCurrentComponentAsValid(final boolean valid) {
         final String STYLE_CLASS_INVALID = "invalidInput";
         // UIComponent.getCurrentComponent only works when invoked via f:ajax
@@ -597,11 +787,11 @@ public class RaSearchCertsBean implements Serializable {
                 if (htmlOutputLabel.getFor().equals(id)) {
                     String styleClass = htmlOutputLabel.getStyleClass();
                     if (valid) {
-                        if (styleClass!=null && styleClass.contains(STYLE_CLASS_INVALID)) {
+                        if (styleClass != null && styleClass.contains(STYLE_CLASS_INVALID)) {
                             styleClass = styleClass.replace(STYLE_CLASS_INVALID, "").trim();
                         }
                     } else {
-                        if (styleClass==null) {
+                        if (styleClass == null) {
                             styleClass = STYLE_CLASS_INVALID;
                         } else {
                             if (!styleClass.contains(STYLE_CLASS_INVALID)) {
@@ -629,24 +819,25 @@ public class RaSearchCertsBean implements Serializable {
         }
         return sb.toString();
     }
+
     public void setCriteriaStatus(final String criteriaStatus) {
         final List<Integer> statuses = new ArrayList<>();
         final List<Integer> revocationReasons = new ArrayList<>();
         stagedRequest.resetExpiresBefore();
         stagedRequest.resetExpiresAfter();
-        
-        if (criteriaStatus!=null && !criteriaStatus.isEmpty()) {
+
+        if (criteriaStatus != null && !criteriaStatus.isEmpty()) {
             final String[] criteriaStatusSplit = criteriaStatus.split("_");
             if (String.valueOf(CertificateConstants.CERT_ACTIVE).equals(criteriaStatusSplit[0])) {
-                statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION }));
+                statuses.addAll(Arrays.asList(CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION));
                 stagedRequest.setExpiresAfter(System.currentTimeMillis());
-            } else if(EXPIRED_STATUS.equalsIgnoreCase(criteriaStatusSplit[0])) {
-                statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, CertificateConstants.CERT_ARCHIVED }));
+            } else if (EXPIRED_STATUS.equalsIgnoreCase(criteriaStatusSplit[0])) {
+                statuses.addAll(Arrays.asList(CertificateConstants.CERT_ACTIVE, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, CertificateConstants.CERT_ARCHIVED));
                 stagedRequest.setExpiresBefore(System.currentTimeMillis());
             } else {
-                statuses.addAll(Arrays.asList(new Integer[]{ CertificateConstants.CERT_REVOKED, CertificateConstants.CERT_ARCHIVED }));
-                if (criteriaStatusSplit.length>1) {
-                    revocationReasons.addAll(Arrays.asList(new Integer[]{ Integer.parseInt(criteriaStatusSplit[1]) }));
+                statuses.addAll(Arrays.asList(CertificateConstants.CERT_REVOKED, CertificateConstants.CERT_ARCHIVED));
+                if (criteriaStatusSplit.length > 1) {
+                    revocationReasons.addAll(Arrays.asList(Integer.parseInt(criteriaStatusSplit[1])));
                 }
             }
         }
@@ -672,18 +863,14 @@ public class RaSearchCertsBean implements Serializable {
         ret.add(getAvailableStatusRevoked(RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE));
         return ret;
     }
+
     private SelectItem getAvailableStatusRevoked(final int reason) {
-        return new SelectItem(CertificateConstants.CERT_REVOKED + "_" + reason, raLocaleBean.getMessage("search_certs_page_criteria_status_option_revoked_reason_"+reason));
+        return new SelectItem(CertificateConstants.CERT_REVOKED + "_" + reason, raLocaleBean.getMessage("search_certs_page_criteria_status_option_revoked_reason_" + reason));
     }
 
     private <T> List<Entry<T, String>> getAsSortedByValue(final Set<Entry<T, String>> entrySet) {
         final List<Entry<T, String>> entrySetSorted = new ArrayList<>(entrySet);
-        Collections.sort(entrySetSorted, new Comparator<Entry<T, String>>() {
-            @Override
-            public int compare(final Entry<T, String> o1, final Entry<T, String> o2) {
-                return o1.getValue().compareToIgnoreCase(o2.getValue());
-            }
-        });
+        entrySetSorted.sort((o1, o2) -> o1.getValue().compareToIgnoreCase(o2.getValue()));
         return entrySetSorted;
     }
 
@@ -695,34 +882,44 @@ public class RaSearchCertsBean implements Serializable {
         this.confirmPasswordComponent = confirmPasswordComponent;
     }
 
-    /** Chain the results in the current order for certificate details navigation. */
+    /**
+     * Chain the results in the current order for certificate details navigation.
+     */
     private void chain() {
         RaCertificateDetails previous = null;
-        for (final RaCertificateDetails current: resultsFiltered) {
+        for (final RaCertificateDetails current : resultsFiltered) {
             current.setPrevious(previous);
-            if (previous!=null) {
+            if (previous != null) {
                 previous.setNext(current);
             }
             previous = current;
         }
         if (!resultsFiltered.isEmpty()) {
-            resultsFiltered.get(resultsFiltered.size()-1).setNext(null);
+            resultsFiltered.get(resultsFiltered.size() - 1).setNext(null);
         }
     }
 
     public void openCertificateDetails(final RaCertificateDetails selected) {
         currentCertificateDetails = selected;
     }
+
     public RaCertificateDetails getCurrentCertificateDetails() {
         return currentCertificateDetails;
     }
+
     public void nextCertificateDetails() {
         currentCertificateDetails = currentCertificateDetails.getNext();
     }
+
     public void previousCertificateDetails() {
         currentCertificateDetails = currentCertificateDetails.getPrevious();
     }
+
     public void closeCertificateDetails() {
         currentCertificateDetails = null;
+    }
+
+    public int getKeyUpDelay() {
+        return KEY_UP_DELAY;
     }
 }
