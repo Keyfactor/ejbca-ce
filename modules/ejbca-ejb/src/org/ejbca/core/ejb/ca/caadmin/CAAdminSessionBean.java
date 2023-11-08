@@ -879,15 +879,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         eeInfo.setCAId(ca.getCAId());
 
         final Certificate cert = ca.generateCertificate(
-            cryptoToken,
-            eeInfo,
-            publicKey,
-            X509KeyUsage.keyEncipherment,
-            null,
-            null,
-            cp,
-            sequence,
-            cceConfig
+                cryptoToken,
+                eeInfo,
+                null,
+                publicKey,
+                X509KeyUsage.keyEncipherment,
+                null,
+                null,
+                cp,
+                null,
+                sequence,
+                cceConfig
         );
 
         certificateStoreSession.storeCertificate(authenticationToken, cert, CertificateConstants.CERT_USERNAME_SYSTEMCA,
