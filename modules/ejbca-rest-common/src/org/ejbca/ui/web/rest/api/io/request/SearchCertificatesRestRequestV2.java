@@ -152,11 +152,11 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                 raRequest.setOrderProperty(orderBy.getProperty());
                 raRequest.setOrderOperation(orderBy.getOperation());
             }
-            raRequest.setEepIds(new ArrayList<Integer>());
-            raRequest.setCpIds(new ArrayList<Integer>());
-            raRequest.setCaIds(new ArrayList<Integer>());
-            raRequest.setStatuses(new ArrayList<Integer>());
-            raRequest.setRevocationReasons(new ArrayList<Integer>());
+            raRequest.setEepIds(new ArrayList<>());
+            raRequest.setCpIds(new ArrayList<>());
+            raRequest.setCaIds(new ArrayList<>());
+            raRequest.setStatuses(new ArrayList<>());
+            raRequest.setRevocationReasons(new ArrayList<>());
             for(final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest : restRequest.getCriteria()) {
                 final SearchCertificateCriteriaRestRequest.CriteriaProperty criteriaProperty = SearchCertificateCriteriaRestRequest.CriteriaProperty.resolveCriteriaProperty(searchCertificateCriteriaRestRequest.getProperty());
                 if(criteriaProperty == null) {

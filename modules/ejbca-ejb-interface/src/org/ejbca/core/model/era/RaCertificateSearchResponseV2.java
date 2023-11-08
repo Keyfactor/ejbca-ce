@@ -12,12 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-
-import org.cesecore.certificates.certificate.CertificateDataWrapper;
 
 /**
  * Response of certificates search from RA UI V2.
@@ -30,21 +30,31 @@ public class RaCertificateSearchResponseV2 implements Serializable {
         ERROR,
         SUCCESSFUL
     }
-    
+
     private static final long serialVersionUID = 1L;
 
     private Status status = Status.IN_PROGRESS;
     private List<CertificateDataWrapper> cdws = new ArrayList<>();
     private long totalCount = 0;
 
-    public List<CertificateDataWrapper> getCdws() { return cdws; }
-    public void setCdws(List<CertificateDataWrapper> cdws) { this.cdws = cdws; }
+    public List<CertificateDataWrapper> getCdws() {
+        return cdws;
+    }
 
-    public long getTotalCount() { return totalCount; }
-    public void setTotalCount(long count) { totalCount = count; }
-    
+    public void setCdws(List<CertificateDataWrapper> cdws) {
+        this.cdws = cdws;
+    }
+
+    public long getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(long count) {
+        totalCount = count;
+    }
+
     public void merge(final RaCertificateSearchResponseV2 other) {
-        final LinkedHashMap<String,CertificateDataWrapper> cdwMap = new LinkedHashMap<>();
+        final LinkedHashMap<String, CertificateDataWrapper> cdwMap = new LinkedHashMap<>();
         for (final CertificateDataWrapper cdw : cdws) {
             cdwMap.put(cdw.getCertificateData().getFingerprint(), cdw);
         }
@@ -63,5 +73,8 @@ public class RaCertificateSearchResponseV2 implements Serializable {
     public void setStatus(final Status newStatus) {
         this.status = newStatus;
     }
-    public Status getStatus() { return status; }
+
+    public Status getStatus() {
+        return status;
+    }
 }

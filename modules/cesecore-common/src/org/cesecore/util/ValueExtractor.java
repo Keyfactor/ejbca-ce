@@ -28,7 +28,7 @@ public abstract class ValueExtractor {
 
     /**
      * Return the intValue if the supplied object has a "intValue" method.
-     * Since different JDBC driver will return different types of objects like
+     * Since different JDBC drivers will return different types of objects like
      * Integer, BigInteger or BigDecimal (Oracle) this is convenient.
      * 
      * As a sad little bonus, DB2 native queries returns a pair of {BigInteger, Integer}
@@ -50,7 +50,7 @@ public abstract class ValueExtractor {
 
     /**
      * Return the longValue if the supplied object has a "longValue" method.
-     * Since different JDBC driver will return different types of objects like
+     * Since different JDBC drivers will return different types of objects like
      * Long, BigInteger or BigDecimal (Oracle) this is convenient.
      */
     public static long extractLongValue(Object object) {
@@ -64,13 +64,28 @@ public abstract class ValueExtractor {
             throw new IllegalStateException(e);
         }
     }
-    
-       /** 
-     * 
-     * @param object to check if it is an array type and in that case extract the BigInteger, BigDecimal or Integer object
-     * @param clazz only used for logging
-     * @return the object to get value from
+
+    /**
+     * Returns the stringValue of the supplied object.
+     * Different JDBC drivers can return different types of objects when native queries are used with pagination,
+     * e.g., Oracle returns String values when offsets are not used and Object[{value, rowNumber}] when offsets are used.
+     * This method provides a convenient way to extract the actual stringValue from either of these types of objects.
      */
+    public static String extractStringValue(Object object) {
+        if (object instanceof String) {
+            return (String) object;
+        } else if (object instanceof Object[]) {
+            return (String) ((Object[]) object)[0];
+        }
+        throw new IllegalStateException("Unexpected result type: " + object.getClass().getName());
+    }
+    
+    /**
+    *
+    * @param object to check if it is an array type and in that case extract the BigInteger, BigDecimal or Integer object
+    * @param clazz only used for logging
+    * @return the object to get value from
+    */
     private static Object getObject(final Object object, final Class<?> clazz) {
         Object ret = object;
         final Class<?> c = object.getClass();
