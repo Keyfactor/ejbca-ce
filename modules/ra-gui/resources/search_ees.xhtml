@@ -71,12 +71,12 @@
                         </h:panelGroup>
                         
                         <noscript>
-                            <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
+                            <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 parentCriteriaDropdown">
                                 <h:commandButton action="#{raSearchEesBean.searchAndFilterAction}" value="#{msg.search_ees_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>
                             </h:panelGroup>
                         </noscript>
                         
-                        <h:panelGroup id="parentCriteriaEepId" styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentCriteriaEepId" styleClass="pure-u-1 parentCriteriaDropdown">
                             <h:selectOneMenu id="criteriaEepId" value="#{raSearchEesBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneEepAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableEeps}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -85,7 +85,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup id="parentCriteriaCpId" styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentCriteriaCpId" styleClass="pure-u-1 parentCriteriaDropdown">
                             <h:selectOneMenu id="criteriaCpId" value="#{raSearchEesBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCpAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableCps}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -94,7 +94,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup id="parentCriteriaCaId" styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentCriteriaCaId" styleClass="pure-u-1 parentCriteriaDropdown">
                             <h:selectOneMenu id="criteriaCaId" value="#{raSearchEesBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchEesBean.onlyOneCaAvailable}">
                                 <f:selectItems value="#{raSearchEesBean.availableCas}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -103,7 +103,7 @@
                             </h:selectOneMenu>
                         </h:panelGroup>
                         
-                        <h:panelGroup id="parentCriteriaStatus" styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:panelGroup id="parentCriteriaStatus" styleClass="pure-u-1 parentCriteriaDropdown">
                             <h:selectOneMenu id="criteriaStatus" value="#{raSearchEesBean.criteriaStatus}" styleClass="pure-input-1">
                                 <f:selectItems value="#{raSearchEesBean.availableStatuses}"/>
                                 <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchEesBean.searchAndFilterAjaxListener}"
@@ -167,7 +167,7 @@
                     <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
                         <h:outputText styleClass="fineprint" rendered="#{raSearchEesBean.resultsNone}" value="#{msg.search_ees_page_info_noresult}"/>
                         <h:outputText styleClass="fineprint" rendered="#{raSearchEesBean.resultsMoreAvailable}" value="#{msg.search_ees_page_info_moreresults}"/>
-                        <h:outputText styleClass="fineprint" rendered="#{raSearchEesBean.resultsTimeout}" value="#{msg.search_ees_page_info_timeout}"/>
+                        <h:outputText styleClass="monospace" rendered="#{raSearchEesBean.resultsTimeout}" value="#{msg.search_ees_page_info_timeout}"/>
                         <h:dataTable id="searchEntityTable" rendered="#{not empty raSearchEesBean.filteredResults}" value="#{raSearchEesBean.filteredResults}" var="raSearchEndEntity"
                             styleClass="pure-table" rowClasses=",pure-table-odd">
                             <h:column>

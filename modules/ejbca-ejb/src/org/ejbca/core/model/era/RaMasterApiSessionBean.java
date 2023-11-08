@@ -12,53 +12,15 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
-import javax.persistence.QueryTimeoutException;
-
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -145,13 +107,14 @@ import org.cesecore.roles.member.RoleMemberData;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.ValueExtractor;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -239,14 +202,51 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.Query;
+import javax.persistence.QueryTimeoutException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
@@ -336,7 +336,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AcmeChallengeDataSessionLocal acmeChallengeDataSession;
     @EJB
     private EtsiEcaOperationsSessionLocal ecaOperationsSession;
-    
+
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
@@ -366,7 +366,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      */
     private static final int RA_MASTER_API_VERSION = 16;
 
-    /** Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time */
+    /**
+     * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
+     */
     private int activeCaIdCache = -1;
 
     @Override
@@ -402,7 +404,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String... resources) {
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, resources);
     }
-    
+
     @Override
     public boolean isAuthorizedNoLoggingWithoutNeedingActiveLocalCA(AuthenticationToken authenticationToken, String... resources) {
         return authorizationSession.isAuthorizedNoLogging(authenticationToken, resources);
@@ -417,13 +419,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     @Deprecated
-    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException  {
+    public AccessSet getUserAccessSet(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         return authorizationSystemSession.getAccessSetForAuthToken(authenticationToken);
     }
 
     @Override
     @Deprecated
-    public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens)  {
+    public List<AccessSet> getUserAccessSets(final List<AuthenticationToken> authenticationTokens) {
         final List<AccessSet> ret = new ArrayList<>();
         for (final AuthenticationToken authenticationToken : authenticationTokens) {
             try {
@@ -448,7 +450,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public LinkedHashMap<Integer,RaStyleInfo> getAllCustomRaStyles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
+    public LinkedHashMap<Integer, RaStyleInfo> getAllCustomRaStyles(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
         boolean authorizedToCssArchives = isAuthorizedNoLogging(authenticationToken,
                 StandardRules.SYSTEMCONFIGURATION_VIEW.resource(), StandardRules.VIEWROLES.resource());
         if (!authorizedToCssArchives) {
@@ -478,7 +480,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public List<Role> getAuthorizedRoles(AuthenticationToken authenticationToken) {
         return roleSession.getAuthorizedRoles(authenticationToken);
     }
-    
+
     @Override
     public List<Role> getRolesAuthenticationTokenIsMemberOf(AuthenticationToken authenticationToken) {
         return roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
@@ -510,8 +512,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public Map<String,RaRoleMemberTokenTypeInfo> getAvailableRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
-        final Map<String,RaRoleMemberTokenTypeInfo> result = new HashMap<>();
+    public Map<String, RaRoleMemberTokenTypeInfo> getAvailableRoleMemberTokenTypes(final AuthenticationToken authenticationToken) {
+        final Map<String, RaRoleMemberTokenTypeInfo> result = new HashMap<>();
         for (final String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
             // Disallow access to Public Access and CLI token types on the RA, as well as non-user-configurable token types such as AlwaysAllowLocal
             if (!AccessMatchValueReverseLookupRegistry.INSTANCE.getMetaData(tokenType).isUserConfigurable() ||
@@ -520,15 +522,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 continue;
             }
 
-            final Map<String,Integer> stringToNumberMap = new HashMap<>();
-            for (final Entry<String,AccessMatchValue> entry : AccessMatchValueReverseLookupRegistry.INSTANCE.getNameLookupRegistryForTokenType(tokenType).entrySet()) {
+            final Map<String, Integer> stringToNumberMap = new HashMap<>();
+            for (final Entry<String, AccessMatchValue> entry : AccessMatchValueReverseLookupRegistry.INSTANCE.getNameLookupRegistryForTokenType(tokenType).entrySet()) {
                 stringToNumberMap.put(entry.getKey(), entry.getValue().getNumericValue());
             }
             final AccessMatchValue defaultValue = AccessMatchValueReverseLookupRegistry.INSTANCE.getDefaultValueForTokenType(tokenType);
             final boolean hasMatchTypes = !defaultValue.getAvailableAccessMatchTypes().isEmpty();
 
             result.put(tokenType, new RaRoleMemberTokenTypeInfo(stringToNumberMap, defaultValue.name(), defaultValue.isIssuedByCa(),
-                    defaultValue.isIssuedByOauthProvider(), hasMatchTypes, hasMatchTypes ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue() : 0));
+                    defaultValue.isIssuedByOauthProvider(), hasMatchTypes, hasMatchTypes
+                    ? defaultValue.getAvailableAccessMatchTypes().get(0).getNumericValue()
+                    : 0));
 
         }
         return result;
@@ -614,7 +618,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return approvals.iterator().next();
     }
 
-    /** @param approvalId Calculated hash of the request (this somewhat confusing name is re-used from the ApprovalRequest class)
+    /**
+     * @param approvalId Calculated hash of the request (this somewhat confusing name is re-used from the ApprovalRequest class)
      * @return ApprovalDataVO or null if not found
      */
     private ApprovalDataVO getApprovalDataByRequestHash(final int approvalId) {
@@ -622,13 +627,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return approvalDataVOs.isEmpty() ? null : approvalDataVOs.get(0);
     }
 
-    /** Gets the complete text representation of a request (unlike ApprovalRequest.getNewRequestDataAsText which doesn't do any database queries) */
+    /**
+     * Gets the complete text representation of a request (unlike ApprovalRequest.getNewRequestDataAsText which doesn't do any database queries)
+     */
     private List<ApprovalDataText> getRequestDataAsText(final AuthenticationToken authenticationToken, final ApprovalDataVO approval) {
         final ApprovalRequest approvalRequest = approval.getApprovalRequest();
         if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession);
+            return ((EditEndEntityApprovalRequest) approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession);
         } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession);
+            return ((AddEndEntityApprovalRequest) approvalRequest).getNewRequestDataAsText(caSession, endEntityProfileSession, certificateProfileSession);
         } else {
             return approvalRequest.getNewRequestDataAsText(authenticationToken);
         }
@@ -639,10 +646,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final RaEditableRequestData editableData = new RaEditableRequestData();
         EndEntityInformation userData = null;
         if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            final EditEndEntityApprovalRequest req = (EditEndEntityApprovalRequest)approvalRequest;
+            final EditEndEntityApprovalRequest req = (EditEndEntityApprovalRequest) approvalRequest;
             userData = req.getNewEndEntityInformation();
         } else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            final AddEndEntityApprovalRequest req = (AddEndEntityApprovalRequest)approvalRequest;
+            final AddEndEntityApprovalRequest req = (AddEndEntityApprovalRequest) approvalRequest;
             userData = req.getEndEntityInformation();
         }
         // TODO handle more types or approval requests? (ECA-5290)
@@ -707,9 +714,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(approvalDataVO.getEndEntityProfileId());
         final String certificateProfileName;
         if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-            certificateProfileName = certificateProfileSession.getCertificateProfileName(((AddEndEntityApprovalRequest)approvalRequest).getEndEntityInformation().getCertificateProfileId());
+            certificateProfileName = certificateProfileSession.getCertificateProfileName(((AddEndEntityApprovalRequest) approvalRequest).getEndEntityInformation().getCertificateProfileId());
         } else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-            certificateProfileName = certificateProfileSession.getCertificateProfileName(((EditEndEntityApprovalRequest)approvalRequest).getNewEndEntityInformation().getCertificateProfileId());
+            certificateProfileName = certificateProfileSession.getCertificateProfileName(((EditEndEntityApprovalRequest) approvalRequest).getNewEndEntityInformation().getCertificateProfileId());
         } else {
             certificateProfileName = null;
         }
@@ -720,7 +727,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         // Editable data
         final RaEditableRequestData editableData = getRequestEditableData(approvalDataVO);
         final List<Role> rolesTokenIsMemberOf = roleSession.getRolesAuthenticationTokenIsMemberOf(authenticationToken);
-        return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, approvalDataVO, 
+        return new RaApprovalRequestInfo(authenticationToken, caName, endEntityProfileName, endEntityProfile, certificateProfileName, approvalDataVO,
                 requestData, editableData, rolesTokenIsMemberOf);
     }
 
@@ -878,7 +885,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (authorizedCas.size() == 0) {
             return response; // not authorized to any CAs. return empty response
         }
-        final Map<Integer,String> caIdToNameMap = new HashMap<>();
+        final Map<Integer, String> caIdToNameMap = new HashMap<>();
         for (final CAInfo cainfo : authorizedCas) {
             caIdToNameMap.put(cainfo.getCAId(), cainfo.getName());
         }
@@ -924,11 +931,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                         (request.isSearchingPending() && ari.isInProgress(now)) ||
                         (request.isSearchingHistorical() && ari.isProcessed()) ||
                         (request.isSearchingExpired() && ari.isExpired(now));
-            } else {                
+            } else {
                 include = (request.isSearchingWaitingForMe() && ari.isWaitingForMe(rolesTokenIsMemberOf)) ||
-                    (request.isSearchingPending() && ari.isPending(rolesTokenIsMemberOf)) ||
-                    (request.isSearchingHistorical() && ari.isProcessed()) ||
-                    (request.isSearchingExpired() && ari.isExpired(now));
+                        (request.isSearchingPending() && ari.isPending(rolesTokenIsMemberOf)) ||
+                        (request.isSearchingHistorical() && ari.isProcessed()) ||
+                        (request.isSearchingExpired() && ari.isExpired(now));
             }
 
             if (include) {
@@ -956,18 +963,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
         String endEntityAuth = null;
         GlobalConfiguration globalconfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        if (globalconfiguration.getEnableEndEntityProfileLimitations()){
+        if (globalconfiguration.getEnableEndEntityProfileLimitations()) {
             endEntityAuth = getAuthorizedEndEntityProfileIdsString(authenticationToken);
-            if(authorizedToApproveCAActions && authorizedToApproveRAActions){
+            if (authorizedToApproveCAActions && authorizedToApproveRAActions) {
                 endEntityAuth = getAuthorizedEndEntityProfileIdsString(authenticationToken);
-                if(endEntityAuth != null){
-                  endEntityAuth = "(" + getAuthorizedEndEntityProfileIdsString(authenticationToken) + " OR endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE + " ) ";
+                if (endEntityAuth != null) {
+                    endEntityAuth = "(" + getAuthorizedEndEntityProfileIdsString(authenticationToken) + " OR endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE + " ) ";
                 }
-            }
-            else if (authorizedToApproveCAActions) {
+            } else if (authorizedToApproveCAActions) {
                 endEntityAuth = " endEntityProfileId=" + ApprovalDataVO.ANY_ENDENTITYPROFILE;
-            }
-            else if (authorizedToApproveRAActions) {
+            } else if (authorizedToApproveRAActions) {
                 endEntityAuth = getAuthorizedEndEntityProfileIdsString(authenticationToken);
             }
 
@@ -978,23 +983,23 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     // TODO this method is copied from RAAuthorization because we couldn't use ComplexAccessControlSession.
     // Previous name: getEndEntityProfileAuthorizationString
     // We should find a way to use ComplexAccessControlSession here instead
-    private String getAuthorizedEndEntityProfileIdsString(AuthenticationToken authenticationToken){
+    private String getAuthorizedEndEntityProfileIdsString(AuthenticationToken authenticationToken) {
         StringBuilder authEndEntityProfileStringBuilder = null;
         Collection<Integer> profileIds = new ArrayList<>(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
         Collection<Integer> results = getAuthorizedEndEntityProfileIds(authenticationToken, profileIds);
         results.retainAll(this.endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.APPROVE_END_ENTITY));
-        for(Integer resultId : results) {
-            if(authEndEntityProfileStringBuilder == null) {
+        for (Integer resultId : results) {
+            if (authEndEntityProfileStringBuilder == null) {
                 authEndEntityProfileStringBuilder = new StringBuilder(" endEntityProfileId = " + resultId);
             } else {
                 authEndEntityProfileStringBuilder.append(" OR endEntityProfileId = ").append(resultId);
             }
         }
-        if(authEndEntityProfileStringBuilder != null) {
+        if (authEndEntityProfileStringBuilder != null) {
             authEndEntityProfileStringBuilder = new StringBuilder("( " + authEndEntityProfileStringBuilder + " )");
         }
         return authEndEntityProfileStringBuilder != null ? authEndEntityProfileStringBuilder.toString() : null;
-      }
+    }
 
     // TODO this method is copied from ComplexAccessControlSession. We should find a way to use ComplexAccessControlSession here instead
     private Collection<Integer> getAuthorizedEndEntityProfileIds(
@@ -1030,7 +1035,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public CertificateDataWrapper searchForCertificate(final AuthenticationToken authenticationToken, final String fingerprint) {
         final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
-        if (cdw==null || isNotAuthorizedToCert(authenticationToken, cdw)) {
+        if (cdw == null || isNotAuthorizedToCert(authenticationToken, cdw)) {
             return null;
         }
         return cdw;
@@ -1047,17 +1052,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         appendCaChain(retval, cdw.getCertificate());
         return retval;
     }
-    
+
     @Override
     public List<CertificateWrapper> searchForCertificateChainWithPreferredRoot(AuthenticationToken authenticationToken, String fingerprint, String rootSubjectDnHash) {
         final CertificateDataWrapper cdw = certificateStoreSession.getCertificateData(fingerprint);
         if (Objects.isNull(cdw) || isNotAuthorizedToCert(authenticationToken, cdw)) {
             return Collections.emptyList();
         }
-        
+
         String issuerDn = CertTools.getIssuerDN(cdw.getCertificate());
         CAInfo internalCaInfo = caSession.getCAInfoInternal(issuerDn.hashCode());
-        if(!(internalCaInfo instanceof X509CAInfo)) {
+        if (!(internalCaInfo instanceof X509CAInfo)) {
             return searchForCertificateChain(authenticationToken, fingerprint);
         }
         X509CAInfo caInfo = (X509CAInfo) internalCaInfo;
@@ -1065,35 +1070,36 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         boolean signedByCurrentKey = true;
         try {
             cdw.getCertificate().verify(currentCaPublicKey);
-        } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException | SignatureException e) {
+        } catch (InvalidKeyException | CertificateException | NoSuchAlgorithmException | NoSuchProviderException |
+                 SignatureException e) {
             log.debug("Certificate with fingerprint: " + fingerprint + " signed by old CA keys.");
             signedByCurrentKey = false;
         }
         List<CertificateWrapper> retval = new ArrayList<>();
         final List<String> alternateAliases = new ArrayList<>();
-        
-        if (caInfo.getAlternateCertificateChains()!=null && !caInfo.getAlternateCertificateChains().isEmpty()) {
-            for (String rootSubjectDn: caInfo.getAlternateCertificateChains().keySet()) {
+
+        if (caInfo.getAlternateCertificateChains() != null && !caInfo.getAlternateCertificateChains().isEmpty()) {
+            for (String rootSubjectDn : caInfo.getAlternateCertificateChains().keySet()) {
                 alternateAliases.add(CertTools.getFingerprintAsString(rootSubjectDn.trim().getBytes()));
             }
         }
-        
+
         if (signedByCurrentKey) {
             if (StringUtils.isEmpty(rootSubjectDnHash) || alternateAliases.isEmpty()) {
-                for (Certificate cert: caInfo.getCertificateChain()) {
+                for (Certificate cert : caInfo.getCertificateChain()) {
                     retval.add(EJBTools.wrap(cert));
                 }
             } else {
                 boolean chainFound = false;
                 outer:
-                for (Entry<String, List<String>> entry: caInfo.getAlternateCertificateChains().entrySet()) {
+                for (Entry<String, List<String>> entry : caInfo.getAlternateCertificateChains().entrySet()) {
                     String curRootSubjectDnHash = CertTools.getFingerprintAsString(entry.getKey().trim().getBytes());
                     if (rootSubjectDnHash.equalsIgnoreCase(curRootSubjectDnHash)) {
                         chainFound = true;
                         for (String fp : entry.getValue()) {
                             // cross CA certificates are always stored in local db in CA node where the certs were uploaded
                             CertificateDataWrapper caCertWrapper = certificateStoreSession.getCertificateData(fp);
-                            if(CertTools.getNotAfter(caCertWrapper.getCertificate()).before(new Date())) {
+                            if (CertTools.getNotAfter(caCertWrapper.getCertificate()).before(new Date())) {
                                 break outer;
                             }
                             retval.add(EJBTools.wrap(caCertWrapper.getCertificate()));
@@ -1101,107 +1107,106 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                         break;
                     }
                 }
-                
+
                 if (!chainFound) { // fallback to default, if not found or cross chain is expired
-                    for (Certificate cert: caInfo.getCertificateChain()) {
+                    for (Certificate cert : caInfo.getCertificateChain()) {
                         retval.add(EJBTools.wrap(cert));
-                    } 
+                    }
                 }
             }
-             
+
             // first one(leaf) is AcmeCertificateDataWrapper extending CertificateDataWrapper containing alternateAliases
             AcmeCertificateDataWrapper leafCert = new AcmeCertificateDataWrapper(cdw);
             leafCert.setAlternateChainAliases(alternateAliases);
             retval.add(0, leafCert);
-                
+
         } else {
             // if old certificate i.e. CA rekeyed in meantime, alternate chains are not needed
             String defaultRootSubjectDnHash = CertTools.getFingerprintAsString(
-                        CertTools.getIssuerDN(caInfo.getCertificateChain().get(caInfo.getCertificateChain().size()-1)).getBytes());
+                    CertTools.getIssuerDN(caInfo.getCertificateChain().get(caInfo.getCertificateChain().size() - 1)).getBytes());
             if (StringUtils.isEmpty(rootSubjectDnHash)) {
                 rootSubjectDnHash = defaultRootSubjectDnHash;
             }
             retval = appendRetiredCaChain(cdw, rootSubjectDnHash, defaultRootSubjectDnHash);
-            if(retval.isEmpty()) {
+            if (retval.isEmpty()) {
                 return searchForCertificateChain(authenticationToken, fingerprint);
             }
         }
         return retval;
     }
-    
+
     private List<CertificateWrapper> appendRetiredCaChain(
             CertificateWrapper endEntityCertificate, String rootSubjectDnHash, String defaultRootSubjectDnHash) {
-        
+
         List<CertificateWrapper> defaultChain = new ArrayList<>();
         // leaf certificate has least validity -> shortest range
         Date notBefore = CertTools.getNotBefore(endEntityCertificate.getCertificate());
         Date notAfter = CertTools.getNotAfter(endEntityCertificate.getCertificate());
-        
+
         List<List<CertificateWrapper>> certificateChains = new ArrayList<>();
         List<CertificateWrapper> leafCertificate = new ArrayList<>();
         leafCertificate.add(endEntityCertificate);
         certificateChains.add(leafCertificate);
-        
-        for(int level=0; level<10; level++) {
+
+        for (int level = 0; level < 10; level++) {
             int candidateCertChainsSize = certificateChains.size();
-            for(int i=0; i<candidateCertChainsSize; i++) {
+            for (int i = 0; i < candidateCertChainsSize; i++) {
                 List<CertificateWrapper> curCertList = certificateChains.get(i);
-                Certificate certificate = curCertList.get(curCertList.size()-1).getCertificate();
+                Certificate certificate = curCertList.get(curCertList.size() - 1).getCertificate();
                 final String issuerDN = CertTools.getIssuerDN(certificate);
-                
+
                 final Collection<Certificate> caCerts = certificateStoreSession.findCertificatesBySubject(issuerDN);
                 if (CollectionUtils.isEmpty(caCerts)) {
-                    log.info("No certificate found for CA with subjectDN: "+issuerDN);
+                    log.info("No certificate found for CA with subjectDN: " + issuerDN);
                     continue;
                 }
                 for (final Certificate cert : caCerts) {
-                    
-                    if (CertTools.getNotBefore(cert).after(notBefore) || 
+
+                    if (CertTools.getNotBefore(cert).after(notBefore) ||
                             CertTools.getNotAfter(cert).before(notAfter)) {
                         continue;
                     }
-                    
+
                     try {
                         certificate.verify(cert.getPublicKey());
                     } catch (Exception e) {
                         continue;
                     }
-                    
-                    if(CertTools.isSelfSigned(cert)) {
+
+                    if (CertTools.isSelfSigned(cert)) {
                         String curRootDnHash = CertTools.getFingerprintAsString(CertTools.getIssuerDN(cert).getBytes());
-                        if(curRootDnHash.equalsIgnoreCase(rootSubjectDnHash)) {
+                        if (curRootDnHash.equalsIgnoreCase(rootSubjectDnHash)) {
                             curCertList.add(EJBTools.wrap(cert));
                             return curCertList;
-                        } else if (curRootDnHash.equalsIgnoreCase(defaultRootSubjectDnHash)){
+                        } else if (curRootDnHash.equalsIgnoreCase(defaultRootSubjectDnHash)) {
                             // backup, if contemporary cross chain was absent
                             List<CertificateWrapper> appendedCertChain = new ArrayList<>();
                             appendedCertChain.addAll(curCertList);
                             appendedCertChain.add(EJBTools.wrap(cert));
                             defaultChain = appendedCertChain;
-                        }
-                        else {
+                        } else {
                             continue;
                         }
                     }
-                    
+
                     List<CertificateWrapper> appendedCertChain = new ArrayList<>();
                     appendedCertChain.addAll(curCertList);
                     appendedCertChain.add(EJBTools.wrap(cert));
                     certificateChains.add(appendedCertChain);
                 }
             }
-            for(int i=0; i<candidateCertChainsSize; i++) {
+            for (int i = 0; i < candidateCertChainsSize; i++) {
                 certificateChains.remove(0); // keep removing first one N times
             }
         }
-            
+
         return defaultChain;
     }
 
     @Override
     public CertificateDataWrapper searchForCertificateByIssuerAndSerial(final AuthenticationToken authenticationToken, final String issuerDN, final String serNo) {
         final CertificateDataWrapper cdw = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerDN, new BigInteger(serNo, 16));
-        if (cdw==null || isNotAuthorizedToCert(authenticationToken, cdw)) {
+        if (cdw == null || isNotAuthorizedToCert(authenticationToken, cdw)) {
             return null;
         }
         return cdw;
@@ -1210,7 +1215,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public RaCertificateSearchResponse searchForCertificates(AuthenticationToken authenticationToken, RaCertificateSearchRequest request) {
         final RaCertificateSearchResponseV2 responseV2 = searchForCertificatesV2(authenticationToken, new RaCertificateSearchRequestV2(request));
-        final boolean mightHaveMoreResults = (responseV2.getCdws().size() == request.getMaxResults());
+        final boolean mightHaveMoreResults = (responseV2.getCdws().size() == request.getMaxResults()
+                || RaCertificateSearchResponseV2.Status.TIMEOUT.equals(responseV2.getStatus()));
         return new RaCertificateSearchResponse(responseV2, mightHaveMoreResults);
     }
 
@@ -1230,13 +1236,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (caInfoIssuerDn.startsWith(CAInfo.CITS_SUBJECTDN_PREFIX)) {
                 continue; // skip CITS CAs
             }
-            final String issuerDn = CertTools.stringToBCDNString(caInfoIssuerDn);
+            final String issuerDn = DnComponents.stringToBCDNString(caInfoIssuerDn);
             issuerDns.add(issuerDn);
         }
         if (issuerDns.isEmpty()) {
             // Empty response since there were no authorized CAs
             if (log.isDebugEnabled()) {
-                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CAs and the search request will be dropped.");
+                log.debug("Client '" + authenticationToken + "' was not authorized to any of the requested CAs and the search request will be dropped.");
             }
             return emptyResponse;
         }
@@ -1249,7 +1255,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (authorizedCpIds.isEmpty()) {
             // Empty response since there were no authorized Certificate Profiles
             if (log.isDebugEnabled()) {
-                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CPs and the search request will be dropped.");
+                log.debug("Client '" + authenticationToken + "' was not authorized to any of the requested CPs and the search request will be dropped.");
             }
             return emptyResponse;
         }
@@ -1262,7 +1268,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (authorizedEepIds.isEmpty()) {
             // Empty response since there were no authorized End Entity Profiles
             if (log.isDebugEnabled()) {
-                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested EEPs and the search request will be dropped.");
+                log.debug("Client '" + authenticationToken + "' was not authorized to any of the requested EEPs and the search request will be dropped.");
             }
             return emptyResponse;
         }
@@ -1276,22 +1282,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (request.getMaxResults() != -1 && request.isSerialNumberSearch()) {
             final RaCertificateSearchRequestV2 sernoRequest = new RaCertificateSearchRequestV2(request);
             sernoRequest.resetToSerialNumberSearch();
-            final RaCertificateSearchResponseV2 sernoResponse = performSearchForCertificates(authenticationToken, sernoRequest, authorizedLocalCaIds, issuerDns,
+            final RaCertificateSearchResponseV2 sernoResponse = performSearchForCertificates(authenticationToken, sernoRequest, issuerDns,
                     authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
             if (!sernoResponse.getCdws().isEmpty()) {
                 return sernoResponse;
             }
         }
-        return performSearchForCertificates(authenticationToken, request, authorizedLocalCaIds, issuerDns,
-                authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
+        return performSearchForCertificates(authenticationToken, request, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
     }
 
     private RaCertificateSearchResponseV2 performSearchForCertificates(final AuthenticationToken authenticationToken, final RaCertificateSearchRequestV2 request,
-            final List<Integer> authorizedLocalCaIds, final List<String> issuerDns, final List<Integer> authorizedCpIds,
-            final boolean accessAnyCpAvailable, final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
+                                                                       final List<String> issuerDns, final List<Integer> authorizedCpIds, final boolean accessAnyCpAvailable,
+                                                                       final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
         final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
         final boolean countOnly = request.getPageNumber() == -1;
-        final Query query = createQuery(authenticationToken, request, countOnly, issuerDns, authorizedLocalCaIds, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
+        final Query query = createQuery(request, countOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
         int maxResults = -1;
         int offset = -1;
         if (!countOnly) {
@@ -1307,10 +1312,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
          * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
          */
         final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
-        if (queryTimeout>0L) {
+        if (queryTimeout > 0L) {
             query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
         }
-        final List<String> fingerprints;
         try {
             if (countOnly) {
                 final long count = (long) query.getSingleResult();
@@ -1320,13 +1324,14 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     log.debug("Certificate search count: " + count + ". queryTimeout=" + queryTimeout + "ms");
                 }
             } else {
-                fingerprints = query.getResultList();
-                for (final String fingerprint : fingerprints) {
+                final List<?> resultList = query.getResultList();
+                for (final Object fingerprintRecord : resultList) {
+                    final String fingerprint = ValueExtractor.extractStringValue(fingerprintRecord);
                     response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
                 }
                 response.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
                 if (log.isDebugEnabled()) {
-                    log.debug("Certificate search query: page " + request.getPageNumber() + ", page size " + maxResults + ", count " + fingerprints.size() + " results. queryTimeout=" + queryTimeout + "ms");
+                    log.debug("Certificate search query: page " + request.getPageNumber() + ", page size " + maxResults + ", count " + resultList.size() + " results. queryTimeout=" + queryTimeout + "ms");
                 }
             }
         } catch (QueryTimeoutException e) {
@@ -1345,18 +1350,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 //                log.debug("Query.unwrap(org.hibernate.Query.class) is not supported by JPA provider");
 //            }
             response.setStatus(RaCertificateSearchResponseV2.Status.TIMEOUT);
-            log.info("Requested search query by " + authenticationToken +  " took too long. Query was '" + queryString + "'. " + e.getMessage());
+            log.info("Requested search query by " + authenticationToken + " took too long. Query was '" + queryString + "'. " + e.getMessage());
         } catch (PersistenceException e) {
             response.setStatus(RaCertificateSearchResponseV2.Status.ERROR);
-            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " + e.getMessage());
+            log.info("Requested search query by " + authenticationToken + " failed, possibly due to timeout. " + e.getMessage());
         }
         return response;
     }
-    
-    private Query createQuery(final AuthenticationToken authenticationToken, final RaCertificateSearchRequestV2 request, final boolean countOnly, 
-            final List<String> issuerDns, final List<Integer> authorizedLocalCaIds, 
-            final List<Integer> authorizedCpIds, final boolean accessAnyCpAvailable, 
-            final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
+
+    private Query createQuery(final RaCertificateSearchRequestV2 request,
+                              final boolean countOnly,
+                              final List<String> issuerDns,
+                              final List<Integer> authorizedCpIds,
+                              final boolean accessAnyCpAvailable,
+                              final Collection<Integer> authorizedEepIds,
+                              final boolean accessAnyEepAvailable) {
         final String subjectDnSearchString = request.getSubjectDnSearchString();
         final String subjectAnSearchString = request.getSubjectAnSearchString();
         final String usernameSearchString = request.getUsernameSearchString();
@@ -1369,56 +1377,58 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } else {
             sb.append("a.fingerprint");
         }
-        sb.append(" FROM CertificateData a WHERE (a.issuerDN IN (:issuerDN))");
-        if (!subjectDnSearchString.isEmpty() || !subjectAnSearchString.isEmpty() || !usernameSearchString.isEmpty() ||
-                !serialNumberSearchStringFromDec.isEmpty() || !serialNumberSearchStringFromHex.isEmpty()
-                || !StringUtils.isEmpty(externalAccountIdSearchString)) {
-            sb.append(" AND (");
+        sb.append(" FROM CertificateData a");
+        if (StringUtils.isNotEmpty(subjectDnSearchString) || StringUtils.isNotEmpty(subjectAnSearchString) || StringUtils.isNotEmpty(usernameSearchString) ||
+                StringUtils.isNotEmpty(serialNumberSearchStringFromDec) || StringUtils.isNotEmpty(serialNumberSearchStringFromHex)
+                || StringUtils.isNotEmpty(externalAccountIdSearchString)) {
+            sb.append(" INNER JOIN (");
             boolean firstAppended = false;
-            if (!subjectDnSearchString.isEmpty()) {
-                sb.append("UPPER(a.subjectDN) LIKE :subjectDN");
+            if (StringUtils.isNotEmpty(subjectDnSearchString)) {
+                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(subjectDN) LIKE :subjectDN");
                 firstAppended = true;
             }
-            if (!subjectAnSearchString.isEmpty()) {
+            if (StringUtils.isNotEmpty(subjectAnSearchString)) {
                 if (firstAppended) {
-                    sb.append(" OR ");
+                    sb.append(" UNION ");
                 } else {
                     firstAppended = true;
                 }
-                sb.append("a.subjectAltName LIKE :subjectAltName");
+                sb.append("SELECT fingerprint FROM CertificateData WHERE subjectAltName LIKE :subjectAltName");
             }
-            if (!usernameSearchString.isEmpty()) {
+            if (StringUtils.isNotEmpty(usernameSearchString)) {
                 if (firstAppended) {
-                    sb.append(" OR ");
+                    sb.append(" UNION ");
                 } else {
                     firstAppended = true;
                 }
-                sb.append("UPPER(a.username) LIKE :username");
+                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(username) LIKE :username");
             }
-            if (!serialNumberSearchStringFromDec.isEmpty()) {
+            if (StringUtils.isNotEmpty(serialNumberSearchStringFromDec)) {
                 if (firstAppended) {
-                    sb.append(" OR ");
+                    sb.append(" UNION ");
                 } else {
                     firstAppended = true;
                 }
-                sb.append("a.serialNumber LIKE :serialNumberDec");
+                sb.append("SELECT fingerprint FROM CertificateData WHERE serialNumber LIKE :serialNumberDec");
             }
-            if (!serialNumberSearchStringFromHex.isEmpty()) {
+            if (StringUtils.isNotEmpty(serialNumberSearchStringFromHex)) {
                 if (firstAppended) {
-                    sb.append(" OR ");
+                    sb.append(" UNION ");
                 } else {
                     firstAppended = true;
                 }
-                sb.append("a.serialNumber LIKE :serialNumberHex");
+                sb.append("SELECT fingerprint FROM CertificateData WHERE serialNumber LIKE :serialNumberHex");
             }
-            if (!StringUtils.isEmpty(externalAccountIdSearchString)) {
+            if (StringUtils.isNotEmpty(externalAccountIdSearchString)) {
                 if (firstAppended) {
-                    sb.append(" OR ");
+                    sb.append(" UNION ");
                 }
-                sb.append("UPPER(a.accountBindingId) LIKE :accountBindingId");
+                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(accountBindingId) LIKE :accountBindingId");
             }
-            sb.append(")");
+
+            sb.append(") b ON a.fingerprint = b.fingerprint");
         }
+        sb.append(" WHERE a.issuerDN IN (:issuerDN)");
         // NOTE: notBefore is not indexed.. we might want to disallow such search.
         if (request.isIssuedAfterUsed()) {
             sb.append(" AND (a.notBefore > :issuedAfter)");
@@ -1460,22 +1470,22 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!accessAnyEepAvailable || !request.getEepIds().isEmpty()) {
             sb.append(" AND (a.endEntityProfileId IN (:endEntityProfileId))");
         }
-        
+
         String orderProperty = request.getOrderProperty();
         String orderOperation = request.getOrderOperation();
         if (!countOnly && StringUtils.isNotBlank(orderProperty) && StringUtils.isNotBlank(orderOperation)) {
             orderOperation = orderOperation.trim();
             if("ASC".equalsIgnoreCase(orderOperation) || "DESC".equalsIgnoreCase(orderOperation)) {
                 orderProperty = mapOrderColumn(orderProperty);
-                if (orderProperty != null) { 
+                if (orderProperty != null) {
                     sb.append(" ORDER BY a.").append(orderProperty).append(" ").append(orderOperation);
                 }
             } else {
                 log.warn("Invalid order JPQL order operation '" + orderOperation + "'.");
             }
-        } 
-        
-        final Query query = entityManager.createQuery(sb.toString());
+        }
+
+        final Query query = entityManager.createNativeQuery(sb.toString());
         query.setParameter("issuerDN", issuerDns);
         if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
             query.setParameter("certificateProfileId", authorizedCpIds);
@@ -1496,40 +1506,40 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug(" endEntityProfileId: Any (even deleted) profile(s) due to root access.");
             }
         }
-        if (!subjectDnSearchString.isEmpty()) {
+        if (StringUtils.isNotEmpty(subjectDnSearchString)) {
             if (request.isSubjectDnSearchExact()) {
                 query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
             } else {
                 query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
             }
         }
-        if (!subjectAnSearchString.isEmpty()) {
+        if (StringUtils.isNotEmpty(subjectAnSearchString)) {
             if (request.isSubjectAnSearchExact()) {
                 query.setParameter("subjectAltName", subjectAnSearchString);
             } else {
                 query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
             }
         }
-        if (!usernameSearchString.isEmpty()) {
+        if (StringUtils.isNotEmpty(usernameSearchString)) {
             if (request.isUsernameSearchExact()) {
                 query.setParameter("username", usernameSearchString.toUpperCase());
             } else {
                 query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
             }
         }
-        if (!serialNumberSearchStringFromDec.isEmpty()) {
+        if (StringUtils.isNotEmpty(serialNumberSearchStringFromDec)) {
             query.setParameter("serialNumberDec", serialNumberSearchStringFromDec);
             if (log.isDebugEnabled()) {
                 log.debug(" serialNumberDec: " + serialNumberSearchStringFromDec);
             }
         }
-        if (!serialNumberSearchStringFromHex.isEmpty()) {
+        if (StringUtils.isNotEmpty(serialNumberSearchStringFromHex)) {
             query.setParameter("serialNumberHex", serialNumberSearchStringFromHex);
             if (log.isDebugEnabled()) {
                 log.debug(" serialNumberHex: " + serialNumberSearchStringFromHex);
             }
         }
-        if (!StringUtils.isEmpty(externalAccountIdSearchString)) {
+        if (StringUtils.isNotEmpty(externalAccountIdSearchString)) {
             if (request.isExternalAccountIdSearchExact()) {
                 query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
             } else {
@@ -1569,32 +1579,45 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return query;
     }
-    
+
     private final String mapOrderColumn(final String property) {
         if (property != null) {
             switch (property.trim()) {
-                case "USERNAME": return "username";
-                case "ISSUER_DN": return "issuerDN";
-                case "SUBJECT_DN": return "subjectDN";
-                case "EXTERNAL_ACCOUNT_BINDING_ID": return "accountBindingId";
-                case "END_ENTITY_PROFILE": return "endEntityProfileId";
-                case "CERTIFICATE_PROFILE": return "certificateProfileId";
-                case "STATUS": return "status";
-                case "TAG": return "tag";
-                case "TYPE": return "type";
-                case "UPDATE_TIME": return "updateTime";
-                case "ISSUED_DATE": return "notBefore";
-                case "EXPIRE_DATE": return "expireDate";
-                case "REVOCATION_DATE": return "revocationDate";
+                case "USERNAME":
+                    return "username";
+                case "ISSUER_DN":
+                    return "issuerDN";
+                case "SUBJECT_DN":
+                    return "subjectDN";
+                case "EXTERNAL_ACCOUNT_BINDING_ID":
+                    return "accountBindingId";
+                case "END_ENTITY_PROFILE":
+                    return "endEntityProfileId";
+                case "CERTIFICATE_PROFILE":
+                    return "certificateProfileId";
+                case "STATUS":
+                    return "status";
+                case "TAG":
+                    return "tag";
+                case "TYPE":
+                    return "type";
+                case "UPDATE_TIME":
+                    return "updateTime";
+                case "ISSUED_DATE":
+                    return "notBefore";
+                case "EXPIRE_DATE":
+                    return "expireDate";
+                case "REVOCATION_DATE":
+                    return "revocationDate";
             }
         }
         log.warn("Invalid query order property '" + property + "'.");
         return null;
     }
-    
+
     @Override
     public RaEndEntitySearchResponseV2 searchForEndEntitiesV2(AuthenticationToken authenticationToken,
-            RaEndEntitySearchRequestV2 raEndEntitySearchRequest) {
+                                                              RaEndEntitySearchRequestV2 raEndEntitySearchRequest) {
 
         RaEndEntitySearchPaginationSummary searchSummary = null;
         String queryCacheKey = authenticationToken.getUniqueId() + raEndEntitySearchRequest.toString();
@@ -1629,9 +1652,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         RaEndEntitySearchResponse searchResponse =
                 searchForEndEntities(authenticationToken, raEndEntitySearchRequest,
                         searchSummary.getCurrentIdentifierSearchOffset(),
-                raEndEntitySearchRequest.getSortOperation(),
-                raEndEntitySearchRequest.getAdditionalConstraint(),
-                searchSummary.getCurrentIdentifier());
+                        raEndEntitySearchRequest.getSortOperation(),
+                        raEndEntitySearchRequest.getAdditionalConstraint(),
+                        searchSummary.getCurrentIdentifier());
 
         // update cache entry - page number, reference update
         searchSummary.setCurrentIdentifierSearchOffset(
@@ -1660,7 +1683,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (authorizedLocalCaIds.isEmpty()) {
             // Empty response since there were no authorized CAs
             if (log.isDebugEnabled()) {
-                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CAs and the search request will be dropped.");
+                log.debug("Client '" + authenticationToken + "' was not authorized to any of the requested CAs and the search request will be dropped.");
             }
             return response;
         }
@@ -1673,7 +1696,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (authorizedCpIds.isEmpty()) {
             // Empty response since there were no authorized Certificate Profiles
             if (log.isDebugEnabled()) {
-                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested CPs and the search request will be dropped.");
+                log.debug("Client '" + authenticationToken + "' was not authorized to any of the requested CPs and the search request will be dropped.");
             }
             return response;
         }
@@ -1686,7 +1709,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (authorizedEepIds.isEmpty()) {
             // Empty response since there were no authorized End Entity Profiles
             if (log.isDebugEnabled()) {
-                log.debug("Client '"+authenticationToken+"' was not authorized to any of the requested EEPs and the search request will be dropped.");
+                log.debug("Client '" + authenticationToken + "' was not authorized to any of the requested EEPs and the search request will be dropped.");
             }
             return response;
         }
@@ -1789,12 +1812,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (!request.getStatuses().isEmpty()) {
             query.setParameter("status", request.getStatuses());
         }
-        if(StringUtils.isNotEmpty(additionalConstraintQuery)) {
+        if (StringUtils.isNotEmpty(additionalConstraintQuery)) {
             query.setParameter("sortconstraint", additionalConstraintParam);
         }
         final int maxResults = Math.min(getGlobalCesecoreConfiguration().getMaximumQueryCount(), request.getMaxResults());
         query.setMaxResults(maxResults);
-        if(currentQueryOffset!=-1) {
+        if (currentQueryOffset != -1) {
             // for v2 on multiple ca,cp,eep id in same page
             // maxResults is not updated for convenience
             query.setFirstResult(currentQueryOffset);
@@ -1808,7 +1831,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
          * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
          */
         final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
-        if (queryTimeout>0L) {
+        if (queryTimeout > 0L) {
             query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
         }
         log.info("query:" + LogRedactionUtils.getRedactedMessage(query.toString()));
@@ -1818,17 +1841,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             for (final String username : usernames) {
                 response.getEndEntities().add(endEntityAccessSession.findUser(username));
             }
-            response.setMightHaveMoreResults(usernames.size()==maxResults);
+            response.setMightHaveMoreResults(usernames.size() == maxResults);
             if (log.isDebugEnabled()) {
                 log.debug("Certificate search query: " + LogRedactionUtils.getRedactedMessage(sb.toString()) + " LIMIT " + maxResults + " \u2192 "
                         + usernames.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
-            log.info("Requested search query by " + authenticationToken +  " took too long. Query was " +
+            log.info("Requested search query by " + authenticationToken + " took too long. Query was " +
                     LogRedactionUtils.getRedactedMessage(e.getQuery().toString()) + ". " + LogRedactionUtils.getRedactedMessage(e.getMessage()));
             response.setMightHaveMoreResults(true);
         } catch (PersistenceException e) {
-            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " +
+            log.info("Requested search query by " + authenticationToken + " failed, possibly due to timeout. " +
                     LogRedactionUtils.getRedactedMessage(e.getMessage()));
             response.setMightHaveMoreResults(true);
         }
@@ -1918,7 +1941,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final int maxResults = getGlobalCesecoreConfiguration().getMaximumQueryCount();
         query.setMaxResults(maxResults);
         final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
-        if (queryTimeout>0L) {
+        if (queryTimeout > 0L) {
             query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
         }
 
@@ -1928,17 +1951,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             for (final RoleMemberData roleMemberData : roleMemberDatas) {
                 response.getRoleMembers().add(roleMemberData.asValueObject());
             }
-            response.setMightHaveMoreResults(roleMemberDatas.size()==maxResults);
+            response.setMightHaveMoreResults(roleMemberDatas.size() == maxResults);
             if (log.isDebugEnabled()) {
                 log.debug("Role Member search query: " + LogRedactionUtils.getRedactedMessage(sb.toString()) + " LIMIT " + maxResults + " \u2192 "
                         + roleMemberDatas.size() + " results. queryTimeout=" + queryTimeout + "ms");
             }
         } catch (QueryTimeoutException e) {
-            log.info("Requested search query by " + authenticationToken +  " took too long. Query was "
+            log.info("Requested search query by " + authenticationToken + " took too long. Query was "
                     + LogRedactionUtils.getRedactedMessage(e.getQuery().toString()) + ". " + LogRedactionUtils.getRedactedMessage(e.getMessage()));
             response.setMightHaveMoreResults(true);
         } catch (PersistenceException e) {
-            log.info("Requested search query by " + authenticationToken +  " failed, possibly due to timeout. " +
+            log.info("Requested search query by " + authenticationToken + " failed, possibly due to timeout. " +
                     LogRedactionUtils.getRedactedMessage(e.getMessage()));
             response.setMightHaveMoreResults(true);
         }
@@ -1980,18 +2003,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, endEntityAccessRule);
         Map<Integer, String> idToNameMap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
         IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
-        for (Integer id : ids){
+        for (Integer id : ids) {
             authorizedEndEntityProfiles.put(id, idToNameMap.get(id), endEntityProfileSession.getEndEntityProfile(id));
         }
         return authorizedEndEntityProfiles;
     }
 
     @Override
-    public IdNameHashMap<CertificateProfile> getAllAuthorizedCertificateProfiles(AuthenticationToken authenticationToken){
+    public IdNameHashMap<CertificateProfile> getAllAuthorizedCertificateProfiles(AuthenticationToken authenticationToken) {
         IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = getAuthorizedCertificateProfiles(authenticationToken, CertificateConstants.CERTTYPE_UNKNOWN);
         return authorizedCertificateProfiles;
     }
-    
+
     @Override
     public RaCertificateProfileResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName) {
         final CertificateProfile profile = certificateProfileSession.getCertificateProfile(profileName);
@@ -2002,9 +2025,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return null;
     }
-    
+
     @Override
-    public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken){
+    public IdNameHashMap<CertificateProfile> getAuthorizedCertificateProfiles(AuthenticationToken authenticationToken) {
         IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = getAuthorizedCertificateProfiles(authenticationToken, CertificateConstants.CERTTYPE_ENDENTITY);
         return authorizedCertificateProfiles;
     }
@@ -2029,7 +2052,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
         IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
         List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
-        for (CAInfo caInfo : authorizedCAInfosList){
+        for (CAInfo caInfo : authorizedCAInfosList) {
             if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                 authorizedCAInfos.put(caInfo.getCAId(), caInfo.getName(), caInfo);
             }
@@ -2038,9 +2061,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public void checkSubjectDn(final AuthenticationToken admin, final EndEntityInformation endEntity) throws EjbcaException{
+    public void checkSubjectDn(final AuthenticationToken admin, final EndEntityInformation endEntity) throws EjbcaException {
         KeyToValueHolder<CAInfo> caInfoEntry = getAuthorizedCAInfos(admin).get(endEntity.getCAId());
-        if(caInfoEntry == null) {
+        if (caInfoEntry == null) {
             log.info("No authorized CAs found for " + admin);
             return;
         }
@@ -2051,20 +2074,20 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throw new EjbcaException(LogRedactionUtils.getRedactedException(e));
         }
     }
-    
+
     private boolean populateEndEntityFromRestRequest(final AuthenticationToken admin, final EndEntityInformation endEntity) throws EjbcaException {
         // we ignore global configuration to "ignore EEP restriction" for REST
 
         // EEP
         Map<Integer, String> eeProfIdToNameMap = getAuthorizedEndEntityProfileIdsToNameMap(admin);
         Integer endEntityProfileId = null;
-        for(Entry<Integer, String> entry: eeProfIdToNameMap.entrySet() ) {
-            if(entry.getValue().equals(endEntity.getExtendedInformation().getCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME))) {
+        for (Entry<Integer, String> entry : eeProfIdToNameMap.entrySet()) {
+            if (entry.getValue().equals(endEntity.getExtendedInformation().getCustomData(ExtendedInformation.END_ENTITY_PROFILE_NAME))) {
                 endEntityProfileId = entry.getKey();
                 break;
             }
         }
-        
+
         if (endEntityProfileId == null) {
             throw new EjbcaException("End Entity Profile is invalid or unauthorized.");
         }
@@ -2104,13 +2127,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public boolean addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, boolean isClearPwd) throws AuthorizationDeniedException,
-            EjbcaException, WaitingForApprovalException{
+            EjbcaException, WaitingForApprovalException {
         // only for REST to avoid fetching end entity profile contents to RA
-        if(endEntity.getExtendedInformation()!=null && 
-                endEntity.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE)!=null) {
+        if (endEntity.getExtendedInformation() != null &&
+                endEntity.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE) != null) {
             isClearPwd = populateEndEntityFromRestRequest(admin, endEntity);
         }
-        
+
         try {
             endEntityManagementSession.addUser(admin, endEntity, isClearPwd);
         } catch (CesecoreException e) {
@@ -2130,7 +2153,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         EndEntityInformation endEntityInformation = ejbcaWSHelperSession.convertUserDataVOWS(authenticationToken, userDataVOWS);
         //Perform any request pre-processing on the end entity
         CAInfo cainfo = caSession.getCAInfoInternal(endEntityInformation.getCAId());
-        if(cainfo.getCAType() == CAInfo.CATYPE_X509) {
+        if (cainfo.getCAType() == CAInfo.CATYPE_X509) {
             String preProcessorClass = ((X509CAInfo) cainfo).getRequestPreProcessor();
             if (!StringUtils.isEmpty(preProcessorClass)) {
                 try {
@@ -2138,20 +2161,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                             .getDeclaredConstructor().newInstance();
                     endEntityInformation = extendedUserDataHandler.processEndEntityInformation(endEntityInformation,
                             certificateProfileSession.getCertificateProfileName(endEntityInformation.getCertificateProfileId()));
-                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
-                        | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+                } catch (InstantiationException | IllegalAccessException | ClassNotFoundException |
+                         IllegalArgumentException
+                         | InvocationTargetException | NoSuchMethodException | SecurityException e) {
                     throw new IllegalStateException("Request Preprocessor implementation " + preProcessorClass + " could not be instansiated.");
                 }
             }
         }
-        
+
         endEntityManagementSession.addUser(authenticationToken, endEntityInformation, isClearPwd);
         return endEntityAccessSession.findUser(endEntityInformation.getUsername()) != null;
     }
 
 
     @Override
-    public void deleteUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException{
+    public void deleteUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException {
         try {
             endEntityManagementSession.deleteUser(admin, username);
         } catch (NoSuchEndEntityException | CouldNotRemoveEndEntityException e) {
@@ -2170,7 +2194,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return null;
         }
     }
-    
+
     @Override
     public EndEntityInformation searchUserWithoutViewEndEntityAccessRule(final AuthenticationToken admin, String username) {
         try {
@@ -2197,10 +2221,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public void finishUserAfterLocalKeyRecovery(final AuthenticationToken authenticationToken, final String username, final String password) throws AuthorizationDeniedException, EjbcaException {
         EndEntityInformation userData = endEntityAccessSession.findUser(username);
         if (userData == null) {
-            throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '"+username+"' does not exist");
+            throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '" + username + "' does not exist");
         }
         if (userData.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
-            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, "User '"+username+"' is not in KEYRECOVERY status");
+            throw new EjbcaException(ErrorCode.USER_WRONG_STATUS, "User '" + username + "' is not in KEYRECOVERY status");
         }
         try {
             final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
@@ -2211,7 +2235,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             endEntityAuthenticationSessionLocal.authenticateUser(authenticationToken, username, password);
             final boolean shouldFinishUser = caSession.getCAInfo(authenticationToken, userData.getCAId()).getFinishUser();
             if (shouldFinishUser) {
-                    endEntityManagementSession.finishUser(userData);
+                endEntityManagementSession.finishUser(userData);
             }
 
             userData = endEntityAccessSession.findUser(username);
@@ -2233,7 +2257,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
             EndEntityInformation data = endEntityAccessSession.findUser(endEntity.getUsername());
             if (data == null) {
-                throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '"+endEntity.getUsername()+"' does not exist");
+                throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '" + endEntity.getUsername() + "' does not exist");
             }
             final boolean saveKeysFlag = data.getKeyRecoverable() && useKeyRecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
@@ -2241,12 +2265,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             ExtendedInformation ei = endEntity.getExtendedInformation();
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
-            	// Make it easy for ourselves and create a default one if there is none in the end entity
+                // Make it easy for ourselves and create a default one if there is none in the end entity
                 ei = new ExtendedInformation();
             }
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
-                ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
+                    ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
             keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverToken(admin, // Authentication token
                     endEntity.getUsername(), // Username
                     endEntity.getPassword(), // Enrollment code
@@ -2261,20 +2285,24 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     reuseCertificateFlag, // Reuse recovered cert?
                     endEntity.getEndEntityProfileId()); // Identifier for end entity
         } catch (KeyStoreException | InvalidAlgorithmParameterException | CADoesntExistsException | IllegalKeyException
-                | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
-                | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
-                | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
-                | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
+                 | CertificateCreateException | IllegalNameException | CertificateRevokeException |
+                 CertificateSerialNumberException
+                 | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException |
+                 InvalidAlgorithmException
+                 | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException |
+                 InvalidKeySpecException
+                 | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
             throw new KeyStoreGeneralRaException(e);
         }
-        if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
+        if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM) {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
-            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException |
+                     NoSuchAlgorithmException e) {
                 log.error(LogRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
-        } else{
+        } else {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 keyStore.store(outputStream, endEntity.getPassword().toCharArray());
                 return outputStream.toByteArray();
@@ -2284,7 +2312,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         return null;
     }
-    
+
     @Override
     public byte[] generateKeyStoreWithoutViewEndEntityAccessRule(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException {
         KeyStore keyStore;
@@ -2293,7 +2321,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
             EndEntityInformation data = endEntityAccessSession.findUser(endEntity.getUsername());
             if (data == null) {
-                throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '"+endEntity.getUsername()+"' does not exist");
+                throw new EjbcaException(ErrorCode.USER_NOT_FOUND, "User '" + endEntity.getUsername() + "' does not exist");
             }
             final boolean saveKeysFlag = data.getKeyRecoverable() && useKeyRecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
@@ -2306,7 +2334,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
-                ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
+                    ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
             keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(admin, // Authentication token
                     endEntity.getUsername(), // Username
                     endEntity.getPassword(), // Enrollment code
@@ -2321,17 +2349,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     reuseCertificateFlag, // Reuse recovered cert?
                     endEntity.getEndEntityProfileId()); // Identifier for end entity
         } catch (KeyStoreException | InvalidAlgorithmParameterException | CADoesntExistsException | IllegalKeyException
-                | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
-                | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
-                | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
-                | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
+                 | CertificateCreateException | IllegalNameException | CertificateRevokeException |
+                 CertificateSerialNumberException
+                 | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException |
+                 InvalidAlgorithmException
+                 | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException |
+                 InvalidKeySpecException
+                 | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
             throw new KeyStoreGeneralRaException(e);
         }
-        if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM){
+        if (endEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_PEM) {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
-            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException |
+                     NoSuchAlgorithmException e) {
                 log.error(LogRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         } else {
@@ -2348,7 +2380,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private boolean isNotAfterInclusive(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity) throws AuthorizationDeniedException {
         final CAInfo caInfo = caSession.getCAInfo(authenticationToken, endEntity.getCAId());
         if (caInfo == null) {
-            log.warn("CA "+ endEntity.getCAId() + " was not found. Username: " + endEntity.getUsername());
+            log.warn("CA " + endEntity.getCAId() + " was not found. Username: " + endEntity.getUsername());
             return true; // Assume X.509
         }
         return caInfo.isExpirationInclusive();
@@ -2357,32 +2389,32 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] createCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException {
-        if(endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null){
+        if (endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null) {
             throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
         }
 
         RequestMessage req;
         boolean isSshEnroll = endEntityInformation.isSshEndEntity();
-        if(!isSshEnroll) {
+        if (!isSshEnroll) {
             // default
             req = RequestMessageUtils.parseRequestMessage(endEntityInformation.getExtendedInformation().getCertificateRequest());
         } else {
             // SSH certificate enrollment
             req = new SshRequestMessage(
-                    endEntityInformation.getExtendedInformation().getCertificateRequest(), 
-                            endEntityInformation.getDN(), endEntityInformation.getSubjectAltName(),
-                            endEntityInformation.getExtendedInformation());
+                    endEntityInformation.getExtendedInformation().getCertificateRequest(),
+                    endEntityInformation.getDN(), endEntityInformation.getSubjectAltName(),
+                    endEntityInformation.getExtendedInformation());
         }
         req.setUsername(endEntityInformation.getUsername());
         req.setPassword(endEntityInformation.getPassword());
         final String encodedValidity = endEntityInformation.getExtendedInformation().getCertificateEndTime();
         req.setRequestValidityNotAfter(encodedValidity == null ? null :
-            ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
+                ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntityInformation)));
         try {
             ResponseMessage resp = null;
-            if(isSshEnroll) {
+            if (isSshEnroll) {
                 resp = signSessionLocal.createCertificate(authenticationToken, req, SshResponseMessage.class, null);
-                if(resp.getFailInfo()!=null) {
+                if (resp.getFailInfo() != null) {
                     throw new EjbcaException(ErrorCode.BAD_REQUEST, resp.getFailText());
                 }
                 return resp.getResponseMessage();
@@ -2392,10 +2424,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
             return cert.getEncoded();
-        } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
-                | CADoesntExistsException | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
-                | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
-                | InvalidAlgorithmException | CertificateExtensionException e) {
+        } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException |
+                 IllegalKeyException
+                 | CADoesntExistsException | SignRequestException | SignRequestSignatureException |
+                 IllegalNameException | CertificateCreateException
+                 | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException |
+                 CAOfflineException
+                 | InvalidAlgorithmException | CertificateExtensionException e) {
             throw new EjbcaException(LogRedactionUtils.getRedactedException(e));
         } catch (CertificateParsingException | CertificateEncodingException e) {
             throw new IllegalStateException("Internal error with creating Certificate from CertificateResponseMessage");
@@ -2443,7 +2478,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("EJBCA REST exception", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
             throw new EjbcaException(e.getErrorCode(), LogRedactionUtils.getRedactedException(e));
-        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException e) {
+        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException |
+                 CertificateException | IOException e) {
             log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
         }
@@ -2452,7 +2488,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] createCertificateWS(final AuthenticationToken authenticationToken, final UserDataVOWS userData, final String requestData, final int requestType,
-            final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, EjbcaException,
+                                      final String hardTokenSN, final String responseType) throws AuthorizationDeniedException, EjbcaException,
             EndEntityProfileValidationException {
         try {
             // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
@@ -2461,11 +2497,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (!responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
                 if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
                     responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7;
-                }
-                else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
+                } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
                     responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN;
-                }
-                else{
+                } else {
                     throw new NoSuchAlgorithmException("Bad responseType:" + responseType);
                 }
             }
@@ -2498,14 +2532,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("EJBCA WebService error", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
             throw new EjbcaException(e.getErrorCode(), LogRedactionUtils.getRedactedException(e));
-        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException | CertificateException | IOException | RuntimeException e) {  // EJBException, ClassCastException, ...
+        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException |
+                 CertificateException | IOException | RuntimeException e) {  // EJBException, ClassCastException, ...
             log.debug("EJBCA WebService error", LogRedactionUtils.getRedactedException(e));
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
 
     @Override
-    public byte[] softTokenRequest(AuthenticationToken authenticationToken, UserDataVOWS userdata, String keyspec, String keyalg, boolean createJKS) 
+    public byte[] softTokenRequest(AuthenticationToken authenticationToken, UserDataVOWS userdata, String keyspec, String keyalg, boolean createJKS)
             throws AuthorizationDeniedException, CADoesntExistsException, EndEntityProfileValidationException, EjbcaException {
         try {
             // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
@@ -2532,15 +2567,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             log.debug("EJBCA WebService error", e);
             // Will convert the CESecore exception to an EJBCA exception with the same error code
             throw new EjbcaException(e.getErrorCode(), LogRedactionUtils.getRedactedException(e));
-        } catch (KeyStoreException| NoSuchAlgorithmException | CertificateException |  RuntimeException e) {  // EJBException, ClassCastException, ...
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException |
+                 RuntimeException e) {  // EJBException, ClassCastException, ...
             log.debug("EJBCA WebService error", LogRedactionUtils.getRedactedException(e));
             throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
         }
     }
-    
+
     @Override
     public byte[] enrollAndIssueSshCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntityInformation,
-            final SshRequestMessage sshRequestMessage)
+                                               final SshRequestMessage sshRequestMessage)
             throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
         try {
             endEntityInformation.setSshEndEntity(true);
@@ -2575,7 +2611,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] enrollAndIssueSshCertificateWs(final AuthenticationToken authenticationToken, final UserDataVOWS userDataVOWS,
-            final SshRequestMessage sshRequestMessage)
+                                                 final SshRequestMessage sshRequestMessage)
             throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException {
         try {
             // Some of the session beans are only needed for authentication or certificate operations, and are passed as null
@@ -2613,7 +2649,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public List<CertificateWrapper> getLastCertChain(final AuthenticationToken authenticationToken, final String username) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace(">getLastCertChain: "+username);
+            log.trace(">getLastCertChain: " + username);
         }
         final List<CertificateWrapper> retValues = new ArrayList<>();
         if (endEntityAccessSession.findUser(authenticationToken, username) != null) { // checks authorization on CA and profiles and view_end_entity
@@ -2634,12 +2670,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     appendCaChain(retValues, lastCert);
 
                 } else {
-                    log.debug("Found no certificate (in non null list??) for user "+username);
+                    log.debug("Found no certificate (in non null list??) for user " + username);
                 }
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<getLastCertChain: "+username);
+            log.trace("<getLastCertChain: " + username);
         }
         return retValues;
     }
@@ -2652,7 +2688,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final String issuerDN = CertTools.getIssuerDN(certificate);
             final Collection<Certificate> caCerts = certificateStoreSession.findCertificatesBySubject(issuerDN);
             if (CollectionUtils.isEmpty(caCerts)) {
-                log.info("No certificate found for CA with subjectDN: "+issuerDN);
+                log.info("No certificate found for CA with subjectDN: " + issuerDN);
                 break;
             }
             for (final Certificate cert : caCerts) {
@@ -2666,7 +2702,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     certificate = cert;
                     break; // Break of iteration over this CAs certs
                 } catch (Exception e) {
-                    log.debug("Failed verification when looking for CA certificate, this was not the correct CA certificate. IssuerDN: "+issuerDN+", serno: "+CertTools.getSerialNumberAsString(cert));
+                    log.debug("Failed verification when looking for CA certificate, this was not the correct CA certificate. IssuerDN: " + issuerDN + ", serno: " + CertTools.getSerialNumberAsString(cert));
                 }
             }
         }
@@ -2674,7 +2710,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public boolean markForRecovery(AuthenticationToken authenticationToken, String username, String newPassword, CertificateWrapper cert, boolean localKeyGeneration) throws AuthorizationDeniedException, ApprovalException,
-                                    CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
+            CADoesntExistsException, WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException {
         boolean keyRecoverySuccessful;
         boolean authorized = true;
         // If called from the wrong instance, return to proxybean and try next implementation
@@ -2725,9 +2761,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return false;
         } else {
             // only for REST to avoid fetching end entity profile contents to RA
-            if(endEntityInformation.getExtendedInformation()!=null && 
-                    endEntityInformation.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE)!=null) {
-                EndEntityProfile endEntityProfile = 
+            if (endEntityInformation.getExtendedInformation() != null &&
+                    endEntityInformation.getExtendedInformation().getCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE) != null) {
+                EndEntityProfile endEntityProfile =
                         endEntityProfileSession.getEndEntityProfileNoClone(endEntityInformation.getEndEntityProfileId());
                 isClearPwd = endEntityProfile.isClearTextPasswordUsed() && endEntityProfile.isClearTextPasswordDefault();
                 endEntityInformation.getExtendedInformation().getRawData().remove(
@@ -2792,7 +2828,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     private Collection<EndEntityInformation> filterEep(final AuthenticationToken authenticationToken,
-            final Collection<EndEntityInformation> resultsWithCasFiltered) {
+                                                       final Collection<EndEntityInformation> resultsWithCasFiltered) {
         final List<Integer> profileIds = new ArrayList<>(
                 endEntityProfileSession.getAuthorizedEndEntityProfileIds(authenticationToken, AccessRulesConstants.VIEW_END_ENTITY));
         // Additionally require view access to all the profiles
@@ -2873,7 +2909,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
 
             // find certificate to recover
-            final Certificate cert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, new BigInteger(certSNinHex,16));
+            final Certificate cert = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, new BigInteger(certSNinHex, 16));
             if (cert == null) {
                 final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerDN, certSNinHex);
                 throw new NotFoundException(msg);
@@ -2923,17 +2959,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return keyStoreBytes;
     }
 
-    /** Help function used to check end entity profile authorization. */
+    /**
+     * Help function used to check end entity profile authorization.
+     */
     private boolean endEntityAuthorization(AuthenticationToken admin, int profileId) {
         return isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileId
-                    + AccessRulesConstants.KEYRECOVERY_RIGHTS, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + AccessRulesConstants.KEYRECOVERY_RIGHTS);
+                + AccessRulesConstants.KEYRECOVERY_RIGHTS, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + AccessRulesConstants.KEYRECOVERY_RIGHTS);
     }
 
     @Override
     public boolean changeCertificateStatus(final AuthenticationToken authenticationToken, final String fingerprint, final int newStatus, final int newRevocationReason)
             throws ApprovalException, WaitingForApprovalException {
         final CertificateDataWrapper cdw = searchForCertificate(authenticationToken, fingerprint);
-        if (cdw!=null) {
+        if (cdw != null) {
             final BigInteger serialNumber = new BigInteger(cdw.getCertificateData().getSerialNumber());
             final String issuerDn = cdw.getCertificateData().getIssuerDN();
             try {
@@ -2942,16 +2980,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 return true;
             } catch (AlreadyRevokedException e) {
                 // If it is already revoked, great! The client got what the client wanted.. (almost at least, since reason might differ)
-                log.info("Client '"+authenticationToken+"' requested status change of when status was already set for certificate '"+fingerprint+"'. Considering operation successful.");
+                log.info("Client '" + authenticationToken + "' requested status change of when status was already set for certificate '" + fingerprint + "'. Considering operation successful.");
                 return true;
             } catch (AuthorizationDeniedException e) {
-                log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' but is not authorized to revoke certificates.");
+                log.info("Client '" + authenticationToken + "' requested status change of certificate '" + fingerprint + "' but is not authorized to revoke certificates.");
             } catch (NoSuchEndEntityException e) {
                 // The certificate did exist a few lines ago, but must have been removed since then. Treat this like it never existed
-                log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' that does not exist.");
+                log.info("Client '" + authenticationToken + "' requested status change of certificate '" + fingerprint + "' that does not exist.");
             }
         } else {
-            log.info("Client '"+authenticationToken+"' requested status change of certificate '"+fingerprint+"' that does not exist or the client is not authorized to see.");
+            log.info("Client '" + authenticationToken + "' requested status change of certificate '" + fingerprint + "' that does not exist or the client is not authorized to see.");
         }
         return false;
     }
@@ -2966,10 +3004,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         endEntityManagementSession.revokeCert(authenticationToken, certSerNo, revocationDate, /*invalidityDate*/null, issuerDn, reason, checkDate);
     }
 
-    
+
     @Override
     public void revokeAndDeleteUser(final AuthenticationToken authenticationToken, final String username, final int reason)
-        throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
+            throws AuthorizationDeniedException, NoSuchEndEntityException, WaitingForApprovalException, CouldNotRemoveEndEntityException, ApprovalException {
         endEntityManagementSession.revokeAndDeleteUser(authenticationToken, username, reason);
     }
 
@@ -2985,7 +3023,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public void revokeUser(final AuthenticationToken authenticationToken, final String username, final int reason, final boolean deleteUser) throws AuthorizationDeniedException, CADoesntExistsException,
-        WaitingForApprovalException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException {
+            WaitingForApprovalException, NoSuchEndEntityException, CouldNotRemoveEndEntityException, EjbcaException {
         endEntityManagementSession.revokeUser(authenticationToken, username, reason, deleteUser);
     }
 
@@ -2995,8 +3033,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final int caId = CertTools.stringToBCDNString(issuerDn).hashCode();
         caSession.verifyExistenceOfCA(caId);
         // Check if we are authorized to this CA
-        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() +caId)) {
-            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() +caId, null);
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId)) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() + caId, null);
             throw new AuthorizationDeniedException(msg);
         }
 
@@ -3008,18 +3046,18 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException{
+    public ApprovalProfile getApprovalProfileForAction(final AuthenticationToken authenticationToken, final ApprovalRequestType action, final int caId, final int certificateProfileId) throws AuthorizationDeniedException {
         KeyToValueHolder<CAInfo> caInfoHolder = getAuthorizedCAInfos(authenticationToken).get(caId);
         KeyToValueHolder<CertificateProfile> certificateProfileHolder = getAllAuthorizedCertificateProfiles(authenticationToken).get(certificateProfileId);
-        if(caInfoHolder == null){
+        if (caInfoHolder == null) {
             throw new AuthorizationDeniedException("Could not get approval profile because " + authenticationToken + " doesn't have access to CA with ID = " + caId);
         }
-        if(certificateProfileHolder == null){
+        if (certificateProfileHolder == null) {
             throw new AuthorizationDeniedException("Could not get approval profile because " + authenticationToken + " doesn't have access to certificate profile with ID = " + certificateProfileId);
         }
         return approvalProfileSession.getApprovalProfileForAction(action, caInfoHolder.getValue(), certificateProfileHolder.getValue());
     }
-    
+
     @Override
     public Integer createApprovalRequest(final AuthenticationToken authenticationToken, final int type, final int approvalProfileId, final int endEntityProfileId, final String acmeAccountId) throws AuthorizationDeniedException, ApprovalException {
         return approvalSession.createApprovalRequest(authenticationToken, type, approvalProfileId, endEntityProfileId, acmeAccountId);
@@ -3033,7 +3071,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             SignatureException, CertificateException, AuthorizationDeniedException, CertificateExtensionException, CertificateRenewalException {
         return scepMessageDispatcherSession.dispatchRequest(authenticationToken, operation, message, scepConfigurationAlias);
     }
-    
+
     @Override
     public byte[] verifyScepPkcs10RequestMessage(AuthenticationToken authenticationToken, String alias, byte[] message) throws CertificateCreateException {
         return scepMessageDispatcherSession.verifyRequestMessage(authenticationToken, alias, message);
@@ -3068,12 +3106,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public Collection<CertificateWrapper> getCertificateChain(final AuthenticationToken authenticationToken, int caId) throws AuthorizationDeniedException, CADoesntExistsException {
-        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId)) {
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId)) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAACCESS.resource() + caId, null);
             throw new AuthorizationDeniedException(msg);
         }
         CAInfo caInfo = caSession.getCAInfoInternal(caId);
-        if(caInfo == null) {
+        if (caInfo == null) {
             throw new CADoesntExistsException("CA with ID " + caId + " doesn't exist");
         }
         return EJBTools.wrapCertCollection(caInfo.getCertificateChain());
@@ -3088,8 +3126,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public int getCountOfCertificatesByExpirationTime(final AuthenticationToken authenticationToken, long days) throws AuthorizationDeniedException {
-        if(!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate")) {
-            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", null);
+        if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate")) {
+            final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate", null);
             throw new AuthorizationDeniedException(msg);
         }
         Date findDate = getDate(days);
@@ -3098,7 +3136,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public void customLog(final AuthenticationToken authenticationToken, final String type, final String caName, final String username, final String certificateSn,
-    		final String msg, final EventType event) throws AuthorizationDeniedException, CADoesntExistsException {
+                          final String msg, final EventType event) throws AuthorizationDeniedException, CADoesntExistsException {
         caAdminSession.customLog(authenticationToken, type, caName, username, certificateSn, msg, event);
     }
 
@@ -3128,7 +3166,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public Collection<CertificateWrapper> getCertificatesByExpirationTime(final AuthenticationToken authenticationToken, final long days,
-            final int maxNumberOfResults, final int offset) throws AuthorizationDeniedException {
+                                                                          final int maxNumberOfResults, final int offset) throws AuthorizationDeniedException {
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate")) {
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource",
                     StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate", null);
@@ -3176,7 +3214,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] processCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String req, final int reqType,
-            final String hardTokenSN, final String responseType)
+                                            final String hardTokenSN, final String responseType)
             throws AuthorizationDeniedException, EjbcaException, CesecoreException,
             CertificateExtensionException, InvalidKeyException, SignatureException,
             InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException, IOException {
@@ -3246,11 +3284,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         final String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
         caSession.verifyExistenceOfCA(bcIssuerDN.hashCode());
-        final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(new BigInteger(serialNumberInHex,16), bcIssuerDN);
-        if(certReqHistory == null){
-            throw new PublisherException("Error: the certificate with serialnumber : " + serialNumberInHex +" and issuerdn " + issuerDN + " couldn't be found in database.");
+        final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(new BigInteger(serialNumberInHex, 16), bcIssuerDN);
+        if (certReqHistory == null) {
+            throw new PublisherException("Error: the certificate with serialnumber : " + serialNumberInHex + " and issuerdn " + issuerDN + " couldn't be found in database.");
         }
-        ejbcaWSHelperSession.isAuthorizedToRepublish(authenticationToken, certReqHistory.getUsername(),bcIssuerDN.hashCode());
+        ejbcaWSHelperSession.isAuthorizedToRepublish(authenticationToken, certReqHistory.getUsername(), bcIssuerDN.hashCode());
         final CertificateProfile certificateProfile = certificateProfileSession.getCertificateProfile(certReqHistory.getEndEntityInformation().getCertificateProfileId());
         if (certificateProfile != null) {
             if (certificateProfile.getPublisherList().size() > 0) {
@@ -3258,7 +3296,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                         authenticationToken, certificateProfile.getPublisherList(), certReqHistory.getFingerprint(),
                         certReqHistory.getEndEntityInformation().getPassword(), certReqHistory.getEndEntityInformation().getCertificateDN(),
                         certReqHistory.getEndEntityInformation().getExtendedInformation());
-                if(!pubStoreCertificateResult) {
+                if (!pubStoreCertificateResult) {
                     throw new PublisherException("Error: publication failed to at least one of the defined publishers.");
                 }
             } else {
@@ -3270,7 +3308,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
-            final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+                                            final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm);
     }
 
@@ -3283,10 +3321,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] getSshCaPublicKey(String caName) throws SshKeyException, CADoesntExistsException {
         CAInfo caInfo = caSession.getCAInfoInternal(-1, caName, true);
-        if(caInfo == null) {
+        if (caInfo == null) {
             throw new CADoesntExistsException("CA with name " + caName + " does not exist.");
         }
-        if(caInfo.getCAType() != SshCaInfo.CATYPE_SSH) {
+        if (caInfo.getCAType() != SshCaInfo.CATYPE_SSH) {
             throw new SshKeyException("CA of name " + caName + " is not an SSH CA.");
         } else {
             PublicKey publicKey = caInfo.getCertificateChain().get(0).getPublicKey();
@@ -3348,7 +3386,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public String parseAcmeEabMessage(AuthenticationToken authenticationToken, String alias, String requestUrl, String requestJwk,
-            String eabRequestJsonString) throws AcmeProblemException {
+                                      String eabRequestJsonString) throws AcmeProblemException {
         return acmeConfigurationSession.parseAcmeEabMessage(authenticationToken, alias, requestUrl, requestJwk, eabRequestJsonString);
     }
 
@@ -3466,7 +3504,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             final String encodedValidity = endEntity.getExtendedInformation().getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
-                ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntity));
+                    ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(authenticationToken, endEntity));
             keyStore = keyStoreCreateSessionLocal.generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(authenticationToken,
                     endEntity.getUsername(), // Username
                     endEntity.getPassword(), // Enrollment code
@@ -3481,10 +3519,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     reuseCertificateFlag, // Reuse recovered cert?
                     endEntity.getEndEntityProfileId()); // Identifier for end entity
         } catch (KeyStoreException | InvalidAlgorithmParameterException | CADoesntExistsException | IllegalKeyException
-                | CertificateCreateException | IllegalNameException | CertificateRevokeException | CertificateSerialNumberException
-                | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException | InvalidAlgorithmException
-                | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException | InvalidKeySpecException
-                | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
+                 | CertificateCreateException | IllegalNameException | CertificateRevokeException |
+                 CertificateSerialNumberException
+                 | CryptoTokenOfflineException | IllegalValidityException | CAOfflineException |
+                 InvalidAlgorithmException
+                 | CustomCertificateSerialNumberException | CertificateException | NoSuchAlgorithmException |
+                 InvalidKeySpecException
+                 | EndEntityProfileValidationException | CertificateSignatureException | NoSuchEndEntityException e) {
             cleanupAfterFailure(endEntity);
             throw new KeyStoreGeneralRaException(e);
         }
@@ -3492,7 +3533,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 outputStream.write(KeyTools.getSinglePemFromKeyStore(keyStore, endEntity.getPassword().toCharArray()));
                 return outputStream.toByteArray();
-            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException | NoSuchAlgorithmException e) {
+            } catch (IOException | CertificateEncodingException | UnrecoverableKeyException | KeyStoreException |
+                     NoSuchAlgorithmException e) {
                 log.error(LogRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         } else {
@@ -3511,7 +3553,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] addUserAndCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, boolean isClearPwd)
             throws AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
-        if(endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null){
+        if (endEntityInformation.getExtendedInformation() == null || endEntityInformation.getExtendedInformation().getCertificateRequest() == null) {
             throw new IllegalArgumentException("Could not find CSR for end entity with username " + endEntityInformation.getUsername() + " CSR must be set under endEntityInformation.extendedInformation.certificateRequest");
         }
 
@@ -3542,10 +3584,13 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
             return cert.getEncoded();
-        } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException | IllegalKeyException
-                | CADoesntExistsException | SignRequestException | SignRequestSignatureException | IllegalNameException | CertificateCreateException
-                | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException | CAOfflineException
-                | InvalidAlgorithmException | CertificateExtensionException e) {
+        } catch (NoSuchEndEntityException | CustomCertificateSerialNumberException | CryptoTokenOfflineException |
+                 IllegalKeyException
+                 | CADoesntExistsException | SignRequestException | SignRequestSignatureException |
+                 IllegalNameException | CertificateCreateException
+                 | CertificateRevokeException | CertificateSerialNumberException | IllegalValidityException |
+                 CAOfflineException
+                 | InvalidAlgorithmException | CertificateExtensionException e) {
             cleanupAfterFailure(endEntityInformation);
             throw new EjbcaException(LogRedactionUtils.getRedactedException(e));
         } catch (CertificateParsingException | CertificateEncodingException e) {
@@ -3562,7 +3607,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             // We only delete the end entity here. The createCertificate/generateOrKeyRecoverToken calls
             // are responsible for revocation is the certificate is issued half-way.
             endEntityManagementSession.deleteUser(new AlwaysAllowLocalAuthenticationToken("Failed Enrollment Cleanup"), endEntityInformation.getUsername());
-        } catch (NoSuchEndEntityException | AuthorizationDeniedException | CouldNotRemoveEndEntityException | RuntimeException e) {
+        } catch (NoSuchEndEntityException | AuthorizationDeniedException | CouldNotRemoveEndEntityException |
+                 RuntimeException e) {
             // We don't want the admin to focus on this error, so we use lower log levels than normal
             log.info("End entity could not be deleted after issuance failure: " + LogRedactionUtils.getRedactedMessage(e.getMessage()));
             log.trace("Stack trace from cleanup", LogRedactionUtils.getRedactedException(e));
@@ -3597,7 +3643,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (log.isDebugEnabled()) {
             if (result != null) {
                 log.debug("Found configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
-            } else  {
+            } else {
                 log.debug("Could not find configuration with class '" + type.getName() + "'. Probably the request was sent from an RA peer of a newer version");
             }
         }
@@ -3614,8 +3660,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId, 
-                                byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException {
+    public byte[] doEtsiOperation(AuthenticationToken authenticationToken, String ecaCertificateId,
+                                  byte[] requestBody, int operationCode) throws AuthorizationDeniedException, EjbcaException {
         log.info("requestBody: " + Hex.toHexString(requestBody));
         return ecaOperationsSession.doEtsiOperation(authenticationToken, ecaCertificateId, requestBody, operationCode);
     }

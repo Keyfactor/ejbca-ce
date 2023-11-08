@@ -1,11 +1,12 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:component="http://xmlns.jcp.org/jsf/composite/component">
-    <ui:remove>
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:component="http://xmlns.jcp.org/jsf/composite/component">
+<ui:remove>
     <!--
     /*************************************************************************
      *                                                                       *
@@ -21,340 +22,483 @@
      *************************************************************************/
 
      -->
-    </ui:remove>
-    <ui:composition template="/WEB-INF/include/template.xhtml">
-        <f:metadata>
-            <!-- Parameters defined here can be passed in GET requests -->
-            <f:viewParam name="certsGenericSearchString" value="#{raSearchCertsBean.genericSearchString}"/>
-            <f:event type="preRenderView" listener="#{raSearchCertsBean.initialize}"/>
-        </f:metadata>
-        <ui:define name="content">
-        	<h:panelGroup layout="block" class="header" id="title">
-				<h1><h:outputText value="#{msg.search_certs_page_title}"/></h1>
-			</h:panelGroup>
-        	<h:panelGroup layout="block" styleClass="content-body">	  
-                <h:outputText value="#{msg.search_certs_page_error_unauthorized}" rendered="#{!raAccessBean.authorizedToSearchCerts}"/>
-                <h:form id="detailsForm" styleClass="pure-form"
+</ui:remove>
+<ui:composition template="/WEB-INF/include/template.xhtml">
+    <f:metadata>
+        <!-- Parameters defined here can be passed in GET requests -->
+        <f:viewParam name="certsGenericSearchString" value="#{raSearchCertsBean.httpSearchQueryParameter}"/>
+        <f:event type="preRenderView" listener="#{raSearchCertsBean.initialize}"/>
+    </f:metadata>
+    <ui:define name="content">
+        <h:panelGroup layout="block" class="header" id="title">
+            <h1>
+                <h:outputText value="#{msg.search_certs_page_title}"/>
+            </h1>
+        </h:panelGroup>
+        <h:panelGroup layout="block" styleClass="content-body">
+            <h:outputText value="#{msg.search_certs_page_error_unauthorized}"
+                          rendered="#{!raAccessBean.authorizedToSearchCerts}"/>
+            <h:form id="detailsForm" styleClass="pure-form"
                     rendered="#{raAccessBean.authorizedToSearchCerts and not empty raSearchCertsBean.currentCertificateDetails}">
-                    <h:panelGroup styleClass="pure-u-1">
-                        <h:panelGroup styleClass="pure-u-1-3">
-                            <h2><h:outputText value="#{msg.viewcert_page_title}"/></h2>
-                        </h:panelGroup>
-                        <h:panelGroup styleClass="pure-u-2-3">
-                            <h:commandButton action="#{raSearchCertsBean.previousCertificateDetails}" value="#{msg.search_certs_page_cdprevious_command}"
-                                styleClass="pure-button ra-button"
-                                disabled="#{empty raSearchCertsBean.currentCertificateDetails.previous}"
-                                immediate="true"/>
-                            <h:commandButton action="#{raSearchCertsBean.closeCertificateDetails}" value="#{msg.search_certs_page_cdclose_command}"
-                                styleClass="pure-button ra-button"
-                                immediate="true"/>
-                            <h:commandButton action="#{raSearchCertsBean.nextCertificateDetails}" value="#{msg.search_certs_page_cdnext_command}"
-                                styleClass="pure-button ra-button"
-                                disabled="#{empty raSearchCertsBean.currentCertificateDetails.next}"
-                                immediate="true"/>
-                        </h:panelGroup>
+                <h:panelGroup styleClass="pure-u-1">
+                    <h:panelGroup styleClass="pure-u-1-3">
+                        <h2>
+                            <h:outputText value="#{msg.viewcert_page_title}"/>
+                        </h2>
                     </h:panelGroup>
-                    <h:panelGroup styleClass="pure-u-1">
-                        <component:certdetails id="certDetails" raCertificateDetails="#{raSearchCertsBean.currentCertificateDetails}"/>
+                    <h:panelGroup styleClass="pure-u-2-3">
+                        <h:commandButton action="#{raSearchCertsBean.previousCertificateDetails}"
+                                         value="#{msg.search_certs_page_cdprevious_command}"
+                                         styleClass="pure-button ra-button"
+                                         disabled="#{empty raSearchCertsBean.currentCertificateDetails.previous}"
+                                         immediate="true"/>
+                        <h:commandButton action="#{raSearchCertsBean.closeCertificateDetails}"
+                                         value="#{msg.search_certs_page_cdclose_command}"
+                                         styleClass="pure-button ra-button"
+                                         immediate="true"/>
+                        <h:commandButton action="#{raSearchCertsBean.nextCertificateDetails}"
+                                         value="#{msg.search_certs_page_cdnext_command}"
+                                         styleClass="pure-button ra-button"
+                                         disabled="#{empty raSearchCertsBean.currentCertificateDetails.next}"
+                                         immediate="true"/>
                     </h:panelGroup>
-                </h:form>
-	            <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form"
+                </h:panelGroup>
+                <h:panelGroup styleClass="pure-u-1">
+                    <component:certdetails id="certDetails"
+                                           raCertificateDetails="#{raSearchCertsBean.currentCertificateDetails}"/>
+                </h:panelGroup>
+            </h:form>
+            <h:form id="contentForm" styleClass="pure-form pure-form-aligned foo-form"
                     rendered="#{raAccessBean.authorizedToSearchCerts and empty raSearchCertsBean.currentCertificateDetails}">
-	                <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
-	                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" style="display: none;"/>
-	
-	                <h:panelGroup id="basic" styleClass="pure-g">
-	               		<h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1 pure-u-lg-4-5">
-		                    <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}" styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsDelayKeyUp pure-u-1" size="40"
-		                         title="#{msg.search_certs_page_criteria_generic_title}">
-		                        <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-		                    </h:inputText>
-	                    </h:panelGroup>
-	                    
-	                    <noscript>
-                            <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
-                                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}" value="#{msg.search_certs_page_search_command}" styleClass="pure-button pure-button-primary searchButton jsHide"/>
-                            </h:panelGroup>
-                        </noscript>
-	                    
-						<h:panelGroup id="parentCriteriaEepId" styleClass="pure-u-1 pure-u-lg-1-5">
-                            <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}">
-		                        <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
-		                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-		                    </h:selectOneMenu>
-	                    </h:panelGroup>
-	                    
-						<h:panelGroup id="parentCriteriaCpId" styleClass="pure-u-1 pure-u-lg-1-5">
-		                    <h:selectOneMenu id="criteriaCpId" value="#{raSearchCertsBean.criteriaCpId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCpAvailable}">
-		                        <f:selectItems value="#{raSearchCertsBean.availableCps}"/>
-		                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-		                    </h:selectOneMenu>
-						</h:panelGroup>
-						
-						<h:panelGroup id="parentCriteriaCaId" styleClass="pure-u-1 pure-u-lg-1-5">
-		                    <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}" styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCaAvailable}">
-		                        <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
-		                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-		                    </h:selectOneMenu>
-						</h:panelGroup>
-						
-						<h:panelGroup id="parentCriteriaStatus" styleClass="pure-u-1 pure-u-lg-1-5">
-		                    <h:selectOneMenu id="criteriaStatus" value="#{raSearchCertsBean.criteriaStatus}" styleClass="pure-input-1">
-		                        <f:selectItems value="#{raSearchCertsBean.availableStatuses}"/>
-		                        <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-		                    </h:selectOneMenu>
-						</h:panelGroup>
-						
-						<h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
-		                    <h:commandButton id="showMoreButton" rendered="#{raSearchCertsBean.moreOptions}" action="#{raSearchCertsBean.moreOptionsAction}" value="#{msg.search_certs_page_lessoptions_command}"
-		                    	styleClass="pure-button ra-button">
-		                        <f:ajax execute="@this" render=":contentForm:basic :contentForm:more :contentForm:filteredResults"
-		                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');if(data.status=='success'){ejbca.ra.touchUpDocument();}"
-		                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-		                    </h:commandButton>
-		                    <h:commandButton id="showLessButton" rendered="#{!raSearchCertsBean.moreOptions}" action="#{raSearchCertsBean.moreOptionsAction}" value="#{msg.search_certs_page_moreoptions_command}"
-		                    	styleClass="pure-button ra-button">
-		                        <f:ajax execute="@this" render=":contentForm:basic :contentForm:more"
-		                            onevent="function(data){if(data.status=='success'){ejbca.ra.touchUpDocument();}}"/>
-		                    </h:commandButton>
-						</h:panelGroup>
-	                </h:panelGroup>
-	
-	                <h:panelGroup id="more" layout="block" style="margin-top: 10px;" styleClass="pure-u-1 pure-u-lg-4-5">
-	                    <h:panelGroup rendered="#{raSearchCertsBean.moreOptions}" styleClass="pure-g">                
-							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">
-								<h:panelGroup layout="block" styleClass="pure-control-group">
-	                                <h:outputLabel for="criteriaMaxResults" value="#{msg.search_certs_page_criteria_maxresults}"/>
-	                                <h:selectOneMenu id="criteriaMaxResults" value="#{raSearchCertsBean.criteriaMaxResults}">
-	                                    <f:selectItems value="#{raSearchCertsBean.availableMaxResults}"/>
-	                                    <f:ajax event="change" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:selectOneMenu>
-                                </h:panelGroup>
-	                       </h:panelGroup>
-                           <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">                  
-                                <h:panelGroup layout="block" styleClass="pure-control-group">
-                                    <h:outputLabel for="issuedAfter" id="issuedAfterLabel" value="#{msg.search_certs_page_criteria_issuedafter}"/>
-                                    <h:inputText id="issuedAfter" value="#{raSearchCertsBean.issuedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-                                        <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:issuedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-                                    </h:inputText>
-                                </h:panelGroup>
-                                <h:panelGroup layout="block" styleClass="pure-control-group">
-                                    <h:outputLabel for="issuedBefore" id="issuedBeforeLabel" value="#{msg.search_certs_page_criteria_issuedbefore}"/>
-                                    <h:inputText id="issuedBefore" value="#{raSearchCertsBean.issuedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-                                        styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-                                        <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:issuedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-                                    </h:inputText>
-                                 </h:panelGroup>
-                            </h:panelGroup>
-	                       <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">                  
-	                            <h:panelGroup layout="block" styleClass="pure-control-group">
-	                                <h:outputLabel for="expiresAfter" id="expiresAfterLabel" value="#{msg.search_certs_page_criteria_expiresafter}"/>
-	                                <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:expiresAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:inputText>
-	                            </h:panelGroup>
-	                            <h:panelGroup layout="block" styleClass="pure-control-group">
-	                                <h:outputLabel for="expiresBefore" id="expiresBeforeLabel" value="#{msg.search_certs_page_criteria_expiresbefore}"/>
-	                                <h:inputText id="expiresBefore" value="#{raSearchCertsBean.expiresBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:expiresBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:inputText>
-                                 </h:panelGroup>
-							</h:panelGroup>
-							<h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">				
-	                            <h:panelGroup layout="block" styleClass="pure-control-group">	                            	
-	                                <h:outputLabel for="revokedAfter" id="revokedAfterLabel" value="#{msg.search_certs_page_criteria_revokedafter}"/>
-	                                <h:inputText id="revokedAfter" value="#{raSearchCertsBean.revokedAfter}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:revokedAfterLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:inputText>
-	                            </h:panelGroup>
-	                            <h:panelGroup layout="block" styleClass="pure-control-group">	                            		                            
-	                                <h:outputLabel for="revokedBefore" id="revokedBeforeLabel" value="#{msg.search_certs_page_criteria_revokedbefore}"/>
-	                                <h:inputText id="revokedBefore" value="#{raSearchCertsBean.revokedBefore}" size="21" title="YYYY-MM-dd HH:mm:ssZZ"
-	                                    styleClass="jsTitleAsPlaceHolder jsDelayKeyUp">
-	                                    <f:ajax event="keyup" execute="@this" render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:revokedBeforeLabel" listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:inputText>
-	                            </h:panelGroup>
-							</h:panelGroup>
-	                    </h:panelGroup>
-	                </h:panelGroup>
-	
-	                <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
-	                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsNone}" value="#{msg.search_certs_page_info_noresult}"/>
-	                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsMoreAvailable}" value="#{msg.search_certs_page_info_moreresults}"/>
-                        <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsTimeout}" value="#{msg.search_certs_page_info_timeout}"/>
-	                    <h:dataTable id="searchCertTable" rendered="#{not empty raSearchCertsBean.filteredResults}" value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
-	                       styleClass="pure-table" rowClasses=",pure-table-odd" >
-	                        <h:column>
-	                            <f:facet name="header">
-	                                <h:outputLabel for="sortCa" value="#{msg.search_certs_page_colhead_ca} #{raSearchCertsBean.sortedByCa}"/>
-	                                <h:commandButton id="sortCa" action="#{raSearchCertsBean.sortByCa}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:commandButton>
-	                            </f:facet>
-	                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.caName}"/>
-	                        </h:column>
-	                        <h:column>
-	                            <f:facet name="header">
-	                                <h:outputLabel for="sortProfile" value="#{msg.search_certs_page_colhead_profile} #{raSearchCertsBean.sortedByProfile}"/>
-	                                <h:commandButton id="sortProfile" action="#{raSearchCertsBean.sortByProfile}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:commandButton>
-	                            </f:facet>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
-	                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.eepName}"/>
-	                                <h:outputText styleClass="fineprint" value=" / #{raSearchCertificate.cpName}" rendered="#{!raSearchCertificate.cpNameSameAsEepName}"/>
-	                            </h:panelGrid>
-	                        </h:column>
-	                        <h:column>
-	                            <f:facet name="header">
-	                                <h:outputLabel for="sortSerialNumber" value="#{msg.search_certs_page_colhead_serialnumber} #{raSearchCertsBean.sortedBySerialNumber}"/>
-	                                <h:commandButton id="sortSerialNumber" action="#{raSearchCertsBean.sortBySerialNumber}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:commandButton>
-	                            </f:facet>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.serialnumber}"/>
-	                                <h:outputText styleClass="fineprintMono" value="(#{raSearchCertificate.serialnumberRaw})"/>
-	                            </h:panelGrid>
-	                        </h:column>
-	                        <h:column>
-	                            <f:facet name="header">
-	                                <h:outputLabel for="sortSubject" value="#{msg.search_certs_page_colhead_subject} #{raSearchCertsBean.sortedBySubject}"/>
-	                                <h:commandButton id="sortSubject" action="#{raSearchCertsBean.sortBySubject}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:commandButton>
-	                            </f:facet>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder" rendered="#{!raSearchCertificate.typeSsh}">
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectDnUnescapedValue.length() gt 100 ? raSearchCertificate.subjectDnUnescapedValue.substring(0,95).concat('.....')  : raSearchCertificate.subjectDnUnescapedValue}"/>
-	                                <ui:fragment rendered="#{raSearchCertificate.subjectAn.length() gt 0}"><hr /></ui:fragment>
-	                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.subjectAn.length() gt 100 ? raSearchCertificate.subjectAnUnescapedComma.substring(0,95).concat('.....') : raSearchCertificate.subjectAnUnescapedComma}"/>
-	                            </h:panelGrid>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder" rendered="#{raSearchCertificate.typeSsh}">
-	                                <h:outputText styleClass="fineprintMono" value="KeyId: #{raSearchCertificate.sshKeyId.length() gt 90 ? raSearchCertificate.sshKeyId.substring(0,85).concat('.....')  : raSearchCertificate.sshKeyId}"/>
-	                                <ui:fragment rendered="#{raSearchCertificate.principals.length() gt 0}"><hr /></ui:fragment>
-	                                <h:outputText styleClass="fineprintMono" rendered="#{raSearchCertificate.principals.length() gt 0}"
-	                                    value="Principals: #{raSearchCertificate.principals.length() gt 90 ? raSearchCertificate.principals.substring(0,85).concat('.....') : raSearchCertificate.principals}"/>
-	                                <ui:fragment rendered="#{raSearchCertificate.comment.length() gt 0}"><hr /></ui:fragment>
-	                                <h:outputText styleClass="fineprintMono" rendered="#{raSearchCertificate.comment.length() gt 0}" 
-	                                	value="Comment: #{raSearchCertificate.comment.length() gt 90 ? raSearchCertificate.comment.substring(0,85).concat('.....') : raSearchCertificate.comment}"/>
-	                            </h:panelGrid>
-	                        </h:column>
-	                        <h:column>
-                                <f:facet name="header">
-                                    <h:outputLabel for="sortIssuance" value="#{msg.search_certs_page_colhead_notbefore} #{raSearchCertsBean.sortedByIssuance}"/>
-                                    <h:commandButton id="sortIssuance" action="#{raSearchCertsBean.sortByIssuance}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-                                        <f:ajax execute="@this" render=":contentForm:filteredResults"
-                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-                                    </h:commandButton>
-                                </f:facet>
-                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.created}"/>
-                            </h:column>
-                            <h:column>
-	                            <f:facet name="header">
-	                                <h:outputLabel for="sortExpiration" value="#{msg.search_certs_page_colhead_notafter} #{raSearchCertsBean.sortedByExpiration}"/>
-	                                <h:commandButton id="sortExpiration" action="#{raSearchCertsBean.sortByExpiration}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:commandButton>
-	                            </f:facet>
-                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.expires}"/>
-	                        </h:column>
-	                        <h:column>
-	                            <f:facet name="header">
-	                                <h:outputLabel for="sortStatus" value="#{msg.search_certs_page_colhead_status} #{raSearchCertsBean.sortedByStatus}"/>
-	                                <h:commandButton id="sortStatus" action="#{raSearchCertsBean.sortByStatus}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:commandButton>
-	                            </f:facet>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
-	                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.status}"/>
-	                                <h:outputText rendered="#{!raSearchCertificate.active}" styleClass="fineprintMono" value="#{raSearchCertificate.updated}"/>
-	                            </h:panelGrid>
-	                        </h:column>
-	                        <h:column>
-	                            <f:facet name="header">
-	                                <h:outputLabel for="sortEAId" value="#{msg.search_certs_page_colhead_external_account} #{raSearchCertsBean.sortedByExternalAccount}"/>
-	                                <h:commandButton id="sortEAId" action="#{raSearchCertsBean.sortByExternalAccount}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:commandButton>
-	                            </f:facet>
-	                            <h:panelGrid columns="1" styleClass="nopadding noborder">
-	                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.accountBindingId}"/>
-	                            </h:panelGrid>
-	                        </h:column>
-	                        <h:column rendered="#{raAccessBean.authorizedToSearchEndEntities}">
-	                            <f:facet name="header">
-	                                <h:outputLabel for="sortUsername" value="#{msg.search_certs_page_colhead_username} #{raSearchCertsBean.sortedByUsername}"/>
-	                                <h:commandButton id="sortUsername" action="#{raSearchCertsBean.sortByUsername}" value="#{msg.search_certs_page_sort_command}" style="display: none;">
-	                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
-	                                        onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
-	                                        onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
-	                                </h:commandButton>
-	                            </f:facet>
-								<h:outputLink value="endentity.xhtml" styleClass="fineprint">
-									<f:param name="ee" value="#{raSearchCertificate.username}" />
-									<h:outputText value="#{raSearchCertificate.username}" />
-								</h:outputLink>
-	                        </h:column>
-                            <h:column>
-                                <f:facet name="header"><h:outputText value="#{msg.search_certs_page_colhead_action}"/></f:facet>
-                                <h:commandButton id="viewButton" action="#{raSearchCertsBean.openCertificateDetails(raSearchCertificate)}" value="#{msg.search_certs_page_show_command}"/>
-                            </h:column>
-	                    </h:dataTable>
-	                </h:panelGroup>
-		            
-		            <h:panelGroup id="pageButtons" layout="block" style="margin-top: 10px;">
-		                <h:commandButton id="previousPageButton" rendered="#{raSearchCertsBean.showPreviousPageButton}" value="#{msg.search_previous_page}" styleClass="pure-button ra-button float-left">
-	                                <f:ajax event="click" execute="@this" render=":contentForm:pageButtons :contentForm:basic :contentForm:more :contentForm:filteredResults" listener="#{raSearchCertsBean.queryPreviousPage}" />
-	                     </h:commandButton>
-	                    <h:commandButton id="nextPageButton" rendered="#{raSearchCertsBean.showNextPageButton}" value="#{msg.search_next_page}" styleClass="pure-button ra-button float-right">
-	                                <f:ajax event="click" execute="@this" render=":contentForm:pageButtons :contentForm:basic :contentForm:more :contentForm:filteredResults" listener="#{raSearchCertsBean.queryNextPage}" />
-	                    </h:commandButton>
+                <ui:remove><!-- Add a hidden h:commandButton first in the form to ensure that hitting enter leads to a search --></ui:remove>
+                <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}"
+                                 value="#{msg.search_certs_page_search_command}" style="display: none;"/>
+
+                <h:panelGroup id="basic" styleClass="pure-g">
+                    <h:panelGroup id="parentGenericSearchString" styleClass="pure-u-1">
+                        <h:inputText id="genericSearchString" value="#{raSearchCertsBean.genericSearchString}"
+                                     styleClass="jsAutoFocusFirst jsTitleAsPlaceHolder jsPreventEnterKeyPropagation pure-u-1"
+                                     size="40"
+                                     title="#{msg.search_certs_page_criteria_generic_title}">
+                            <f:ajax event="keyup" delay="#{raSearchCertsBean.keyUpDelay}" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                        </h:inputText>
                     </h:panelGroup>
-	            </h:form>
-            </h:panelGroup>
-        </ui:define>
-    </ui:composition>
+
+                    <noscript>
+                        <h:panelGroup id="parentGenericSearchButton" styleClass="pure-u-1 pure-u-lg-1-5">
+                            <h:commandButton action="#{raSearchCertsBean.searchAndFilterAction}"
+                                             value="#{msg.search_certs_page_search_command}"
+                                             styleClass="pure-button pure-button-primary searchButton jsHide"/>
+                        </h:panelGroup>
+                    </noscript>
+
+                    <h:panelGroup styleClass="pure-u-1 parentCriteriaCheckbox">
+                        <h:selectBooleanCheckbox id="subjectDistinguishedName"
+                                                 value="#{raSearchCertsBean.searchSubjectDistinguishedName}">
+                            <f:ajax event="change"/>
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="subjectDistinguishedName"
+                                       value="#{msg.search_certs_page_criteria_checkbox_subdn}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup styleClass="pure-u-1 parentCriteriaCheckbox">
+                        <h:selectBooleanCheckbox id="subjectAlternativeName"
+                                                 value="#{raSearchCertsBean.searchSubjectAlternativeName}">
+                            <f:ajax event="change"/>
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="subjectAlternativeName"
+                                       value="#{msg.search_certs_page_criteria_checkbox_suban}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup styleClass="pure-u-1 parentCriteriaCheckbox">
+                        <h:selectBooleanCheckbox id="username" value="#{raSearchCertsBean.searchUsername}">
+                            <f:ajax event="change"/>
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="username" value="#{msg.search_certs_page_criteria_checkbox_username}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup styleClass="pure-u-1 parentCriteriaCheckbox">
+                        <h:selectBooleanCheckbox id="externalAccountId"
+                                                 value="#{raSearchCertsBean.searchExternalAccountId}">
+                            <f:ajax event="change"/>
+                        </h:selectBooleanCheckbox>
+                        <h:outputLabel for="externalAccountId"
+                                       value="#{msg.search_certs_page_criteria_checkbox_externalid}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="parentCriteriaEepId" styleClass="pure-u-1 parentCriteriaDropdown">
+                        <h:selectOneMenu id="criteriaEepId" value="#{raSearchCertsBean.criteriaEepId}"
+                                         styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneEepAvailable}">
+                            <f:selectItems value="#{raSearchCertsBean.availableEeps}"/>
+                            <f:ajax event="change" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="parentCriteriaCpId" styleClass="pure-u-1 parentCriteriaDropdown">
+                        <h:selectOneMenu id="criteriaCpId" value="#{raSearchCertsBean.criteriaCpId}"
+                                         styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCpAvailable}">
+                            <f:selectItems value="#{raSearchCertsBean.availableCps}"/>
+                            <f:ajax event="change" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="parentCriteriaCaId" styleClass="pure-u-1 parentCriteriaDropdown">
+                        <h:selectOneMenu id="criteriaCaId" value="#{raSearchCertsBean.criteriaCaId}"
+                                         styleClass="pure-input-1" rendered="#{!raSearchCertsBean.onlyOneCaAvailable}">
+                            <f:selectItems value="#{raSearchCertsBean.availableCas}"/>
+                            <f:ajax event="change" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="parentCriteriaStatus" styleClass="pure-u-1 parentCriteriaDropdown">
+                        <h:selectOneMenu id="criteriaStatus" value="#{raSearchCertsBean.criteriaStatus}"
+                                         styleClass="pure-input-1">
+                            <f:selectItems value="#{raSearchCertsBean.availableStatuses}"/>
+                            <f:ajax event="change" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+
+                    <h:panelGroup styleClass="pure-u-1 pure-u-lg-1-5">
+                        <h:commandButton id="showMoreButton" rendered="#{raSearchCertsBean.moreOptions}"
+                                         action="#{raSearchCertsBean.moreOptionsAction}"
+                                         value="#{msg.search_certs_page_lessoptions_command}"
+                                         styleClass="pure-button ra-button">
+                            <f:ajax execute="@this"
+                                    render=":contentForm:basic :contentForm:more :contentForm:filteredResults"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');if(data.status=='success'){ejbca.ra.touchUpDocument();}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                        </h:commandButton>
+                        <h:commandButton id="showLessButton" rendered="#{!raSearchCertsBean.moreOptions}"
+                                         action="#{raSearchCertsBean.moreOptionsAction}"
+                                         value="#{msg.search_certs_page_moreoptions_command}"
+                                         styleClass="pure-button ra-button">
+                            <f:ajax execute="@this" render=":contentForm:basic :contentForm:more"
+                                    onevent="function(data){if(data.status=='success'){ejbca.ra.touchUpDocument();}}"/>
+                        </h:commandButton>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <h:panelGroup id="more" layout="block" style="margin-top: 10px;" styleClass="pure-u-1 pure-u-lg-4-5">
+                    <h:panelGroup rendered="#{raSearchCertsBean.moreOptions}" styleClass="pure-g">
+                        <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">
+                            <h:panelGroup layout="block" styleClass="pure-control-group">
+                                <h:outputLabel for="criteriaMaxResults"
+                                               value="#{msg.search_certs_page_criteria_maxresults}"/>
+                                <h:selectOneMenu id="criteriaMaxResults"
+                                                 value="#{raSearchCertsBean.criteriaMaxResults}">
+                                    <f:selectItems value="#{raSearchCertsBean.availableMaxResults}"/>
+                                    <f:ajax event="change" execute="@this"
+                                            render=":contentForm:pageButtons :contentForm:filteredResults"
+                                            listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:selectOneMenu>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">
+                            <h:panelGroup layout="block" styleClass="pure-control-group">
+                                <h:outputLabel for="issuedAfter" id="issuedAfterLabel"
+                                               value="#{msg.search_certs_page_criteria_issuedafter}"/>
+                                <h:inputText id="issuedAfter" value="#{raSearchCertsBean.issuedAfter}" size="21"
+                                             title="YYYY-MM-dd HH:mm:ssZZ"
+                                             styleClass="jsTitleAsPlaceHolder">
+                                    <f:ajax event="keyup" delay="#{raSearchCertsBean.keyUpDelay}" execute="@this"
+                                            render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:issuedAfterLabel"
+                                            listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:inputText>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="pure-control-group">
+                                <h:outputLabel for="issuedBefore" id="issuedBeforeLabel"
+                                               value="#{msg.search_certs_page_criteria_issuedbefore}"/>
+                                <h:inputText id="issuedBefore" value="#{raSearchCertsBean.issuedBefore}" size="21"
+                                             title="YYYY-MM-dd HH:mm:ssZZ"
+                                             styleClass="jsTitleAsPlaceHolder">
+                                    <f:ajax event="keyup" delay="#{raSearchCertsBean.keyUpDelay}" execute="@this"
+                                            render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:issuedBeforeLabel"
+                                            listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:inputText>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">
+                            <h:panelGroup layout="block" styleClass="pure-control-group">
+                                <h:outputLabel for="expiresAfter" id="expiresAfterLabel"
+                                               value="#{msg.search_certs_page_criteria_expiresafter}"/>
+                                <h:inputText id="expiresAfter" value="#{raSearchCertsBean.expiresAfter}" size="21"
+                                             title="YYYY-MM-dd HH:mm:ssZZ"
+                                             styleClass="jsTitleAsPlaceHolder">
+                                    <f:ajax event="keyup" delay="#{raSearchCertsBean.keyUpDelay}" execute="@this"
+                                            render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:expiresAfterLabel"
+                                            listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:inputText>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="pure-control-group">
+                                <h:outputLabel for="expiresBefore" id="expiresBeforeLabel"
+                                               value="#{msg.search_certs_page_criteria_expiresbefore}"/>
+                                <h:inputText id="expiresBefore" value="#{raSearchCertsBean.expiresBefore}" size="21"
+                                             title="YYYY-MM-dd HH:mm:ssZZ"
+                                             styleClass="jsTitleAsPlaceHolder">
+                                    <f:ajax event="keyup" delay="#{raSearchCertsBean.keyUpDelay}" execute="@this"
+                                            render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:expiresBeforeLabel"
+                                            listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:inputText>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="pure-u-1 pure-u-lg-1-4">
+                            <h:panelGroup layout="block" styleClass="pure-control-group">
+                                <h:outputLabel for="revokedAfter" id="revokedAfterLabel"
+                                               value="#{msg.search_certs_page_criteria_revokedafter}"/>
+                                <h:inputText id="revokedAfter" value="#{raSearchCertsBean.revokedAfter}" size="21"
+                                             title="YYYY-MM-dd HH:mm:ssZZ"
+                                             styleClass="jsTitleAsPlaceHolder">
+                                    <f:ajax event="keyup" delay="#{raSearchCertsBean.keyUpDelay}" execute="@this"
+                                            render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:revokedAfterLabel"
+                                            listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:inputText>
+                            </h:panelGroup>
+                            <h:panelGroup layout="block" styleClass="pure-control-group">
+                                <h:outputLabel for="revokedBefore" id="revokedBeforeLabel"
+                                               value="#{msg.search_certs_page_criteria_revokedbefore}"/>
+                                <h:inputText id="revokedBefore" value="#{raSearchCertsBean.revokedBefore}" size="21"
+                                             title="YYYY-MM-dd HH:mm:ssZZ"
+                                             styleClass="jsTitleAsPlaceHolder">
+                                    <f:ajax event="keyup" delay="#{raSearchCertsBean.keyUpDelay}" execute="@this"
+                                            render=":contentForm:pageButtons :contentForm:filteredResults :messages :contentForm:revokedBeforeLabel"
+                                            listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:inputText>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </h:panelGroup>
+                </h:panelGroup>
+
+                <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
+                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsNone}"
+                                  value="#{msg.search_certs_page_info_noresult}"/>
+                    <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsMoreAvailable}"
+                                  value="#{msg.search_certs_page_info_moreresults}"/>
+                    <h:outputText styleClass="monospace" rendered="#{raSearchCertsBean.resultsTimeout}"
+                                  value="#{msg.search_certs_page_info_timeout}"/>
+                    <h:dataTable id="searchCertTable" rendered="#{not empty raSearchCertsBean.filteredResults}"
+                                 value="#{raSearchCertsBean.filteredResults}" var="raSearchCertificate"
+                                 styleClass="pure-table" rowClasses=",pure-table-odd">
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortCa"
+                                               value="#{msg.search_certs_page_colhead_ca} #{raSearchCertsBean.sortedByCa}"/>
+                                <h:commandButton id="sortCa" action="#{raSearchCertsBean.sortByCa}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText styleClass="fineprint" value="#{raSearchCertificate.caName}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortProfile"
+                                               value="#{msg.search_certs_page_colhead_profile} #{raSearchCertsBean.sortedByProfile}"/>
+                                <h:commandButton id="sortProfile" action="#{raSearchCertsBean.sortByProfile}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.eepName}"/>
+                                <h:outputText styleClass="fineprint" value=" / #{raSearchCertificate.cpName}"
+                                              rendered="#{!raSearchCertificate.cpNameSameAsEepName}"/>
+                            </h:panelGrid>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortSerialNumber"
+                                               value="#{msg.search_certs_page_colhead_serialnumber} #{raSearchCertsBean.sortedBySerialNumber}"/>
+                                <h:commandButton id="sortSerialNumber" action="#{raSearchCertsBean.sortBySerialNumber}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.serialnumber}"/>
+                                <h:outputText styleClass="fineprintMono"
+                                              value="(#{raSearchCertificate.serialnumberRaw})"/>
+                            </h:panelGrid>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortSubject"
+                                               value="#{msg.search_certs_page_colhead_subject} #{raSearchCertsBean.sortedBySubject}"/>
+                                <h:commandButton id="sortSubject" action="#{raSearchCertsBean.sortBySubject}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder"
+                                         rendered="#{!raSearchCertificate.typeSsh}">
+                                <h:outputText styleClass="fineprintMono"
+                                              value="#{raSearchCertificate.subjectDnUnescapedValue.length() gt 100 ? raSearchCertificate.subjectDnUnescapedValue.substring(0,95).concat('.....')  : raSearchCertificate.subjectDnUnescapedValue}"/>
+                                <ui:fragment rendered="#{raSearchCertificate.subjectAn.length() gt 0}">
+                                    <hr/>
+                                </ui:fragment>
+                                <h:outputText styleClass="fineprintMono"
+                                              value="#{raSearchCertificate.subjectAn.length() gt 100 ? raSearchCertificate.subjectAnUnescapedComma.substring(0,95).concat('.....') : raSearchCertificate.subjectAnUnescapedComma}"/>
+                            </h:panelGrid>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder"
+                                         rendered="#{raSearchCertificate.typeSsh}">
+                                <h:outputText styleClass="fineprintMono"
+                                              value="KeyId: #{raSearchCertificate.sshKeyId.length() gt 90 ? raSearchCertificate.sshKeyId.substring(0,85).concat('.....')  : raSearchCertificate.sshKeyId}"/>
+                                <ui:fragment rendered="#{raSearchCertificate.principals.length() gt 0}">
+                                    <hr/>
+                                </ui:fragment>
+                                <h:outputText styleClass="fineprintMono"
+                                              rendered="#{raSearchCertificate.principals.length() gt 0}"
+                                              value="Principals: #{raSearchCertificate.principals.length() gt 90 ? raSearchCertificate.principals.substring(0,85).concat('.....') : raSearchCertificate.principals}"/>
+                                <ui:fragment rendered="#{raSearchCertificate.comment.length() gt 0}">
+                                    <hr/>
+                                </ui:fragment>
+                                <h:outputText styleClass="fineprintMono"
+                                              rendered="#{raSearchCertificate.comment.length() gt 0}"
+                                              value="Comment: #{raSearchCertificate.comment.length() gt 90 ? raSearchCertificate.comment.substring(0,85).concat('.....') : raSearchCertificate.comment}"/>
+                            </h:panelGrid>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortIssuance"
+                                               value="#{msg.search_certs_page_colhead_notbefore} #{raSearchCertsBean.sortedByIssuance}"/>
+                                <h:commandButton id="sortIssuance" action="#{raSearchCertsBean.sortByIssuance}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.created}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortExpiration"
+                                               value="#{msg.search_certs_page_colhead_notafter} #{raSearchCertsBean.sortedByExpiration}"/>
+                                <h:commandButton id="sortExpiration" action="#{raSearchCertsBean.sortByExpiration}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputText styleClass="fineprintMono" value="#{raSearchCertificate.expires}"/>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortStatus"
+                                               value="#{msg.search_certs_page_colhead_status} #{raSearchCertsBean.sortedByStatus}"/>
+                                <h:commandButton id="sortStatus" action="#{raSearchCertsBean.sortByStatus}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.status}"/>
+                                <h:outputText rendered="#{!raSearchCertificate.active}" styleClass="fineprintMono"
+                                              value="#{raSearchCertificate.updated}"/>
+                            </h:panelGrid>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputLabel for="sortEAId"
+                                               value="#{msg.search_certs_page_colhead_external_account} #{raSearchCertsBean.sortedByExternalAccount}"/>
+                                <h:commandButton id="sortEAId" action="#{raSearchCertsBean.sortByExternalAccount}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:panelGrid columns="1" styleClass="nopadding noborder">
+                                <h:outputText styleClass="fineprint" value="#{raSearchCertificate.accountBindingId}"/>
+                            </h:panelGrid>
+                        </h:column>
+                        <h:column rendered="#{raAccessBean.authorizedToSearchEndEntities}">
+                            <f:facet name="header">
+                                <h:outputLabel for="sortUsername"
+                                               value="#{msg.search_certs_page_colhead_username} #{raSearchCertsBean.sortedByUsername}"/>
+                                <h:commandButton id="sortUsername" action="#{raSearchCertsBean.sortByUsername}"
+                                                 value="#{msg.search_certs_page_sort_command}" style="display: none;">
+                                    <f:ajax execute="@this" render=":contentForm:filteredResults"
+                                            onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                            onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
+                                </h:commandButton>
+                            </f:facet>
+                            <h:outputLink value="endentity.xhtml" styleClass="fineprint">
+                                <f:param name="ee" value="#{raSearchCertificate.username}"/>
+                                <h:outputText value="#{raSearchCertificate.username}"/>
+                            </h:outputLink>
+                        </h:column>
+                        <h:column>
+                            <f:facet name="header">
+                                <h:outputText value="#{msg.search_certs_page_colhead_action}"/>
+                            </f:facet>
+                            <h:commandButton id="viewButton"
+                                             action="#{raSearchCertsBean.openCertificateDetails(raSearchCertificate)}"
+                                             value="#{msg.search_certs_page_show_command}"/>
+                        </h:column>
+                    </h:dataTable>
+                </h:panelGroup>
+
+                <h:panelGroup id="pageButtons" layout="block" style="margin-top: 10px;">
+                    <h:commandButton id="previousPageButton" rendered="#{raSearchCertsBean.showPreviousPageButton}"
+                                     value="#{msg.search_previous_page}" styleClass="pure-button ra-button float-left">
+                        <f:ajax event="click" execute="@this"
+                                render=":contentForm:pageButtons :contentForm:basic :contentForm:more :contentForm:filteredResults"
+                                listener="#{raSearchCertsBean.queryPreviousPage}"/>
+                    </h:commandButton>
+                    <h:commandButton id="nextPageButton" rendered="#{raSearchCertsBean.showNextPageButton}"
+                                     value="#{msg.search_next_page}" styleClass="pure-button ra-button float-right">
+                        <f:ajax event="click" execute="@this"
+                                render=":contentForm:pageButtons :contentForm:basic :contentForm:more :contentForm:filteredResults"
+                                listener="#{raSearchCertsBean.queryNextPage}"/>
+                    </h:commandButton>
+                </h:panelGroup>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>
 </html>
