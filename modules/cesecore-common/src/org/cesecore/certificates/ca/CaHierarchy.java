@@ -135,7 +135,7 @@ public class CaHierarchy<T> implements Comparable<CaHierarchy<T>>, Iterable<T> {
         
         private static <T> CaHierarchy<T> computeCaHierarchy(final Set<Edge<T>> edgesToProcess) {
             final Optional<Edge<T>> selfLoop = edgesToProcess.stream()
-                    .filter(edge -> edge.isSelfLoop())
+                    .filter(Edge::isSelfLoop)
                     .findAny();
             if (!selfLoop.isPresent()) {
                 if (log.isTraceEnabled()) {

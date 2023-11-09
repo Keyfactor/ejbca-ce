@@ -171,6 +171,18 @@ public abstract class RequestMessageUtils {
             pkcs10RequestMessage.setUsername(username);
             pkcs10RequestMessage.setPassword(password);
             ret = pkcs10RequestMessage;
+        } else if (reqType == CertificateConstants.CERT_REQ_TYPE_MS_KEY_ARCHIVAL) {
+            byte[] buffer = Base64.decode(req.getBytes());
+            if (buffer == null) {
+                return null;
+            }
+            final MsKeyArchivalRequestMessage msKeyArchivalRequestMessage = new MsKeyArchivalRequestMessage(buffer);
+            if (!msKeyArchivalRequestMessage.verify()) {
+                throw new SignRequestSignatureException("Verification failed for MS key archival request");
+            }
+            msKeyArchivalRequestMessage.setUsername(username);
+            msKeyArchivalRequestMessage.setPassword(password);
+            ret = msKeyArchivalRequestMessage;
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_SPKAC) {
             byte[] reqBytes = req.getBytes();
             if (reqBytes != null) {

@@ -39,8 +39,8 @@
         <meta charset="UTF-8"/>
         <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
         <title dir="ltr"><h:outputText value="#{web.ejbcaTitle}"/></title>
-        <link rel="stylesheet" type="text/css" href="#{web.ejbcaWebBean.baseUrl}#{web.ejbcaWebBean.cssFile}"/>
-        <script type="text/javascript" src="#{adminMenuBean.adminWebUrl}ejbcajslib.js"></script>
+        <link rel="stylesheet" type="text/css" href="#{web.ejbcaWebBean.baseUrl}#{web.ejbcaWebBean.cssFile}?v=#{web.ejbcaWebBean.version}"/>
+        <script type="text/javascript" src="#{adminMenuBean.adminWebUrl}ejbcajslib.js?v=#{web.ejbcaWebBean.version}"></script>
         <link rel="shortcut icon" type="image/png" href="#{adminMenuBean.adminWebUrl}#{adminMenuBean.faviconUrl}"/>
        
         <h:outputStylesheet name="primeicons/primeicons.css" library="primefaces" />
