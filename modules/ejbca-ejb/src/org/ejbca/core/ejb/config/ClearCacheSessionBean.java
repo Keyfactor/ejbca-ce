@@ -86,6 +86,9 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
     private RoleDataSessionLocal roleDataSession;
     @EJB
     private RoleMemberDataSessionLocal roleMemberDataSession;
+    
+    @EJB
+    private KECCache kecCache;
 
     @Override
     public void clearCaches(final boolean excludeActiveCryptoTokens) {
@@ -173,7 +176,7 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
             log.debug("Role member cache cleared.");
         }
         
-        KECCache.flushKecCache();
+        kecCache.flushKecCache();
         if(log.isDebugEnabled()) {
             log.debug("Key exchange certificate cache cleared.");
         }
