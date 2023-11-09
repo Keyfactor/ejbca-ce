@@ -97,7 +97,7 @@
 							
 							<!-- Render CSR upload if user generated -->
 							<h:panelGroup layout="block"
-								rendered="#{enrollWithRequestIdBean.renderGenerateCertificate}" id="uploadCsrOuterPanel" styleClass="pure-control-group">
+								rendered="#{enrollWithRequestIdBean.renderGenerateCertificate  and !enrollWithRequestIdBean.keyRecoveryOperation}" id="uploadCsrOuterPanel" styleClass="pure-control-group">
 								<h:panelGroup layout="block" rendered="#{!enrollWithRequestIdBean.uploadCsrDoneRendered}">
 									<h:panelGroup layout="block">
 									    <p id="newFileInputContainer" style="display: inline-block;"></p>

@@ -15,6 +15,7 @@ package org.cesecore.certificates.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -135,6 +136,25 @@ public class DNFieldsUtilTest {
     	} catch (Exception e) {
     		// What we expect if something goes wrong
     	}
+    }
+
+    @Test
+    public void testExtractCommonNameFromFullSND() {
+        assertEquals("Extracted CN is wrong.","CommonNameA", DNFieldsUtil.extractCommonName("CN=CommonNameA"));
+        assertEquals("Extracted CN is wrong.","CommonNameB", DNFieldsUtil.extractCommonName("CN=CommonNameB , O=Organisation"));
+        assertEquals("Extracted CN is wrong.","CommonNameC", DNFieldsUtil.extractCommonName("O=Organisation, CN=CommonNameC"));
+        assertEquals("Extracted CN is wrong.","CommonNameD", DNFieldsUtil.extractCommonName("CN=CommonNameD, O=Organisation, OU=OrganisationalUnit"));
+        assertEquals("Extracted CN is wrong.","CommonNameE", DNFieldsUtil.extractCommonName("O=Organisation, OU=OrganisationalUnit, CN=CommonNameE"));
+        assertEquals("Extracted CN is wrong.","CommonNameF", DNFieldsUtil.extractCommonName("O=Organisation, CN=CommonNameF , OU=OrganisationalUnit"));
+
+        assertNotNull("Extracted CN is null.", DNFieldsUtil.extractCommonName("CN=CommonNameA"));
+        assertNotNull("Extracted CN is null.", DNFieldsUtil.extractCommonName("CN=CommonNameB , O=Organisation"));
+        assertNotNull("Extracted CN is null.", DNFieldsUtil.extractCommonName("O=Organisation, CN=CommonNameC"));
+        assertNotNull("Extracted CN is null.", DNFieldsUtil.extractCommonName("CN=CommonNameD, O=Organisation, OU=OrganisationalUnit"));
+        assertNotNull("Extracted CN is null.", DNFieldsUtil.extractCommonName("O=Organisation, OU=OrganisationalUnit, CN=CommonNameE"));
+        assertNotNull("Extracted CN is null.", DNFieldsUtil.extractCommonName("O=Organisation, CN=CommonNameF , OU=OrganisationalUnit"));
+
+
     }
 
     private String removeEmpties(String dn, boolean onlyTrailing) {

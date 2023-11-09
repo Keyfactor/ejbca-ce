@@ -881,7 +881,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
     public void test16EECrmfNotCheckAdmin() throws NoSuchAlgorithmException, EjbcaException, IOException, Exception {
         this.cmpConfiguration.setAuthenticationModule(ALIAS, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         this.cmpConfiguration.setAuthenticationParameters(ALIAS, "TestCA");
-        this.cmpConfiguration.setOmitVerificationsInECC(ALIAS, true);
+        this.cmpConfiguration.setOmitVerificationsInEEC(ALIAS, true);
         this.cmpConfiguration.setRAMode(ALIAS, true);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
 

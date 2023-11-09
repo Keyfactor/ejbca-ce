@@ -12,17 +12,16 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * An enum for revocation reasons, with a numerical database value and a String value for CLI applications.
- * 
+ * <p>
  * Based on RFC 5280 Section 5.3.1
- * 
+ *
  * @version $Id$
  */
 public enum RevocationReasons {
@@ -37,78 +36,73 @@ public enum RevocationReasons {
     REMOVEFROMCRL(8, "REMOVE_FROM_CRL", "Remove from CRL"),
     PRIVILEGESWITHDRAWN(9, "PRIVILEGES_WITHDRAWN", "Privileges Withdrawn"),
     AACOMPROMISE(10, "AA_COMPROMISE", "AA Compromise");
-    
+
     private final int databaseValue;
     private final String stringValue;
     private final String humanReadable;
 
-    private static final Map<Integer, RevocationReasons> databaseLookupMap = new HashMap<>();
-    private static final Map<String, RevocationReasons> cliLookupMap = new HashMap<>();
-    private static final Collection<Integer> reasonableRevocationReasons;
-    
-    static {
-        for(RevocationReasons reason : RevocationReasons.values()) {
-            databaseLookupMap.put(reason.getDatabaseValue(), reason);
-            cliLookupMap.put(reason.getStringValue(), reason);
-        }
-        Collection<Integer> reason = new ArrayList<>();
-        reason.add(RevocationReasons.AFFILIATIONCHANGED.getDatabaseValue());
-        reason.add(RevocationReasons.CESSATIONOFOPERATION.getDatabaseValue());
-        reason.add(RevocationReasons.KEYCOMPROMISE.getDatabaseValue());
-        reason.add(RevocationReasons.PRIVILEGESWITHDRAWN.getDatabaseValue());
-        reason.add(RevocationReasons.SUPERSEDED.getDatabaseValue());
-        reason.add(RevocationReasons.UNSPECIFIED.getDatabaseValue());
-        reasonableRevocationReasons = Collections.unmodifiableCollection(reason);
-    }
+    private static final List<RevocationReasons> reasonableRevocationReasons =
+            List.of(RevocationReasons.AFFILIATIONCHANGED,
+                    RevocationReasons.CESSATIONOFOPERATION,
+                    RevocationReasons.KEYCOMPROMISE,
+                    RevocationReasons.PRIVILEGESWITHDRAWN,
+                    RevocationReasons.SUPERSEDED,
+                    RevocationReasons.UNSPECIFIED
+            );
 
-    private RevocationReasons(final int databaseValue, final String stringValue, String humanReadable) {
+
+    private RevocationReasons(final int databaseValue, final String stringValue, final String humanReadable) {
         this.databaseValue = databaseValue;
         this.stringValue = stringValue;
         this.humanReadable = humanReadable;
     }
-    
+
     public int getDatabaseValue() {
         return databaseValue;
     }
-    
+
     public String getHumanReadable() {
         return humanReadable;
     }
-    
+
     public String getStringValue() {
         return stringValue;
     }
-    
+
     /**
-     * 
      * @param databaseValue the database value
-     * @return the relevant RevocationReasons object, null if none found. 
+     * @return the relevant RevocationReasons object, null if none found.
      */
     public static RevocationReasons getFromDatabaseValue(int databaseValue) {
-        return databaseLookupMap.get(databaseValue);
+        return Arrays.stream(values())
+                .filter(item -> item.getDatabaseValue() == databaseValue)
+                .findAny().orElse(null);
     }
-    
+
     /**
-     * 
      * @param cliValue the database value
-     * @return the relevant RevocationReasons object, null if none found. 
+     * @return the relevant RevocationReasons object, null if none found.
      */
     public static RevocationReasons getFromCliValue(String cliValue) {
-        if(cliValue == null) {
+        if (cliValue == null) {
             return null;
         }
-        return cliLookupMap.get(cliValue);
+        return Arrays.stream(values())
+                .filter(item -> item.getStringValue().equals(cliValue))
+                .findAny().orElse(null);
     }
-    
+
     /**
      * Returns the collection of reasonable revocation reason codes.
-     * 
+     * <p>
      * Verify that the revocation reason code is allowed (see https://tools.ietf.org/html/rfc8555#section-7.6)
      * ACME server MAY disallow a subset may of reasonCodes ... defined in RFC5820 ...
-     *  
+     *
      * @return the collection of revocation reason codes.
      */
     public static Collection<Integer> getReasonableRevocationReasonCodes() {
-        return reasonableRevocationReasons;
+        return reasonableRevocationReasons.stream()
+                .map(RevocationReasons::getDatabaseValue)
+                .collect(Collectors.toList());
     }
 }

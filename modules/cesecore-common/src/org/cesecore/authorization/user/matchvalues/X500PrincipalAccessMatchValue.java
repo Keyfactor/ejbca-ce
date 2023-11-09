@@ -13,6 +13,7 @@
 package org.cesecore.authorization.user.matchvalues;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -40,7 +41,8 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     WITH_DNEMAILADDRESS(12),
     WITH_RFC822NAME(13),
     WITH_UPN(14),
-    WITH_FULLDN(15);
+    WITH_FULLDN(15),
+    WITH_ANY(16);
     
     private final int numericValue;
     
@@ -75,7 +77,11 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
 
     @Override
     public List<AccessMatchType> getAvailableAccessMatchTypes() {
-        return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
+        if (numericValue == 16) {
+            return Collections.emptyList();
+        } else {
+            return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
+        }
     }
     
     @Override
