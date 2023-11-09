@@ -90,7 +90,7 @@ public class InternalKeyBindingValidityCheck extends ConfigurationIssue {
     public List<Ticket> getTickets() {
         return internalKeyBindingDataSession.getIds(/* all types */ null)
                 .stream()
-                .map(id -> internalKeyBindingDataSession.getInternalKeyBinding(id))
+                .map(internalKeyBindingDataSession::getInternalKeyBinding)
                 .filter(internalKeyBinding -> internalKeyBinding.getStatus() == InternalKeyBindingStatus.ACTIVE)
                 .map(internalKeyBinding -> new InternalKeyBindingEntry(internalKeyBinding, getCertificate(internalKeyBinding)))
                 .filter(entry -> entry.getX509Certificate().isPresent())

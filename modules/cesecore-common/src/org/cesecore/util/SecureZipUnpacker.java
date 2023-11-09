@@ -295,7 +295,7 @@ public class SecureZipUnpacker {
             // Allow all files, this is the default
             return true;
         }
-        return acceptedFileExtensions.stream().anyMatch(fileExtension -> fileName.endsWith(fileExtension));
+        return acceptedFileExtensions.stream().anyMatch(fileName::endsWith);
     }
 
     private byte[] readZipEntry(final ZipInputStream zipInputStream, final ZipEntry zipEntry) throws IOException {

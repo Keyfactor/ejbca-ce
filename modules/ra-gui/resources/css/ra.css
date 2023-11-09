@@ -369,3 +369,11 @@ textarea.row-odd,
 	color: #fff;
 	margin-bottom: 15px;
 }
+
+input[type="file"] {
+	color: #fff;
+}
+
+input[type="file"]:focus {
+	outline: none !important;
+}

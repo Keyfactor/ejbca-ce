@@ -19,6 +19,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 
+import org.bouncycastle.util.Properties;
+import org.cesecore.certificates.certificate.CertificateConstants;
+
 import com.keyfactor.util.Base64;
 
 
@@ -26,26 +29,31 @@ import com.keyfactor.util.Base64;
  * Class used to generate a java.security.KeyStore from a 
  * org.ejbca.core.protocol.ws.common.KeyStore
  * 
- * @version $Id$
  */
 public class KeyStoreHelper {
 
-	/**
-	 * Retrieves the keystore from the encoded data.
-	 * @param keystoreData byte array
-	 * @param type "PKCS12" or "JKS"
-	 * @param password to lock the keystore
-	 * @return the loaded and unlocked keystore.
-	 * @throws CertificateException
-	 * @throws IOException 
-	 * @throws NoSuchAlgorithmException 
-	 * @throws NoSuchProviderException 
-	 * @throws KeyStoreException 
-	 */
-	public static java.security.KeyStore getKeyStore(byte[] keystoreData, String type, String password) throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException, NoSuchProviderException{
-		java.security.KeyStore ks = type.equalsIgnoreCase("JKS") ? java.security.KeyStore.getInstance("JKS") : java.security.KeyStore.getInstance(type, "BC");
-		ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decode(keystoreData));
-		ks.load(bais, password.toCharArray());
-        return ks; 
-	}
+    /**
+     * Retrieves the keystore from the encoded data.
+     * @param keystoreData byte array
+     * @param type "PKCS12" or "JKS"
+     * @param password to lock the keystore
+     * @return the loaded and unlocked keystore.
+     * @throws CertificateException
+     * @throws IOException 
+     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchProviderException 
+     * @throws KeyStoreException 
+     */
+    public static java.security.KeyStore getKeyStore(byte[] keystoreData, String type, String password)
+            throws CertificateException, NoSuchAlgorithmException, IOException, KeyStoreException, NoSuchProviderException {
+        try (final ByteArrayInputStream bais = new ByteArrayInputStream(Base64.decode(keystoreData))) {
+            Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+            java.security.KeyStore ks = type.equalsIgnoreCase("JKS") ? java.security.KeyStore.getInstance("JKS")
+                    : java.security.KeyStore.getInstance(type, "BC");
+            ks.load(bais, password.toCharArray());
+            return ks;
+        } finally {
+            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+        }
+    }
 }

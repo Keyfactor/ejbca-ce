@@ -51,6 +51,9 @@ public interface EjbcaWebBean extends Serializable {
     /** Return the IE fixes CSS of the admins selected theme including it's trailing '.css' */
     String getIeFixesCssFile();
 
+    /** Returns a version string for JavaScript and CSS file cache control */
+    String getVersion();
+
     /** Returns the admins prefered language */
     int getPreferedLanguage();
 

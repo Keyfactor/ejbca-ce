@@ -75,6 +75,7 @@ public final class CertificateConstants {
     public static final int CERTTYPE_ITS        =     0xc;
     /** Certificate belongs to an CA cross chain. These are not loaded in CaCertificateCache. */
     public static final int CERTTYPE_CROSS_CA_CHAIN   =     0xf0;
+    // Username used for creating key exchange certificate
     /** Certificate is CA certificate intended to be used as internal or external CA in EJBCA */
     public static final String CERT_USERNAME_SYSTEMCA = "SYSTEMCA";
     
@@ -92,11 +93,13 @@ public final class CertificateConstants {
     public static final int CERT_REQ_TYPE_SPKAC     = 2;
     public static final int CERT_REQ_TYPE_PUBLICKEY = 3;
     public static final int CERT_REQ_TYPE_CVC       = 4;
+    public static final int CERT_REQ_TYPE_MS_KEY_ARCHIVAL    = 5;
 
     // Certificate response types
     public static final int CERT_RES_TYPE_CERTIFICATE    = 0;
     public static final int CERT_RES_TYPE_PKCS7          = 1;
     public static final int CERT_RES_TYPE_PKCS7WITHCHAIN = 2;
+    public static final int CERT_RES_TYPE_CMCFULLPKI = 3;
 
 	/** KeyUsage constants */
 	public static final int DIGITALSIGNATURE = 0;
@@ -130,4 +133,6 @@ public final class CertificateConstants {
     public static final String SHA512 = HashAlgorithm.getName(HashAlgorithm.sha512).toUpperCase();
     public static final String[] AVAILABLE_CERTID_HASH_ALGORITHMS = {SHA1, SHA256, SHA384, SHA512};
     public static final String DEFAULT_CERTID_HASH_ALGORITHM = AVAILABLE_CERTID_HASH_ALGORITHMS[0];
+    
+    public static final String ENABLE_UNSAFE_RSA_KEYS = "org.bouncycastle.rsa.allow_unsafe_mod";
 }
