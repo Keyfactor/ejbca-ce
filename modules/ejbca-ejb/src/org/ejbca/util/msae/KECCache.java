@@ -43,18 +43,18 @@ public enum KECCache {
 
     private static final Logger log = Logger.getLogger(KECCache.class);
 
-    private static ConcurrentMap<Integer, Certificate> kecCache = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Integer, Certificate> currentKecCache = new ConcurrentHashMap<>();
 
     public Certificate getCachedKEC(final AuthenticationToken admin, final int cAId, final int cPId)
             throws CertificateEncodingException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
             CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException,
             AuthorizationDeniedException, CertificateExtensionException, KeyArchivalException {
 
-        Certificate kec = kecCache.get(cAId);
+        Certificate kec = currentKecCache.get(cAId);
 
-        log.error("KEC CACHE size is " + kecCache.size());
+        log.error("KEC CACHE size is " + currentKecCache.size());
 
-        log.error("KEC CACHE is empty " + kecCache.isEmpty());
+        log.error("KEC CACHE is empty " + currentKecCache.isEmpty());
 
         if (Objects.isNull(kec)) {
             return generateKecOnCaSideAndCache(admin, cAId, cPId);
@@ -71,11 +71,10 @@ public enum KECCache {
     }
 
     public void flushKecCache() {
-        kecCache.clear();
         dereferenceKecCache();
         log.info("KEC cache cleared.");
-        log.error(" The cache is now empty : " + kecCache.isEmpty());
-        log.error(" The size of cache is now : " + kecCache.size());
+        log.error(" The cache is now empty : " + currentKecCache.isEmpty());
+        log.error(" The size of cache is now : " + currentKecCache.size());
     }
 
     private Certificate generateKecOnCaSideAndCache(final AuthenticationToken admin, final int cAId, final int cPId)
@@ -88,7 +87,7 @@ public enum KECCache {
             log.debug("RaMasterApi returns null instead of key exchange certificate.");
             throw new KeyArchivalException("Null key exchange certificate returned by the CA!");
         } else {
-            kecCache.put(cAId, kec);
+            currentKecCache.put(cAId, kec);
         }
         return kec;
     }
@@ -96,7 +95,7 @@ public enum KECCache {
     private void dereferenceKecCache() {
         final ConcurrentMap<Integer, Certificate> newKecCache = new ConcurrentHashMap<>();
         synchronized (this) {
-            kecCache = newKecCache;
+            currentKecCache = newKecCache;
         }
     }
 }
