@@ -335,7 +335,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
         return publisherQueueSession
                 .getPendingEntriesForPublisherWithLimitAndOffset(publisherId, MAX_RESULTS + 1, MAX_RESULTS * pageNumber)
                 .stream()
-                .map(data -> new PublisherQueueItem(data))
+                .map(PublisherQueueItem::new)
                 .collect(Collectors.toList());
     }
 }

@@ -43,7 +43,7 @@
         <h:form id="aliases" rendered="#{web.ejbcaWebBean.runningEnterprise}">
             <h:dataTable value="#{estConfigMBean.estConfigAliasesSelectItemList}" var="alias" styleClass="grid"
                          rendered="#{!estConfigMBean.aliasListEmpty}">
-                <h:column headerClass="listColumn1">
+                <h:column>
                     <f:facet name="header">
                         <h:outputText value="#{web.text.ESTALIAS}"/>
                     </f:facet>

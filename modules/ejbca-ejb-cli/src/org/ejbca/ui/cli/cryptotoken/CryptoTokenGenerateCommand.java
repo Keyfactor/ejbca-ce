@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.cli.cryptotoken;
 
+import java.util.Arrays;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
@@ -23,13 +30,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
- * 
- * @version $Id$
  */
 public class CryptoTokenGenerateCommand extends BaseCryptoTokenCommand {
 
@@ -37,12 +39,18 @@ public class CryptoTokenGenerateCommand extends BaseCryptoTokenCommand {
 
     private static final String KEY_PAIR_ALIAS_KEY = "--alias";
     private static final String KEY_SPECIFICATION_KEY = "--keyspec";
+    private static final String KEY_USAGE = "--key-usage";
 
     {
         registerParameter(new Parameter(KEY_PAIR_ALIAS_KEY, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key pair alias"));
         registerParameter(new Parameter(KEY_SPECIFICATION_KEY, "Key Specification", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Key specification, for example 2048, secp256r1, DSA1024, gost3410, dstu4145"));
+        registerParameter(
+                new Parameter(KEY_USAGE, "Key usage", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
+                        "A key usage emplate, describing how the key is allowed to be used. Applicable for PKCS#11 NG Crypto Tokens and has no function "
+                        + "for most other crypto tokens. Available templates: "
+                        + Arrays.asList(KeyPairTemplate.values()) + ". If not provided, the default value of SIGN will be used"));
     }
 
     @Override
@@ -54,9 +62,12 @@ public class CryptoTokenGenerateCommand extends BaseCryptoTokenCommand {
     public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException, CryptoTokenOfflineException {
         final String keyPairAlias = parameters.get(KEY_PAIR_ALIAS_KEY);
         final String keyPairSpecification = parameters.get(KEY_SPECIFICATION_KEY);
+        // If user does not provide key usage on the command line, it defaults to SIGN (which is the same default if we don't provide any template into createKeyPair)
+        final String keyUsage = parameters.get(KEY_USAGE) == null ? KeyPairTemplate.SIGN.toString() : parameters.get(KEY_USAGE);
+        final KeyGenParamsBuilder paramBuilder = KeyGenParams.builder(keyPairSpecification).withKeyPairTemplate(KeyPairTemplate.valueOf(keyUsage.toUpperCase()));
         try {
             EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class).createKeyPair(getAdmin(), cryptoTokenId,
-                    keyPairAlias, KeyGenParams.builder(keyPairSpecification).build());
+                    keyPairAlias, paramBuilder.build());
             getLogger().info("Key pair generated successfully.");
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
