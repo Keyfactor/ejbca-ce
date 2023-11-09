@@ -67,8 +67,10 @@ public enum KECCache {
     }
 
     public static void clearCache() {
-        KECCache.KEC_CACHE.clear();
+        KEC_CACHE.clear();
         log.info("KEC cache cleared.");
+        log.error(" The cache is now empty : " + KEC_CACHE.isEmpty());
+        log.error(" The size of cache is now : " + KEC_CACHE.size());
     }
 
     private Certificate generateKecOnCaSideAndCache(final AuthenticationToken admin, final int cAId, final int cPId)
