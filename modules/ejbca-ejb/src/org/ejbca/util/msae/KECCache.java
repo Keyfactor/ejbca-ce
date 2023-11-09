@@ -43,7 +43,7 @@ public enum KECCache {
 
     private static final Logger log = Logger.getLogger(KECCache.class);
 
-    private static ConcurrentMap<Integer, Certificate> currentKecCache = new ConcurrentHashMap<>();
+    private ConcurrentMap<Integer, Certificate> currentKecCache = new ConcurrentHashMap<>();
 
     public Certificate getCachedKEC(final AuthenticationToken admin, final int cAId, final int cPId)
             throws CertificateEncodingException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
