@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -107,6 +108,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collection;
@@ -616,6 +618,33 @@ public interface RaMasterApi {
      */
     byte[] generateKeyStoreWithoutViewEndEntityAccessRule(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation)
             throws AuthorizationDeniedException, EjbcaException;
+
+    /**
+     * Finds and returns key exchange certificate for the specified CA if exists in database else generates
+     * for the specified CA with the specified certificate profile.
+     * @param authenticationToken authentication token
+     * @param caId certificate authority id
+     * @param cpId certificate profile id
+     * @return generated key exchange certificate
+     * @throws AuthorizationDeniedException if not authorized
+     * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid
+     * @throws CryptoTokenOfflineException if crypto token is offline
+     * @throws CertificateCreateException if an error occurred when trying to create a certificate
+     * @throws CertificateExtensionException if extensions configured with bad properties
+     * @throws CAOfflineException if the CA wasn't active
+     * @throws IllegalValidityException if validity period is invalid
+     * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
+     * @throws IllegalKeyException if the using public key is not allowed to be used by specified certProfile
+     * @throws OperatorCreationException if CA's private key contained an unknown algorithm or provider
+     * @throws IllegalNameException if the Subject DN failed constraints
+     * @throws CertificateEncodingException if the certificate couldn't be encoded
+     * @throws CertificateNotYetValidException 
+     * @throws CertificateExpiredException 
+     */
+    Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+        throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException,
+        CertificateCreateException, CertificateExtensionException, CAOfflineException, IllegalValidityException,
+        SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, CertificateEncodingException;
 
     /**
      * Generates certificate from CSR for the specified end entity. Used for client side generated key pairs.

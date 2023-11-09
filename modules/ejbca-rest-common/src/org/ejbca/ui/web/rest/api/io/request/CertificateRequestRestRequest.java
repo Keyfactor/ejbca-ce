@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import com.keyfactor.util.CertTools;
 import io.swagger.annotations.ApiModelProperty;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
@@ -19,7 +20,7 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
  * A class representing the input for certificate request REST method.
  */
 public class CertificateRequestRestRequest {
-    @ApiModelProperty(value = "Certificate request", example = "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
+    @ApiModelProperty(value = "Certificate request", example = "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     private String certificateRequest;
     @ApiModelProperty(value = "Username", example = "JohnDoe")
     private String username;
@@ -96,7 +97,7 @@ public class CertificateRequestRestRequest {
          */
         public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final CertificateRequestRestRequest certificateRequestRestRequest) {
             return new EnrollPkcs10CertificateRequest.Builder()
-                    .certificateRequest(certificateRequestRestRequest.getCertificateRequest())
+                    .certificateRequest(CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest()))
                     .username(certificateRequestRestRequest.getUsername())
                     .password(certificateRequestRestRequest.getPassword())
                     .includeChain(certificateRequestRestRequest.getIncludeChain())
