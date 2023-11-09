@@ -51,21 +51,21 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 @Startup
 @ConcurrencyManagement(ConcurrencyManagementType.BEAN)
 @TransactionManagement(TransactionManagementType.BEAN)
-public class KECCache {
+public class KecCacheBean {
 
-    private static final Logger log = Logger.getLogger(KECCache.class);
+    private static final Logger log = Logger.getLogger(KecCacheBean.class);
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    private ConcurrentMap<Integer, Certificate> currentKecCache;
+    private ConcurrentMap<Integer, Certificate> kecCache;
 
     @PostConstruct
-    public void init() {
-        currentKecCache = new ConcurrentHashMap<>();
+    public void initialize() {
+        kecCache = new ConcurrentHashMap<>();
     }
 
-    public KECCache() {
+    public KecCacheBean() {
         //
     }
 
@@ -74,11 +74,11 @@ public class KECCache {
             CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException,
             AuthorizationDeniedException, CertificateExtensionException, KeyArchivalException {
 
-        Certificate kec = currentKecCache.get(cAId);
+        Certificate kec = kecCache.get(cAId);
 
-        log.error("KEC CACHE size is " + currentKecCache.size());
+        log.error("KEC CACHE size is " + kecCache.size());
 
-        log.error("KEC CACHE is empty " + currentKecCache.isEmpty());
+        log.error("KEC CACHE is empty " + kecCache.isEmpty());
 
         if (Objects.isNull(kec)) {
             return generateKecOnCaSideAndCache(admin, cAId, cPId);
@@ -95,10 +95,10 @@ public class KECCache {
     }
 
     public void flushKecCache() {
-        currentKecCache = new ConcurrentHashMap<>();
+        kecCache = new ConcurrentHashMap<>();
         log.info("KEC cache cleared.");
-        log.error(" The cache is now empty : " + currentKecCache.isEmpty());
-        log.error(" The size of cache is now : " + currentKecCache.size());
+        log.error(" The cache is now empty : " + kecCache.isEmpty());
+        log.error(" The size of cache is now : " + kecCache.size());
     }
 
     private Certificate generateKecOnCaSideAndCache(final AuthenticationToken admin, final int cAId, final int cPId)
@@ -111,7 +111,7 @@ public class KECCache {
             log.debug("RaMasterApi returns null instead of key exchange certificate.");
             throw new KeyArchivalException("Null key exchange certificate returned by the CA!");
         } else {
-            currentKecCache.put(cAId, kec);
+            kecCache.put(cAId, kec);
         }
         return kec;
     }
