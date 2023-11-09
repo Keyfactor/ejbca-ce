@@ -65,7 +65,8 @@ public class KECCache {
         currentKecCache = new ConcurrentHashMap<>();
     }
 
-    private KECCache() {
+    public KECCache() {
+        //
     }
 
     public Certificate getCachedKEC(final AuthenticationToken admin, final int cAId, final int cPId)
