@@ -19,6 +19,15 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import javax.annotation.PostConstruct;
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.EJB;
+import javax.ejb.Singleton;
+import javax.ejb.Startup;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -30,7 +39,7 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.ejbca.core.model.util.EjbLocalHelper;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.protocol.msae.KeyArchivalException;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -38,14 +47,28 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Cache holding CA id and associated kec (key exchange certificate) 
  */
-public enum KECCache {
-    INSTANCE;
+@Singleton
+@Startup
+@ConcurrencyManagement(ConcurrencyManagementType.BEAN)
+@TransactionManagement(TransactionManagementType.BEAN)
+public class KECCache {
 
     private static final Logger log = Logger.getLogger(KECCache.class);
 
-    private static ConcurrentMap<Integer, Certificate> currentKecCache = new ConcurrentHashMap<>();
+    @EJB
+    private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    public static Certificate getCachedKEC(final AuthenticationToken admin, final int cAId, final int cPId)
+    private ConcurrentMap<Integer, Certificate> currentKecCache;
+
+    @PostConstruct
+    public void init() {
+        currentKecCache = new ConcurrentHashMap<>();
+    }
+
+    private KECCache() {
+    }
+
+    public Certificate getCachedKEC(final AuthenticationToken admin, final int cAId, final int cPId)
             throws CertificateEncodingException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
             CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException,
             AuthorizationDeniedException, CertificateExtensionException, KeyArchivalException {
@@ -70,19 +93,19 @@ public enum KECCache {
         }
     }
 
-    public static void flushKecCache() {
-        currentKecCache.clear();
+    public void flushKecCache() {
+        currentKecCache = new ConcurrentHashMap<>();
         log.info("KEC cache cleared.");
         log.error(" The cache is now empty : " + currentKecCache.isEmpty());
         log.error(" The size of cache is now : " + currentKecCache.size());
     }
 
-    private static Certificate generateKecOnCaSideAndCache(final AuthenticationToken admin, final int cAId, final int cPId)
+    private Certificate generateKecOnCaSideAndCache(final AuthenticationToken admin, final int cAId, final int cPId)
             throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
             CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException,
             OperatorCreationException, IllegalNameException, CertificateEncodingException, KeyArchivalException {
         Certificate kec;
-        kec = new EjbLocalHelper().getRaMasterApiProxyBean().getKeyExchangeCertificate(admin, cAId, cPId);
+        kec = raMasterApiProxyBean.getKeyExchangeCertificate(admin, cAId, cPId);
         if (Objects.isNull(kec)) {
             log.debug("RaMasterApi returns null instead of key exchange certificate.");
             throw new KeyArchivalException("Null key exchange certificate returned by the CA!");
@@ -91,4 +114,5 @@ public enum KECCache {
         }
         return kec;
     }
+
 }
