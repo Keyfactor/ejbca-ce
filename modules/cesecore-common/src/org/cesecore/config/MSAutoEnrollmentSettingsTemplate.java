@@ -36,6 +36,9 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private boolean publishToActiveDirectory;
     
     private boolean excludeObjectSidInNtdsSecurityExtension;
+    
+    // Private key archival flag
+    private boolean archivePrivateKey;
 
     public MSAutoEnrollmentSettingsTemplate() {
         init();
@@ -60,8 +63,8 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         setAdditionalSubjectDNAttributes("");
         setPublishToActiveDirectory(false);
         setExcludeObjectSidInNtdsSecurityExtension(false);
+        setArchivePrivateKey(false);
     }
-
 
 
     // Getters and Setters
@@ -208,6 +211,14 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     public void setExcludeObjectSidInNtdsSecurityExtension(boolean excludeObjectSidInNtdsSecurityExtension) {
         this.excludeObjectSidInNtdsSecurityExtension = excludeObjectSidInNtdsSecurityExtension;
     }
+    
+    public boolean isArchivePrivateKey() {
+        return archivePrivateKey;
+    }
+    
+    public void setArchivePrivateKey(boolean archivePrivateKey) {
+        this.archivePrivateKey = archivePrivateKey;
+    }
 
     @Override
     public int hashCode() {
@@ -249,6 +260,9 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         "\nIncludeObjectGuidInSubjectSAN: " + isIncludeObjectGuidInSubjectSAN() +
         "\nAdditionalSubjectDNAttributes: " + getAdditionalSubjectDNAttributes() + 
         "\nPublishToActiveDirectory: " + isPublishToActiveDirectory() +
-        "\nExcludeObjectSidInNtdsSecurityExtension: " + isExcludeObjectSidInNtdsSecurityExtension();
+        "\nExcludeObjectSidInNtdsSecurityExtension: " + isExcludeObjectSidInNtdsSecurityExtension() +
+        "\nArchivePrivateKey: " + isArchivePrivateKey();
     }
+
+
 }

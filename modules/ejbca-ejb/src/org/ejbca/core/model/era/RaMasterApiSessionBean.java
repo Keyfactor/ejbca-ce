@@ -25,6 +25,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.Properties;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -42,6 +44,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -87,6 +90,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.GlobalCesecoreConfiguration;
@@ -362,9 +366,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>14<td>=<td>7.10.0
      * <tr><th>15<td>=<td>7.11.0
      * <tr><th>16<td>=<td>8.1.0
+     * <tr><th>17<td>=<td>8.2.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 16;
+    private static final int RA_MASTER_API_VERSION = 17;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -2316,6 +2321,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] generateKeyStoreWithoutViewEndEntityAccessRule(final AuthenticationToken admin, final EndEntityInformation endEntity) throws AuthorizationDeniedException, EjbcaException {
         KeyStore keyStore;
+        try { // bad indentation
         try {
             final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntity.getEndEntityProfileId());
             boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
@@ -2325,6 +2331,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             final boolean saveKeysFlag = data.getKeyRecoverable() && useKeyRecovery && (data.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
+            if (loadKeysFlag) {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+            }
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
             if (ei == null) {
@@ -2374,6 +2383,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.error(LogRedactionUtils.getRedactedException(e)); //should never happen if keyStore is valid object
             }
         }
+        } finally {
+            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
+        }
         return null;
     }
 
@@ -2384,6 +2396,37 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             return true; // Assume X.509
         }
         return caInfo.isExpirationInclusive();
+    }
+
+    @Override
+    public Certificate getKeyExchangeCertificate(AuthenticationToken authenticationToken, int caId, int cpId)
+            throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
+            CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException,
+            OperatorCreationException, IllegalNameException, CertificateEncodingException {
+
+        final String caSubjectDN = caSession.getCAInfo(authenticationToken, caId).getSubjectDN();
+
+        // Using CA subject DN's common name part to stay compatible with Microsoft KA cert format
+        // Check here for more info: https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-wcce/bcae68c1-5b26-4a9d-8f28-eb2fdc209c65
+        final String cNPartOfSubjectDN = DNFieldsUtil.extractCommonName(caSubjectDN);
+        
+        if (cNPartOfSubjectDN == null) {
+            log.debug("Could not extrace the CN from CA's subject DN!");
+            throw new IllegalStateException("Unable to extrace the CN from full CA's subject DN!");
+        }
+        
+        List<Certificate> activeNotExpiredCaKecCertificates = certificateStoreSession.findCertificatesBySubjectAndIssuer(
+                "CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING, caSubjectDN, true);
+
+        for (Certificate certificate : activeNotExpiredCaKecCertificates) {
+            if (Objects.nonNull(certificate)) {
+                return certificate;
+            }
+        }
+        CA ca = (CA) caSession.getCA(authenticationToken, caId);
+        CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
+        log.debug("Creating KEC as certificate not found with subjectDN=[ CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
+        return caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
     }
 
     @Override
@@ -2499,7 +2542,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7;
                 } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
                     responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN;
-                } else {
+                } else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CMC_FULL_PKI)) {
+                    responseTypeInt = CertificateConstants.CERT_RES_TYPE_CMCFULLPKI;
+                }
+                else{
                     throw new NoSuchAlgorithmException("Bad responseType:" + responseType);
                 }
             }
