@@ -42,19 +42,19 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.util.msae.KECCache;
 
 import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * Session bean for clearing all caches of the local EJBCA instance.
  * 
- * @version $Id$
  */
 @Stateless//(mappedName = JndiConstants.APP_JNDI_PREFIX + "ClearCacheSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ClearCacheSessionBean implements ClearCacheSessionLocal {
 
-    private final static Logger log = Logger.getLogger(ClearCacheSessionBean.class);
+    private static final Logger log = Logger.getLogger(ClearCacheSessionBean.class);
     
     @EJB
     private ApprovalProfileSessionLocal approvalprofilesession;
@@ -172,11 +172,16 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
         if(log.isDebugEnabled()) {
             log.debug("Role member cache cleared.");
         }
+        
+        KECCache.INSTANCE.clearCache();
+        if(log.isDebugEnabled()) {
+            log.debug("Key exchange certificate cache cleared.");
+        }
     }
     
     private void flushCryptoTokenCache(boolean withExclusion) {
         if (withExclusion) {
-            final List<Integer> excludeIDs = new ArrayList<Integer>();
+            final List<Integer> excludeIDs = new ArrayList<>();
             for (final Integer cryptoTokenId : cryptoTokenSession.getCryptoTokenIds()) {
                 final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(cryptoTokenId);
                 if (cryptoToken.getTokenStatus()==CryptoToken.STATUS_ACTIVE && !cryptoToken.isAutoActivationPinPresent()) {
