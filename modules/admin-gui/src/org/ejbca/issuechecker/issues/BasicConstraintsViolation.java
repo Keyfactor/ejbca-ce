@@ -95,7 +95,7 @@ public class BasicConstraintsViolation extends ConfigurationIssue {
 
     private List<X509Certificate> convertToX509CertificateChain(List<Certificate> certificateChain) {
         return certificateChain == null ? Collections.emptyList()
-                : certificateChain.stream().map(c -> X509Certificate.class.cast(c)).collect(Collectors.toList());
+                : certificateChain.stream().map(X509Certificate.class::cast).collect(Collectors.toList());
     }
 
     /**

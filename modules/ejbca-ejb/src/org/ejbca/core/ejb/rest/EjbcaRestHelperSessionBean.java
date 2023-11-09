@@ -13,19 +13,8 @@
 
 package org.ejbca.core.ejb.rest;
 
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -62,8 +51,17 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaRestHelperSessionRemote")
@@ -90,7 +88,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
     // Only used to verify the Peers access to /protocol/rest. Will not affect authorization for individual admins.
     private final AuthenticationToken raRestAuthCheckToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("restServiceAuthCheck"));
-    
+
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public AuthenticationToken getAdmin(final boolean allowNonAdmins, final X509Certificate cert, String oauthBearerToken, boolean allowNoActiveCa) throws AuthorizationDeniedException {
@@ -113,7 +111,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
                 }
             } else if (admin == null) {
                 final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " +
-                        CertTools.getSerialNumber(cert) + " and issuerDN '" + CertTools.getIssuerDN(cert)+"'.");
+                        CertTools.getSerialNumber(cert) + " and issuerDN '" + CertTools.getIssuerDN(cert) + "'.");
                 throw new AuthorizationDeniedException(msg);
             }
 
@@ -160,6 +158,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
         Integer endEntityProfileId = getEndEntityProfileId(enrollcertificateRequest.getEndEntityProfileName());
         endEntityInformation.setEndEntityProfileId(endEntityProfileId);
+
 
         PKCS10CertificationRequest pkcs10CertificateRequest = CertTools.getCertificateRequestFromPem(enrollcertificateRequest.getCertificateRequest());
         if (pkcs10CertificateRequest == null) {
@@ -248,8 +247,8 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
     }
 
     public Integer getEndEntityProfileId(String endEntityProfileName) throws EndEntityProfileNotFoundException {
-            int endEntityProfileId = endEntityProfileSessionBean.getEndEntityProfileId(endEntityProfileName);
-            return endEntityProfileId;
+        int endEntityProfileId = endEntityProfileSessionBean.getEndEntityProfileId(endEntityProfileName);
+        return endEntityProfileId;
     }
 
     public EndEntityProfile getEndEntityProfile(int endEntityProfileId) {

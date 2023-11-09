@@ -16,6 +16,8 @@ package org.ejbca.core.protocol.ws.client;
 import java.io.File;
 import java.io.FileOutputStream;
 
+import org.bouncycastle.util.Properties;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
@@ -26,7 +28,6 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
 /**
  * Request a keystore given a pkcs12
  *
- * @version $Id$
  */
 public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
@@ -79,7 +80,8 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
               outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
             }
             
-            try{
+            try {
+                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
             	KeyStore result = getEjbcaRAWS().pkcs12Req(username, password, null, keyspec, keyalg);
             	
             	if(result==null){
@@ -91,18 +93,20 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
             			filepath = outputPath + "/" + filepath;
             		}
             		            		
-            		FileOutputStream fos = new FileOutputStream(filepath);
-            		java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(),"PKCS12",password);
-            		ks.store(fos, password.toCharArray());
-            		fos.close();            		
-            		getPrintStream().println("Keystore generated, written to " + filepath);
+                    try (final FileOutputStream fos = new FileOutputStream(filepath)) {
+                        java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), "PKCS12", password);
+                        ks.store(fos, password.toCharArray());
+                        getPrintStream().println("Keystore generated, written to " + filepath);
+                    }
             	}
             	             
-            }catch(AuthorizationDeniedException_Exception e){
+            } catch(AuthorizationDeniedException_Exception e){
             	getPrintStream().println("Error : " + e.getMessage());            
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
+        } finally {
+            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
         }
     }
 

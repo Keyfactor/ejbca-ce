@@ -17,6 +17,7 @@ import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import org.apache.commons.lang3.StringUtils;
@@ -136,7 +137,7 @@ public class CertificateRestResource extends BaseRestResource {
             final List<Certificate> certificateChain = enrollCertificateRestRequest.getIncludeChain()
                     ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest.getCertificateAuthorityName())
                     .stream()
-                    .map(certificateWrapper -> certificateWrapper.getCertificate())
+                    .map(CertificateWrapper::getCertificate)
                     .collect(Collectors.toList())
                     : null;
             final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(
@@ -154,7 +155,7 @@ public class CertificateRestResource extends BaseRestResource {
             throws RestException, AuthorizationDeniedException, CesecoreException, IOException, SignatureException, NoSuchFieldException {
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
-            EnrollPkcs10CertificateRequest requestData = CertificateRequestRestRequest.converter().toEnrollPkcs10CertificateRequest(certificateRequestRestRequest);
+            final EnrollPkcs10CertificateRequest requestData = CertificateRequestRestRequest.converter().toEnrollPkcs10CertificateRequest(certificateRequestRestRequest);
             final byte[] certificateBytes = raMasterApi.processCertificateRequest(authenticationToken, requestData.getUsername(), requestData.getPassword(),
                     requestData.getCertificateRequest(), CertificateConstants.CERT_REQ_TYPE_PKCS10, null, "CERTIFICATE");
 
@@ -163,7 +164,7 @@ public class CertificateRestResource extends BaseRestResource {
             final List<Certificate> certificateChain = certificateRequestRestRequest.getIncludeChain()
                     ? raMasterApi.getLastCaChain(authenticationToken, certificateRequestRestRequest.getCertificateAuthorityName())
                     .stream()
-                    .map(certificateWrapper -> certificateWrapper.getCertificate())
+                    .map(CertificateWrapper::getCertificate)
                     .collect(Collectors.toList())
                     : null;
             final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(

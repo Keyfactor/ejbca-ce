@@ -133,7 +133,7 @@ public final class SafeObjectInputStream extends ObjectInputStream {
                 classType.equals(Void.class)) {
             return resolvedClass;
         }
-        if (allowedClasses.stream().anyMatch(clazz -> classType.equals(clazz))) {
+        if (allowedClasses.stream().anyMatch(classType::equals)) {
             return resolvedClass;
         }
         if (allowedPackagePrefixes.stream().anyMatch(packagePrefix -> classType.getName().startsWith(packagePrefix))) {

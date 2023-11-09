@@ -69,6 +69,8 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
     // MS Enrollment Servlet Settings
     private static final String CA_NAME = "caName";
+    
+    private static final String KEY_EXCHANGE_CERT_PROFILE_NAME = "keyExchangeCertProfileName";
 
     // Template to Settings
     public static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
@@ -123,6 +125,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             data.put(alias + AD_LOGIN_PASSWORD, "");
             data.put(alias + AUTH_KEY_BINDING, null);
             data.put(alias + CA_NAME, "");
+            data.put(alias + KEY_EXCHANGE_CERT_PROFILE_NAME, "");
             data.put(alias + MS_TEMPLATE_SETTINGS, new ArrayList<>());
         } else {
             log.debug("No alias found");
@@ -148,6 +151,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         keys.add(alias + AD_LOGIN_PASSWORD);
         keys.add(alias + AUTH_KEY_BINDING);
         keys.add(alias + CA_NAME);
+        keys.add(alias + KEY_EXCHANGE_CERT_PROFILE_NAME);
         keys.add(alias + MS_TEMPLATE_SETTINGS);
         return keys;
     }
@@ -359,9 +363,19 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         return getValue(key, alias);
     }
     
-    public void setCaName(String alias, final String caName) {
+    public void setCaName(final String alias, final String caName) {
         String key = alias + "." + CA_NAME;
         setValue(key, caName, alias);
+    }
+    
+    public String getKeyExchangeCertProfileName(final String alias) {
+        String key = alias + "." + KEY_EXCHANGE_CERT_PROFILE_NAME;
+        return getValue(key, alias);
+    }
+    
+    public void setKeyExchangeCertProfileName(final String alias, final String keyExchangeCertProfileName) {
+        String key = alias + "." + KEY_EXCHANGE_CERT_PROFILE_NAME;
+        setValue(key, keyExchangeCertProfileName, alias);
     }
 
     // MS Template Settings
@@ -375,8 +389,6 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         String key = alias + "." + MS_TEMPLATE_SETTINGS;
         data.put(key, msTemplateSettings);
     }
-    
-    
     
     // Aliases
     

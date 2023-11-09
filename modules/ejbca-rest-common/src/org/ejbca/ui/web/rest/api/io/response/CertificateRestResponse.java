@@ -141,6 +141,7 @@ public class CertificateRestResponse {
                 this.responseFormat = "PEM";
                 break;
             case SecConst.TOKEN_SOFT_P12:
+            case SecConst.TOKEN_SOFT_BROWSERGEN:
                 this.responseFormat = "PKCS12";
                 break;
             case SecConst.TOKEN_SOFT_BCFKS:

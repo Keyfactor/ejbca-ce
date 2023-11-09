@@ -54,8 +54,6 @@ import com.keyfactor.util.keys.KeyTools;
  * Unit tests for the X509CertificateAuthenticationToken class. Note that this test class subverts the unit test concept slightly by using 'real'
  * certificates.
  * 
- * @version $Id$
- * 
  */
 public class X509CertificateAuthenticationTokenTest {
 
@@ -205,6 +203,16 @@ public class X509CertificateAuthenticationTokenTest {
                 assertTrue(authenticationToken.matches(accessUser));
                 // Try again for TYPE_NOT_EQUALCASE/TYPE_NOT_EQUALCASEINS
                 assertFalse(authenticationToken.matches(accessUser));
+                EasyMock.verify(accessUser);
+                break;
+            case WITH_ANY:
+                accessUser = EasyMock.createMock(AccessUserAspectData.class);
+                EasyMock.expect(accessUser.getCaId()).andReturn(caid);
+                EasyMock.expect(accessUser.getMatchValue()).andReturn("Test1");
+                EasyMock.expect(accessUser.getMatchWith()).andReturn(matchValue.getNumericValue());
+                EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE);
+                EasyMock.replay(accessUser);
+                assertTrue("False match for Any certificate by CA" + matchValue, authenticationToken.matches(accessUser));
                 EasyMock.verify(accessUser);
                 break;
             case WITH_FULLDN:
