@@ -41,8 +41,6 @@ import com.keyfactor.util.CertTools;
  * The implementation of the <code>matches(...)</code> method is based on <code>AdminEntity.java 10832 2010-12-13 13:54:25Z anatom</code> from EJBCA.
  * 
  * 
- * @version $Id$
- * 
  */
 public class X509CertificateAuthenticationToken extends NestableAuthenticationToken {
 
@@ -129,11 +127,15 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
         if (StringUtils.equals(getMetaData().getTokenType(), accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId() == adminCaId) {
+                X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                 // Check if we actually have some value to match against, null is not an allowed match value
-                if (accessUser.getMatchValue() != null) {                    
+                if (accessUser.getMatchValue() != null) {
+                    if (matchValue == X500PrincipalAccessMatchValue.WITH_ANY) {
+                        //we already checked ca id
+                        return true;
+                    }
                     // Determine part of certificate to match with.
                     DNFieldExtractor usedExtractor = dnExtractor;
-                    X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                     if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
                         try {
                             BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);

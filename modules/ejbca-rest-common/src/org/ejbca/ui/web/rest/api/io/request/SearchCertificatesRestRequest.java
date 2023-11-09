@@ -116,11 +116,11 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
             }
             final RaCertificateSearchRequest raCertificateSearchRequest = new RaCertificateSearchRequest();
             raCertificateSearchRequest.setMaxResults(searchCertificatesRestRequest.getMaxNumberOfResults());
-            raCertificateSearchRequest.setEepIds(new ArrayList<Integer>());
-            raCertificateSearchRequest.setCpIds(new ArrayList<Integer>());
-            raCertificateSearchRequest.setCaIds(new ArrayList<Integer>());
-            raCertificateSearchRequest.setStatuses(new ArrayList<Integer>());
-            raCertificateSearchRequest.setRevocationReasons(new ArrayList<Integer>());
+            raCertificateSearchRequest.setEepIds(new ArrayList<>());
+            raCertificateSearchRequest.setCpIds(new ArrayList<>());
+            raCertificateSearchRequest.setCaIds(new ArrayList<>());
+            raCertificateSearchRequest.setStatuses(new ArrayList<>());
+            raCertificateSearchRequest.setRevocationReasons(new ArrayList<>());
             for(final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest : searchCertificatesRestRequest.getCriteria()) {
                 final SearchCertificateCriteriaRestRequest.CriteriaProperty criteriaProperty = SearchCertificateCriteriaRestRequest.CriteriaProperty.resolveCriteriaProperty(searchCertificateCriteriaRestRequest.getProperty());
                 if(criteriaProperty == null) {

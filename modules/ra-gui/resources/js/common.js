@@ -83,6 +83,10 @@
     	forEachInputElementByTagNameAndStyleClass(["input"], "jsDelayKeyUp", function(inputField) {
     		new KeyUpEventDelay(inputField, 400);
     	});
+        // Prevent Enter key press event propagation for input elements marked with the provided styleClassName.
+        forEachInputElementByTagNameAndStyleClass(["input"], "jsPreventEnterKeyPropagation", function(inputField) {
+            new PreventEnterKeyEventPropagation(inputField);
+        });
     };
 
     /** Set focus to component by class names (JSF2.0 does not support HTML5 attributes like autofocus) */
@@ -196,7 +200,21 @@
         if (this.originalHandler) {
         	this.component.onkeyup = this.delay;
         }
-    };
+    }
+
+    /**
+     * Prevent propagation of the Enter key press event to other elements.
+     *
+     * @param inputElement the element to wrap the keypress handler for
+     */
+    function PreventEnterKeyEventPropagation(inputElement) {
+        inputElement.addEventListener('keypress', function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+    }
 
     /** Can be invoked on AJAX requests to indicate that a background operation is running. */
     var onAjaxEvent = function(data, elementId) {
@@ -235,6 +253,14 @@
         }
     };
 
+    function click(id){
+        document.getElementById(id).click();
+    }
+
+    function growToContentHeight(id) {
+        const element = document.getElementById(id);
+        element.style.height = element.scrollHeight + "px";
+    }
 
     // Setup name space...
     window.ejbca = window.ejbca || {};
@@ -247,4 +273,6 @@
     ejbca.ra.onAjaxError = onAjaxError;
     ejbca.ra.toggleDetails = toggleDetails;
     ejbca.ra.toggleElements = toggleElements;
+    ejbca.ra.click = click;
+    ejbca.ra.growToContentHeight = growToContentHeight;
 }());
