@@ -43,9 +43,9 @@ public enum KECCache {
 
     private static final Logger log = Logger.getLogger(KECCache.class);
 
-    private ConcurrentMap<Integer, Certificate> currentKecCache = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Integer, Certificate> currentKecCache = new ConcurrentHashMap<>();
 
-    public Certificate getCachedKEC(final AuthenticationToken admin, final int cAId, final int cPId)
+    public static Certificate getCachedKEC(final AuthenticationToken admin, final int cAId, final int cPId)
             throws CertificateEncodingException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
             CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException,
             AuthorizationDeniedException, CertificateExtensionException, KeyArchivalException {
@@ -70,14 +70,14 @@ public enum KECCache {
         }
     }
 
-    public void flushKecCache() {
-        dereferenceKecCache();
+    public static void flushKecCache() {
+        currentKecCache.clear();
         log.info("KEC cache cleared.");
         log.error(" The cache is now empty : " + currentKecCache.isEmpty());
         log.error(" The size of cache is now : " + currentKecCache.size());
     }
 
-    private Certificate generateKecOnCaSideAndCache(final AuthenticationToken admin, final int cAId, final int cPId)
+    private static Certificate generateKecOnCaSideAndCache(final AuthenticationToken admin, final int cAId, final int cPId)
             throws AuthorizationDeniedException, InvalidAlgorithmException, CryptoTokenOfflineException, CertificateCreateException,
             CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException, IllegalKeyException,
             OperatorCreationException, IllegalNameException, CertificateEncodingException, KeyArchivalException {
@@ -90,12 +90,5 @@ public enum KECCache {
             currentKecCache.put(cAId, kec);
         }
         return kec;
-    }
-
-    private void dereferenceKecCache() {
-        final ConcurrentMap<Integer, Certificate> newKecCache = new ConcurrentHashMap<>();
-        synchronized (this) {
-            currentKecCache = newKecCache;
-        }
     }
 }

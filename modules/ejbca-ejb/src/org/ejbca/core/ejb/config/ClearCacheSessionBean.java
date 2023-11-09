@@ -173,7 +173,7 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
             log.debug("Role member cache cleared.");
         }
         
-        KECCache.INSTANCE.flushKecCache();
+        KECCache.flushKecCache();
         if(log.isDebugEnabled()) {
             log.debug("Key exchange certificate cache cleared.");
         }
