@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -357,7 +358,7 @@ public class RsaKeyValidatorTest {
 
         // A-1: Test RSA key validation OK with default settings except key size.
         // In order to create these keys, we need to override/disable some internal checks in BC
-        org.bouncycastle.util.Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
+        org.bouncycastle.util.Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
         BigInteger modulus = BigInteger.valueOf(15);
         BigInteger exponent = BigInteger.valueOf(3);
         PublicKey publicKey = keyFactory.generatePublic(new RSAPublicKeySpec(modulus, exponent));
