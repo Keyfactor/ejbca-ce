@@ -18,6 +18,7 @@ import java.security.KeyPair;
 
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
+import org.cesecore.certificates.certificate.request.MsKeyArchivalRequestMessage;
 
 
 /**
@@ -30,12 +31,14 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
 	private static final long serialVersionUID = -5686267640542389771L;
     public static final int COMMAND_ENCRYPTKEYS = 1;
 	public static final int COMMAND_DECRYPTKEYS = 2;
+    public static final int COMMAND_DECRYPT_MS_KEY_ARCHIVAL_PRIVKEY = 3;
 	
     private int command;
     private byte[] keydata;
     private KeyPair keypair;
     private int cryptoTokenId;
     private String keyAlias;
+    private MsKeyArchivalRequestMessage msKeyArchivalRequestMessage;
     
     /** Constructor for KeyRecoveryCAServiceRequest used to decrypt data
      */                   
@@ -51,6 +54,17 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
     public KeyRecoveryCAServiceRequest(int command, KeyPair keypair) {
     	this.command = command;
     	this.keypair = keypair;
+    }
+
+    /**
+     * Constructor used to decrypt private key from MS Key Archival request
+     */
+    public KeyRecoveryCAServiceRequest(final int command, final MsKeyArchivalRequestMessage msKeyArchivalRequestMessage, final int cryptoTokenId,
+            final String keyAlias) {
+        this.command = command;
+        this.msKeyArchivalRequestMessage = msKeyArchivalRequestMessage;
+        this.cryptoTokenId = cryptoTokenId;
+        this.keyAlias = keyAlias;
     }
     
     public int getCommand(){
@@ -78,6 +92,14 @@ public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implem
         	ret = keypair;
     	}
     	return ret;
+    }
+
+    public MsKeyArchivalRequestMessage getMsKeyArchivalRequestMessage() {
+        if (command == COMMAND_DECRYPT_MS_KEY_ARCHIVAL_PRIVKEY) {
+            return msKeyArchivalRequestMessage;
+        } else {
+            return null;
+        }
     }
     
     

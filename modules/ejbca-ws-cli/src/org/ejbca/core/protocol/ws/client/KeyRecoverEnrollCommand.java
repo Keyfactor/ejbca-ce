@@ -17,6 +17,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.bouncycastle.util.Properties;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
@@ -63,65 +65,64 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
     @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
         try {
-            if(args.length < 6 || args.length > 7) { // TODO
+            if (args.length < 6 || args.length > 7) { // TODO
                 getPrintStream().println("Unexpected number of parameters");
                 usage();
                 System.exit(-1); // NOPMD, it's not a JEE app
             }
-            
+
             String username = args[ARG_USERNAME];
             String certSn = args[ARG_CERTSNINHEX];
             String issuerDn = args[ARG_ISSUERDN];
             String password = args[ARG_PASSWORD];
-            
+
             try {
-                KeyStore result = getEjbcaRAWS().keyRecoverEnroll(username, certSn, issuerDn, password, null);
-                
-                if(result==null) {
-                    getPrintStream().println("No keystore could be generated for user, check server logs for error.");
-                } else {
-                    String filepath = username;
-                    String outputPath = null;
-                    
-                    if (args.length == 7) {
-                      outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
-                    }
-                    
-                    if (outputPath != null) {
-                        filepath = outputPath + "/" + filepath;
-                    }
-                    final byte[] keyStoreBytes = Base64.decode(result.getKeystoreData());
-                    String keyStoreType;
-                    if (keyStoreBytes[0] == PKCS12_MAGIC) {
-                        keyStoreType = "PKCS12";
-                        filepath = filepath + ".p12";
-                    } else if (keyStoreBytes[0] == JKS_MAGIC) {
-                        keyStoreType = "JKS";
-                        filepath = filepath + ".jks";
+                try {
+
+                    Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+                    KeyStore result = getEjbcaRAWS().keyRecoverEnroll(username, certSn, issuerDn, password, null);
+
+                    if (result == null) {
+                        getPrintStream().println("No keystore could be generated for user, check server logs for error.");
                     } else {
-                        throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
+                        String filepath = username;
+                        String outputPath = null;
+
+                        if (args.length == 7) {
+                            outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
+                        }
+
+                        if (outputPath != null) {
+                            filepath = outputPath + "/" + filepath;
+                        }
+                        final byte[] keyStoreBytes = Base64.decode(result.getKeystoreData());
+                        String keyStoreType;
+                        if (keyStoreBytes[0] == PKCS12_MAGIC) {
+                            keyStoreType = "PKCS12";
+                            filepath = filepath + ".p12";
+                        } else if (keyStoreBytes[0] == JKS_MAGIC) {
+                            keyStoreType = "JKS";
+                            filepath = filepath + ".jks";
+                        } else {
+                            throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
+                        }
+
+                        try (FileOutputStream fos = new FileOutputStream(filepath)) {
+                            java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), keyStoreType, password);
+                            ks.store(fos, password.toCharArray());
+                            getPrintStream().println("Key recovery sucessfull!\nKeystore generated, written to " + filepath);
+                        }
                     }
-                    
-                    FileOutputStream fos = new FileOutputStream(filepath);
-                    java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), keyStoreType, password);
-                    ks.store(fos, password.toCharArray());
-                    fos.close();                    
-                    getPrintStream().println("Key recovery sucessfull!\nKeystore generated, written to " + filepath);
+                } catch (AuthorizationDeniedException_Exception e) {
+                    getPrintStream().println("Authentication failed :\n" + e.getMessage());
+                } catch (WaitingForApprovalException_Exception | ApprovalException_Exception | CADoesntExistsException_Exception
+                        | NotFoundException_Exception | EjbcaException_Exception e) {
+                    getPrintStream().println(e.getMessage());
                 }
-            } catch (AuthorizationDeniedException_Exception e) {
-                getPrintStream().println("Authentication failed :\n" + e.getMessage());
-            } catch (WaitingForApprovalException_Exception e) {
-                getPrintStream().println(e.getMessage());
-            } catch (ApprovalException_Exception e) {
-                getPrintStream().println(e.getMessage());
-            } catch (CADoesntExistsException_Exception e) {
-                getPrintStream().println(e.getMessage());
-            } catch (NotFoundException_Exception e) {
-                getPrintStream().println(e.getMessage());
-            } catch (EjbcaException_Exception e) {
-                getPrintStream().println(e.getMessage());
+            } finally {
+                Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
             }
-            
+
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

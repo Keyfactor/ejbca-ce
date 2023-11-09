@@ -19,6 +19,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -31,6 +34,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.Part;
 
+import com.keyfactor.util.StringTools;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -39,7 +43,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
@@ -52,22 +55,21 @@ import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import com.keyfactor.util.StringTools;
-
 /**
  * Backing bean for MSAutoEnrollmentConfiguration in System Settings.
  */
 @Named("msAutoEnrollmentSettings")
 @ViewScoped
 public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
-    
+    private static final String SZOID_KP_CA_EXCHANGE = "1.3.6.1.4.1.311.21.5";
+
     @Inject
     private AutoenrollmentConfigMBean autoenrollmentConfigMBean;
-    
+
     private static final Logger log = Logger.getLogger(MSAutoEnrollmentSettingsManagedBean.class);
     private static final long serialVersionUID = 1L;
 
-    private static final String HIDDEN_PWD = "**********";
+    public static final String HIDDEN_PWD = "**********";
 
     private static final String SELECT_CEP = "Select a Certificate Profile";
     private static final String SELECT_EEP = "Select an End Entity Profile";
@@ -75,41 +77,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final String KEYTAB_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE_PLAIN = "text/plain";
-
-    
-    // MSAE Kerberos Settings
-    private String msaeForestRoot;
-    private String msaeDomain;
     private Part keyTabFile;
-    private String keyTabFilename;
-    private byte[] keyTabFileBytes;
-    
+
     // MSAE Krb5Conf Settings
     private Part krb5ConfFile;
-    private String krb5ConfFilename;
-    private byte[] krb5ConfFileBytes;    
-
-    private String policyName;
-    private String servicePrincipalName;
-
-    // MSAE Settings
-    private boolean isUseSSL;
-    private boolean followLdapReferral;
-    private int adConnectionPort;
-    private int ldapReadTimeout;
-    private int ldapConnectTimeout;
-    private String adLoginDN;
-    private String adLoginPassword;
-    private Integer authKeyBinding;
-
-    // MS Servlet Settings
-    private String caName;
-
-    // MS Template Settings: Holds mapped MS Templates for the configuration
-    private List<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates;
-    private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplatesModel;
-    private List<MSAutoEnrollmentSettingsTemplate> availableTemplates;
-
     private String selectedTemplateOid;
     private String selectedCertificateProfileName;
     private Integer selectedCertificateProfileId;
@@ -117,8 +88,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private Integer selectedEndEntityProfileId;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
-    
-    private String currentAlias;
 
     @EJB
     private ADConnectionSingletonLocal adConnection;
@@ -131,81 +100,31 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
-    
+    private AutoEnrollmentDTO dto;
+
     @PostConstruct
     public void loadConfiguration() {
-
-        final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
-                globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
-
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
         this.authorizedCertificateProfiles = raMasterApiProxyBean.getAuthorizedCertificateProfiles(getAdmin());
-        
-        if (autoEnrollmentConfiguration != null) {
-            currentAlias = autoenrollmentConfigMBean.getSelectedAlias();
+    }
 
-            msaeForestRoot = autoEnrollmentConfiguration.getMsaeForestRoot(currentAlias);
-            msaeDomain = autoEnrollmentConfiguration.getMsaeDomain(currentAlias);
-            policyName = autoEnrollmentConfiguration.getPolicyName(currentAlias);
-            servicePrincipalName = autoEnrollmentConfiguration.getSpn(currentAlias);
-            keyTabFileBytes = autoEnrollmentConfiguration.getMsaeKeyTabBytes(currentAlias);
-            keyTabFilename = autoEnrollmentConfiguration.getMsaeKeyTabFilename(currentAlias);
-            
-            krb5ConfFileBytes = autoEnrollmentConfiguration.getMsaeKrb5ConfBytes(currentAlias);
-            krb5ConfFilename = autoEnrollmentConfiguration.getMsaeKrb5ConfFilename(currentAlias);
 
-            isUseSSL = autoEnrollmentConfiguration.isUseSSL(currentAlias);
-            followLdapReferral = autoEnrollmentConfiguration.isFollowLdapReferral(currentAlias);
-            adConnectionPort = autoEnrollmentConfiguration.getADConnectionPort(currentAlias);
-            ldapReadTimeout = autoEnrollmentConfiguration.getLdapReadTimeout(currentAlias);
-            ldapConnectTimeout = autoEnrollmentConfiguration.getLdapConnectTimeout(currentAlias);
-
-            adLoginDN = autoEnrollmentConfiguration.getAdLoginDN(currentAlias);
-            adLoginPassword = MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD;
-            authKeyBinding = autoEnrollmentConfiguration.getAuthKeyBinding(currentAlias);
-
-            caName = autoEnrollmentConfiguration.getCaName(currentAlias);
-
-            mappedMsTemplates = autoEnrollmentConfiguration.getMsTemplateSettings(currentAlias);
+    public AutoEnrollmentDTO getDto() {
+        String aliasName = autoenrollmentConfigMBean.getSelectedAlias();
+        if (dto == null) {
+            if (StringUtils.isEmpty(aliasName)) {
+                this.dto = new AutoEnrollmentDTO();
+            } else {
+                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
+                        globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+                this.dto = new AutoEnrollmentDTO(aliasName, autoEnrollmentConfiguration);
+            }
         }
-    }
-    
-    public String getCurrentAlias() {
-        return this.currentAlias;
+        return dto;
     }
 
-    // MSAE Kerberos Settings
-    
-    public String getMsaeForestRoot() {
-        return msaeForestRoot;
-    }
-    
-    public void setMsaeForestRoot(String msaeForestRoot) {
-        this.msaeForestRoot = msaeForestRoot;
-    }
-    
-    public String getMsaeDomain() {
-        return msaeDomain;
-    }
-
-    public void setMsaeDomain(String msaeDomain) {
-        this.msaeDomain = msaeDomain;
-    }
-
-    public String getPolicyName() {
-        return policyName;
-    }
-
-    public void setPolicyName(String policyName) {
-        this.policyName = policyName;
-    }
-    
-    public String getServicePrincipalName() {
-        return servicePrincipalName;
-    }
-
-    public void setServicePrincipalName(String servicePrincipalName) {
-        this.servicePrincipalName = servicePrincipalName;
+    public void setDto(AutoEnrollmentDTO dto) {
+        this.dto = dto;
     }
 
     public Part getKeyTabFile() {
@@ -216,26 +135,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.keyTabFile = keyTabFile;
     }
 
-    public String getKeyTabFilename() {
-        return keyTabFilename;
-    }
-
-    public void setKeyTabFilename(String keyTabFilename) {
-        this.keyTabFilename = StringTools.stripFilename(keyTabFilename);
-    }
-
-    public byte[] getKeyTabFileBytes() {
-        return keyTabFileBytes;
-    }
-
-    public void setKeyTabFileBytes(byte[] keyTabFileBytes) {
-        this.keyTabFileBytes = keyTabFileBytes;
-    }
-
     public boolean isKeyTabUploaded() {
-        return (keyTabFilename != null && keyTabFileBytes != null);
+        return (getDto().getKeyTabFilename() != null && getDto().getKeyTabFileBytes() != null);
     }
-    
+
     public Part getKrb5ConfFile() {
         return krb5ConfFile;
     }
@@ -244,104 +147,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         this.krb5ConfFile = krb5ConfFile;
     }
 
-    public String getKrb5ConfFilename() {
-        return krb5ConfFilename;
-    }
-
-    public void setKrb5ConfFilename(String krb5ConfFilename) {
-        this.krb5ConfFilename = StringTools.stripFilename(krb5ConfFilename);
-    }
-
-    public byte[] getKrb5ConfFileContent() {
-        return krb5ConfFileBytes;
-    }
-
-    public void setKrb5ConfFileContent(byte[] krb5ConfFileBytes) {
-        this.krb5ConfFileBytes = krb5ConfFileBytes;
-    }
-
     public boolean isKrb5ConfFileUploaded() {
-        return (krb5ConfFilename != null && krb5ConfFileBytes != null);
-    }
-    
-
-    // MSAE Settings
-    public boolean isUseSSL() {
-        return isUseSSL;
-    }
-
-    public void setUseSSL(final boolean isUseSSL) {
-        this.isUseSSL = isUseSSL;
-    }
-
-    public boolean isFollowLdapReferral() {
-        return followLdapReferral;
-    }
-
-    public void setFollowLdapReferral(final boolean followLdapReferral) {
-        this.followLdapReferral = followLdapReferral;
-    }
-
-    public int getAdConnectionPort() {
-        return adConnectionPort;
-    }
-
-    public void setAdConnectionPort(int adConnectionPort) {
-        this.adConnectionPort = adConnectionPort;
-    }
-    
-    public int getLdapReadTimeout() {
-        return ldapReadTimeout;
-    }
-
-    public void setLdapReadTimeout(final int ldapReadTimeout) {
-        this.ldapReadTimeout = ldapReadTimeout;
-    }
-    
-    public int getLdapConnectTimeout() {
-        return ldapConnectTimeout;
-    }
-
-    public void setLdapConnectTimeout(final int ldapConnectTimeout) {
-        this.ldapConnectTimeout = ldapConnectTimeout;
-    }
-
-    public String getAdLoginDN() {
-        return adLoginDN;
-    }
-
-    public void setAdLoginDN(String adLoginDN) {
-        this.adLoginDN = adLoginDN;
-    }
-
-    public String getAdLoginPassword() {
-        return adLoginPassword;
-    }
-
-    public void setAdLoginPassword(String adLoginPassword) {
-        this.adLoginPassword = adLoginPassword;
-    }
-
-    public Integer getAuthKeyBinding() {
-        return authKeyBinding;
-    }
-
-    public void setAuthKeyBinding(Integer authKeyBinding) {
-        this.authKeyBinding = authKeyBinding;
-    }
-
-    // MS Servlet Settings
-    public String getCaName() {
-        return caName;
-    }
-
-    public void setCaName(String caName) {
-        this.caName = caName;
-    }
-
-    // MS Template Settings
-    public List<MSAutoEnrollmentSettingsTemplate> getMappedMsTemplates() {
-        return mappedMsTemplates;
+        return (getDto().getKrb5ConfFilename() != null && getDto().getKrb5ConfFileBytes() != null);
     }
 
     // UI Related Getters and Setters
@@ -391,39 +198,19 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
     }
 
-    /**
-     * Return the mapped templates in ListDataModel
-     *
-     * @return template models
-     */
     public ListDataModel<MSAutoEnrollmentSettingsTemplate> getMappedMsTemplatesModel() {
-        if (mappedMsTemplatesModel == null) {
-            mappedMsTemplatesModel = new ListDataModel<>(getMappedMsTemplates());
-        }
-
-        return mappedMsTemplatesModel;
+        return new ListDataModel<>(getDto().getMappedMsTemplates());
     }
 
-    public void removeMappedMSTemplate(){
+    public void removeMappedMSTemplate() {
         // Selected model
-        MSAutoEnrollmentSettingsTemplate templateToRemove = mappedMsTemplatesModel.getRowData();
-
-        removeMappedMSTemplate(templateToRemove);
-    }
-
-    /**
-     * Remove the template from mapped templates and re-create the model list.
-     *
-     * @param template MS template
-     */
-    private void removeMappedMSTemplate(MSAutoEnrollmentSettingsTemplate template) {
-        mappedMsTemplates.remove(template);
-        mappedMsTemplatesModel = new ListDataModel<>(getMappedMsTemplates());
+        MSAutoEnrollmentSettingsTemplate templateToRemove = getMappedMsTemplatesModel().getRowData();
+        getDto().getMappedMsTemplates().remove(templateToRemove);
     }
 
     public void addToMappedMsTemplates() {
         // If a template is already mapped, it should be removed first.
-        if (findMsTemplateByOid(mappedMsTemplates, selectedTemplateOid) != null) {
+        if (findMsTemplateByOid(getDto().getMappedMsTemplates(), selectedTemplateOid) != null) {
             addErrorMessage("MSAE_ERROR_TEMPLATE_ALREADY_ADDED");
             return;
         }
@@ -452,17 +239,15 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      *
      * @param templateOid ms template oid
      * @param certProfile certificate profile name
-     * @param eep end entity profile name
+     * @param eep         end entity profile name
      */
     private void addToMappedMsTemplates(final String templateOid, final String certProfile, final String eep) {
         List<MSAutoEnrollmentSettingsTemplate> adTemplates = getAvailableTemplateSettingsFromAD();
         MSAutoEnrollmentSettingsTemplate template = findMsTemplateByOid(adTemplates, templateOid);
-
         if (template != null) {
             template.setCertificateProfile(certProfile);
             template.setEndEntityProfile(eep);
-            mappedMsTemplates.add(template);
-            mappedMsTemplatesModel = new ListDataModel<>(getMappedMsTemplates());
+            getDto().getMappedMsTemplates().add(template);
         } else {
             addErrorMessage("MSAE_TEMPLATE_NOT_FOUND");
         }
@@ -471,18 +256,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     /**
      * Find and return the template using the oid.
      *
-     * @param templates list of MSAutoEnrollmentSettingsTemplate
+     * @param templates   list of MSAutoEnrollmentSettingsTemplate
      * @param templateOid template oid
      * @return
      */
-    private MSAutoEnrollmentSettingsTemplate findMsTemplateByOid(List<MSAutoEnrollmentSettingsTemplate> templates, final String templateOid) {
-        for (MSAutoEnrollmentSettingsTemplate template: templates) {
-            if (template.getOid().equals(templateOid)) {
-                return template;
-            }
-        }
-
-        return null;
+    private static MSAutoEnrollmentSettingsTemplate findMsTemplateByOid(List<MSAutoEnrollmentSettingsTemplate> templates, final String templateOid) {
+        return templates.stream()
+                .filter(template -> template.getOid().equals(templateOid))
+                .findAny().orElse(null);
     }
 
     /**
@@ -491,26 +272,16 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
-        // TODO: Implement and maybe return a Map<id, template> so findMsTemplateByOid is simpler
-        if (availableTemplates == null) {
-            final String selectedAlias = currentAlias;
-            if (selectedAlias == null) {
-                return Collections.emptyList();
-            }
-            availableTemplates = adConnection.getCertificateTemplateSettings(selectedAlias);
-        }
-        return availableTemplates;
+        return getDto().getAlias().isEmpty() ? List.of() : adConnection.getCertificateTemplateSettings(getDto().getAlias());
     }
 
     public List<SelectItem> getAvailableTemplates() {
-        List<SelectItem> templatesAvailable = new ArrayList<>();
-        templatesAvailable.add(new SelectItem(SELECT_MST));
-
-        getAvailableTemplateSettingsFromAD().stream()
-                .sorted(Comparator.comparing(MSAutoEnrollmentSettingsTemplate::getDisplayName))
-                .map(template -> new SelectItem(template.getOid(), template.getDisplayName())).forEach(templatesAvailable::add);
-
-        return templatesAvailable;
+        return Stream.concat(
+                Stream.of(new SelectItem(SELECT_MST)),
+                getAvailableTemplateSettingsFromAD().stream()
+                        .sorted(Comparator.comparing(MSAutoEnrollmentSettingsTemplate::getDisplayName))
+                        .map(template -> new SelectItem(template.getOid(), template.getDisplayName()))
+        ).collect(Collectors.toList());
     }
 
     /**
@@ -526,8 +297,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             EndEntityProfile eep = authorizedEndEntityProfiles.getValue(getSelectedEndEntityProfileId());
 
             if (eep != null) {
-                for (Integer certProfileId: eep.getAvailableCertificateProfileIds()) {
-                    if(authorizedCertificateProfiles.containsKey(certProfileId)) {
+                for (Integer certProfileId : eep.getAvailableCertificateProfileIds()) {
+                    if (authorizedCertificateProfiles.containsKey(certProfileId)) {
                         final String certProfileName = authorizedCertificateProfiles.get(certProfileId).getName();
                         availableCertificateProfiles.add(new SelectItem(certProfileId, certProfileName));
                     }
@@ -536,7 +307,14 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         return availableCertificateProfiles;
     }
-
+    
+    public List<SelectItem> getAvailableKECCertificateProfiles() {
+        return Stream.concat(Stream.of(new SelectItem(-1, SELECT_CEP)),
+                authorizedCertificateProfiles.entrySet().stream()
+                        .filter(item -> item.getValue().getValue().getExtendedKeyUsageOids().contains(SZOID_KP_CA_EXCHANGE))
+                        .map(item -> new SelectItem(String.valueOf(item.getKey()), item.getValue().getName())))
+                .collect(Collectors.toList());
+    }
 
     /**
      * Return the available End Entity Profile id and names.
@@ -544,41 +322,36 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     public List<SelectItem> getAvailableEndEntityProfiles() {
-        List<SelectItem> availableEndEntityProfiles = new ArrayList<>();
-        availableEndEntityProfiles.add(new SelectItem(-1, SELECT_EEP));
-
-        for (final Integer id : authorizedEndEntityProfiles.idKeySet()) {
-            availableEndEntityProfiles.add(new SelectItem(String.valueOf(id), authorizedEndEntityProfiles.get(id).getName()));
-        }        
-
-        return availableEndEntityProfiles;
+        return Stream.concat(
+                Stream.of(new SelectItem(-1, SELECT_EEP)),
+                authorizedEndEntityProfiles.entrySet().stream()
+                        .map(item -> new SelectItem(String.valueOf(item.getKey()), item.getValue().getName()))
+        ).collect(Collectors.toList());
     }
-    
+
     public List<SelectItem> getAvailableAuthenticationKeyBindings() {
-        final List<SelectItem> ret = new ArrayList<>();
-        final List<InternalKeyBindingInfo> authorizedAkbs = internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAdmin(), AuthenticationKeyBinding.IMPLEMENTATION_ALIAS);
-        for (final InternalKeyBindingInfo current : authorizedAkbs) {
-            ret.add(new SelectItem(current.getId(), current.getName(), current.getName(), !current.getStatus().equals(InternalKeyBindingStatus.ACTIVE)));
-        }
-        return ret;
+        return internalKeyBindingMgmtSession.getInternalKeyBindingInfos(getAdmin(), AuthenticationKeyBinding.IMPLEMENTATION_ALIAS).stream()
+                .map(current -> new SelectItem(current.getId(), current.getName(), current.getName(), !current.getStatus().equals(InternalKeyBindingStatus.ACTIVE)))
+                .collect(Collectors.toList());
     }
 
-    /** @return a list of all CA names and caids */
+    /**
+     * @return a list of all CA names and caids
+     */
     public List<SelectItem> getAvailableCAs() {
         final List<SelectItem> ret = new ArrayList<>();
         Map<Integer, String> caidToName = caSession.getCAIdToNameMap();
         List<Integer> allCaIds = caSession.getAllCaIds();
-        for(int caid : allCaIds) {
+        for (int caid : allCaIds) {
             if (caSession.authorizedToCANoLogging(getAdmin(), caid)) {
-                String caname = caidToName.get(caid);
-                ret.add(new SelectItem(caid, caname));
+                ret.add(new SelectItem(caid, caidToName.get(caid)));
             } else {
                 ret.add(new SelectItem(0, "<Unauthorized CA>", "A CA that the current admin lack access to.", true));
             }
         }
         return ret;
     }
-    
+
     /**
      * Import and save key tab file.
      *
@@ -588,21 +361,21 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         if (keyTabFile != null) {
             String contentType = keyTabFile.getContentType();
 
-            if(!contentType.equals(KEYTAB_CONTENT_TYPE)) {
+            if (!contentType.equals(KEYTAB_CONTENT_TYPE)) {
                 addErrorMessage("MSAE_KEYTAB_ERROR_WRONG_CONTENT");
                 return;
             }
 
-            final byte[] fileBytes =  IOUtils.toByteArray(keyTabFile.getInputStream(), keyTabFile.getSize());      
-            setKeyTabFilename(keyTabFile.getSubmittedFileName());
-            setKeyTabFileBytes(fileBytes);
+            final byte[] fileBytes = IOUtils.toByteArray(keyTabFile.getInputStream(), keyTabFile.getSize());
+            getDto().setKeyTabFilename(keyTabFile.getSubmittedFileName());
+            getDto().setKeyTabFileBytes(fileBytes);
 
             saveKeyTabFile();
         } else {
             addErrorMessage("MSAE_KEYTAB_ERROR_NOT_FOUND");
         }
     }
-    
+
     /**
      * Import and save krb5 conf file.
      *
@@ -612,39 +385,38 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         if (krb5ConfFile != null) {
             String contentType = krb5ConfFile.getContentType();
 
-            if(!(contentType.equals(KRB5_CONF_CONTENT_TYPE) || contentType.equals(KRB5_CONF_CONTENT_TYPE_PLAIN))) {
+            if (!(contentType.equals(KRB5_CONF_CONTENT_TYPE) || contentType.equals(KRB5_CONF_CONTENT_TYPE_PLAIN))) {
                 addErrorMessage("MSAE_KRB5_CONF_ERROR_WRONG_CONTENT");
                 return;
             }
-            final byte[] fileBytes =  IOUtils.toByteArray(krb5ConfFile.getInputStream(), krb5ConfFile.getSize());      
-            setKrb5ConfFilename(krb5ConfFile.getSubmittedFileName());
-            setKrb5ConfFileContent(fileBytes);
+            final byte[] fileBytes = IOUtils.toByteArray(krb5ConfFile.getInputStream(), krb5ConfFile.getSize());
+            getDto().setKrb5ConfFilename(krb5ConfFile.getSubmittedFileName());
+            getDto().setKrb5ConfFileBytes(fileBytes);
 
             saveKrb5ConfFile();
         } else {
             addErrorMessage("MSAE_KRB5_CONF_ERROR_NOT_FOUND");
         }
-        
+
     }
 
     /**
      * Download save key tab file from UI.
-     *
      */
     public void downloadKeyTabFile() {
-        if (keyTabFileBytes != null && keyTabFilename != null) {
+        if (getDto().getKeyTabFileBytes() != null && getDto().getKeyTabFilename() != null) {
 
             FacesContext fc = FacesContext.getCurrentInstance();
             ExternalContext ec = fc.getExternalContext();
             ec.responseReset();
             ec.setResponseContentType(KEYTAB_CONTENT_TYPE);
-            ec.setResponseContentLength(keyTabFileBytes.length);
+            ec.setResponseContentLength(getDto().getKeyTabFileBytes().length);
 
             final String filename = "keytab.krb";
             ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 
             try (OutputStream output = ec.getResponseOutputStream()) {
-                output.write(keyTabFileBytes);
+                output.write(getDto().getKeyTabFileBytes());
                 output.flush();
                 fc.responseComplete();
             } catch (IOException e) {
@@ -655,25 +427,24 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             addErrorMessage("MSAE_KEYTAB_ERROR_COULD_NOT_BE_DOWNLOADED");
         }
     }
-    
+
     /**
      * Download save krb5 conf file from UI.
-     *
      */
     public void downloadKrb5ConfFile() {
-        if (krb5ConfFileBytes != null && krb5ConfFilename != null) {
+        if (getDto().getKrb5ConfFileBytes() != null && getDto().getKrb5ConfFilename() != null) {
 
             FacesContext fc = FacesContext.getCurrentInstance();
             ExternalContext ec = fc.getExternalContext();
             ec.responseReset();
             ec.setResponseContentType(KRB5_CONF_CONTENT_TYPE);
-            ec.setResponseContentLength(krb5ConfFileBytes.length);
+            ec.setResponseContentLength(getDto().getKrb5ConfFileBytes().length);
 
             final String filename = "krb5.conf";
             ec.setResponseHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
 
             try (OutputStream output = ec.getResponseOutputStream()) {
-                output.write(krb5ConfFileBytes);
+                output.write(getDto().getKrb5ConfFileBytes());
                 output.flush();
                 fc.responseComplete();
             } catch (IOException e) {
@@ -690,8 +461,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * Test if a connection can be made to Active Directory with given credentials.
      */
     public void testAdConnection() {
-        String adLoginPass = getAdLoginPassword();
-        if (StringUtils.isBlank(getAdLoginDN())) {
+        String adLoginPass = getDto().getAdLoginPassword();
+        if (StringUtils.isBlank(getDto().getAdLoginDN())) {
             addErrorMessage("MSAE_AD_TEST_CONNECTION_ERROR_NO_LOGIN");
             return;
         }
@@ -702,17 +473,16 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         if (adLoginPass.equals(HIDDEN_PWD)) {
             // If password field has been reset in GUI, test connection with persisted password
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
-                globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
-            adLoginPass = autoEnrollmentConfiguration.getAdLoginPassword(currentAlias);
+                    globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+            adLoginPass = autoEnrollmentConfiguration.getAdLoginPassword(getDto().getAlias());
             if (StringUtils.isEmpty(adLoginPass)) {
                 addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", "Invalid Credentials");
                 return;
             }
         }
         try {
-            availableTemplates = null;
-            adConnection.testConnection(getMsaeDomain(), getAdConnectionPort(), getAdLoginDN(), adLoginPass, isUseSSL(), isFollowLdapReferral(),
-                    getLdapReadTimeout(), getLdapConnectTimeout(), currentAlias);
+            adConnection.testConnection(getDto().getMsaeDomain(), getDto().getAdConnectionPort(), getDto().getAdLoginDN(), adLoginPass, getDto().isUseSSL(), getDto().isFollowLdapReferral(),
+                    getDto().getLdapReadTimeout(), getDto().getLdapConnectTimeout(), getDto().getAlias());
             addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
         } catch (LDAPException e) {
             addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", e.getFriendlyMessage());
@@ -730,20 +500,19 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
                     globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
 
-            autoEnrollmentConfiguration.setMsaeKeyTabFilename(currentAlias, getKeyTabFilename());
-            autoEnrollmentConfiguration.setMsaeKeyTabBytes(currentAlias, getKeyTabFileBytes());
+            autoEnrollmentConfiguration.setMsaeKeyTabFilename(getDto().getAlias(), getDto().getKeyTabFilename());
+            autoEnrollmentConfiguration.setMsaeKeyTabBytes(getDto().getAlias(), getDto().getKeyTabFileBytes());
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
             addInfoMessage("MSAE_KEYTAB_SAVE_OK");
 
         } catch (AuthorizationDeniedException e) {
             log.error("Cannot save the configuration for the MS Auto Enrollment Key Tab because the current "
-                              + "administrator is not authorized. Error description: " + e.getMessage());
+                    + "administrator is not authorized. Error description: " + e.getMessage());
             addErrorMessage("MSAE_KEYTAB_SAVE_ERROR");
         }
     }
-    
-    
+
     /**
      * Save krb5 conf to the global configuration.
      */
@@ -752,15 +521,15 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
                     globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
 
-            autoEnrollmentConfiguration.setMsaeKrb5ConfFilename(currentAlias, getKrb5ConfFilename());
-            autoEnrollmentConfiguration.setMsaeKrb5ConfBytes(currentAlias, getKrb5ConfFileContent());
+            autoEnrollmentConfiguration.setMsaeKrb5ConfFilename(getDto().getAlias(), getDto().getKrb5ConfFilename());
+            autoEnrollmentConfiguration.setMsaeKrb5ConfBytes(getDto().getAlias(), getDto().getKrb5ConfFileBytes());
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
             addInfoMessage("MSAE_KRB5_CONF_SAVE_OK");
 
         } catch (AuthorizationDeniedException e) {
             log.error("Cannot save the configuration for the MS Auto Enrollment Krb5 conf file because the current "
-                              + "administrator is not authorized. Error description: " + e.getMessage());
+                    + "administrator is not authorized. Error description: " + e.getMessage());
             addErrorMessage("MSAE_KRB5_CONF_SAVE_ERROR");
         }
     }
@@ -768,9 +537,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     // Updates persisted template mappings with new values from AD
     public void updateMappedTemplates() {
         // Force reload from AD
-        availableTemplates = null;
         List<MSAutoEnrollmentSettingsTemplate> newTemplates = getAvailableTemplateSettingsFromAD();
-        for (MSAutoEnrollmentSettingsTemplate persistedTemplate : mappedMsTemplates) {
+        for (MSAutoEnrollmentSettingsTemplate persistedTemplate : getDto().getMappedMsTemplates()) {
             MSAutoEnrollmentSettingsTemplate newTemplateSettings = findMsTemplateByOid(newTemplates, persistedTemplate.getOid());
             if (newTemplateSettings == null) {
                 return;
@@ -789,51 +557,93 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             persistedTemplate.setIncludeSPNInSubjectSAN(newTemplateSettings.isIncludeSPNInSubjectSAN());
             persistedTemplate.setIncludeUPNInSubjectSAN(newTemplateSettings.isIncludeUPNInSubjectSAN());
             persistedTemplate.setPublishToActiveDirectory(newTemplateSettings.isPublishToActiveDirectory());
+            persistedTemplate.setArchivePrivateKey(newTemplateSettings.isArchivePrivateKey());
         }
     }
-    
-    public void save() {
+
+    public boolean renameOrAddAlias() throws AuthorizationDeniedException {
+
+        String oldAlias = autoenrollmentConfigMBean.getSelectedAlias();
+        String newAlias = getDto().getAlias();
+
+        if (StringUtils.isNotEmpty(oldAlias) && Objects.equals(oldAlias, newAlias)) {
+            return true;
+        }
+
+        if (StringUtils.isEmpty(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        }
+
+        if (!StringTools.checkFieldForLegalChars(newAlias)) {
+            addErrorMessage("ONLYCHARACTERS");
+            return false;
+        }
+
+        if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(newAlias)) {
+            addErrorMessage("ESTCOULDNOTRENAMEORCLONE");
+            return false;
+        }
+
+        if (StringUtils.isEmpty(oldAlias)) {
+            getEjbcaWebBean().addAutoenrollAlias(newAlias);
+        } else {
+            getEjbcaWebBean().renameAutoenrollAlias(oldAlias, newAlias);
+        }
+
+        autoenrollmentConfigMBean.setSelectedAlias(newAlias);
+        getEjbcaWebBean().clearAutoenrollCache();
+        getEjbcaWebBean().reloadAutoenrollmentConfiguration();
+        return true;
+    }
+
+
+    public String save() {
         try {
+            if (!renameOrAddAlias()) {
+                return null;
+            }
+
             final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
                     globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
 
             // MSAE Kerberos Settings
-            autoEnrollmentConfiguration.setMsaeForestRoot(currentAlias, msaeForestRoot);
-            autoEnrollmentConfiguration.setMsaeDomain(currentAlias, msaeDomain);
-            autoEnrollmentConfiguration.setPolicyName(currentAlias, policyName);
-            autoEnrollmentConfiguration.setPolicyUid(currentAlias);
-            autoEnrollmentConfiguration.setSpn(currentAlias, servicePrincipalName);
+            autoEnrollmentConfiguration.setMsaeForestRoot(getDto().getAlias(), getDto().getMsaeForestRoot());
+            autoEnrollmentConfiguration.setMsaeDomain(getDto().getAlias(), getDto().getMsaeDomain());
+            autoEnrollmentConfiguration.setPolicyName(getDto().getAlias(), getDto().getPolicyName());
+            autoEnrollmentConfiguration.setPolicyUid(getDto().getAlias());
+            autoEnrollmentConfiguration.setSpn(getDto().getAlias(), getDto().getServicePrincipalName());
 
             // MSAE Settings
-            autoEnrollmentConfiguration.setIsUseSsl(currentAlias, isUseSSL);
-            autoEnrollmentConfiguration.setFollowLdapReferral(currentAlias, followLdapReferral);
-            autoEnrollmentConfiguration.setAdConnectionPort(currentAlias, adConnectionPort);
-            autoEnrollmentConfiguration.setLdapReadTimeout(currentAlias, ldapReadTimeout);
-            autoEnrollmentConfiguration.setLdapConnectTimeout(currentAlias, ldapConnectTimeout);
-            
-            autoEnrollmentConfiguration.setAdLoginDN(currentAlias, adLoginDN);
+            autoEnrollmentConfiguration.setIsUseSsl(getDto().getAlias(), getDto().isUseSSL());
+            autoEnrollmentConfiguration.setFollowLdapReferral(getDto().getAlias(), getDto().isFollowLdapReferral());
+            autoEnrollmentConfiguration.setAdConnectionPort(getDto().getAlias(), getDto().getAdConnectionPort());
+            autoEnrollmentConfiguration.setLdapReadTimeout(getDto().getAlias(), getDto().getLdapReadTimeout());
+            autoEnrollmentConfiguration.setLdapConnectTimeout(getDto().getAlias(), getDto().getLdapConnectTimeout());
+
+            autoEnrollmentConfiguration.setAdLoginDN(getDto().getAlias(), getDto().getAdLoginDN());
             // If the client secret was not changed from the placeholder value in the UI, set the old value, i.e. no change
-            if (!adLoginPassword.equals(MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD)) {
-                autoEnrollmentConfiguration.setAdLoginPassword(currentAlias, adLoginPassword);
-                adLoginPassword = MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD;
+            if (!getDto().getAdLoginPassword().equals(MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD)) {
+                autoEnrollmentConfiguration.setAdLoginPassword(getDto().getAlias(), getDto().getAdLoginPassword());
+                getDto().setAdLoginPassword(MSAutoEnrollmentSettingsManagedBean.HIDDEN_PWD);
             }
 
-            autoEnrollmentConfiguration.setAuthKeyBinding(currentAlias, authKeyBinding);
-
-            // MS Servlet Settings
-            autoEnrollmentConfiguration.setCaName(currentAlias, caName);
+            autoEnrollmentConfiguration.setAuthKeyBinding(getDto().getAlias(), getDto().getAuthKeyBinding());
+            autoEnrollmentConfiguration.setCaName(getDto().getAlias(), getDto().getCaName());
+            autoEnrollmentConfiguration.setKeyExchangeCertProfileName(getDto().getAlias(), getDto().getkECCertificateProfileName());
 
             // MS Template Settings
             updateMappedTemplates();
-            autoEnrollmentConfiguration.setMsTemplateSettings(currentAlias, mappedMsTemplates);
+            autoEnrollmentConfiguration.setMsTemplateSettings(getDto().getAlias(), getDto().getMappedMsTemplates());
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
             addInfoMessage("MSAE_AUTOENROLLMENT_SAVE_OK");
-
+            return "done";
         } catch (AuthorizationDeniedException e) {
             log.error("Cannot save the configuration for the MS Auto Enrollment because the current "
-                              + "administrator is not authorized. Error description: " + e.getMessage());
+                    + "administrator is not authorized. Error description: " + e.getMessage());
             addErrorMessage("MSAE_AUTOENROLLMENT_SAVE_ERROR");
+            return null;
         }
     }
 
@@ -841,12 +651,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         reset();
         return "done";
     }
-    
+
     private void reset() {
         getEjbcaWebBean().clearAutoenrollConfigClone();
         autoenrollmentConfigMBean.actionCancel();
     }
-    
+
     public AutoenrollmentConfigMBean getAutoenrollmentConfigMBean() {
         return autoenrollmentConfigMBean;
     }
@@ -854,5 +664,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     public void setAutoenrollmentConfigMBean(AutoenrollmentConfigMBean autoenrollmentConfigMBean) {
         this.autoenrollmentConfigMBean = autoenrollmentConfigMBean;
     }
-    
+
+    public boolean isKeyArchivalEnabledInMappedTemplates() {
+        return getDto().getMappedMsTemplates().stream().anyMatch(MSAutoEnrollmentSettingsTemplate::isArchivePrivateKey);
+    }
 }
