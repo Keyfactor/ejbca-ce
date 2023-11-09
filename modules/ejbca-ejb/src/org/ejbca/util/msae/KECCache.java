@@ -66,8 +66,8 @@ public enum KECCache {
         }
     }
 
-    public void clearCache() {
-        KEC_CACHE.clear();
+    public static void clearCache() {
+        KECCache.KEC_CACHE.clear();
         log.info("KEC cache cleared.");
     }
 
