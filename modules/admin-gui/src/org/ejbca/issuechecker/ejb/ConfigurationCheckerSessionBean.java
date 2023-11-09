@@ -13,6 +13,7 @@
 
 package org.ejbca.issuechecker.ejb;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -102,9 +103,9 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
     @Override
     public Stream<Ticket> getTickets(final TicketRequest request) {
         return allConfigurationIssues.stream()
-                .filter(issue -> isChecking(issue))
-                .map(issue -> issue.getTickets())
-                .flatMap(tickets -> tickets.stream())
+                .filter(this::isChecking)
+                .map(ConfigurationIssue::getTickets)
+                .flatMap(Collection::stream)
                 .sorted()
                 .filter(ticket -> ticket.isAuthorizedToView(request.getAuthenticationToken()))
                 .filter(ticket -> ticket.getLevel().isGreaterOrEqual(request.getMinimumLevel()))
@@ -138,7 +139,7 @@ public class ConfigurationCheckerSessionBean implements ConfigurationCheckerSess
      */
     private boolean isChecking(final ConfigurationIssue configurationIssue) {
         return allConfigurationIssueSets.stream()
-                .filter(configurationIssueSet -> isConfigurationIssueSetEnabled(configurationIssueSet))
+                .filter(this::isConfigurationIssueSetEnabled)
                 .anyMatch(configurationIssueSet -> configurationIssueSet.getConfigurationIssues().contains(configurationIssue.getClass()));
     }
 }

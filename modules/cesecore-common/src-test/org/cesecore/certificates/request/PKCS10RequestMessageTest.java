@@ -13,6 +13,15 @@
 
 package org.cesecore.certificates.request;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.security.KeyPair;
+
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
@@ -30,15 +39,6 @@ import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.KeyTools;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.KeyPair;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 public class PKCS10RequestMessageTest {
 
@@ -67,4 +67,5 @@ public class PKCS10RequestMessageTest {
             }
         }
     }
+    
 }

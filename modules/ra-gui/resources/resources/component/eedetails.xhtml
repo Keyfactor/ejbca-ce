@@ -320,13 +320,21 @@
                                              disabled="#{cc.attrs.raEndEntityDetails.sendNotificationDisabled}" />
                 </h:panelGroup>
 
-                <h:outputLabel for="certserialoverride" value="#{msg.component_eedetails_field_certserialoverride}"
-                               rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
+                <h:outputLabel for="certSerialOverride"
+                               value="#{msg.component_eedetails_field_certserialoverride}"
+                               rendered="#{cc.attrs.raEndEntityDetails.customSerialNumberUsed}"
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
-                <h:outputText id="certserialoverride"
-                              value="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
-                              rendered="#{cc.attrs.raEndEntityDetails.certificateSerialNumberOverrideEnabled and not empty cc.attrs.raEndEntityDetails.certificateSerialNumberOverride}"
-                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                <h:panelGroup
+                        rendered="#{cc.attrs.raEndEntityDetails.customSerialNumberUsed}"
+                        styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                    <h:outputText id="certSerialOverride"
+                                  value="#{cc.attrs.raEndEntityDetails.customSerialNumber}"
+                                  rendered="#{!cc.attrs.editMode and cc.attrs.raEndEntityDetails.customSerialNumberUsed}"
+                                  styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                    <h:inputText id="certSerialOverrideInput"
+                                 rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.customSerialNumberUsed}"
+                                 value="#{cc.attrs.raEndEntityBean.customSerialNumber}"/>
+                </h:panelGroup>
 
                 <h:outputLabel for="cleartextpassword" value="#{msg.component_eedetails_field_cleartextpassword}"
                                rendered="#{cc.attrs.raEndEntityDetails.clearPasswordAllowed}"
@@ -390,12 +398,22 @@
                     <h:message for="certValidityEndTime" id="certValidityEndTimeMessage" styleClass="validationErrorMessage showErrorMessage" />
                 </h:panelGroup>
 
-                <h:outputLabel for="cardnumber" value="#{msg.component_eedetails_field_cardnumber}"
-                               rendered="#{cc.attrs.raEndEntityDetails.cardNumberEnabled and not empty cc.attrs.raEndEntityDetails.cardNumber}"
+                <h:outputLabel for="cardnumber"
+                               value="#{msg.component_eedetails_field_cardnumber}"
+                               rendered="#{cc.attrs.raEndEntityDetails.cardNumberUsed}"
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
-                <h:outputText id="cardnumber" value="#{cc.attrs.raEndEntityDetails.cardNumber}"
-                              rendered="#{cc.attrs.raEndEntityDetails.cardNumberEnabled and not empty cc.attrs.raEndEntityDetails.cardNumber}"
-                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                <h:panelGroup
+                        rendered="#{cc.attrs.raEndEntityDetails.cardNumberUsed}"
+                        styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                    <h:outputText id="cardnumber"
+                                  value="#{cc.attrs.raEndEntityDetails.cardNumber}"
+                                  rendered="#{(!cc.attrs.editMode or !cc.attrs.raEndEntityDetails.cardNumberModifiable) and cc.attrs.raEndEntityDetails.cardNumberUsed}"
+                                  styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                    <h:inputText id="cardnumberInput"
+                                 rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.cardNumberUsed and cc.attrs.raEndEntityDetails.cardNumberModifiable}"
+                                 value="#{cc.attrs.raEndEntityBean.cardNumber}">
+                    </h:inputText>
+                </h:panelGroup>
 
                 <h:outputLabel for="nameConstraintsPermitted"
                                value="#{msg.component_eedetails_field_nameconstraintspermitted}"
@@ -454,19 +472,45 @@
                 </h:inputTextarea>
 
                 <h:outputLabel for="allowedrequests" value="#{msg.component_eedetails_field_allowedrequests}"
-                               rendered="#{cc.attrs.raEndEntityDetails.allowedRequestsEnabled}"
+                               rendered="#{cc.attrs.raEndEntityDetails.allowedRequestsUsed}"
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
-                <h:outputText id="allowedrequests"
-                              value="#{cc.attrs.raEndEntityDetails.allowedRequestsUsed} / #{cc.attrs.raEndEntityDetails.allowedRequests}"
-                              rendered="#{cc.attrs.raEndEntityDetails.allowedRequestsEnabled}"
-                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                <h:panelGroup
+                        rendered="#{cc.attrs.raEndEntityDetails.allowedRequestsUsed}"
+                        styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                    <h:outputText id="allowedrequests"
+                                  value="#{cc.attrs.raEndEntityDetails.allowedRequests}"
+                                  rendered="#{(!cc.attrs.editMode or !cc.attrs.raEndEntityDetails.allowedRequestsModifiable) and cc.attrs.raEndEntityDetails.allowedRequestsUsed}"
+                                  styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                    <h:selectOneMenu id="allowedRequestsChangeSelect"
+                                     rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.allowedRequestsUsed and cc.attrs.raEndEntityDetails.allowedRequestsModifiable}"
+                                     value="#{cc.attrs.raEndEntityBean.selectedAllowedRequests}"
+                                     styleClass="pure-input-1-4">
+                        <f:selectItems value="#{cc.attrs.raEndEntityBean.selectableNumberOfAllowedRequests}"
+                                       var="selectableReason"
+                                       itemLabel="#{selectableReason.value}"
+                                       itemValue="#{selectableReason.key}" />
+                    </h:selectOneMenu>
+                </h:panelGroup>
 
                 <h:outputLabel for="issuancerevocation" value="#{msg.component_eedetails_field_issuancerevocation}"
-                               rendered="#{cc.attrs.raEndEntityDetails.issuanceRevocationReasonEnabled and not empty cc.attrs.raEndEntityDetails.issuanceRevocationReason}"
+                               rendered="#{cc.attrs.raEndEntityDetails.issuanceRevocationReasonUsed}"
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
-                <h:outputText id="issuancerevocation" value="#{cc.attrs.raEndEntityDetails.issuanceRevocationReason}"
-                              rendered="#{cc.attrs.raEndEntityDetails.issuanceRevocationReasonEnabled and not empty cc.attrs.raEndEntityDetails.issuanceRevocationReason}"
-                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                <h:panelGroup
+                        rendered="#{cc.attrs.raEndEntityDetails.issuanceRevocationReasonUsed}"
+                        styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
+                    <h:outputText id="issuancerevocation" value="#{cc.attrs.raEndEntityDetails.issuanceRevocationReason}"
+                                  rendered="#{(!cc.attrs.editMode or !cc.attrs.raEndEntityDetails.issuanceRevocationReasonModifiable) and cc.attrs.raEndEntityDetails.issuanceRevocationReasonUsed}"
+                                  styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
+                    <h:selectOneMenu id="issuanceRevocationChangeSelect"
+                                     rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.issuanceRevocationReasonUsed and cc.attrs.raEndEntityDetails.issuanceRevocationReasonModifiable}"
+                                     value="#{cc.attrs.raEndEntityBean.selectedRevocationReason}"
+                                     styleClass="pure-input-1-4">
+                        <f:selectItems value="#{cc.attrs.raEndEntityBean.selectableRevocationReasons}"
+                                       var="selectableReason"
+                                       itemLabel="#{selectableReason.value}"
+                                       itemValue="#{selectableReason.key}" />
+                    </h:selectOneMenu>
+                </h:panelGroup>
 
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />
 

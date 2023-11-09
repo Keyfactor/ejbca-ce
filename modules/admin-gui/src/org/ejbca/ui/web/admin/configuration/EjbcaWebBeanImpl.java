@@ -112,6 +112,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
+import org.ejbca.ui.web.StaticResourceVersioning;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
 import org.ejbca.ui.web.configuration.exception.AdminExistsException;
@@ -551,6 +552,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     public String getIeFixesCssFile() {
         return globalconfiguration == null ? null : globalconfiguration.getAdminWebPath() + globalconfiguration.getThemePath() + "/" + currentAdminPreference.getTheme()
                 + globalconfiguration.getIeCssFilenamePostfix() + ".css";
+    }
+
+    /** Returns a version string for JavaScript and CSS file cache control */
+    @Override
+    public String getVersion() {
+        return StaticResourceVersioning.VERSION;
     }
 
     /** Returns the admins prefered language */

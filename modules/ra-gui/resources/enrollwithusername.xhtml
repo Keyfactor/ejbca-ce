@@ -130,7 +130,7 @@
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{!enrollWithUsernameBean.sshEnrollmentMode}">
 					<!--Either render the fields for algorithm selection if no algorithm has been set, or render the field for CSR upload/paste -->
 						<h:panelGroup layout="block"
-							rendered="#{!enrollWithUsernameBean.preSetKeyAlgorithmRendered}">
+							rendered="#{!enrollWithUsernameBean.preSetKeyAlgorithmRendered  and !enrollWithUsernameBean.keyRecoveryOperation}">
 							<h:panelGroup id="enteredkeyAlg" layout="block"
 								styleClass="pure-control-group"
 								rendered="#{enrollWithUsernameBean.selectKeyAlgorithmRendered}">
@@ -146,7 +146,7 @@
 						</h:panelGroup>
 							<h:panelGroup layout="block"
 								rendered="#{enrollWithUsernameBean.renderGenerateCertificate}" id="uploadCsrOuterPanel" styleClass="pure-control-group">
-								<h:panelGroup layout="block" rendered="#{!enrollWithUsernameBean.uploadCsrDoneRendered}">
+								<h:panelGroup layout="block" rendered="#{!enrollWithUsernameBean.uploadCsrDoneRendered and !enrollWithUsernameBean.keyRecoveryOperation}">
 									<h:panelGroup layout="block">
 									    <p id="newFileInputContainer" style="display: inline-block;"></p>
 									    <ui:remove>

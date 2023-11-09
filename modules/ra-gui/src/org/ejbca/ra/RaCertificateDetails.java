@@ -12,32 +12,9 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
-import javax.faces.model.SelectItem;
-
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -75,13 +52,33 @@ import org.ejbca.cvc.AuthorizationField;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
+import javax.faces.model.SelectItem;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * UI representation of a certificate from the back end.
- *
  */
 public class RaCertificateDetails implements Serializable {
 
@@ -89,22 +86,28 @@ public class RaCertificateDetails implements Serializable {
 
     public interface Callbacks {
         RaLocaleBean getRaLocaleBean();
+
         boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException;
+
         /**
          * Tries to update the revocation reason (and optionally backdate it).
+         *
          * @param newRevocationReason The revocation reason to update to
-         * @param newDate New revocation date (can be null if backdate is not desired)
-         * @param issuerDn Distinguished name of certificate issuer
+         * @param newDate             New revocation date (can be null if backdate is not desired)
+         * @param issuerDn            Distinguished name of certificate issuer
          * @throws RevokeBackDateNotAllowedForProfileException Backdating fails if not allowed in certificate profile
-         * @throws CertificateProfileDoesNotExistException 
-         * @throws IllegalArgumentException 
+         * @throws CertificateProfileDoesNotExistException
+         * @throws IllegalArgumentException
          */
         void changeRevocationReason(final RaCertificateDetails raCertificateDetails, final int newRevocationReason, final Date newDate,
-                final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
+                                    final String issuerDn) throws NoSuchEndEntityException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
                 AlreadyRevokedException, CADoesntExistsException, AuthorizationDeniedException, WaitingForApprovalException, CertificateProfileDoesNotExistException;
+
         boolean recoverKey(RaCertificateDetails raCertificateDetails) throws ApprovalException, CADoesntExistsException, AuthorizationDeniedException,
-                                                                                WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
+                WaitingForApprovalException, NoSuchEndEntityException, EndEntityProfileValidationException;
+
         boolean keyRecoveryPossible(RaCertificateDetails raCertificateDetails);
+
         UIComponent getConfirmPasswordComponent();
     }
 
@@ -159,7 +162,7 @@ public class RaCertificateDetails implements Serializable {
     private String password;
     private String confirmPassword;
     private int requestId;
-    
+
     private String sshKeyId = "";
     private String principals = "";
     private String comment = "";
@@ -184,20 +187,20 @@ public class RaCertificateDetails implements Serializable {
     private boolean caAllowsInvalidityDate = false;
 
     public RaCertificateDetails(final CertificateDataWrapper cdw, final Callbacks callbacks,
-            final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
-                    final Map<String, Boolean> caNameToAllowsInvalidityDate,
-                    final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
-                    final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
+                                final Map<Integer, String> cpIdToNameMap, final Map<Integer, String> eepIdToNameMap, final Map<String, String> caSubjectToNameMap,
+                                final Map<String, Boolean> caNameToAllowsInvalidityDate,
+                                final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
+                                final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
         this.callbacks = callbacks;
         reInitialize(cdw, cpIdToNameMap, eepIdToNameMap, caSubjectToNameMap, caNameToAllowsInvalidityDate,
                 caNameToAllowsChangeOfRevocationReason, cpNameToAllowsRevocationBackdating);
     }
 
     public void reInitialize(final CertificateDataWrapper cdw, final Map<Integer, String> cpIdToNameMap,
-            final Map<Integer, String> eepIdToNameMap, final Map<String,String> caSubjectToNameMap,
-            final Map<String, Boolean> caNameToAllowsInvalidityDate,
-            final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
-            final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
+                             final Map<Integer, String> eepIdToNameMap, final Map<String, String> caSubjectToNameMap,
+                             final Map<String, Boolean> caNameToAllowsInvalidityDate,
+                             final Map<String, Boolean> caNameToAllowsChangeOfRevocationReason,
+                             final Map<String, Boolean> cpNameToAllowsRevocationBackdating) {
         this.cdw = cdw;
         final CertificateData certificateData = cdw.getCertificateData();
         this.cpId = certificateData.getCertificateProfileId();
@@ -241,11 +244,11 @@ public class RaCertificateDetails implements Serializable {
                 log.debug("Failed to format serial number as hex. Probably a CVC certificate. Message: " + e.getMessage());
             }
         }
-        this.username = certificateData.getUsername()==null ? "" : certificateData.getUsername();
+        this.username = certificateData.getUsername() == null ? "" : certificateData.getUsername();
         this.subjectDn = certificateData.getSubjectDnNeverNull();
         final Certificate certificate = cdw.getCertificate();
         byte[] certificateEncoded = null;
-        if (certificate!=null) {
+        if (certificate != null) {
             try {
                 certificateEncoded = certificate.getEncoded();
             } catch (CertificateEncodingException e) {
@@ -266,25 +269,25 @@ public class RaCertificateDetails implements Serializable {
             this.username = certificateData.getUsername() == null ? "" : certificateData.getUsername();
         }
 
-        if(certificateData.getType() == CertificateConstants.CERTTYPE_SSH) {
+        if (certificateData.getType() == CertificateConstants.CERTTYPE_SSH) {
             this.sshKeyId = SshCertificateUtils.getKeyId(certificateData.getSubjectDnNeverNull());
-            String[] principalsAndComment = SshCertificateUtils.parsePrincipalsAndComment(certificateData.getSubjectAltNameNeverNull());        
+            String[] principalsAndComment = SshCertificateUtils.parsePrincipalsAndComment(certificateData.getSubjectAltNameNeverNull());
             this.principals = principalsAndComment[0].replace(":", ", ");
             this.comment = principalsAndComment[1];
             this.type = SshCertificate.CERTIFICATE_TYPE;
         }
-        if (certificate!=null || certificateEncoded!=null) {
+        if (certificate != null || certificateEncoded != null) {
             this.type = certificate.getType();
             this.fingerprintSha256 = new String(Hex.encode(CertTools.generateSHA256Fingerprint(certificateEncoded)));
             final PublicKey publicKey = certificate.getPublicKey();
             this.publicKeyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
             this.publicKeySpecification = checkForPQCAndGetPublicKeySpec(publicKey, publicKeyAlgorithm);
             if (publicKey instanceof RSAPublicKey) {
-                this.publicKeyParameter = ((RSAPublicKey)publicKey).getModulus().toString(16);
-            } else if(certificate.getPublicKey() instanceof DSAPublicKey) {
-                this.publicKeyParameter = ((DSAPublicKey)publicKey).getY().toString(16);
-            } else if(certificate.getPublicKey() instanceof ECPublicKey) {
-                this.publicKeyParameter = ((ECPublicKey)publicKey).getW().getAffineX().toString(16) + " " + ((ECPublicKey)publicKey).getW().getAffineY().toString(16);
+                this.publicKeyParameter = ((RSAPublicKey) publicKey).getModulus().toString(16);
+            } else if (certificate.getPublicKey() instanceof DSAPublicKey) {
+                this.publicKeyParameter = ((DSAPublicKey) publicKey).getY().toString(16);
+            } else if (certificate.getPublicKey() instanceof ECPublicKey) {
+                this.publicKeyParameter = ((ECPublicKey) publicKey).getW().getAffineX().toString(16) + " " + ((ECPublicKey) publicKey).getW().getAffineY().toString(16);
             }
             this.expireDate = certificateData.getExpireDate();
 
@@ -292,7 +295,7 @@ public class RaCertificateDetails implements Serializable {
                 this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
                 this.signatureAlgorithm = CertTools.getCertSignatureAlgorithmNameAsString(certificate);
 
-                final X509Certificate x509Certificate = (X509Certificate)certificate;
+                final X509Certificate x509Certificate = (X509Certificate) certificate;
                 this.typeVersion = Integer.toString(x509Certificate.getVersion());
                 this.subjectAn = CertTools.getSubjectAlternativeName(certificate);
                 try {
@@ -303,7 +306,7 @@ public class RaCertificateDetails implements Serializable {
                     }
                 }
                 final int basicConstraints = x509Certificate.getBasicConstraints();
-                if (basicConstraints==Integer.MAX_VALUE) {
+                if (basicConstraints == Integer.MAX_VALUE) {
                     this.basicConstraints = "";
                 } else if (basicConstraints == -1) {
                     this.basicConstraints = callbacks.getRaLocaleBean().getMessage("component_certdetails_info_basicconstraints_ee");
@@ -313,7 +316,7 @@ public class RaCertificateDetails implements Serializable {
                 keyUsages.clear();
                 final boolean[] keyUsageArray = x509Certificate.getKeyUsage();
                 if (keyUsageArray != null) {
-                    for (int i=0; i<keyUsageArray.length; i++) {
+                    for (int i = 0; i < keyUsageArray.length; i++) {
                         if (keyUsageArray[i]) {
                             keyUsages.add(String.valueOf(i));
                         }
@@ -350,12 +353,12 @@ public class RaCertificateDetails implements Serializable {
                 this.created = ValidityDate.formatAsUTCSecondsGranularity(CertTools.getNotBefore(certificate).getTime());
                 this.signatureAlgorithm = CertTools.getCertSignatureAlgorithmNameAsString(certificate);
 
-                final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate)certificate;
+                final CardVerifiableCertificate cardVerifiableCertificate = (CardVerifiableCertificate) certificate;
                 this.typeVersion = String.valueOf(CVCertificateBody.CVC_VERSION);
                 // Role and access rights
                 try {
                     final AuthorizationField authorizationField = cardVerifiableCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField();
-                    if (authorizationField!=null) {
+                    if (authorizationField != null) {
                         this.cvcAuthorizationRole = String.valueOf(authorizationField.getAuthRole());
                         this.cvcAuthorizationAccessRights = String.valueOf(authorizationField.getAccessRights());
                     }
@@ -366,23 +369,23 @@ public class RaCertificateDetails implements Serializable {
                 }
                 this.expires = ValidityDate.formatAsUTCSecondsGranularity(expireDate);
             } else if (certificate.getType().equalsIgnoreCase(SshCertificate.CERTIFICATE_TYPE)) {
-                 this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
-                 this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
-                 final SshCertificate sshCertificate = (SshCertificate) certificate;
-                 
-                 this.signatureAlgorithm = sshCertificate.getSignatureAlgorithm();
-                 this.sshCertificateType = sshCertificate.getSshCertificateType().getLabel();
-                 this.sshExtensions = sshCertificate.getExtensions().keySet().toString();
-                 this.sshForceCommand = sshCertificate.getCriticalOptions().getOrDefault(
-                         SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, "");
-                 this.sshSourceAddress = sshCertificate.getCriticalOptions().getOrDefault(
-                         SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, "");
-                 this.sshVerifyRequired = sshCertificate.getCriticalOptions().containsKey(
-                         SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
+                this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
+                this.expires = ValidityDate.formatAsISO8601ServerTZ(expireDate, TimeZone.getDefault());
+                final SshCertificate sshCertificate = (SshCertificate) certificate;
+
+                this.signatureAlgorithm = sshCertificate.getSignatureAlgorithm();
+                this.sshCertificateType = sshCertificate.getSshCertificateType().getLabel();
+                this.sshExtensions = sshCertificate.getExtensions().keySet().toString();
+                this.sshForceCommand = sshCertificate.getCriticalOptions().getOrDefault(
+                        SshEndEntityProfileFields.SSH_CRITICAL_OPTION_FORCE_COMMAND_CERT_PROP, "");
+                this.sshSourceAddress = sshCertificate.getCriticalOptions().getOrDefault(
+                        SshEndEntityProfileFields.SSH_CRITICAL_OPTION_SOURCE_ADDRESS_CERT_PROP, "");
+                this.sshVerifyRequired = sshCertificate.getCriticalOptions().containsKey(
+                        SshEndEntityProfileFields.SSH_CRITICAL_OPTION_VERIFY_REQUIRED_CERT_PROP);
             }
         }
 
-        if (status==CertificateConstants.CERT_ARCHIVED || status==CertificateConstants.CERT_REVOKED) {
+        if (status == CertificateConstants.CERT_ARCHIVED || status == CertificateConstants.CERT_REVOKED) {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
             this.revocationDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getRevocationDate(), TimeZone.getDefault());
         } else {
@@ -392,37 +395,78 @@ public class RaCertificateDetails implements Serializable {
             this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
         }
         final String subjectKeyIdB64 = certificateData.getSubjectKeyId();
-        if (subjectKeyIdB64!=null) {
+        if (subjectKeyIdB64 != null) {
             this.subjectKeyId = new String(Hex.encode(Base64.decode(subjectKeyIdB64.getBytes())));
         }
         this.accountBindingId = certificateData.getAccountBindingId();
         styleRowCallCounter = 0;    // Reset
     }
+
     private String checkForPQCAndGetPublicKeySpec(final PublicKey pubKey, final String pubKeyAlgorithm) {
         String pubKeySpecification = AlgorithmTools.getKeySpecification(pubKey);
-        if (AlgorithmTools.isPQC(pubKeyAlgorithm)){
-            pubKeySpecification = pubKeyAlgorithm.equals(pubKeySpecification)? "" : pubKeySpecification;
+        if (AlgorithmTools.isPQC(pubKeyAlgorithm)) {
+            pubKeySpecification = pubKeyAlgorithm.equals(pubKeySpecification) ? "" : pubKeySpecification;
         }
         return pubKeySpecification;
     }
+
     private String generalizedTimeToString(final ASN1GeneralizedTime gt) throws ParseException {
-        return gt != null ? ValidityDate.formatAsISO8601ServerTZ(gt.getDate().getTime(), TimeZone.getDefault()) : "not specified";
+        return gt != null
+                ? ValidityDate.formatAsISO8601ServerTZ(gt.getDate().getTime(), TimeZone.getDefault())
+                : "not specified";
     }
 
-    public String getFingerprint() { return fingerprint; }
-    public String getFingerprintSha256() { return fingerprintSha256; }
-    public String getUsername() { return username; }
-    public String getType() { return type; }
-    public boolean isTypeX509() { return "X.509".equals(type); }
-    public boolean isTypeCvc() { return "CVC".equals(type); }
-    public boolean isTypeSsh() { return SshCertificate.CERTIFICATE_TYPE.equals(type); }
-    public String getTypeVersion() { return typeVersion; }
-    public String getSerialnumber() { return serialnumber; }
-    public String getSerialnumberRaw() { return serialnumberRaw; }
-    public String getIssuerDn() { return issuerDn; }
-    public String getSubjectDn() { return subjectDn; }
+    public String getFingerprint() {
+        return fingerprint;
+    }
 
-    /** @return the Subject DN string of the current certificate in unescaped RDN format */
+    public String getFingerprintSha256() {
+        return fingerprintSha256;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public boolean isTypeX509() {
+        return "X.509".equals(type);
+    }
+
+    public boolean isTypeCvc() {
+        return "CVC".equals(type);
+    }
+
+    public boolean isTypeSsh() {
+        return SshCertificate.CERTIFICATE_TYPE.equals(type);
+    }
+
+    public String getTypeVersion() {
+        return typeVersion;
+    }
+
+    public String getSerialnumber() {
+        return serialnumber;
+    }
+
+    public String getSerialnumberRaw() {
+        return serialnumberRaw;
+    }
+
+    public String getIssuerDn() {
+        return issuerDn;
+    }
+
+    public String getSubjectDn() {
+        return subjectDn;
+    }
+
+    /**
+     * @return the Subject DN string of the current certificate in unescaped RDN format
+     */
     public final String getSubjectDnUnescapedValue() {
         if (StringUtils.isNotEmpty(subjectDn)) {
             return org.ietf.ldap.LDAPDN.unescapeRDN(subjectDn);
@@ -430,60 +474,92 @@ public class RaCertificateDetails implements Serializable {
             return subjectDn;
         }
     }
-    
-    public String getSubjectAn() { return subjectAn; }
-    
-    /** @return the Subject Alternative Name string of the current certificate in (comma) unescaped RDN format */
-    public final String getSubjectAnUnescapedComma() {
-        return subjectAn = StringUtils.isNotEmpty(subjectAn) ? subjectAn.replace("\\,", ",") : subjectAn; 
+
+    public String getSubjectAn() {
+        return subjectAn;
     }
-    
-    public String getSubjectDa() { return subjectDa; }
-    public String getCaName() { return caName; }
-    /** @return Certificate Profile Name from the provided CP ID or a localized error String */
+
+    /**
+     * @return the Subject Alternative Name string of the current certificate in (comma) unescaped RDN format
+     */
+    public final String getSubjectAnUnescapedComma() {
+        return subjectAn = StringUtils.isNotEmpty(subjectAn) ? subjectAn.replace("\\,", ",") : subjectAn;
+    }
+
+    public String getSubjectDa() {
+        return subjectDa;
+    }
+
+    public String getCaName() {
+        return caName;
+    }
+
+    /**
+     * @return Certificate Profile Name from the provided CP ID or a localized error String
+     */
     public String getCpName() {
-        if (cpId != null && cpId.intValue()==CertificateProfileConstants.NO_CERTIFICATE_PROFILE) {
+        if (cpId != null && cpId.intValue() == CertificateProfileConstants.NO_CERTIFICATE_PROFILE) {
             return callbacks.getRaLocaleBean().getMessage("component_certdetails_info_unknowncp");
-        } else if (cpName!=null) {
+        } else if (cpName != null) {
             return cpName;
         }
         return callbacks.getRaLocaleBean().getMessage("component_certdetails_info_missingcp", cpId);
     }
-    public boolean isCpNameSameAsEepName() { return getEepName().equals(getCpName()); }
-    /** @return End Entity Profile Name from the provided EEP ID or a localized error String */
+
+    public boolean isCpNameSameAsEepName() {
+        return getEepName().equals(getCpName());
+    }
+
+    /**
+     * @return End Entity Profile Name from the provided EEP ID or a localized error String
+     */
     public String getEepName() {
-        if (eepId==EndEntityConstants.NO_END_ENTITY_PROFILE) {
+        if (eepId == EndEntityConstants.NO_END_ENTITY_PROFILE) {
             return callbacks.getRaLocaleBean().getMessage("component_certdetails_info_unknowneep");
         }
-        if (eepName!=null) {
+        if (eepName != null) {
             return eepName;
         }
         return callbacks.getRaLocaleBean().getMessage("component_certdetails_info_missingeep", eepId);
     }
-    public String getCreated() { return created; }
-    public String getExpires() { return expires; }
 
-    public boolean isExpired() { return expireDate<System.currentTimeMillis(); }
-    public boolean isActive() {
-        return status==CertificateConstants.CERT_ACTIVE || status==CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION;
+    public String getCreated() {
+        return created;
     }
+
+    public String getExpires() {
+        return expires;
+    }
+
+    public boolean isExpired() {
+        return expireDate < System.currentTimeMillis();
+    }
+
+    public boolean isActive() {
+        return status == CertificateConstants.CERT_ACTIVE || status == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION;
+    }
+
     public boolean isSuspended() {
         return status == CertificateConstants.CERT_REVOKED && revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD;
     }
+
     /**
      * @return boolean is certificate revoked
      */
     public boolean isRevoked() {
         return status == CertificateConstants.CERT_REVOKED;
     }
+
     /**
      * @return boolean is certificate revoked with reason key compromise
      */
     public boolean isRevokedWithKeyCompromise() {
         return this.isRevoked() && this.revocationReason == RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE;
     }
+
     /**
      * Check if the CA that issues the certificate allows changing the revocation reason.
+     *
      * @return boolean does CA allow revocation reason change
      */
     public boolean isCaAllowingChangeOfRevocationReason() {
@@ -492,6 +568,7 @@ public class RaCertificateDetails implements Serializable {
 
     /**
      * Check if the Certificate profile is set to allowing revocation backdating.
+     *
      * @return boolean does CP allow revocation backdate
      */
     public boolean isCpAllowingRevocationBackdate() {
@@ -502,47 +579,104 @@ public class RaCertificateDetails implements Serializable {
         return caAllowsInvalidityDate;
     }
 
-    /** @return a localized certificate (revocation) status string */
+    /**
+     * @return a localized certificate (revocation) status string
+     */
     public String getStatus() {
         switch (status) {
-        case CertificateConstants.CERT_ACTIVE:
-        case CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION:
-        {
-            if(isExpired()) {
-                return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_expired");
-            } else {
-                return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_active");
+            case CertificateConstants.CERT_ACTIVE:
+            case CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION: {
+                if (isExpired()) {
+                    return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_expired");
+                } else {
+                    return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_active");
+                }
             }
-        }
-        case CertificateConstants.CERT_ARCHIVED:
-        case CertificateConstants.CERT_REVOKED:
-            return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_"+revocationReason);
-        default:
-            return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_other");
+            case CertificateConstants.CERT_ARCHIVED:
+            case CertificateConstants.CERT_REVOKED:
+                return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_revoked_" + revocationReason);
+            default:
+                return callbacks.getRaLocaleBean().getMessage("component_certdetails_status_other");
         }
     }
-    public String getUpdated() { return updated; }
-    public String getRevocationDate() { return revocationDate; }
-    public String getInvalidityDate() { return invalidityDate; }
-    public String getPublicKeyAlgorithm() { return publicKeyAlgorithm; }
-    public String getPublicKeySpecification() { return publicKeySpecification; }
-    public String getPublicKeyParameter() { return publicKeyParameter; }
-    public String getSubjectKeyId() { return subjectKeyId; }
-    public String getAccountBindingId() { return accountBindingId; }
-    public String getBasicConstraints() { return basicConstraints; }
-    public String getPrivateKeyUsagePeriod() { return privateKeyUsagePeriod; }
-    public String getCvcAuthorizationRole() { return cvcAuthorizationRole; }
-    public String getCvcAuthorizationAccessRights() { return cvcAuthorizationAccessRights; }
-    public List<String> getKeyUsages() { return keyUsages; }
-    public List<String> getExtendedKeyUsages() { return extendedKeyUsages; }
-    public String getNameConstraints() { return hasNameConstraints ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present") : ""; }
-    public String getQcStatements() { return hasQcStatements ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present") : ""; }
-    public String getCertificateTransparencyScts() { return hasCertificateTransparencyScts ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present") : ""; }
-    public String getSignatureAlgorithm() { return signatureAlgorithm; }
+
+    public String getUpdated() {
+        return updated;
+    }
+
+    public String getRevocationDate() {
+        return revocationDate;
+    }
+
+    public String getInvalidityDate() {
+        return invalidityDate;
+    }
+
+    public String getPublicKeyAlgorithm() {
+        return publicKeyAlgorithm;
+    }
+
+    public String getPublicKeySpecification() {
+        return publicKeySpecification;
+    }
+
+    public String getPublicKeyParameter() {
+        return publicKeyParameter;
+    }
+
+    public String getSubjectKeyId() {
+        return subjectKeyId;
+    }
+
+    public String getAccountBindingId() {
+        return accountBindingId;
+    }
+
+    public String getBasicConstraints() {
+        return basicConstraints;
+    }
+
+    public String getPrivateKeyUsagePeriod() {
+        return privateKeyUsagePeriod;
+    }
+
+    public String getCvcAuthorizationRole() {
+        return cvcAuthorizationRole;
+    }
+
+    public String getCvcAuthorizationAccessRights() {
+        return cvcAuthorizationAccessRights;
+    }
+
+    public List<String> getKeyUsages() {
+        return keyUsages;
+    }
+
+    public List<String> getExtendedKeyUsages() {
+        return extendedKeyUsages;
+    }
+
+    public String getNameConstraints() {
+        return hasNameConstraints ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present") : "";
+    }
+
+    public String getQcStatements() {
+        return hasQcStatements ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present") : "";
+    }
+
+    public String getCertificateTransparencyScts() {
+        return hasCertificateTransparencyScts
+                ? callbacks.getRaLocaleBean().getMessage("component_certdetails_info_present")
+                : "";
+    }
+
+    public String getSignatureAlgorithm() {
+        return signatureAlgorithm;
+    }
 
     public String getDump() {
         final Certificate certificate = cdw.getCertificate();
-        if (certificate!=null) {
+        if (certificate != null) {
             try {
                 return CertTools.dumpCertificateAsString(certificate);
             } catch (RuntimeException e) {
@@ -558,25 +692,36 @@ public class RaCertificateDetails implements Serializable {
         return "";
     }
 
-    /** @return Certificate as java.security.cert.Certificate */
+    /**
+     * @return Certificate as java.security.cert.Certificate
+     */
     public Certificate getCertificate() {
         return cdw.getCertificate();
     }
 
-    /** @return true if more details should be shown */
-    public boolean isMore() { return more; }
+    /**
+     * @return true if more details should be shown
+     */
+    public boolean isMore() {
+        return more;
+    }
+
     public void actionToggleMore() {
         more = !more;
         styleRowCallCounter = 0;    // Reset
     }
 
-    /** @return true every twice starting with every forth call */
+    /**
+     * @return true every twice starting with every forth call
+     */
     public boolean isEven() {
         styleRowCallCounter++;
-        return (styleRowCallCounter+1) / 2 % 2 == 0;
+        return (styleRowCallCounter + 1) / 2 % 2 == 0;
     }
 
-    /** @return CA Name from the provided issuer DN or the IssuerDN itself if no name is known */
+    /**
+     * @return CA Name from the provided issuer DN or the IssuerDN itself if no name is known
+     */
     private String getCaNameFromIssuerDn(final Map<String, String> caSubjectToNameMap, final String issuerDn) {
         if (issuerDn != null && caSubjectToNameMap.containsKey(issuerDn)) {
             return String.valueOf(caSubjectToNameMap.get(issuerDn));
@@ -584,11 +729,21 @@ public class RaCertificateDetails implements Serializable {
         return String.valueOf(issuerDn);
     }
 
-    public RaCertificateDetails getNext() { return next; }
-    public void setNext(RaCertificateDetails next) { this.next = next; }
+    public RaCertificateDetails getNext() {
+        return next;
+    }
 
-    public RaCertificateDetails getPrevious() { return previous; }
-    public void setPrevious(RaCertificateDetails previous) { this.previous = previous; }
+    public void setNext(RaCertificateDetails next) {
+        this.next = next;
+    }
+
+    public RaCertificateDetails getPrevious() {
+        return previous;
+    }
+
+    public void setPrevious(RaCertificateDetails previous) {
+        this.previous = previous;
+    }
 
     public List<SelectItem> getNewRevocationReasons() {
         final List<SelectItem> ret = new ArrayList<>();
@@ -610,6 +765,7 @@ public class RaCertificateDetails implements Serializable {
     /**
      * Returns list of options for changing revocation reason.
      * The Mozilla Root Store Policy only allows change of revocation reason to keyCompromise.
+     *
      * @return list of SelectItem revocation reasons
      */
     public List<SelectItem> getChangeRevocationReasons() {
@@ -619,17 +775,26 @@ public class RaCertificateDetails implements Serializable {
         return ret;
     }
 
-    public Integer getNewRevocationReason() { return Integer.valueOf(newRevocationReason); }
-    public void setNewRevocationReason(final Integer newRevocationReason) { this.newRevocationReason = newRevocationReason.intValue(); }
+    public Integer getNewRevocationReason() {
+        return Integer.valueOf(newRevocationReason);
+    }
+
+    public void setNewRevocationReason(final Integer newRevocationReason) {
+        this.newRevocationReason = newRevocationReason.intValue();
+    }
 
     /**
      * Get the date String for the revocation backdate that has been input by the GUI user.
+     *
      * @return String date
      */
-    public String getChangedRevocationReasonDate() { return updatedRevocationDate; }
+    public String getChangedRevocationReasonDate() {
+        return updatedRevocationDate;
+    }
 
     /**
      * Set the revocation backdate date String.
+     *
      * @param dateString new date String
      */
     public void setChangedRevocationReasonDate(String dateString) {
@@ -686,7 +851,8 @@ public class RaCertificateDetails implements Serializable {
                 callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             }
             log.error(e);
-        } catch (NoSuchEndEntityException | CertificateProfileDoesNotExistException | CADoesntExistsException | AuthorizationDeniedException e) {
+        } catch (NoSuchEndEntityException | CertificateProfileDoesNotExistException | CADoesntExistsException |
+                 AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageError("component_certdetails_error_revocation_failed");
             log.error(e);
         }
@@ -726,10 +892,10 @@ public class RaCertificateDetails implements Serializable {
             log.info("Request with Id: " + e.getRequestId() + " has been sent for approval");
         } catch (CADoesntExistsException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unknown_error");
-                log.debug("CA does not exist", e);
+            log.debug("CA does not exist", e);
         } catch (AuthorizationDeniedException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_unauthorized");
-                log.debug("Not authorized to perform key recovery", e);
+            log.debug("Not authorized to perform key recovery", e);
         } catch (NoSuchEndEntityException e) {
             callbacks.getRaLocaleBean().addMessageInfo("component_certdetails_keyrecovery_no_such_end_entity", username);
             if (log.isDebugEnabled()) {
@@ -745,16 +911,20 @@ public class RaCertificateDetails implements Serializable {
         renderConfirmRecoveryToggle();
     }
 
-    /** Validate that password and password confirm entries match and render error messages otherwise. */
+    /**
+     * Validate that password and password confirm entries match and render error messages otherwise.
+     */
     public final void validatePassword(ComponentSystemEvent event) {
-        if (renderConfirmRecovery){
+        if (renderConfirmRecovery) {
             FacesContext fc = FacesContext.getCurrentInstance();
             UIComponent components = event.getComponent();
             UIInput uiInputPassword = (UIInput) components.findComponent("passwordField");
             String password = uiInputPassword.getLocalValue() == null ? "" : uiInputPassword.getLocalValue().toString();
             UIInput uiInputConfirmPassword = (UIInput) components.findComponent("passwordConfirmField");
-            String confirmPassword = uiInputConfirmPassword.getLocalValue() == null ? "" : uiInputConfirmPassword.getLocalValue().toString();
-            if (password.isEmpty()){
+            String confirmPassword = uiInputConfirmPassword.getLocalValue() == null
+                    ? ""
+                    : uiInputConfirmPassword.getLocalValue().toString();
+            if (password.isEmpty()) {
                 fc.addMessage(callbacks.getConfirmPasswordComponent().getClientId(fc), callbacks.getRaLocaleBean().getFacesMessage("enroll_password_can_not_be_empty"));
                 fc.renderResponse();
             }
@@ -763,9 +933,11 @@ public class RaCertificateDetails implements Serializable {
                 fc.renderResponse();
             }
         }
-    }   
-    
-    /** Download CSR attached to certificate in .pem format */
+    }
+
+    /**
+     * Download CSR attached to certificate in .pem format
+     */
     public void downloadCsr() {
         final CertificateData certificateData = cdw.getCertificateData();
         if (certificateData != null) {
@@ -776,7 +948,7 @@ public class RaCertificateDetails implements Serializable {
             throw new IllegalStateException("Could not find CSR attached to end entity with username " + username + ". CSR is expected to be set at this point");
         }
     }
-    
+
     private final void downloadToken(byte[] token, String responseContentType, String fileExtension, CertificateData certificateData) {
         if (token == null) {
             return;
@@ -814,7 +986,7 @@ public class RaCertificateDetails implements Serializable {
         }
     }
 
-    public final String getParamRequestId(){
+    public final String getParamRequestId() {
         return PARAM_REQUESTID;
     }
 
@@ -861,24 +1033,24 @@ public class RaCertificateDetails implements Serializable {
     public boolean isRequestIdInfoRendered() {
         return requestId != 0;
     }
-    
+
     public boolean isDownloadCsrRendered() {
         return cdw.getCertificateData() != null && StringUtils.isNotEmpty(cdw.getCertificateData().getCertificateRequest());
     }
-    
+
     public boolean isPreCertificate() {
         return isPreCertificate;
     }
-    
-    public String  getSshKeyId() {
+
+    public String getSshKeyId() {
         return sshKeyId;
     }
-    
-    public String  getPrincipals() {
+
+    public String getPrincipals() {
         return principals;
     }
-    
-    public String  getComment() {
+
+    public String getComment() {
         return comment;
     }
 
@@ -897,9 +1069,9 @@ public class RaCertificateDetails implements Serializable {
     public String getSshForceCommand() {
         return sshForceCommand;
     }
-    
+
     public boolean isSshVerifyRequired() {
         return sshVerifyRequired;
     }
-    
+
 }

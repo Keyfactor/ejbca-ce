@@ -484,7 +484,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isRenderGenerateCertificate(){
-        if (isUserGeneratedToken()) {
+        if (isUserGeneratedToken() && endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY) {
             // If CSR is already uploaded, load its key algorithm and display it to end user
             if (isCsrPreSet() && !isCsrChanged) {
                 selectKeyAlgorithmFromCsr();
@@ -518,7 +518,8 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     public boolean isRenderGenerateKeyStorePkcs12(){
-        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN){
+        if (endEntityInformation.getTokenType() == EndEntityConstants.TOKEN_USERGEN  && 
+                endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY){
             return false;
         }
         KeyToValueHolder<EndEntityProfile> holder = authorizedEndEntityProfiles.get(endEntityInformation.getEndEntityProfileId());
@@ -582,6 +583,10 @@ public class EnrollWithRequestIdBean implements Serializable {
         return endEntityInformation.getExtendedInformation() != null &&
                endEntityInformation.getExtendedInformation().getKeyStoreAlgorithmType() != null &&
                endEntityInformation.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY;
+    }
+    
+    public boolean isKeyRecoveryOperation() {
+        return getEndEntityInformation().getStatus() == EndEntityConstants.STATUS_KEYRECOVERY;
     }
 
     /**
