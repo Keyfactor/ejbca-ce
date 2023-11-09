@@ -51,6 +51,10 @@ public enum KECCache {
             AuthorizationDeniedException, CertificateExtensionException, KeyArchivalException {
 
         Certificate kec = KEC_CACHE.get(cAId);
+        
+        log.error("KEC CACHE size is " + KEC_CACHE.size());
+        
+        log.error("KEC CACHE is empty " + KEC_CACHE.isEmpty());
 
         if (Objects.isNull(kec)) {
             return generateKecOnCaSideAndCache(admin, cAId, cPId);
