@@ -36,9 +36,8 @@ import org.cesecore.util.ValidityDate;
 
 import com.keyfactor.util.CertTools;
 
-/** Class used to construct validity times based on a range of different input parameters and configuration. 
- * 
- * @version $Id$
+/**
+ * Class used to construct validity times based on a range of different input parameters and configuration.
  */
 public class CertificateValidity {
 
@@ -223,7 +222,7 @@ public class CertificateValidity {
             // a certificateProfileLastDate and create an already expired certificate.
             if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate) {
                 final String msg = intres.getLocalizedMessage("createcert.erroralreadyexpired", firstDate);
-                log.error(msg);
+                log.info(msg);
                 throw new IllegalValidityException(msg);
             }
     	}
