@@ -42,7 +42,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.util.msae.KECCache;
 import org.ejbca.util.msae.KecCacheBean;
 
 import com.keyfactor.util.keys.token.CryptoToken;
