@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNull;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.keyfactor.util.certificate.DnComponents;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
@@ -100,10 +101,13 @@ public class LogRedactionUtilsTest {
                 + "(unstructuredaddress=)|(unstructuredname=)|(emailaddress=)|(email=)|(dn=)|(uniqueidentifier=)|"
                 + "(uid=)|(pid=)|(vid=)|(cn=)|(name=)|(sn=)|(serialnumber=)|(gn=)|(givenname=)|(initials=)|(surname=)|"
                 + "(ou=)|(organizationidentifier=)|(st=)|(dc=)|(c=)).*");
-        assertEquals("SubjectAltName redaction pattern mismatch", LogRedactionUtils.getSubjectAltNameRedactionPattern(), 
+        // include FASC-N only if it's available in the runtime edition
+        final String federalAgencySmartCredentialNumberPattern = DnComponents.getDnIdFromAltName("FASCN") == null ? "" : "|(FASCN=)";
+        assertEquals("SubjectAltName redaction pattern mismatch", LogRedactionUtils.getSubjectAltNameRedactionPattern(),
                 "((OTHERNAME=)|(RFC822NAME=)|(DNSNAME=)|(IPADDRESS=)|(X400ADDRESS=)|(DIRECTORYNAME=)|(EDIPARTYNAME=)|"
-                + "(UNIFORMRESOURCEID=)|(REGISTEREDID=)|(UPN=)|(GUID=)|(KRB5PRINCIPAL=)|(PERMANENTIDENTIFIER=)|(XMPPADDR=)|"
-                + "(SRVNAME=)|(SUBJECTIDENTIFICATIONMETHOD=)|(FASCN=)|(UNIFORMRESOURCEIDENTIFIER=)|(URI=)).*");
+                        + "(UNIFORMRESOURCEID=)|(REGISTEREDID=)|(UPN=)|(GUID=)|(KRB5PRINCIPAL=)|(PERMANENTIDENTIFIER=)|(XMPPADDR=)|"
+                        + "(SRVNAME=)|(SUBJECTIDENTIFICATIONMETHOD=)" + federalAgencySmartCredentialNumberPattern
+                        + "|(UNIFORMRESOURCEIDENTIFIER=)|(URI=)).*");
     }
     
     private void dummy() throws CesecoreException {
