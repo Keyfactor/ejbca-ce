@@ -31,3 +31,5 @@ label.invalidInput { color: red; }
 .jsShow { display: none; }
 
 .plainDiv { width: 100%; }
+
+.hidden { display: none; }
