@@ -59,6 +59,7 @@ public class CertificateHelper {
 	 * Method that builds a certificate from the data in the WS response.
 	 * @param certificateData byte array with base64 encoded Certificate type
 	 * @return Certificate
+	 * @throws CertificateException if {@code certificateData} can not be decoded
 	 */
 	public static Certificate getCertificate(byte[] certificateData) throws CertificateException{
         Certificate retval = CertTools.getCertfromByteArray(Base64.decode(certificateData), Certificate.class); 
