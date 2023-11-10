@@ -54,11 +54,11 @@
                         <h:commandButton value="#{web.text.VIEW}" action="acmealiasconfiguration.xhtml">
                         	<f:param name="faces-redirect" value="true" />
                         	<f:param name="mode" value="view" />
-                        	<f:param name="alias" value="#{alias.alias}" />
+                        	<f:param name="alias" value="#{fn:escapeXml(alias.alias)}" />
                         </h:commandButton>
                         <h:commandButton value="#{web.text.EDIT}" action="acmealiasconfiguration.xhtml" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
                         	<f:param name="faces-redirect" value="true" />
-                        	<f:param name="alias" value="#{alias.alias}" />
+                        	<f:param name="alias" value="#{fn:escapeXml(alias.alias)}" />
                         	<f:param name="mode" value="edit" />
                         </h:commandButton>
                         <h:commandButton value="#{web.text.DELETE}" onclick="return inputIntoFieldConfirm('#{web.text.AREYOUSURE}','aliases:currentAliasStr','#{alias.alias}');" 
