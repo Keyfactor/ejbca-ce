@@ -25,6 +25,7 @@ import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+import org.ejbca.util.SelectItemComparator;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -609,7 +610,10 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     }
 
     public List<SelectItem> getVendorCaSelectItems() {
-        return caIdToNameMap.values().stream().map(SelectItem::new).collect(Collectors.toList());
+        return caIdToNameMap.values().stream()
+                .map(SelectItem::new)
+                .sorted(new SelectItemComparator())
+                .collect(Collectors.toList());
     }
 
     private String vendorCas;
@@ -669,7 +673,8 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     public List<SelectItem> getAvailableRaNameGenSchemes() {
         return Arrays.stream(UsernameGenerateMode.values())
                 .map(UsernameGenerateMode::name)
-                .map(SelectItem::new).collect(Collectors.toList());
+                .map(SelectItem::new)
+                .collect(Collectors.toList());
     }
 
     /**
