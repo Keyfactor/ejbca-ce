@@ -59,13 +59,13 @@
                                      action="#{autoenrollmentConfigMBean.actionView(alias)}">
                         <f:param name="faces-redirect" value="true"/>
                         <f:param name="mode" value="view"/>
-                        <f:param name="alias" value="#{alias}"/>
+                        <f:param name="alias" value="#{fn:escapeXml(alias)}"/>
                     </h:commandButton>
                     <h:commandButton value="#{web.text.EDIT}"
                                      action="#{autoenrollmentConfigMBean.actionEdit(alias)}"
                                      disabled="#{!autoenrollmentConfigMBean.authorizedToEdit}">
                         <f:param name="faces-redirect" value="true"/>
-                        <f:param name="alias" value="#{alias}"/>
+                        <f:param name="alias" value="#{fn:escapeXml(alias)}"/>
                         <f:param name="mode" value="edit"/>
                     </h:commandButton>
                     <h:commandButton value="#{web.text.DELETE}"
