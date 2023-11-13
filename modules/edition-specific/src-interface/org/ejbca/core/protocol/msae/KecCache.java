@@ -26,7 +26,6 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-import org.ejbca.core.ejb.config.ClearCacheSessionBean;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -60,7 +59,7 @@ public interface KecCache {
     }
 
     /**
-     * Clears the cache, called from {@link ClearCacheSessionBean}
+     * Clears the cache, called from {@link #ClearCacheSessionBean}
      */
     default void flushKecCache() {
         throw new UnsupportedOperationException("KEC cache methods are only supported in EJBCA Enterprise");
