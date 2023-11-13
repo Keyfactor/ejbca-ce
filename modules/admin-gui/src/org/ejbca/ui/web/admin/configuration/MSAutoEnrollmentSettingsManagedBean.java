@@ -86,7 +86,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private Integer selectedEndEntityProfileId;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
-    ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
+    private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
 
     @EJB
     private ADConnectionSingletonLocal adConnection;
