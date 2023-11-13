@@ -34,6 +34,7 @@
             <composite:attribute name="approvalRequestMode" required="false" default="false" />
             <composite:attribute name="styleLabel" required="false" default="pure-u-lg-1-3" />
             <composite:attribute name="styleValue" required="false" default="pure-u-lg-2-3 ra-outputText" />
+            <composite:attribute name="styleInfo" required="false" default="pure-u-lg-2-3" />
             <composite:attribute name="styleFull" required="false" default="pure-u-lg-1" />
             <composite:attribute name="styleOdd" required="false" default="row-odd" />
             <composite:attribute name="styleEven" required="false" default="row-even" />
@@ -842,13 +843,9 @@
                 <h:outputLabel value="#{msg.component_eedetails_field_keyrecoverable}"
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" />
                 <h:panelGroup  styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
-                    <h:selectBooleanCheckbox id="eeKeyRecoverable"
-                                             rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode}"
-                                             value="#{cc.attrs.raEndEntityBean.keyRecoverable}" />
                     <h:outputText
-                            styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                            value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_yes : msg.component_eedetails_field_keyrecoverable_no }"
-                            rendered="#{cc.attrs.approvalRequestMode or not cc.attrs.editMode}" />
+                            styleClass="#{cc.attrs.styleInfo} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                            value="#{cc.attrs.raEndEntityDetails.keyRecoverable ? msg.component_eedetails_field_keyrecoverable_yes : msg.component_eedetails_field_keyrecoverable_no }"/>
                 </h:panelGroup>
 
                 <h:outputLabel for="editCertificateExtensionDataField" value="#{msg.enroll_cert_extension_data}"
