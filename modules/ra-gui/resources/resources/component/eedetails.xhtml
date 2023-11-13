@@ -3,6 +3,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
@@ -49,7 +50,7 @@
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                 <h:outputText value="#{cc.attrs.raEndEntityDetails.username} " />
                 <h:outputLink value="endentity.xhtml" styleClass="fineprint">
-                    <f:param name="ee" value="#{cc.attrs.raEndEntityDetails.username}" />
+                    <f:param name="ee" value="#{fn:escapeXml(cc.attrs.raEndEntityDetails.username)}" />
                     <h:outputText value="#{msg.component_eedetails_link_perm}" />
                 </h:outputLink>
             </h:panelGroup>
