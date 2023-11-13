@@ -87,6 +87,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private Integer selectedEndEntityProfileId;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
+    private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
 
     @EJB
     private ADConnectionSingletonLocal adConnection;
@@ -198,7 +199,11 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
 
     public ListDataModel<MSAutoEnrollmentSettingsTemplate> getMappedMsTemplatesModel() {
-        return new ListDataModel<>(getDto().getMappedMsTemplates());
+        if (Objects.isNull(mappedMsTemplates)) {
+            mappedMsTemplates = new ListDataModel<>(getDto().getMappedMsTemplates());
+            return mappedMsTemplates;
+        }
+        return mappedMsTemplates;
     }
 
     public void removeMappedMSTemplate() {
