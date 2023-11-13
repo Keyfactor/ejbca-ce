@@ -1921,8 +1921,13 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 // Add standard response extensions
                 responseExtensions.putAll(getStandardResponseExtensions(req, ocspSigningCacheEntry));
                 
-                // Add responseExtensions
-                Extensions exts = new Extensions(responseExtensions.values().toArray(new Extension[0]));
+                // Add responseExtensions                
+                final Extensions exts;
+                if (responseExtensions.isEmpty()) {
+                    exts = null;
+                } else {
+                    exts = new Extensions(responseExtensions.values().toArray(new Extension[0]));
+                }
                 // generate the signed response object
                 BasicOCSPResp basicresp = signOcspResponse(req, responseList, exts, ocspSigningCacheEntry, producedAt);
                 signerCert = ocspSigningCacheEntry.getSigningCertificate();

@@ -1210,9 +1210,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      * @throws SignatureException if the CA's certificate's and request's certificate's and signature algorithms differ
      * @throws IllegalKeyException if selected public key (check providedRequestMessage, providedPublicKey, subject) is not allowed with certProfile
      */
-    protected Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage, final PublicKey providedPublicKey, final PublicKey providedAlternativePublicKey,
-            final int keyusage, final Date notBefore, final Date notAfter, final CertificateProfile certProfile, final Extensions extensions,
-                                            final SigningKeyContainer caSigningPackage,
+    protected Certificate generateCertificate(final EndEntityInformation subject, final RequestMessage providedRequestMessage,
+            final PublicKey providedPublicKey, final PublicKey providedAlternativePublicKey, final int keyusage, final Date notBefore,
+            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final SigningKeyContainer caSigningPackage,
             CertificateGenerationParams certGenParams, AvailableCustomCertificateExtensionsConfiguration cceConfig, boolean linkCertificate, boolean caNameChange)
             throws CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, CertificateExtensionException,
              OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException {
@@ -1485,21 +1485,21 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
-                if (overriddenExtensions != null) {
-                    if (overriddenExtensions.getExtension(Extension.keyUsage) == null) {
-                        try {
-                            extgen.addExtension(Extension.keyUsage, certProfile.getKeyUsageCritical(), ku);
-                        } catch (IOException e) {
-                            throw new IllegalStateException("Caught unexpected IOException.", e);
-                        }
-                    } else {
+                try {
+                    if (overriddenExtensions != null && overriddenExtensions.getExtension(Extension.keyUsage) != null) {
                         if (log.isDebugEnabled()) {
                             log.debug("KeyUsage was already overridden by an extension, not using KeyUsage from parameter.");
                         }
+                    } else {
+                        extgen.addExtension(Extension.keyUsage, certProfile.getKeyUsageCritical(), ku);
                     }
+                } catch (IOException e) {
+                    throw new IllegalStateException("Caught unexpected IOException.", e);
                 }
             }
-            overriddenExtensions = extgen.generate();
+            if (!extgen.isEmpty()) {
+                overriddenExtensions = extgen.generate();
+            }
         }
 
         // Third, check for standard Certificate Extensions that should be added.
@@ -1551,23 +1551,21 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     wildcardExt.add(id);
                     continue;
                 }
-                if (overriddenExtensions != null) {
-                    // We don't want to try to add custom extensions with the same oid if we have already added them
-                    // from the request, if AllowExtensionOverride is enabled.
-                    // Two extensions with the same oid is not allowed in the standard.
-                    if (overriddenExtensions.getExtension(new ASN1ObjectIdentifier(certExt.getOID())) == null) {
-                        final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caSigningPackage.getPrimaryPublicKey(),
-                                val);
-                        if (value != null) {
-                            extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
-                            requestOids.remove(certExt.getOID());
-                        }
-                    } else {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Extension with oid " + certExt.getOID() + " has been overridden, custom extension will not be added.");
-                        }
+                // We don't want to try to add custom extensions with the same oid if we have already added them
+                // from the request, if AllowExtensionOverride is enabled.
+                // Two extensions with the same oid is not allowed in the standard.
+                if (overriddenExtensions != null && overriddenExtensions.getExtension(new ASN1ObjectIdentifier(certExt.getOID())) != null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Extension with oid " + certExt.getOID() + " has been overridden, custom extension will not be added.");
                     }
-                }
+                } else {
+                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caSigningPackage.getPrimaryPublicKey(),
+                            val);
+                    if (value != null) {
+                        extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
+                        requestOids.remove(certExt.getOID());
+                    }
+                }  
             }
         }
         // Match remaining extensions (wild cards)
@@ -1575,23 +1573,21 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             final int remainingOidsToMatch = requestOids.size();
             final CustomCertificateExtension certExt = cceConfig.getCustomCertificateExtension(id);
             if (certExt != null) {
-                if (overriddenExtensions != null) {
-                    for (final String oid : requestOids) {
-                        // Match requested OID with wildcard in CCE configuration 
-                        if (oid.matches(CertTools.getOidWildcardPattern(certExt.getOID()))) {
-                            if (overriddenExtensions.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
-                                final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey,
-                                        caSigningPackage.getPrimaryPublicKey(), val, oid);
-                                if (value != null) {
-                                    extgen.addExtension(new ASN1ObjectIdentifier(oid), certExt.isCriticalFlag(), value);
-                                    requestOids.remove(oid);
-                                    // Each wildcard CCE configuration may only be matched once.
-                                    break;
-                                }
-                            } else {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Extension with oid " + oid + " has been overridden, custom extension will not be added.");
-                                }
+                for (final String oid : requestOids) {
+                    // Match requested OID with wildcard in CCE configuration 
+                    if (oid.matches(CertTools.getOidWildcardPattern(certExt.getOID()))) {
+                        if (overriddenExtensions != null && overriddenExtensions.getExtension(new ASN1ObjectIdentifier(oid)) != null) {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Extension with oid " + oid + " has been overridden, custom extension will not be added.");
+                            }        
+                        } else {
+                            final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey,
+                                    caSigningPackage.getPrimaryPublicKey(), val, oid);
+                            if (value != null) {
+                                extgen.addExtension(new ASN1ObjectIdentifier(oid), certExt.isCriticalFlag(), value);
+                                requestOids.remove(oid);
+                                // Each wildcard CCE configuration may only be matched once.
+                                break;
                             }
                         }
                     }
@@ -1735,25 +1731,33 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 final ContentSigner signer = new BufferingContentSigner(
                         new JcaContentSignerBuilder(sigAlg).setProvider(prov).build(caSigningPackage.getPrimaryPrivateKey()), X509CAImpl.SIGN_BUFFER_SIZE);
                 
-                final String alternativeSigningAlgorithm; 
-                if (certProfile.getAlternativeSignatureAlgorithm() == null) {
-                    alternativeSigningAlgorithm = getCAToken().getAlternativeSignatureAlgorithm();
+                final X509CertificateHolder certHolder;
+                if (caSigningPackage.getAlternativePrivateKey() == null) {
+                    certHolder = precertbuilder.build(signer);
                 } else {
-                    alternativeSigningAlgorithm = certProfile.getAlternativeSignatureAlgorithm();
+
+                    final String alternativeSigningAlgorithm;
+                    if (certProfile.getAlternativeSignatureAlgorithm() == null) {
+                        alternativeSigningAlgorithm = getCAToken().getAlternativeSignatureAlgorithm();
+                    } else {
+                        alternativeSigningAlgorithm = certProfile.getAlternativeSignatureAlgorithm();
+                    }
+
+                    final String altProv;
+                    if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getAlternativeProvider())) {
+                        altProv = CryptoProviderTools.getProviderNameFromAlg(alternativeSigningAlgorithm);
+                    } else {
+                        altProv = caSigningPackage.getAlternativeProvider();
+                    }
+                    ContentSigner alternativeSigner = new BufferingContentSigner(new JcaContentSignerBuilder(alternativeSigningAlgorithm)
+                            .setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey()), X509CAImpl.SIGN_BUFFER_SIZE);
+
+                    // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
+                    certHolder = precertbuilder.build(signer, false, alternativeSigner);
                 }
                 
-                final String altProv;
-                if (BouncyCastleProvider.PROVIDER_NAME.equals(caSigningPackage.getAlternativeProvider())) {
-                    altProv = CryptoProviderTools.getProviderNameFromAlg(alternativeSigningAlgorithm);
-                } else {
-                    altProv = caSigningPackage.getAlternativeProvider();
-                }
-                ContentSigner alternativeSigner = new BufferingContentSigner(
-                        new JcaContentSignerBuilder(alternativeSigningAlgorithm).setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey()),
-                        X509CAImpl.SIGN_BUFFER_SIZE);
                 
-                // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
-                final X509CertificateHolder certHolder = precertbuilder.build(signer, false, alternativeSigner);
+                
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 // ECA-6051 Re-Factored with Domain Service Layer.
                 if (certGenParams.getAuthenticationToken() != null && certGenParams.getCertificateValidationDomainService() != null) {
