@@ -110,6 +110,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     protected static final String SERIALNUMBEROCTETSIZE = "serialnumberoctetsize";
     protected static final String DO_PRE_PRODUCE_OCSP_RESPONSES = "dopreproduceocspresponses";
     protected static final String DO_STORE_OCSP_ON_DEMAND = "dostoreocspondemand";
+    protected static final String DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES = "dopreproduceocspresponsesuponissuanceandrevocation";
     private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";
     /**
      * @deprecated since 6.8.0, replaced by the approvals Action:ApprovalProfile mapping

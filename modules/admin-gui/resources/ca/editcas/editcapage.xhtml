@@ -803,6 +803,7 @@
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
 						disabled="#{not editCAsMBean.hasEditRight}">
  						<f:ajax render="doStoreOnDemandSection" immediate="true"/>
+						<f:ajax render="doPreProduceIndividualOcspResponse" immediate="true"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxpreproduceocspresponses" value="#{editCAsMBean.checkboxUseCollapsedText}" />
 				</h:panelGroup>
@@ -827,6 +828,7 @@
 						value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses}"
 						disabled="#{not editCAsMBean.hasEditRight}">
 						<f:ajax render="doStoreOnDemandSection" immediate="true"/>
+						<f:ajax render="doPreProduceIndividualOcspResponse" immediate="true"/>
 					</h:selectBooleanCheckbox>
 					<h:outputLabel for="checkboxpreproduceocspresponsesext" value="#{editCAsMBean.checkboxUseCollapsedText}" />
 				</h:panelGroup>
@@ -849,6 +851,24 @@
 					<h:outputLabel for="checkboxocspstoreondemand" value="#{web.text.USE}" />
 					<br/>
 					<h:outputText styleClass="smallHelp" value="#{web.text.PREPRODUCEONDEMAND_HELP}"/>
+				</h:panelGroup>
+			</h:panelGrid>
+
+			<h:panelGrid id="doPreProduceIndividualOcspResponse" columns="2" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1,Row0"
+				columnClasses="editColumn1,editColumn2">
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
+					<h:outputLabel for="checkboxpreproduceocspresponseoponissueanceandrevocationsext"
+								   value="#{web.text.PREPRODUCEOCSPRESPONSESUPONISSUANCEREVOCATION}" />
+					<h:outputText
+							value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Store_Responses_On_Demand')}"
+							escape="false" styleClass="helpReference"/>
+				</h:panelGroup>
+				<h:panelGroup rendered="#{editCAsMBean.caInfoDto.doPreProduceOcspResponses and editCAsMBean.caInfoDto.caTypeX509 and editCAsMBean.renderOcspPreProduction}">
+					<h:selectBooleanCheckbox id="checkboxpreproduceocspresponseoponissueanceandrevocationsext"
+											 value="#{editCAsMBean.caInfoDto.doPreProduceOcspResponseUponIssuanceAndRevocation}"
+											 disabled="#{not editCAsMBean.hasEditRight}"/>
+					<h:outputLabel for="checkboxpreproduceocspresponseoponissueanceandrevocationsext" value="#{editCAsMBean.checkboxUseCollapsedText}" />
 				</h:panelGroup>
 			</h:panelGrid>
 

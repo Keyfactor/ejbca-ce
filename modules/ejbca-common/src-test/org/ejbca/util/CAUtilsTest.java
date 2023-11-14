@@ -54,4 +54,32 @@ public class CAUtilsTest {
 		assertFalse(produceOcspResponse);
 	}
 
+	@Test
+	public void shouldDoPreProduceOcspResponsesUponIssuanceAndRevocation() {
+		//given
+		X509CA ca = createMock(X509CA.class);
+		expect(ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation()).andReturn(true);
+		replay(ca);
+
+		//when
+		boolean produceOcspResponse = CAUtils.isDoPreProduceOcspResponsesUponIssuanceAndRevocation(ca);
+
+		//then
+		assertTrue(produceOcspResponse);
+	}
+
+	@Test
+	public void shouldNotPreProduceOcspResponsesUponIssuanceAndRevocation() {
+		//given
+		X509CA ca = createMock(X509CA.class);
+		expect(ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation()).andReturn(false);
+		replay(ca);
+
+		//when
+		boolean produceOcspResponse = CAUtils.isDoPreProduceOcspResponsesUponIssuanceAndRevocation(ca);
+
+		//then
+		assertFalse(produceOcspResponse);
+	}
+
 }

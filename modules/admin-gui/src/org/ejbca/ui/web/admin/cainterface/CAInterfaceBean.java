@@ -13,39 +13,14 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.text.ParseException;
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ejb.EJBException;
-import javax.servlet.http.HttpServletRequest;
-
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
@@ -107,14 +82,28 @@ import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.FileTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import javax.ejb.EJBException;
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.text.ParseException;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -233,7 +222,7 @@ public class CAInterfaceBean implements Serializable {
 		return this.request;
 	}
 
-	public String getRequestDataAsString(final int caType) throws Exception{
+	public String getRequestDataAsString(final int caType) {
 		String returnval = null;
 		if(request != null ){
 		    returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL;
@@ -365,7 +354,6 @@ public class CAInterfaceBean implements Serializable {
             ProxyCaInfo.ProxyCaInfoBuilder proxyCaInfoBuilder = createProxyCaInfoBuilder(caInfoDto);
             if (buttonCreateCa) {
                 ProxyCaInfo proxyCaInfo =  proxyCaInfoBuilder
-                    //.setIncludeInHealthCheck(false) // TODO: to be confirmed
                     .build();
                 proxyCaInfo.setSubjectDN(caInfoDto.getCaSubjectDN());
                 proxyCaInfo.setEncodedValidity("99y");
@@ -455,8 +443,6 @@ public class CAInterfaceBean implements Serializable {
 
 	    if (caInfoDto.getCaType() != 0 && caInfoDto.getCaSubjectDN() != null && caInfoDto.getCaName() != null && signedBy != 0) {
 	        // Approvals is generic for all types of CAs
-//	        final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
-//            final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
 
 	        if (caInfoDto.getCaType() == CAInfo.CATYPE_X509) {
 	            // Create a X509 CA
@@ -561,6 +547,7 @@ public class CAInterfaceBean implements Serializable {
                             .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                             .setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses())
                             .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
+							.setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                             .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                             .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
                             .setUsePartitionedCrl(caInfoDto.isUsePartitionedCrl())
@@ -642,11 +629,6 @@ public class CAInterfaceBean implements Serializable {
                 if (!StringUtils.isEmpty(errorMessage)) {
                    throw new ParameterException(errorMessage);
                 }
-                // TODO: Implement KRL publishing after initial release
-
-                // TODO: Implement validators after initial release
-                //final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
-
 
                 final List<String> nameConstraintsPermitted = parseNameConstraintsInput(caInfoDto.getNameConstraintsPermitted());
                 final List<String> nameConstraintsExcluded = parseNameConstraintsInput(caInfoDto.getNameConstraintsExcluded());
@@ -927,8 +909,6 @@ public class CAInterfaceBean implements Serializable {
         }
         if (caid != 0 && caInfoDto.getCaType() != 0) {
             // First common info for both X509 CAs and CVC CAs
-//           final List<Integer> approvalsettings = StringTools.idStringToListOfInteger(approvalSettingValues, LIST_SEPARATOR);
-//           final int approvalProfileID = (approvalProfileParam==null ? -1 : Integer.parseInt(approvalProfileParam));
            final List<Integer> crlpublishers = StringTools.idStringToListOfInteger(availablePublisherValues, LIST_SEPARATOR);
            final List<Integer> keyValidators = StringTools.idStringToListOfInteger(availableKeyValidatorValues, LIST_SEPARATOR);
 
@@ -1007,6 +987,7 @@ public class CAInterfaceBean implements Serializable {
                        .setUseCertificateStorage(caInfoDto.isUseCertificateStorage())
                        .setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses())
                        .setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand())
+					   .setDoPreProduceIndividualOcspResponses(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                        .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                        .setCmpRaAuthSecret(caInfoDto.getSharedCmpRaSecret())
                        .setKeepExpiredCertsOnCRL(caInfoDto.isKeepExpiredOnCrl())
@@ -1288,50 +1269,7 @@ public class CAInterfaceBean implements Serializable {
         return false;
     }
 
-    public byte[] parseRequestParameters(HttpServletRequest request, Map<String, String> requestMap) throws IOException {
-        byte[] fileBuffer = null;
-        try {
-            if (ServletFileUpload.isMultipartContent(request)) {
-                final DiskFileItemFactory diskFileItemFactory = new DiskFileItemFactory();
-                diskFileItemFactory.setSizeThreshold(59999);
-                ServletFileUpload upload = new ServletFileUpload(diskFileItemFactory);
-                upload.setSizeMax(60000);
-                // Upload consists of at least 6 DiskFileItems, at least 5 form fields and 1 data stream.
-                upload.setFileCountMax(10);
-                final List<FileItem> items = upload.parseRequest(request);
-                for (final FileItem item : items) {
-                    if (item.isFormField()) {
-                        final String fieldName = item.getFieldName();
-                        final String currentValue = requestMap.get(fieldName);
-                        if (currentValue != null) {
-                            requestMap.put(fieldName, currentValue + ";" + item.getString("UTF8"));
-                        } else {
-                            requestMap.put(fieldName, item.getString("UTF8"));
-                        }
-                    } else {
-                        //final String itemName = item.getName();
-                        final InputStream file = item.getInputStream();
-                        byte[] fileBufferTmp = FileTools.readInputStreamtoBuffer(file);
-                        if (fileBuffer == null && fileBufferTmp.length > 0) {
-                            fileBuffer = fileBufferTmp;
-                        }
-                    }
-                }
-            } else {
-                final Set<String> keySet = request.getParameterMap().keySet();
-                for (final String key : keySet) {
-                    requestMap.put(key, request.getParameter(key));
-                }
-            }
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        } catch (FileUploadException e) {
-            throw new IOException(e);
-        }
-        return fileBuffer;
-    }
-
-    /** Returns true if any CVC CA implementation is available, false otherwise.
+	/** Returns true if any CVC CA implementation is available, false otherwise.
      * Used to hide/give warning when no CVC CA implementation is available.
      */
     public boolean isCvcAvailable() {
