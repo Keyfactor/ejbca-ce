@@ -90,15 +90,7 @@ public class RaAvailableAlgorithmsTool {
             if (WebConfiguration.isPQCEnabled()) {
                 for (String algorithm : availableKeyAlgorithms) {
                     if (AlgorithmTools.isPQC(algorithm)) {
-                        if (algorithm.equals(AlgorithmConstants.KEYALGORITHM_NTRU) &&
-                                certificateProfile.getAvailableSecurityLevelsAsList() != null) {
-                            for (int level : certificateProfile.getAvailableSecurityLevelsAsList()) {
-                                availableAlgorithmSelectItems.add(new SelectItem(algorithm+ "_" + level,
-                                        algorithm + " " + level));
-                            }
-                        } else {
                             availableAlgorithmSelectItems.add(new SelectItem(algorithm));
-                        }
                     }
                 }
             }
