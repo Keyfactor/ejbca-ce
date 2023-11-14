@@ -63,6 +63,7 @@ public class PreSigningOcspResponseSessionBeanTest {
 
 		X509CA ca = createMock(X509CA.class);
 		expect(ca.isDoPreProduceOcspResponses()).andReturn(true);
+		expect(ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation()).andReturn(true);
 		expect(ca.getCertificateChain()).andReturn(Collections.singletonList(certificate));
 		replay(ca);
 
@@ -81,6 +82,7 @@ public class PreSigningOcspResponseSessionBeanTest {
 
 		X509CA ca = createMock(X509CA.class);
 		expect(ca.isDoPreProduceOcspResponses()).andReturn(true);
+		expect(ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation()).andReturn(true);
 		expect(ca.getCertificateChain()).andReturn(Collections.emptyList());
 		replay(ca);
 
@@ -99,6 +101,45 @@ public class PreSigningOcspResponseSessionBeanTest {
 
 		X509CA ca = createMock(X509CA.class);
 		expect(ca.isDoPreProduceOcspResponses()).andReturn(false);
+		expect(ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation()).andReturn(true);
+		expect(ca.getCertificateChain()).andReturn(Collections.emptyList());
+		replay(ca);
+
+		//when
+		testInstance.preSignOcspResponse(ca, certData);
+
+		//then
+		verify(ocspResponseGeneratorSession);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void shouldDoNothingWhenNoIndividualOcspResponseProductionChosen() {
+		//given
+		BaseCertificateData certData = new CertificateData();
+		certData.setSerialNumber(SERIAL_NUMBER);
+
+		X509CA ca = createMock(X509CA.class);
+		expect(ca.isDoPreProduceOcspResponses()).andReturn(true);
+		expect(ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation()).andReturn(false);
+		expect(ca.getCertificateChain()).andReturn(Collections.emptyList());
+		replay(ca);
+
+		//when
+		testInstance.preSignOcspResponse(ca, certData);
+
+		//then
+		verify(ocspResponseGeneratorSession);
+	}
+
+	@Test(expected = IllegalStateException.class)
+	public void shouldDoNothingWhenNeitherOcspResponseProductionChosen() {
+		//given
+		BaseCertificateData certData = new CertificateData();
+		certData.setSerialNumber(SERIAL_NUMBER);
+
+		X509CA ca = createMock(X509CA.class);
+		expect(ca.isDoPreProduceOcspResponses()).andReturn(false);
+		expect(ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation()).andReturn(false);
 		expect(ca.getCertificateChain()).andReturn(Collections.emptyList());
 		replay(ca);
 
