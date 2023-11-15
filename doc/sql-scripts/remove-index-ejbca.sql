@@ -1,4 +1,8 @@
--- version: $Id$
+-- Script that removes indexes created by the create index script. 
+-- You typically don't have to run this script as indexes are updated automatically
+-- It's more likely that new indexes are needed when upgrading than old indexes needing to be removed.
+-- NOTE: this syntax works for MySQL/MariaDB, MSSQL and some others, but not for PostgreSQL
+-- PostgreSQL syntax for removing indexes is simply "DROP INDEX auditrecorddata_idx2"
 
 DROP INDEX auditrecorddata_idx2 ON AuditRecordData;
 DROP INDEX auditrecorddata_idx3 ON AuditRecordData;
