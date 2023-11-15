@@ -24,14 +24,13 @@ import org.cesecore.internal.CommonCacheBase;
 /**
  * CA object and name to id lookup cache. Configured through CesecoreConfiguration.getCacheCaTimeInCaSession().
  * 
- * @version $Id$
  */
 public enum CaCache implements CommonCache<CACommon> {
     INSTANCE;
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(CaCache.class);
 
-    final private CommonCache<CACommon> caCache = new CommonCacheBase<CACommon>() {
+    private final CommonCache<CACommon> caCache = new CommonCacheBase<CACommon>() {
         @Override
         protected long getCacheTime() {
             return CesecoreConfiguration.getCacheCaTimeInCaSession();
