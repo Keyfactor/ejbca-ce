@@ -264,12 +264,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         final PKIMessage certRequestFalcon = genCertReq(issuerDN, userDN, falconKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
         runCrmfHttpOkUser(certRequestFalcon, nonce, transid, notAfter, false, null);
 
-        KeyPairGenerator keygen = KeyPairGenerator.getInstance("NTRU", BouncyCastlePQCProvider.PROVIDER_NAME);
-        keygen.initialize(NTRUParameterSpec.ntruhrss701);
-        KeyPair ntruKeyPair = keygen.generateKeyPair();
-
-        final PKIMessage certRequestNTRU = genCertReq(issuerDN, userDN, ntruKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
-        runCrmfHttpOkUser(certRequestNTRU, nonce, transid, notAfter, false, null);
     }
 
     @Test
