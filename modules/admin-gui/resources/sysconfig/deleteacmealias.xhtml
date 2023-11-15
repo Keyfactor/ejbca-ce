@@ -33,7 +33,7 @@
             <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/ACME.html')}" escape="false"/>
         </h1>
         <h:form id="aliases" rendered="#{web.ejbcaWebBean.runningEnterprise}">
-            <h:panelGroup rendered="#{autoenrollmentConfigMBean.authorizedToEdit}">
+            <h:panelGroup rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}">
                 <h3>
                     <h:outputText value="#{web.text.DELETE}"/>
                 </h3>
