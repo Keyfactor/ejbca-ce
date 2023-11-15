@@ -1,11 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:h="http://xmlns.jcp.org/jsf/html"
+    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -24,101 +22,89 @@
 </ui:remove>
 
 <ui:composition template="/WEB-INF/include/template.xhtml">
-    <ui:param name="resourceBean" value="#{acmeConfigMBean}"/>
-    <ui:define name="content">
+    <ui:param name="resourceBean" value="#{acmeConfigMBean}" />
+	<ui:define name="content">
+	
+	<h1>
+        <h:outputText value="#{web.text.ACME_MANAGEALIASES}"
+                              rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
+        <h:outputText value="#{web.text.SCEP_VIEW_ALIASES}"
+                              rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+        <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/ACME.html')}" escape="false"/>
+    </h1>
 
-        <h1>
-            <h:outputText value="#{web.text.ACME_MANAGEALIASES}"
-                          rendered="#{systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:outputText value="#{web.text.SCEP_VIEW_ALIASES}"
-                          rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-            <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/ACME.html')}" escape="false"/>
-        </h1>
+	<h3><h:outputText value="#{web.text.ACME_LISTOFALIASES}"/></h3>
 
-        <h3>
-            <h:outputText value="#{web.text.ACME_LISTOFALIASES}"/>
-        </h3>
+            <h:form id="aliases">
 
-        <h:form id="aliases">
+                <h:inputHidden id="currentAliasStr" value="#{acmeConfigMBean.currentAliasStr}">
+                    <f:validator validatorId="legalCharsValidator" />
+                </h:inputHidden>
 
-            <h:inputHidden id="currentAliasStr" value="#{acmeConfigMBean.currentAliasStr}">
-                <f:validator validatorId="legalCharsValidator"/>
-            </h:inputHidden>
+                <h:dataTable value="#{acmeConfigMBean.aliasGuiList}" var="alias" styleClass="grid">
 
-            <h:dataTable value="#{acmeConfigMBean.aliasGuiList}" var="alias" styleClass="grid">
+                    <h:column headerClass="listColumn1">
+                        <f:facet name="header">
+                            <h:outputText value="#{web.text.ACME_ALIAS}"/>
+                        </f:facet>
+                    	<h:outputText value="#{alias.alias}" title="#{alias.alias}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header"><h:outputText value="#{web.text.ACTIONS}"/></f:facet>
+                        <h:commandButton value="#{web.text.VIEW}" action="acmealiasconfiguration.xhtml">
+                        	<f:param name="faces-redirect" value="true" />
+                        	<f:param name="mode" value="view" />
+                        	<f:param name="alias" value="#{alias.alias}" />
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.EDIT}" action="acmealiasconfiguration.xhtml" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
+                        	<f:param name="faces-redirect" value="true" />
+                        	<f:param name="alias" value="#{alias.alias}" />
+                        	<f:param name="mode" value="edit" />
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.DELETE}" onclick="return inputIntoFieldConfirm('#{web.text.AREYOUSURE}','aliases:currentAliasStr','#{alias.alias}');" 
+                        	action="#{acmeConfigMBean.deleteAlias}"  disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>                       
+                    </h:column>
 
-                <h:column>
-                    <f:facet name="header">
-                        <h:outputText value="#{web.text.ACME_ALIAS}"/>
-                    </f:facet>
-                    <h:outputText value="#{alias.alias}" title="#{alias.alias}"/>
-                </h:column>
-                <h:column>
-                    <f:facet name="header">
-                        <h:outputText value="#{web.text.ACTIONS}"/>
-                    </f:facet>
-                    <h:commandButton value="#{web.text.VIEW}" action="acmealiasconfiguration.xhtml">
-                        <f:param name="faces-redirect" value="true"/>
-                        <f:param name="mode" value="view"/>
-                        <f:param name="alias" value="#{fn:escapeXml(alias.alias)}"/>
-                    </h:commandButton>
-                    <h:commandButton value="#{web.text.EDIT}" action="acmealiasconfiguration.xhtml"
-                                     disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
-                        <f:param name="faces-redirect" value="true"/>
-                        <f:param name="alias" value="#{fn:escapeXml(alias.alias)}"/>
-                        <f:param name="mode" value="edit"/>
-                    </h:commandButton>
-                    <h:commandButton value="#{web.text.DELETE}"
-                                     action="#{acmeConfigMBean.deleteAlias(alias.alias)}"
-                                     disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
-                </h:column>
+                </h:dataTable>
+                <br/>
+                
+                <h:panelGrid columns="1">
+					<h:commandButton value="#{web.text.ADD}" action="acmealiasconfiguration.xhtml" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
+						<f:param name="faces-redirect" value="true" />
+                        <f:param name="mode" value="edit" />
+					</h:commandButton>
+				</h:panelGrid>
+            </h:form>
+            <h:panelGroup/>
 
-            </h:dataTable>
-            <br/>
+            <h3><h:outputText value="#{web.text.ACME_GLOBAL_CONFIGS}"/></h3>
+            <h:form id="acmeConfigs" rendered="#{acmeConfigMBean.allowedToEdit}">
 
-            <h:panelGrid columns="1">
-                <h:commandButton value="#{web.text.ADD}" action="acmealiasconfiguration.xhtml"
-                                 disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}">
-                    <f:param name="faces-redirect" value="true"/>
-                    <f:param name="mode" value="edit"/>
-                </h:commandButton>
-            </h:panelGrid>
-        </h:form>
-        <h:panelGroup/>
-
-        <h3>
-            <h:outputText value="#{web.text.ACME_GLOBAL_CONFIGS}"/>
-        </h3>
-        <h:form id="acmeConfigs" rendered="#{acmeConfigMBean.allowedToEdit}">
-
-            <h:panelGrid columns="2">
-                <h:outputLabel for="defaultConfig" value="#{web.text.ACME_DEFAULT_CONFIG}"/>
-                <h:panelGroup id="defaultConfig">
-                    <h:panelGroup>
-                        <h:selectOneMenu id="selectOneMenuEEP"
-                                         value="#{acmeConfigMBean.globalInfo.defaultAcmeConfiguration}">
-                            <f:selectItems value="#{acmeConfigMBean.aliasSeletItemList}"/>
-                        </h:selectOneMenu>
+                <h:panelGrid columns="2">
+                    <h:outputLabel for="defaultConfig" value="#{web.text.ACME_DEFAULT_CONFIG}" />
+                    <h:panelGroup id="defaultConfig"  >
+                        <h:panelGroup >
+                            <h:selectOneMenu id="selectOneMenuEEP" value="#{acmeConfigMBean.globalInfo.defaultAcmeConfiguration}">
+                                <f:selectItems value="#{acmeConfigMBean.aliasSeletItemList}"/>
+                            </h:selectOneMenu>
+                        </h:panelGroup>
                     </h:panelGroup>
-                </h:panelGroup>
 
-                <h:outputLabel for="replayNonce" value="#{web.text.ACME_REPLAY_NONCE_VALIDITY}"/>
-                <h:panelGroup id="replayNonce">
-                    <h:inputText title="#{web.text.FORMAT_INTEGER}"
-                                 value="#{acmeConfigMBean.globalInfo.replayNonceValidity}"
-                                 validatorMessage="#{web.text.ONLYNUMBERS_INNONCEVALIDITY}">
-                        <f:validateLongRange minimum="0" maximum="9223372036854775807"/>
-                    </h:inputText>
-                </h:panelGroup>
-                <h:panelGroup>
-                    <h:commandButton action="#{acmeConfigMBean.saveGlobalConfigs}" value="#{web.text.SAVE}"/>
-                </h:panelGroup>
-            </h:panelGrid>
+                    <h:outputLabel for="replayNonce" value="#{web.text.ACME_REPLAY_NONCE_VALIDITY}" />
+                    <h:panelGroup id="replayNonce" >
+                        <h:inputText title="#{web.text.FORMAT_INTEGER}" value="#{acmeConfigMBean.globalInfo.replayNonceValidity}" validatorMessage="#{web.text.ONLYNUMBERS_INNONCEVALIDITY}">
+                            <f:validateLongRange minimum="0" maximum="9223372036854775807"/>
+                        </h:inputText>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:commandButton action="#{acmeConfigMBean.saveGlobalConfigs}" value="#{web.text.SAVE}"/>
+                    </h:panelGroup>
+                </h:panelGrid>
 
-        </h:form>
-
-    </ui:define>
-</ui:composition>
+            </h:form>
+	
+	</ui:define>
+</ui:composition>	
 </html>
 
 	
