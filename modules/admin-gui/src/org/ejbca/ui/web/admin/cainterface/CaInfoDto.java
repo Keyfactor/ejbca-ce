@@ -53,6 +53,7 @@ public class CaInfoDto implements Serializable {
     private boolean useCertificateStorage = true;
     private boolean acceptRevocationsNonExistingEntry;
     private boolean doPreProduceOcspResponses = false;
+    private boolean doPreProduceOcspResponseUponIssuanceAndRevocation = false;
     private boolean doStoreOcspResponsesOnDemand = false;
     private String caSubjectAltName;
     private String policyId;
@@ -311,6 +312,14 @@ public class CaInfoDto implements Serializable {
     
     public void setDoPreProduceOcspResponses(boolean preProduceOcspResponses) {
         this.doPreProduceOcspResponses = preProduceOcspResponses;
+    }
+
+    public boolean isDoPreProduceOcspResponseUponIssuanceAndRevocation() {
+        return doPreProduceOcspResponseUponIssuanceAndRevocation;
+    }
+
+    public void setDoPreProduceOcspResponseUponIssuanceAndRevocation(boolean preProduceIndividualOcspResponse) {
+        this.doPreProduceOcspResponseUponIssuanceAndRevocation = preProduceIndividualOcspResponse;
     }
 
     public boolean isDoStoreOcspResponsesOnDemand() {

@@ -65,7 +65,7 @@ import com.keyfactor.util.CertTools;
 public class X509CAInfo extends CAInfo {
 
     private static final Logger log = Logger.getLogger(X509CAInfo.class);
-    
+
 	private static final long serialVersionUID = 2L;
 	private List<CertificatePolicy> policies;
 	private boolean msCaCompatible;
@@ -93,25 +93,26 @@ public class X509CAInfo extends CAInfo {
 	private int caSerialNumberOctetSize;
 	private boolean doPreProduceOcspResponses;
 	private boolean doStoreOcspResponsesOnDemand;
+    private boolean doPreProduceOcspResponseUponIssuanceAndRevocation;
 	private boolean usePartitionedCrl;
 	private int crlPartitions;
 	private int suspendedCrlPartitions;
 	private String requestPreProcessor;
-	
+
 	// Key: Root CA subjectDn, Value: fingerprint in reverse order, root CA at end
 	private Map<String, List<String>> alternateCertificateChains;
 
     /**
      * This constructor can be used when creating a CA.
      * This constructor uses defaults for the fields that are not specified.
-     * 
+     *
      * @param subjectdn the Subject DN of the CA certificate
      * @param name the name of the CA
      * @param status a value from {@link CAConstantsn}
      * @param certificateProfileId the certificate profile for the CA's certificate. May be a value from {@link CertificateProfileConstants}
      * @param The validity, expressed in y, d, m, e.g: "365d"
      * @param the ID of the CA signing this CA. CAInfo.SELFSIGNED for Root CAs.
-     * @param certificatechain the chain of CA certificates. May be null for a Root CA. 
+     * @param certificatechain the chain of CA certificates. May be null for a Root CA.
      * @param catoken the CAToken of this CA
      */
     public static X509CAInfo getDefaultX509CAInfo(final String subjectdn, final String name, final int status,
@@ -174,6 +175,7 @@ public class X509CAInfo extends CAInfo {
                 .setUseCertificateStorage(true)
                 .setDoPreProduceOcspResponses(false)
                 .setDoStoreOcspResponsesOnDemand(false)
+                .setDoPreProduceIndividualOcspResponses(false)
                 .setAcceptRevocationNonExistingEntry(false)
                 .setCmpRaAuthSecret(null)
                 .setKeepExpiredCertsOnCRL(false)
@@ -181,14 +183,13 @@ public class X509CAInfo extends CAInfo {
                 .setCrlPartitions(0)
                 .setSuspendedCrlPartitions(0)
                 .setRequestPreProcessor(null)
-                .setExternalCrlDistPoint(null)
-                ;
+                .setExternalCrlDistPoint(null);
          return caInfoBuilder.build();
     }
 
     /** Constructor that should be used when updating CA data. */
     private X509CAInfo(final String encodedValidity, final CAToken catoken, final String description, final int caSerialNumberOctetSize,
-                      final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
+                      final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod,
                       final boolean generateCrlUponRevocation, final boolean allowChangingRevocationReason, final boolean allowInvalidityDate, final Collection<Integer> crlpublishers,
                       final Collection<Integer> keyValidators, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
                       final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,
@@ -200,9 +201,10 @@ public class X509CAInfo extends CAInfo {
                       final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
                       final boolean doEnforceUniquePublicKeys, final boolean doEnforceKeyRenewal, final boolean doEnforceUniqueDistinguishedName,
                       final boolean doEnforceUniqueSubjectDNSerialnumber, final boolean useCertReqHistory, final boolean useUserStorage,
-                      final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand, final boolean acceptRevocationNonExistingEntry, 
-                      final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId, 
-                      final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions, 
+                      final boolean useCertificateStorage, final boolean doPreProduceOcspResponses, final boolean doStoreOcspResponsesOnDemand,
+                      final boolean doPreProduceOcspResponseUponIssuanceAndRevocation, final boolean acceptRevocationNonExistingEntry,
+                      final String cmpRaAuthSecret, final boolean keepExpiredCertsOnCRL, final int defaultCertprofileId,
+                      final boolean useNoConflictCertificateData, final boolean usePartitionedCrl, final int crlPartitions, final int suspendedCrlPartitions,
                       final String requestPreProcessor, final boolean msCaCompatible, final Map<String, List<String>> alternateCertificateChains,
                       final String externalCDP) {
         this.encodedValidity = encodedValidity;
@@ -246,6 +248,7 @@ public class X509CAInfo extends CAInfo {
         this.useCertificateStorage = useCertificateStorage;
         this.doPreProduceOcspResponses = doPreProduceOcspResponses;
         this.doStoreOcspResponsesOnDemand = doStoreOcspResponsesOnDemand;
+        this.doPreProduceOcspResponseUponIssuanceAndRevocation = doPreProduceOcspResponseUponIssuanceAndRevocation;
         this.acceptRevocationNonExistingEntry = acceptRevocationNonExistingEntry;
         setCmpRaAuthSecret(cmpRaAuthSecret);
         this.keepExpiredCertsOnCRL = keepExpiredCertsOnCRL;
@@ -292,19 +295,19 @@ public class X509CAInfo extends CAInfo {
   public void setDefaultCRLDistPoint(String defaultCRLDistPoint) {
       this.defaultcrldistpoint = defaultCRLDistPoint;
   }
- 
+
   /**
-   * A method returning all CDP URLs to currently used CRL partitions for this CA  
-   * @param crlUrl is the URL to the CRL CDP for this CA, in the format "http://example.com/CA*.crl", 
+   * A method returning all CDP URLs to currently used CRL partitions for this CA
+   * @param crlUrl is the URL to the CRL CDP for this CA, in the format "http://example.com/CA*.crl",
    * where any '*' will be replaced by an index number (or removed for the first partition)
-   * @return a list of CDP URLs with index numbers for currently used CRL partitions for this CA 
+   * @return a list of CDP URLs with index numbers for currently used CRL partitions for this CA
    */
   public List<String> getAllCrlPartitionUrls(final String crlUrl) {
       List<String> crlUrlsReturned = new ArrayList<>();
       if (getUsePartitionedCrl()) {
           int partitionUrlsToGenerate = (getCrlPartitions() - getSuspendedCrlPartitions());
           crlUrlsReturned.add(crlUrl.replace("*", ""));
-          Integer partitionIndex = getSuspendedCrlPartitions() < 1 ? 1 : 1 + getSuspendedCrlPartitions();  
+          Integer partitionIndex = getSuspendedCrlPartitions() < 1 ? 1 : 1 + getSuspendedCrlPartitions();
           for (int generatedUrls = 0; generatedUrls < partitionUrlsToGenerate; generatedUrls++) {
               crlUrlsReturned.add(crlUrl.replace("*", partitionIndex.toString()));
               partitionIndex++;
@@ -316,11 +319,11 @@ public class X509CAInfo extends CAInfo {
   }
 
   /**
-   * A method returning a CDP URL with the given CRL partition index number for this CA 
-   * @param crlUrl is the URL to the CRL CDP for this CA, in the format "http://example.com/CA*.crl", 
+   * A method returning a CDP URL with the given CRL partition index number for this CA
+   * @param crlUrl is the URL to the CRL CDP for this CA, in the format "http://example.com/CA*.crl",
    * where any '*' will be replaced by given index number (or removed for the first partition)
    * @param index is the index of the CRL partition asked for
-   * @return the URL for the specific CRL partition CDP with the given index number 
+   * @return the URL for the specific CRL partition CDP with the given index number
    */
   public String getCrlPartitionUrl(final String crlUrl, final int index) {
       Integer partitionIndex = index;
@@ -548,12 +551,12 @@ public class X509CAInfo extends CAInfo {
     public void setCaSerialNumberOctetSize(int caSerialNumberOctetSize) {
         this.caSerialNumberOctetSize = caSerialNumberOctetSize;
     }
-    
+
     /** @return true if CA should pre-produce OCSP responses, otherwise false. */
     public boolean isDoPreProduceOcspResponses() {
         return doPreProduceOcspResponses;
     }
-    
+
     /** Set whether the CA should pre-produce OCSP responses. */
     public void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
         this.doPreProduceOcspResponses = doPreProduceOcspResponses;
@@ -569,57 +572,67 @@ public class X509CAInfo extends CAInfo {
         this.doStoreOcspResponsesOnDemand = doStoreOcspResponsesOnDemand;
     }
 
-    /** 
-     * Partitioned crls are used by CAs with very large crls.  
-     * It is CA specific configuration using multiple partitions to which certificates randomly are assigned. 
-     * @return true if a partitioned crl is used 
+    /** @return indicates whether an OCSP response has to be generated during the certificate issuance/revocation */
+    public boolean isDoPreProduceOcspResponseUponIssuanceAndRevocation() {
+        return doPreProduceOcspResponseUponIssuanceAndRevocation;
+    }
+
+    /** Set whether OCSP responses should be stored upon request for each certificate or not */
+    public void setDoPreProduceOcspResponseUponIssuanceAndRevocation(boolean doPreProduceOcspResponseUponIssuanceAndRevocation) {
+        this.doPreProduceOcspResponseUponIssuanceAndRevocation = doPreProduceOcspResponseUponIssuanceAndRevocation;
+    }
+
+    /**
+     * Partitioned crls are used by CAs with very large crls.
+     * It is CA specific configuration using multiple partitions to which certificates randomly are assigned.
+     * @return true if a partitioned crl is used
      */
     public boolean getUsePartitionedCrl() {
         return this.usePartitionedCrl;
     }
-    
-    /** 
+
+    /**
      *  Set use partitioned crl for this ca.
-     *  @see #getUsePartitionedCrl() 
+     *  @see #getUsePartitionedCrl()
      */
     public void setUsePartitionedCrl(final boolean usePartitionedCrl) {
-        this.usePartitionedCrl = usePartitionedCrl;  
+        this.usePartitionedCrl = usePartitionedCrl;
     }
-    
-    /** 
-     * @return how many crl partitions are being used in total by this ca 
-     *  @see #getUsePartitionedCrl() 
+
+    /**
+     * @return how many crl partitions are being used in total by this ca
+     *  @see #getUsePartitionedCrl()
      */
     public int getCrlPartitions() {
         return crlPartitions;
     }
-    
-    /** 
-     * Set the number of crl partitions that should be used by this ca. 
-     * @see #getUsePartitionedCrl() 
+
+    /**
+     * Set the number of crl partitions that should be used by this ca.
+     * @see #getUsePartitionedCrl()
      */
     public void setCrlPartitions(final int crlPartitions) {
-        this.crlPartitions = crlPartitions;  
+        this.crlPartitions = crlPartitions;
     }
-    
-    /** 
+
+    /**
      * New certificates will not be assigned to suspended partitions. This can be used to balance the partitions
-     * if the low numbered partitions have too many certificates (for example after increasing the number of partitions).  
+     * if the low numbered partitions have too many certificates (for example after increasing the number of partitions).
      * @return the number of suspended CRL partitions for this CA.
-     * @see #getUsePartitionedCrl() 
+     * @see #getUsePartitionedCrl()
      */
     public int getSuspendedCrlPartitions() {
         return suspendedCrlPartitions;
     }
-    
-    /** 
+
+    /**
      * Set the number of suspended CRL partitions for this CA.
-     * @see #getUsePartitionedCrl() 
+     * @see #getUsePartitionedCrl()
      */
     public void setSuspendedCrlPartitions(final int suspendedCrlPartitions) {
-        this.suspendedCrlPartitions = suspendedCrlPartitions;  
+        this.suspendedCrlPartitions = suspendedCrlPartitions;
     }
-    
+
     public String getRequestPreProcessor() {
         return requestPreProcessor;
     }
@@ -627,7 +640,7 @@ public class X509CAInfo extends CAInfo {
     public void setRequestPreProcessor(String requestPreProcessor) {
         this.requestPreProcessor = requestPreProcessor;
     }
-    
+
     public Map<String, List<String>> getAlternateCertificateChains() {
         return alternateCertificateChains;
     }
@@ -698,6 +711,7 @@ public class X509CAInfo extends CAInfo {
         private boolean useCertificateStorage = true;
         private boolean doPreProduceOcspResponses = false;
         private boolean doStoreOcspResponsesOnDemand = false;
+        private boolean doPreProduceIndividualOcspResponse = false;
         private boolean acceptRevocationNonExistingEntry = false;
         private String cmpRaAuthSecret = null;
         private boolean keepExpiredCertsOnCRL = false;
@@ -887,7 +901,7 @@ public class X509CAInfo extends CAInfo {
             this.deltaCrlPeriod = deltaCrlPeriod;
             return this;
         }
-        
+
         /**
          * @param generate generate a new CRL if a certificate is revoked.
          */
@@ -952,7 +966,7 @@ public class X509CAInfo extends CAInfo {
 
         /**
          * @param defaultCrlDistPoint the URI of the default CRL distribution point
-         */ 
+         */
         public X509CAInfoBuilder setExternalCrlDistPoint(String externalCrlDistPoint) {
             this.externalCrlDistPoint = externalCrlDistPoint;
             return this;
@@ -1086,12 +1100,17 @@ public class X509CAInfo extends CAInfo {
             this.useCertificateStorage = useCertificateStorage;
             return this;
         }
-        
+
         public X509CAInfoBuilder setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses) {
             this.doPreProduceOcspResponses = doPreProduceOcspResponses;
             return this;
         }
-        
+
+        public X509CAInfoBuilder setDoPreProduceIndividualOcspResponses(boolean doPreProduceIndividualOcspResponse) {
+            this.doPreProduceIndividualOcspResponse = doPreProduceIndividualOcspResponse;
+            return this;
+        }
+
         public X509CAInfoBuilder setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand) {
             this.doStoreOcspResponsesOnDemand = doStoreOcspResponsesOnDemand;
             return this;
@@ -1152,7 +1171,7 @@ public class X509CAInfo extends CAInfo {
             this.requestPreProcessor = requestPreProcessor;
             return this;
         }
-        
+
         public Map<String, List<String>> getAlternateCertificateChains() {
             return alternateCertificateChains;
         }
@@ -1168,7 +1187,7 @@ public class X509CAInfo extends CAInfo {
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, 
+                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
                                                requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setSubjectDN(subjectDn);
             caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
@@ -1207,7 +1226,7 @@ public class X509CAInfo extends CAInfo {
                                                certificateAiaDefaultCaIssuerUri, nameConstraintsPermitted, nameConstraintsExcluded, caDefinedFreshestCrl, finishUser, extendedCaServiceInfos, useUtf8PolicyText, approvals,
                                                usePrintableStringSubjectDN, useLdapDnOrder, useCrlDistributionPointOnCrl, crlDistributionPointOnCrlCritical, includeInHealthCheck, doEnforceUniquePublicKeys, doEnforceKeyRenewal,
                                                doEnforceUniqueDistinguishedName, doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, doPreProduceOcspResponses, doStoreOcspResponsesOnDemand,
-                                               acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions, 
+                                               doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
                                                requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setCAId(caId);
             caInfo.setPolicies(policies);
@@ -1217,7 +1236,7 @@ public class X509CAInfo extends CAInfo {
 
         public X509CAInfo buildDefault () { return null;}
     }
-    
+
     public static boolean isCertListValidAndIssuedByCA(List<X509Certificate> certs, Collection<Certificate> trustedCertificates) throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException, CertPathBuilderException, CertPathValidatorException {
         if (certs == null || certs.isEmpty()) {
