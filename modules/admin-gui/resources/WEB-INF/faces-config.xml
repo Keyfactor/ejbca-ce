@@ -121,6 +121,22 @@
     </navigation-rule>
 
     <navigation-rule>
+        <from-view-id>/sysconfig/acmeconfiguration.xhtml</from-view-id>
+        <navigation-case>
+            <from-outcome>delete</from-outcome>
+            <to-view-id>/sysconfig/deleteacmealias.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>done</from-outcome>
+            <to-view-id>/sysconfig/acmeconfiguration.xhtml</to-view-id>
+        </navigation-case>
+        <navigation-case>
+            <from-outcome>cancel</from-outcome>
+            <to-view-id>/sysconfig/acmeconfiguration.xhtml</to-view-id>
+        </navigation-case>
+    </navigation-rule>
+
+    <navigation-rule>
         <from-view-id>/sysconfig/cmpaliases.xhtml</from-view-id>
         <navigation-case>
             <from-outcome>edit</from-outcome>
