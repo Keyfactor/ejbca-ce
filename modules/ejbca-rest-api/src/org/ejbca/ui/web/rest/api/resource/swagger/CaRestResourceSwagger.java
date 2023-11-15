@@ -42,6 +42,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import java.io.File;
 import java.security.cert.CertificateEncodingException;
 
 /**
@@ -126,8 +128,9 @@ public class CaRestResourceSwagger extends CaRestResource {
     )
     public Response importCrl(@Context final HttpServletRequest httpServletRequest,
                               @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
-                              @ApiParam("CRL partition index") @DefaultValue("0") @FormParam("crlPartitionIndex") int crlPartitionIndex
+                              @ApiParam("CRL partition index") @DefaultValue("0") @FormParam("crlPartitionIndex") int crlPartitionIndex,
+                              @ApiParam("CRL file in DER format") @FormParam("crlFile") final File crlFile
     ) throws AuthorizationDeniedException, RestException {
-        return super.importCrl(httpServletRequest, issuerDn, crlPartitionIndex);
+        return super.importCrl(httpServletRequest, issuerDn, crlPartitionIndex, crlFile);
     }
 }
