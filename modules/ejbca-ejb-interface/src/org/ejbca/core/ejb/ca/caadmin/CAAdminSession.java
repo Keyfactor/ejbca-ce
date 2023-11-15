@@ -791,7 +791,7 @@ public interface CAAdminSession {
      * Generates key exchange certificate for the specified CA with the specified certificate profile
      * @param authenticationToken authentication token
      * @param ca certificate authority
-     * @param cp certificate profile
+     * @param cpId certificate profile id
      * @return generated key exchange certificate
      * @throws AuthorizationDeniedException if not authorized
      * @throws InvalidAlgorithmException if the signing algorithm in the certificate profile (or the CA Token if not found) was invalid
@@ -805,7 +805,7 @@ public interface CAAdminSession {
      * @throws OperatorCreationException if CA's private key contained an unknown algorithm or provider
      * @throws IllegalNameException if the Subject DN failed constraints
      */
-    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, CertificateProfile cp)
+    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, int cpId)
         throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException,
         CertificateExtensionException, CAOfflineException, IllegalValidityException, SignatureException,
         IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException;
