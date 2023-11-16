@@ -3,6 +3,7 @@
         "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <ui:remove>
@@ -58,13 +59,13 @@
                                      action="#{estConfigMBean.actionView(alias)}">
                         <f:param name="faces-redirect" value="true"/>
                         <f:param name="mode" value="view"/>
-                        <f:param name="alias" value="#{alias}"/>
+                        <f:param name="alias" value="#{fn:escapeXml(alias)}"/>
                     </h:commandButton>
                     <h:commandButton value="#{web.text.EDIT}"
                                      action="#{estConfigMBean.actionEdit(alias)}"
                                      disabled="#{!estConfigMBean.authorizedToEdit}">
                         <f:param name="faces-redirect" value="true"/>
-                        <f:param name="alias" value="#{alias}"/>
+                        <f:param name="alias" value="#{fn:escapeXml(alias)}"/>
                         <f:param name="mode" value="edit"/>
                     </h:commandButton>
                     <h:commandButton value="#{web.text.DELETE}"
