@@ -21,6 +21,7 @@ import io.swagger.annotations.SwaggerDefinition.Scheme;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
+import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
@@ -74,7 +75,8 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @GET
     @Path("/count")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get the quantity of rather total issued or active certificates")
+    @ApiOperation(value = "Get the quantity of rather total issued or active certificates", 
+                    response = CertificateCountResponse.class)
     @Override
     public Response getCertificateCount(@Context HttpServletRequest requestContext,
                                         @ApiParam(value = "true if an active certificates should be counted only")
