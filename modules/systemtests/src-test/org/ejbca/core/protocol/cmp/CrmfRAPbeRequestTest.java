@@ -43,6 +43,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
+import org.bouncycastle.pqc.jcajce.spec.NTRUParameterSpec;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -264,6 +265,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         final PKIMessage certRequestFalcon = genCertReq(issuerDN, userDN, falconKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
         runCrmfHttpOkUser(certRequestFalcon, nonce, transid, notAfter, false, null);
 
+        KeyPairGenerator keygen = KeyPairGenerator.getInstance("NTRU", BouncyCastlePQCProvider.PROVIDER_NAME);
+        keygen.initialize(NTRUParameterSpec.ntruhrss701);
+        KeyPair ntruKeyPair = keygen.generateKeyPair();
+
+        final PKIMessage certRequestNTRU = genCertReq(issuerDN, userDN, ntruKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
+        runCrmfHttpOkUser(certRequestNTRU, nonce, transid, notAfter, false, null);
     }
 
     @Test
