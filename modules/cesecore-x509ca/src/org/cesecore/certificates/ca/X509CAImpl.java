@@ -1615,8 +1615,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         try {
             if (exts != null) {
-                ASN1ObjectIdentifier[] oids = exts.getExtensionOIDs();
-                for (ASN1ObjectIdentifier oid : oids) {
+                for (ASN1ObjectIdentifier oid : exts.getExtensionOIDs()) {
                     final Extension extension = exts.getExtension(oid);
                     if (oid.equals(Extension.subjectAlternativeName)) { // subjectAlternativeName extension value needs special handling
                         ExtensionsGenerator sanExtGen = getSubjectAltNameExtensionForCert(extension, precertbuilder != null);
@@ -1733,6 +1732,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 
                 final X509CertificateHolder certHolder;
                 if (caSigningPackage.getAlternativePrivateKey() == null) {
+                    // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
                     certHolder = precertbuilder.build(signer);
                 } else {
 
@@ -1752,12 +1752,9 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     ContentSigner alternativeSigner = new BufferingContentSigner(new JcaContentSignerBuilder(alternativeSigningAlgorithm)
                             .setProvider(altProv).build(caSigningPackage.getAlternativePrivateKey()), X509CAImpl.SIGN_BUFFER_SIZE);
 
-                    // TODO: with the new BC methods remove- and replaceExtension we can get rid of the precertbuilder and only use one builder to save some time and space 
                     certHolder = precertbuilder.build(signer, false, alternativeSigner);
                 }
-                
-                
-                
+   
                 final X509Certificate cert = CertTools.getCertfromByteArray(certHolder.getEncoded(), X509Certificate.class);
                 // ECA-6051 Re-Factored with Domain Service Layer.
                 if (certGenParams.getAuthenticationToken() != null && certGenParams.getCertificateValidationDomainService() != null) {
