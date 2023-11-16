@@ -103,9 +103,6 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             }else {
                 availableBitLengthsFromProfile = certificateProfile.getAvailableBitLengthsAsList();
             }
-            if (availableKeyAlgorithmsFromProfile.contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
-                availableSecurityLevelsFromProfile = certificateProfile.getAvailableSecurityLevelsAsList();
-            }
             response.certificateProfileId = certProfileId;
             response.availableAlgorithms = availableKeyAlgorithmsFromProfile;
             response.availableBitLengths = availableBitLengthsFromProfile;
