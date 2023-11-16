@@ -1,11 +1,13 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:composite="http://xmlns.jcp.org/jsf/composite">
-    <ui:remove>
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:composite="http://xmlns.jcp.org/jsf/composite">
+<ui:remove>
     <!--
     /*************************************************************************
      *                                                                       *
@@ -22,8 +24,8 @@
 
      version: $Id$
      -->
-    </ui:remove>
-    <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
+</ui:remove>
+<f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
     <h:head dir="#{raLocaleBean.direction}"/>
     <h:body>
         <composite:interface>
@@ -36,205 +38,216 @@
         </composite:interface>
 
         <composite:implementation>
-         	<h:outputLabel for="note" value="" 
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
+            <h:outputLabel for="note" value=""
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
             <h:outputText id="note" value="#{msg.component_certdetails_field_precert}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                style="color: black"
-                rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          style="color: black"
+                          rendered="#{cc.attrs.raCertificateDetails.preCertificate}"/>
             <h:outputLabel for="caname" value="#{msg.component_certdetails_field_caname}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="caname" value="#{cc.attrs.raCertificateDetails.caName}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="issuerdn" value="#{msg.component_certdetails_field_issuerdn}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="issuerdn" value="#{cc.attrs.raCertificateDetails.issuerDn}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="serialnumber" value="#{msg.component_certdetails_field_serialnumber}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup id="serialnumber"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
-                <h:outputText rendered="#{cc.attrs.raCertificateDetails.typeX509}" value="#{cc.attrs.raCertificateDetails.serialnumber} " styleClass="monospace"/>
-                <h:outputText rendered="#{cc.attrs.raCertificateDetails.typeX509}" value=" (#{cc.attrs.raCertificateDetails.serialnumberRaw}) " styleClass="monospace"/>
-                <h:outputText rendered="#{!cc.attrs.raCertificateDetails.typeX509}" value="#{cc.attrs.raCertificateDetails.serialnumberRaw}" styleClass="monospace"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                <h:outputText rendered="#{cc.attrs.raCertificateDetails.typeX509}"
+                              value="#{cc.attrs.raCertificateDetails.serialnumber} " styleClass="monospace"/>
+                <h:outputText rendered="#{cc.attrs.raCertificateDetails.typeX509}"
+                              value=" (#{cc.attrs.raCertificateDetails.serialnumberRaw}) " styleClass="monospace"/>
+                <h:outputText rendered="#{!cc.attrs.raCertificateDetails.typeX509}"
+                              value="#{cc.attrs.raCertificateDetails.serialnumberRaw}" styleClass="monospace"/>
             </h:panelGroup>
             <h:outputLabel for="subjectdn" value="#{msg.component_certdetails_field_subjectdn}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{!cc.attrs.raCertificateDetails.typeSsh}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{!cc.attrs.raCertificateDetails.typeSsh}"/>
             <h:outputText id="subjectdn" value="#{cc.attrs.raCertificateDetails.subjectDnUnescapedValue}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
-                rendered="#{!cc.attrs.raCertificateDetails.typeSsh}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
+                          rendered="#{!cc.attrs.raCertificateDetails.typeSsh}"/>
             <h:outputLabel for="subjectan" value="#{msg.component_certdetails_field_subjectan}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectAn}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectAn}"/>
             <h:outputText id="subjectan" value="#{cc.attrs.raCertificateDetails.subjectAnUnescapedComma}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectAn}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
+                          rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectAn}"/>
             <h:outputLabel for="subjectda" value="#{msg.component_certdetails_field_subjectda}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectDa}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectDa}"/>
             <h:outputText id="subjectda" value="#{cc.attrs.raCertificateDetails.subjectDa}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectDa}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
+                          rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.subjectDa}"/>
 
-			<h:outputLabel for="sshkeyid" value="#{msg.enroll_ssh_key_id}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh}" />
+            <h:outputLabel for="sshkeyid" value="#{msg.enroll_ssh_key_id}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeSsh}"/>
             <h:outputText id="sshkeyid" value="#{cc.attrs.raCertificateDetails.sshKeyId}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh}" />
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"
+                          rendered="#{cc.attrs.raCertificateDetails.typeSsh}"/>
             <h:outputLabel for="sshprincipals" value="#{msg.enroll_ssh_principals}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.principals}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.principals}"/>
             <h:outputText id="sshprincipals" value="#{cc.attrs.raCertificateDetails.principals}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.principals}"/>
-            
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.principals}"/>
+
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="publickeyspec" value="#{msg.component_certdetails_field_publickeyspec}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup id="publickeyspec"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                 <h:outputText value="#{cc.attrs.raCertificateDetails.publicKeyAlgorithm} "/>
                 <h:outputText value=" #{cc.attrs.raCertificateDetails.publicKeySpecification} "/>
             </h:panelGroup>
             <h:outputLabel for="signaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="signaturealgorithm" value="#{cc.attrs.raCertificateDetails.signatureAlgorithm}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
             <h:outputLabel for="basicconstraints" value="#{msg.component_certdetails_field_basicconstraints}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
             <h:outputText id="basicconstraints" value="#{cc.attrs.raCertificateDetails.basicConstraints}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
-            <h:outputLabel for="pkup" value="#{msg.component_certdetails_field_privatekeyusageperiod}" rendered="#{not empty cc.attrs.raCertificateDetails.privateKeyUsagePeriod}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="pkup" value="#{cc.attrs.raCertificateDetails.privateKeyUsagePeriod}" rendered="#{not empty cc.attrs.raCertificateDetails.privateKeyUsagePeriod}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
+            <h:outputLabel for="pkup" value="#{msg.component_certdetails_field_privatekeyusageperiod}"
+                           rendered="#{not empty cc.attrs.raCertificateDetails.privateKeyUsagePeriod}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="pkup" value="#{cc.attrs.raCertificateDetails.privateKeyUsagePeriod}"
+                          rendered="#{not empty cc.attrs.raCertificateDetails.privateKeyUsagePeriod}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="cvcauthorizationrole" value="#{msg.component_certdetails_field_cvcauthorizationrole}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
             <h:outputText id="cvcauthorizationrole" value="#{cc.attrs.raCertificateDetails.cvcAuthorizationRole}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
-            <h:outputLabel for="cvcauthorizationaccessrights" value="#{msg.component_certdetails_field_cvcauthorizationaccessrights}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
-            <h:outputText id="cvcauthorizationaccessrights" value="#{cc.attrs.raCertificateDetails.cvcAuthorizationAccessRights}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
+            <h:outputLabel for="cvcauthorizationaccessrights"
+                           value="#{msg.component_certdetails_field_cvcauthorizationaccessrights}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
+            <h:outputText id="cvcauthorizationaccessrights"
+                          value="#{cc.attrs.raCertificateDetails.cvcAuthorizationAccessRights}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeCvc}"/>
             <h:outputLabel for="keyusage" value="#{msg.component_certdetails_field_keyusage}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
             <h:panelGroup id="keyusage"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509}">
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeX509}">
                 <ui:repeat var="keyUsageIndex" value="#{cc.attrs.raCertificateDetails.keyUsages}" varStatus="status">
                     <h:outputText value=", " rendered="#{status.index!=0}"/>
                     <h:outputText value="#{'Key usage '.concat(keyUsageIndex)}"
-                        rendered="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)].equals('???component_certdetails_field_keyusage_'.concat(keyUsageIndex).concat('???'))}"/>
+                                  rendered="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)].equals('???component_certdetails_field_keyusage_'.concat(keyUsageIndex).concat('???'))}"/>
                     <h:outputText value="#{msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)]}"
-                        rendered="#{not msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)].equals('???component_certdetails_field_keyusage_'.concat(keyUsageIndex).concat('???'))}"/>
+                                  rendered="#{not msg['component_certdetails_field_keyusage_'.concat(keyUsageIndex)].equals('???component_certdetails_field_keyusage_'.concat(keyUsageIndex).concat('???'))}"/>
                 </ui:repeat>
             </h:panelGroup>
             <h:outputLabel for="extendedkeyusage" value="#{msg.component_certdetails_field_extendedkeyusage}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeX509}"/>
             <h:panelGroup id="extendedkeyusage"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509}">
-                <ui:repeat var="extendedKeyUsageOid" value="#{cc.attrs.raCertificateDetails.extendedKeyUsages}" varStatus="status">
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeX509}">
+                <ui:repeat var="extendedKeyUsageOid" value="#{cc.attrs.raCertificateDetails.extendedKeyUsages}"
+                           varStatus="status">
                     <h:outputText value=", " rendered="#{status.index!=0}"/>
                     <h:outputText value="#{extendedKeyUsageOid}"
-                        rendered="#{msg['extendedkeyusage_'.concat(extendedKeyUsageOid)].equals('???extendedkeyusage_'.concat(extendedKeyUsageOid).concat('???'))}"/>
+                                  rendered="#{msg['extendedkeyusage_'.concat(extendedKeyUsageOid)].equals('???extendedkeyusage_'.concat(extendedKeyUsageOid).concat('???'))}"/>
                     <h:outputText value="#{msg['extendedkeyusage_'.concat(extendedKeyUsageOid)]}"
-                        rendered="#{not msg['extendedkeyusage_'.concat(extendedKeyUsageOid)].equals('???extendedkeyusage_'.concat(extendedKeyUsageOid).concat('???'))}"/>
+                                  rendered="#{not msg['extendedkeyusage_'.concat(extendedKeyUsageOid)].equals('???extendedkeyusage_'.concat(extendedKeyUsageOid).concat('???'))}"/>
                 </ui:repeat>
             </h:panelGroup>
             <h:outputLabel for="nameconstraints" value="#{msg.component_certdetails_field_nameconstraints}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.nameConstraints}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.nameConstraints}"/>
             <h:outputText id="nameconstraints" value="#{cc.attrs.raCertificateDetails.nameConstraints}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.nameConstraints}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.nameConstraints}"/>
             <h:outputLabel for="qcstatements" value="#{msg.component_certdetails_field_qcstatements}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.qcStatements}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.qcStatements}"/>
             <h:outputText id="qcstatements" value="#{cc.attrs.raCertificateDetails.qcStatements}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.qcStatements}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.qcStatements}"/>
             <h:outputLabel for="ctscts" value="#{msg.component_certdetails_field_ctscts}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.certificateTransparencyScts}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.certificateTransparencyScts}"/>
             <h:outputText id="ctscts" value="#{cc.attrs.raCertificateDetails.certificateTransparencyScts}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.certificateTransparencyScts}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeX509 and not empty cc.attrs.raCertificateDetails.certificateTransparencyScts}"/>
 
-			<h:outputLabel for="sshcomment" value="#{msg.enroll_ssh_comment}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.comment}"/>
+            <h:outputLabel for="sshcomment" value="#{msg.enroll_ssh_comment}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.comment}"/>
             <h:outputText id="sshcomment" value="#{cc.attrs.raCertificateDetails.comment}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.comment}"/>
-			<h:outputLabel for="sshcerttype" value="#{msg.component_certdetails_field_ssh_cert_type}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.comment}"/>
+            <h:outputLabel for="sshcerttype" value="#{msg.component_certdetails_field_ssh_cert_type}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeSsh}"/>
             <h:outputText id="sshcerttype" value="#{cc.attrs.raCertificateDetails.sshCertificateType}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh}"/>
-			<h:outputLabel for="sshextensions" value="#{msg.component_certdetails_field_ssh_extensions}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshExtensions}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeSsh}"/>
+            <h:outputLabel for="sshextensions" value="#{msg.component_certdetails_field_ssh_extensions}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshExtensions}"/>
             <h:outputText id="sshextensions" value="#{cc.attrs.raCertificateDetails.sshExtensions}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshExtensions}"/>
-			<h:outputLabel for="sshSourceAddress" value="#{msg.enroll_ssh_critical_source_address}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshSourceAddress}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshExtensions}"/>
+            <h:outputLabel for="sshSourceAddress" value="#{msg.enroll_ssh_critical_source_address}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshSourceAddress}"/>
             <h:outputText id="sshSourceAddress" value="#{cc.attrs.raCertificateDetails.sshSourceAddress}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshSourceAddress}"/>
-			<h:outputLabel for="sshForceCommand" value="#{msg.enroll_ssh_critical_force_command}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshForceCommand}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshSourceAddress}"/>
+            <h:outputLabel for="sshForceCommand" value="#{msg.enroll_ssh_critical_force_command}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshForceCommand}"/>
             <h:outputText id="sshForceCommand" value="#{cc.attrs.raCertificateDetails.sshForceCommand}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshForceCommand}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeSsh and not empty cc.attrs.raCertificateDetails.sshForceCommand}"/>
             <h:outputLabel for="sshVerifyRequired" value="#{msg.enroll_ssh_critical_verify_required}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and cc.attrs.raCertificateDetails.sshVerifyRequired}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{cc.attrs.raCertificateDetails.typeSsh and cc.attrs.raCertificateDetails.sshVerifyRequired}"/>
             <h:outputText id="sshVerifyRequired" value="#{msg.enroll_ssh_critical_verify_required_enabled}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{cc.attrs.raCertificateDetails.typeSsh and cc.attrs.raCertificateDetails.sshVerifyRequired}"/>
-            
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.typeSsh and cc.attrs.raCertificateDetails.sshVerifyRequired}"/>
+
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="notbefore" value="#{msg.component_certdetails_field_notbefore}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="notbefore" value="#{cc.attrs.raCertificateDetails.created}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="notafter" value="#{msg.component_certdetails_field_notafter}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:panelGroup id="notafter"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                 <h:outputText value="#{cc.attrs.raCertificateDetails.expires}"/>
-                <h:outputText value=" #{msg.component_certdetails_status_expired}" rendered="#{cc.attrs.raCertificateDetails.expired}" style="color: red;"/>
+                <h:outputText value=" #{msg.component_certdetails_status_expired}"
+                              rendered="#{cc.attrs.raCertificateDetails.expired}" style="color: red;"/>
             </h:panelGroup>
             <h:outputLabel for="status" value="#{msg.component_certdetails_field_status}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="status" value="#{cc.attrs.raCertificateDetails.status}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputLabel for="revocationdate" value="#{msg.component_certdetails_field_revocationdate}" rendered="#{!cc.attrs.raCertificateDetails.active}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="revocationdate" value="#{cc.attrs.raCertificateDetails.revocationDate}" rendered="#{!cc.attrs.raCertificateDetails.active}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="revocationdate" value="#{msg.component_certdetails_field_revocationdate}"
+                           rendered="#{!cc.attrs.raCertificateDetails.active}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="revocationdate" value="#{cc.attrs.raCertificateDetails.revocationDate}"
+                          rendered="#{!cc.attrs.raCertificateDetails.active}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
 
             <h:outputLabel for="invaliditydate" value="#{msg.component_certdetails_field_invaliditydate}"
                            rendered="#{!cc.attrs.raCertificateDetails.active and cc.attrs.raCertificateDetails.caAllowsInvalidityDate}"
@@ -246,128 +259,145 @@
             <h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
             <h:panelGroup id="revokeGroup" styleClass="#{cc.attrs.styleValue} revokeGroup">
                 <h:selectOneMenu id="newRevocationReason" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
-                    styleClass="pure-input-1-4"
-                    style="color:black"
-                    rendered="#{(cc.attrs.raCertificateDetails.active or cc.attrs.raCertificateDetails.suspended) and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
+                                 styleClass="pure-input-1-4"
+                                 style="color:black"
+                                 rendered="#{(cc.attrs.raCertificateDetails.active or cc.attrs.raCertificateDetails.suspended) and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}">
                     <f:selectItems value="#{cc.attrs.raCertificateDetails.newRevocationReasons}"/>
                 </h:selectOneMenu>
-                <h:commandButton value="#{cc.attrs.raCertificateDetails.suspended ? msg.component_certdetails_changestatus_revokepermanent : msg.component_certdetails_changestatus_revoke}"
-                    action="#{cc.attrs.raCertificateDetails.actionRevoke}" styleClass="pure-button ra-button"
-                    rendered="#{(cc.attrs.raCertificateDetails.active or cc.attrs.raCertificateDetails.suspended) and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
-                <h:commandButton value="#{msg.component_certdetails_changestatus_reactivate}" action="#{cc.attrs.raCertificateDetails.actionReactivate}"
-                    styleClass="pure-button ra-button"
-                    rendered="#{cc.attrs.raCertificateDetails.suspended and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
-                <h:commandButton value="#{cc.attrs.raCertificateDetails.renderConfirmRecovery ? msg.component_certdetails_keyrecovery_cancel : msg.component_certdetails_keyrecovery_recover}" 
-                	action="#{cc.attrs.raCertificateDetails.renderConfirmRecoveryToggle}"
-                	immediate="true"
-                	styleClass="pure-button ra-button"
-                	rendered="#{cc.attrs.raCertificateDetails.keyRecoveryPossible}"/>
+                <h:commandButton
+                        value="#{cc.attrs.raCertificateDetails.suspended ? msg.component_certdetails_changestatus_revokepermanent : msg.component_certdetails_changestatus_revoke}"
+                        action="#{cc.attrs.raCertificateDetails.actionRevoke}" styleClass="pure-button ra-button"
+                        rendered="#{(cc.attrs.raCertificateDetails.active or cc.attrs.raCertificateDetails.suspended) and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
+                <h:commandButton value="#{msg.component_certdetails_changestatus_reactivate}"
+                                 action="#{cc.attrs.raCertificateDetails.actionReactivate}"
+                                 styleClass="pure-button ra-button"
+                                 rendered="#{cc.attrs.raCertificateDetails.suspended and not cc.attrs.raCertificateDetails.expired and raAccessBean.authorizedToRevokeCertificates}"/>
+                <h:commandButton
+                        value="#{cc.attrs.raCertificateDetails.renderConfirmRecovery ? msg.component_certdetails_keyrecovery_cancel : msg.component_certdetails_keyrecovery_recover}"
+                        action="#{cc.attrs.raCertificateDetails.renderConfirmRecoveryToggle}"
+                        immediate="true"
+                        styleClass="pure-button ra-button"
+                        rendered="#{cc.attrs.raCertificateDetails.keyRecoveryPossible}"/>
             </h:panelGroup>
 
             <h:outputLabel
-                for="updateRevocationReasonSelectMenu"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                value="#{msg.component_certdetails_changestatus_change_revocation_reason}"
-                rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                    for="updateRevocationReasonSelectMenu"
+                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                    value="#{msg.component_certdetails_changestatus_change_revocation_reason}"
+                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
                         and not cc.attrs.raCertificateDetails.suspended
                         and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}"/>
             <h:panelGroup styleClass="#{cc.attrs.styleValue}"
-                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                          rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
                             and not cc.attrs.raCertificateDetails.suspended
                             and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}">
-                <h:selectOneMenu id="changeRevocationReasonSelectMenu" value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
-                    styleClass="pure-input-1-4 #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                    style="color:black"
-                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                <h:selectOneMenu id="changeRevocationReasonSelectMenu"
+                                 value="#{cc.attrs.raCertificateDetails.newRevocationReason}"
+                                 styleClass="pure-input-1-4 #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                                 style="color:black"
+                                 rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
                             and not cc.attrs.raCertificateDetails.suspended
                             and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}">
                     <f:selectItems value="#{cc.attrs.raCertificateDetails.changeRevocationReasons}"/>
                 </h:selectOneMenu>
                 <h:commandButton value="#{msg.component_certdetails_changestatus_change_revocation_reason}"
-                    rendered="#{not cc.attrs.raCertificateDetails.cpAllowingRevocationBackdate}"
-                    action="#{cc.attrs.raCertificateDetails.actionChangeRevocationReason}" styleClass="pure-button ra-button"/>
+                                 rendered="#{not cc.attrs.raCertificateDetails.cpAllowingRevocationBackdate}"
+                                 action="#{cc.attrs.raCertificateDetails.actionChangeRevocationReason}"
+                                 styleClass="pure-button ra-button"/>
             </h:panelGroup>
             <h:panelGroup styleClass="#{cc.attrs.styleLabel}"
-                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                          rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
                             and not cc.attrs.raCertificateDetails.suspended
                             and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}"/>
             <h:panelGroup id="changeRevocationReasonDate" styleClass="#{cc.attrs.styleValue} revokeGroup"
-                    rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
+                          rendered="#{cc.attrs.raCertificateDetails.revoked and not cc.attrs.raCertificateDetails.expired
                             and not cc.attrs.raCertificateDetails.suspended
                             and cc.attrs.raCertificateDetails.cpAllowingRevocationBackdate
                             and raAccessBean.authorizedToRevokeCertificates and cc.attrs.raCertificateDetails.caAllowingChangeOfRevocationReason}">
                 <h:inputText
-                    id="updatedRevocationDate"
-                    styleClass="pure-input-1-4"
-                    value="#{cc.attrs.raCertificateDetails.changedRevocationReasonDate}">
+                        id="updatedRevocationDate"
+                        styleClass="pure-input-1-4"
+                        value="#{cc.attrs.raCertificateDetails.changedRevocationReasonDate}">
                     <f:validator validatorId="dateValidator"/>
                 </h:inputText>
                 <h:commandButton value="#{cc.attrs.raCertificateDetails.revokedWithKeyCompromise ?
                         msg.component_certdetails_changestatus_backdate : msg.component_certdetails_changestatus_change_revocation_reason}"
-                    action="#{cc.attrs.raCertificateDetails.actionChangeRevocationReason}" styleClass="pure-button ra-button"/>
-                <h:outputText 
-                    id="updatedRevocationDateHelpText" 
-                    for="updatedRevocationDate"
-                    styleClass="showErrorMessage"
-                    value="#{msg.generic_timeformat_iso}"/>
-                <h:message for="updatedRevocationDate" id="updatedRevocationDateMessage" styleClass="showErrorMessage validationErrorMessage"/>
+                                 action="#{cc.attrs.raCertificateDetails.actionChangeRevocationReason}"
+                                 styleClass="pure-button ra-button"/>
+                <h:outputText
+                        id="updatedRevocationDateHelpText"
+                        for="updatedRevocationDate"
+                        styleClass="showErrorMessage"
+                        value="#{msg.generic_timeformat_iso}"/>
+                <h:message for="updatedRevocationDate" id="updatedRevocationDateMessage"
+                           styleClass="showErrorMessage validationErrorMessage"/>
             </h:panelGroup>
 
-			<h:panelGroup layout="block" styleClass="recovery-group" rendered="#{cc.attrs.raCertificateDetails.renderConfirmRecovery}">
-						<f:event type="postValidate" listener="#{cc.attrs.raCertificateDetails.validatePassword}"/>
-						<h:panelGroup layout="block" styleClass="pure-control-group">
-						<h:outputLabel value="#{msg.component_certdetails_keyrecovery_finalize}" styleClass="#{cc.attrs.styleLabel}"/>
-			            <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
-							<h:outputLabel for="passwordField" value="#{msg.enroll_password_new}" styleClass="#{cc.attrs.styleLabel}"/>
-							<h:inputSecret id="passwordField" value="#{cc.attrs.raCertificateDetails.password}" autocomplete="off">
-								<f:validator validatorId="extendedRequiredValidator"/>
-								<f:attribute name="_required" value="true"/>
-							</h:inputSecret>
-							<h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
-						</h:panelGroup>
-						<h:panelGroup layout="block" styleClass="pure-control-group">
-							<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}" styleClass="#{cc.attrs.styleLabel}"/>
-							<h:inputSecret id="passwordConfirmField" binding="#{raSearchCertsBean.confirmPasswordComponent}" value="#{cc.attrs.raCertificateDetails.confirmPassword}"
-							 	autocomplete="off">
-								<f:validator validatorId="extendedRequiredValidator"/>
-								<f:attribute name="_required" value="true"/>
-							</h:inputSecret>
-							<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="showErrorMessage"/>
-						</h:panelGroup>
-						<h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
-						<h:commandButton id="confirmRequestButton" value="#{msg.enroll_confirm_request}" styleClass="pure-button ra-button"
-							action="#{cc.attrs.raCertificateDetails.actionRecovery}">
-						</h:commandButton>	
-			</h:panelGroup>
+            <h:panelGroup layout="block" styleClass="recovery-group"
+                          rendered="#{cc.attrs.raCertificateDetails.renderConfirmRecovery}">
+                <f:event type="postValidate" listener="#{cc.attrs.raCertificateDetails.validatePassword}"/>
+                <h:panelGroup layout="block" styleClass="pure-control-group">
+                    <h:outputLabel value="#{msg.component_certdetails_keyrecovery_finalize}"
+                                   styleClass="#{cc.attrs.styleLabel}"/>
+                    <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
+                    <h:outputLabel for="passwordField" value="#{msg.enroll_password_new}"
+                                   styleClass="#{cc.attrs.styleLabel}"/>
+                    <h:inputSecret id="passwordField" value="#{cc.attrs.raCertificateDetails.password}"
+                                   autocomplete="off">
+                        <f:validator validatorId="extendedRequiredValidator"/>
+                        <f:attribute name="_required" value="true"/>
+                    </h:inputSecret>
+                    <h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="pure-control-group">
+                    <h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}"
+                                   styleClass="#{cc.attrs.styleLabel}"/>
+                    <h:inputSecret id="passwordConfirmField" binding="#{raSearchCertsBean.confirmPasswordComponent}"
+                                   value="#{cc.attrs.raCertificateDetails.confirmPassword}"
+                                   autocomplete="off">
+                        <f:validator validatorId="extendedRequiredValidator"/>
+                        <f:attribute name="_required" value="true"/>
+                    </h:inputSecret>
+                    <h:message for="passwordConfirmField" id="passwordConfirmFieldMessage"
+                               styleClass="showErrorMessage"/>
+                </h:panelGroup>
+                <h:panelGroup styleClass="#{cc.attrs.styleLabel}"/>
+                <h:commandButton id="confirmRequestButton" value="#{msg.enroll_confirm_request}"
+                                 styleClass="pure-button ra-button"
+                                 action="#{cc.attrs.raCertificateDetails.actionRecovery}">
+                </h:commandButton>
+            </h:panelGroup>
 
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
             <h:outputLabel for="username" value="#{msg.component_certdetails_field_username}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}" 
-                rendered="#{raAccessBean.authorizedToSearchEndEntities}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                           rendered="#{raAccessBean.authorizedToSearchEndEntities}"/>
             <h:panelGroup id="username"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
-                rendered="#{raAccessBean.authorizedToSearchEndEntities}">
-                <h:outputText value="#{cc.attrs.raCertificateDetails.username} " />
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{raAccessBean.authorizedToSearchEndEntities}">
+                <h:outputText value="#{cc.attrs.raCertificateDetails.username} "/>
                 <h:outputLink value="endentity.xhtml" styleClass="fineprint">
-                    <f:param name="ee" value="#{cc.attrs.raCertificateDetails.username}" />
-                    <h:outputText value="#{msg.component_certdetails_link_perm}" />
+                    <f:param name="ee" value="#{fn:escapeXml(cc.attrs.raCertificateDetails.username)}"/>
+                    <h:outputText value="#{msg.component_certdetails_link_perm}"/>
                 </h:outputLink>
             </h:panelGroup>
             <h:outputLabel for="eep" value="#{msg.component_certdetails_field_eep}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="eep" value="#{cc.attrs.raCertificateDetails.eepName}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputLabel for="cp" value="#{msg.component_certdetails_field_cp}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="cp" value="#{cc.attrs.raCertificateDetails.cpName}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputLabel for="eab" value="#{msg.component_certdetails_field_eab}" rendered="#{not empty cc.attrs.raCertificateDetails.accountBindingId}"
-                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-            <h:outputText id="eab" value="#{cc.attrs.raCertificateDetails.accountBindingId}" rendered="#{not empty cc.attrs.raCertificateDetails.accountBindingId}"
-                styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-			
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputLabel for="eab" value="#{msg.component_certdetails_field_eab}"
+                           rendered="#{not empty cc.attrs.raCertificateDetails.accountBindingId}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+            <h:outputText id="eab" value="#{cc.attrs.raCertificateDetails.accountBindingId}"
+                          rendered="#{not empty cc.attrs.raCertificateDetails.accountBindingId}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
@@ -406,66 +436,72 @@
                 </h:outputLink>
                 <h:outputText value=" " styleClass="pre"/>
                 <h:panelGroup rendered="#{!cc.attrs.raCertificateDetails.typeSsh}">
-	                <h:commandLink action="#{cc.attrs.raCertificateDetails.downloadCsr}" value="#{msg.component_eedetails_link_downloadcsr}" styleClass="fineprint"
-	                    rendered="#{cc.attrs.raCertificateDetails.downloadCsrRendered}"/>
+                    <h:commandLink action="#{cc.attrs.raCertificateDetails.downloadCsr}"
+                                   value="#{msg.component_eedetails_link_downloadcsr}" styleClass="fineprint"
+                                   rendered="#{cc.attrs.raCertificateDetails.downloadCsrRendered}"/>
                 </h:panelGroup>
                 <h:outputText value=" " styleClass="pre"/>
-                <h:commandButton id="showMoreLessDetailsButton" value="#{cc.attrs.raCertificateDetails.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
-                    styleClass="pure-button ra-button"
-                    action="#{cc.attrs.raCertificateDetails.actionToggleMore}">
+                <h:commandButton id="showMoreLessDetailsButton"
+                                 value="#{cc.attrs.raCertificateDetails.more ? msg.component_certdetails_show_less : msg.component_certdetails_show_more}"
+                                 styleClass="pure-button ra-button"
+                                 action="#{cc.attrs.raCertificateDetails.actionToggleMore}">
                     <f:ajax execute="@this" render="@form"/>
                 </h:commandButton>
             </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
-            <h:panelGroup id="showMoreCertificateDetails" styleClass="#{cc.attrs.styleFull}" rendered="#{cc.attrs.raCertificateDetails.more}">
+            <h:panelGroup id="showMoreCertificateDetails" styleClass="#{cc.attrs.styleFull}"
+                          rendered="#{cc.attrs.raCertificateDetails.more}">
                 <h:outputLabel for="type" value="#{msg.component_certdetails_field_type}"
-                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
-                <h:outputText id="type" value="#{cc.attrs.raCertificateDetails.type} v#{cc.attrs.raCertificateDetails.typeVersion}"
-                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="type"
+                              value="#{cc.attrs.raCertificateDetails.type} v#{cc.attrs.raCertificateDetails.typeVersion}"
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
                 <h:outputLabel for="fingerprintSha1" value="#{msg.component_certdetails_field_fingerprint}"
-                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="fingerprintSha1" value="#{cc.attrs.raCertificateDetails.fingerprint}"
-                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
                 <h:outputLabel for="fingerprintSha256" value="#{msg.component_certdetails_field_fingerprintSha256}"
-                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="fingerprintSha256" value="#{cc.attrs.raCertificateDetails.fingerprintSha256}"
-                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
                 <h:outputLabel for="publickeyparameter" value="#{msg.component_certdetails_field_publickeyparameter}"
-                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="publickeyparameter" value="#{cc.attrs.raCertificateDetails.publicKeyParameter}"
-                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis"/>
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis"/>
                 <h:outputLabel for="subjectkeyid" value="#{msg.component_certdetails_field_subjectkeyid}"
-                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="subjectkeyid" value="#{cc.attrs.raCertificateDetails.subjectKeyId}"
-                    styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
-            
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
                 <h:outputLabel for="dump" value="#{msg.component_certdetails_field_dump}"
-                    styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="dump" value="#{cc.attrs.raCertificateDetails.dump}"
-                    styleClass="#{cc.attrs.styleValue}  #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis pre"/>
+                              styleClass="#{cc.attrs.styleValue}  #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis pre"/>
             </h:panelGroup>
-            
-            <h:panelGroup layout="block" styleClass="internal-frame-black" rendered="#{cc.attrs.raCertificateDetails.requestIdInfoRendered}">
-				<h:panelGroup layout="block" styleClass="keygeneration-button-group">
-					<h:outputText value="#{msg.enroll_request_was_successfully_sent}" />
-				</h:panelGroup>
-				<h:panelGroup layout="block" styleClass="keygeneration-button-group">
-					<h:outputText value="#{msg.enroll_request_id}:&nbsp;" />
-					<h:outputText value="#{cc.attrs.raCertificateDetails.requestId}" />
-				</h:panelGroup>
-				<h:panelGroup layout="block" styleClass="keygeneration-button-group">
-					<h:outputLink value="enrollwithrequestid.xhtml" id="useRequestIdLink" styleClass="jsAutoFocusFirst">
-						<h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}&nbsp;&gt;&gt;" />
-						<f:param name="#{cc.attrs.raCertificateDetails.paramRequestId}" value="#{cc.attrs.raCertificateDetails.requestId}" />
-					</h:outputLink>
-				</h:panelGroup>
+
+            <h:panelGroup layout="block" styleClass="internal-frame-black"
+                          rendered="#{cc.attrs.raCertificateDetails.requestIdInfoRendered}">
+                <h:panelGroup layout="block" styleClass="keygeneration-button-group">
+                    <h:outputText value="#{msg.enroll_request_was_successfully_sent}"/>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="keygeneration-button-group">
+                    <h:outputText value="#{msg.enroll_request_id}:&nbsp;"/>
+                    <h:outputText value="#{cc.attrs.raCertificateDetails.requestId}"/>
+                </h:panelGroup>
+                <h:panelGroup layout="block" styleClass="keygeneration-button-group">
+                    <h:outputLink value="enrollwithrequestid.xhtml" id="useRequestIdLink" styleClass="jsAutoFocusFirst">
+                        <h:outputText value="#{msg.menu_pagetitle_enroll_use_request_id}&nbsp;&gt;&gt;"/>
+                        <f:param name="#{cc.attrs.raCertificateDetails.paramRequestId}"
+                                 value="#{cc.attrs.raCertificateDetails.requestId}"/>
+                    </h:outputLink>
+                </h:panelGroup>
             </h:panelGroup>
 
         </composite:implementation>
     </h:body>
-    </f:view>
+</f:view>
 </html>
