@@ -466,7 +466,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
         // POPO
         /*
-         * PKMACValue myPKMACValue = new PKMACValue( new Identifier(new
+         * PKMACValue myPKMACValue = new PKMACValue( new AlgorithmIdentifier(new
          * ASN1ObjectIdentifier("8.2.1.2.3.4"), new DERBitString(new byte[] { 8,
          * 1, 1, 2 })), new DERBitString(new byte[] { 12, 29, 37, 43 }));
          * 
