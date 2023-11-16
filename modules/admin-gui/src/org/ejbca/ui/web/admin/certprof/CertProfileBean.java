@@ -444,6 +444,9 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableSecurityLevel() {
         Set<Integer> availableSecurityLevel = new TreeSet<>();
+        if (certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
+            availableSecurityLevel.addAll(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU);
+        }
         final List<SelectItem> ret = new ArrayList<>();
         if (!availableSecurityLevel.isEmpty() && certificateProfile.isKeyAlgorithmsRequireSecurityLevel()) {
             for (final Integer current : availableSecurityLevel) {
