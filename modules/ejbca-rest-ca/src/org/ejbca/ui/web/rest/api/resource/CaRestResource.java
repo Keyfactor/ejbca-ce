@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.io.File;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -185,7 +186,7 @@ public class CaRestResource extends BaseRestResource {
         return Response.ok(response).build();
     }
 
-    public Response importCrl(final HttpServletRequest httpServletRequest, String issuerDn, int crlPartitionIndex)
+    public Response importCrl(final HttpServletRequest httpServletRequest, String issuerDn, int crlPartitionIndex, final File crlFile)
             throws AuthorizationDeniedException, RestException {
         final AuthenticationToken admin = getAdmin(httpServletRequest, false);
         issuerDn = issuerDn.trim();

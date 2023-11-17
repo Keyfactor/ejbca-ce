@@ -1608,7 +1608,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 return "";
             }
             if (cANameChange && newSubjectDn != null && !newSubjectDn.isEmpty()) {
-                // TODO handle MS Compatible here too.
                 renewAndRenameCA(caid, certSignKeyReNewValue, createLinkCertificate, newSubjectDn);
             } else {
                 renewCA(caid, certSignKeyReNewValue, createLinkCertificate);
@@ -1670,6 +1669,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             x509caInfo.setAllowInvalidityDate(caInfoDto.isAllowInvalidityDate());
             x509caInfo.setDoPreProduceOcspResponses(caInfoDto.isDoPreProduceOcspResponses());
             x509caInfo.setDoStoreOcspResponsesOnDemand(caInfoDto.isDoStoreOcspResponsesOnDemand());
+            x509caInfo.setDoPreProduceOcspResponseUponIssuanceAndRevocation(caInfoDto.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
             return saveCaInternal(x509caInfo);
         } else if (caInfoDto.getCaType()==CAInfo.CATYPE_PROXY) {
             return saveCaInternal(caInfoDto.buildProxyCaInfo());
@@ -2352,6 +2352,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setDefaultOCSPServiceLocator(x509cainfo.getDefaultOCSPServiceLocator());
             caInfoDto.setCaSerialNumberOctetSize(String.valueOf(x509cainfo.getCaSerialNumberOctetSize()));
             caInfoDto.setDoPreProduceOcspResponses(x509cainfo.isDoPreProduceOcspResponses());
+            caInfoDto.setDoPreProduceOcspResponseUponIssuanceAndRevocation(x509cainfo.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
             caInfoDto.setDoStoreOcspResponsesOnDemand(x509cainfo.isDoStoreOcspResponsesOnDemand());
             caInfoDto.setMsCaCompatible(x509cainfo.isMsCaCompatible());
             Map<String, List<String>> alternateChains = new HashMap<>();

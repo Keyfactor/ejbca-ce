@@ -131,7 +131,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             throw new AuthorizationDeniedException(msg);
         }
         // Check token type.
-        if (endEntity.getTokenType() != EndEntityConstants.TOKEN_SOFT_P12 && endEntity.getTokenType() != EndEntityConstants.TOKEN_USERGEN) { // logger
+        if (endEntity.getTokenType() != EndEntityConstants.TOKEN_SOFT_P12 && 
+                !(endEntity.getTokenType() == EndEntityConstants.TOKEN_USERGEN && endEntity.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY)) { // logger
             throw new EjbcaException(ErrorCode.BAD_USER_TOKEN_TYPE,
                     "Error: Wrong Token Type of user, must be 'P12' for PKCS12 requests and 'USER_GENERATED' for MSAE key archival request.");
         }

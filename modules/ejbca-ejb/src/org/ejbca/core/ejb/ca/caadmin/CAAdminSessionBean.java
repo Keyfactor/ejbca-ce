@@ -877,7 +877,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, CertificateProfile cp)
+    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, final int cpId)
         throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException,
         CertificateExtensionException, CAOfflineException, IllegalValidityException,
         SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException {
@@ -894,22 +894,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         EndEntityInformation eeInfo = new EndEntityInformation();
         eeInfo.setDN(caCommonName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
         eeInfo.setCAId(ca.getCAId());
+        final CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
 
         final Certificate cert = ca.generateCertificate(
-            cryptoToken,
-            eeInfo,
-            publicKey,
-            X509KeyUsage.keyEncipherment,
-            null,
-            null,
-            cp,
-            sequence,
-            cceConfig
+                cryptoToken,
+                eeInfo,
+                null,
+                publicKey,
+                X509KeyUsage.keyEncipherment,
+                null,
+                null,
+                cp,
+                null,
+                sequence,
+                cceConfig
         );
 
         certificateStoreSession.storeCertificate(authenticationToken, cert, CertificateConstants.CERT_USERNAME_SYSTEMCA,
                                                  CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE,
-                                                 CertificateConstants.CERT_TYPE_ENCRYPTION, CertificateProfileConstants.NO_CERTIFICATE_PROFILE,
+                                                 CertificateConstants.CERT_TYPE_ENCRYPTION, cpId,
                                                  EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, null,
                                                  System.currentTimeMillis(), null);
 

@@ -247,6 +247,9 @@
         "produces": [
           "application/json"
         ],
+        "consumes": [
+          "application/json"
+        ],
         "parameters": [
           {
             "name": "issuer_dn",
@@ -297,13 +300,6 @@
             "type": "string"
           },
           {
-            "name": "crlFile",
-            "in": "formData",
-            "description": "CRL file in DER format",
-            "required": false,
-            "type": "file"
-          },
-          {
             "name": "crlPartitionIndex",
             "in": "formData",
             "description": "CRL partition index",
@@ -311,6 +307,13 @@
             "type": "integer",
             "default": 0,
             "format": "int32"
+          },
+          {
+            "name": "crlFile",
+            "in": "formData",
+            "description": "CRL file in DER format",
+            "required": false,
+            "type": "file"
           }
         ],
         "responses": {
@@ -409,7 +412,7 @@
           {
             "name": "reason",
             "in": "query",
-            "description": "Must be valid RFC5280 reason. One of\n NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE\n\n Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.",
+            "description": "Must be valid RFC5280 reason. One of\n NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE \n\n Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.",
             "required": false,
             "type": "string"
           },
@@ -494,6 +497,9 @@
         "description": "Finalizes enrollment after administrator approval using request Id",
         "operationId": "finalizeEnrollment",
         "produces": [
+          "application/json"
+        ],
+        "consumes": [
           "application/json"
         ],
         "parameters": [
@@ -691,7 +697,7 @@
         "tags": [
           "v2/certificate"
         ],
-        "summary": "Retrieve the quantity of total issued or active certificates",
+        "summary": "Get the quantity of rather total issued or active certificates",
         "description": "",
         "operationId": "getCertificateCount",
         "produces": [
@@ -852,7 +858,7 @@
           {
             "name": "exclude",
             "in": "query",
-            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
+            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities, CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
             "required": false,
             "type": "array",
             "items": {
@@ -1123,7 +1129,7 @@
           {
             "name": "exclude",
             "in": "query",
-            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config,CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
+            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
             "required": false,
             "type": "array",
             "items": {
@@ -1323,6 +1329,9 @@
         "produces": [
           "application/json"
         ],
+        "consumes": [
+          "application/json"
+        ],
         "parameters": [
           {
             "name": "cryptotoken_name",
@@ -1352,7 +1361,7 @@
           "v1/cryptotoken"
         ],
         "summary": "Generate keys",
-        "description": "Generates a key pair given crypto token name, key pair alias, key algorithm and key specification",
+        "description": "Generates a key pair given crypto token name, key pair alias, key algorithm and key specification, i.e. RSA 4096 or ECDSA secp256r1.",
         "operationId": "generateKeys",
         "produces": [
           "application/json"
@@ -1782,10 +1791,13 @@
         "tags": [
           "v1/system"
           ],
-        "summary": "Run service worker",
-        "description": "Runs specified service worker.",
+        "summary": "Runs a specified service",
+        "description": "Run service with the provided name",
         "operationId": "runServiceNoTimer",
         "produces": [
+          "application/json"
+        ],
+        "consumes": [
           "application/json"
         ],
         "parameters": [
@@ -1882,7 +1894,8 @@
       "properties": {
         "count": {
           "type": "integer",
-          "example": "1054",
+          "format": "int64",
+          "example": 1054,
           "description": "The quantity of issued or active certificates"
         }
       }
@@ -2567,6 +2580,13 @@
           "items": {
             "type": "string"
           }
+        },
+        "available_security_levels": {
+          "items": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "type": "array"
         }
       }
     },
@@ -2606,17 +2626,22 @@
         "key_pair_alias": {
           "type": "string",
           "example": "signKey",
-          "description": "Key pair alias"
+          "description": "Key pair aliasof the key pair to be generated, must not already exist"
         },
         "key_alg": {
           "type": "string",
           "example": "RSA",
-          "description": "Key algorithm"
+          "description": "Key algorithm, required for some algorithms, RSA, not required for others like EC or Dilithium"
         },
         "key_spec": {
           "type": "string",
           "example": "4096",
-          "description": "Key specification"
+          "description": "Key specification, key size, curve or name, must be supported by the underlying crypto token, like 4096 for RSA or secp256r1 for EC"
+        },
+        "key_usage": {
+          "description": "Optional key usage, affects some crypto tokens (PKCS#11 NG) but not most others. Values SIGN, ENCRYPT, SIGN_ENCRYPT",
+          "example": "SIGN",
+          "type": "string"
         }
       }
     },
@@ -2684,6 +2709,12 @@
           "type": "string",
           "example": "1234567890",
           "description": "Account Binding ID"
+        },
+        "custom_data": {
+          "items": {
+            "$ref": "#/definitions/ExtendedInformationRestRequestComponent"
+          },
+          "type": "array"
         }
       }
     },
@@ -2692,12 +2723,12 @@
       "properties": {
         "name": {
           "type": "string",
-          "example": "1.3.6.1.5.5.7.1.24",
-          "description": "Certificate Extension Object Identifier (OID)"
+          "example": "1.3.6.1.5.5.7.1.24/customdata_STARTTIME",
+          "description": "For extension_data a certificate extension object identifier (OID), for custom_data a string variable and value see ExtendedInformation class"
         },
         "value": {
           "type": "string",
-          "example": "3003020105",
+          "example": "3003020105/2022-12-13 00:00:00",
           "description": "OID value"
         }
       }
@@ -2946,7 +2977,6 @@
         "available_certificate_profiles": {
           "type": "array",
           "example": "[\"ENDUSER\"]",
-          "position": 1,
           "description": "List of available Certificate Profiles",
           "items": {
             "type": "string"
@@ -2955,7 +2985,6 @@
         "available_cas": {
           "type": "array",
           "example": "[\"ExampleCA\"]",
-          "position": 2,
           "description": "List of available Certificate Authorities (CAs)",
           "items": {
             "type": "string"
@@ -3007,7 +3036,7 @@
         "current_page": {
           "type": "integer",
           "format": "int32",
-          "example": 0,
+          "example": 1,
           "description": "Current page number"
         },
         "criteria": {
@@ -3120,6 +3149,16 @@
           "type": "string",
           "example": "foo123",
           "description": "Password"
+        },
+        "not_after": {
+          "description": "Valid notAfter date",
+          "example": "ISO 8601 Date string, eg. '2024-06-15T14:07:09Z'",
+          "type": "string"
+        },
+        "not_before": {
+          "description": "Valid notBefore date",
+          "example": "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'",
+          "type": "string"
         }
       }
     },
