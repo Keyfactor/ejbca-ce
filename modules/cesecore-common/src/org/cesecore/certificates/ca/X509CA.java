@@ -129,12 +129,16 @@ public interface X509CA extends CA, HybridCa {
     void setCaSerialNumberOctetSize(int serialNumberOctetSize);
     
     boolean isDoPreProduceOcspResponses();
-    
+
     void setDoPreProduceOcspResponses(boolean doPreProduceOcspResponses);
     
     boolean isDoStoreOcspResponsesOnDemand();
     
     void setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand);
+
+    boolean isDoPreProduceOcspResponseUponIssuanceAndRevocation();
+
+    void setDoPreProduceOcspResponseUponIssuanceAndRevocation(boolean doPreProduceOcspResponses);
 
     void createOrRemoveLinkCertificateDuringCANameChange(CryptoToken cryptoToken, boolean createLinkCertificate, CertificateProfile certProfile,
             AvailableCustomCertificateExtensionsConfiguration cceConfig, Certificate oldCaCert) throws CryptoTokenOfflineException;
