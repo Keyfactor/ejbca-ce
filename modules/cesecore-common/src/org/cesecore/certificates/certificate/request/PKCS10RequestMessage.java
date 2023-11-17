@@ -17,10 +17,14 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -38,6 +42,7 @@ import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.DirectoryString;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
@@ -50,6 +55,8 @@ import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+
 import org.cesecore.util.LogRedactionUtils;
 
 /**
@@ -88,6 +95,8 @@ public class PKCS10RequestMessage implements RequestMessage {
     private List<Certificate> additionalCaCertificates = new ArrayList<>();
     
     private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
+    
+    private transient PublicKey alternativePublicKey = null;
 
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
@@ -95,6 +104,11 @@ public class PKCS10RequestMessage implements RequestMessage {
             return;
         }
         this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+        try {
+            this.alternativePublicKey = extractAlternativePublicKey(pkcs10);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new IOException(e);
+        }
     }
     
     /**
@@ -107,6 +121,8 @@ public class PKCS10RequestMessage implements RequestMessage {
      * Constructs a new PKCS#10 message handler object.
      *
      * @param msg The DER encoded PKCS#10 request.
+     * @throws NoSuchProviderException 
+     * @throws NoSuchAlgorithmException 
      */
     public PKCS10RequestMessage(byte[] msg) throws IOException {
     	if (log.isTraceEnabled()) {
@@ -115,6 +131,11 @@ public class PKCS10RequestMessage implements RequestMessage {
         this.p10msg = msg;
         if (!Objects.isNull(p10msg)) {
             this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+            try {
+                this.alternativePublicKey = extractAlternativePublicKey(pkcs10);
+            } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+                throw new IOException(e);
+            }
         }
     	if (log.isTraceEnabled()) {
     		log.trace("<PKCS10RequestMessage(byte[])");
@@ -133,6 +154,11 @@ public class PKCS10RequestMessage implements RequestMessage {
     	}
         p10msg = p10.getEncoded();
         pkcs10 = p10;
+        try {
+            this.alternativePublicKey = extractAlternativePublicKey(pkcs10);
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new IOException(e);
+        }
     	if (log.isTraceEnabled()) {
     		log.trace("<PKCS10RequestMessage(ExtendedPKCS10CertificationRequest)");
     	}
@@ -142,11 +168,12 @@ public class PKCS10RequestMessage implements RequestMessage {
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException {
         return Objects.isNull(pkcs10) ? null : pkcs10.getPublicKey();
     }
+    
     @Override
     public SubjectPublicKeyInfo getRequestSubjectPublicKeyInfo() {
         return Objects.isNull(pkcs10) ? null : pkcs10.getSubjectPublicKeyInfo();
     }
-
+    
     @Override
     public void setPassword(String pwd) {
         this.password = pwd;
@@ -496,6 +523,40 @@ public class PKCS10RequestMessage implements RequestMessage {
     public void setAdditionalExtraCertsCertificates(List<Certificate> additionalExtraCertsCertificates) {
         this.additionalExtraCertsCertificates = additionalExtraCertsCertificates;
     }
+    
+    private static PublicKey extractAlternativePublicKey(final PKCS10CertificationRequest request)
+            throws NoSuchAlgorithmException, NoSuchProviderException {
+        Attribute[] attributes = request.getAttributes();
+        for (Attribute attribute : attributes) {
+            if (Extension.subjectAltPublicKeyInfo.equals(attribute.getAttrType())) {
+                SubjectPublicKeyInfo subjectPublicKeyInfo = SubjectPublicKeyInfo.getInstance(getSingleValue(attribute));
+
+                final AlgorithmIdentifier keyAlgorithm = subjectPublicKeyInfo.getAlgorithm();
+                X509EncodedKeySpec x509EncodedKeySpec;
+                try {
+                    x509EncodedKeySpec = new X509EncodedKeySpec(subjectPublicKeyInfo.getEncoded());
+                    KeyFactory keyFactory = KeyFactory.getInstance(keyAlgorithm.getAlgorithm().getId(),
+                            CryptoProviderTools.getProviderNameFromAlg(keyAlgorithm.getAlgorithm().getId()));
+                    return keyFactory.generatePublic(x509EncodedKeySpec);
+                } catch (IOException | InvalidKeySpecException e) {
+                    throw new IllegalStateException("Could not extract alternative public key.", e);
+                }
+
+            }
+        }
+        return null;
+    }
+    
+    private static ASN1Encodable getSingleValue(Attribute at)
+    {
+        ASN1Encodable[] attrValues = at.getAttributeValues();
+        if (attrValues.length!= 1)
+        {
+            throw new IllegalArgumentException("single value attribute value not size of 1");
+        }
+
+        return attrValues[0];
+    }
 
     @Override
     public int hashCode() {
@@ -565,6 +626,10 @@ public class PKCS10RequestMessage implements RequestMessage {
         } else if (!username.equals(other.username))
             return false;
         return true;
+    }
+
+    public PublicKey getAlternativePublicKey() {
+        return alternativePublicKey;
     }
 
 }
