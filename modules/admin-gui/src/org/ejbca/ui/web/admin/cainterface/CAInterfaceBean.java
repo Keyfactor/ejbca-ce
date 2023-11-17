@@ -425,7 +425,6 @@ public class CAInterfaceBean implements Serializable {
             if (!StringUtils.isEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
                 caToken.setAlternativeSignatureAlgorithm(caInfoDto.getAlternativeSignatureAlgorithmParam());
                 //Future proofing to allow the alternative key to potentially be on a different crypto token
-                caToken.setAlternativeCryptoTokenId(cryptoTokenId);
             }      
         }
        
