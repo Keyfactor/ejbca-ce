@@ -95,11 +95,11 @@ public class RaRequestPreview {
     }
     
     public final void updateSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName, final EndEntityProfile profile){
-        if(subjectAlternativeName == null){
+        if (subjectAlternativeName == null) {
             return;
         }
-        if(profile ==null) {
-            this.subjectAlternativeName =subjectAlternativeName.getUpdatedValue();
+        if (profile == null) {
+            this.subjectAlternativeName = subjectAlternativeName.getUpdatedValue();
         } else {
             String sanUpdatedValue = subjectAlternativeName.getUpdatedValue();
             sanUpdatedValue = copyCnToAltName(subjectDn, sanUpdatedValue, profile, DnComponents.DNSNAME);
@@ -119,7 +119,7 @@ public class RaRequestPreview {
         if (altName == null) {
             altName = "";
         }
-        if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn) && !altName.contains(specifiedDnTypeValueFromCn)) {
+        if (StringUtils.isNotEmpty(specifiedDnTypeValueFromCn) && !isAltNameContainsValueFromCn(altName, specifiedDnTypeValueFromCn)) {
             if (StringUtils.isNotEmpty(altName)) {
                 altName += ", ";
             }
@@ -127,7 +127,16 @@ public class RaRequestPreview {
         }
         return altName;
     }
-    
+
+    static boolean isAltNameContainsValueFromCn(String altName, String specifiedDnTypeValueFromCn) {
+        if (!altName.contains(specifiedDnTypeValueFromCn)) {
+            return false;
+        } else {
+            int indexOfNextChar = StringUtils.indexOf(altName, specifiedDnTypeValueFromCn) + specifiedDnTypeValueFromCn.length();
+            return indexOfNextChar == altName.length() || altName.charAt(indexOfNextChar) == ',';
+        }
+    }
+
     public final void updateSubjectDirectoryAttributes(SubjectDirectoryAttributes subjectDirectoryAttributes){
         if(subjectDirectoryAttributes == null){
             return;
