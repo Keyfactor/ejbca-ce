@@ -253,7 +253,7 @@ public abstract class CmpTestCase extends CaTestCase {
         result.setAllowDNOverride(true);
         // Add NTRU, just to demonstrate that it is possible in testCrmfHttpOkUserWithPQC
         List<String> algos = result.getAvailableKeyAlgorithmsAsList();
-        algos.add(AlgorithmConstants.KEYALGORITHM_NTRU);
+        algos.add(AlgorithmConstants.KEYALGORITHM_DILITHIUM5);
         result.setAvailableKeyAlgorithmsAsList(algos);
         int id = -1;
         try {
