@@ -338,10 +338,8 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
      */
     @Test
     public void testKeyUsage() throws Exception {
-        log.trace(">test06KeyUsage()");
 
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
-        log.debug("Reset status of 'foo' to NEW");
 
         int keyusage1 = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
 
@@ -350,12 +348,11 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         boolean[] retKU = cert.getKeyUsage();
-        assertTrue("Fel KeyUsage, digitalSignature finns ej!", retKU[0]);
-        assertTrue("Fel KeyUsage, keyEncipherment finns ej!", retKU[2]);
-        assertTrue("Fel KeyUsage, cRLSign finns!", !retKU[6]);
+        assertTrue("Incorrect KeyUsage, digitalSignature is not present.", retKU[0]);
+        assertTrue("Incorrect KeyUsage, keyEncipherment is not present.", retKU[2]);
+        assertTrue("Incorrect KeyUsage, cRLSign is present.", !retKU[6]);
 
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
-        log.debug("Reset status of 'foo' to NEW");
 
         int keyusage2 = X509KeyUsage.keyCertSign | X509KeyUsage.cRLSign;
 
@@ -364,12 +361,9 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
 
         assertNotNull("Failed to create certificate", cert1);
         retKU = cert1.getKeyUsage();
-        assertTrue("Fel KeyUsage, keyCertSign finns ej!", retKU[5]);
-        assertTrue("Fel KeyUsage, cRLSign finns ej!", retKU[6]);
-        assertTrue("Fel KeyUsage, digitalSignature finns!", !retKU[0]);
-
-        log.debug("Cert=" + cert1.toString());
-        log.trace("<test06KeyUsage()");
+        assertTrue("Incorrect KeyUsage, keyCertSign is not present.", retKU[5]);
+        assertTrue("Incorrect KeyUsage, cRLSign is not present.", retKU[6]);
+        assertTrue("Incorrect KeyUsage, digitalSignature is present.", !retKU[0]);
     }
 
     @Test

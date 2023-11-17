@@ -70,7 +70,6 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
-import org.cesecore.certificates.ca.HybridCa;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -101,8 +100,8 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
@@ -439,7 +438,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Validate ValidatorPhase.DATA_VALIDATION
         try {
             // Which public key to validate follows the criteria established in RequestAndPublicKeySelector, which is the same as used in the CA.
-            final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, ei);
+            final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, null, ei);
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     pkSelector.getPublicKey());
         } catch(ValidationException e) {
@@ -566,23 +565,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 certGenParams.setCertificateValidationDomainService(keyValidatorSession);
                 
                 // Validate ValidatorPhase.PRE_CERTIFICATE_VALIDATION (X.509 CA only)
-                try {      
-                    if (ca instanceof HybridCa) {
-                        // Alternate crypto token may be the same as the standard one, but also may not.
-                        final CryptoToken alternativeCryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
-                        if (alternativeCryptoToken==null) {
-                            final String msg = intres.getLocalizedMessage("error.catalternativeokenoffline", ca.getCAId());
-                            log.info(msg);
-                            CryptoTokenOfflineException exception = new CryptoTokenOfflineException("CA's Alternative CryptoToken not found.");
-                            auditFailure(admin, exception, exception.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
-                            throw exception;
-                        }
-                        cert = ((HybridCa) ca).generateCertificate(cryptoToken, alternativeCryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
-                                extensions, sequence, certGenParams, cceConfig);
-                    } else {
-                        cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
-                                extensions, sequence, certGenParams, cceConfig);
-                    }
+                try {
+                    cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
+                            extensions, sequence, certGenParams, cceConfig);
                 } catch (CertificateCreateException e) {
                     if (e.getCause() instanceof CTLogException) {
                         // Issuance will eventually be aborted but we have to store the pre-certificate.
