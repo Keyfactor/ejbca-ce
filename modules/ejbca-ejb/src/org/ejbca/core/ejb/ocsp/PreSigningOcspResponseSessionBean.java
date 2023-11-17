@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static org.cesecore.certificates.certificate.CertificateConstants.DEFAULT_CERTID_HASH_ALGORITHM;
+import static org.ejbca.util.CAUtils.isDoPreProduceOcspResponsesUponIssuanceAndRevocation;
 import static org.ejbca.util.CAUtils.isDoPreProduceOcspResponses;
 
 @Stateless
@@ -48,7 +49,7 @@ public class PreSigningOcspResponseSessionBean implements PreSigningOcspResponse
 
 	@Override
 	public void preSignOcspResponse(CA ca, BaseCertificateData certData) {
-		if (isDoPreProduceOcspResponses(ca)) {
+		if (isDoPreProduceOcspResponses(ca) && isDoPreProduceOcspResponsesUponIssuanceAndRevocation(ca)) {
 			preSign(ca, certData);
 		}
 	}
