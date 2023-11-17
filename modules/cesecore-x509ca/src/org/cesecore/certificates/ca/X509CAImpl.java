@@ -250,6 +250,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
         setDoPreProduceOcspResponses(cainfo.isDoPreProduceOcspResponses());
         setDoStoreOcspResponsesOnDemand(cainfo.isDoStoreOcspResponsesOnDemand());
+        setDoPreProduceOcspResponseUponIssuanceAndRevocation(cainfo.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
         setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
         setCrlPartitions(cainfo.getCrlPartitions());
         setSuspendedCrlPartitions(cainfo.getSuspendedCrlPartitions());
@@ -296,6 +297,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCaSerialNumberOctetSize(getSerialNumberOctetSize())
                 .setDoPreProduceOcspResponses(isDoPreProduceOcspResponses())
                 .setDoStoreOcspResponsesOnDemand(isDoStoreOcspResponsesOnDemand())
+                .setDoPreProduceIndividualOcspResponses(isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                 .setRevocationReason(getRevocationReason())
                 .setRevocationDate(getRevocationDate())
                 .setPolicies(getPolicies())
@@ -774,10 +776,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      */
     @Override
     public boolean isDoPreProduceOcspResponses() {
-        if(data.containsKey(DO_PRE_PRODUCE_OCSP_RESPONSES)) {
-            return (Boolean) data.get(DO_PRE_PRODUCE_OCSP_RESPONSES);
-        }
-        return false;
+        return containsOcspKey(DO_PRE_PRODUCE_OCSP_RESPONSES);
     }
     
     /* (non-Javadoc)
@@ -790,17 +789,31 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
     @Override
     public boolean isDoStoreOcspResponsesOnDemand() {
-        if (data.containsKey(DO_STORE_OCSP_ON_DEMAND)) {
-            return (Boolean) data.get(DO_STORE_OCSP_ON_DEMAND);
-        }
-        return false;
+        return containsOcspKey(DO_STORE_OCSP_ON_DEMAND);
     }
     
     @Override
     public void setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand) {
         data.put(DO_STORE_OCSP_ON_DEMAND, doStoreOcspResponsesOnDemand);
     }
-    
+
+    @Override
+    public boolean isDoPreProduceOcspResponseUponIssuanceAndRevocation() {
+        return containsOcspKey(DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES);
+    }
+
+    @Override
+    public void setDoPreProduceOcspResponseUponIssuanceAndRevocation(boolean doPreProduceIndividualOcspResponses) {
+        data.put(DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES, doPreProduceIndividualOcspResponses);
+    }
+
+    private boolean containsOcspKey(String key) {
+        if (data.containsKey(key)) {
+            return (Boolean) data.get(key);
+        }
+        return false;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, List<String>> getAlternateCertificateChains() {
@@ -846,6 +859,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setCaSerialNumberOctetSize(info.getCaSerialNumberOctetSize());
         setDoPreProduceOcspResponses(info.isDoPreProduceOcspResponses());
         setDoStoreOcspResponsesOnDemand(info.isDoStoreOcspResponsesOnDemand());
+        setDoPreProduceOcspResponseUponIssuanceAndRevocation(info.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
         setUsePartitionedCrl(info.getUsePartitionedCrl());
         setCrlPartitions(info.getCrlPartitions());
         setMsCaCompatible(info.isMsCaCompatible());

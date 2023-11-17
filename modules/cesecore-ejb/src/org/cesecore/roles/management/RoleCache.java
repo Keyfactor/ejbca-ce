@@ -26,7 +26,6 @@ import org.cesecore.roles.Role;
  * 
  * The cached name is in the form "nameSpace:roleName".
  * 
- * @version $Id$
  */
 public enum RoleCache implements CommonCache<Role> {
     INSTANCE;
