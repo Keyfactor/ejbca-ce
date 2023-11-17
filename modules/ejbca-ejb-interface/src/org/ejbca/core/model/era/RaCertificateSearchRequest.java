@@ -588,15 +588,16 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
      * @return true if the username is matched by this search.
      */
     public boolean matchUsername(final String username) {
-        return username != null && usernameSearchString != null && ((!usernameSearchExact && StringUtils.contains(username.toUpperCase(), usernameSearchString.toUpperCase())) ||
-                (usernameSearchExact && StringUtils.equalsIgnoreCase(username, usernameSearchString)));
+        return username != null && !StringUtils.isEmpty(usernameSearchString) &&
+                ((!usernameSearchExact && StringUtils.contains(username.toUpperCase(), usernameSearchString.toUpperCase())) ||
+                        (usernameSearchExact && StringUtils.equalsIgnoreCase(username, usernameSearchString)));
     }
 
     /**
      * @return true if the external account id is matched by this search.
      */
     public boolean matchExternalAccountId(final String externalAccountId) {
-        return externalAccountId != null && usernameSearchString != null && (externalAccountIdSearchExact ?
+        return externalAccountId != null && !StringUtils.isEmpty(externalAccountIdSearchString) && (externalAccountIdSearchExact ?
                 StringUtils.equalsIgnoreCase(externalAccountId, usernameSearchString) :
                 StringUtils.contains(externalAccountId.toUpperCase(), usernameSearchString.toUpperCase()));
     }
@@ -605,15 +606,18 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
      * @return true if the subjectDn is matched by this search.
      */
     public boolean matchSubjectDn(final String subjectDn) {
-        return subjectDn != null && subjectDnSearchString != null && ((!subjectDnSearchExact && StringUtils.contains(subjectDn.toUpperCase(), subjectDnSearchString.toUpperCase())) ||
-                (subjectDnSearchExact && StringUtils.equalsIgnoreCase(subjectDn, subjectDnSearchString)));
+        return subjectDn != null && !StringUtils.isEmpty(subjectDnSearchString) &&
+                ((!subjectDnSearchExact && StringUtils.contains(subjectDn.toUpperCase(), subjectDnSearchString.toUpperCase())) ||
+                        (subjectDnSearchExact && StringUtils.equalsIgnoreCase(subjectDn, subjectDnSearchString)));
     }
 
     /**
      * @return true if the subjectAn is matched by this search.
      */
     public boolean matchSubjectAn(final String subjectAn) {
-        return subjectAn != null && ((!subjectAnSearchExact && StringUtils.contains(subjectAn, subjectAnSearchString)) || (subjectAnSearchExact && StringUtils.equals(subjectAn, subjectAnSearchString)));
+        return subjectAn != null && !StringUtils.isEmpty(subjectAnSearchString) &&
+                ((!subjectAnSearchExact && StringUtils.contains(subjectAn, subjectAnSearchString))||
+                        (subjectAnSearchExact && StringUtils.equals(subjectAn, subjectAnSearchString)));
     }
 
     /**

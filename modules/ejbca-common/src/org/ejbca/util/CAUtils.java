@@ -34,4 +34,18 @@ public final class CAUtils {
 		}
 		return false;
 	}
+
+	/**
+	 * Check if OCSP response have to be produced for individual certificates or not.
+	 *
+	 * @param ca certificate authority.
+	 * @return whether an OCSP responses produced or not - true/false.
+	 */
+	public static boolean isDoPreProduceOcspResponsesUponIssuanceAndRevocation(CA ca) {
+		if (ca instanceof X509CA) {
+			return ((X509CA) ca).isDoPreProduceOcspResponseUponIssuanceAndRevocation();
+		}
+		return false;
+	}
+
 }
