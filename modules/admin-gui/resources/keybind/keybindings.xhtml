@@ -2,6 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
 	  xmlns:f="http://xmlns.jcp.org/jsf/core"
+	  xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	  xmlns:h="http://xmlns.jcp.org/jsf/html"
 	  xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	  xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
@@ -48,7 +49,7 @@
 				<h:column>
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATEISSUER}"/></f:facet>
 					<h:outputLink value="/ejbca/adminweb/viewcertificate.xhtml" rendered="#{guiInfo.certificateBound}">
-						<f:param name="certsernoparameter" value="#{guiInfo.caCertificateSerialNumber},#{guiInfo.caCertificateIssuerDn}"/>
+						<f:param name="certsernoparameter" value="#{guiInfo.caCertificateSerialNumber},#{fn:escapeXml(guiInfo.caCertificateIssuerDn)}"/>
 						<f:param name="returnTo" value="3"/>
 						<h:outputText value="#{guiInfo.certificateInternalCaName}" rendered="#{guiInfo.issuedByInternalCa}"/>
 						<h:outputText value="#{guiInfo.certificateIssuerDn}" rendered="#{!guiInfo.issuedByInternalCa}"/>
@@ -58,7 +59,7 @@
 				<h:column>
 					<f:facet name="header"><h:outputText value="#{web.text.INTERNALKEYBINDING_CERTIFICATESERIAL}"/></f:facet>
 					<h:outputLink value="/ejbca/adminweb/viewcertificate.xhtml" rendered="#{guiInfo.certificateBound}">
-						<f:param name="certsernoparameter" value="#{guiInfo.certificateSerialNumber},#{guiInfo.certificateIssuerDn}"/>
+						<f:param name="certsernoparameter" value="#{guiInfo.certificateSerialNumber},#{fn:escapeXml(guiInfo.certificateIssuerDn)}"/>
 						<f:param name="returnTo" value="3"/>
 						<h:outputText style="font-family: monospace; text-align: right;" value="#{guiInfo.certificateSerialNumber}"/>
 					</h:outputLink>
