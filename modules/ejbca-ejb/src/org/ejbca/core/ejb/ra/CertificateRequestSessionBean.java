@@ -234,7 +234,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             throw LogRedactionUtils.getRedactedException(e);
         } finally {
             /* BC property may be overriden by {@link validateAndGetMsaeKeyPairToArchive}, make sure to always remove*/
-            Properties.removeThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod");
+            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
         }
         return retval;
     }
@@ -266,7 +266,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                     caSession.getCA(admin, userData.getCAId()).getCAToken().getCryptoTokenId(),
                     caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
             log.info("decrypting private key for archival");
-            Properties.setThreadOverride("org.bouncycastle.rsa.allow_unsafe_mod", true);
+            Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
             final KeyRecoveryCAServiceResponse response = (KeyRecoveryCAServiceResponse) caAdminSession.extendedService(admin, userData.getCAId(),
                     decryptMsPrivateKeyRequest);
             return response.getKeyPair();
