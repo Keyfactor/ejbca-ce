@@ -56,6 +56,7 @@
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/ra-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestconfigdump-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestct" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestcaa" inheritall="true" inheritrefs="true"/>
@@ -170,6 +171,7 @@
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
+                    <include name="modules/ra-gui/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins/src-test/**/${test.runone}.java" />
                     <include name="modules/plugins-ee/src-test/**/${test.runone}.java" />
                     <include name="modules/cli-util/src-test/**/${test.runone}.java" />
@@ -253,6 +255,9 @@
         </condition>
         <condition property="module" value="modules/admin-gui">
             <matches string="${test-fullname}" pattern="^modules/admin-gui/.*$"/>
+        </condition>
+        <condition property="module" value="modules/ra-gui">
+            <matches string="${test-fullname}" pattern="^modules/ra-gui/.*$"/>
         </condition>
         <condition property="module" value="modules/plugins">
             <matches string="${test-fullname}" pattern="^modules/plugins/.*$"/>
@@ -398,6 +403,11 @@
 
     <target name="test:unit:admingui" description="run all JUnit tests for CA UI." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:ragui" description="run all JUnit tests for RA UI." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ra-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
