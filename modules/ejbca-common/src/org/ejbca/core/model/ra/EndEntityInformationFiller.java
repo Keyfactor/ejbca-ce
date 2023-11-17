@@ -147,7 +147,7 @@ public class EndEntityInformationFiller {
             return StringUtils.EMPTY;
         }
         StringBuilder specifiedSans = new StringBuilder();
-        String commonName = CertTools.getCommonNameFromSubjectDn(subjectDn);
+        String commonName = DnComponents.getCommonNameFromSubjectDn(subjectDn);
         if (StringUtils.isNotEmpty(commonName)) {
             int[] field = null;
             final int numberOfFields = endEntityProfile.getSubjectAltNameFieldOrderLength();
