@@ -488,9 +488,9 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     private boolean isWider(final String thisObject, final String otherObject) {
         if (thisObject == null && otherObject == null) {
             return false;
-        } else if (thisObject == null) {
+        } else if (StringUtils.isEmpty(thisObject)) {
             return true;
-        } else if (otherObject == null) {
+        } else if (StringUtils.isEmpty(otherObject)) {
             return true;
         } else {
             return !thisObject.contains(otherObject);
