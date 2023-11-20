@@ -487,6 +487,7 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setSearchSubjectDistinguishedName(boolean searchSubjectDistinguishedName) {
         this.searchSubjectDistinguishedName = searchSubjectDistinguishedName;
+        updateStringSearchCriteria();
     }
 
     public boolean isSearchSubjectAlternativeName() {
@@ -495,6 +496,7 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setSearchSubjectAlternativeName(boolean searchSubjectAlternativeName) {
         this.searchSubjectAlternativeName = searchSubjectAlternativeName;
+        updateStringSearchCriteria();
     }
 
     public boolean isSearchUsername() {
@@ -503,6 +505,7 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setSearchUsername(boolean searchUsername) {
         this.searchUsername = searchUsername;
+        updateStringSearchCriteria();
     }
 
     public boolean isSearchExternalAccountId() {
@@ -511,6 +514,7 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setSearchExternalAccountId(boolean searchExternalAccountId) {
         this.searchExternalAccountId = searchExternalAccountId;
+        updateStringSearchCriteria();
     }
 
     /**
@@ -545,12 +549,20 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setGenericSearchString(final String genericSearchString) {
         this.genericSearchString = genericSearchString;
+        updateStringSearchCriteria();
+    }
+    
+    private void updateStringSearchCriteria() {
         stagedRequest.setSubjectDnSearchString(this.searchSubjectDistinguishedName ? genericSearchString : "");
         stagedRequest.setSubjectAnSearchString(this.searchSubjectAlternativeName ? genericSearchString : "");
         stagedRequest.setUsernameSearchString(this.searchUsername ? genericSearchString : "");
         stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
         stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
         stagedRequest.setExternalAccountIdSearchString(this.searchExternalAccountId ? genericSearchString : "");
+        log.debug("stagedRequest: {dnString: " + stagedRequest.getSubjectDnSearchString() + ", "
+                                + "sanString: " + stagedRequest.getSubjectAnSearchString() + ", "
+                                + "username: " + stagedRequest.getUsernameSearchString() + ", "
+                                + "eab: " + stagedRequest.getExternalAccountIdSearchString());
     }
 
     public String getHttpSearchQueryParameter() {
