@@ -10,16 +10,21 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.protocol.msae;
+package org.ejbca.core.ejb;
+
+import javax.ejb.ConcurrencyManagement;
+import javax.ejb.ConcurrencyManagementType;
+import javax.ejb.DependsOn;
+import javax.ejb.Singleton;
+
+import org.ejbca.core.protocol.msae.KecCache;
 
 /**
- *
+ * Cache holding CA id and associated kec (key exchange certificate) 
  */
-public class KeyArchivalException extends Exception {
-
-    private static final long serialVersionUID = 1L;
-
-    public KeyArchivalException(String string) {
-        super(string);
-    }
+@Singleton
+@ConcurrencyManagement(ConcurrencyManagementType.CONTAINER)
+@DependsOn({ "StartupSingletonBean" })
+public class KecCacheBean implements KecCache {
+    // Only available in enterprise EJBCA!
 }
