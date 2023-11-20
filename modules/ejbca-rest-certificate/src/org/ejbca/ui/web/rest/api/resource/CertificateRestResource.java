@@ -24,7 +24,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -122,6 +124,9 @@ public class CertificateRestResource extends BaseRestResource {
     private static final Logger log = Logger.getLogger(CertificateRestResource.class);
 
     @EJB
+    private CaSessionLocal caSessionLocal;
+
+    @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
 
     public Response enrollPkcs10Certificate(final HttpServletRequest requestContext,
@@ -167,7 +172,7 @@ public class CertificateRestResource extends BaseRestResource {
                     .map(CertificateWrapper::getCertificate)
                     .collect(Collectors.toList())
                     : null;
-            final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(
+            final CertificateRestResponse enrollCertificateRestResponse = constructFullCertRestResponse(
                     certificateChain,
                     certificate
             );
@@ -237,9 +242,12 @@ public class CertificateRestResource extends BaseRestResource {
         if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS || tokenType == SecConst.TOKEN_SOFT_BCFKS)) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
-        final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
-        CertificateRestResponse response = CertificateRestResponse.converter().toRestResponse(keyStoreBytes, endEntityInformation.getTokenType());
-        return Response.status(Status.CREATED).entity(response).build();
+        CACommon caCommon = caSessionLocal.getCA(admin, endEntityInformation.getCAId());
+        final CertificateRestResponse enrollCertificateRestResponse = constructFullCertRestResponse(
+                caCommon.getCertificateChain(),
+                caCommon.getCACertificate()
+        );
+        return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
     }
 
     public Response revocationStatus(final HttpServletRequest requestContext, final String issuerDn, final String serialNumber)
@@ -510,5 +518,9 @@ public class CertificateRestResource extends BaseRestResource {
         final RaCertificateSearchRequest raCertificateSearchRequest = SearchCertificatesRestRequest.converter().toEntity(searchCertificatesRestRequest);
         final RaCertificateSearchResponse raCertificateSearchResponse = raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest);
         return SearchCertificatesRestResponse.converter().toRestResponse(raCertificateSearchResponse, availableEndEntityProfiles, availableCertificateProfiles);
+    }
+
+    private CertificateRestResponse constructFullCertRestResponse(List<Certificate> certificateChain, Certificate certificate) {
+        return CertificateRestResponse.converter().toRestResponse(certificateChain, certificate);
     }
 }
