@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import com.keyfactor.util.EJBTools;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -242,10 +243,34 @@ public class RaSearchCertsBean implements Serializable {
     }
 
     private void searchForCertificates() {
-        lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
+        if (isStagedRequestValid()) {
+            lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
+        } else {
+            // if the request is deemed invalid, we can bypass sending it for execution and simply generate an empty response
+            lastExecutedResponse = new RaCertificateSearchResponse();
+        }
         lastExecutedRequest = stagedRequest;
         stagedRequest = new RaCertificateSearchRequest(stagedRequest);
         filterTransformSort();
+    }
+
+    /**
+     * Determine if the current search criteria would result in a valid request.
+     *
+     * @return true if the request appears to be valid and should be executed, false otherwise
+     */
+    private boolean isStagedRequestValid() {
+        return isAtLeastOneCriteriaCheckboxTicked() ||
+                StringUtils.isEmpty(genericSearchString) ||
+                StringUtils.isNotEmpty(stagedRequest.getSerialNumberSearchStringFromDec()) ||
+                StringUtils.isNotEmpty(stagedRequest.getSerialNumberSearchStringFromHex());
+    }
+
+    /**
+     * @return true if at least one of the search criteria checkboxes is ticked
+     */
+    private boolean isAtLeastOneCriteriaCheckboxTicked() {
+        return searchSubjectDistinguishedName || searchSubjectAlternativeName || searchUsername || searchExternalAccountId;
     }
 
     /**
@@ -551,7 +576,7 @@ public class RaSearchCertsBean implements Serializable {
         this.genericSearchString = genericSearchString;
         updateStringSearchCriteria();
     }
-    
+
     private void updateStringSearchCriteria() {
         stagedRequest.setSubjectDnSearchString(this.searchSubjectDistinguishedName ? genericSearchString : "");
         stagedRequest.setSubjectAnSearchString(this.searchSubjectAlternativeName ? genericSearchString : "");
