@@ -559,10 +559,6 @@ public class RaSearchCertsBean implements Serializable {
         stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
         stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
         stagedRequest.setExternalAccountIdSearchString(this.searchExternalAccountId ? genericSearchString : "");
-        log.debug("stagedRequest: {dnString: " + stagedRequest.getSubjectDnSearchString() + ", "
-                                + "sanString: " + stagedRequest.getSubjectAnSearchString() + ", "
-                                + "username: " + stagedRequest.getUsernameSearchString() + ", "
-                                + "eab: " + stagedRequest.getExternalAccountIdSearchString() + " }");
     }
 
     public String getHttpSearchQueryParameter() {
