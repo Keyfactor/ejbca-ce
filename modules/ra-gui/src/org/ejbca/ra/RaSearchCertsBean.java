@@ -562,7 +562,7 @@ public class RaSearchCertsBean implements Serializable {
         log.debug("stagedRequest: {dnString: " + stagedRequest.getSubjectDnSearchString() + ", "
                                 + "sanString: " + stagedRequest.getSubjectAnSearchString() + ", "
                                 + "username: " + stagedRequest.getUsernameSearchString() + ", "
-                                + "eab: " + stagedRequest.getExternalAccountIdSearchString());
+                                + "eab: " + stagedRequest.getExternalAccountIdSearchString() + " }");
     }
 
     public String getHttpSearchQueryParameter() {

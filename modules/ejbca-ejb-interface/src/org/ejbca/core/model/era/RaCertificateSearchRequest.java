@@ -459,9 +459,9 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     private boolean isMoreNarrow(final String thisObject, final String otherObject) {
         if (thisObject == null && otherObject == null) {
             return false;
-        } else if (thisObject == null) {
+        } else if ((StringUtils.isEmpty(thisObject))) {
             return false;
-        } else if (otherObject == null) {
+        } else if ((StringUtils.isEmpty(otherObject))) {
             return true;
         } else {
             return thisObject.contains(otherObject) && !otherObject.contains(thisObject);
@@ -488,9 +488,7 @@ public class RaCertificateSearchRequest implements Serializable, Comparable<RaCe
     private boolean isWider(final String thisObject, final String otherObject) {
         if (thisObject == null && otherObject == null) {
             return false;
-        } else if (StringUtils.isEmpty(thisObject)) {
-            return true;
-        } else if (StringUtils.isEmpty(otherObject)) {
+        } else if (StringUtils.isEmpty(thisObject) || StringUtils.isEmpty(otherObject)) {
             return true;
         } else {
             return !thisObject.contains(otherObject);
