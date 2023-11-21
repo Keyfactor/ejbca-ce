@@ -298,7 +298,6 @@ public class CertificateRestResource extends BaseRestResource {
             CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, WaitingForApprovalException, IllegalArgumentException, CertificateProfileDoesNotExistException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         RevocationReasons reasons = RevocationReasons.getFromCliValue(reason);
-        // TODO Replace with @ValidRevocationReason
         final BigInteger serialNr;
         try {
             serialNr = StringTools.getBigIntegerFromHexString(serialNumber);
@@ -341,7 +340,6 @@ public class CertificateRestResource extends BaseRestResource {
         return Response.ok(result).build();
     }
 
-    // TODO Replace with @ValidRevocationDate annotation
     private Date getValidatedDate(String sDate) throws RestException {
         Date date = null;
         if (sDate != null) {
