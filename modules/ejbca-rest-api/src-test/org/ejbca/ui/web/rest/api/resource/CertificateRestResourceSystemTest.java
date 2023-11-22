@@ -1098,7 +1098,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         certificateRequestExpectCsrSubjectIgnored(true);
     }
 
-    public void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
+    private void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
         // Add End Entity
         EndEntityInformation userdata = new EndEntityInformation(testUsername, "O=PrimeKey,CN=" + testUsername, x509TestCa.getCAId(), null,
                 null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
