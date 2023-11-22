@@ -23,7 +23,6 @@ import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
