@@ -64,7 +64,6 @@ public class SessionBeans {
         final HttpSession httpSession = httpServletRequest.getSession(true);
         synchronized (httpSession) {
             CAInterfaceBean caBean = (CAInterfaceBean) httpSession.getAttribute(SESSION.CA_INTERFACE_BEAN);
-            if (caBean == null) {
                 caBean = getBeanInstance(CAInterfaceBean.class);
                 try {
                     caBean.initialize(getEjbcaWebBean(httpServletRequest));
@@ -72,7 +71,6 @@ public class SessionBeans {
                     throw new ServletException("Error initializing CACertReqServlet");
                 }
                 httpSession.setAttribute(SESSION.CA_INTERFACE_BEAN, caBean);
-            }
             return caBean;
         }
     }
