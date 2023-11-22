@@ -157,9 +157,11 @@ public class CAInterfaceBean implements Serializable {
           keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
           authenticationToken = ejbcawebbean.getAdminObject();
           this.ejbcawebbean = ejbcawebbean;
-
           initialized =true;
+        } else {
+            log.debug("=initialize(): already initialized");
         }
+        log.trace("<initialize()");
     }
 
     public CertificateView[] getCACertificates(int caid) {
