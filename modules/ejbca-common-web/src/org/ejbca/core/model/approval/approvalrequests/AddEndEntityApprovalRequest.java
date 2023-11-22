@@ -49,7 +49,7 @@ import org.ejbca.core.model.approval.profile.ApprovalProfile;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Approval Request created when trying to add an end entity.
@@ -151,7 +151,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
 	    ArrayList<ApprovalDataText> retval = new ArrayList<>();
         retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
 		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(userdata.getEndEntityProfileId())), true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN,CertTools.stringToBCDNString(userdata.getDN()),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN,DnComponents.stringToBCDNString(userdata.getDN()),true,false));
         retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME,userdata.getSubjectAltName()));
         String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
         retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));
@@ -166,7 +166,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest implements EndE
 		ArrayList<ApprovalDataText> retval = new ArrayList<>();
 		retval.add(new ApprovalDataText("USERNAME",userdata.getUsername(),true,false));
 		retval.add(new ApprovalDataText(ApprovalDataText.REDACT_PII, Boolean.toString(LogRedactionUtils.isRedactPii(userdata.getEndEntityProfileId())), true, false));
-		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, CertTools.stringToBCDNString(userdata.getDN()),true,false));
+		retval.add(new ApprovalDataText(ApprovalDataText.SUBJECT_DN, DnComponents.stringToBCDNString(userdata.getDN()),true,false));
 		retval.add(getTextWithNoValueString(ApprovalDataText.SUBJECT_ALT_NAME, userdata.getSubjectAltName()));
 		String dirattrs = userdata.getExtendedInformation() != null ? userdata.getExtendedInformation().getSubjectDirectoryAttributes() : null;
 		retval.add(getTextWithNoValueString("SUBJECTDIRATTRIBUTES",dirattrs));

@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPEntry;
@@ -157,14 +157,14 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
     	
         LDAPAttributeSet attributeSet = super.getAttributeSet(cert, objectclass, dn, email, extra, person, password, extendedinformation);
         
-        String cn = CertTools.getPartFromDN(dn, "CN");
+        String cn = DnComponents.getPartFromDN(dn, "CN");
         // Add AD specific attributes
         //attributeSet.add(new LDAPAttribute("userAccountControl", Integer.toString(getUserAccountControl())));
         
         if(cert!= null && cert instanceof X509Certificate){
           String upn = null;
 		try {
-			upn = CertTools.getUPNAltName(cert);
+			upn = DnComponents.getUPNAltName(cert);
 		} catch (CertificateParsingException e) {}
 		String samaccountname = upn;
 		if(upn != null && upn.indexOf('@') != -1){
@@ -178,7 +178,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
               samaccountname = cn;   
               break;
             case DNFieldExtractor.UID:  
-              samaccountname = CertTools.getPartFromDN(dn, "UID");   
+              samaccountname = DnComponents.getPartFromDN(dn, "UID");   
               break;        	
           }
           if(samaccountname !=null){

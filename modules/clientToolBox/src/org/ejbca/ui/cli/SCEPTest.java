@@ -41,10 +41,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -105,6 +101,11 @@ import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * Used to stress test the SCEP interface.
@@ -218,7 +219,7 @@ class SCEPTest extends ClientToolBox {
         private Extensions generateExtensions(int bcKeyUsage) throws IOException {
             final ExtensionsGenerator extgen = new ExtensionsGenerator();
             extgen.addExtension(Extension.keyUsage, false, new X509KeyUsage(bcKeyUsage));
-            final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
+            final GeneralNames san = DnComponents.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
             extgen.addExtension(Extension.subjectAlternativeName, false, san);
             return extgen.generate();
         }
@@ -418,8 +419,8 @@ class SCEPTest extends ClientToolBox {
                 }
                 SignerId sinfo = signerInfo.getSID();
                 // Check that the signer is the expected CA
-                String raCertIssuer = CertTools.stringToBCDNString(this.sessionData.certchain[0].getIssuerDN().getName());
-                String sinfoIssuer = CertTools.stringToBCDNString(sinfo.getIssuer().toString());
+                String raCertIssuer = DnComponents.stringToBCDNString(this.sessionData.certchain[0].getIssuerDN().getName());
+                String sinfoIssuer = DnComponents.stringToBCDNString(sinfo.getIssuer().toString());
                 if (!StringUtils.equals(raCertIssuer, sinfoIssuer)) {
                     StressTest.this.performanceTest.getLog().error("Issuers does not match: " + raCertIssuer + ", " + sinfoIssuer);
                     return false;
@@ -615,7 +616,7 @@ class SCEPTest extends ClientToolBox {
                 //                            } catch (Exception e) {}
 
                 // check the returned certificate
-                final String subjectdn = CertTools.stringToBCDNString(usercert.getSubjectDN().getName());
+                final String subjectdn = DnComponents.stringToBCDNString(usercert.getSubjectDN().getName());
                 if (!subjectdn.equals(userDN)) {
                     StressTest.this.performanceTest.getLog().info("subjectdn='" + subjectdn + "', mysubjectdn='" + userDN + "'.");
                     return false;
@@ -626,7 +627,7 @@ class SCEPTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("keys does not match");
                     return false;
                 }
-                final String altName = CertTools.getSubjectAlternativeName(usercert);
+                final String altName = DnComponents.getSubjectAlternativeName(usercert);
                 final String expectedAltName = "dNSName=foo.bar.com, iPAddress=10.0.0.1"; // same as the extension we created in generateExtensions()
                 if (altName == null || !altName.equals(expectedAltName)) {
                     StressTest.this.performanceTest.getLog().error("altName should be '" + expectedAltName + "' but was: '" + altName + "'.");
@@ -760,7 +761,7 @@ class SCEPTest extends ClientToolBox {
                 DERSet attributes = new DERSet(v);
                 // Create PKCS#10 certificate request
                 final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest(StressTest.this.signatureAlg,
-                        CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
+                        DnComponents.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
 
                 // wrap message in pkcs#7
                 return wrap(p10request.getEncoded(), "19", transactionId, senderCertificate, signatureKey);

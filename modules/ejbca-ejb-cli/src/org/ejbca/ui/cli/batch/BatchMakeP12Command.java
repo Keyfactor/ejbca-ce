@@ -13,6 +13,20 @@
 
 package org.ejbca.ui.cli.batch;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Properties;
@@ -46,22 +60,9 @@ import org.ejbca.util.keystore.P12toPEM;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 
 /**
  * This class generates keys and request certificates for all users with status NEW. The result is
@@ -360,7 +361,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         }
 
         // Use CN if as alias in the keystore, if CN is not present use username
-        String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+        String alias = DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
         if (alias == null) {
             alias = username;
         }

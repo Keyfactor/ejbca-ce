@@ -73,6 +73,7 @@ import org.junit.rules.TestRule;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
@@ -301,10 +302,10 @@ public class OcspKeyRenewalTest {
         cleanupCryptoToken(ECC_CRYPTOTOKEN_NAME);
         
         // Delete CA
-        final String caName = CertTools.getPartFromDN(CA_DN, "CN");
+        final String caName = DnComponents.getPartFromDN(CA_DN, "CN");
         CaTestCase.removeTestCA(caName);
         
-        final String caEccName = CertTools.getPartFromDN(CA_ECC_DN, "CN");
+        final String caEccName = DnComponents.getPartFromDN(CA_ECC_DN, "CN");
         CaTestCase.removeTestCA(caEccName);
         
         

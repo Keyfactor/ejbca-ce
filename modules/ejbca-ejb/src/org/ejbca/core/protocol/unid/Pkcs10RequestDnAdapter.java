@@ -29,7 +29,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Holder for a modified Pkcs10RequestMessage
@@ -71,7 +71,7 @@ public class Pkcs10RequestDnAdapter implements RequestMessage {
 		if ( name==null ) {
 			return null;
 		}
-		return CertTools.stringToBCDNString(name.toString());
+		return DnComponents.stringToBCDNString(name.toString());
 	}
 	@Override
 	public X500Name getRequestX500Name() {
