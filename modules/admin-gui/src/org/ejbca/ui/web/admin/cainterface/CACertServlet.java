@@ -41,6 +41,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Servlet used to distribute CA certificates <br>
@@ -101,7 +102,7 @@ public class CACertServlet extends BaseAdminServlet {
 
         // HttpServetRequets.getParameter URLDecodes the value for you
         // No need to do it manually, that will cause problems with + characters
-        final String issuerDn = CertTools.stringToBCDNString(req.getParameter(ISSUER_PROPERTY));
+        final String issuerDn = DnComponents.stringToBCDNString(req.getParameter(ISSUER_PROPERTY));
 
         // Keep this for logging.
         log.debug("Got request from " + req.getRemoteAddr());

@@ -38,6 +38,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Stores and manages CertReqHistory entries in the database.
@@ -132,7 +133,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     
     @Override
     public CertificateInfo findFirstCertificateInfo(final String issuerDN, final BigInteger serno) {
-    	return certificateDataSession.findFirstCertificateInfo(CertTools.stringToBCDNString(issuerDN), serno.toString());
+    	return certificateDataSession.findFirstCertificateInfo(DnComponents.stringToBCDNString(issuerDN), serno.toString());
     }
 
 }

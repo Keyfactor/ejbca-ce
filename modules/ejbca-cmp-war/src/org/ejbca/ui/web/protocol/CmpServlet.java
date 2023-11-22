@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.servlet.ServletInputStream;
@@ -33,6 +34,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -82,6 +84,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 
 
 /**
@@ -459,7 +462,7 @@ public class CmpServlet extends HttpServlet {
             // CMP Client mode, get secret from end entity clear text password
             final String requestDN = getSubjectDNFromPkiMessage(pkiMessage);
             if (requestDN != null) {
-                String extractedUsername = CertTools.getPartFromDN(requestDN, cmpConfiguration.getExtractUsernameComponent(alias));
+                String extractedUsername = DnComponents.getPartFromDN(requestDN, cmpConfiguration.getExtractUsernameComponent(alias));
                 if (log.isDebugEnabled()) {
                     log.debug("Username ("+extractedUsername+") was extracted from the '" + cmpConfiguration.getExtractUsernameComponent(alias) + "' part of the subjectDN provided in the request.");
                 }

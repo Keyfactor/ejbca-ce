@@ -1692,7 +1692,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        String caname = CertTools.getPartFromDN(ecdsaCADN, "CN");
+        String caname = DnComponents.getPartFromDN(ecdsaCADN, "CN");
         X509CAInfo ecdsaCaInfo = X509CAInfo.getDefaultX509CAInfo(ecdsaCADN, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d",
                 CAInfo.SELFSIGNED, null, catoken);
         ecdsaCaInfo.setExtendedCAServiceInfos(extendedCaServices);

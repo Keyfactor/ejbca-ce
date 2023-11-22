@@ -13,13 +13,30 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.text.ParseException;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.ServiceLoader;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.ejb.EJBException;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -82,28 +99,14 @@ import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.cert.OID;
 
-import javax.ejb.EJBException;
-import java.io.Serializable;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.text.ParseException;
-import java.util.AbstractMap;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.ServiceLoader;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
@@ -357,7 +360,7 @@ public class CAInterfaceBean implements Serializable {
                     .build();
                 proxyCaInfo.setSubjectDN(caInfoDto.getCaSubjectDN());
                 proxyCaInfo.setEncodedValidity("99y");
-                final int caid = CertTools.stringToBCDNString(proxyCaInfo.getSubjectDN()).hashCode();
+                final int caid = DnComponents.stringToBCDNString(proxyCaInfo.getSubjectDN()).hashCode();
                 proxyCaInfo.setCAId(caid);
 
                 try {
@@ -417,7 +420,7 @@ public class CAInterfaceBean implements Serializable {
         }
         if(!caInfoDto.isCaTypeX509() && !caInfoDto.isCaTypeCits()) {
     	    try {
-    	        CertTools.stringToBcX500Name(caInfoDto.getCaSubjectDN());
+    	        DnComponents.stringToBcX500Name(caInfoDto.getCaSubjectDN());
     	    } catch (IllegalArgumentException e) {
     	        illegaldnoraltname = true;
     	    }

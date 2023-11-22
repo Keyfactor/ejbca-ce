@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -85,16 +92,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Basic vanilla tests for CrlCreateSession. Contains quite some code lifted from PublishingCrlSession that doesn't belong under the CESeCore
@@ -364,8 +365,8 @@ public class CrlCreateSessionTest {
             Date lastDate = new Date();
             lastDate.setTime(lastDate.getTime() + 365 * 24 * 60 * 60 * 1000);
             final SubjectPublicKeyInfo subcaspki = SubjectPublicKeyInfo.getInstance(subcapubkey.getEncoded());
-            final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(rootcadn, false), new BigInteger(64, new Random(System.nanoTime())),
-                    firstDate, lastDate, CertTools.stringToBcX500Name(subcadn, false), subcaspki);
+            final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name(rootcadn, false), new BigInteger(64, new Random(System.nanoTime())),
+                    firstDate, lastDate, DnComponents.stringToBcX500Name(subcadn, false), subcaspki);
             final AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(CertTools.getAuthorityKeyId(rootcacert));
             final SubjectKeyIdentifier ski = new SubjectKeyIdentifier(TEST_AKID); // Non-standard SKID. It should match the AKID in the CRL
             certbuilder.addExtension(Extension.authorityKeyIdentifier, true, aki);

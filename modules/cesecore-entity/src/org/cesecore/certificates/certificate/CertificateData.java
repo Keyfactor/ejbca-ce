@@ -44,6 +44,7 @@ import org.cesecore.util.SshCertificateUtils;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
@@ -173,7 +174,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
             setSubjectDN(CertTools.getSubjectDN(certificate));
             setIssuerDN(CertTools.getIssuerDN(certificate));
             if (storeSubjectAltName && !certificate.getType().equalsIgnoreCase(SshCertificate.CERTIFICATE_TYPE) ) {
-                setSubjectAltName(CertTools.getSubjectAlternativeName(certificate));
+                setSubjectAltName(DnComponents.getSubjectAlternativeName(certificate));
             } else if (certificate.getType().equalsIgnoreCase(SshCertificate.CERTIFICATE_TYPE)) {
                 setSubjectAltName(SshCertificateUtils.createSanForStorage((SshCertificate) certificate));
             }
@@ -562,12 +563,12 @@ public class CertificateData extends BaseCertificateData implements Serializable
     
     @Override
     public void setIssuer(String dn) {
-        setIssuerDN(CertTools.stringToBCDNString(dn));
+        setIssuerDN(DnComponents.stringToBCDNString(dn));
     }
 
     @Override
     public void setSubject(String dn) {
-        setSubjectDN(CertTools.stringToBCDNString(dn));
+        setSubjectDN(DnComponents.stringToBCDNString(dn));
     }
 
     @Override

@@ -13,6 +13,11 @@
 package org.cesecore.certificates.ca;
 
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 
@@ -30,16 +35,11 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests the CA session bean using soft CA tokens.
@@ -141,7 +141,7 @@ public class CaSessionTest extends RoleUsingTestCase {
     @Test
     public void testGetCaChain() throws Exception {        
         final String caDn = "CN=TestCAChain";
-        final String caName = CertTools.getPartFromDN(caDn, "CN");
+        final String caName = DnComponents.getPartFromDN(caDn, "CN");
         CAInfo caInfo = null;
         try {
             final CA ca = CaTestUtils.createTestX509CAOptionalGenKeys(caDn, "foo123".toCharArray(), true, false);

@@ -38,6 +38,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * A class for reading values from SubjectDirectoryAttributes extension.
@@ -182,13 +183,13 @@ public class SubjectDirAttrExtension extends CertTools {
         final ArrayList<Attribute> ret = new ArrayList<>();
         ret.addAll(makeAsn1Attributes(id_pda_countryOfResidence, "countryOfResidence", dirAttr));
         ret.addAll(makeAsn1Attributes(id_pda_countryOfCitizenship, "countryOfCitizenship", dirAttr));
-        String value = CertTools.getPartFromDN(dirAttr, "gender");
+        String value = DnComponents.getPartFromDN(dirAttr, "gender");
         if (!StringUtils.isEmpty(value)) {
             ASN1EncodableVector vec = new ASN1EncodableVector();
             vec.add(new DERPrintableString(value));
             ret.add(new Attribute(new ASN1ObjectIdentifier(id_pda_gender),new DERSet(vec)));
         }
-        value = CertTools.getPartFromDN(dirAttr, "placeOfBirth");
+        value = DnComponents.getPartFromDN(dirAttr, "placeOfBirth");
         if (!StringUtils.isEmpty(value)) {
             ASN1EncodableVector vec = new ASN1EncodableVector();
             X509DefaultEntryConverter conv = new X509DefaultEntryConverter();
@@ -198,7 +199,7 @@ public class SubjectDirAttrExtension extends CertTools {
         }        
         // dateOfBirth that is a GeneralizedTime
         // The correct format for this is YYYYMMDD, it will be padded to YYYYMMDD120000Z
-        value = CertTools.getPartFromDN(dirAttr, "dateOfBirth");
+        value = DnComponents.getPartFromDN(dirAttr, "dateOfBirth");
         if (!StringUtils.isEmpty(value)) {
             if (value.length() == 8) {
                 value += "120000Z"; // standard format according to rfc3739
@@ -214,7 +215,7 @@ public class SubjectDirAttrExtension extends CertTools {
 
     private static List<Attribute> makeAsn1Attributes(final String attributeOid, final String attributeName, final String dirAttrs) {
         final List<Attribute> ret = new ArrayList<>();
-        final List<String> values = CertTools.getPartsFromDN(dirAttrs, attributeName);
+        final List<String> values = DnComponents.getPartsFromDN(dirAttrs, attributeName);
         for (final String value : values) {
             if (!StringUtils.isEmpty(value)) {
                 ASN1EncodableVector vec = new ASN1EncodableVector();

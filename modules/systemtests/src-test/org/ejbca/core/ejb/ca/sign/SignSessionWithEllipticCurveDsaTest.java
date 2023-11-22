@@ -172,7 +172,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
@@ -249,7 +249,7 @@ public class SignSessionWithEllipticCurveDsaTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN="
                 + ECDSA_USERNAME), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);

@@ -70,8 +70,8 @@ import org.ejbca.util.query.TimeMatch;
 import org.ejbca.util.query.UserMatch;
 import org.primefaces.event.TabChangeEvent;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Backing bean for the Search End Entities page in the CA UI.
@@ -689,7 +689,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         }
 
         public String getCommonName() {
-            return CertTools.getCommonNameFromSubjectDn(endEntityInformation.getCertificateDN());
+            return DnComponents.getCommonNameFromSubjectDn(endEntityInformation.getCertificateDN());
         }
 
         public String getStatus() {

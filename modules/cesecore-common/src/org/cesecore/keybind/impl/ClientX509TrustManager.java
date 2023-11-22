@@ -12,15 +12,6 @@
  *************************************************************************/
 package org.cesecore.keybind.impl;
 
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.cesecore.certificates.pinning.TrustEntry;
-import org.cesecore.util.LogRedactionUtils;
-import org.cesecore.util.provider.EkuPKIXCertPathChecker;
-
-import com.keyfactor.util.CertTools;
-
-import javax.net.ssl.X509TrustManager;
 import java.security.cert.CertificateException;
 import java.security.cert.PKIXCertPathChecker;
 import java.security.cert.X509Certificate;
@@ -31,6 +22,17 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import javax.net.ssl.X509TrustManager;
+
+import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
+import org.cesecore.certificates.pinning.TrustEntry;
+import org.cesecore.util.LogRedactionUtils;
+import org.cesecore.util.provider.EkuPKIXCertPathChecker;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 
 public class ClientX509TrustManager implements X509TrustManager {
@@ -67,7 +69,7 @@ public class ClientX509TrustManager implements X509TrustManager {
             }
         }
         if (!CertTools.verifyWithTrustedCertificates(leafCertificate, trustedCertificateChains, pkixPathChecker)) {
-            String subjectAltName = CertTools.getSubjectAlternativeName(leafCertificate);
+            String subjectAltName = DnComponents.getSubjectAlternativeName(leafCertificate);
             String issuerdn = CertTools.getIssuerDN(leafCertificate);
             String sn = CertTools.getSerialNumberAsString(leafCertificate);
             String errmsg = "Certificate with serial number '0x" + sn + "' and SAN '" + LogRedactionUtils.getSubjectAltNameLogSafe(subjectAltName) +

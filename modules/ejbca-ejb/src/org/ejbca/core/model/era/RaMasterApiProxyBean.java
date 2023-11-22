@@ -152,6 +152,7 @@ import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -1448,7 +1449,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     private X509Certificate requestCertForEndEntity(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final String password, final KeyPair kp)
             throws AuthorizationDeniedException, EjbcaException {
         try {
-            final X500Name x509dn = CertTools.stringToBcX500Name(endEntity.getDN());
+            final X500Name x509dn = DnComponents.stringToBcX500Name(endEntity.getDN());
             final String sigAlg = AlgorithmTools.getSignatureAlgorithms(kp.getPublic()).get(0);
             final PKCS10CertificationRequest pkcs10req = CertTools.genPKCS10CertificationRequest(sigAlg, x509dn, kp.getPublic(), null, kp.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
             final byte[] csr = pkcs10req.getEncoded();
@@ -1683,7 +1684,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             }
             // Build keystore
             final KeyStore ks;
-            String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+            String alias = DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
             if (alias == null) {
                 alias = username;
             }
@@ -3436,6 +3437,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public Collection<CertificateWrapper> processCardVerifiableCertificateRequest(final AuthenticationToken authenticationToken, final String username, final String password, final String cvcReq)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile,

@@ -21,7 +21,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
@@ -55,9 +54,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
-
 import org.apache.commons.configuration2.Configuration;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -155,11 +152,11 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.util.JDBCUtil;
 
-
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -1421,7 +1418,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                                 final Certificate certificate = certificateStoreSession.findCertificateByIssuerAndSerno(issuerDn,
                                         new BigInteger(tokenMatchValue, 16));
                                 if (certificate != null) {
-                                    final List<String> commonNames = CertTools.getPartsFromDN(CertTools.getSubjectDN(certificate), "CN");
+                                    final List<String> commonNames = DnComponents.getPartsFromDN(CertTools.getSubjectDN(certificate), "CN");
                                     if (!commonNames.isEmpty()) {
                                         // Use the first found CN of the mapped certificate
                                         description = commonNames.get(0);
@@ -1839,7 +1836,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         final String subjectdn = CertTools.getSubjectDN(cacert);
         
-        final int caid = CertTools.stringToBCDNString(subjectdn).hashCode();
+        final int caid = DnComponents.stringToBCDNString(subjectdn).hashCode();
         try {
             caSession.verifyExistenceOfCA(caid);
         } catch (CADoesntExistsException e) {

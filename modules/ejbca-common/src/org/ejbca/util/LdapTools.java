@@ -21,7 +21,7 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.novell.ldap.LDAPDN;
 
 /**
@@ -39,7 +39,7 @@ public final class LdapTools {
      * "cn=User,dc=example,dc=com" then it would return "cn=User".
      */
     public static String getFirstDNComponent(String dn) {
-        List<String> components = CertTools.getX500NameComponents(dn);
+        List<String> components = DnComponents.getX500NameComponents(dn);
         if (components.size() == 0 || StringUtils.isEmpty(components.get(0))) return "";
         else return LDAPDN.escapeRDN(components.get(0));
     }
@@ -55,7 +55,7 @@ public final class LdapTools {
         
         // Split and escape the DN (but ignore the lowest level component)
         final List<String> components = new ArrayList<String>();
-        for (String comp : CertTools.getX500NameComponents(CertTools.getParentDN(subDN))) {
+        for (String comp : DnComponents.getX500NameComponents(DnComponents.getParentDN(subDN))) {
             if (!StringUtils.isEmpty(comp)) {
                 components.add(LDAPDN.escapeRDN(comp));
             }

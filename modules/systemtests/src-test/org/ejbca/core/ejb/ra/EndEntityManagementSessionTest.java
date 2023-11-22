@@ -951,7 +951,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                     CertTools.getIssuerDN(adminCert).hashCode(), RoleMember.NO_PROVIDER,
                     X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(),
                     AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    CertTools.getPartFromDN(CertTools.getSubjectDN(adminCert), "CN"),
+                    DnComponents.getPartFromDN(CertTools.getSubjectDN(adminCert), "CN"),
                     role.getRoleId(),
                     null));
             // We must enforce end entity profile limitations for this, with false it should be ok now

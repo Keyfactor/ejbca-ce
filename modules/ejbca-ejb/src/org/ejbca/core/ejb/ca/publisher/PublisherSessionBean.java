@@ -92,6 +92,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Handles management of Publishers.
@@ -302,7 +303,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">storeCRL");
         }
-        int caid = CertTools.stringToBCDNString(issuerDn).hashCode();
+        int caid = DnComponents.stringToBCDNString(issuerDn).hashCode();
         if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
             final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
             throw new AuthorizationDeniedException(msg);

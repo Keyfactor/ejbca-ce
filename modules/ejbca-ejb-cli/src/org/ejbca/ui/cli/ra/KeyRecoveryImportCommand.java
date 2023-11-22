@@ -70,6 +70,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -245,11 +246,11 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
             if (username == null) {
                 getLogger().info("No username parameter supplied, creating a randomized username based on CN UID, SERIALNUMBER, or 'user', in order of existence.");
                 final String seq = RandomStringUtils.randomAlphanumeric(20);
-                String userPart = CertTools.getPartFromDN(CertTools.getSubjectDN(userCertificate), "CN");
+                String userPart = DnComponents.getPartFromDN(CertTools.getSubjectDN(userCertificate), "CN");
                 if (userPart == null) {
-                    userPart = CertTools.getPartFromDN(CertTools.getSubjectDN(userCertificate), "UID");                    
+                    userPart = DnComponents.getPartFromDN(CertTools.getSubjectDN(userCertificate), "UID");                    
                     if (userPart == null) {
-                        userPart = CertTools.getPartFromDN(CertTools.getSubjectDN(userCertificate), "SERIALNUMBER");                    
+                        userPart = DnComponents.getPartFromDN(CertTools.getSubjectDN(userCertificate), "SERIALNUMBER");                    
                         if (userPart == null) {
                             userPart = "user"; 
                         }
@@ -272,8 +273,8 @@ public class KeyRecoveryImportCommand extends BaseRaCommand {
             } else {
                 getLogger().info("Adding new end entity with username: " + username);
                 // Use status GENERATED so that we don't create end entities that can be enrolled
-                final EndEntityInformation userdata = new EndEntityInformation(username, CertTools.getSubjectDN(userCertificate), cainfo.getCAId(), CertTools.getSubjectAlternativeName(userCertificate), 
-                        CertTools.getEMailAddress(userCertificate), EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endentityprofileid, certificateprofileid, null,
+                final EndEntityInformation userdata = new EndEntityInformation(username, CertTools.getSubjectDN(userCertificate), cainfo.getCAId(), DnComponents.getSubjectAlternativeName(userCertificate), 
+                        DnComponents.getEMailAddress(userCertificate), EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endentityprofileid, certificateprofileid, null,
                         null, SecConst.TOKEN_SOFT_P12, null);
                 final String randompwd = RandomStringUtils.randomAlphanumeric(20);
                 userdata.setPassword(randompwd);

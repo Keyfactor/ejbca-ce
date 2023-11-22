@@ -52,6 +52,7 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ImportCrlSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -131,7 +132,7 @@ public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSes
                 }
                 final int reasonCode = CrlExtensions.extractReasonCode(crlEntry);
                 if (crlEntry.getCertificateIssuer()!=null) {
-                    final String entryIssuerDn = CertTools.stringToBCDNString(crlEntry.getCertificateIssuer().getName());
+                    final String entryIssuerDn = DnComponents.stringToBCDNString(crlEntry.getCertificateIssuer().getName());
                     if (!issuerDn.equals(entryIssuerDn)) {
                         log.warn("CA's subjectDN does not match CRL entry's issuerDn '"+entryIssuerDn+"' and entry with serialNumber " + serialNumber + " will be ignored.");
                     }

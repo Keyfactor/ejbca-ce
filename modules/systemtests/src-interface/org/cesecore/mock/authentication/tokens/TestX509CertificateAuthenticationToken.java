@@ -30,6 +30,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.util.DNFieldExtractor;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Acts like X509CertificateAuthenticationToken, but without the JVM-only check. 
@@ -66,7 +67,7 @@ public class TestX509CertificateAuthenticationToken extends X509CertificateAuthe
         adminCaId = CertTools.getIssuerDN(certificate).hashCode();
         String certstring = CertTools.getSubjectDN(certificate).toString();
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
-        String altNameString = CertTools.getSubjectAlternativeName(certificate);
+        String altNameString = DnComponents.getSubjectAlternativeName(certificate);
 
         dnExtractor = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);       
         anExtractor = new DNFieldExtractor(altNameString, DNFieldExtractor.TYPE_SUBJECTALTNAME);

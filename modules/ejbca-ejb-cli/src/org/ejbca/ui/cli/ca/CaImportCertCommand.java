@@ -66,6 +66,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Imports a certificate file to the database.
@@ -216,7 +217,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         }
 
         if (StringUtils.isEmpty(email) || StringUtils.equalsIgnoreCase(email, "null")) {
-            email = CertTools.getEMailAddress(certificate);
+            email = DnComponents.getEMailAddress(certificate);
         }
 
         int endentityprofileid = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
@@ -268,7 +269,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             log.info("CRL Partition Index: " + crlPartitionIndex);
         }
 
-        String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
+        String subjectAltName = DnComponents.getSubjectAlternativeName(certificate);
         if (subjectAltName != null) {
             log.info("SubjectAltName: " + subjectAltName);
         }

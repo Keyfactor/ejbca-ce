@@ -59,6 +59,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -125,7 +126,7 @@ public class RaMasterApiStressTest extends CaTestCase {
         Extensions exts = extgen.generate();
         attr.add(new DERSet(exts));
         attributes.add(new DERSequence(attr));
-        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
+        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", DnComponents.stringToBcX500Name("CN=NOUSED"),
                 keys.getPublic(), new DERSet(attributes), keys.getPrivate(), null);
         return new String(Base64.encode(pkcs10.getEncoded()));
     }

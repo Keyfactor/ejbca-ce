@@ -48,7 +48,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /** QCStatement (rfc3739)
  * 
@@ -318,7 +318,7 @@ public class QcStatement extends StandardCertificateExtension {
      */
     private List<QCStatement> getV2SemanticOidStatements(final CertificateProfile profile) {
         final String names = profile.getQCStatementRAName();
-        final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
+        final GeneralNames san = DnComponents.getGeneralNamesFromAltName(names);
         final List<QCStatement> result = new ArrayList<>();
         if (StringUtils.isNotEmpty(profile.getQCSemanticsIds())) {
             final List<ASN1ObjectIdentifier> oids = createOidList(Arrays.asList(profile.getQCSemanticsIds().split(",")));
