@@ -64,7 +64,7 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
 
 import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Certificate request message (crmf) according to RFC4211.
@@ -270,7 +270,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             if (StringUtils.isEmpty(component)) {
                 component = "CN";
             }
-            String name = CertTools.getPartFromDN(getRequestDN(), component);
+            String name = DnComponents.getPartFromDN(getRequestDN(), component);
             if (name == null) {
                 log.error("No component " + component + " in DN: " + LogRedactionUtils.getSubjectDnLogSafe(getRequestDN()));
             } else {
@@ -293,7 +293,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         final CertTemplate templ = getReq().getCertReq().getCertTemplate();
         final X500Name name = templ.getIssuer();
         if (name != null) {
-            ret = CertTools.stringToBCDNString(name.toString());
+            ret = DnComponents.stringToBCDNString(name.toString());
         } else {
             ret = defaultCADN;
         }
@@ -345,7 +345,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         String ret = null;
         final X500Name name = getRequestX500Name();
         if (name != null) {
-            ret = CertTools.stringToBCDNString(name.toString());
+            ret = DnComponents.stringToBCDNString(name.toString());
         }
         if (log.isDebugEnabled()) {
             log.debug("Request DN is: " + LogRedactionUtils.getSubjectDnLogSafe(ret));
@@ -374,7 +374,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         if (exts != null) {
             final Extension ext = exts.getExtension(Extension.subjectAlternativeName);
             if (ext != null) {
-                ret = CertTools.getAltNameStringFromExtension(ext);
+                ret = DnComponents.getAltNameStringFromExtension(ext);
             }
         }
         if (log.isDebugEnabled()) {
@@ -602,7 +602,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         final CertTemplate templ = getReq().getCertReq().getCertTemplate();
         final X500Name name = templ.getSubject();
         if (name != null) {
-            ret = CertTools.stringToBCDNString(name.toString());
+            ret = DnComponents.stringToBCDNString(name.toString());
         }
         return ret;
     }

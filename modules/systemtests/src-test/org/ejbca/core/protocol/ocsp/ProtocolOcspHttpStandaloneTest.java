@@ -90,6 +90,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
@@ -246,7 +247,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
         super.test05OcspUnknownCA();
         // Reverted issuer DN should work as well, we are independent of the order here
-        final String revertedIssuerDN = CertTools.reverseDN(issuerDN);
+        final String revertedIssuerDN = DnComponents.reverseDN(issuerDN);
         assertNotEquals("Reverting DN should produce a different result.", issuerDN, revertedIssuerDN);
         ocspConfiguration.setOcspDefaultResponderReference(revertedIssuerDN);
         globalConfigurationSession.saveConfiguration(authenticationToken, ocspConfiguration);

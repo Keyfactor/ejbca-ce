@@ -13,6 +13,11 @@
 
 package org.ejbca.core.protocol.est;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -103,11 +108,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Helper class for EST Junit tests. 
@@ -429,7 +430,7 @@ public abstract class EstTestCase extends CaTestCase {
             if (!useChangeSubjectNameAttribute) {
                 changesubjectnameattr.add(EstConfiguration.id_cmc_changeSubjectName);
             }
-            final GeneralNames altName = CertTools.getGeneralNamesFromAltName(changeToSubjectAltName);
+            final GeneralNames altName = DnComponents.getGeneralNamesFromAltName(changeToSubjectAltName);
             changeSubjectName.add(altName);
             useChangeSubjectNameAttribute = true;
         }
@@ -450,7 +451,7 @@ public abstract class EstTestCase extends CaTestCase {
         DERSet attributes = new DERSet(attributesVec);
         // Create PKCS#10 certificate request
         final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA",
-                CertTools.stringToBcX500Name(dn), keys.getPublic(), attributes, keys.getPrivate(), null);
+                DnComponents.stringToBcX500Name(dn), keys.getPublic(), attributes, keys.getPrivate(), null);
         return p10request;
     }
 
@@ -490,7 +491,7 @@ public abstract class EstTestCase extends CaTestCase {
                 )
         );
         */
-        importDataIntoJksKeystore(LOGIN_STORE_PATH, CLIENT_KEYSTORE, CertTools.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"), 
+        importDataIntoJksKeystore(LOGIN_STORE_PATH, CLIENT_KEYSTORE, DnComponents.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"), 
                 trustedCaCertificateChain.get(0).getEncoded(), clientKeys, clientCert.getEncoded());
 
     }

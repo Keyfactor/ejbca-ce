@@ -29,7 +29,7 @@ import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 
@@ -164,7 +164,7 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
         // Construct the userDN with the certificate serial number as UID
         X509Certificate xcert = (X509Certificate)incert;
         String certSerNo = xcert.getSerialNumber().toString();
-        String snfromuser = CertTools.getPartFromDN(userDN, "UID");
+        String snfromuser = DnComponents.getPartFromDN(userDN, "UID");
         if (StringUtils.isNotEmpty(snfromuser)) {
             log.info("User '"+username+"' aready has a UID in DN, this will be replaced by Cert Serial No: "+snfromuser);
             StringUtils.replace(userDN, snfromuser, certSerNo);
@@ -192,7 +192,7 @@ public class CertSernoCustomLdapPublisher extends LdapPublisher implements ICust
             String password, ExtendedInformation extendedinformation) {
         LDAPAttributeSet set = super.getAttributeSet(cert, objectclass, dn, email, extra, person, password, extendedinformation);
         // Add SerialNumber (from DN) attribute as well, it is not included by default by LDAPPublisher
-        String serno = CertTools.getPartFromDN(dn, "SN");
+        String serno = DnComponents.getPartFromDN(dn, "SN");
         if (serno != null) {
             set.add(new LDAPAttribute("serialNumber", serno));
         }

@@ -30,7 +30,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Holder for a modified ICrmfRequestMessage
@@ -72,7 +72,7 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
 		if ( name==null ) {
 			return null;
 		}
-		return CertTools.stringToBCDNString(name.toString());
+		return DnComponents.stringToBCDNString(name.toString());
 	}
 	@Override
 	public X500Name getRequestX500Name() {

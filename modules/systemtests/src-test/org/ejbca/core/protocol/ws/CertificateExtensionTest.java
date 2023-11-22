@@ -12,6 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -69,14 +75,9 @@ import org.junit.Test;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Test of certificate extensions with values from WS.
@@ -220,7 +221,7 @@ public class CertificateExtensionTest extends CommonEjbcaWs {
 
         final X509Certificate cert = getMyCertificate();
         assertNotNull(cert);
-        assertEquals("dNSName=top.secret.domain.se", CertTools.getSubjectAlternativeName(cert));
+        assertEquals("dNSName=top.secret.domain.se", DnComponents.getSubjectAlternativeName(cert));
 
         // Check that the number-of-redacted-lables-extension was added
         byte[] extValue = cert.getExtensionValue(CertTools.id_ct_redacted_domains);
@@ -432,7 +433,7 @@ public class CertificateExtensionTest extends CommonEjbcaWs {
     private X509Certificate getMyCertificate() throws GeneralSecurityException, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
             NotFoundException_Exception, CesecoreException_Exception, IOException, OperatorCreationException {
         final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(),
+        final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", DnComponents.stringToBcX500Name("CN=NOUSED"), keys.getPublic(),
                 new DERSet(), keys.getPrivate(), null);
 
         final CertificateResponse certenv;

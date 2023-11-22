@@ -23,7 +23,7 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.TCPTool;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.novell.ldap.LDAPConnection;
 import com.novell.ldap.LDAPEntry;
 import com.novell.ldap.LDAPException;
@@ -56,11 +56,11 @@ public class LdapSearchPublisher extends LdapPublisher {
 	
 
 	private static String getPartFromDN(String certDN, String userDN, String dnpart) {
-		final String certResult = CertTools.getPartFromDN(certDN, dnpart);
+		final String certResult = DnComponents.getPartFromDN(certDN, dnpart);
 		if ( certResult!=null ) {
 			return certResult;
 		}
-		return CertTools.getPartFromDN(userDN, dnpart);
+		return DnComponents.getPartFromDN(userDN, dnpart);
 	}
     /** SearchOldEntity is the only method differing between regular ldap and ldap search publishers.
      *  Apart from how they find existing users, the publishing works the same.

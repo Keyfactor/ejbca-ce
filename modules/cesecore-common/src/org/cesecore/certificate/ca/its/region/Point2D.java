@@ -23,6 +23,7 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.Longitude;
 import org.bouncycastle.oer.its.ieee1609dot2.basetypes.TwoDLocation;
 
 public class Point2D implements ItsGeographicElement {
+    private static final long serialVersionUID = 1L;
     /**
      * Intended to represent TwoDLocation(latitude, longitude) class. 
      * Validations are handled by corresponding BouncyCastle classes. 
