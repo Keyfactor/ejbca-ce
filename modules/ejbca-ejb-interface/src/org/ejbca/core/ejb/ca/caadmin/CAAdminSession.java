@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
 import javax.ejb.EJBException;
 
 import org.bouncycastle.operator.OperatorCreationException;
@@ -48,7 +49,6 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;

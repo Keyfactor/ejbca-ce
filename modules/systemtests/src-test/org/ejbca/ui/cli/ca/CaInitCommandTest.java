@@ -13,6 +13,10 @@
 
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -57,12 +61,9 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 
 /**
  * System test class for CaInitCommandTest, tests rudimentary behavior of the "ca init" CLI command
@@ -306,8 +307,8 @@ public class CaInitCommandTest {
             random.nextBytes(serno);
             final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(msg.getRequestPublicKey().getEncoded());
             X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(
-                    CertTools.stringToBcX500Name(externalCACert.getSubjectDN().toString()), new java.math.BigInteger(serno).abs(), firstDate,
-                    lastDate, CertTools.stringToBcX500Name(msg.getRequestDN()), pkinfo);
+                    DnComponents.stringToBcX500Name(externalCACert.getSubjectDN().toString()), new java.math.BigInteger(serno).abs(), firstDate,
+                    lastDate, DnComponents.stringToBcX500Name(msg.getRequestDN()), pkinfo);
             BasicConstraints bc = new BasicConstraints(true);
             certbuilder.addExtension(Extension.basicConstraints, true, bc);
             X509KeyUsage ku = new X509KeyUsage(X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);

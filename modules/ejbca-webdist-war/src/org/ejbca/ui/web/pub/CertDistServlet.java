@@ -64,6 +64,7 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Servlet used to distribute certificates and CRLs.<br>
@@ -172,7 +173,7 @@ public class CertDistServlet extends HttpServlet {
             issuerdn = req.getParameter(ISSUER_PROPERTY);
             // Verify that the DN is valid, and make it into EJBCA ordering/format
             try {
-                issuerdn = CertTools.stringToBCDNString(issuerdn);
+                issuerdn = DnComponents.stringToBCDNString(issuerdn);
             } catch (IllegalArgumentException e ) {
                 log.debug("Invalid DN entered (IllegalArgumentException): "+issuerdn+": "+e.getMessage());
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid issuer property");
@@ -327,7 +328,7 @@ public class CertDistServlet extends HttpServlet {
             }
             // Verify that the DN is valid
             try {
-                CertTools.stringToBCDNString(StringTools.strip(dn));
+                DnComponents.stringToBCDNString(StringTools.strip(dn));
             } catch (IllegalArgumentException e ) {
                 log.debug("Invalid DN entered (IllegalArgumentException): "+dn+": "+e.getMessage());
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=lastcert/listcert?subject=<subjectdn>.");
@@ -541,7 +542,7 @@ public class CertDistServlet extends HttpServlet {
         if (deltaCrl) {
             sb.append("delta_");
         }
-        sb.append(CertTools.getPartFromDN(dn,"CN"));
+        sb.append(DnComponents.getPartFromDN(dn,"CN"));
         if (crlPartitionIndex != CertificateConstants.NO_CRL_PARTITION) {
             sb.append("_partition");
             sb.append(crlPartitionIndex);
@@ -638,9 +639,9 @@ public class CertDistServlet extends HttpServlet {
 			        store.load(null, null);
 			        for (int i = 0; i < chain.length; i++) {
 				        String cadn = CertTools.getSubjectDN(chain[i]);
-			        	String alias = CertTools.getPartFromDN(cadn, "CN");
+			        	String alias = DnComponents.getPartFromDN(cadn, "CN");
 			        	if (alias == null) {
-			        		alias = CertTools.getPartFromDN(cadn, "O");
+			        		alias = DnComponents.getPartFromDN(cadn, "O");
 			        	}
 			        	if (alias == null) {
 			        		alias = "cacert"+i;

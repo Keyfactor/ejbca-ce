@@ -104,6 +104,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
@@ -666,7 +667,7 @@ public class CAsTest extends CaTestCase {
         
         boolean ret = false;
         try {
-            String dn = CertTools
+            String dn = DnComponents
                     .stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
             final CAToken caToken = createCaToken("test07", "1024", AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active Extended CA Services.
@@ -680,7 +681,7 @@ public class CAsTest extends CaTestCase {
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
             assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, sigAlg);
-            assertTrue("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()).equals(dn));
+            assertTrue("Error in created ca certificate", DnComponents.stringToBCDNString(cert.getSubjectDN().toString()).equals(dn));
             assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
             // Normal order
             assertEquals(
@@ -713,7 +714,7 @@ public class CAsTest extends CaTestCase {
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
             assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, sigAlg);
-            assertEquals("Error in created ca certificate", CertTools.stringToBCDNString(cert.getSubjectDN().toString()), TEST_RSA_REVSERSE_CA_DN);
+            assertEquals("Error in created ca certificate", DnComponents.stringToBCDNString(cert.getSubjectDN().toString()), TEST_RSA_REVSERSE_CA_DN);
             assertTrue("Creating CA failed", info.getSubjectDN().equals(TEST_RSA_REVSERSE_CA_DN));
             // reverse order
             assertEquals(cert.getSubjectX500Principal().getName(), "CN=TESTRSAReverse,OU=BarFoo,O=FooBar,C=SE");

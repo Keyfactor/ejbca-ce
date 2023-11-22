@@ -26,7 +26,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class for standard X509 certificate extension. 
@@ -50,7 +50,7 @@ public class IssuerAltNames extends StandardCertificateExtension {
         GeneralNames ret = null;
         String altName = null;
         if (ca.getCACertificate() != null) {
-            altName = CertTools.getSubjectAlternativeName(ca.getCACertificate());
+            altName = DnComponents.getSubjectAlternativeName(ca.getCACertificate());
         } else {
             // If we have a new Root CA (not renewing), we go here
             if (certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA && ca.getCAInfo() instanceof X509CAInfo) {
@@ -67,7 +67,7 @@ public class IssuerAltNames extends StandardCertificateExtension {
             }
         }
         if (StringUtils.isNotEmpty(altName)) {
-            ret = CertTools.getGeneralNamesFromAltName(altName);
+            ret = DnComponents.getGeneralNamesFromAltName(altName);
         }
         if (ret == null) {
             if (log.isDebugEnabled()) {

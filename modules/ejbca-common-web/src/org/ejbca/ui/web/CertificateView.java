@@ -46,6 +46,7 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.HTMLTools;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -496,7 +497,7 @@ public class CertificateView implements Serializable {
             return UNKNOWN;
         }
         if (subjectaltnamestring == null) {
-            subjectaltnamestring = CertTools.getSubjectAlternativeName(certificate);
+            subjectaltnamestring = DnComponents.getSubjectAlternativeName(certificate);
         }        
         return subjectaltnamestring; 	
     }
