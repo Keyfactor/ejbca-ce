@@ -51,7 +51,7 @@ public class NameConstraint extends StandardCertificateExtension {
 
     private static final long serialVersionUID = 1L;
     
-    private static final String URI_TEMPLATE_REGEX = "^(?!:\\/\\/)(\\.)?([a-zA-Z0-9]+\\.)?[a-zA-Z0-9][a-zA-Z0-9-]+\\.[a-zA-Z]{2,6}?$";
+    private static final String URI_TEMPLATE_REGEX = "^(?!:\\/\\/)(\\.)?([a-zA-Z0-9]+\\.)?([a-zA-Z0-9][a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,6}?$";
     private static final String URI_PREFIX = "uri:";
     private static final String DNS_REGEX = "^\\.?([a-zA-Z0-9_-]+\\.)*[a-zA-Z0-9_-]+$";
     
@@ -201,6 +201,9 @@ public class NameConstraint extends StandardCertificateExtension {
      * @throws CertificateExtensionException if the string can not be parsed.
      */
     public static String parseNameConstraintEntry(String str) throws CertificateExtensionException {
+        if (StringUtils.isEmpty(str) || str.equals(URI_PREFIX)) {
+            throw new CertificateExtensionException("Name constraint can not be empty or null.");
+        }
         if (str.equals(".")) { // Empty DNS 
             return "dNSName:";
         } else if (str.matches("^([0-9]+\\.){3,3}([0-9]+)/[0-9]+$") ||
