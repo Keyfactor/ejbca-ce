@@ -30,6 +30,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * @version $Id$
@@ -413,7 +414,7 @@ public class SshCaInfo extends CAInfo {
                     doEnforceUniqueSubjectDNSerialnumber, useCertReqHistory, useUserStorage, useCertificateStorage, acceptRevocationNonExistingEntry,
                     defaultCertProfileId, useNoConflictCertificateData);
             caInfo.setSubjectDN(subjectDn);
-            caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
+            caInfo.setCAId(DnComponents.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
             caInfo.setName(name);
             caInfo.setStatus(status);
             caInfo.setUpdateTime(updateTime);

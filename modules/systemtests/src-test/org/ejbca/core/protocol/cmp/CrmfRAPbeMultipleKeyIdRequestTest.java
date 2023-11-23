@@ -13,6 +13,12 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -59,14 +65,9 @@ import org.junit.Ignore;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * This test is ignored for normal Jenkins test runs. It can be enabled manually and run if needed.
@@ -217,9 +218,9 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         final String user1 = userDN1.getRDNs(BCStyle.CN)[0].getFirst().getValue().toString();
-        //String user1 = CertTools.getPartFromDN(userDN1, "CN");
+        //String user1 = DnComponents.getPartFromDN(userDN1, "CN");
         final String user2 = userDN2.getRDNs(BCStyle.CN)[0].getFirst().getValue().toString();
-        //String user2 = CertTools.getPartFromDN(userDN2, "CN");
+        //String user2 = DnComponents.getPartFromDN(userDN2, "CN");
         try {
             this.endEntityManagementSession.deleteUser(ADMIN, user1);
             this.endEntityManagementSession.deleteUser(ADMIN, user2);
@@ -285,7 +286,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, configAlias);
         checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN1, this.cacert1, resp, reqId);
-        String altNames = CertTools.getSubjectAlternativeName(cert);
+        String altNames = DnComponents.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
 
@@ -302,7 +303,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1
-        assertEquals("SE", CertTools.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("SE", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -368,7 +369,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN1, userDN1, this.cacert1, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN1, this.cacert1, resp, reqId);
-        String altNames = CertTools.getSubjectAlternativeName(cert);
+        String altNames = DnComponents.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
 
@@ -385,7 +386,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1
-        assertEquals("SE", CertTools.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("SE", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -422,7 +423,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
-        String altNames = CertTools.getSubjectAlternativeName(cert);
+        String altNames = DnComponents.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
 
@@ -439,7 +440,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1 and NO for KeyId2
-        assertEquals("NO", CertTools.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -476,7 +477,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, configAlias);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
-        String altNames = CertTools.getSubjectAlternativeName(cert);
+        String altNames = DnComponents.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
 
@@ -493,7 +494,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1 and NO for KeyId2
-        assertEquals("NO", CertTools.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -548,7 +549,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // FileOutputStream fos = new FileOutputStream("/home/tomas/foo.crt");
         // fos.write(cert.getEncoded());
         // fos.close();
-        String altNames = CertTools.getSubjectAlternativeName(cert);
+        String altNames = DnComponents.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
         assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
 
@@ -567,7 +568,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1 and NO for KeyId2
-        assertEquals("NO", CertTools.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -595,7 +596,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // We should not get our values when not using extension override
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         // SubjectAltName
-        GeneralNames san = CertTools.getGeneralNamesFromAltName("dnsName=foo.bar.com");
+        GeneralNames san = DnComponents.getGeneralNamesFromAltName("dnsName=foo.bar.com");
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
         // KeyUsage
         int bcku = 0;
@@ -632,7 +633,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
-        String altNames = CertTools.getSubjectAlternativeName(cert);
+        String altNames = DnComponents.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("dNSName=foo.bar.com") != -1);
 
         // Check key usage that it is nonRepudiation for KeyId2
@@ -669,7 +670,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         resp = sendCmpHttp(ba, 5);
         checkCmpResponseGeneral(resp, this.issuerDN2, userDN2, this.cacert2, nonce, transid, false, PBEPASSWORD, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, userDN2, this.cacert2, resp, reqId);
-        altNames = CertTools.getSubjectAlternativeName(cert);
+        altNames = DnComponents.getSubjectAlternativeName(cert);
         assertTrue(altNames.indexOf("dNSName=foo.bar.com") != -1);
 
         // Check key usage that it is decipherOnly for KeyId4

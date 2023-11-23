@@ -49,10 +49,10 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
+import org.ejbca.util.JDBCUtil;
 
 import com.keyfactor.util.CertTools;
-
-import org.ejbca.util.JDBCUtil;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * @version $Id$
@@ -234,7 +234,7 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
             }
             
             // Must be authorized to CA in order to change status is certificates issued by the CA
-            String bcdn = CertTools.stringToBCDNString(data.getIssuerDN());
+            String bcdn = DnComponents.stringToBCDNString(data.getIssuerDN());
             int caid = bcdn.hashCode();
             authorizedToCA(admin, caid);
 

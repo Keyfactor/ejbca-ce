@@ -12,6 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -98,16 +104,11 @@ import org.junit.Test;
 import com.keyfactor.CesecoreException;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * System tests for EndEntityCertificateAuthenticationModule.
@@ -201,7 +202,7 @@ public class EndEntityCertAuthModuleTest extends CmpTestCase {
                 log.debug("Added CA: " + ca.getName());
             }
         }
-        int subcaid = CertTools.stringToBCDNString("CN="+AUTH_PARAM_SUBCA).hashCode();
+        int subcaid = DnComponents.stringToBCDNString("CN="+AUTH_PARAM_SUBCA).hashCode();
         if (caSession.existsCa(subcaid)) {
             CaTestUtils.removeCa(ADMIN, caSession.getCAInfo(ADMIN, subcaid));
             log.debug("Removed CA in beforeClass: " + subcaid);            

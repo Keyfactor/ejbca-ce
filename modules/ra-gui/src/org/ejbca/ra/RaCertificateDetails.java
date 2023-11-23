@@ -12,9 +12,32 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
+
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.event.ComponentSystemEvent;
+import javax.faces.model.SelectItem;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -52,30 +75,10 @@ import org.ejbca.cvc.AuthorizationField;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
-import javax.faces.model.SelectItem;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.RSAPublicKey;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * UI representation of a certificate from the back end.
@@ -297,7 +300,7 @@ public class RaCertificateDetails implements Serializable {
 
                 final X509Certificate x509Certificate = (X509Certificate) certificate;
                 this.typeVersion = Integer.toString(x509Certificate.getVersion());
-                this.subjectAn = CertTools.getSubjectAlternativeName(certificate);
+                this.subjectAn = DnComponents.getSubjectAlternativeName(certificate);
                 try {
                     this.subjectDa = SubjectDirAttrExtension.getSubjectDirectoryAttributes(certificate);
                 } catch (ParseException e) {
@@ -961,7 +964,7 @@ public class RaCertificateDetails implements Serializable {
         ec.setResponseContentLength(token.length);
         String fileNameWithoutExtension = "request_csr";
         if (certificateData.getSubjectDN() != null) {
-            fileNameWithoutExtension = CertTools.getPartFromDN(certificateData.getSubjectDN(), "CN");
+            fileNameWithoutExtension = DnComponents.getPartFromDN(certificateData.getSubjectDN(), "CN");
         }
 
         final String filename = StringTools.stripFilename(fileNameWithoutExtension + fileExtension);

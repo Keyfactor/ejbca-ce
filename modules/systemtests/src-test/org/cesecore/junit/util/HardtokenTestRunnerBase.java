@@ -23,7 +23,7 @@ import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
@@ -52,7 +52,7 @@ public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
 
     @Override
     public X509CAInfo createX509Ca(String subjectDn, String caName) throws Exception {
-        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
         X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), true,
                 getTokenImplementation(), CAInfo.SELFSIGNED, "1024", 
                 X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, "3650d");
@@ -64,7 +64,7 @@ public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
     
     @Override
     public X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity) throws Exception {
-        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
         X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), true,
                 getTokenImplementation(), issuerDn.hashCode(), "1024", 
                 X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, validity);
@@ -77,7 +77,7 @@ public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
     @Override
     public X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity, 
             String keySpec, String signingAlgorithm) throws Exception {
-        caSession.removeCA(alwaysAllowToken, CertTools.stringToBCDNString(subjectDn).hashCode());
+        caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
         X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, SystemTestsConfiguration.getPkcs11SlotPin(DEFAULT_TOKEN_PIN), true,
                 getTokenImplementation(), subjectDn.equalsIgnoreCase(issuerDn) ? CAInfo.SELFSIGNED: issuerDn.hashCode(), 
                 keySpec, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, validity, signingAlgorithm);

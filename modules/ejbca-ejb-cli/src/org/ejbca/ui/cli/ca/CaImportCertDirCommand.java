@@ -42,8 +42,8 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Imports certificate files to the database for a given CA
@@ -175,7 +175,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
             // Fetch CA info
             final CAInfo caInfo = getCAInfo(getAuthenticationToken(), caName);
             final X509Certificate cacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-            final String issuer = CertTools.stringToBCDNString(cacert.getSubjectDN().toString());
+            final String issuer = DnComponents.stringToBCDNString(cacert.getSubjectDN().toString());
             log.info("CA: " + issuer);
             // Fetch End Entity Profile info
             log.debug("Searching for End Entity Profile " + eeProfile);

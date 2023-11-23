@@ -37,6 +37,7 @@ import org.junit.Test;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -124,13 +125,13 @@ public class CaBaseUnitTest {
         CABase.checkNameConstraints(cacert, new X500Name("C=SE,CN=spacing"), null);
         // When importing certificates issued by Name Constrained CAs we may run into issues with DN encoding and DN order
         // In EndEntityManagementSessionBean.addUser we use something like:
-        // X500Name subjectDNName1 = CertTools.stringToBcX500Name(CertTools.getSubjectDN(subjectCert), nameStyle, useLdapDnOrder);
+        // X500Name subjectDNName1 = DnComponents.stringToBcX500Name(CertTools.getSubjectDN(subjectCert), nameStyle, useLdapDnOrder);
         // Where nameStyle and dnOrder can have different values
-        X500Name validDN2 = CertTools.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", CeSecoreNameStyle.INSTANCE, false);
+        X500Name validDN2 = DnComponents.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", CeSecoreNameStyle.INSTANCE, false);
         CABase.checkNameConstraints(cacert, validDN2, null);
-        X500Name invalidDN1 = CertTools.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", CeSecoreNameStyle.INSTANCE, true);
+        X500Name invalidDN1 = DnComponents.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", CeSecoreNameStyle.INSTANCE, true);
         checkNCException(cacert, invalidDN1, null, "ldapDnOrder true was accepted");
-        X500Name validDN3 = CertTools.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", PrintableStringNameStyle.INSTANCE, false);
+        X500Name validDN3 = DnComponents.stringToBcX500Name("C=SE,O=PrimeKey,CN=example.com", PrintableStringNameStyle.INSTANCE, false);
         // This should be accepted according to RFC5280, section 4.2.1.10
         // "CAs issuing certificates with a restriction of the form directoryName
         // SHOULD NOT rely on implementation of the full ISO DN name comparison

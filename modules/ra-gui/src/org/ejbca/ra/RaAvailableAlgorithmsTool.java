@@ -12,22 +12,23 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.config.CesecoreConfiguration;
-import org.ejbca.config.WebConfiguration;
-
-import javax.faces.model.SelectItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.faces.model.SelectItem;
+
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.config.CesecoreConfiguration;
+import org.ejbca.config.WebConfiguration;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 public class RaAvailableAlgorithmsTool {
     private static final Logger log = Logger.getLogger(RaAvailableAlgorithmsTool.class);

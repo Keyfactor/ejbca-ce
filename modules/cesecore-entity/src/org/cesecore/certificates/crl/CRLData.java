@@ -12,14 +12,10 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.dbprotection.DatabaseProtectionException;
-import org.cesecore.dbprotection.ProtectedData;
-import org.cesecore.dbprotection.ProtectionStringBuilder;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
+import java.io.Serializable;
+import java.security.cert.CRLException;
+import java.security.cert.X509CRL;
+import java.util.Date;
 
 import javax.persistence.ColumnResult;
 import javax.persistence.Entity;
@@ -30,10 +26,16 @@ import javax.persistence.SqlResultSetMapping;
 import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.io.Serializable;
-import java.security.cert.CRLException;
-import java.security.cert.X509CRL;
-import java.util.Date;
+
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.dbprotection.DatabaseProtectionException;
+import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Representation of a CRL.
@@ -82,7 +84,7 @@ public class CRLData extends ProtectedData implements Serializable {
         String fp = CertTools.getFingerprintAsString(incrl);
         setFingerprint(fp);
         // Make sure names are always looking the same
-        String issuer = CertTools.stringToBCDNString(issuerDN);
+        String issuer = DnComponents.stringToBCDNString(issuerDN);
         setIssuerDN(issuer);
         if (log.isDebugEnabled()) {
             log.debug("Creating crldata, fp=" + fp + ", issuer=" + issuer + ", crlNumber=" + number + ", crlPartitionIndex="
@@ -258,7 +260,7 @@ public class CRLData extends ProtectedData implements Serializable {
     }
 
     public void setIssuer(String dn) {
-        setIssuerDN(CertTools.stringToBCDNString(dn));
+        setIssuerDN(DnComponents.stringToBCDNString(dn));
     }
 
     public void setThisUpdate(Date thisUpdate) {

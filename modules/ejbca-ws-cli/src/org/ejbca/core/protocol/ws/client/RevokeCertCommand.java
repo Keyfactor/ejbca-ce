@@ -25,7 +25,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Revokes a given certificate
@@ -60,7 +60,7 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				System.exit(-1); // NOPMD, it's not a JEE app
 			}
 
-			final String issuerdn = CertTools.stringToBCDNString(this.args[ARG_ISSUERDN]);
+			final String issuerdn = DnComponents.stringToBCDNString(this.args[ARG_ISSUERDN]);
 			final String certsn = getCertSN(this.args[ARG_CERTSN]);
 			final int reason = getRevokeReason(this.args[ARG_REASON]);
 			final String time = this.args.length>ARG_TIME ? this.args[ARG_TIME] : null;

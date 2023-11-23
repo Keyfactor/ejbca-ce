@@ -22,7 +22,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Revokes a given certificate
@@ -57,7 +57,7 @@ public class CheckRevokeStatusCommand extends EJBCAWSRABaseCommand implements IA
             	System.exit(-1); // NOPMD, this is not a JEE app
             }
             
-            String issuerdn = CertTools.stringToBCDNString(args[ARG_ISSUERDN]);            
+            String issuerdn = DnComponents.stringToBCDNString(args[ARG_ISSUERDN]);            
             String certsn = getCertSN(args[ARG_CERTSN]);                                   
                    
             try{

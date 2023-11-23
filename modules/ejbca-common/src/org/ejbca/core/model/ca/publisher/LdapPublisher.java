@@ -48,6 +48,7 @@ import org.ejbca.util.TCPTool;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPAttributeSet;
 import com.novell.ldap.LDAPConnection;
@@ -217,7 +218,7 @@ public class LdapPublisher extends BasePublisher {
     		}
 
     		// Extract the users email from the cert.
-    		String email = CertTools.getEMailAddress(incert);
+    		String email = DnComponents.getEMailAddress(incert);
 
     		// Check if the entry is already present, we will update it with the new certificate.
     		// To work well with the LdapSearchPublisher we need to pass the full certificate DN to the 
@@ -345,7 +346,7 @@ public class LdapPublisher extends BasePublisher {
     							// Check if the intermediate parent node is present, and if it is not
     							// we can create it, of allowed to do so by the publisher configuration
     							if(getCreateIntermediateNodes()) {
-    								final String parentDN = CertTools.getParentDN(dn);
+    								final String parentDN = DnComponents.getParentDN(dn);
     								try {
     									lc.read(parentDN, ldapSearchConstraints);
     								} catch(LDAPException e) {
@@ -483,7 +484,7 @@ public class LdapPublisher extends BasePublisher {
 		try {
 			// Extract the users DN from the crl. Use the least number of encodings...
 			final X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-			crldn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
+			crldn = DnComponents.stringToBCDNString(crl.getIssuerDN().toString());
 			// Is it a delta CRL?
 			if (crl.getExtensionValue(Extension.deltaCRLIndicator.getId()) != null) {
 				isDeltaCRL = true;
@@ -646,7 +647,7 @@ public class LdapPublisher extends BasePublisher {
 		}
 
 		// Extract the users email from the cert.
-		String email = CertTools.getEMailAddress(cert);
+		String email = DnComponents.getEMailAddress(cert);
 
 		// Check if the entry is already present, we will update it with the new certificate.
 		final LDAPEntry oldEntry;
@@ -1363,7 +1364,7 @@ public class LdapPublisher extends BasePublisher {
 	protected Collection<LDAPAttribute> getAttributesFromDN(String dn, String[] attributes) {
 		Collection<LDAPAttribute> attributeList= new LinkedList<LDAPAttribute>();
 		for (int i =0; i<attributes.length;i++){
-			String attribute = CertTools.getPartFromDN(dn, attributes[i]);
+			String attribute = DnComponents.getPartFromDN(dn, attributes[i]);
 			if (attribute != null) {
 				attributeList.add(new LDAPAttribute(attributes[i], attribute));
 			}
@@ -1385,7 +1386,7 @@ public class LdapPublisher extends BasePublisher {
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
 		for (int i =0; i<attributes.length;i++){
-			String attribute = CertTools.getPartFromDN(dn, attributes[i]);
+			String attribute = DnComponents.getPartFromDN(dn, attributes[i]);
 			LDAPAttribute oldattribute = oldEntry.getAttribute(attributes[i]);
 			if (log.isDebugEnabled()) {
 				if (oldattribute!=null) {
@@ -1451,8 +1452,8 @@ public class LdapPublisher extends BasePublisher {
 				// First get the easy ones where LDAP and EJBCA spelling is the same
 				attributeSet.addAll(getAttributesFromDN(dn, MATCHINGPERSONALATTRIBUTES));
 				// sn means surname in LDAP, and is required for persons
-				String cn = CertTools.getPartFromDN(dn, "CN");
-				String sn = CertTools.getPartFromDN(dn, "SURNAME");
+				String cn = DnComponents.getPartFromDN(dn, "CN");
+				String sn = DnComponents.getPartFromDN(dn, "SURNAME");
 				if ( (sn == null) && (cn != null) ) {
 					// Only construct this if we are the standard object class
 					if (objectclass.contains("inetOrgPerson")) {
@@ -1472,7 +1473,7 @@ public class LdapPublisher extends BasePublisher {
 					attributeSet.add(new LDAPAttribute("sn", sn));
 				}
 				// gn means givenname in LDAP, and is required for persons
-				String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
+				String gn = DnComponents.getPartFromDN(dn, "GIVENNAME");
 				if ( (gn == null) && (cn != null) ) {
 					// Only construct this if we are the standard object class
 					if (objectclass.contains("inetOrgPerson")) {
@@ -1491,7 +1492,7 @@ public class LdapPublisher extends BasePublisher {
 				if (gn != null) {
 					attributeSet.add(new LDAPAttribute("givenName", gn));
 				}
-				String title = CertTools.getPartFromDN(dn, "T");
+				String title = DnComponents.getPartFromDN(dn, "T");
 				if (title != null) {
 					attributeSet.add(new LDAPAttribute("title", title));
 				}
@@ -1504,7 +1505,7 @@ public class LdapPublisher extends BasePublisher {
 				// Modifying the schema is as simple as adding serialNumber as MAY in the inetOrgPerson object class in inetorgperson.schema.
 				Collection<Integer> usefields = getUseFieldInLdapDN();
 				if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
-					String serno = CertTools.getPartFromDN(dn, "SN");
+					String serno = DnComponents.getPartFromDN(dn, "SN");
 					if (serno != null) {
 						attributeSet.add(new LDAPAttribute("serialNumber", serno));
 					}            		
@@ -1570,8 +1571,8 @@ public class LdapPublisher extends BasePublisher {
 			// handle that case.
 			if (person) {
 				// sn means surname in LDAP, and is required for inetOrgPerson
-				String cn = CertTools.getPartFromDN(dn, "CN");
-				String sn = CertTools.getPartFromDN(dn, "SURNAME");
+				String cn = DnComponents.getPartFromDN(dn, "CN");
+				String sn = DnComponents.getPartFromDN(dn, "SURNAME");
 				if ( (sn == null) && (cn != null) ) {
 					// Only construct this if we are the standard object class
                     if (objectclass.contains("inetOrgPerson")) {
@@ -1593,7 +1594,7 @@ public class LdapPublisher extends BasePublisher {
 					modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 				}
 				// gn means givenname in LDAP, and is required for inetOrgPerson
-				String gn = CertTools.getPartFromDN(dn, "GIVENNAME");
+				String gn = DnComponents.getPartFromDN(dn, "GIVENNAME");
 				LDAPAttribute oldgn = oldEntry.getAttribute("GIVENNAME");
 				if ( (gn == null) && (cn != null) ) {
 					// Only construct this if we are the standard object class
@@ -1614,7 +1615,7 @@ public class LdapPublisher extends BasePublisher {
 						modSet.add(new LDAPModification(LDAPModification.REPLACE, attr));
 					}
 				}
-				String title = CertTools.getPartFromDN(dn, "T");
+				String title = DnComponents.getPartFromDN(dn, "T");
 				LDAPAttribute oldTitle = oldEntry.getAttribute("Title");
 				if ( ( (title != null) && (oldTitle == null) && addNonExisting) || ( (title != null) && (oldTitle != null ) && modifyExisting) ) {
 					LDAPAttribute attr = new LDAPAttribute("givenName", title);
@@ -1632,7 +1633,7 @@ public class LdapPublisher extends BasePublisher {
 				// This is not present in the normal objectClass (inetOrgPerson)
 				Collection<Integer> usefields = getUseFieldInLdapDN();
 				if (usefields.contains(Integer.valueOf(DNFieldExtractor.SN))) {
-					String serno = CertTools.getPartFromDN(dn, "SN");
+					String serno = DnComponents.getPartFromDN(dn, "SN");
 					LDAPAttribute oldserno = oldEntry.getAttribute("SN");
 					if (((serno != null) && (oldserno == null) && addNonExisting) || ( (serno != null) && (oldserno != null ) && modifyExisting)) {
 						LDAPAttribute attr = new LDAPAttribute("serialNumber", serno);
