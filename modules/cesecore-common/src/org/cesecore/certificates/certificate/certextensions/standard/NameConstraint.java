@@ -227,7 +227,7 @@ public class NameConstraint extends StandardCertificateExtension {
                 return "uniformResourceIdentifier:" + concactedString;
             } else {
                 throw new CertificateExtensionException(
-                        "Cannot parse URI, should be in format of \"host.example.com\" and \".example.com\"): " + concactedString);
+                        "Cannot parse URI, should be in format of \"host.example.com\" and \".example.com\": " + concactedString);
             }
         } else if (str.matches(DNS_REGEX)) {
             // DNS name (it can start with a ".", this means "all subdomains")
