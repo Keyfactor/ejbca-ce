@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.keyfactor.util.CertTools;
 import io.swagger.annotations.ApiModelProperty;
 import org.ejbca.core.model.SecConst;
 
@@ -136,12 +137,26 @@ public class CertificateRestResponseV3 {
 
 	public static class CertificateRestResponseConverter {
 
-		public CertificateRestResponseV3 toRestResponse(final byte[] keyStoreBytes, final List<Certificate> certificateChain)  {
+		public CertificateRestResponseV3 toRestResponse(final byte[] certificate, final List<Certificate> certificateChain)  {
+			return createCertificateRestResponse(certificate, null, certificateChain);
+		}
+
+		public CertificateRestResponseV3 toRestResponse(final Certificate certificate, final List<Certificate> certificateChain) {
+			return createCertificateRestResponse(
+					getEncodedCertificate(certificate),
+					CertTools.getSerialNumberAsString(certificate),
+					certificateChain
+			);
+		}
+
+		private static CertificateRestResponseV3 createCertificateRestResponse(final byte[] certificate,
+				String serialNumber, List<Certificate> certificateChain) {
 			return CertificateRestResponseV3.builder()
-					.setCertificate(keyStoreBytes)
+					.setCertificate(certificate)
+					.setSerialNumber(serialNumber)
 					.setCertificateChain(certificateChain == null
-							? null
-							: encodeChainCertificates(certificateChain))
+									? null
+									: encodeChainCertificates(certificateChain))
 					.setResponseFormat(DER_RESPONSE_FORMAT)
 					.build();
 		}

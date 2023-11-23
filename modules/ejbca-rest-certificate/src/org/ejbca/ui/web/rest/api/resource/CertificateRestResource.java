@@ -67,8 +67,8 @@ import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponseV3;
+import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
@@ -144,9 +144,9 @@ public class CertificateRestResource extends BaseRestResource {
                     authenticationToken,
                     enrollCertificateRestRequest.getIncludeChain(),
                     enrollCertificateRestRequest.getCertificateAuthorityName());
-            final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(
-                    certificateChain,
-                    certificate
+            final CertificateRestResponseV3 enrollCertificateRestResponse = CertificateRestResponseV3.converter().toRestResponse(
+                    certificate,
+                    certificateChain
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
@@ -180,9 +180,9 @@ public class CertificateRestResource extends BaseRestResource {
                     authenticationToken,
                     certificateRequestRestRequest.getIncludeChain(),
                     certificateRequestRestRequest.getCertificateAuthorityName());
-            final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(
-                    certificateChain,
-                    certificate
+            final CertificateRestResponseV3 enrollCertificateRestResponse = CertificateRestResponseV3.converter().toRestResponse(
+                    certificate,
+                    certificateChain
             );
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (InvalidKeyException | InvalidKeySpecException | NoSuchAlgorithmException | NoSuchProviderException |
