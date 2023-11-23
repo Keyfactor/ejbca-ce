@@ -68,6 +68,7 @@ import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponseV3;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
@@ -139,12 +140,10 @@ public class CertificateRestResource extends BaseRestResource {
                     EnrollCertificateRestRequest.converter().toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest)
             );
             final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
-            final List<Certificate> certificateChain = enrollCertificateRestRequest.getIncludeChain()
-                    ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest.getCertificateAuthorityName())
-                    .stream()
-                    .map(CertificateWrapper::getCertificate)
-                    .collect(Collectors.toList())
-                    : null;
+            final List<Certificate> certificateChain = extractCertificateChain(
+                    authenticationToken,
+                    enrollCertificateRestRequest.getIncludeChain(),
+                    enrollCertificateRestRequest.getCertificateAuthorityName());
             final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(
                     certificateChain,
                     certificate
@@ -154,6 +153,17 @@ public class CertificateRestResource extends BaseRestResource {
             log.info("exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
         }
+    }
+
+    private List<Certificate> extractCertificateChain(AuthenticationToken authenticationToken,
+            boolean enrollCertificateRestRequest, String enrollCertificateRestRequest1)
+            throws AuthorizationDeniedException, CADoesntExistsException {
+        return enrollCertificateRestRequest
+                ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest1)
+                    .stream()
+                    .map(CertificateWrapper::getCertificate)
+                    .collect(Collectors.toList())
+                : null;
     }
 
     public Response certificateRequest(final HttpServletRequest requestContext, final CertificateRequestRestRequest certificateRequestRestRequest)
@@ -166,13 +176,11 @@ public class CertificateRestResource extends BaseRestResource {
 
             final X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
 
-            final List<Certificate> certificateChain = certificateRequestRestRequest.getIncludeChain()
-                    ? raMasterApi.getLastCaChain(authenticationToken, certificateRequestRestRequest.getCertificateAuthorityName())
-                    .stream()
-                    .map(CertificateWrapper::getCertificate)
-                    .collect(Collectors.toList())
-                    : null;
-            final CertificateRestResponse enrollCertificateRestResponse = constructFullCertRestResponse(
+            final List<Certificate> certificateChain = extractCertificateChain(
+                    authenticationToken,
+                    certificateRequestRestRequest.getIncludeChain(),
+                    certificateRequestRestRequest.getCertificateAuthorityName());
+            final CertificateRestResponse enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(
                     certificateChain,
                     certificate
             );
@@ -218,7 +226,7 @@ public class CertificateRestResource extends BaseRestResource {
 
     public Response enrollKeystore(final HttpServletRequest requestContext, final KeyStoreRestRequest keyStoreRestRequest)
             throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, IOException, RestException {
+            NoSuchAlgorithmException, CertificateException, IOException, RestException, CADoesntExistsException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         EndEntityInformation endEntityInformation = raMasterApi.searchUser(admin, keyStoreRestRequest.getUsername());
         if (endEntityInformation == null) {
@@ -242,12 +250,19 @@ public class CertificateRestResource extends BaseRestResource {
         if (!(tokenType == SecConst.TOKEN_SOFT_P12 || tokenType == SecConst.TOKEN_SOFT_JKS || tokenType == SecConst.TOKEN_SOFT_BCFKS)) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
+        final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
         CACommon caCommon = caSessionLocal.getCA(admin, endEntityInformation.getCAId());
-        final CertificateRestResponse enrollCertificateRestResponse = constructFullCertRestResponse(
-                caCommon.getCertificateChain(),
-                caCommon.getCACertificate()
-        );
-        return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
+        List<Certificate> keyChain = getKeyChain(admin, caCommon.getName());
+        CertificateRestResponseV3 response = CertificateRestResponseV3.converter().toRestResponse(keyStoreBytes, keyChain);
+        return Response.status(Status.CREATED).entity(response).build();
+    }
+
+    private List<Certificate> getKeyChain(AuthenticationToken admin, String caName)
+            throws AuthorizationDeniedException, CADoesntExistsException {
+        return raMasterApi.getLastCaChain(admin, caName)
+                .stream()
+                .map(CertificateWrapper::getCertificate)
+                .collect(Collectors.toList());
     }
 
     public Response revocationStatus(final HttpServletRequest requestContext, final String issuerDn, final String serialNumber)
@@ -516,9 +531,5 @@ public class CertificateRestResource extends BaseRestResource {
         final RaCertificateSearchRequest raCertificateSearchRequest = SearchCertificatesRestRequest.converter().toEntity(searchCertificatesRestRequest);
         final RaCertificateSearchResponse raCertificateSearchResponse = raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest);
         return SearchCertificatesRestResponse.converter().toRestResponse(raCertificateSearchResponse, availableEndEntityProfiles, availableCertificateProfiles);
-    }
-
-    private CertificateRestResponse constructFullCertRestResponse(List<Certificate> certificateChain, Certificate certificate) {
-        return CertificateRestResponse.converter().toRestResponse(certificateChain, certificate);
     }
 }
