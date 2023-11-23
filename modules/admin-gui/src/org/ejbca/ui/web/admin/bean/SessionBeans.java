@@ -86,7 +86,6 @@ public class SessionBeans {
         final HttpSession httpSession = httpServletRequest.getSession(true);
         synchronized (httpSession) {
             RAInterfaceBean raBean = (RAInterfaceBean) httpSession.getAttribute(SESSION.RA_INTERFACE_BEAN);
-            if (raBean == null) {
                 raBean = getBeanInstance(RAInterfaceBean.class);
                 try {
                     raBean.initialize(getEjbcaWebBean(httpServletRequest));
@@ -94,7 +93,6 @@ public class SessionBeans {
                     throw new ServletException("Cannot initialize RAInterfaceBean", e);
                 }
                 httpSession.setAttribute(SESSION.RA_INTERFACE_BEAN, raBean);
-            }
             return raBean;
         }
     }
