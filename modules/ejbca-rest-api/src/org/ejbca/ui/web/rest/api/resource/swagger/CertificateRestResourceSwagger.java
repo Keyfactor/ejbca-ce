@@ -135,7 +135,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             code = 201)
     public Response enrollKeystore(@Context HttpServletRequest requestContext, KeyStoreRestRequest keyStoreRestRequest)
             throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, IOException, RestException {
+            NoSuchAlgorithmException, CertificateException, IOException, RestException, CADoesntExistsException {
         return super.enrollKeystore(requestContext, keyStoreRestRequest);
     }
 
