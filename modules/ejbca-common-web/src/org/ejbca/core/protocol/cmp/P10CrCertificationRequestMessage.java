@@ -50,6 +50,7 @@ import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 public class P10CrCertificationRequestMessage extends BaseCmpMessage implements ICrmfRequestMessage {
     
@@ -117,7 +118,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
         String ret = null;
         final X500Name name = getRequest().getSubject();
         if (name != null) {
-            ret = CertTools.stringToBCDNString(name.toString());
+            ret = DnComponents.stringToBCDNString(name.toString());
         }
         return ret;
     }
@@ -133,7 +134,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
             if (StringUtils.isEmpty(component)) {
                 component = "CN";
             }
-            String name = CertTools.getPartFromDN(getRequestDN(), component);
+            String name = DnComponents.getPartFromDN(getRequestDN(), component);
             if (name == null) {
                 log.error("No component " + component + " in DN: " + LogRedactionUtils.getSubjectDnLogSafe(getRequestDN()));
             } else {
@@ -230,7 +231,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
         String ret = null;
         final X500Name name = getRequestX500Name();
         if (name != null) {
-            ret = CertTools.stringToBCDNString(name.toString());
+            ret = DnComponents.stringToBCDNString(name.toString());
         }
         if (log.isDebugEnabled()) {
             log.debug("Request DN is: " + LogRedactionUtils.getSubjectDnLogSafe(ret));
@@ -267,7 +268,7 @@ public class P10CrCertificationRequestMessage extends BaseCmpMessage implements 
         final Extension sanExtension = CertTools.getExtension(request, Extension.subjectAlternativeName.getId());
 
         if (sanExtension != null) {
-            requestAltName = CertTools.getAltNameStringFromExtension(sanExtension);
+            requestAltName = DnComponents.getAltNameStringFromExtension(sanExtension);
         }
         if (log.isDebugEnabled()) {
             log.debug("Request altName is: " + LogRedactionUtils.getSubjectAltNameLogSafe(requestAltName));

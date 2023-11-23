@@ -65,8 +65,8 @@ import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 import com.keyfactor.CesecoreException;
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
@@ -327,7 +327,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
         } else {
             req = crmfreq;
         }
-        // Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
+        // Don't convert this DN to an ordered EJBCA DN string with DnComponents.stringToBCDNString because we don't want double escaping of some characters
         final X500Name dnname = req.getRequestX500Name();
         if (dnname == null) {
             final String nullMsg = "Request DN Name can not be null";
@@ -365,8 +365,8 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
         }
         // AltNames may be in the request template
         final String altNames = req.getRequestAltNames();
-        final List<String> emails = CertTools.getEmailFromDN(altNames);
-        emails.addAll(CertTools.getEmailFromDN(dnname.toString()));
+        final List<String> emails = DnComponents.getEmailFromDN(altNames);
+        emails.addAll(DnComponents.getEmailFromDN(dnname.toString()));
         // Use rfc822name or first SubjectDN email address as user email address if available
         final String email = emails.isEmpty() ? null : emails.get(0);
         ExtendedInformation ei = null;
@@ -491,7 +491,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
             LOG.debug("extractUsernameComponent: "+usernameComp);
         }
         if(StringUtils.isNotEmpty(usernameComp)) {
-            String username = CertTools.getPartFromDN(dn,usernameComp);
+            String username = DnComponents.getPartFromDN(dn,usernameComp);
             String fix = cmpConfiguration.getRANameGenPrefix(this.confAlias);
             if (StringUtils.isNotBlank(fix)) {
                 LOG.info("Preceded RA name prefix '" + fix + "' to username '" + username + "' in CMP vendor mode.");

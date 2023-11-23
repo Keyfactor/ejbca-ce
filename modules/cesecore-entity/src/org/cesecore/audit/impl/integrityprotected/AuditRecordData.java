@@ -37,7 +37,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.GUIDGenerator;
 import org.cesecore.util.XmlSerializer;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * This class represents an audit log record.
@@ -248,7 +248,7 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
     public String getUnescapedRndValue(){
         String value = getAdditionalDetails();
         if (StringUtils.isNotEmpty(value)) {
-            return CertTools.getUnescapedRdnValue(value);
+            return DnComponents.getUnescapedRdnValue(value);
         } else {
             return value;
         }

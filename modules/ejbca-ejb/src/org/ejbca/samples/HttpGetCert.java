@@ -33,6 +33,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -266,7 +267,7 @@ public class HttpGetCert {
 
         // Generate PKCS10 certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX500Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(),
+                DnComponents.stringToBcX500Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(),
                 new DERSet(), rsaKeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);

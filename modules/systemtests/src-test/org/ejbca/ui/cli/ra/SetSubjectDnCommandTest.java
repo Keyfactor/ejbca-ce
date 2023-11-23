@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ra;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Date;
 
 import org.cesecore.CaTestUtils;
@@ -36,10 +38,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
-
-import static org.junit.Assert.assertEquals;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * @version $Id$
@@ -97,6 +97,6 @@ public class SetSubjectDnCommandTest {
         final String newDn = "C=DE,O=Primekey Labs,CN=foo";
         final String args[] = new String[] { TESTCLASS_NAME, newDn };
         command.execute(args);
-        assertEquals("DN was not changed.", CertTools.stringToBCDNString(newDn), endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getDN());
+        assertEquals("DN was not changed.", DnComponents.stringToBCDNString(newDn), endEntityAccessSession.findUser(authenticationToken, TESTCLASS_NAME).getDN());
     }
 }

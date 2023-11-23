@@ -70,8 +70,8 @@ import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
@@ -216,7 +216,7 @@ public class InitCATest extends CaTestCase {
             retrievedCaInfo.setSubjectDN(NEW_DN);
             caAdminSession.initializeCa(admin, retrievedCaInfo);
 
-            final CAInfo updatedCaInfo = caSession.getCAInfo(admin, CertTools.stringToBCDNString(NEW_DN).hashCode());
+            final CAInfo updatedCaInfo = caSession.getCAInfo(admin, DnComponents.stringToBCDNString(NEW_DN).hashCode());
             assertEquals("CA was not set to active", CAConstants.CA_ACTIVE, updatedCaInfo.getStatus());
             assertFalse("Initialized CA was not given certificate chain", updatedCaInfo.getCertificateChain().isEmpty());
 

@@ -50,8 +50,8 @@ import org.cesecore.util.SimpleTime;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
@@ -221,8 +221,8 @@ public abstract class CryptoTokenRunner {
                 CaTestUtils.createCaToken(cryptoTokenId, signingAlgorithm, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, signingKeyName, encryptionKeyName);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        String caname = CertTools.getPartFromDN(cadn, "CN");
-        boolean ldapOrder = !CertTools.isDNReversed(cadn);
+        String caname = DnComponents.getPartFromDN(cadn, "CN");
+        boolean ldapOrder = !DnComponents.isDNReversed(cadn);
         int certificateProfileId = (signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validity,
                 signedBy, null, catoken);

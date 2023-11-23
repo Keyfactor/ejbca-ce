@@ -568,11 +568,11 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             endEntityInformation.setPassword("foo123");
             endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
             KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            X500Name x509dn = CertTools.stringToBcX500Name("CN=" + username);
+            X500Name x509dn = DnComponents.stringToBcX500Name("CN=" + username);
             ASN1EncodableVector v = new ASN1EncodableVector();
             ASN1EncodableVector altnameattr = new ASN1EncodableVector();
             altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            GeneralNames san = CertTools.getGeneralNamesFromAltName(requestSan);
+            GeneralNames san = DnComponents.getGeneralNamesFromAltName(requestSan);
             ExtensionsGenerator extgen = new ExtensionsGenerator();
             extgen.addExtension(Extension.subjectAlternativeName, false, san);
             Extensions exts = extgen.generate();
@@ -641,11 +641,11 @@ public class KeyValidatorSessionTest extends RoleUsingTestCase {
             endEntityInformation.setPassword("foo123");
             endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
             KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-            X500Name x509dn = CertTools.stringToBcX500Name("CN=" + username);
+            X500Name x509dn = DnComponents.stringToBcX500Name("CN=" + username);
             ASN1EncodableVector v = new ASN1EncodableVector();
             ASN1EncodableVector altnameattr = new ASN1EncodableVector();
             altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            GeneralNames san = CertTools.getGeneralNamesFromAltName(requestSan);
+            GeneralNames san = DnComponents.getGeneralNamesFromAltName(requestSan);
             ExtensionsGenerator extgen = new ExtensionsGenerator();
             extgen.addExtension(Extension.subjectAlternativeName, false, san);
             Extensions exts = extgen.generate();
