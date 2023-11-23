@@ -17,13 +17,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * <p><b>CaId Module Module</b>
  * <p>Generates CA IDs which can be used with EJBCA.
  *
- * @version $Id$
  */
 public class CaIdGenerator extends ClientToolBox {
 
@@ -39,7 +38,7 @@ public class CaIdGenerator extends ClientToolBox {
             System.out.println("Too many arguments. Type 'help' for more information.");
             return;
         }
-        final int id = CertTools.stringToBCDNString(argsList.get(0)).hashCode();
+        final int id = DnComponents.stringToBCDNString(argsList.get(0)).hashCode();
         System.out.println(id);
     }
 

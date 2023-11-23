@@ -98,6 +98,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  *
@@ -269,7 +270,7 @@ public abstract class ScepTestBase {
         assertEquals(signerInfo.getDigestAlgOID(), digestOid);
         SignerId sinfo = signerInfo.getSID();
         // Check that the signer is the expected CA
-        assertEquals(CertTools.stringToBCDNString(getCaCertificate().getIssuerDN().getName()), CertTools.stringToBCDNString(sinfo.getIssuer().toString()));
+        assertEquals(DnComponents.stringToBCDNString(getCaCertificate().getIssuerDN().getName()), DnComponents.stringToBCDNString(sinfo.getIssuer().toString()));
         // Verify the signature
         JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
         JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build()).setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -394,10 +395,10 @@ public abstract class ScepTestBase {
                     log.info("Got cert with DN: " + retcert.getSubjectDN().getName());
 
                     // check the returned certificate
-                    String subjectdn = CertTools.stringToBCDNString(retcert.getSubjectDN().getName());
-                    if (CertTools.stringToBCDNString(userDN).equals(subjectdn)) {
+                    String subjectdn = DnComponents.stringToBCDNString(retcert.getSubjectDN().getName());
+                    if (DnComponents.stringToBCDNString(userDN).equals(subjectdn)) {
                         // issued certificate
-                        assertEquals(CertTools.stringToBCDNString(userDN), subjectdn);
+                        assertEquals(DnComponents.stringToBCDNString(userDN), subjectdn);
                         assertEquals(CertTools.getSubjectDN(caCertToUse), CertTools.getIssuerDN(retcert));
                         retcert.verify(caCertToUse.getPublicKey());
                         assertTrue(checkKeys(key.getPrivate(), retcert.getPublicKey()));

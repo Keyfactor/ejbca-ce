@@ -164,7 +164,7 @@ public class SimpleRequestMessage implements RequestMessage {
 
     /** Sets the issuer DN manually, since it can not be contained in the request for
      * this type of simple request message
-     * @param dn issuerDN, in CertTools.stringToBCDnString() format
+     * @param dn issuerDN, in DnComponents.stringToBCDNString() format
      */
     public void setIssuerDN(String dn) {
     	this.issuerDN = dn;

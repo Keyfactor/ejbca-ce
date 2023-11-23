@@ -13,6 +13,11 @@
 
 package org.ejbca.core.protocol.scep;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -80,14 +85,10 @@ import org.junit.Test;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Protocol messages.
@@ -700,7 +701,7 @@ public class MessagesTest {
             ExtensionsGenerator extgen = new ExtensionsGenerator();
             // Requested extensions attribute
             // AltNames
-            final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
+            final GeneralNames san = DnComponents.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
             final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
             final ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
             try {
@@ -742,7 +743,7 @@ public class MessagesTest {
             DERSet attributes = new DERSet(v);
             // Create PKCS#10 certificate request
             final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
-                    CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
+                    DnComponents.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
             
             // wrap message in pkcs#7
             return wrap(p10request.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_PKCSREQ), transactionId, senderCertificate, signatureKey, encryptionAlg);

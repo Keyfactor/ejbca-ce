@@ -1172,7 +1172,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
         final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         PKCS10CertificationRequest pkcs10CertificationRequest = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
-                CertTools.stringToBcX500Name(subjectDn), keys.getPublic(), null, keys.getPrivate(), null);
+                DnComponents.stringToBcX500Name(subjectDn), keys.getPublic(), null, keys.getPrivate(), null);
         String unidFnrCsr = CertTools.buildCsr(pkcs10CertificationRequest);
 
         // Create CSR REST request
@@ -1472,7 +1472,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      * @param delta true for delta CRL, false for base CRL
      */
     private X509CRL createCrl(final boolean delta) throws Exception {
-        final String orderedIssuerDn = CertTools.stringToBCDNString(testIssuerDn);
+        final String orderedIssuerDn = DnComponents.stringToBCDNString(testIssuerDn);
         final String deltaCrlParameter = (delta) ? "?deltacrl=true" : "";
         final Response createCrlResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/createcrl" + deltaCrlParameter).request().post(null);
         assertEquals("Failed to create a CRL", 200, createCrlResponse.getStatus());
@@ -1485,7 +1485,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      * @param delta true for delta CRL, false for base CRL
      */
     private X509CRL getLatestCrl(final boolean delta) throws Exception {
-        final String orderedIssuerDn = CertTools.stringToBCDNString(testIssuerDn);
+        final String orderedIssuerDn = DnComponents.stringToBCDNString(testIssuerDn);
         final String deltaCrlParameter = (delta) ? "?deltacrl=true" : "";
         // get the created CRL
         final Response getLatestCrlResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/getLatestCrl" + deltaCrlParameter).request().get();
@@ -1539,7 +1539,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         Files.write(Paths.get(CRL_FILENAME), crl.getEncoded());
         final MultipartEntityBuilder entity = MultipartEntityBuilder.create();
         entity.addBinaryBody("crlFile", new File(CRL_FILENAME), ContentType.DEFAULT_BINARY, CRL_FILENAME);
-        final HttpPost request = new HttpPost(getBaseUrl() + "/v1/ca/" + CertTools.stringToBCDNString(testIssuerDn) + "/importcrl");
+        final HttpPost request = new HttpPost(getBaseUrl() + "/v1/ca/" + DnComponents.stringToBCDNString(testIssuerDn) + "/importcrl");
         request.setEntity(entity.build());
         final HttpResponse response = getHttpClient(true).execute(request);
         assertEquals("CRL import failed", Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());

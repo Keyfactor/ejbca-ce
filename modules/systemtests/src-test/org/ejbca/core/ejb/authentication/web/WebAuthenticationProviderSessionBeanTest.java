@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -85,13 +90,9 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the WebAuthenticationProviderSessionBean
@@ -286,8 +287,8 @@ public class WebAuthenticationProviderSessionBeanTest {
         random.nextBytes(serno);
         
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(publicKey.getEncoded());                
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn), new java.math.BigInteger(serno).abs(), firstDate, 
-                lastDate, CertTools.stringToBcX500Name(dn), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name(dn), new java.math.BigInteger(serno).abs(), firstDate, 
+                lastDate, DnComponents.stringToBcX500Name(dn), pkinfo);
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
         certbuilder.addExtension(Extension.basicConstraints, true, bc);

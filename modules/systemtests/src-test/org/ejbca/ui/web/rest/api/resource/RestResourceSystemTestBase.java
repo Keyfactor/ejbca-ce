@@ -117,6 +117,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -400,7 +401,7 @@ public class RestResourceSystemTestBase {
             throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         final List<Certificate> trustedCaCertificateChain = serverCertCaInfo.getCertificateChain();
         KeyStore clientKeyStore = initJksKeyStore(LOGIN_STORE_PATH);
-        importDataIntoJksKeystore(LOGIN_STORE_PATH, clientKeyStore, CertTools.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"),
+        importDataIntoJksKeystore(LOGIN_STORE_PATH, clientKeyStore, DnComponents.getPartFromDN(CertTools.getSubjectDN(clientCert), "CN"),
                 trustedCaCertificateChain.get(0).getEncoded(), clientKeys, clientCert.getEncoded());
     }
 

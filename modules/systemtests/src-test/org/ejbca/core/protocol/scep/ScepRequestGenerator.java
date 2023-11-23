@@ -10,10 +10,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -54,6 +50,11 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.CollectionStore;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /** Class used to generate SCEP messages. Used for SCEP clients and testing
  */
@@ -97,7 +98,7 @@ public class ScepRequestGenerator {
             final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
         this.cacert = ca;
         this.reqdn = dn;
-        X500Name name = CertTools.stringToBcX500Name(cacert.getIssuerDN().getName());
+        X500Name name = DnComponents.stringToBcX500Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());       
         // wrap message in pkcs#7
         return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);        
@@ -109,7 +110,7 @@ public class ScepRequestGenerator {
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         // Requested extensions attribute
         // AltNames
-        final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
+        final GeneralNames san = DnComponents.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
         return generateCertReq( dn, password, transactionId, ca, extgen.generate(), senderCertificate, signatureKey, wrappingAlg, encryptionAlg);
     }
@@ -144,7 +145,7 @@ public class ScepRequestGenerator {
         DERSet attributes = new DERSet(v);
         // Create PKCS#10 certificate request
         final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
-                CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
+                DnComponents.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
         // wrap message in pkcs#7
         return wrap(p10request.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_PKCSREQ), transactionId, senderCertificate, signatureKey, wrappingAlg, encryptionAlg);
@@ -160,8 +161,8 @@ public class ScepRequestGenerator {
         //	    subject "the requester subject name as given in PKCS#10" 
         //	} 
         ASN1EncodableVector vec = new ASN1EncodableVector();
-        vec.add(CertTools.stringToBcX500Name(caCertificate.getIssuerDN().getName()));
-        vec.add(CertTools.stringToBcX500Name(dn));
+        vec.add(DnComponents.stringToBcX500Name(caCertificate.getIssuerDN().getName()));
+        vec.add(DnComponents.stringToBcX500Name(dn));
         DERSequence seq = new DERSequence(vec);
 
         // wrap message in pkcs#7
