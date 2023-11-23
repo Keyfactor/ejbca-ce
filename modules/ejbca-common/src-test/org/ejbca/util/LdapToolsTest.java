@@ -25,7 +25,7 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.junit.Test;
 
 import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * @version $Id$
@@ -36,11 +36,11 @@ public class LdapToolsTest {
 
     @Test
     public void test01GetParentDN() {
-        assertEquals("", CertTools.getParentDN(""));
-        assertEquals("", CertTools.getParentDN("dc=localhost"));
-        assertEquals("dc=example,dc=com", CertTools.getParentDN("cn=test user,dc=example,dc=com").toLowerCase());
-        assertEquals("dc=example,dc=com", CertTools.getParentDN("cn=test\\,user,dc=example,dc=com").toLowerCase());
-        assertEquals("o=company\\,inc,dc=example,dc=com", CertTools.getParentDN("cn=user,o=company\\,inc,dc=example,dc=com").toLowerCase());
+        assertEquals("", DnComponents.getParentDN(""));
+        assertEquals("", DnComponents.getParentDN("dc=localhost"));
+        assertEquals("dc=example,dc=com", DnComponents.getParentDN("cn=test user,dc=example,dc=com").toLowerCase());
+        assertEquals("dc=example,dc=com", DnComponents.getParentDN("cn=test\\,user,dc=example,dc=com").toLowerCase());
+        assertEquals("o=company\\,inc,dc=example,dc=com", DnComponents.getParentDN("cn=user,o=company\\,inc,dc=example,dc=com").toLowerCase());
     }
     
     @Test

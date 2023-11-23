@@ -145,7 +145,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
 
         final String caName = CaTestUtils.getClientCertCaName(internalAdmin);
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        String p10 = new String(Base64.encode(CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys
+        String p10 = new String(Base64.encode(CertTools.genPKCS10CertificationRequest("SHA1WithRSA", DnComponents.stringToBcX500Name("CN=NOUSED"), keys
                 .getPublic(), new DERSet(), keys.getPrivate(), null).toASN1Structure().getEncoded()));
         UserDataVOWS user = new UserDataVOWS();
         user.setUsername(TEST_USERNAME);
@@ -163,7 +163,7 @@ public class DnFieldsTest extends CommonEjbcaWs {
         final X509Certificate cert = resp.getCertificate();
         assertNotNull("Certificate was null", cert);
         assertEquals("Wrong Subject DN.", TEST_SUBJECTDN, CertTools.getSubjectDN(cert));
-        assertEquals("Wrong Subject Alternative Name.", TEST_SUBJECTALTNAME, CertTools.getSubjectAlternativeName(cert));
+        assertEquals("Wrong Subject Alternative Name.", TEST_SUBJECTALTNAME, DnComponents.getSubjectAlternativeName(cert));
     }
 
     @Override

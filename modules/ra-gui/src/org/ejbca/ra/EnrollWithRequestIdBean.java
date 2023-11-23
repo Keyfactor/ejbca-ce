@@ -77,6 +77,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
@@ -602,7 +603,7 @@ public class EnrollWithRequestIdBean implements Serializable {
             return;
         }
         // Download the token
-        String fileName = CertTools.getPartFromDN(endEntityInformation.getDN(), "CN");
+        String fileName = DnComponents.getPartFromDN(endEntityInformation.getDN(), "CN");
         if(fileName == null){
             fileName = "certificatetoken";
         }
