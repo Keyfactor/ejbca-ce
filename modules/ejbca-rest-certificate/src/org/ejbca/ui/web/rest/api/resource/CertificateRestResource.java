@@ -156,10 +156,10 @@ public class CertificateRestResource extends BaseRestResource {
     }
 
     private List<Certificate> extractCertificateChain(AuthenticationToken authenticationToken,
-            boolean enrollCertificateRestRequest, String enrollCertificateRestRequest1)
+            boolean doEnrollCertificateRestRequest, String enrollCertificateRestRequest)
             throws AuthorizationDeniedException, CADoesntExistsException {
-        return enrollCertificateRestRequest
-                ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest1)
+        return doEnrollCertificateRestRequest
+                ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest)
                     .stream()
                     .map(CertificateWrapper::getCertificate)
                     .collect(Collectors.toList())
@@ -252,12 +252,12 @@ public class CertificateRestResource extends BaseRestResource {
         }
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
         CACommon caCommon = caSessionLocal.getCA(admin, endEntityInformation.getCAId());
-        List<Certificate> keyChain = getKeyChain(admin, caCommon.getName());
+        List<Certificate> keyChain = getCertificateChain(admin, caCommon.getName());
         CertificateRestResponseV3 response = CertificateRestResponseV3.converter().toRestResponse(keyStoreBytes, keyChain);
         return Response.status(Status.CREATED).entity(response).build();
     }
 
-    private List<Certificate> getKeyChain(AuthenticationToken admin, String caName)
+    private List<Certificate> getCertificateChain(AuthenticationToken admin, String caName)
             throws AuthorizationDeniedException, CADoesntExistsException {
         return raMasterApi.getLastCaChain(admin, caName)
                 .stream()

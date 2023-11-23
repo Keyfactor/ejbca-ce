@@ -39,7 +39,6 @@ public class CertificateRestResponseV3 {
 	private final String responseFormat;
 
 	@ApiModelProperty(value = "Certificate chain", example = "[\"ABC123efg...345xyz0=\"]")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final List<byte[]> certificateChain;
 
 	private CertificateRestResponseV3(final CertificateRestResponseBuilder builder) {
