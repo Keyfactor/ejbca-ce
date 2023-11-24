@@ -73,6 +73,7 @@ import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
+import org.ejbca.util.keystore.P12toPEM;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -83,14 +84,18 @@ import javax.validation.Valid;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.xml.bind.DatatypeConverter;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -100,6 +105,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -226,7 +232,8 @@ public class CertificateRestResource extends BaseRestResource {
 
     public Response enrollKeystore(final HttpServletRequest requestContext, final KeyStoreRestRequest keyStoreRestRequest)
             throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, IOException, RestException, CADoesntExistsException {
+            NoSuchAlgorithmException, CertificateException, IOException, RestException, CADoesntExistsException,
+            UnrecoverableKeyException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
         EndEntityInformation endEntityInformation = raMasterApi.searchUser(admin, keyStoreRestRequest.getUsername());
         if (endEntityInformation == null) {
@@ -240,7 +247,8 @@ public class CertificateRestResource extends BaseRestResource {
         } catch (InvalidKeyException | InvalidAlgorithmParameterException e) {
             throw new RestException(422, e.getMessage());
         }
-        endEntityInformation.setPassword(keyStoreRestRequest.getPassword());
+        String keyStorePassword = keyStoreRestRequest.getPassword();
+        endEntityInformation.setPassword(keyStorePassword);
         if (endEntityInformation.getExtendedInformation() == null) {
             endEntityInformation.setExtendedInformation(new ExtendedInformation());
         }
@@ -253,8 +261,24 @@ public class CertificateRestResource extends BaseRestResource {
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
         CACommon caCommon = caSessionLocal.getCA(admin, endEntityInformation.getCAId());
         List<Certificate> keyChain = getCertificateChain(admin, caCommon.getName());
-        CertificateRestResponseV3 response = CertificateRestResponseV3.converter().toRestResponse(keyStoreBytes, keyChain);
+
+        X509Certificate userX509Certificate = extractCertificateFromKeychain(keyStoreBytes, keyStorePassword);
+
+        CertificateRestResponseV3 response = CertificateRestResponseV3.converter()
+                .toRestResponse(keyStoreBytes,
+                        CertTools.getSerialNumberAsString(userX509Certificate), keyChain);
         return Response.status(Status.CREATED).entity(response).build();
+    }
+
+    private X509Certificate extractCertificateFromKeychain(byte[] keyStoreBytes, String keyStorePassword)
+            throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException {
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        keyStore.load(new ByteArrayInputStream(keyStoreBytes), keyStorePassword.toCharArray());
+
+        String alias = keyStore.aliases().nextElement();
+
+        Certificate[] chain = KeyTools.getCertChain(keyStore, alias);
+        return (X509Certificate) chain[0];
     }
 
     private List<Certificate> getCertificateChain(AuthenticationToken admin, String caName)
