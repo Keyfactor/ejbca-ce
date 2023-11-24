@@ -137,8 +137,8 @@ public class CertificateRestResponseV3 {
 
 	public static class CertificateRestResponseConverter {
 
-		public CertificateRestResponseV3 toRestResponse(final byte[] certificate, final List<Certificate> certificateChain)  {
-			return createCertificateRestResponse(certificate, null, certificateChain);
+		public CertificateRestResponseV3 toRestResponse(final byte[] certificate, String serialNumber, final List<Certificate> certificateChain)  {
+			return createCertificateRestResponse(certificate, serialNumber, certificateChain);
 		}
 
 		public CertificateRestResponseV3 toRestResponse(final Certificate certificate, final List<Certificate> certificateChain) {
