@@ -385,9 +385,7 @@ public class RaEndEntityBean implements Serializable {
             }
         }
         if (clearCsrChecked) {
-            if (extendedInformation != null) {
-                extendedInformation.setCertificateRequest(null);
-            }
+            extendedInformation.setCertificateRequest(null);
             changed = true;
         }
         String newUsername = null;
@@ -427,11 +425,9 @@ public class RaEndEntityBean implements Serializable {
             }
         }
         if (subjectDirectoryAttributes == null) {
-            if (extendedInformation != null) {
-                if (StringUtils.isNotBlank(extendedInformation.getSubjectDirectoryAttributes())) {
-                    extendedInformation.setSubjectDirectoryAttributes(null);
-                    changed = true;
-                }
+            if (StringUtils.isNotBlank(extendedInformation.getSubjectDirectoryAttributes())) {
+                extendedInformation.setSubjectDirectoryAttributes(null);
+                changed = true;
             }
         } else {
             String subjectDa = subjectDirectoryAttributes.getValue();
@@ -445,11 +441,11 @@ public class RaEndEntityBean implements Serializable {
             editExtensionData(extendedInformation);
             changed = true;
         }
-        if (extendedInformation != null && maxFailedLogins != extendedInformation.getMaxLoginAttempts()) {
+        if (maxFailedLogins != extendedInformation.getMaxLoginAttempts()) {
             extendedInformation.setMaxLoginAttempts(maxFailedLogins);
             changed = true;
         }
-        if (extendedInformation != null && resetRemainingLoginAttempts) {
+        if (resetRemainingLoginAttempts) {
             extendedInformation.setRemainingLoginAttempts(maxFailedLogins);
             changed = true;
         }
@@ -507,9 +503,6 @@ public class RaEndEntityBean implements Serializable {
             changed = true;
         }
         if (eep.isPsd2QcStatementUsed()) {
-            if (extendedInformation == null) {
-                endEntityInformation.setExtendedInformation(new ExtendedInformation());
-            }
             if (!StringUtils.equals(psd2NcaName, extendedInformation.getQCEtsiPSD2NCAName())) {
                 extendedInformation.setQCEtsiPSD2NcaName(StringUtils.trimToNull(psd2NcaName));
                 changed = true;
@@ -530,9 +523,6 @@ public class RaEndEntityBean implements Serializable {
         if (eep.isCabfOrganizationIdentifierUsed()) {
             if (!verifyCabfOrganizationIdentifier()) {
                 return;
-            }
-            if (extendedInformation == null) {
-                endEntityInformation.setExtendedInformation(new ExtendedInformation());
             }
             if (!StringUtils.equals(cabfOrganizationIdentifier, extendedInformation.getCabfOrganizationIdentifier())) {
                 extendedInformation.setCabfOrganizationIdentifier(StringUtils.trimToNull(cabfOrganizationIdentifier));
