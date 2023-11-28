@@ -82,6 +82,26 @@ public class CaBaseUnitTest {
         CABase.checkNameConstraints(cacert, validDN, new GeneralNames(new GeneralName(GeneralName.dNSName, ".")));
     }
     
+    
+    @Test
+    public void testUriNameConstraintsNegativeTest() throws Exception {
+        final String testVectors = "uri:..com\n" +
+                                   "uri:.subdomain2.example.c\n" +
+                                   "uri:.subdomain2.example.c123456\n" +
+                                   "uri:.\n" +
+                                   "uri:\n";
+        
+        for (String nc: testVectors.split("\n")) {
+            try {
+                NameConstraint.toGeneralSubtrees(NameConstraint.parseNameConstraintsList(nc));
+                fail("Invalid name constrant is accepted: " + nc);
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        
+    }
+    
     /**
      * Tests the following methods:
      * <ul>
@@ -98,6 +118,12 @@ public class CaBaseUnitTest {
                                  "user@host.com\n" +
                                  "uri:example.com\n" +
                                  "uri:.example.com\n" +
+                                 "uri:subdomain2.example.com\n" +
+                                 "uri:.subdomain2.example.com\n" +
+                                 "uri:subdomain3.subdomain2.example.com\n" +
+                                 "uri:.subdomain3.subdomain2.example.com\n" +
+                                 "uri:sub10.sub11.sub12.subdomain3.subdomain2.example.com\n" +
+                                 "uri:.sub10.sub11.sub12.subdomain3.subdomain2.example.com\n" +
                                  "10.0.0.0/8\n" +
                                  "www.example.com\n" +
                                  "   C=SE,  CN=spacing    \n";
