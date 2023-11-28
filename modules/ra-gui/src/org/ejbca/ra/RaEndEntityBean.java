@@ -618,8 +618,8 @@ public class RaEndEntityBean implements Serializable {
             extendedInformation.removeIssuanceRevocationReason();
         }
 
-        if (raEndEntityDetails.isCustomSerialNumberUsed() /*&& raEndEntityDetails.isCustomSerialNumberModifiable()*/) {
-            if (customSerialNumber != null && !customSerialNumber.equals(extendedInformation.getCustomSerialNumber())) {
+        if (raEndEntityDetails.isCustomSerialNumberUsed()) {
+            if (StringUtils.isNotEmpty(customSerialNumber) && !customSerialNumber.equals(extendedInformation.getCustomSerialNumber())) {
                 extendedInformation.setCustomSerialNumber(customSerialNumber);
                 changed = true;
             }
