@@ -12,17 +12,55 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.cert.Certificate;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.faces.application.FacesMessage;
+import javax.faces.component.UIComponent;
+import javax.faces.component.UIInput;
+import javax.faces.component.html.HtmlSelectOneMenu;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.event.ComponentSystemEvent;
+import javax.faces.model.SelectItem;
+import javax.faces.validator.ValidatorException;
+import javax.faces.view.ViewScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.servlet.http.Part;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.Extension;
@@ -72,49 +110,13 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile.FieldInstance;
 import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.util.cert.OID;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.component.html.HtmlSelectOneMenu;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.ComponentSystemEvent;
-import javax.faces.model.SelectItem;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.Part;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.cert.Certificate;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.stream.Collectors;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Managed bean that backs up the enrollingmakenewrequest.xhtml page.
@@ -217,6 +219,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String selectedAlgorithm; //GENERATED ON SERVER
     private String algorithmFromCsr; //PROVIDED BY USER
     private String algorithmFromCsrUiRepresentation;
+    private String alternativeAlgorithmFromCsrUiRepresentation = "";
     private int selectedTokenType;
 
     private Part uploadFile;
@@ -1776,6 +1779,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
             }
             algorithmFromCsr = keyAlgorithm + " " + keySpecification;// Save for later use
             algorithmFromCsrUiRepresentation = getAlgorithmUiRepresentationString(keyAlgorithm, keySpecification);
+            if (certRequest instanceof PKCS10RequestMessage) {
+                PKCS10RequestMessage pkcs10RequestMessage = (PKCS10RequestMessage) certRequest;
+                PublicKey alternativePublicKey = pkcs10RequestMessage.getAlternativePublicKey();
+                if (alternativePublicKey != null) {
+                    final String alternativeKeyAlgorithm = AlgorithmTools.getKeySpecification(alternativePublicKey);
+                    final String alternativeKeySpecification = AlgorithmTools.getKeyAlgorithm(alternativePublicKey);
+                    alternativeAlgorithmFromCsrUiRepresentation = getAlgorithmUiRepresentationString(alternativeKeyAlgorithm,
+                            alternativeKeySpecification);
+                }
+            }
             publicKeyModulus = KeyTools.getKeyModulus(publicKey);
             publicKeyExponent = KeyTools.getKeyPublicExponent(publicKey);
             sha256Fingerprint = KeyTools.getSha256Fingerprint(csrValue);
@@ -1963,6 +1976,18 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public String getAlgorithmUiRepresentation() {
         return algorithmFromCsrUiRepresentation;
     }
+    
+    /**
+     * @return the current key algorithm as UI representation
+     */
+    public String getAlternativeAlgorithmUiRepresentation() {
+        return alternativeAlgorithmFromCsrUiRepresentation;
+    }
+    
+    public boolean isHybrid() {
+        return StringUtils.isNotEmpty(alternativeAlgorithmFromCsrUiRepresentation);
+    }
+
 
     /**
      * @return the current lazy initialized selectedEndEntityProfile
