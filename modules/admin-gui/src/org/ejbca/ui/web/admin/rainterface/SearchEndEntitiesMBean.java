@@ -172,6 +172,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
                 new SelectItem(UserMatch.MATCH_WITH_EMAIL, ejbcaWebBean.getText("MATCHEMAILADDRESS")),
                 new SelectItem(UserMatch.MATCH_WITH_USERNAME, ejbcaWebBean.getText("MATCHUSERNAME")),
                 new SelectItem(UserMatch.MATCH_WITH_UID, ejbcaWebBean.getText("MATCHUID")),
+                new SelectItem(UserMatch.MATCH_WITH_DN, ejbcaWebBean.getText("MATCHSUBJECTDN")),
                 new SelectItem(UserMatch.MATCH_WITH_COMMONNAME, ejbcaWebBean.getText("MATCHCOMMONNAME")),
                 new SelectItem(UserMatch.MATCH_WITH_DNSERIALNUMBER, ejbcaWebBean.getText("MATCHDNSERIALNUMBER")),
                 new SelectItem(UserMatch.MATCH_WITH_GIVENNAME, ejbcaWebBean.getText("MATCHGIVENNAME")),
@@ -199,6 +200,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         matchMap.put(UserMatch.MATCH_WITH_STATUS, new MatchHow[]{MatchHow.EQUALS});
         matchMap.put(UserMatch.MATCH_WITH_EMAIL, new MatchHow[]{MatchHow.EQUALS, MatchHow.BEGINSWITH});
         matchMap.put(UserMatch.MATCH_WITH_USERNAME, new MatchHow[]{MatchHow.EQUALS, MatchHow.BEGINSWITH});
+        matchMap.put(UserMatch.MATCH_WITH_DN, new MatchHow[]{MatchHow.BEGINSWITH, MatchHow.EQUALS, MatchHow.CONTAINS});
         matchMap.put(UserMatch.MATCH_WITH_UID, new MatchHow[]{MatchHow.BEGINSWITH});
         matchMap.put(UserMatch.MATCH_WITH_COMMONNAME, new MatchHow[]{MatchHow.BEGINSWITH});
         matchMap.put(UserMatch.MATCH_WITH_DNSERIALNUMBER, new MatchHow[]{MatchHow.BEGINSWITH});
@@ -702,7 +704,9 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
     }
 
     private enum MatchHow {
-        EQUALS("Equals", BasicMatch.MATCH_TYPE_EQUALS), BEGINSWITH("Begins with", BasicMatch.MATCH_TYPE_BEGINSWITH);
+        EQUALS("Equals", BasicMatch.MATCH_TYPE_EQUALS),
+        BEGINSWITH("Begins with", BasicMatch.MATCH_TYPE_BEGINSWITH),
+        CONTAINS("Contains", BasicMatch.MATCH_TYPE_CONTAINS);
 
         private final String label;
         private final int numericValue;
@@ -710,7 +714,6 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
         private MatchHow(String label, int numericValue) {
             this.label = label;
             this.numericValue = numericValue;
-            ;
         }
 
         public String getLabel() {
