@@ -32,6 +32,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -75,7 +76,7 @@ public class InternalKeyBindingGenerateCsrCommand extends RudInternalKeyBindingC
         final boolean x500dnorder = !parameters.containsKey(SUBJECTDN_ORDER_KEY);
         final X500Name x500Name;
         if (csrSubjectDN != null) {
-            x500Name = CertTools.stringToBcX500Name(csrSubjectDN, x500dnorder);
+            x500Name = DnComponents.stringToBcX500Name(csrSubjectDN, x500dnorder);
             getLogger().info("Using subject DN from argument '" + x500Name.toString() + "', with order "+x500dnorder);
         } else {
             if (parameters.containsKey(SUBJECTDN_ORDER_KEY)) {

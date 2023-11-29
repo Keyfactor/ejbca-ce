@@ -34,6 +34,7 @@ import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.SemanticsInformation;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * A class for reading values from QC-statement extension.
@@ -183,7 +184,7 @@ public final class QCStatementExtension extends CertTools {
 	                    // Append comma so we get nice formatting if there are more than one authority
 	                    strBuf.append(", ");
 	                }
-	                final String str = getGeneralNameString(gn.getTagNo(), gn.getName());
+	                final String str = DnComponents.getGeneralNameString(gn.getTagNo(), gn.getName());
 	                if (str != null) {
 	                    strBuf.append(str);
 	                }

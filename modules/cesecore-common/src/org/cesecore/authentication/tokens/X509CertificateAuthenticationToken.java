@@ -32,6 +32,7 @@ import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue
 import org.cesecore.certificates.util.DNFieldExtractor;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * This is an implementation of the AuthenticationToken concept, based on using an {@link X509Certificate} as it's single credential, and that
@@ -99,7 +100,7 @@ public class X509CertificateAuthenticationToken extends NestableAuthenticationTo
         adminCaId = CertTools.getIssuerDN(certificate).hashCode();
         adminSubjectDN = CertTools.getSubjectDN(certificate);
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
-        final String altNameString = CertTools.getSubjectAlternativeName(certificate);
+        final String altNameString = DnComponents.getSubjectAlternativeName(certificate);
         dnExtractor = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
         anExtractor = new DNFieldExtractor(altNameString, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     }

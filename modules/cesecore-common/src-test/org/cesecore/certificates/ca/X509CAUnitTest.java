@@ -260,7 +260,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Add a subject alternative name
         ASN1EncodableVector altnameattr = new ASN1EncodableVector();
         altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foobar.bar.com");
+        GeneralNames san = DnComponents.getGeneralNamesFromAltName("dNSName=foobar.bar.com");
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
         Extensions exts = extgen.generate();
@@ -302,9 +302,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
         assertEquals(getTestKeyPairAlgName(algName).toUpperCase(), CertTools.getCertSignatureAlgorithmNameAsString(usercert).toUpperCase());
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
-        assertEquals("user@user.com", CertTools.getEMailAddress(usercert));
-        assertEquals("rfc822name=user@user.com, dNSName=foo.bar.com, " + DnComponents.DIRECTORYNAME + "=c=SE\\,o=PrimeKey\\,cn=Tomas", CertTools.getSubjectAlternativeName(usercert));
-        assertNull(CertTools.getUPNAltName(usercert));
+        assertEquals("user@user.com", DnComponents.getEMailAddress(usercert));
+        assertEquals("rfc822name=user@user.com, dNSName=foo.bar.com, " + DnComponents.DIRECTORYNAME + "=c=SE\\,o=PrimeKey\\,cn=Tomas", DnComponents.getSubjectAlternativeName(usercert));
+        assertNull(DnComponents.getUPNAltName(usercert));
         assertFalse(CertTools.isSelfSigned(usercert));
         usercert.verify(cryptoToken.getPublicKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)));
         usercert.verify(x509ca.getCACertificate().getPublicKey());
@@ -572,7 +572,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     public void testCTRedactedLabels() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
-        GeneralNames gns = CertTools.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE,iPAddress=192.0.2.123");
+        GeneralNames gns = DnComponents.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE,iPAddress=192.0.2.123");
         gns = swapGeneralNames(gns, 0, 5); // Swap iPAddress and rfc822Name to test that the order is preserved
         Extension ext = new Extension(Extension.subjectAlternativeName, false, gns.toASN1Primitive().getEncoded(ASN1Encoding.DER));
         ExtensionsGenerator gen = ca.getSubjectAltNameExtensionForCert(ext, false);
@@ -581,7 +581,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Extension ctext = exts.getExtension(new ASN1ObjectIdentifier(CertTools.id_ct_redacted_domains));
         assertNotNull("A subjectAltName extension should be present", genext);
         assertNull("No CT redated extension should be present", ctext);
-        String altName = CertTools.getAltNameStringFromExtension(genext);
+        String altName = DnComponents.getAltNameStringFromExtension(genext);
         assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, " + DnComponents.DIRECTORYNAME + "=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
         // Test with CT publishing
         gen = ca.getSubjectAltNameExtensionForCert(ext, true);
@@ -598,7 +598,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals("second dnsName should have 1 redacted labels", 1, derInt.getValue().intValue());
         derInt = ASN1Integer.getInstance(seq.getObjectAt(2));
         assertEquals("third dnsName should have 2 redacted labels", 2, derInt.getValue().intValue());
-        altName = CertTools.getAltNameStringFromExtension(genext);
+        altName = DnComponents.getAltNameStringFromExtension(genext);
         assertEquals("altName is not what it should be", "iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=hidden.secret.se, dNSName=hidden1.hidden2.ultrasecret.no, " + DnComponents.DIRECTORYNAME + "=CN=Tomas\\,O=PrimeKey\\,C=SE, rfc822name=foo@bar.com", altName);
     }
 
@@ -606,7 +606,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     public void testCTRedactedLabelsInPreCert() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN);
-        GeneralNames gns = CertTools.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,iPAddress=192.0.2.123,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE");
+        GeneralNames gns = DnComponents.getGeneralNamesFromAltName("rfc822Name=foo@bar.com,iPAddress=192.0.2.123,dnsName=foo.bar.com,dnsName=(hidden).secret.se,dnsName=(hidden1).(hidden2).ultrasecret.no,directoryName=cn=Tomas\\,O=PrimeKey\\,C=SE");
         gns = swapGeneralNames(gns, 0, 5); // Swap rfc822Name and directoryName to test that the order is preserved
         Extension ext = new Extension(Extension.subjectAlternativeName, false, gns.toASN1Primitive().getEncoded(ASN1Encoding.DER));
         ExtensionsGenerator gen = ca.getSubjectAltNameExtensionForCTCert(ext);
@@ -615,7 +615,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Extension ctext = exts.getExtension(new ASN1ObjectIdentifier(CertTools.id_ct_redacted_domains));
         assertNotNull("A subjectAltName extension should be present", genext);
         assertNull("No CT redated extension should be present", ctext);
-        String altName = CertTools.getAltNameStringFromExtension(genext);
+        String altName = DnComponents.getAltNameStringFromExtension(genext);
         assertEquals("altName is not what it should be", DnComponents.DIRECTORYNAME + "=CN=Tomas\\,O=PrimeKey\\,C=SE, iPAddress=192.0.2.123, dNSName=foo.bar.com, dNSName=(PRIVATE).secret.se, dNSName=(PRIVATE).ultrasecret.no, rfc822name=foo@bar.com", altName);
     }
 
@@ -1081,7 +1081,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         try {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
-            assertEquals("rfc822name=" + emailPlain, CertTools.getSubjectAlternativeName(certificate));
+            assertEquals("rfc822name=" + emailPlain, DnComponents.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
@@ -1093,7 +1093,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             certificate = ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", profile, "00000", cceConfig);
             assertNotNull(certificate);
             // getSubjectAlternativeName performs escaping again
-            assertEquals("rfc822name=" + emailEscaped, CertTools.getSubjectAlternativeName(certificate));
+            assertEquals("rfc822name=" + emailEscaped, DnComponents.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created or AIA could not be parsed: " + e.getMessage());
         }
@@ -1107,9 +1107,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             // An unescaped '+' character is interpreted as a separator between two connected subjectAltName fields. So "rfc822Name=user+plus@user.com" is
             // handled as "rfc822Name=user" and "plus@user.com". Since the second part does not map to any known fields, the resulting SubjectAltName is
             // "rfc822Name=user"
-            assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, CertTools.getSubjectAlternativeName(certificate)));
-            assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, CertTools.getSubjectAlternativeName(certificate)));
-            assertEquals("rfc822name=user", CertTools.getSubjectAlternativeName(certificate));
+            assertFalse(StringUtils.equals("rfc822name=" + emailUnescaped, DnComponents.getSubjectAlternativeName(certificate)));
+            assertFalse(StringUtils.equals("rfc822name=" + emailEscaped, DnComponents.getSubjectAlternativeName(certificate)));
+            assertEquals("rfc822name=user", DnComponents.getSubjectAlternativeName(certificate));
         } catch (CAOfflineException e) {
             fail("Certificate could not be created: " + e.getMessage());
         }
@@ -1605,7 +1605,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Create a pkcs10 certificate request
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        X500Name x509dn = CertTools.stringToBcX500Name("CN=Override,O=PrimeKey,C=SE");
+        X500Name x509dn = DnComponents.stringToBcX500Name("CN=Override,O=PrimeKey,C=SE");
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage p10msg = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(req));
         assertEquals("CN=Override,O=PrimeKey,C=SE", p10msg.getRequestDN());
@@ -1695,7 +1695,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Create a pkcs10 certificate request (this algorithm will be used)
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
+        X500Name x509dn = DnComponents.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
         PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
         assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
@@ -1738,7 +1738,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Generate three different PKCS#10 CSRs with the same public key encoded in three different ways
         // 1. With named curve and non-compressed point
-        X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn");
+        X500Name x509dn = DnComponents.stringToBcX500Name("CN=RequestMessageCn");
         PKCS10CertificationRequest certificationRequest = genPKCS10CertificationRequest(algName, x509dn, namedNonCompressed, keyPair.getPrivate());
         PKCS10RequestMessage csrNamedNonCompressed = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
         assertTrue("Our own generated CSR with uncompressed key does not verify POP, it definitely should", csrNamedNonCompressed.verify(keyPair.getPublic()));
@@ -1913,7 +1913,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Create a pkcs10 certificate request (the algorithm will be overriden)
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
+        X500Name x509dn = DnComponents.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
         PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
         assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
@@ -1945,14 +1945,14 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // Create a pkcs10 certificate request (the algorithm will be overriden)
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        X500Name x509dn = CertTools.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
+        X500Name x509dn = DnComponents.stringToBcX500Name("CN=RequestMessageCn,O=PrimeKey,C=SE");
         PKCS10CertificationRequest certificationRequest = CertTools.genPKCS10CertificationRequest(algName, x509dn, keyPair.getPublic(), null, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequest));
         assertEquals("CN=RequestMessageCn,O=PrimeKey,C=SE", requestMessage.getRequestDN());
 
         // Create a pkcs10 certificate request that will be enforced (put inside endEntityInformation.extendedInformation)
         KeyPair keyPairEnforcedAlg = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        X500Name nameEnforcedAlg = CertTools.stringToBcX500Name("CN=EnforcedAlgCn,O=PrimeKey,C=SE");
+        X500Name nameEnforcedAlg = DnComponents.stringToBcX500Name("CN=EnforcedAlgCn,O=PrimeKey,C=SE");
         PKCS10CertificationRequest certificationRequestEnforcedAlg = CertTools.genPKCS10CertificationRequest(algName, nameEnforcedAlg, keyPairEnforcedAlg.getPublic(), null, keyPairEnforcedAlg.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
         PKCS10RequestMessage requestMessageEnforcedAlg = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(certificationRequestEnforcedAlg));
         assertEquals("CN=EnforcedAlgCn,O=PrimeKey,C=SE", requestMessageEnforcedAlg.getRequestDN());

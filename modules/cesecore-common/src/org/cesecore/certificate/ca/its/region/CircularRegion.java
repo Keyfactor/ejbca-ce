@@ -22,6 +22,7 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.UINT16;
 
 public class CircularRegion implements ItsGeographicElement {
     
+    private static final long serialVersionUID = 1L;
     private Point2D center;
     private int radius;
     

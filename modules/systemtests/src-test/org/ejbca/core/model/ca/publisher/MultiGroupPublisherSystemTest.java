@@ -226,7 +226,7 @@ public class MultiGroupPublisherSystemTest {
             userdata.setPassword("foo123");
             userdata.setEndEntityProfileId(endEntityProfileId);
             userdata.setCertificateProfileId(certiciateProfileId);
-            userdata.setCAId(CertTools.stringToBCDNString(CA_DN).hashCode());
+            userdata.setCAId(DnComponents.stringToBCDNString(CA_DN).hashCode());
             userdata.setTokenType(EndEntityConstants.TOKEN_USERGEN);
             userdata.setType(EndEntityTypes.ENDUSER.toEndEntityType());
             final ExtendedInformation extendedinformation = new ExtendedInformation();

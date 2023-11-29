@@ -328,7 +328,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         random.nextBytes(transactionId);
         random.nextBytes(senderNonce);
         final String subjectDn = "C=SE,O=PrimeKey,OU=Labs,CN=Sec_"+serialNumber;
-        final X500Name subjectX500Name = CertTools.stringToBcX500Name(subjectDn, new TeletexNamingStyle(), false);
+        final X500Name subjectX500Name = DnComponents.stringToBcX500Name(subjectDn, new TeletexNamingStyle(), false);
         certTemplate.setSubject(subjectX500Name);
         final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
         certTemplate.setPublicKey(keyInfo);

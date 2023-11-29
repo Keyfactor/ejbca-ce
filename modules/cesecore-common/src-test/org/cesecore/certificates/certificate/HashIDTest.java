@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -45,6 +46,6 @@ public class HashIDTest {
         X509Certificate testCertificate = CertTools.genSelfCert(subjectDn, 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(subjectDn).getKey());
-        assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(CertTools.reverseDN(subjectDn)).getKey());
+        assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(DnComponents.reverseDN(subjectDn)).getKey());
     }
 }
