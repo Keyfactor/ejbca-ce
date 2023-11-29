@@ -24,6 +24,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -136,6 +137,8 @@ import static org.junit.Assume.assumeTrue;
  * A unit test class for CertificateRestResource to test its content.
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
+    
+    private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
 
     private static final String CRL_FILENAME = "CertificateRestSystemTestCrlFile";
     private static final String ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE = "Certificate with issuer: {0} and serial " +
@@ -1142,7 +1145,200 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Object certificatesToExpire = actualJsonObject.get("certificates_rest_response");
         assertNotNull(certificatesToExpire);
     }
+    
+    @Test
+    public void testGetCertificateAboutToExpireDetailedSearch() throws Exception {
+        
+        final String issuerDN = "CN=CaSigningForVariedValidity";
+        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false, 
+                            X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        X509CAInfo caInfo = (X509CAInfo) testX509Ca.getCAInfo();
+        caInfo.setDoEnforceUniquePublicKeys(false);
+        testX509Ca.setCAInfo(caInfo);
+        caSession.addCA(INTERNAL_ADMIN_TOKEN, testX509Ca);
+        
+        final String profilePrefix = "CertProfileVariedValidity";
+        // there is always a 10min in past offset
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEncodedValidity("30m");
+        int certificateProfile30mId = 
+                certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "30m", certificateProfile);
 
+        certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEncodedValidity("5d");
+        int certificateProfile5dId = 
+                certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "5d", certificateProfile);
+
+        certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEncodedValidity("15d");
+        certificateProfile.setAvailableCAs(Arrays.asList(issuerDN.hashCode()));
+        int certificateProfile15dId = 
+                certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "15d", certificateProfile);
+
+        
+        final String eeProfileName = "EeProfileVariedValidity";
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.setDefaultCertificateProfile(certificateProfile30mId);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(
+                                    certificateProfile30mId, certificateProfile5dId, certificateProfile15dId));
+        endEntityProfile.setAvailableCAs(Arrays.asList(issuerDN.hashCode()));
+        int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(
+                                INTERNAL_ADMIN_TOKEN, eeProfileName, endEntityProfile);        
+        
+        List<String> addedUserNames = new ArrayList<>();
+        StringBuilder errorMessage = new StringBuilder();
+        
+        try {
+            // there is no limit for offset or max results today
+            int created30mCerts = 50;
+            for (int i=0; i<50; i++) {
+                String username = addAndEnrollEntity(issuerDN,  profilePrefix + "30m", certificateProfile30mId,
+                                            eeProfileName, endEntityProfileId);
+                if (username!=null) {
+                    addedUserNames.add(username);
+                } else {
+                    created30mCerts--;
+                }
+            }
+            
+            int created5dCerts = 75;
+            for (int i=0; i<75; i++) {
+                String username = addAndEnrollEntity(issuerDN,  profilePrefix + "5d", certificateProfile5dId,
+                                            eeProfileName, endEntityProfileId);
+                if (username!=null) {
+                    addedUserNames.add(username);
+                } else {
+                    created5dCerts--;
+                }
+            }
+            
+            int created15dCerts = 60;
+            for (int i=0; i<60; i++) {
+                String username = addAndEnrollEntity(issuerDN,  profilePrefix + "15d", certificateProfile15dId,
+                                            eeProfileName, endEntityProfileId);
+                if (username!=null) {
+                    addedUserNames.add(username);
+                } else {
+                    created15dCerts--;
+                }
+            }
+            
+            // test vectors
+            // 1d offset: 0, 10
+            errorMessage.append(searchToBeExpiredCerts(1, 0, 0, created30mCerts));
+            errorMessage.append(searchToBeExpiredCerts(1, 10, 0, created30mCerts - 10));
+            // 6d offset: 0, 10
+            errorMessage.append(searchToBeExpiredCerts(6, 0, 0, created30mCerts + created5dCerts));
+            errorMessage.append(searchToBeExpiredCerts(6, 10, 0, created30mCerts + created5dCerts - 10));
+            // 16d offset: 0, 10
+            errorMessage.append(searchToBeExpiredCerts(16, 0, 0, created30mCerts + created5dCerts + created15dCerts));
+            errorMessage.append(searchToBeExpiredCerts(16, 10, 0, created30mCerts + created5dCerts + created15dCerts - 10));
+            
+            // 1d offset: 10, max: 10,50  offset: 40, max: 10,50
+            errorMessage.append(searchToBeExpiredCerts(1, 10, 10, created30mCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(1, 10, 50, created30mCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(1, 40, 10, created30mCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(1, 40, 50, created30mCerts - 10));
+            // 6d
+            errorMessage.append(searchToBeExpiredCerts(6, 10, 10, created30mCerts + created5dCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(6, 10, 50, created30mCerts + created5dCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(6, 40, 10, created30mCerts + created5dCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(6, 40, 50, created30mCerts + created5dCerts - 10));
+            // 16d
+            errorMessage.append(searchToBeExpiredCerts(16, 10, 10, created30mCerts + created5dCerts + created15dCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(16, 10, 50, created30mCerts + created5dCerts + created15dCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(16, 40, 10, created30mCerts + created5dCerts + created15dCerts - 10));
+            errorMessage.append(searchToBeExpiredCerts(16, 40, 50, created30mCerts + created5dCerts + created15dCerts - 10));
+            
+            // to test for negative: empty query params, no days, 10d i.e. with d, negative
+        } catch (Exception e) {
+            log.error("Exception while testing expired certificate search: ", e);
+        } finally {
+        
+            for (String user: addedUserNames) {
+                endEntityManagementSession.revokeAndDeleteUser(INTERNAL_ADMIN_TOKEN, user, 0);
+                internalCertificateStoreSession.removeCertificatesByUsername(user);
+            }
+            
+            endEntityProfileSession.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, eeProfileName);
+            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "30m");
+            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "5d");
+            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "15d");
+            caSession.removeCA(INTERNAL_ADMIN_TOKEN, issuerDN.hashCode());
+        }
+        
+        String errors = errorMessage.toString();
+        assertTrue("Errors: " + errors, errors.isEmpty());
+    }
+    
+    private String searchToBeExpiredCerts(int days, int offset, int maxResult, 
+                                                int minimumMoreResultsExpected) throws Exception {
+        
+        String url = "/v1/certificate/expire?days=" + days + "&offset=" + offset;
+        int expectedEntries = 25;
+        if (maxResult!=0) {
+            url += "&maxNumberOfResults=" + maxResult;
+            expectedEntries = maxResult;
+        }
+        final Response actualResponse = newRequest(url).request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final Object certificatesToExpire = actualJsonObject.get("certificates_rest_response");
+        assertNotNull(certificatesToExpire);
+        
+        final Object pagination = actualJsonObject.get("pagination_rest_response_component");
+        assertNotNull(pagination);
+        
+        // TODO
+        
+        return "";
+        
+    }
+
+    private String addAndEnrollEntity(String caDn, String certProfileName, int certProfileId,
+                                                            String eeProfileName, int eeProfileId) {
+        
+        String userName = "expireSearchTest" + RANDOM.nextLong();
+        
+        try {
+            EndEntityInformation userdata = new EndEntityInformation(
+                    userName, "O=PrimeKey,CN=" + userName, caDn.hashCode(), null,
+                    null, new EndEntityType(EndEntityTypes.ENDUSER), 
+                    eeProfileId, certProfileId,
+                    SecConst.TOKEN_SOFT_BROWSERGEN, new ExtendedInformation());
+            userdata.setPassword("foo123");
+            userdata.setStatus(EndEntityConstants.STATUS_NEW);
+            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
+            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+            
+            // Create CSR REST request
+            EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder()
+                    .certificateAuthorityName(caDn.substring(3))
+                    .username(userName)
+                    .password("foo123")
+                    .certificateProfileName(certProfileName)
+                    .endEntityProfileName(eeProfileName)
+                    .certificateRequest(CSR_WITH_HEADERS).build();
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+    
+            // Send request
+            final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
+            if (actualResponse.getStatus()!=201) {
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Exception while adding: " + userName, e);
+            return null;
+        }
+        
+        return userName;
+    }
+    
     @Test
     public void enrollPkcs10WithUnidFnr() throws Exception {
 
