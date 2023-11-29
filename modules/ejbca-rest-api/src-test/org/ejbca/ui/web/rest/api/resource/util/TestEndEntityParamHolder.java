@@ -17,6 +17,7 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.SecConst;
 
 public class TestEndEntityParamHolder {
 
@@ -28,6 +29,7 @@ public class TestEndEntityParamHolder {
 	private final EndEntityProfileSessionRemote endEntityProfileSessionRemote;
 	private final CertificateProfileSessionRemote certificateProfileSession;
 	private final EndEntityManagementSessionRemote endEntityManagementSession;
+	private final int tokenType;
 
 	private TestEndEntityParamHolder(Builder builder) {
 		this.testUsername = builder.testUsername;
@@ -38,6 +40,7 @@ public class TestEndEntityParamHolder {
 		this.endEntityProfileSessionRemote = builder.endEntityProfileSessionRemote;
 		this.certificateProfileSession = builder.certificateProfileSession;
 		this.endEntityManagementSession = builder.endEntityManagementSession;
+		this.tokenType = builder.tokenType;
 	}
 
 	public static Builder newBuilder() {
@@ -76,7 +79,11 @@ public class TestEndEntityParamHolder {
 		return endEntityManagementSession;
 	}
 
-	public static class Builder {
+	public int getTokenType() {
+        return tokenType;
+    }
+
+    public static class Builder {
 
 		private String testUsername;
 		private String testCertProfileName;
@@ -86,6 +93,7 @@ public class TestEndEntityParamHolder {
 		private EndEntityProfileSessionRemote endEntityProfileSessionRemote;
 		private CertificateProfileSessionRemote certificateProfileSession;
 		private EndEntityManagementSessionRemote endEntityManagementSession;
+		private int tokenType=-1;
 
 		public Builder withTestUsername(String testUsername) {
 			this.testUsername = testUsername;
@@ -126,8 +134,16 @@ public class TestEndEntityParamHolder {
 			this.endEntityManagementSession = endEntityManagementSession;
 			return this;
 		}
+		
+		public Builder withTokenType(int tokenType) {
+		    this.tokenType = tokenType;
+            return this;
+		}
 
 		public TestEndEntityParamHolder build() {
+		    if (this.tokenType==-1) {
+		        this.tokenType = SecConst.TOKEN_SOFT_P12;
+		    }
 			return new TestEndEntityParamHolder(this);
 		}
 

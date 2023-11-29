@@ -55,7 +55,7 @@ public class CertificateRestResourceSystemTestUtil {
 				new EndEntityType(EndEntityTypes.ENDUSER),
 				EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
 				certificateProfileId,
-				SecConst.TOKEN_SOFT_P12,
+				paramHolder.getTokenType(),
 				new ExtendedInformation());
 		userdata.setPassword("foo123");
 		userdata.setStatus(EndEntityConstants.STATUS_NEW);
