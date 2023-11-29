@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource.util;
 
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -22,12 +21,13 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import java.util.Arrays;
 
 public class CertificateRestResourceSystemTestUtil {
+    
+    public static final String DEFAULT_PASSWORD = "foo123";
 
 	/**
 	 * Creates a test End Entity.
@@ -57,11 +57,12 @@ public class CertificateRestResourceSystemTestUtil {
 				certificateProfileId,
 				paramHolder.getTokenType(),
 				new ExtendedInformation());
-		userdata.setPassword("foo123");
+		userdata.setPassword(DEFAULT_PASSWORD);
 		userdata.setStatus(EndEntityConstants.STATUS_NEW);
-		userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-		userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+		userdata.getExtendedInformation().setKeyStoreAlgorithmType(paramHolder.getKeyAlgo());
+		userdata.getExtendedInformation().setKeyStoreAlgorithmSubType(paramHolder.getKeySpec());
 		userdata.setEndEntityProfileId(endEntityProfileId);
+		userdata.setKeyRecoverable(paramHolder.isKeyRecoverable());
 		return paramHolder
 				.getEndEntityManagementSession()
 				.addUser(paramHolder.getInternalAdminToken(), userdata, false);

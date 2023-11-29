@@ -13,6 +13,9 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,23 +31,26 @@ import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
+import org.ejbca.ui.web.rest.api.resource.util.TestEndEntityParamHolder;
 import org.json.simple.parser.JSONParser;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
@@ -55,14 +61,19 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     private static final JSONParser jsonParser = new JSONParser();
     
     private static final String TEST_USER_PREFIX = "EnrollKeyStoreSystemTestUser";
-    private static final String TEST_CA_DN = "CN=CaSigningRestEnrollKeyStore";
+    private static final String TEST_CA_NAME = "CaSigningRestEnrollKeyStore";
+    private static final String TEST_CA_DN = "CN=" + TEST_CA_NAME;
     private static final String TEST_CERT_PROFILE_NAME = "CertProfileRestEnrollKeyStore";
     private static final String TEST_CERT_PROFILE_RSA_ONLY_NAME = "CertProfileRsaOnlyRestEnrollKeyStore";
     private static final String TEST_EE_PROFILE_NAME = "EeProfileRestEnrollKeyStore";
     private static final String TEST_EE_PROFILE_KEY_RECOVERY_NAME = "EeProfileKeyRecovRestEnrollKeyStore";
     
+    private static X509CA testX509Ca;
+    
     private static final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-
+    private static final TestRaMasterApiProxySessionRemote raMasterApiProxyBean = EjbRemoteHelper.INSTANCE
+                                    .getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     private static final List<String> addedUserNames = new ArrayList<>();
     private static final Random RANDOM = new Random();
     
@@ -163,29 +174,88 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
         enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
 
-    private void enrollKeyStore(String keyalgorithm, int tokenType, String eeProfileName) {
+    private void enrollKeyStore(String keyAlgorithm, int tokenType, String eeProfileName) {
+        
+        String keySpec = keyAlgorithm.equals(AlgorithmConstants.KEYALGORITHM_RSA) ? "2048" : "secp256r1";
+        String userName = createUser(eeProfileName, TEST_CERT_PROFILE_NAME, tokenType, keyAlgorithm, 
+                keySpec);
+        
+        String responseBody = enrollKeyStoreRestCall(userName, 
+                CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, keyAlgorithm, keySpec);
+        
+        // TODO: process response body
+        
+        // TODO: process key recovery
+        String certificateSerialNo = null;
+        if (eeProfileName.equals(TEST_EE_PROFILE_KEY_RECOVERY_NAME)) {
+            byte[] keyStoreRecovered = null;
+            try {
+                keyStoreRecovered = raMasterApiProxyBean.keyRecoverEnrollWS(INTERNAL_ADMIN_TOKEN, userName, certificateSerialNo, 
+                        TEST_CA_DN, CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, null);
+            } catch (CADoesntExistsException | AuthorizationDeniedException | EjbcaException | WaitingForApprovalException e) {
+                log.error("Failed to recover key: ", e);
+                fail("Failed to recover key: key algo: " + keyAlgorithm + ", tokenType: " + tokenType);
+            }
+            
+            assertNotNull("Failed to recover key(keyStore null): key algo: " + keyAlgorithm + 
+                    ", tokenType: " + tokenType, keyStoreRecovered);
+            assertTrue("Failed to recover key(keyStore empty): key algo: " + keyAlgorithm + 
+                    ", tokenType: " + tokenType, keyStoreRecovered.length==0);
+
+        }
         
     }
     
-    private String createUser(String eeProfileName, String certProfileName, int tokenType) {
+    private String createUser(String eeProfileName, String certProfileName, int tokenType, String keyalgorithm, String keySpec) {
         String userName = TEST_USER_PREFIX + RANDOM.nextLong();
         
+        try {
+           new CertificateRestResourceSystemTestUtil()
+                    .createTestEndEntity(TestEndEntityParamHolder.newBuilder()
+                            .withX509TestCa(testX509Ca)
+                            .withTestUsername(userName)
+                            .withTestCertProfileName(certProfileName)
+                            .withTestEeProfileName(eeProfileName)
+                            .withInternalAdminToken(INTERNAL_ADMIN_TOKEN)
+                            .withCertificateProfileSession(certificateProfileSession)
+                            .withEndEntityManagementSession(endEntityManagementSession)
+                            .withEndEntityProfileSessionRemote(endEntityProfileSession)
+                            .withTokenType(tokenType)
+                            .withKeyAlgo(keyalgorithm)
+                            .withKeySpec(keySpec)
+                            .build());
+        } catch (Exception e) {
+            log.error("Failed to create user:", e);
+            fail("Failed to create user with EEP: " + eeProfileName + ", CP: " +  certProfileName + ", token: " + tokenType);
+        }
         
+        addedUserNames.add(userName);
         return userName;
     }
     
-    private String enrollKeyStoreRestCall(String username, String password, String keyAlgo, String keySpec) throws Exception {
+    private String enrollKeyStoreRestCall(String username, String password, String keyAlgo, String keySpec) {
         
         Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("username", username);
+        requestBody.put("password", password);
+        requestBody.put("key_alg", keyAlgo);
+        requestBody.put("key_spec", keySpec);
         
-        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
-        final String requestBodyStr = objectMapper.writeValueAsString(requestBody);
-        final Entity<String> requestEntity = Entity.entity(requestBodyStr, MediaType.APPLICATION_JSON);
-        // Send request
-        final Response actualResponse = newRequest("/v1/certificate/enrollkeystore").request().post(requestEntity);
-        final String actualJsonString = actualResponse.readEntity(String.class);
-        // Verify response
-        assertJsonContentType(actualResponse);
+        String actualJsonString = null;
+        try {
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBodyStr = objectMapper.writeValueAsString(requestBody);
+            final Entity<String> requestEntity = Entity.entity(requestBodyStr, MediaType.APPLICATION_JSON);
+            // Send request
+            final Response actualResponse = newRequest("/v1/certificate/enrollkeystore").request().post(requestEntity);
+            actualJsonString = actualResponse.readEntity(String.class);
+            // Verify response
+            assertJsonContentType(actualResponse);
+        } catch (Exception e) {
+            log.error("Failed to enroll keystore:", e);
+            log.error("Failed to enroll keystore: request: " + requestBody + ", response: " +  actualJsonString);
+            fail("Failed to enroll keystore: " + requestBody);
+        }
         
         return actualJsonString;
             
