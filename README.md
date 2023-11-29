@@ -23,7 +23,7 @@ You can also easily run EJBCA as a container from **[Dockerhub](https://hub.dock
 In our Community we welcome contributions. The Community software is open source and community supported, there is no support SLA, but a helpful best-effort Community.
 
 * To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. 
-* If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
+* If you want to contribute to the project, see our **[Contributing guidelines](CONTRIBUTING.md)**.
 * Ask the community for ideas: **[EJBCA Discussions](https://github.com/Keyfactor/ejbca-ce/discussions)**.  
 * Read more in our documentation: **[EJBCA Documentation](https://doc.primekey.com/ejbca)**.
 * See release information: **[EJBCA Release information](https://doc.primekey.com/ejbca/ejbca-release-information)**. 
