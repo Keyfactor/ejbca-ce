@@ -253,7 +253,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         
         String issuerDN = CertTools.getSubjectDN(caCertificate);
         if(reverseIssuerDN) {
-            issuerDN = CertTools.reverseDN(issuerDN); 
+            issuerDN = DnComponents.reverseDN(issuerDN); 
         }        
         
         // Generate and send certificate request

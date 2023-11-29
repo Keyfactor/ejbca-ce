@@ -33,6 +33,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Holds non sensitive information about a CA.
@@ -158,7 +159,7 @@ public abstract class CAInfo implements Serializable {
         if(subjectDn.startsWith(CITS_SUBJECTDN_PREFIX)) {
             this.subjectdn = subjectDn;
         } else {
-            this.subjectdn = CertTools.stringToBCDNString(subjectDn);
+            this.subjectdn = DnComponents.stringToBCDNString(subjectDn);
         }
     }
 

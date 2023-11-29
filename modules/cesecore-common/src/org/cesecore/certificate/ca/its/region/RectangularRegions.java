@@ -23,6 +23,7 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfRectangularRegi
 
 public class RectangularRegions implements ItsGeographicElement {
 
+    private static final long serialVersionUID = 1L;
     private List<Point2D[]> rectangles;
     public static final String RECTANGLE_FORMAT_HINT =  "Expected format: "
           + "for each recatangle: latitudeNorthWest,longitudeNorthWest,latitudeSouthEast,longitudeSouthEast";

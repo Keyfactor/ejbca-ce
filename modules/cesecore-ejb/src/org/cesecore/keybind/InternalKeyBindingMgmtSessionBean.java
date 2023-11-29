@@ -90,6 +90,7 @@ import org.cesecore.util.ui.DynamicUiProperty;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -639,18 +640,18 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                         	log.debug("Using subject DN from active X.509 certificate '" + x500Name.toString() + "'");
                         }
                     } else {
-                        x500Name = CertTools.stringToBcX500Name(CertTools.getSubjectDN(certificate));
+                        x500Name = DnComponents.stringToBcX500Name(CertTools.getSubjectDN(certificate));
                         if (log.isDebugEnabled()) {
                             log.debug("Using subject DN from active " + certificate.getType() +" certificate '" + x500Name.toString() + "'");
                         }
                     }
                 } else {
                 	// No mapped certificate exists, and no parameter, use default value
-                    x500Name = CertTools.stringToBcX500Name("CN="+internalKeyBinding.getName());                
+                    x500Name = DnComponents.stringToBcX500Name("CN="+internalKeyBinding.getName());                
                 }
             } else {
                 // No mapped certificate exists, and no parameter, use default value
-                x500Name = CertTools.stringToBcX500Name("CN="+internalKeyBinding.getName());                
+                x500Name = DnComponents.stringToBcX500Name("CN="+internalKeyBinding.getName());                
             }
         }
         try {

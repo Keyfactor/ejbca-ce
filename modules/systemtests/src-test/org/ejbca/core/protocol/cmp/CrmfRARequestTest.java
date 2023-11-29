@@ -632,7 +632,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         ASN1EncodableVector vec = new ASN1EncodableVector();
         ASN1EncodableVector v = new ASN1EncodableVector();
         
-        v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
+        v.add(new ASN1ObjectIdentifier(DnComponents.UPN_OBJECTID));
         v.add(new DERTaggedObject(true, 0, new DERUTF8String("boo@bar")));
         GeneralName gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
         vec.add(gn);
@@ -682,7 +682,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             byte[] bytes = (byte[])name1.get(1);
             ASN1TaggedObject obj = ASN1TaggedObject.getInstance(bytes);
             OtherName on = OtherName.getInstance(obj.getBaseObject());
-            assertEquals("OID should be UPN", CertTools.UPN_OBJECTID, on.getTypeID().getId());
+            assertEquals("OID should be UPN", DnComponents.UPN_OBJECTID, on.getTypeID().getId());
             ASN1UTF8String str = ASN1UTF8String.getInstance(on.getValue());
             assertEquals("Value should be what we set", "boo@bar", str.getString());
         } finally {
@@ -1310,7 +1310,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 
         String fingerprint = null;
         try {
-            GeneralNames san = CertTools.getGeneralNamesFromAltName("iPAddress=10.0.0.1,iPAddress=2001:db8::1234:5678");
+            GeneralNames san = DnComponents.getGeneralNamesFromAltName("iPAddress=10.0.0.1,iPAddress=2001:db8::1234:5678");
             ExtensionsGenerator gen = new ExtensionsGenerator();
             gen.addExtension(Extension.subjectAlternativeName, false, san);
             Extensions exts = gen.generate();

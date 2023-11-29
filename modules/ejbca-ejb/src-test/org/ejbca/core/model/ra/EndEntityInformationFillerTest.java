@@ -179,7 +179,7 @@ public class EndEntityInformationFillerTest {
         assertEquals("CN=Name2,SN=12345,OU=MyOrgU,OU=Unit2,O=Org1,C=SE", user.getDN());
         
         // Add serial number, and remove CN
-        // This is the case where things get confused, because serial number makes CertTools.stringToBCDNString think that the DN is reversed 
+        // This is the case where things get confused, because serial number makes DnComponents.stringToBCDNString think that the DN is reversed 
         // making the OUs re-ordered.
         user.setDN("SN=12345,OU=MyOrgU");
         user.setEmail("");

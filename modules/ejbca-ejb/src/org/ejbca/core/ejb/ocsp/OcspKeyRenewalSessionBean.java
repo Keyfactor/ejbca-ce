@@ -354,7 +354,7 @@ public class OcspKeyRenewalSessionBean implements OcspKeyRenewalSessionLocal, Oc
             CryptoTokenOfflineException {
         /* Construct a certification request in order to have the new keystore certified by the CA. 
          */
-        //final int caId = CertTools.stringToBCDNString(tokenAndChain.getCaCertificate().getSubjectDN().toString()).hashCode();
+        //final int caId = DnComponents.stringToBCDNString(tokenAndChain.getCaCertificate().getSubjectDN().toString()).hashCode();
         final int caId = CertTools.getSubjectDN(ocspSigningCacheEntry.getCaCertificateChain().get(0)).hashCode();
         final X509Certificate ocspSigningCertificate = ocspSigningCacheEntry.getOcspSigningCertificate();
         final UserDataVOWS userData = getUserDataVOWS(ejbcaWS, ocspSigningCertificate, caId);

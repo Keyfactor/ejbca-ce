@@ -38,8 +38,8 @@ import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.CryptoTools;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Representation of an End Entity, called User for legacy reasons an end entity can be a server, device, or a user.
@@ -124,7 +124,7 @@ public class UserData extends ProtectedData implements Serializable {
             setClearPassword(null);
         }
         transientPwd = password; // performance optimization within a transaction
-        setSubjectDN(CertTools.stringToBCDNString(dn));
+        setSubjectDN(DnComponents.stringToBCDNString(dn));
         setCaId(caid);
         setSubjectAltName(altname);
         setSubjectEmail(email);
@@ -479,7 +479,7 @@ public class UserData extends ProtectedData implements Serializable {
      * Function that sets the BCDN representation of the string.
      */
     public void setDN(String dn) {
-        setSubjectDN(CertTools.stringToBCDNString(dn));
+        setSubjectDN(DnComponents.stringToBCDNString(dn));
     }
 
     /**

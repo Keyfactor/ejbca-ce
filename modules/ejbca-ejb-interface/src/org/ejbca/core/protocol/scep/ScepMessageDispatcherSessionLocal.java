@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.scep;
 
 import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 
 import javax.ejb.Local;

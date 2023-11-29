@@ -28,7 +28,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 
 /**
@@ -65,7 +65,7 @@ public class RevokeCertWithMetadataCommand extends EJBCAWSRABaseCommand implemen
 
 			List<KeyValuePair> metadata = parseInputArgs();
 
-			final String issuerdn = CertTools.stringToBCDNString(this.args[ARG_ISSUERDN]);
+			final String issuerdn = DnComponents.stringToBCDNString(this.args[ARG_ISSUERDN]);
 			final String certsn = getCertSN(this.args[ARG_CERTSN]);
 
 			final String justRevoke = "To revoke the certificate with the current time remove the last argument (revocation time).";

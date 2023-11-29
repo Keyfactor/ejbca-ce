@@ -13,9 +13,6 @@
 
 package org.ejbca.core.model.ra;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 

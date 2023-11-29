@@ -30,7 +30,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
@@ -165,7 +165,7 @@ public class RemoveCATest extends CaTestCase {
     private void removeCa(String dn) {
         // Log trace with calling methods name
         log.trace(">" + Thread.currentThread().getStackTrace()[2].getMethodName());
-        final int caid = CertTools.stringToBCDNString(dn).hashCode();
+        final int caid = DnComponents.stringToBCDNString(dn).hashCode();
         try {
             removeTestCA(caid);
         } catch (AuthorizationDeniedException e) {

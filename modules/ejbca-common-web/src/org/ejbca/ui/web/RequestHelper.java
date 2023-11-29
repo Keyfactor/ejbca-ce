@@ -53,6 +53,7 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Helper class for handling certificate request from browsers or general PKCS#10
@@ -409,12 +410,12 @@ public class RequestHelper {
     		dnpart = car + "_" + chr;
     	} else {
     		String dn = CertTools.getSubjectDN(cacert);
-    		dnpart = CertTools.getPartFromDN(dn, "CN");
+    		dnpart = DnComponents.getPartFromDN(dn, "CN");
     		if (dnpart == null) {
-    			dnpart = CertTools.getPartFromDN(dn, "SN");
+    			dnpart = DnComponents.getPartFromDN(dn, "SN");
     		}
     		if (dnpart == null) {
-    			dnpart = CertTools.getPartFromDN(dn, "O");
+    			dnpart = DnComponents.getPartFromDN(dn, "O");
     		}
     	}
     	if (dnpart == null) {

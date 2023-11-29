@@ -17,7 +17,6 @@ import java.util.List;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
@@ -49,6 +48,6 @@ public class SubjectDn extends RaAbstractDn{
 
     @Override
     protected String reorder(String dnBeforeReordering) {
-        return CertTools.stringToBcX500Name(dnBeforeReordering, nameStyle, ldapOrder).toString();
+        return DnComponents.stringToBcX500Name(dnBeforeReordering, nameStyle, ldapOrder).toString();
     }
 }
