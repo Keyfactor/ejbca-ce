@@ -100,7 +100,11 @@
                     <h:panelGroup styleClass="pure-u-1 parentCriteriaCheckbox">
                         <h:selectBooleanCheckbox id="subjectDistinguishedName"
                                                  value="#{raSearchCertsBean.searchSubjectDistinguishedName}">
-                            <f:ajax event="change"/>
+                            <f:ajax event="change" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="subjectDistinguishedName"
                                        value="#{msg.search_certs_page_criteria_checkbox_subdn}"/>
@@ -109,7 +113,11 @@
                     <h:panelGroup styleClass="pure-u-1 parentCriteriaCheckbox">
                         <h:selectBooleanCheckbox id="subjectAlternativeName"
                                                  value="#{raSearchCertsBean.searchSubjectAlternativeName}">
-                            <f:ajax event="change"/>
+                            <f:ajax event="change" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="subjectAlternativeName"
                                        value="#{msg.search_certs_page_criteria_checkbox_suban}"/>
@@ -117,7 +125,11 @@
 
                     <h:panelGroup styleClass="pure-u-1 parentCriteriaCheckbox">
                         <h:selectBooleanCheckbox id="username" value="#{raSearchCertsBean.searchUsername}">
-                            <f:ajax event="change"/>
+                            <f:ajax event="change" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="username" value="#{msg.search_certs_page_criteria_checkbox_username}"/>
                     </h:panelGroup>
@@ -125,7 +137,11 @@
                     <h:panelGroup styleClass="pure-u-1 parentCriteriaCheckbox">
                         <h:selectBooleanCheckbox id="externalAccountId"
                                                  value="#{raSearchCertsBean.searchExternalAccountId}">
-                            <f:ajax event="change"/>
+                            <f:ajax event="change" execute="@this"
+                                    render=":contentForm:pageButtons :contentForm:filteredResults"
+                                    listener="#{raSearchCertsBean.searchAndFilterAjaxListener}"
+                                    onevent="function(data){ejbca.ra.onAjaxEvent(data,'contentForm:filteredResults');}"
+                                    onerror="function(data){ejbca.ra.onAjaxError(data,'contentForm:filteredResults');}"/>
                         </h:selectBooleanCheckbox>
                         <h:outputLabel for="externalAccountId"
                                        value="#{msg.search_certs_page_criteria_checkbox_externalid}"/>

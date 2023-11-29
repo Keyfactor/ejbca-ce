@@ -52,8 +52,8 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /** 
  * This test is meant to be used as "ant test:runone -Dtest.runone=" before all the systemtests run to test redacted log.<br>
@@ -214,7 +214,7 @@ public class EnableGlobalPiiDataRedactionTest {
                             logRecord.getMessage().indexOf(CA_CREATED_WITH_DN_MARKER) 
                             + CA_CREATED_WITH_DN_MARKER.length() + 1).strip();
                     issuerDns.add(issuerDn);
-                    String transformedIssuerDn = CertTools.stringToBCDNString(StringTools.strip(issuerDn));
+                    String transformedIssuerDn = DnComponents.stringToBCDNString(StringTools.strip(issuerDn));
                     issuerDns.add(transformedIssuerDn);
                     if(issuerDn.endsWith("C=SE")) {
                         issuerDn = "C=SE," + issuerDn.replace(",C=SE", "");

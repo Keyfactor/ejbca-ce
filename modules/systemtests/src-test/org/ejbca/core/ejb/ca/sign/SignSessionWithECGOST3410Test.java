@@ -59,6 +59,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
@@ -162,7 +163,7 @@ public class SignSessionWithECGOST3410Test extends SignSessionCommon {
         userAdminSession.setUserStatus(internalAdmin, ECGOST3410_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECGOST3410_USERNAME + "' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("GOST3411withECGOST3410", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN="
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("GOST3411withECGOST3410", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN="
                 + ECGOST3410_USERNAME), gostkeys.getPublic(), new DERSet(), gostkeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
