@@ -21,11 +21,11 @@ import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.NoSuchProviderException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,6 +79,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
@@ -191,9 +192,9 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         cmpConfiguration.removeAlias(ALIAS);
         globalConfigurationSession.saveConfiguration(ADMIN, cmpConfiguration);
         roleSession.deleteRoleIdempotent(ADMIN, null, TEST_ROLE);
-        internalCertificateStoreSession.removeCertificatesByIssuer(CertTools.stringToBCDNString(ISSUER_DN));
-        internalCertificateStoreSession.removeCertificatesByIssuer(CertTools.stringToBCDNString(ISSUER_1_DN));
-        internalCertificateStoreSession.removeCertificatesByIssuer(CertTools.stringToBCDNString(ISSUER_2_DN));
+        internalCertificateStoreSession.removeCertificatesByIssuer(DnComponents.stringToBCDNString(ISSUER_DN));
+        internalCertificateStoreSession.removeCertificatesByIssuer(DnComponents.stringToBCDNString(ISSUER_1_DN));
+        internalCertificateStoreSession.removeCertificatesByIssuer(DnComponents.stringToBCDNString(ISSUER_2_DN));
         internalCertificateStoreSession.removeCertificatesByUsername(CLIENT_MODE_ENDENTITY);
         if (endEntityManagementSession.existsUser(CLIENT_MODE_ENDENTITY)) {
             endEntityManagementSession.deleteUser(ADMIN, CLIENT_MODE_ENDENTITY);
@@ -1038,8 +1039,8 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         Random random = new Random();
         random.nextBytes(serno);
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(signingKeyPair.getPublic().getEncoded());
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(issuerDn, false),
-                new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(SIGNINGCERT_DN, false), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name(issuerDn, false),
+                new BigInteger(serno).abs(), firstDate, lastDate, DnComponents.stringToBcX500Name(SIGNINGCERT_DN, false), pkinfo);
         final ContentSigner signer = new BufferingContentSigner(
                 new JcaContentSignerBuilder("SHA256WithRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME).build(issuerKey), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);
@@ -1065,7 +1066,7 @@ public class CmpExtendedValidationTest extends CmpTestCase {
         final Role role = roleSession.persistRole(ADMIN, new Role(null, TEST_ROLE, accessRules, Collections.emptyList()));
         roleMemberSession.persist(ADMIN, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE, testx509ca.getCAId(), RoleMember.NO_PROVIDER,
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.getRoleId(), null));
+                DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN"), role.getRoleId(), null));
     }
 
     private PKIMessage genCertReq(final String userDn) throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IOException {

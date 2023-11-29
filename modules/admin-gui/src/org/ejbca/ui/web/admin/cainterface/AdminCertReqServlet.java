@@ -50,6 +50,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * This is a servlet that is used for creating a user into EJBCA and retrieving her certificate.
@@ -194,7 +195,7 @@ public class AdminCertReqServlet extends BaseAdminServlet {
         newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);
         newuser.setKeyRecoverable(false);
 
-        String email = CertTools.getPartFromDN(dn, "E"); // BC says VeriSign
+        String email = DnComponents.getPartFromDN(dn, "E"); // BC says VeriSign
         if (email != null) {
             newuser.setEmail(email);
         }

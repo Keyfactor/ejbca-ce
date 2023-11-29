@@ -57,6 +57,7 @@ import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SimpleTime;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 
 /**
@@ -1190,7 +1191,7 @@ public class X509CAInfo extends CAInfo {
                                                doPreProduceIndividualOcspResponse, acceptRevocationNonExistingEntry, cmpRaAuthSecret, keepExpiredCertsOnCRL, defaultCertProfileId, useNoConflictCertificateData, usePartitionedCrl, crlPartitions, suspendedCrlPartitions,
                                                requestPreProcessor, msCaCompatible, alternateCertificateChains, externalCrlDistPoint);
             caInfo.setSubjectDN(subjectDn);
-            caInfo.setCAId(CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
+            caInfo.setCAId(DnComponents.stringToBCDNString(caInfo.getSubjectDN()).hashCode());
             caInfo.setName(name);
             caInfo.setStatus(status);
             caInfo.setUpdateTime(updateTime);

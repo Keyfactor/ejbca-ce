@@ -130,7 +130,6 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.cmp.CMPException;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -192,6 +191,7 @@ import org.junit.internal.ArrayComparisonFailure;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -253,7 +253,7 @@ public abstract class CmpTestCase extends CaTestCase {
         result.setAllowDNOverride(true);
         // Add NTRU, just to demonstrate that it is possible in testCrmfHttpOkUserWithPQC
         List<String> algos = result.getAvailableKeyAlgorithmsAsList();
-        algos.add(AlgorithmConstants.KEYALGORITHM_NTRU);
+        algos.add(AlgorithmConstants.KEYALGORITHM_DILITHIUM5);
         result.setAvailableKeyAlgorithmsAsList(algos);
         int id = -1;
         try {
@@ -435,7 +435,7 @@ public abstract class CmpTestCase extends CaTestCase {
             ASN1OutputStream dOut = ASN1OutputStream.create(bOut);
             ExtensionsGenerator extgen = new ExtensionsGenerator();
             if (altNames != null) {
-                GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
+                GeneralNames san = DnComponents.getGeneralNamesFromAltName(altNames);
                 dOut.writeObject(san);
                 byte[] value = bOut.toByteArray();
                 extgen.addExtension(Extension.subjectAlternativeName, false, value);
@@ -541,7 +541,7 @@ public abstract class CmpTestCase extends CaTestCase {
             if (StringUtils.isNotBlank(altNames)) {
                 // SubjectAltName
                 // Some altNames
-                GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
+                GeneralNames san = DnComponents.getGeneralNamesFromAltName(altNames);
                 dOut.writeObject(san);
                 byte[] value = bOut.toByteArray();
                 extgen.addExtension(Extension.subjectAlternativeName, false, value);
@@ -1301,7 +1301,7 @@ public abstract class CmpTestCase extends CaTestCase {
             final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
             final X500Name name = new X500Name(CertTools.getSubjectDN(leafCertificate));
             assertArrayEquals(eeDN.getEncoded(), name.getEncoded());
-            assertEquals(CertTools.stringToBCDNString(CertTools.getIssuerDN(leafCertificate)), CertTools.getSubjectDN(issuerCert));
+            assertEquals(DnComponents.stringToBCDNString(CertTools.getIssuerDN(leafCertificate)), CertTools.getSubjectDN(issuerCert));
             // Verify the issuer of cert
             final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
             final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
@@ -1573,7 +1573,7 @@ public abstract class CmpTestCase extends CaTestCase {
         if (eepID == -1) {
             eepID = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
         }
-        X500Name userDN = new X500Name(StringTools.strip(CertTools.stringToBCDNString(dn)));
+        X500Name userDN = new X500Name(StringTools.strip(DnComponents.stringToBCDNString(dn)));
         if (useDnOverride) {
             cpID = this.cpDnOverrideId;
             eepID = this.eepDnOverrideId;

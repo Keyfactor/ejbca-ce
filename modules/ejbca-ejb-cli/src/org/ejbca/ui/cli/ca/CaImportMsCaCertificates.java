@@ -42,6 +42,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Implementation of the CLI command <code>./ejbca.sh ca importcertsms</code>.
@@ -413,7 +414,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             }
             if (StringUtils.equals(eeUsernameField, "CN")) {
                 final String subjectDn = CertTools.getSubjectDN(certificate);
-                final String cn = CertTools.getPartFromDN(subjectDn, "CN");
+                final String cn = DnComponents.getPartFromDN(subjectDn, "CN");
                 if (StringUtils.isEmpty(cn)) {
                     continue;
                 }
@@ -421,7 +422,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             }
             if (StringUtils.equals(eeUsernameField, "O")) {
                 final String subjectDn = CertTools.getSubjectDN(certificate);
-                final String o = CertTools.getPartFromDN(subjectDn, "O");
+                final String o = DnComponents.getPartFromDN(subjectDn, "O");
                 if (StringUtils.isEmpty(o)) {
                     continue;
                 }
@@ -429,7 +430,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
             }
             if (StringUtils.equals(eeUsernameField, "OU")) {
                 final String subjectDn = CertTools.getSubjectDN(certificate);
-                final String ou = CertTools.getPartFromDN(subjectDn, "OU");
+                final String ou = DnComponents.getPartFromDN(subjectDn, "OU");
                 if (StringUtils.isEmpty(ou)) {
                     continue;
                 }
@@ -442,7 +443,7 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                 return upn;
             }
             if (StringUtils.equals(eeUsernameField, "universalPrincipalName")) {
-                final String upnFromCertificate = CertTools.getPartFromDN(CertTools.getSubjectAlternativeName(certificate), CertTools.UPN);
+                final String upnFromCertificate = DnComponents.getPartFromDN(DnComponents.getSubjectAlternativeName(certificate), DnComponents.UPN);
                 if (StringUtils.isEmpty(upnFromCertificate)) {
                     continue;
                 }

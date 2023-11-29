@@ -13,7 +13,6 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import io.swagger.annotations.ApiModelProperty;
-import io.swagger.annotations.ApiParam;
 
 /**
  * JSON input representation of crypto token key generation request through REST API.

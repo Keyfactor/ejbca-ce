@@ -61,7 +61,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.ValidityDate;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -576,7 +576,7 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
                     validator.checkExcluded(dngn);
                 } catch (PKIXNameConstraintValidatorException e) {
                     final String dnStr = subjectDNName.toString();
-                    final boolean isLdapOrder = CertTools.dnHasMultipleComponents(dnStr) && !CertTools.isDNReversed(dnStr);
+                    final boolean isLdapOrder = DnComponents.dnHasMultipleComponents(dnStr) && !DnComponents.isDNReversed(dnStr);
                     if (isLdapOrder) {
                         final String msg = intres.getLocalizedMessage("nameconstraints.x500dnorderrequired");
                         throw new IllegalNameException(msg);
