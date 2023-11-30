@@ -15,7 +15,6 @@ package org.cesecore.certificates.certificateprofile;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.security.PublicKey;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -168,7 +167,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USE_EXPIRATION_RESTRICTION_FOR_WEEKDAYS = "useexpirationrestrictionforweekdays";
     protected static final String EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE = "expirationrestrictionforweekdaysbefore";
     protected static final String EXPIRATION_RESTRICTION_WEEKDAYS = "expirationrestrictionweekdays";
-    protected static final String SHORT_TERM = "shorttermcertificate";
     protected static final String ALLOWVALIDITYOVERRIDE = "allowvalidityoverride";
     protected static final String ALLOWKEYUSAGEOVERRIDE = "allowkeyusageoverride";
     protected static final String ALLOWBACKDATEDREVOCATION = "allowbackdatedrevokation";
@@ -876,14 +874,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setExpirationRestrictionWeekday(Calendar.FRIDAY, true);
         setExpirationRestrictionWeekday(Calendar.SATURDAY, true);
         setExpirationRestrictionWeekday(Calendar.SUNDAY, true);
-    }
-
-    public boolean getIsShortTerm() {
-        return (Boolean) data.get(SHORT_TERM);
-    }
-
-    public void setIsShortTerm(boolean isShortTerm) {
-        data.put(SHORT_TERM, isShortTerm);
     }
 
     /**
