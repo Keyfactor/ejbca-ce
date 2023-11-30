@@ -37,6 +37,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.junit.After;
 import org.junit.Before;
@@ -53,6 +54,9 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 /**
  * 
@@ -219,6 +223,21 @@ public class ScpPublisherTest {
         TestAlwaysAllowLocalAuthenticationToken testAlwaysAllowLocalAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken("testPublishCrl");
         scpPublisher.storeCRL(testAlwaysAllowLocalAuthenticationToken, testCrl, null, 0, null);
         //To check that publisher works, verify that the published CRL exists at the location
+    }
+
+    @Test
+    public void shouldFailConnectionTestWhenDestinationUrlsAreBlank() {
+        // given
+        final String expectedErrorMessage = "Neither Certificate nor CRL destination URLs are configured.";
+        final ScpPublisher scpPublisher = new ScpPublisher();
+        final Properties properties = new Properties();
+        properties.setProperty(ScpPublisher.CERT_SCP_DESTINATION_PROPERTY_NAME, "");
+        properties.setProperty(ScpPublisher.CRL_SCP_DESTINATION_PROPERTY_NAME, " ");
+        scpPublisher.init(properties);
+        // when, then
+        var exception = assertThrows("Should throw a PublisherConnectionException when both Certificate and CRL" +
+                "destination URLs are blank", PublisherConnectionException.class, scpPublisher::testConnection);
+        assertEquals(expectedErrorMessage, exception.getMessage());
     }
 
 }
