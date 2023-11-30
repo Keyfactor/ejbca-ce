@@ -52,7 +52,7 @@ import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponseV3;
+import org.ejbca.ui.web.rest.api.io.response.CertificateEnrollmentRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
@@ -104,7 +104,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Enrollment with client generated keys, using CSR subject",
             notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-            response = CertificateRestResponseV3.class,
+            response = CertificateEnrollmentRestResponse.class,
             code = 201)
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext,
                                             final EnrollCertificateRestRequest enrollCertificateRestRequest)
@@ -118,7 +118,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Enrollment with client generated keys for an existing End Entity",
             notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-            response = CertificateRestResponseV3.class,
+            response = CertificateEnrollmentRestResponse.class,
             code = 201)
     public Response certificateRequest(@Context HttpServletRequest requestContext,
                                        final CertificateRequestRestRequest certificateRequestRestRequest)
@@ -133,7 +133,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Keystore enrollment",
             notes = "Creates a keystore for the specified end entity",
-            response = CertificateRestResponseV3.class,
+            response = CertificateEnrollmentRestResponse.class,
             code = 201)
     public Response enrollKeystore(@Context HttpServletRequest requestContext, KeyStoreRestRequest keyStoreRestRequest)
             throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException,
