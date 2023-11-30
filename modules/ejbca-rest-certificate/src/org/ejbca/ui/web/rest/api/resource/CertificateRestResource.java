@@ -67,7 +67,7 @@ import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
-import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponseV3;
+import org.ejbca.ui.web.rest.api.io.response.CertificateEnrollmentRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
@@ -145,7 +145,7 @@ public class CertificateRestResource extends BaseRestResource {
                     authenticationToken,
                     enrollCertificateRestRequest.getIncludeChain(),
                     enrollCertificateRestRequest.getCertificateAuthorityName());
-            final CertificateRestResponseV3 enrollCertificateRestResponse = CertificateRestResponseV3.converter().toRestResponse(
+            final CertificateEnrollmentRestResponse enrollCertificateRestResponse = CertificateEnrollmentRestResponse.converter().toRestResponse(
                     certificate,
                     certificateChain
             );
@@ -157,9 +157,9 @@ public class CertificateRestResource extends BaseRestResource {
     }
 
     private List<Certificate> extractCertificateChain(AuthenticationToken authenticationToken,
-            boolean doEnrollCertificateRestRequest, String enrollCertificateRestRequest)
+            boolean includeChain, String enrollCertificateRestRequest)
             throws AuthorizationDeniedException, CADoesntExistsException {
-        return doEnrollCertificateRestRequest
+        return includeChain
                 ? raMasterApi.getLastCaChain(authenticationToken, enrollCertificateRestRequest)
                     .stream()
                     .map(CertificateWrapper::getCertificate)
@@ -181,7 +181,7 @@ public class CertificateRestResource extends BaseRestResource {
                     authenticationToken,
                     certificateRequestRestRequest.getIncludeChain(),
                     certificateRequestRestRequest.getCertificateAuthorityName());
-            final CertificateRestResponseV3 enrollCertificateRestResponse = CertificateRestResponseV3.converter().toRestResponse(
+            final CertificateEnrollmentRestResponse enrollCertificateRestResponse = CertificateEnrollmentRestResponse.converter().toRestResponse(
                     certificate,
                     certificateChain
             );
@@ -259,7 +259,7 @@ public class CertificateRestResource extends BaseRestResource {
 
         X509Certificate certificate = getFirstCertificate(keyStoreBytes, keyStorePassword);
 
-        CertificateRestResponseV3 response = CertificateRestResponseV3.converter()
+        CertificateEnrollmentRestResponse response = CertificateEnrollmentRestResponse.converter()
                 .toRestResponse(keyStoreBytes,
                         CertTools.getSerialNumberAsString(certificate), keyChain);
         return Response.status(Status.CREATED).entity(response).build();
