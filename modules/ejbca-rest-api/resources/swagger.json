@@ -559,7 +559,7 @@
           "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
+              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
             }
           }
         }
@@ -630,7 +630,7 @@
           "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
+              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
             }
           }
         }
@@ -664,7 +664,7 @@
           "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
+              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
             }
           }
         }
@@ -1993,6 +1993,42 @@
           "type": "string",
           "example": "ExampleEEP",
           "description": "End Entity profile name"
+        }
+      }
+    },
+    "CertificateEnrollmentRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "array",
+          "example": "MIIDXzCCA...eW1Zro0=",
+          "description": "Certificate",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "serial_number": {
+          "type": "string",
+          "example": "1234567890ABCDEF",
+          "description": "Hex Serial Number"
+        },
+        "response_format": {
+          "type": "string",
+          "example": "DER",
+          "description": "Response format"
+        },
+        "certificate_chain": {
+          "type": "array",
+          "example": "[\"ABC123efg...345xyz0=\"]",
+          "description": "Certificate chain",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "byte"
+            }
+          }
         }
       }
     },

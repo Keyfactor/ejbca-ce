@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 /**
  * A class responsible for representing the certificate enrollment result.
  */
-public class CertificateRestResponseV3 {
+public class CertificateEnrollmentRestResponse {
 
 	private static final String DER_RESPONSE_FORMAT = "DER";
 
@@ -42,7 +42,7 @@ public class CertificateRestResponseV3 {
 	@ApiModelProperty(value = "Certificate chain", example = "[\"ABC123efg...345xyz0=\"]")
 	private final List<byte[]> certificateChain;
 
-	private CertificateRestResponseV3(final CertificateRestResponseBuilder builder) {
+	private CertificateEnrollmentRestResponse(final CertificateRestResponseBuilder builder) {
 		this.certificate = builder.certificate;
 		this.serialNumber = builder.serialNumber;
 		this.responseFormat = builder.responseFormat;
@@ -130,18 +130,18 @@ public class CertificateRestResponseV3 {
 			return this;
 		}
 
-		public CertificateRestResponseV3 build() {
-			return new CertificateRestResponseV3(this);
+		public CertificateEnrollmentRestResponse build() {
+			return new CertificateEnrollmentRestResponse(this);
 		}
 	}
 
 	public static class CertificateRestResponseConverter {
 
-		public CertificateRestResponseV3 toRestResponse(final byte[] certificate, String serialNumber, final List<Certificate> certificateChain)  {
+		public CertificateEnrollmentRestResponse toRestResponse(final byte[] certificate, String serialNumber, final List<Certificate> certificateChain)  {
 			return createCertificateRestResponse(certificate, serialNumber, certificateChain);
 		}
 
-		public CertificateRestResponseV3 toRestResponse(final Certificate certificate, final List<Certificate> certificateChain) {
+		public CertificateEnrollmentRestResponse toRestResponse(final Certificate certificate, final List<Certificate> certificateChain) {
 			return createCertificateRestResponse(
 					getEncodedCertificate(certificate),
 					CertTools.getSerialNumberAsString(certificate),
@@ -149,9 +149,9 @@ public class CertificateRestResponseV3 {
 			);
 		}
 
-		private static CertificateRestResponseV3 createCertificateRestResponse(final byte[] certificate,
+		private static CertificateEnrollmentRestResponse createCertificateRestResponse(final byte[] certificate,
 				String serialNumber, List<Certificate> certificateChain) {
-			return CertificateRestResponseV3.builder()
+			return CertificateEnrollmentRestResponse.builder()
 					.setCertificate(certificate)
 					.setSerialNumber(serialNumber)
 					.setCertificateChain(certificateChain == null
