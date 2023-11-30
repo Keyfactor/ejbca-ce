@@ -23,6 +23,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -67,9 +68,12 @@ public class CreateCsrCommand extends EjbcaCommandBase {
     
     private static final String KEYALG_ARG = "--keyalg";
     private static final String ALT_KEYALG_ARG = "--altkeyalg";
-
+    
     private static final String KEYSPEC_ARG = "--keyspec";
     private static final String ALT_KEYSPEC_ARG = "--altkeyspec";
+    
+    private static final String SIGALG_ARG = "--sigalg";
+    private static final String ALT_SIGALG_ARG = "--altsigalg";
 
     private static final String PUBLICKEY_ARG = "--pubkey";
     private static final String PRIVATEKEY_ARG = "--privkey";
@@ -82,6 +86,8 @@ public class CreateCsrCommand extends EjbcaCommandBase {
     private static final Set<String> EC_CURVES = AlgorithmTools.getNamedEcCurvesMap(true).keySet();
 
     private static final Logger log = Logger.getLogger(CreateCsrCommand.class);
+    
+    final StringBuffer signatureAlgorithmsFormatted = new StringBuffer(); 
 
     {
         registerParameter(new Parameter(SDN_ARG, "Subject DN", MandatoryMode.MANDATORY, StandaloneMode.FORBID,
@@ -95,6 +101,24 @@ public class CreateCsrCommand extends EjbcaCommandBase {
                 "Complete path to the public key to sign. Key cipher and algorithm arguments will be ignored if this is provided."));
         registerParameter(new Parameter(ALT_PRIVATEKEY_ARG, "Alternative Private Key file", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Complete path to the private key associated with the alternative public key. Key cipher and algorithm arguments will be ignored if this is provided."));
+       
+        signatureAlgorithmsFormatted.append("[");
+        String[] signatureAlgorithms = AlgorithmConstants.AVAILABLE_SIGALGS;
+        for(int i = 0; i < signatureAlgorithms.length; i++) {
+            if(i > 0) {
+                signatureAlgorithmsFormatted.append(" ");
+            } 
+            signatureAlgorithmsFormatted.append(signatureAlgorithms[i]);
+        }
+        signatureAlgorithmsFormatted.append("]");
+        
+        registerParameter(new Parameter(SIGALG_ARG, "Signature Algorithm", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "Signature algorithm to sign the CSR with. If omitted, the default 256 bit algorithm for the assigned key will be used. Must be one of: "
+                        + signatureAlgorithmsFormatted));
+        registerParameter(new Parameter(ALT_SIGALG_ARG, "Alternative Signature Algorithm", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT,
+                "Alternative signature algorithm to sign the CSR with, if making a hyrid CSR. If omitted, the default 256 bit algorithm for the assigned key will be used. Must be one of: "
+                        + signatureAlgorithmsFormatted));
 
         registerParameter(new Parameter(KEYALG_ARG, "cipher", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Cipher must be one of [ " + AlgorithmConstants.KEYALGORITHM_RSA + ", " + AlgorithmConstants.KEYALGORITHM_EC + ", "
@@ -190,7 +214,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
             //Keys should be generated
             final String keySpec = parameters.get(KEYSPEC_ARG);
             final String keyAlg = parameters.get(KEYALG_ARG);
-                log.info("Generating primary key pair: " + keyAlg + " - " + keySpec);
+            log.info("Generating primary key pair: " + keyAlg + " - " + keySpec);
             
             if(StringUtils.isEmpty(keyAlg)) {
                 getLogger().error("No keys were provided, nor was a key algorithm for key generation.");
@@ -209,6 +233,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
             
             //Create an alternative keypair, if requested
             if(!StringUtils.isEmpty(altKeyAlg)) {
+                log.info("Generating alternative key pair: " + altKeyAlg + " - " + altKeySpec);
                 try {
                     alternativeKeyPair = generateKeypair(altKeyAlg, altKeySpec);
                 } catch (IOException e) {
@@ -230,13 +255,22 @@ public class CreateCsrCommand extends EjbcaCommandBase {
             return CommandResult.CLI_FAILURE;
         }
         
-        final String signatureAlgorithm;
-        if ( primaryKeyPair.getPublic() instanceof RSAPublicKey ) {
-            signatureAlgorithm = "SHA256WithRSA"; // Avoid SHA1WithRSA that AlgorithmTools.getSignatureAlgorithms will return
+        Set<String> availableSignatureAlgorithms = new HashSet<>(Arrays.asList(AlgorithmConstants.AVAILABLE_SIGALGS));
+        
+        String signatureAlgorithm = parameters.get(SIGALG_ARG);
+        if (signatureAlgorithm != null) {
+            if (!availableSignatureAlgorithms.contains(signatureAlgorithm)) {
+                log.error("Signature algorithm " + signatureAlgorithm + " was unknown, must be one of: " + signatureAlgorithmsFormatted);
+            }
         } else {
-            signatureAlgorithm = primarySigAlgs.get(0);
+            if (primaryKeyPair.getPublic() instanceof RSAPublicKey) {
+                signatureAlgorithm = "SHA256WithRSA"; // Avoid SHA1WithRSA that AlgorithmTools.getSignatureAlgorithms will return
+            } else {
+                signatureAlgorithm = primarySigAlgs.get(0);
+            }
+            log.info("Signature algorithm not specified, setting signature algorithm: " + signatureAlgorithm);
         }
-        log.info("Using signature algorithm: " + signatureAlgorithm);
+        
         final ContentSigner contentSigner;
         try {
             contentSigner = new JcaContentSignerBuilder(signatureAlgorithm).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(primaryKeyPair.getPrivate());
@@ -249,12 +283,21 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         PKCS10CertificationRequest pkcs10CertificationRequest;
         if(alternativeKeyPair != null) {
             List<String> alternativeSigAlgs = AlgorithmTools.getSignatureAlgorithms(alternativeKeyPair.getPublic());
-            final String alternativeSignatureAlgorithm;
-            if ( alternativeKeyPair.getPublic() instanceof RSAPublicKey ) {
-                alternativeSignatureAlgorithm = "SHA256WithRSA"; // Avoid SHA1WithRSA that AlgorithmTools.getSignatureAlgorithms will return
+           
+            String alternativeSignatureAlgorithm = parameters.get(ALT_SIGALG_ARG);
+            if (alternativeSignatureAlgorithm != null) {
+                if (!availableSignatureAlgorithms.contains(alternativeSignatureAlgorithm)) {
+                    log.error("Alternative signature algorithm " + alternativeSignatureAlgorithm + " was unknown, must be one of: " + signatureAlgorithmsFormatted);
+                }
             } else {
-                alternativeSignatureAlgorithm = alternativeSigAlgs.get(0);
+                if (alternativeKeyPair.getPublic() instanceof RSAPublicKey) {
+                    alternativeSignatureAlgorithm = "SHA256WithRSA"; // Avoid SHA1WithRSA that AlgorithmTools.getSignatureAlgorithms will return
+                } else {
+                    alternativeSignatureAlgorithm = alternativeSigAlgs.get(0);
+                }
+                log.info("Alternative signature algorithm not specified, setting signature algorithm: " + alternativeSignatureAlgorithm);
             }
+
             ContentSigner altSigner;
             try {
                 altSigner = new JcaContentSignerBuilder(alternativeSignatureAlgorithm)
