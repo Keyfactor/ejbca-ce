@@ -15,6 +15,7 @@ package org.ejbca.util.mail;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -114,6 +115,7 @@ public class MailSender {
         // mail.smtp.timeout
         // mail.smtp.connectiontimeout
         // mail.smtp.writetimeout
+		mailSession.getProperties().put("mail.smtp.timeout", 15000);
         Message msg = new MimeMessage(mailSession);
         try {
         	if (log.isDebugEnabled()) {
@@ -171,7 +173,15 @@ public class MailSender {
 	        }
 	        msg.setHeader("X-Mailer", "JavaMailer");
 	        msg.setSentDate(new Date());
-	        Transport.send(msg);
+			Executors.newSingleThreadExecutor().submit(() -> {
+				try {
+					Transport.send(msg);
+					log.info("Sending email is successful.");
+				} catch (MessagingException e) {
+					log.error("Unable to send email: ", e);
+				}
+			});
+
 		} catch (MessagingException e) {
 			log.error("Unable to send email: ", e);
 			return false;
