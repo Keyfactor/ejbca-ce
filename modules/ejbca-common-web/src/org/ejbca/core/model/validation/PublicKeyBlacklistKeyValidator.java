@@ -61,7 +61,6 @@ public class PublicKeyBlacklistKeyValidator extends KeyValidatorBase {
     protected static final ArrayList<String> AVAILABLE_KEY_ALGORITHMS = new ArrayList<String>();
     
     static {
-        AVAILABLE_KEY_ALGORITHMS.add("DSA");
         AVAILABLE_KEY_ALGORITHMS.add("RSA");
         AVAILABLE_KEY_ALGORITHMS.add("ECDSA");
     }
