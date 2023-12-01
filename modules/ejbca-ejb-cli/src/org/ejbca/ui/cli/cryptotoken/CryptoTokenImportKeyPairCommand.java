@@ -189,10 +189,6 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             privateKey = privateKey.replace(EC_KEY_HEADER, StringUtils.EMPTY);
             privateKey = privateKey.replace(EC_KEY_FOOTER, StringUtils.EMPTY);
             break;
-        case "DSA":
-            privateKey = privateKey.replace(DSA_KEY_HEADER, StringUtils.EMPTY);
-            privateKey = privateKey.replace(DSA_KEY_FOOTER, StringUtils.EMPTY);
-            break;
         default:
             privateKey = privateKey.replace(RSA_KEY_HEADER, StringUtils.EMPTY);
             privateKey = privateKey.replace(RSA_KEY_FOOTER, StringUtils.EMPTY);
@@ -235,9 +231,6 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private String getSignatureAlgorithm(final String keyAlgorithm) {
         String signatureAlgorithm = null;
         switch (keyAlgorithm) {
-        case "DSA-SHA1":
-            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            break;
         case "RSA-SHA256":
             signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
             break;
