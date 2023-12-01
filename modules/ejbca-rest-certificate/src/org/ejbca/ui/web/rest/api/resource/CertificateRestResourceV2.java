@@ -15,8 +15,12 @@ package org.ejbca.ui.web.rest.api.resource;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.InternalCertificateRestSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
@@ -35,6 +39,8 @@ import javax.ejb.TransactionAttributeType;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
+
+import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.util.Map;
@@ -55,6 +61,9 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
     @EJB
     private InternalCertificateRestSessionLocal certificateSessionLocal;
+    
+    @EJB
+    private CertificateDataSessionLocal certDataSession;
     
     @Override
     public Response status() {
@@ -125,6 +134,36 @@ public class CertificateRestResourceV2 extends BaseRestResource {
         final CertificateProfileInfoRestResponseV2 getCertificateProfileInfoRestResponse = getCertificateProfileInfo(authenticationToken, profileName);
         return Response.ok(getCertificateProfileInfoRestResponse).build();
     }
+ 
+    
+    /**
+     * Mark the certificate with serialNumber and issuerDN for recovery
+     * 
+     * @param requestContext
+     * @param certificateSerialNumber
+     * @param issuerDN
+     * @return
+     * @throws AuthorizationDeniedException
+     * @throws RestException
+     * @throws CADoesntExistsException
+     * @throws EjbcaException
+     * @throws WaitingForApprovalException
+     */
+    public Response markCertificateForKeyRecovery(final HttpServletRequest requestContext, final String certificateSerialNumber,
+            final String issuerDN)
+            throws AuthorizationDeniedException, RestException, CADoesntExistsException, EjbcaException, WaitingForApprovalException {
+
+        final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
+
+        // Finding username from db first, as it is needed by key recovery code flow.
+        final String certDecimalSerialNumber = new BigInteger(certificateSerialNumber, 16).toString();
+        final String userName = certDataSession.findUsernameByIssuerDnAndSerialNumber(issuerDN, certDecimalSerialNumber);
+
+        // Using same logic as in the web service code.
+        raMasterApi.keyRecoverWS(authenticationToken, userName, certificateSerialNumber, issuerDN);
+
+        return Response.ok().build();
+    }
     
     /**
      * Get Certificate Profile Info
@@ -132,16 +171,14 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      * @param authenticationToken
      * @param profileName is the name of the Certificate Profile
      * @return a CertificateProfileInfoRestResponseV2 containing Certificate Profile Info
-     * @throws AuthorizationDeniedException
      * @throws RestException In case of malformed criteria.
      */
-    private CertificateProfileInfoRestResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName) throws AuthorizationDeniedException, RestException {
+    private CertificateProfileInfoRestResponseV2 getCertificateProfileInfo(final AuthenticationToken authenticationToken, final String profileName)
+            throws RestException {
         RaCertificateProfileResponseV2 raResponse = raMasterApi.getCertificateProfileInfo(authenticationToken, profileName);
-        if (raResponse == null){
-            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), 
-                    "Invalid search criteria, unknown certificate profile.");
+        if (raResponse == null) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid search criteria, unknown certificate profile.");
         }
-        CertificateProfileInfoRestResponseV2 response = new CertificateProfileInfoRestResponseV2().convert().toCertificateProfileInfoRestResponse(raResponse);
-        return response;
+        return new CertificateProfileInfoRestResponseV2().convert().toCertificateProfileInfoRestResponse(raResponse);
     }
 }
