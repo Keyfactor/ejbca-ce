@@ -66,11 +66,12 @@ import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
-import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateEnrollmentRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
+import org.ejbca.util.KeyStoreUtils;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
@@ -256,18 +257,21 @@ public class CertificateRestResource extends BaseRestResource {
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
         CACommon caCommon = caSessionLocal.getCA(admin, endEntityInformation.getCAId());
         List<Certificate> keyChain = getCertificateChain(admin, caCommon.getName());
+        String keyStoreType = KeyStoreUtils.determineKeyStoreType(tokenType);
 
-        X509Certificate certificate = getFirstCertificate(keyStoreBytes, keyStorePassword);
+        X509Certificate certificate = getFirstCertificate(keyStoreBytes, keyStoreType, keyStorePassword);
 
         CertificateEnrollmentRestResponse response = CertificateEnrollmentRestResponse.converter()
                 .toRestResponse(keyStoreBytes,
-                        CertTools.getSerialNumberAsString(certificate), keyChain);
+                        CertTools.getSerialNumberAsString(certificate),
+                        keyStoreType,
+                        keyChain);
         return Response.status(Status.CREATED).entity(response).build();
     }
 
-    private static X509Certificate getFirstCertificate(byte[] keyStoreBytes, String keyStorePassword)
+    private static X509Certificate getFirstCertificate(byte[] keyStoreBytes, String keyStoreType, String keyStorePassword)
             throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
-        return CertTools.extractCertificatesFromKeychain(keyStoreBytes, "PKCS12", keyStorePassword).get(0);
+        return CertTools.extractCertificatesFromKeychain(keyStoreBytes, keyStoreType, keyStorePassword).get(0);
     }
 
     private List<Certificate> getCertificateChain(AuthenticationToken admin, String caName)
