@@ -178,12 +178,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     }
 
     @Test
-    public void testX509CABasicOperationsDSA() throws Exception {
-        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
-        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_SHA256_WITH_DSA);
-    }
-
-    @Test
     public void testX509CABasicOperationsGOST() throws Exception {
         assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
@@ -647,7 +641,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // Create a set of user keypairs for different algs
         KeyPair userKeyPairRSA = genTestKeyPair("SHA256WithRSA");
         KeyPair userKeyPairECDSA = genTestKeyPair("SHA256WithECDSA");
-        KeyPair userKeyPairDSA = genTestKeyPair("SHA1WithDSA");
         KeyPair userKeyPairEd25519 = genTestKeyPair(AlgorithmConstants.SIGALG_ED25519);
         KeyPair userKeyPairDilithium3 = genTestKeyPair(AlgorithmConstants.SIGALG_DILITHIUM3);
         KeyPair userKeyPairFalcon512 = genTestKeyPair(AlgorithmConstants.SIGALG_FALCON512);
@@ -661,7 +654,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             final X509CA x509ca = createTestCA(cryptoToken, CADN);
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
@@ -683,19 +675,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, null, null);
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
-        }
-
-        // Create a CA using SHA1WithDSA as sigAlg
-        {
-            final CryptoToken cryptoToken = getNewCryptoToken();
-            final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, null, null);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
@@ -707,7 +686,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1, null, null);
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
@@ -718,7 +696,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_ED25519, null, null);
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
@@ -729,7 +706,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_DILITHIUM3, null, null);
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
@@ -740,7 +716,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_FALCON512, null, null);
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
@@ -2028,8 +2003,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             } else {
                 return null;
             }
-        } else if(algName.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA)) {
-            return KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
         } else if(algName.contains("ECDSA")) {
             return KeyTools.genKeys("brainpoolp224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         } else if(algName.equals(AlgorithmConstants.SIGALG_ED25519)) {
