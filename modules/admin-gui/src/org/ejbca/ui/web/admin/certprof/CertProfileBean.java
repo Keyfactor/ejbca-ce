@@ -462,9 +462,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECDSA)    ) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_EC);
         }
-        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSA);
-        }
         if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_RSA);
         }
