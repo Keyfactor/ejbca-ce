@@ -1186,7 +1186,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                                 INTERNAL_ADMIN_TOKEN, eeProfileName, endEntityProfile);        
         
         List<String> addedUserNames = new ArrayList<>();
-        StringBuilder errorMessage = new StringBuilder();
         
         try {
             // there is no limit for offset or max results today
@@ -1225,34 +1224,35 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             
             // test vectors
             // 1d offset: 0, 10
-            errorMessage.append(searchToBeExpiredCerts(1, 0, 0, created30mCerts));
-            errorMessage.append(searchToBeExpiredCerts(1, 10, 0, created30mCerts - 10));
+            searchToBeExpiredCerts(1, 0, 0, created30mCerts);
+            searchToBeExpiredCerts(1, 10, 0, created30mCerts - 10);
             // 6d offset: 0, 10
-            errorMessage.append(searchToBeExpiredCerts(6, 0, 0, created30mCerts + created5dCerts));
-            errorMessage.append(searchToBeExpiredCerts(6, 10, 0, created30mCerts + created5dCerts - 10));
+            searchToBeExpiredCerts(6, 0, 0, created30mCerts + created5dCerts);
+            searchToBeExpiredCerts(6, 10, 0, created30mCerts + created5dCerts - 10);
             // 16d offset: 0, 10
-            errorMessage.append(searchToBeExpiredCerts(16, 0, 0, created30mCerts + created5dCerts + created15dCerts));
-            errorMessage.append(searchToBeExpiredCerts(16, 10, 0, created30mCerts + created5dCerts + created15dCerts - 10));
+            searchToBeExpiredCerts(16, 0, 0, created30mCerts + created5dCerts + created15dCerts);
+            searchToBeExpiredCerts(16, 10, 0, created30mCerts + created5dCerts + created15dCerts - 10);
             
             // 1d offset: 10, max: 10,50  offset: 40, max: 10,50
-            errorMessage.append(searchToBeExpiredCerts(1, 10, 10, created30mCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(1, 10, 50, created30mCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(1, 40, 10, created30mCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(1, 40, 50, created30mCerts - 10));
+            searchToBeExpiredCerts(1, 10, 10, created30mCerts - 10);
+            searchToBeExpiredCerts(1, 10, 50, created30mCerts - 10, false);
+            searchToBeExpiredCerts(1, 40, 10, created30mCerts - 40, false);
+            searchToBeExpiredCerts(1, 40, 50, created30mCerts - 40, false);
             // 6d
-            errorMessage.append(searchToBeExpiredCerts(6, 10, 10, created30mCerts + created5dCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(6, 10, 50, created30mCerts + created5dCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(6, 40, 10, created30mCerts + created5dCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(6, 40, 50, created30mCerts + created5dCerts - 10));
+            searchToBeExpiredCerts(6, 10, 10, created30mCerts + created5dCerts - 10);
+            searchToBeExpiredCerts(6, 10, 50, created30mCerts + created5dCerts - 10);
+            searchToBeExpiredCerts(6, 40, 10, created30mCerts + created5dCerts - 40);
+            searchToBeExpiredCerts(6, 40, 50, created30mCerts + created5dCerts - 40);
             // 16d
-            errorMessage.append(searchToBeExpiredCerts(16, 10, 10, created30mCerts + created5dCerts + created15dCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(16, 10, 50, created30mCerts + created5dCerts + created15dCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(16, 40, 10, created30mCerts + created5dCerts + created15dCerts - 10));
-            errorMessage.append(searchToBeExpiredCerts(16, 40, 50, created30mCerts + created5dCerts + created15dCerts - 10));
+            searchToBeExpiredCerts(16, 10, 10, created30mCerts + created5dCerts + created15dCerts - 10);
+            searchToBeExpiredCerts(16, 10, 50, created30mCerts + created5dCerts + created15dCerts - 10);
+            searchToBeExpiredCerts(16, 40, 10, created30mCerts + created5dCerts + created15dCerts - 40);
+            searchToBeExpiredCerts(16, 40, 50, created30mCerts + created5dCerts + created15dCerts - 40);
             
             // to test for negative: empty query params, no days, 10d i.e. with d, negative
         } catch (Exception e) {
             log.error("Exception while testing expired certificate search: ", e);
+            fail("Exception while testing expired certificate search");
         } finally {
         
             for (String user: addedUserNames) {
@@ -1267,33 +1267,53 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             caSession.removeCA(INTERNAL_ADMIN_TOKEN, issuerDN.hashCode());
         }
         
-        String errors = errorMessage.toString();
-        assertTrue("Errors: " + errors, errors.isEmpty());
     }
     
-    private String searchToBeExpiredCerts(int days, int offset, int maxResult, 
-                                                int minimumMoreResultsExpected) throws Exception {
+    private void searchToBeExpiredCerts(int days, int offset, int maxResult, 
+            int minimumResultsExpected) throws Exception {
+        searchToBeExpiredCerts(days, offset, maxResult, minimumResultsExpected, true);
+    }
+    
+    private void searchToBeExpiredCerts(int days, int offset, int maxResult, 
+                                                int minimumResultsExpected, boolean expectedMoreResults) throws Exception {
         
-        String url = "/v1/certificate/expire?days=" + days + "&offset=" + offset;
-        int expectedEntries = 25;
-        if (maxResult!=0) {
-            url += "&maxNumberOfResults=" + maxResult;
-            expectedEntries = maxResult;
+        String url = "/v1/certificate/expire?days=" + days;
+        if (offset!=0) {
+            url += "&offset=" + offset;
         }
+        if (maxResult==0) {
+            maxResult = 25;
+        }
+        url += "&maxNumberOfResults=" + maxResult;
+        int expectedEntries = maxResult;
+        
+        log.error("searchToBeExpiredCerts url: " + url);
         final Response actualResponse = newRequest(url).request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
         assertJsonContentType(actualResponse);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final Object certificatesToExpire = actualJsonObject.get("certificates_rest_response");
+        final JSONObject certificatesToExpire = (JSONObject) actualJsonObject.get("certificates_rest_response");
         assertNotNull(certificatesToExpire);
         
-        final Object pagination = actualJsonObject.get("pagination_rest_response_component");
+        final JSONObject pagination = (JSONObject) actualJsonObject.get("pagination_rest_response_component");
         assertNotNull(pagination);
         
-        // TODO
+        assertTrue(pagination.containsKey("more_results"));
+        assertTrue(pagination.containsKey("number_of_results"));
+        assertTrue(pagination.containsKey("next_offset"));
         
-        return "";
+        assertTrue("number_of_results is lower than expected", 
+                (long) pagination.get("number_of_results") >= minimumResultsExpected - expectedEntries);
         
+        assertTrue(certificatesToExpire.containsKey("certificates"));
+        JSONArray certificates = (JSONArray) certificatesToExpire.get("certificates");
+        if (expectedMoreResults) {
+            assertEquals("certificates has mismatched number of entries", certificates.size(), expectedEntries);
+        } else {
+            assertFalse("certificates has mismatched number of entries with no next page", certificates.isEmpty());
+        }
+        
+        return;
     }
 
     private String addAndEnrollEntity(String caDn, String certProfileName, int certProfileId,
@@ -1303,7 +1323,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         
         try {
             EndEntityInformation userdata = new EndEntityInformation(
-                    userName, "O=PrimeKey,CN=" + userName, caDn.hashCode(), null,
+                    userName, "CN=" + userName, caDn.hashCode(), null,
                     null, new EndEntityType(EndEntityTypes.ENDUSER), 
                     eeProfileId, certProfileId,
                     SecConst.TOKEN_SOFT_BROWSERGEN, new ExtendedInformation());
@@ -1313,6 +1333,12 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
             endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
             
+            final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            PKCS10CertificationRequest pkcs10CertificationRequest = CertTools.genPKCS10CertificationRequest(
+                    AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+                    DnComponents.stringToBcX500Name("CN=" + userName), 
+                    keys.getPublic(), null, keys.getPrivate(), null);
+
             // Create CSR REST request
             EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder()
                     .certificateAuthorityName(caDn.substring(3))
@@ -1320,7 +1346,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                     .password("foo123")
                     .certificateProfileName(certProfileName)
                     .endEntityProfileName(eeProfileName)
-                    .certificateRequest(CSR_WITH_HEADERS).build();
+                    .certificateRequest(CertTools.buildCsr(pkcs10CertificationRequest)).build();
             // Construct POST  request
             final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
             final String requestBody = objectMapper.writeValueAsString(pkcs10req);
