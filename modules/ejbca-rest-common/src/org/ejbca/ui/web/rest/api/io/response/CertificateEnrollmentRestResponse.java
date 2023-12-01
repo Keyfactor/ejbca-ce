@@ -15,7 +15,6 @@ package org.ejbca.ui.web.rest.api.io.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.keyfactor.util.CertTools;
 import io.swagger.annotations.ApiModelProperty;
-import org.ejbca.core.model.SecConst;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -103,28 +102,6 @@ public class CertificateEnrollmentRestResponse {
 			return this;
 		}
 
-		public CertificateRestResponseBuilder setResponseFormat(int keystoreType) {
-			switch (keystoreType) {
-			case SecConst.TOKEN_SOFT_JKS:
-				this.responseFormat = "JKS";
-				break;
-			case SecConst.TOKEN_SOFT_PEM:
-				this.responseFormat = "PEM";
-				break;
-			case SecConst.TOKEN_SOFT_P12:
-			case SecConst.TOKEN_SOFT_BROWSERGEN:
-				this.responseFormat = "PKCS12";
-				break;
-			case SecConst.TOKEN_SOFT_BCFKS:
-				this.responseFormat = "BCFKS";
-				break;
-			default:
-				this.responseFormat = "UNKNOWN";
-				break;
-			}
-			return this;
-		}
-
 		public CertificateRestResponseBuilder setCertificateChain(final List<byte[]> certificateChain) {
 			this.certificateChain = certificateChain;
 			return this;
@@ -137,8 +114,12 @@ public class CertificateEnrollmentRestResponse {
 
 	public static class CertificateRestResponseConverter {
 
-		public CertificateEnrollmentRestResponse toRestResponse(final byte[] certificate, String serialNumber, final List<Certificate> certificateChain)  {
-			return createCertificateRestResponse(certificate, serialNumber, certificateChain);
+		public CertificateEnrollmentRestResponse toRestResponse(final byte[] certificate, String serialNumber,
+				String keyStoreType, final List<Certificate> certificateChain)  {
+			return createCertificateRestResponse(certificate,
+					serialNumber, certificateChain)
+					.setResponseFormat(keyStoreType)
+					.build();
 		}
 
 		public CertificateEnrollmentRestResponse toRestResponse(final Certificate certificate, final List<Certificate> certificateChain) {
@@ -146,10 +127,10 @@ public class CertificateEnrollmentRestResponse {
 					getEncodedCertificate(certificate),
 					CertTools.getSerialNumberAsString(certificate),
 					certificateChain
-			);
+			).build();
 		}
 
-		private static CertificateEnrollmentRestResponse createCertificateRestResponse(final byte[] certificate,
+		private static CertificateRestResponseBuilder createCertificateRestResponse(final byte[] certificate,
 				String serialNumber, List<Certificate> certificateChain) {
 			return CertificateEnrollmentRestResponse.builder()
 					.setCertificate(certificate)
@@ -157,8 +138,7 @@ public class CertificateEnrollmentRestResponse {
 					.setCertificateChain(certificateChain == null
 									? null
 									: encodeChainCertificates(certificateChain))
-					.setResponseFormat(DER_RESPONSE_FORMAT)
-					.build();
+					.setResponseFormat(DER_RESPONSE_FORMAT);
 		}
 
 		private static List<byte[]> encodeChainCertificates(List<Certificate> certificateChain) {
