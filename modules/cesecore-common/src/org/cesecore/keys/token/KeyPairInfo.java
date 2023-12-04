@@ -29,12 +29,14 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
     private String keyAlgorithm;
     private String keySpecification;
     private String subjectKeyID = "";
+    private String keyUsage = "";
 
-    public KeyPairInfo(final String alias, final String keyAlgorithm, final String keySpecification, final String subjectKeyID) {
+    public KeyPairInfo(final String alias, final String keyAlgorithm, final String keySpecification, final String subjectKeyID, final String keyUsage) {
         this.alias = alias;
         this.keyAlgorithm = keyAlgorithm;
         this.keySpecification = keySpecification;
         this.subjectKeyID = subjectKeyID;
+        this.keyUsage = keyUsage;
     }
 
     public String getAlias() { return alias; }
@@ -45,6 +47,9 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
     public void setKeySpecification(String keySpecification) { this.keySpecification = keySpecification; }
     public String getSubjectKeyID() { return subjectKeyID; }
     public void setSubjectKeyID(String subjectKeyID) { this.subjectKeyID = subjectKeyID; }
+    public String getKeyUsage() { return keyUsage; }
+    public void setKeyUsage(String keyUsage) { this.keyUsage = keyUsage; }
+
 
     @Override
     public int compareTo(final KeyPairInfo o) {
@@ -58,7 +63,9 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
         if (c != 0) { return c; }
         c = keySpecification.compareTo(o.keySpecification);
         if (c != 0) { return c; }
-        
+        c = keyUsage.compareTo(o.keyUsage);
+        if (c != 0) { return c; }
+   
         return 0;
     }
 
@@ -70,6 +77,7 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
         result = prime * result + ((keyAlgorithm == null) ? 0 : keyAlgorithm.hashCode());
         result = prime * result + ((keySpecification == null) ? 0 : keySpecification.hashCode());
         result = prime * result + ((subjectKeyID == null) ? 0 : subjectKeyID.hashCode());
+        result = prime * result + ((keyUsage == null) ? 0 : keyUsage.hashCode());
         return result;
     }
 
@@ -85,6 +93,7 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
         return StringUtils.equals(alias, other.alias)
                 && StringUtils.equals(keyAlgorithm, other.keyAlgorithm)
                 && StringUtils.equals(keySpecification, other.keySpecification)
+                && StringUtils.equals(keyUsage, other.keyUsage)
                 && StringUtils.equals(subjectKeyID, other.subjectKeyID);
     }
 }
