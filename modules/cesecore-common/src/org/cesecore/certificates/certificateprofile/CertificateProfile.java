@@ -168,6 +168,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE = "expirationrestrictionforweekdaysbefore";
     protected static final String EXPIRATION_RESTRICTION_WEEKDAYS = "expirationrestrictionweekdays";
     protected static final String ALLOWVALIDITYOVERRIDE = "allowvalidityoverride";
+    protected static final String ALLOWEXPIREDVALIDITYENDDATE = "allowexpiredvalidityenddate";
     protected static final String ALLOWKEYUSAGEOVERRIDE = "allowkeyusageoverride";
     protected static final String ALLOWBACKDATEDREVOCATION = "allowbackdatedrevokation";
     protected static final String ALLOWEXTENSIONOVERRIDE = "allowextensionoverride";
@@ -452,6 +453,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setExpirationRestrictionForWeekdaysExpireBefore(true);
         setDefaultExpirationRestrictionWeekdays();
         setAllowValidityOverride(false);
+        setAllowExpiredValidityEndDate(false);
         setDescription("");
 
         setAllowExtensionOverride(false);
@@ -893,6 +895,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setAllowValidityOverride(boolean allowvalidityoverride) {
         data.put(ALLOWVALIDITYOVERRIDE, allowvalidityoverride);
+    }
+
+    /**
+     * Allows creation of certificates with end date in the past.
+     */
+    public boolean getAllowExpiredValidityEndDate() {
+        final Object d = data.get(ALLOWEXPIREDVALIDITYENDDATE);
+        return d != null && (Boolean) d;
+    }
+
+    /**
+     * Allows creation of certificates with end date in the past.
+     * @param   allowExpiredValidityEndDate
+     */
+    public void setAllowExpiredValidityEndDate(boolean allowExpiredValidityEndDate) {
+        data.put(ALLOWEXPIREDVALIDITYENDDATE, allowExpiredValidityEndDate);
     }
 
     /**
@@ -3386,6 +3404,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if (data.get(ALLOWVALIDITYOVERRIDE) == null) {
                 setAllowValidityOverride(false);
+            }
+
+            if (data.get(ALLOWEXPIREDVALIDITYENDDATE) == null) {
+                setAllowExpiredValidityEndDate(false);
             }
 
             if (data.get(CRLISSUER) == null) {
