@@ -91,6 +91,7 @@
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
 		<path refid="lib.keyfactor-cli-commons.classpath"/>
+		<path refid="lib.p11ng.classpath"/>
         <path refid="lib.ejbca-common-web.classpath"/>
         <path refid="lib.jacknji.classpath"/>
         <path refid="lib.nimbus-jose-jwt.classpath"/>
