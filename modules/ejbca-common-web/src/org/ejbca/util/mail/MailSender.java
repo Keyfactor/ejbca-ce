@@ -40,6 +40,8 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 public class MailSender {
 	
 	private static final Logger log = Logger.getLogger(MailSender.class);
+
+	private static final int TIMEOUT_PERIOD = 15000;
 	
 	// Some constants to make it easier to read the client code
 	public final static List<String> NO_TO = null;	//List<String>
@@ -115,7 +117,9 @@ public class MailSender {
         // mail.smtp.timeout
         // mail.smtp.connectiontimeout
         // mail.smtp.writetimeout
-		mailSession.getProperties().put("mail.smtp.timeout", 15000);
+		mailSession.getProperties().put("mail.smtp.timeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtp.connectiontimeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtps.connectiontimeout", TIMEOUT_PERIOD);
         Message msg = new MimeMessage(mailSession);
         try {
         	if (log.isDebugEnabled()) {
