@@ -531,6 +531,22 @@
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
 
+                <h:panelGroup>
+                    <h:outputLabel for="checkallowvalidityexpiredgroup"
+                                   value="#{web.text.ALLOWEXPIREDVALIDITYENDDATE}" />
+                    <h:outputText
+                            value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Validity')}"
+                            escape="false" />
+                </h:panelGroup>
+                <h:panelGroup id="checkallowvalidityexpiredgroup">
+                    <h:selectBooleanCheckbox
+                            id="checkallowvalidityexpired"
+                            value="#{certProfileBean.certificateProfile.allowExpiredValidityEndDate}"
+                            disabled="#{certProfileBean.viewOnly}" />
+                    <h:outputLabel for="checkallowvalidityexpired"
+                                   value="#{web.text.ALLOW} " />
+                </h:panelGroup>
+
                 <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
                     <h:outputLabel
                         for="checkallowextensionoverridegroup"
