@@ -151,9 +151,12 @@ public class CaRestResource extends BaseRestResource {
 
         boolean result = true;
         try {
-            result &= publishingCrlSession.forceCRL(admin, caId); // always generated
-            if (deltacrl) { // generated on top of base CRL
+            if (deltacrl) {
+                // generate delta CRL
                 result &= publishingCrlSession.forceDeltaCRL(admin, caId);
+            } else {
+                // if false, generate base CRL
+                result &= publishingCrlSession.forceCRL(admin, caId);
             }
         } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException e) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
