@@ -180,15 +180,18 @@ public class CertificateValidity {
                 log.warn("Expiration restriction of certificate profile could not be applied!");
             }
         }
+
         //If it is a link certificate that we create, we use the old CA's expire date, as requested, as link certificate expire date
         if (isLinkCertificate) {
             lastDate = notAfter;
         }
+
         if (lastDate == null) {
         	lastDate = certProfileLastDate;
         }
+
         // Limit validity: No not allow lastDate to be set in the past, unless certificate is being created as a backdated revocation or as a link certificate
-        if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate) {
+        if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate && !certProfile.getAllowExpiredValidityEndDate()) {
             String msg = "notAfter (" + lastDate.toString() +") in request for user '" + subject.getUsername() + "' set before the current date (" + now
                     + "), which is only allowed for backdated revocations or link certificates.";
             log.info(msg);
