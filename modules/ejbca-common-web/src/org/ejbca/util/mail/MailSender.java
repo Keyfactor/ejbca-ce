@@ -118,6 +118,7 @@ public class MailSender {
         // mail.smtp.connectiontimeout
         // mail.smtp.writetimeout
 		mailSession.getProperties().put("mail.smtp.timeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtps.timeout", TIMEOUT_PERIOD);
 		mailSession.getProperties().put("mail.smtp.connectiontimeout", TIMEOUT_PERIOD);
 		mailSession.getProperties().put("mail.smtps.connectiontimeout", TIMEOUT_PERIOD);
         Message msg = new MimeMessage(mailSession);
