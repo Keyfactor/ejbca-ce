@@ -27,6 +27,8 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
@@ -377,4 +379,21 @@ public class SoftCryptoToken extends BaseCryptoToken {
         return true;
     }
 
+    @Override
+    public Set<Long> getKeyUsagesFromKey(String arg0, boolean arg1, long... arg2) throws CryptoTokenOfflineException {
+        // Not implemented.
+        return new TreeSet<Long>();
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPrivateKey(String arg0) throws CryptoTokenOfflineException {
+        // Not implemented.
+        return new TreeSet<Long>();
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPublicKey(String arg0) throws CryptoTokenOfflineException {
+        // Not implemented.
+        return new TreeSet<Long>();
+    }
 }
