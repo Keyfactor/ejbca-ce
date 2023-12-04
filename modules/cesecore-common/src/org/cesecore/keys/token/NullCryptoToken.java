@@ -22,6 +22,7 @@ import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
+import java.util.Set;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -115,5 +116,19 @@ public class NullCryptoToken extends BaseCryptoToken {
         return doPermitExtractablePrivateKey();
     }
 
+    @Override
+    public Set<Long> getKeyUsagesFromKey(String arg0, boolean arg1, long... arg2) throws CryptoTokenOfflineException {
+        return null;
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPrivateKey(String arg0) throws CryptoTokenOfflineException {
+        return null;
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPublicKey(String arg0) throws CryptoTokenOfflineException {
+        return null;
+    }
 }
 
