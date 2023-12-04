@@ -42,6 +42,7 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import javax.ejb.EJB;
@@ -760,9 +761,26 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
             final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
-            ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId));
+            //remove hardcoded keyUsage 
+            final boolean[] hardcodedKeyUsage = new boolean[]{true, true, false, false};// final boolean[] hardcodedkeyUsage = cryptoToken.getKeyUsageFromPrivateKey(alias);
+            final String keyUsage = getKeyUsageStringForKeyPairInfo(hardcodedKeyUsage);
+            ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, keyUsage));
         }
         return ret;
+    }
+    
+    private String getKeyUsageStringForKeyPairInfo(final boolean[] keyUsage) {
+        final boolean[] SIGN = new boolean[]{true, false, true, true};
+        final boolean[] ENCRYPT = new boolean[]{true, true, false, false};
+        final boolean[] SIGN_ENCRYPT = new boolean[] {true, true, true, true};
+        if (Arrays.equals(SIGN, keyUsage)) {
+            return KeyPairTemplate.SIGN.toString();
+        } else if (Arrays.equals(ENCRYPT, keyUsage)) {
+            return KeyPairTemplate.ENCRYPT.toString();
+        } else if (Arrays.equals(SIGN_ENCRYPT, keyUsage)) {
+            return KeyPairTemplate.SIGN_ENCRYPT.toString();
+        }
+        return "";
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -799,7 +817,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
         final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
-        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId);
+        final boolean[] hardcodedKeyUsage = new boolean[]{true, true, false, false};// final boolean[] hardcodedkeyUsage = cryptoToken.getKeyUsageFromPrivateKey(alias);
+        final String keyUsage = getKeyUsageStringForKeyPairInfo(hardcodedKeyUsage);
+        //if (pkcs11ngcryptotoken)
+        //final String cryptoToken.getKeyUsageFromPrivateKey(alias);
+        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, /*hardcoded*/keyUsage);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -943,9 +965,13 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
+    public void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification, KeyPairTemplate template)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
-        createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecification).build());       
+        if (template != null) {
+            createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecification).withKeyPairTemplate(template).build());
+        } else {
+            createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecification).build());       
+        }
         removeKeyPairPlaceholder(authenticationToken, cryptoTokenId, alias);
     }
 
