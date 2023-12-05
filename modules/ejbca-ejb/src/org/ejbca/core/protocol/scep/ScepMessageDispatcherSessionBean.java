@@ -187,8 +187,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
         } catch (ClassNotFoundException e) {
             scepClientCertificateRenewal = null;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            scepRaModeExtension = null;
-            log.error(SCEP_RA_MODE_EXTENSION_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
+            scepClientCertificateRenewal = null;
+            log.error(SCEP_CLIENT_CERTIFICATE_RENEWAL_CLASSNAME + " was found, but could not be instanced. " + e.getMessage());
         } 
     }
 

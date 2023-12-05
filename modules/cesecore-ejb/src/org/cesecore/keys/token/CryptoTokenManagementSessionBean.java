@@ -758,13 +758,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final List<KeyPairInfo> ret = new ArrayList<KeyPairInfo>();
         for (final String alias : getKeyPairAliasesInternal(cryptoToken)) {
             final PublicKey publicKey = cryptoToken.getPublicKey(alias);
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-            final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
-            final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
-            //remove hardcoded keyUsage 
-            final boolean[] hardcodedKeyUsage = new boolean[]{true, true, false, false};// final boolean[] hardcodedkeyUsage = cryptoToken.getKeyUsageFromPrivateKey(alias);
-            final String keyUsage = getKeyUsageStringForKeyPairInfo(hardcodedKeyUsage);
-            ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, keyUsage));
+            if (publicKey != null) {
+                final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
+                final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
+                final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
+                //remove hardcoded keyUsage 
+                final boolean[] hardcodedKeyUsage = new boolean[]{true, true, false, false};// final boolean[] hardcodedkeyUsage = cryptoToken.getKeyUsageFromPrivateKey(alias);
+                final String keyUsage = getKeyUsageStringForKeyPairInfo(hardcodedKeyUsage);
+                ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, keyUsage));
+            } else {
+                log.warn("Could not read pubkey for alias '" + alias +"', got null, this is probably an unknown key type.");
+            }
         }
         return ret;
     }
