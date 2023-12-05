@@ -13,6 +13,9 @@
 
 package org.ejbca.core.ejb.ra;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.security.KeyPair;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
@@ -62,11 +65,9 @@ import org.junit.rules.TestRule;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Test the combined function for editing and requesting a keystore/certificate in a single transaction.
@@ -254,7 +255,7 @@ public class CertificateRequestThrowAwayTest {
         X509Certificate ret;
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); // Use short keys, since this will be done many times
         byte[] rawPkcs10req = CertTools
-                .genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=ignored"), rsakeys.getPublic(), new DERSet(),
+                .genPKCS10CertificationRequest("SHA256WithRSA", DnComponents.stringToBcX500Name("CN=ignored"), rsakeys.getPublic(), new DERSet(),
                         rsakeys.getPrivate(), null).toASN1Structure().getEncoded();
         if (raw) {
             ret = CertTools.getCertfromByteArray(certificateRequestSession.processCertReq(admin, userData, new String(Base64.encode(rawPkcs10req)),

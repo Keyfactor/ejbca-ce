@@ -55,6 +55,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -130,8 +131,8 @@ public class CaImportCaCertCommandTest {
         Random random = new Random();
         random.nextBytes(serno);
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(msg.getRequestPublicKey().getEncoded());
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(externalCACert.getSubjectDN().toString()),
-                new BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(msg.getRequestDN()), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name(externalCACert.getSubjectDN().toString()),
+                new BigInteger(serno).abs(), firstDate, lastDate, DnComponents.stringToBcX500Name(msg.getRequestDN()), pkinfo);
         BasicConstraints bc = new BasicConstraints(true);
         certbuilder.addExtension(Extension.basicConstraints, true, bc);
         X509KeyUsage ku = new X509KeyUsage(X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);

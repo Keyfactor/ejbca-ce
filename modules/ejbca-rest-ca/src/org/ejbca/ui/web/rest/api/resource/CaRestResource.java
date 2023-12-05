@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.io.File;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -61,6 +62,7 @@ import org.ejbca.ui.web.rest.api.io.response.CrlRestResponse;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -92,7 +94,7 @@ public class CaRestResource extends BaseRestResource {
     public Response getCertificateAsPem(final HttpServletRequest requestContext, String subjectDn)
             throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, false);
-        subjectDn = CertTools.stringToBCDNString(subjectDn);
+        subjectDn = DnComponents.stringToBCDNString(subjectDn);
         Collection<Certificate> certificateChain = EJBTools.unwrapCertCollection(raMasterApiProxy.getCertificateChain(admin, subjectDn.hashCode()));
 
         byte[] bytes = CertTools.getPemFromCertificateChain(certificateChain);
@@ -185,7 +187,7 @@ public class CaRestResource extends BaseRestResource {
         return Response.ok(response).build();
     }
 
-    public Response importCrl(final HttpServletRequest httpServletRequest, String issuerDn, int crlPartitionIndex)
+    public Response importCrl(final HttpServletRequest httpServletRequest, String issuerDn, int crlPartitionIndex, final File crlFile)
             throws AuthorizationDeniedException, RestException {
         final AuthenticationToken admin = getAdmin(httpServletRequest, false);
         issuerDn = issuerDn.trim();

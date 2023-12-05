@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -49,13 +54,9 @@ import org.junit.rules.TestRule;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests signing with PQC algorithms
@@ -244,7 +245,7 @@ public class SignSessionWithPQCTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, username, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of " + username + " to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(sigAlg, CertTools.stringToBcX500Name("C=SE, O=Keyfactor, CN="
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(sigAlg, DnComponents.stringToBcX500Name("C=SE, O=Keyfactor, CN="
                 + username), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);

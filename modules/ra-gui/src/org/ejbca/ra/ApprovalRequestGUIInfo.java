@@ -48,6 +48,7 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Keeps localized information about an approval request.
@@ -470,7 +471,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     }
     
     private String getCNOrFallback(final String subjectDN, final String fallback) {
-        final String cn = CertTools.getPartFromDN(subjectDN, "CN");
+        final String cn = DnComponents.getPartFromDN(subjectDN, "CN");
         if (cn != null) {
             return cn;
         } else if (fallback != null) {

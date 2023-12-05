@@ -52,7 +52,7 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Backing bean for the "Inspect Publisher Queue" page.
@@ -200,7 +200,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
         if (certificateInfo == null) {
             return false;
         }
-        if (!caSession.authorizedToCANoLogging(getAdmin(), CertTools.stringToBCDNString(certificateInfo.getIssuerDN()).hashCode())) {
+        if (!caSession.authorizedToCANoLogging(getAdmin(), DnComponents.stringToBCDNString(certificateInfo.getIssuerDN()).hashCode())) {
             return false;
         }
         final Collection<Integer> authorizedEepIds = endEntityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(),
@@ -219,7 +219,7 @@ public class InspectPublisherQueueManagedBean extends BaseManagedBean {
         if (crlInfo == null) {
             return false;
         }
-        return caSession.authorizedToCANoLogging(getAdmin(), CertTools.stringToBCDNString(crlInfo.getSubjectDN()).hashCode());
+        return caSession.authorizedToCANoLogging(getAdmin(), DnComponents.stringToBCDNString(crlInfo.getSubjectDN()).hashCode());
     }
 
     /**

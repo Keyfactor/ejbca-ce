@@ -168,7 +168,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     private final int caid;
     private final X509Certificate cacert;
     private final CA testx509ca;
-    private static final X500Name SUBJECT_DN= CertTools.stringToBcX500Name("O=  Nested Inc., CN= nestedCMPTest, O=SE");
+    private static final X500Name SUBJECT_DN= DnComponents.stringToBcX500Name("O=  Nested Inc., CN= nestedCMPTest, O=SE");
     private final String issuerDN;
     private final CmpConfiguration cmpConfiguration;
     private static final String cmpAlias = "NestedMessageContentTstConfAlias";

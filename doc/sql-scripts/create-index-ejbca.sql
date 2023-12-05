@@ -25,7 +25,8 @@ CREATE UNIQUE INDEX cadata_idx1 ON CAData (name);
 CREATE INDEX certificatedata_idx2 ON CertificateData (username);
 CREATE INDEX certificatedata_idx4 ON CertificateData (subjectDN);
 CREATE INDEX certificatedata_idx5 ON CertificateData (type);
-CREATE INDEX certificatedata_idx6 ON CertificateData (issuerDN,status);
+-- The following index is aimed to increase an overall delta CRL generation performance
+CREATE INDEX certificatedata_idx6 ON CertificateData (issuerDN,status,revocationDate);
 CREATE INDEX certificatedata_idx7 ON CertificateData(certificateProfileId);
 -- The following index is currently needed for finding expired/expiring certificates
 -- CREATE INDEX certificatedata_idx8 ON CertificateData(expireDate, status);

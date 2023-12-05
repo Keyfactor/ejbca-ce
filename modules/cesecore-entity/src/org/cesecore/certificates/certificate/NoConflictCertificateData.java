@@ -30,8 +30,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Representation of a revoked throw-away certificate and related information.
@@ -421,12 +421,12 @@ public class NoConflictCertificateData extends BaseCertificateData implements Se
     
     @Override
     public void setIssuer(String dn) {
-        setIssuerDN(CertTools.stringToBCDNString(dn));
+        setIssuerDN(DnComponents.stringToBCDNString(dn));
     }
 
     @Override
     public void setSubject(String dn) {
-        setSubjectDN(CertTools.stringToBCDNString(dn));
+        setSubjectDN(DnComponents.stringToBCDNString(dn));
     }
 
     @Override
