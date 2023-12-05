@@ -1,9 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -23,98 +25,111 @@
      -->
 </ui:remove>
 
-<f:metadata> 
-    <f:event type="preRenderView" listener="#{viewCertificateMBean.initialize}"/> 
+<f:metadata>
+    <f:event type="preRenderView" listener="#{viewCertificateMBean.initialize}"/>
 </f:metadata>
 
 <ui:composition template="/WEB-INF/include/popup.xhtml">
     <ui:define name="content">
         <h2>
-            <h:outputText value="#{web.text.VIEW_CACERTIFICATE_HEADING}" rendered="#{viewCertificateMBean.cacerts}" />
-            <h:outputText value="#{web.text.VIEW_CERTIFICATES_HEADING}" rendered="#{!viewCertificateMBean.cacerts}" />
+            <h:outputText value="#{web.text.VIEW_CACERTIFICATE_HEADING}" rendered="#{viewCertificateMBean.cacerts}"/>
+            <h:outputText value="#{web.text.VIEW_CERTIFICATES_HEADING}" rendered="#{!viewCertificateMBean.cacerts}"/>
         </h2>
-        
+
         <h:form id="viewcertificate" rendered="#{viewCertificateMBean.certificateData != null}">
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup rendered="#{!empty viewCertificateMBean.userName}">
-                    <strong><h:outputLabel value="#{web.text.USERNAME}"/></strong>
+                    <strong>
+                        <h:outputLabel value="#{web.text.USERNAME}"/>
+                    </strong>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!empty viewCertificateMBean.userName}">
-                    <strong><h:outputLabel value="#{viewCertificateMBean.userName}"/></strong>
+                    <strong>
+                        <h:outputLabel value="#{viewCertificateMBean.userName}"/>
+                    </strong>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{viewCertificateMBean.caId ne 0}">
-                    <strong><h:outputLabel value="#{web.text.CANAME}"/></strong>
+                    <strong>
+                        <h:outputLabel value="#{web.text.CANAME}"/>
+                    </strong>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{viewCertificateMBean.caId ne 0}">
-                    <strong><h:outputLabel value="#{viewCertificateMBean.caName}"/></strong>
+                    <strong>
+                        <h:outputLabel value="#{viewCertificateMBean.caName}"/>
+                    </strong>
                     <h:outputLabel value=" (#{viewCertificateMBean.caId})"/>
                 </h:panelGroup>
-  
+
                 <h:panelGroup rendered="#{viewCertificateMBean.caId eq 0 and empty viewCertificateMBean.userName}">
                     <h:outputLabel value="&nbsp;"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{viewCertificateMBean.caId eq 0 and empty viewCertificateMBean.userName}">
                     <h:outputLabel value="&nbsp;"/>
                 </h:panelGroup>
-  
-                <ui:remove>              
-                <!-- Index -->
+
+                <ui:remove>
+                    <!-- Index -->
                 </ui:remove>
-                
+
                 <h:panelGroup rendered="#{not empty viewCertificateMBean.userName}">
                     <h:outputLabel value="#{web.text.CERTIFICATENR}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{not empty viewCertificateMBean.userName}">
-                    <h:outputLabel value="#{viewCertificateMBean.nextIndex} #{web.text.OF} #{viewCertificateMBean.numberOfCertificates}"/>
+                    <h:outputLabel
+                            value="#{viewCertificateMBean.nextIndex} #{web.text.OF} #{viewCertificateMBean.numberOfCertificates}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{viewCertificateMBean.displayShowOlderButton}">
                     <h:outputLink rendered="#{!viewCertificateMBean.cacerts}" id="viewOlder"
                                   value="#{viewCertificateMBean.link}" styleClass="button">
                         <f:param name="hiddenindex" value="#{viewCertificateMBean.nextIndex}"/>
-                        <f:param name="username" value="#{viewCertificateMBean.userName}"/>
+                        <f:param name="username" value="#{fn:escapeXml(viewCertificateMBean.userName)}"/>
                         <h:outputText value="&lt; #{web.text.VIEWOLDER}"/>
                     </h:outputLink>
-                    <h:outputLink rendered="#{viewCertificateMBean.cacerts}"  id="viewIssuing"
+                    <h:outputLink rendered="#{viewCertificateMBean.cacerts}" id="viewIssuing"
                                   value="#{viewCertificateMBean.link}" styleClass="button">
                         <f:param name="hiddenindex" value="#{viewCertificateMBean.nextIndex}"/>
                         <f:param name="caid" value="#{viewCertificateMBean.caId}"/>
                         <h:outputText value="&lt; #{web.text.VIEWISSUING}"/>
                     </h:outputLink>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{!viewCertificateMBean.displayShowOlderButton and viewCertificateMBean.displayShowNewerButton}">
+                <h:panelGroup
+                        rendered="#{!viewCertificateMBean.displayShowOlderButton and viewCertificateMBean.displayShowNewerButton}">
                     <h:outputLabel value="&nbsp;"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{viewCertificateMBean.displayShowNewerButton}">
                     <h:outputLink rendered="#{!viewCertificateMBean.cacerts}" id="viewNewer"
                                   value="#{viewCertificateMBean.link}" styleClass="button">
                         <f:param name="hiddenindex" value="#{viewCertificateMBean.currentIndex-1}"/>
-                        <f:param name="username" value="#{viewCertificateMBean.userName}"/>
-                        <h:outputText value="#{web.text.VIEWNEWER} &gt;" />
+                        <f:param name="username" value="#{fn:escapeXml(viewCertificateMBean.userName)}"/>
+                        <h:outputText value="#{web.text.VIEWNEWER} &gt;"/>
                     </h:outputLink>
                     <h:outputLink rendered="#{viewCertificateMBean.cacerts}" id="viewSubordinate"
                                   value="#{viewCertificateMBean.link}" styleClass="button">
                         <f:param name="hiddenindex" value="#{viewCertificateMBean.currentIndex-1}"/>
                         <f:param name="caid" value="#{viewCertificateMBean.caId}"/>
-                        <h:outputText value="#{web.text.VIEWSUBORDINATE} &gt;" />
+                        <h:outputText value="#{web.text.VIEWSUBORDINATE} &gt;"/>
                     </h:outputLink>
                 </h:panelGroup>
-                
-                <h:panelGroup rendered="#{viewCertificateMBean.displayShowOlderButton and !viewCertificateMBean.displayShowNewerButton}">
+
+                <h:panelGroup
+                        rendered="#{viewCertificateMBean.displayShowOlderButton and !viewCertificateMBean.displayShowNewerButton}">
                     <h:outputLabel value="&nbsp;"/>
                 </h:panelGroup>
-                
+
                 <ui:remove>
-                <!-- Certificate content -->
+                    <!-- Certificate content -->
                 </ui:remove>
-                
+
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CERT_TYPEVERSION}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCertificateMBean.certificateData.type} #{web.text.VER}#{viewCertificateMBean.certificateData.version}"/>
+                    <h:outputLabel
+                            value="#{viewCertificateMBean.certificateData.type} #{web.text.VER}#{viewCertificateMBean.certificateData.version}"/>
                 </h:panelGroup>
 
                 <h:panelGroup>
@@ -130,54 +145,62 @@
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.issuerDnUnescaped}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CERT_VALIDFROM}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.certificateData.validFromString}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CERT_VALIDTO}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.certificateData.validToString}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
-                    <h:outputLabel value="#{web.text.ACCOUNT_BINDING_ID}" rendered="#{not empty viewCertificateMBean.certificateData.accountBindingId}"/>
+                    <h:outputLabel value="#{web.text.ACCOUNT_BINDING_ID}"
+                                   rendered="#{not empty viewCertificateMBean.certificateData.accountBindingId}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel value="#{viewCertificateMBean.certificateData.accountBindingId}" 
-                    	rendered="#{not empty viewCertificateMBean.certificateData.accountBindingId}"/>
+                    <h:outputLabel value="#{viewCertificateMBean.certificateData.accountBindingId}"
+                                   rendered="#{not empty viewCertificateMBean.certificateData.accountBindingId}"/>
                 </h:panelGroup>
             </h:panelGrid>
-            
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{web.text.CERT_SUBJECTDN}"/></strong>
+                    <strong>
+                        <h:outputLabel value="#{web.text.CERT_SUBJECTDN}"/>
+                    </strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel escape="false" value="#{viewCertificateMBean.subjectDnEscapedWithLanguageConsideration}"/></strong>
+                    <strong>
+                        <h:outputLabel escape="false"
+                                       value="#{viewCertificateMBean.subjectDnEscapedWithLanguageConsideration}"/>
+                    </strong>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_SUBJECTALTNAME}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <ui:repeat value="#{viewCertificateMBean.subjectAltName}" var="string" varStatus="loop">
-                        <h:outputLabel value="#{string}"/><br/>
+                        <h:outputLabel value="#{string}"/>
+                        <br/>
                     </ui:repeat>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_SUBJECTDIRATTRS}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.subjectDirAttributes}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.CERT_PUBLICKEY}"/>
                 </h:panelGroup>
@@ -185,165 +208,193 @@
                     <h:outputLabel value="#{viewCertificateMBean.publicKey}"/>
                 </h:panelGroup>
             </h:panelGrid>
-                
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{web.text.EXT_ABBR_BASICCONSTRAINTS}" styleClass="title"/></strong>
+                    <strong>
+                        <h:outputLabel value="#{web.text.EXT_ABBR_BASICCONSTRAINTS}" styleClass="title"/>
+                    </strong>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <strong><h:outputLabel value="#{viewCertificateMBean.basicConstraints}"/></strong>
+                    <strong>
+                        <h:outputLabel value="#{viewCertificateMBean.basicConstraints}"/>
+                    </strong>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_KEYUSAGE}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.keyUsage}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_EXTENDEDKEYUSAGE}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.extendedKeyUsage}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_NAMECONSTRAINTS}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.hasNameConstraints ? web.text.YES : web.text.NO}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel escape="false" value="#{web.text.EXT_ABBR_AUTHORITYINFOACCESS}"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc and !viewCertificateMBean.hasAuthorityInformationAccess}">
+                <h:panelGroup
+                        rendered="#{!viewCertificateMBean.isCvc and !viewCertificateMBean.hasAuthorityInformationAccess}">
                     <h:outputLabel value="#{web.text.NO}"/>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{!viewCertificateMBean.isCvc and viewCertificateMBean.hasAuthorityInformationAccess}">
-	                <h:outputLabel value="#{web.text.EXT_PKIX_AIA_OCSP_URI}: " rendered="#{!empty viewCertificateMBean.aiaOcspServiceLocators}"/><br/>
-	                <ui:repeat value="#{viewCertificateMBean.aiaOcspServiceLocators}" var="string" varStatus="loop">
-	                    &nbsp;&nbsp;<h:outputLabel value="#{string}"/><br/>
-	                </ui:repeat>
-	                <h:outputLabel value="#{web.text.EXT_PKIX_AIA_CAISSUERS_URI}: " rendered="#{!empty viewCertificateMBean.aiaCaIssuerUris}"/><br/>
-	                <ui:repeat value="#{viewCertificateMBean.aiaCaIssuerUris}" var="string" varStatus="loop">
-	                    &nbsp;&nbsp;<h:outputLabel value="#{string}"/><br/>
-	                </ui:repeat>
-				</h:panelGroup>
-                
+                <h:panelGroup
+                        rendered="#{!viewCertificateMBean.isCvc and viewCertificateMBean.hasAuthorityInformationAccess}">
+                    <h:outputLabel value="#{web.text.EXT_PKIX_AIA_OCSP_URI}: "
+                                   rendered="#{!empty viewCertificateMBean.aiaOcspServiceLocators}"/>
+                    <br/>
+                    <ui:repeat value="#{viewCertificateMBean.aiaOcspServiceLocators}" var="string" varStatus="loop">
+                        &nbsp;&nbsp;<h:outputLabel value="#{string}"/>
+                        <br/>
+                    </ui:repeat>
+                    <h:outputLabel value="#{web.text.EXT_PKIX_AIA_CAISSUERS_URI}: "
+                                   rendered="#{!empty viewCertificateMBean.aiaCaIssuerUris}"/>
+                    <br/>
+                    <ui:repeat value="#{viewCertificateMBean.aiaCaIssuerUris}" var="string" varStatus="loop">
+                        &nbsp;&nbsp;<h:outputLabel value="#{string}"/>
+                        <br/>
+                    </ui:repeat>
+                </h:panelGroup>
+
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_ABBR_QCSTATEMENTS}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{viewCertificateMBean.qcStatement ? web.text.YES : web.text.NO}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
                     <h:outputLabel value="#{web.text.EXT_CERTIFICATE_TRANSPARENCY_SCTS}"/>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{!viewCertificateMBean.isCvc}">
-                    <h:outputLabel value="#{viewCertificateMBean.certificateTransparencySCTs ? web.text.YES : web.text.NO}"/>
+                    <h:outputLabel
+                            value="#{viewCertificateMBean.certificateTransparencySCTs ? web.text.YES : web.text.NO}"/>
                 </h:panelGroup>
-                
-                
+
+
                 <ui:remove>
                     <!-- TODO:  !certificatedata.getType().equalsIgnoreCase("CVC")  condition ends here. implement!-->
                 </ui:remove>
-                
+
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.SIGNATUREALGORITHM}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel value="#{viewCertificateMBean.certificateData.signatureAlgoritm}"/>
                 </h:panelGroup>
-                
+
                 <ui:remove>
                     <!-- Certificate information -->
                 </ui:remove>
-                
+
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.FINGERPRINT_SHA256}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel escape="false" value="#{viewCertificateMBean.fingerPrint}" styleClass="fingerprint monospace"/>
+                    <h:outputLabel escape="false" value="#{viewCertificateMBean.fingerPrint}"
+                                   styleClass="fingerprint monospace"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.FINGERPRINT_SHA1}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel styleClass="fingerprint monospace" value="#{viewCertificateMBean.certificateData.SHA1Fingerprint}"/>
+                    <h:outputLabel styleClass="fingerprint monospace"
+                                   value="#{viewCertificateMBean.certificateData.SHA1Fingerprint}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
                     <h:outputLabel value="#{web.text.REVOKED}"/>
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:outputLabel escape="false" value="#{viewCertificateMBean.revoked}"/>
                 </h:panelGroup>
-                
-                
+
+
                 <ui:remove>
                     <!-- Actions -->
                 </ui:remove>
-                
+
                 <h:panelGroup>
-                    <h:commandButton rendered="#{viewCertificateMBean.keyRecoveryPossible}" value="#{web.text.RECOVERKEY}" 
-                        onclick="return confirm('#{web.text.AREYOUSUREKEYRECOVER}')" action="#{viewCertificateMBean.actionKeyRecovery}"/>
-                    
-                    <h:commandButton rendered="#{viewCertificateMBean.republishPossible}" value="#{web.text.REPUBLISH}" 
-                        onclick="return confirm('#{web.text.AREYOUSUREREPUBLISH}')" action="#{viewCertificateMBean.actionRepublish}"/>
+                    <h:commandButton rendered="#{viewCertificateMBean.keyRecoveryPossible}"
+                                     value="#{web.text.RECOVERKEY}"
+                                     onclick="return confirm('#{web.text.AREYOUSUREKEYRECOVER}')"
+                                     action="#{viewCertificateMBean.actionKeyRecovery}"/>
+
+                    <h:commandButton rendered="#{viewCertificateMBean.republishPossible}" value="#{web.text.REPUBLISH}"
+                                     onclick="return confirm('#{web.text.AREYOUSUREREPUBLISH}')"
+                                     action="#{viewCertificateMBean.actionRepublish}"/>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
-	                <h:selectOneMenu id="selectRevokeReason" value="#{viewCertificateMBean.revokeReason}" 
-	                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.revokedOrSuspended}">
-	                    <f:selectItems value="#{viewCertificateMBean.revokeReasons.entrySet()}" var="entry" itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
-	                </h:selectOneMenu>
-	                
-	                <h:commandButton value="#{web.text.REVOKE}" action="#{viewCertificateMBean.actionRevoke}" onclick="return confirm('#{web.text.AREYOUSUREREVOKECERT}')"
-	                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.revokedOrSuspended}"/>
-	                
-	                <h:commandButton value="#{web.text.UNREVOKE}" action="#{viewCertificateMBean.actionUnrevoke}" onclick="return confirm('#{web.text.AREYOUSUREUNREVOKECERT}')"
-	                    rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.canBeUnrevoked}"/>
+                    <h:selectOneMenu id="selectRevokeReason" value="#{viewCertificateMBean.revokeReason}"
+                                     rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.revokedOrSuspended}">
+                        <f:selectItems value="#{viewCertificateMBean.revokeReasons.entrySet()}" var="entry"
+                                       itemValue="#{entry.key}" itemLabel="#{entry.value}"/>
+                    </h:selectOneMenu>
+
+                    <h:commandButton value="#{web.text.REVOKE}" action="#{viewCertificateMBean.actionRevoke}"
+                                     onclick="return confirm('#{web.text.AREYOUSUREREVOKECERT}')"
+                                     rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.revokedOrSuspended}"/>
+
+                    <h:commandButton value="#{web.text.UNREVOKE}" action="#{viewCertificateMBean.actionUnrevoke}"
+                                     onclick="return confirm('#{web.text.AREYOUSUREUNREVOKECERT}')"
+                                     rendered="#{viewCertificateMBean.authorizedToRevoke and viewCertificateMBean.canBeUnrevoked}"/>
                 </h:panelGroup>
             </h:panelGrid>
-            
-            <h:panelGrid rendered="#{!viewCertificateMBean.cacerts and viewCertificateMBean.certificateData.certificate != null}" columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+            <h:panelGrid
+                    rendered="#{!viewCertificateMBean.cacerts and viewCertificateMBean.certificateData.certificate != null}"
+                    columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
+                    rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup style="align:right;vertical-align:bottom;">
-                    
+
                     <h:outputLink id="downloadToIE" value="#{viewCertificateMBean.downloadCertificateLink}">
                         <f:param name="cmd" value="iecert"/>
                         <f:param name="certificatesn" value="#{viewCertificateMBean.certificateData.serialNumber}"/>
-                        <f:param name="issuer" value="#{viewCertificateMBean.certificateData.issuerDNUnEscaped}"/>
+                        <f:param name="issuer" value="#{fn:escapeXml(viewCertificateMBean.certificateData.issuerDNUnEscaped)}"/>
                         <h:outputText value="#{web.text.DOWNLOADIE}"/>
                     </h:outputLink>
                     <br/>
                     <h:outputLink id="downloadToNS" value="#{viewCertificateMBean.downloadCertificateLink}">
                         <f:param name="cmd" value="nscert"/>
                         <f:param name="certificatesn" value="#{viewCertificateMBean.certificateData.serialNumber}"/>
-                        <f:param name="issuer" value="#{viewCertificateMBean.certificateData.issuerDNUnEscaped}"/>
+                        <f:param name="issuer" value="#{fn:escapeXml(viewCertificateMBean.certificateData.issuerDNUnEscaped)}"/>
                         <h:outputText value="#{web.text.DOWNLOADNS}"/>
                     </h:outputLink>
                     <br/>
                     <h:outputLink id="downloadPEM" value="#{viewCertificateMBean.downloadCertificateLink}">
                         <f:param name="cmd" value="cert"/>
                         <f:param name="certificatesn" value="#{viewCertificateMBean.certificateData.serialNumber}"/>
-                        <f:param name="issuer" value="#{viewCertificateMBean.certificateData.issuerDNUnEscaped}"/>
+                        <f:param name="issuer" value="#{fn:escapeXml(viewCertificateMBean.certificateData.issuerDNUnEscaped)}"/>
                         <h:outputText value="#{web.text.DOWNLOADPEM}"/>
                     </h:outputLink>
                 </h:panelGroup>
                 <h:panelGroup>
                 </h:panelGroup>
             </h:panelGrid>
-            
-            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
+
+            <h:panelGrid columns="2" styleClass="view-top" cellspacing="2" cellpadding="0" border="0" width="100%"
+                         rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:commandButton ajax="false" value="#{web.text.CLOSE}" onclick="self.close()" rendered="#{empty viewCertificateMBean.returnToLink}"/>
-                    <h:outputLink ajax="false" value="#{viewCertificateMBean.returnToLink}" rendered="#{!empty viewCertificateMBean.returnToLink}">
+                    <h:commandButton ajax="false" value="#{web.text.CLOSE}" onclick="self.close()"
+                                     rendered="#{empty viewCertificateMBean.returnToLink}"/>
+                    <h:outputLink ajax="false" value="#{viewCertificateMBean.returnToLink}"
+                                  rendered="#{!empty viewCertificateMBean.returnToLink}">
                         <h:outputText value="#{web.text.BACK}"/>
                     </h:outputLink>
                 </h:panelGroup>

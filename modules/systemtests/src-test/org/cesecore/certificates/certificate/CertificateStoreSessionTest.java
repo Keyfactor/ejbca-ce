@@ -72,6 +72,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -858,7 +859,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     private X509Certificate generateCert(final AuthenticationToken admin, final int status) throws AuthorizationDeniedException, IllegalStateException,
             OperatorCreationException, CertificateException, IOException {
         // create a new self signed certificate
-        GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foobar.bar.com");
+        GeneralNames san = DnComponents.getGeneralNamesFromAltName("dNSName=foobar.bar.com");
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
         Extension sanExtension = extgen.generate().getExtension(Extension.subjectAlternativeName);

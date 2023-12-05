@@ -36,6 +36,7 @@ import org.ejbca.cvc.exception.ParseException;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.CertificateImplementation;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  *
@@ -94,7 +95,7 @@ public class CvCertificateUtility implements CertificateImplementation {
                     }
                     dn += "C=" + rf.getCountry();
                 }
-                return CertTools.stringToBCDNString(dn);
+                return DnComponents.stringToBCDNString(dn);
             } else {
                 return null;
             }
@@ -125,7 +126,7 @@ public class CvCertificateUtility implements CertificateImplementation {
                     }
                     dn += "C=" + rf.getCountry();
                 }
-                return CertTools.stringToBCDNString(dn);
+                return DnComponents.stringToBCDNString(dn);
             } else {
                 return null;
             }

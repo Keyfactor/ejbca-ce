@@ -52,6 +52,7 @@ import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Base for CA commands, contains common functions for CA operations
@@ -100,7 +101,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
             InvalidKeyException, SignatureException, OperatorCreationException, PKCSException {
         log.trace(">makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
 
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name(dn),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", DnComponents.stringToBcX500Name(dn),
                 rsaKeys.getPublic(), new DERSet(), rsaKeys.getPrivate(), null);
 
         /*

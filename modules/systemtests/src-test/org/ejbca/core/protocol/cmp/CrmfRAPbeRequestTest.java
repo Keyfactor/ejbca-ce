@@ -13,11 +13,15 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -42,8 +46,6 @@ import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
-import org.bouncycastle.pqc.jcajce.spec.NTRUParameterSpec;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.ApprovalRequestType;
@@ -98,11 +100,6 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
@@ -265,12 +262,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         final PKIMessage certRequestFalcon = genCertReq(issuerDN, userDN, falconKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
         runCrmfHttpOkUser(certRequestFalcon, nonce, transid, notAfter, false, null);
 
-        KeyPairGenerator keygen = KeyPairGenerator.getInstance("NTRU", BouncyCastlePQCProvider.PROVIDER_NAME);
-        keygen.initialize(NTRUParameterSpec.ntruhrss701);
-        KeyPair ntruKeyPair = keygen.generateKeyPair();
-
-        final PKIMessage certRequestNTRU = genCertReq(issuerDN, userDN, ntruKeyPair, this.cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
-        runCrmfHttpOkUser(certRequestNTRU, nonce, transid, notAfter, false, null);
     }
 
     @Test

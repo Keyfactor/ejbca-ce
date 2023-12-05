@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.configuration;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -88,6 +87,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private Integer selectedEndEntityProfileId;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
+    private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
 
     @EJB
     private ADConnectionSingletonLocal adConnection;
@@ -199,7 +199,11 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     }
 
     public ListDataModel<MSAutoEnrollmentSettingsTemplate> getMappedMsTemplatesModel() {
-        return new ListDataModel<>(getDto().getMappedMsTemplates());
+        if (Objects.isNull(mappedMsTemplates)) {
+            mappedMsTemplates = new ListDataModel<>(getDto().getMappedMsTemplates());
+            return mappedMsTemplates;
+        }
+        return mappedMsTemplates;
     }
 
     public void removeMappedMSTemplate() {
@@ -272,7 +276,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
-        return getDto().getAlias().isEmpty() ? List.of() : adConnection.getCertificateTemplateSettings(getDto().getAlias());
+        return StringUtils.isEmpty(getDto().getAlias()) ? List.of() : adConnection.getCertificateTemplateSettings(getDto().getAlias());
     }
 
     public List<SelectItem> getAvailableTemplates() {

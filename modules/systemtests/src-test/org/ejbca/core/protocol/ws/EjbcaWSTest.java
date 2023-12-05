@@ -622,12 +622,12 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             ejbcaraws.editUser(endEntity);
             EndEntityInformation createdUser = endEntityAccessSession.findUser(intAdmin, username);
             final String endEntityInformationUnid = IETFUtils.valueToString(
-                    CertTools.stringToBcX500Name(createdUser.getCertificateDN()).getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+                    DnComponents.stringToBcX500Name(createdUser.getCertificateDN()).getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
             final String resultingFnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(endEntityInformationUnid);
             assertNotNull("Unid value was not stored", resultingFnr);
             assertEquals("FNR value was not correctly converted", fnr, resultingFnr);      
             //Generate a certificate, see what happens. 
-            PKCS10CertificationRequest request = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name(subjectDn),
+            PKCS10CertificationRequest request = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, DnComponents.stringToBcX500Name(subjectDn),
                     keys.getPublic(), null, keys.getPrivate(), null);
             //Yeah, what happens, Shoresy?
             CertificateResponse response = ejbcaraws.pkcs10Request(username, password, new String(Base64.encode(request.getEncoded())), null,
@@ -668,7 +668,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         final String lra = "01234";
         final String serialNumber = fnr + '-' + lra;
         final String subjectDn = "C=SE, serialnumber=" + serialNumber + ", CN="+username;
-        PKCS10CertificationRequest request = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name(subjectDn),
+        PKCS10CertificationRequest request = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, DnComponents.stringToBcX500Name(subjectDn),
                 keys.getPublic(), null, keys.getPrivate(), null);
         
         final String profileNameUnidPrefix = "1234-5678-";
@@ -2257,7 +2257,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
         // Generate a CSR
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
+        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", DnComponents.stringToBcX500Name("CN=NOUSED"),
                 keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         final String csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
 
@@ -2891,7 +2891,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         final String eeProfileName = username;
         // Generate a CSR
         final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CertTools.stringToBcX500Name("CN=NOUSED"),
+        final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, DnComponents.stringToBcX500Name("CN=NOUSED"),
                 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
         final String b64csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
         String fingerprint = null;
@@ -2923,9 +2923,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             final X509Certificate x509Certificate = certificateResponse.getCertificate();
             fingerprint = CertTools.getFingerprintAsString(x509Certificate);
             log.debug(" Certificte SDN: " + CertTools.getSubjectDN(x509Certificate));
-            log.debug(" Certificte SAN: " + CertTools.getSubjectAlternativeName(x509Certificate));
+            log.debug(" Certificte SAN: " + DnComponents.getSubjectAlternativeName(x509Certificate));
             assertEquals("Unexpected Subject DN stored in certificate.", SUBJECT_DN, CertTools.getSubjectDN(x509Certificate));
-            assertEquals("Unexpected Subject AN stored in certificate.", SUBJECT_AN, CertTools.getSubjectAlternativeName(x509Certificate));
+            assertEquals("Unexpected Subject AN stored in certificate.", SUBJECT_AN, DnComponents.getSubjectAlternativeName(x509Certificate));
             // Check that the Subject DN and AN was stored correctly in the EE
             final EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(intAdmin, username);
             log.debug(" End entity SDN: " + endEntityInformation.getDN());
@@ -3215,7 +3215,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         final String subCaDn = "CN=testCaRenewCertRequestSubCa";       
         X509CA root = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, rootCaDn);
         X509CA subCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, subCaDn, root.getCAId());  
-        final String subCaName = CertTools.getPartFromDN(subCaDn, "CN");
+        final String subCaName = DnComponents.getPartFromDN(subCaDn, "CN");
         List<byte[]> cachain = Arrays.asList(root.getCACertificate().getEncoded());
         try {
             byte[] csrBytes = ejbcaraws.caRenewCertRequest(subCaName, cachain, false, false, true, String.valueOf(CryptoTokenTestUtils.SOFT_TOKEN_PIN));
@@ -3233,7 +3233,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         final String rootCaDn = "CN=testCaRenewCertRequestRoot";
         final String subCaDn = "CN=NonExistentCa";       
         X509CA root = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(intAdmin, rootCaDn);
-        final String subCaName = CertTools.getPartFromDN(subCaDn, "CN");
+        final String subCaName = DnComponents.getPartFromDN(subCaDn, "CN");
         List<byte[]> cachain = Arrays.asList(root.getCACertificate().getEncoded());
         try {
             ejbcaraws.caRenewCertRequest(subCaName, cachain, false, false, true, String.valueOf(CryptoTokenTestUtils.SOFT_TOKEN_PIN));
@@ -3351,7 +3351,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             if (useCsr) {
                 KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
                 PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
-                        CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+                        DnComponents.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
                 final String csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
                 CertificateResponse response = ejbcaraws.certificateRequest(userData, csr, CertificateHelper.CERT_REQ_TYPE_PKCS10, null,
                         CertificateHelper.RESPONSETYPE_CERTIFICATE);

@@ -45,6 +45,7 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * JSF Managed Bean for handling authentication of clients.
@@ -121,7 +122,7 @@ public class RaAuthenticationBean implements Serializable {
         if (authToken instanceof X509CertificateAuthenticationToken) {
             final Certificate cert = ((X509CertificateAuthenticationToken)authToken).getCertificate();
             final String subjectDN = CertTools.getSubjectDN(cert);
-            String cn = CertTools.getPartFromDN(subjectDN, "CN"); // should perhaps be configurable?
+            String cn = DnComponents.getPartFromDN(subjectDN, "CN"); // should perhaps be configurable?
             if (cn != null) {
                 cn = cn.trim();
                 if (!cn.isEmpty()) {

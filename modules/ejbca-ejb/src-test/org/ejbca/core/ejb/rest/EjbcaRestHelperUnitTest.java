@@ -155,7 +155,7 @@ public class EjbcaRestHelperUnitTest {
         String certificateAuthorityName = "CA1";
         String certificateProfileName = "CP1";
         int certificateProfileId = 1;
-        String subjectDn = CertTools.stringToBCDNString("CN=mydn"); 
+        String subjectDn = DnComponents.stringToBCDNString("CN=mydn"); 
         String name = "test123";
         int status = 20;
         String encodedValidity = "";
@@ -201,7 +201,7 @@ public class EjbcaRestHelperUnitTest {
         String certificateAuthorityName = "CA1";
         String certificateProfileName = "CP1";
         int certificateProfileId = 1;
-        String subjectDn = CertTools.stringToBCDNString("CN=mydn"); 
+        String subjectDn = DnComponents.stringToBCDNString("CN=mydn"); 
         String name = "test123";
         int status = 20;
         String encodedValidity = "";
@@ -257,7 +257,7 @@ public class EjbcaRestHelperUnitTest {
         String altNameString = "dNSName=foo.example.com, iPAddress=10.0.0.1";
         String csrRequest = generateCsrWithSubjectDirectoryAttributesAndSAN(dn, dirAttrString, altNameString);
 
-        String subjectDn = CertTools.stringToBCDNString("CN=mydn");
+        String subjectDn = DnComponents.stringToBCDNString("CN=mydn");
         Collection<Certificate> certificatechain = new ArrayList<>();
         CAToken caToken = EasyMock.mock(CAToken.class);
         CAInfo caInfo = X509CAInfo.getDefaultX509CAInfo(subjectDn, "test123", 20, 9,
@@ -311,7 +311,7 @@ public class EjbcaRestHelperUnitTest {
         ASN1Encodable asn1Encodable = SubjectDirectoryAttributes.getAsn1Encodable(dirAttrString);
         extgen.addExtension(Extension.subjectDirectoryAttributes, false, asn1Encodable);
         // Subject Alternative Name with DNS and IP
-        final GeneralNames san = CertTools.getGeneralNamesFromAltName(altName);
+        final GeneralNames san = DnComponents.getGeneralNamesFromAltName(altName);
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
 
         Extensions exts = extgen.generate();
@@ -352,7 +352,7 @@ public class EjbcaRestHelperUnitTest {
         String certificateProfileName = "CP1";
         String username = "testuser";
         int certificateProfileId = 9;
-        String subjectDn = CertTools.stringToBCDNString("CN=mydn"); 
+        String subjectDn = DnComponents.stringToBCDNString("CN=mydn"); 
         String name = "test123";
         int status = 20;
         String encodedValidity = "";

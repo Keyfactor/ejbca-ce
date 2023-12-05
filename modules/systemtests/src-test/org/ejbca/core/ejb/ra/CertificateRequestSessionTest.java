@@ -20,15 +20,29 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Random;
 import java.util.UUID;
-import java.util.List;
-import java.util.ArrayList;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -48,7 +62,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.util.NonEjbTestTools;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -57,6 +70,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Test the combined function for editing and requesting a keystore/certificate
@@ -166,7 +180,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                 EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         userdata.setPassword(PASSWORD);
-        String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED, PASSWORD)));
+        String pkcs10 = new String(Base64.encode(generatePKCS10Req(CN_IGNORED, PASSWORD)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
             Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
@@ -209,7 +223,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
         EndEntityInformation userdata = new EndEntityInformation(username, suppliedDn, getTestCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         userdata.setPassword(PASSWORD);
-        String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED, PASSWORD)));
+        String pkcs10 = new String(Base64.encode(generatePKCS10Req(CN_IGNORED, PASSWORD)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
             Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
@@ -245,7 +259,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
                                                                      SecConst.TOKEN_SOFT_BROWSERGEN, null);
             userdata.setPassword(PASSWORD);
 
-            String request = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED+uniqueId, PASSWORD)));
+            String request = new String(Base64.encode(generatePKCS10Req(CN_IGNORED+uniqueId, PASSWORD)));
 
             // Then certificate signing with CERT_RES_TYPE_PKCS7 type
             final long startTime = System.currentTimeMillis();
@@ -302,7 +316,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
 
             userdata.setPassword(PASSWORD);
 
-            String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED, PASSWORD)));
+            String pkcs10 = new String(Base64.encode(generatePKCS10Req(CN_IGNORED, PASSWORD)));
             byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
 
             final Certificate cert = CertTools.getCertfromByteArray(encodedCertificate, Certificate.class);
@@ -334,7 +348,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
             final String[][] pkcs10s = new String[NUM_THREADS][NUM_REQUESTS];
             for (int threadIdx = 0; threadIdx < NUM_THREADS; threadIdx++) {
                 for (int reqIdx = 0; reqIdx < NUM_REQUESTS; reqIdx++) {
-                    pkcs10s[threadIdx][reqIdx] = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req(CN_IGNORED, PASSWORD)));
+                    pkcs10s[threadIdx][reqIdx] = new String(Base64.encode(generatePKCS10Req(CN_IGNORED, PASSWORD)));
                 }
             }
             // Prepare threads
@@ -383,6 +397,32 @@ public class CertificateRequestSessionTest extends CaTestCase {
                 // NOMPD ignored
             }
         }
+    }
+    
+    private static byte[] generatePKCS10Req(String dn, String password) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
+            SignatureException, InvalidAlgorithmParameterException, IOException, OperatorCreationException {
+        // Generate keys
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);            
+
+        // Create challenge password attribute for PKCS10
+        // Attributes { ATTRIBUTE:IOSet } ::= SET OF Attribute{{ IOSet }}
+        //
+        // Attribute { ATTRIBUTE:IOSet } ::= SEQUENCE {
+        //    type    ATTRIBUTE.&id({IOSet}),
+        //    values  SET SIZE(1..MAX) OF ATTRIBUTE.&Type({IOSet}{\@type})
+        // }
+        ASN1EncodableVector vec = new ASN1EncodableVector();
+        vec.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); 
+        ASN1EncodableVector values = new ASN1EncodableVector();
+        values.add(new DERUTF8String(password));
+        vec.add(new DERSet(values));
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(new DERSequence(vec));
+        DERSet set = new DERSet(v);
+        // Create PKCS#10 certificate request
+        PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
+                DnComponents.stringToBcX500Name(dn), keys.getPublic(), set, keys.getPrivate(), null);
+        return p10request.toASN1Structure().getEncoded();        
     }
 
 }

@@ -217,6 +217,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -346,7 +347,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caInfo.setStatus(getCaStatus(caInfo));
 
         // Since it's acceptable that SubjectDN (and CAId) changes, in initializing we'll simply kill the old uninitialized CA and then recreate it if anything has changed.
-        int calculatedCAId = CertTools.stringToBCDNString(caInfo.getSubjectDN()).hashCode();
+        int calculatedCAId = DnComponents.stringToBCDNString(caInfo.getSubjectDN()).hashCode();
         int currentCAId = caInfo.getCAId();
         if (calculatedCAId != currentCAId) {
             caSession.removeCA(authenticationToken, currentCAId);
@@ -860,7 +861,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, CertificateProfile cp)
+    public Certificate createKeyExchangeCertificate(AuthenticationToken authenticationToken, CA ca, final int cpId)
         throws CryptoTokenOfflineException, InvalidAlgorithmException, CertificateCreateException,
         CertificateExtensionException, CAOfflineException, IllegalValidityException,
         SignatureException, IllegalKeyException, OperatorCreationException, IllegalNameException, AuthorizationDeniedException {
@@ -877,22 +878,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         EndEntityInformation eeInfo = new EndEntityInformation();
         eeInfo.setDN(caCommonName + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING);
         eeInfo.setCAId(ca.getCAId());
+        final CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
 
         final Certificate cert = ca.generateCertificate(
-            cryptoToken,
-            eeInfo,
-            publicKey,
-            X509KeyUsage.keyEncipherment,
-            null,
-            null,
-            cp,
-            sequence,
-            cceConfig
+                cryptoToken,
+                eeInfo,
+                null,
+                publicKey,
+                X509KeyUsage.keyEncipherment,
+                null,
+                null,
+                cp,
+                null,
+                sequence,
+                cceConfig
         );
 
         certificateStoreSession.storeCertificate(authenticationToken, cert, CertificateConstants.CERT_USERNAME_SYSTEMCA,
                                                  CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE,
-                                                 CertificateConstants.CERT_TYPE_ENCRYPTION, CertificateProfileConstants.NO_CERTIFICATE_PROFILE,
+                                                 CertificateConstants.CERT_TYPE_ENCRYPTION, cpId,
                                                  EndEntityConstants.NO_END_ENTITY_PROFILE, CertificateConstants.NO_CRL_PARTITION, null,
                                                  System.currentTimeMillis(), null);
 
@@ -922,7 +926,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // In uninitialized CAs, the Subject DN might change, and then
         // we need to update the CA ID as well.
         if (cainfo.getStatus() == CAConstants.CA_UNINITIALIZED) {
-            int calculatedCAId = CertTools.stringToBCDNString(cainfo.getSubjectDN()).hashCode();
+            int calculatedCAId = DnComponents.stringToBCDNString(cainfo.getSubjectDN()).hashCode();
             int currentCAId = cainfo.getCAId();
             if (calculatedCAId != currentCAId) {
                 caSession.removeCA(admin, currentCAId);
@@ -1247,14 +1251,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
                 // Check that CA DN is equal to the certificate response.
                 final String cacertSubjectDN = CertTools.getSubjectDN(cacert);
-                if (!cacertSubjectDN.equals(CertTools.stringToBCDNString(ca.getSubjectDN()))) {
+                if (!cacertSubjectDN.equals(DnComponents.stringToBCDNString(ca.getSubjectDN()))) {
                     boolean fail = true;
-                    if (cacert.getType().equals("CVC") && CertTools.getPartFromDN(ca.getSubjectDN(), "OU") != null) {
+                    if (cacert.getType().equals("CVC") && DnComponents.getPartFromDN(ca.getSubjectDN(), "OU") != null) {
                         // If this is a CVC certificate, we have the ability to have more DN components in the CA subject DN than in the actual 
                         // CVC CA certificate (which is limited to C and CN)
-                        final String limitedCVCADN = "CN=" + CertTools.getPartFromDN(ca.getSubjectDN(), "CN") + ",C=" + CertTools.getPartFromDN(ca.getSubjectDN(), "C");
+                        final String limitedCVCADN = "CN=" + DnComponents.getPartFromDN(ca.getSubjectDN(), "CN") + ",C=" + DnComponents.getPartFromDN(ca.getSubjectDN(), "C");
                         if (log.isDebugEnabled()) {
-                            log.debug("Comparing CVC subjectDN '" + cacertSubjectDN + "' to limited CVC CA DN '" + limitedCVCADN + "' after stripping away OU component " + CertTools.getPartFromDN(ca.getSubjectDN(), "OU"));
+                            log.debug("Comparing CVC subjectDN '" + cacertSubjectDN + "' to limited CVC CA DN '" + limitedCVCADN + "' after stripping away OU component " + DnComponents.getPartFromDN(ca.getSubjectDN(), "OU"));
                         }
                         if (cacertSubjectDN.equals(limitedCVCADN)) {
                             // We did have a CVC CA where the database CA DN has an additional OU component, a special case, allow this
@@ -1866,7 +1870,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             log.info("Preparing to import of CA with Subject DN " + subjectdn);
             if (caCertificate instanceof X509Certificate) {
                 X509Certificate x509CaCertificate = (X509Certificate) caCertificate;
-                String subjectaltname = CertTools.getSubjectAlternativeName(x509CaCertificate);
+                String subjectaltname = DnComponents.getSubjectAlternativeName(x509CaCertificate);
     
                 // Process certificate policies.
                 ArrayList<CertificatePolicy> policies = new ArrayList<>();
@@ -2211,13 +2215,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.error(errorMessage);
                     throw new IllegalStateException(errorMessage);
                 }
-                if (CertTools.stringToBCDNString(newSubjectDN).equalsIgnoreCase(ca.getSubjectDN())) {
+                if (DnComponents.stringToBCDNString(newSubjectDN).equalsIgnoreCase(ca.getSubjectDN())) {
                     final String errorMessage = "New Subject DN " + newSubjectDN
                             + " is the same as current. Please choose another name. Aborting CA Name Change renewal.";
                     log.error(errorMessage);
                     throw new CANameChangeRenewalException(errorMessage);
                 }
-                newCAName = CertTools.getPartFromDN(newSubjectDN, "CN");
+                newCAName = DnComponents.getPartFromDN(newSubjectDN, "CN");
                 if (newCAName == null) {
                     final String errorMessage = "New Subject DN " + newSubjectDN
                             + " does not have Common Name or it is invalid. Aborting CA Name Change renewal!";

@@ -104,12 +104,13 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public static final List<String> CMP_BOOLEAN_KEYS = Arrays.asList(CONFIG_VENDORCERTIFICATEMODE, CONFIG_ALLOWRAVERIFYPOPO, CONFIG_RA_ALLOWCUSTOMCERTSERNO,
             CONFIG_ALLOWAUTOMATICKEYUPDATE, CONFIG_ALLOWUPDATEWITHSAMEKEY, CONFIG_ALLOWSERVERGENERATEDKEYS,
             CONFIG_EXTENDEDVALIDATION);
+    public static final String DOT = ".";
 
     private final String ALIAS_LIST = "aliaslist";
     public static final String CMP_CONFIGURATION_ID = "1";
 
     // Default Values
-    public static final float LATEST_VERSION = 9f;
+    public static final float LATEST_VERSION = 10f;
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
     // Default values
@@ -178,7 +179,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     public void initialize(String alias) {
         if (StringUtils.isNotEmpty(alias)) {
-            alias = alias + ".";
+            alias = alias + DOT;
             data.put(alias + CONFIG_DEFAULTCA, DEFAULT_DEFAULTCA);
             data.put(alias + CONFIG_RESPONSEPROTECTION, DEFAULT_RESPONSE_PROTECTION);
             data.put(alias + CONFIG_OPERATIONMODE, DEFAULT_OPERATION_MODE);
@@ -213,7 +214,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
 
     // return all the key with an alias
     public static Set<String> getAllAliasKeys(String alias) {
-        alias = alias + ".";
+        alias = alias + DOT;
         Set<String> keys = new LinkedHashSet<>();
         keys.add(alias + CONFIG_DEFAULTCA);
         keys.add(alias + CONFIG_RESPONSEPROTECTION);
@@ -252,18 +253,18 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * Method used by the Admin GUI.
      */
     public String getCMPDefaultCA(String alias) {
-        String key = alias + "." + CONFIG_DEFAULTCA;
+        String key = alias + DOT + CONFIG_DEFAULTCA;
         return getValue(key, alias);
     }
 
     public void setCMPDefaultCA(String alias, String defCA) {
-        String key = alias + "." + CONFIG_DEFAULTCA;
+        String key = alias + DOT + CONFIG_DEFAULTCA;
         setValue(key, defCA, alias);
     }
 
 
     public String getResponseProtection(String alias) {
-        String key = alias + "." + CONFIG_RESPONSEPROTECTION;
+        String key = alias + DOT + CONFIG_RESPONSEPROTECTION;
         String result = getValue(key, alias);
         if (result == null) {
             setResponseProtection(alias, DEFAULT_RESPONSE_PROTECTION);
@@ -275,20 +276,20 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     }
 
     public void setResponseProtection(String alias, String protection) {
-        String key = alias + "." + CONFIG_RESPONSEPROTECTION;
+        String key = alias + DOT + CONFIG_RESPONSEPROTECTION;
         setValue(key, protection, alias);
     }
 
 
     // Any value that is not "ra" or "RA" will be client mode, no matter what it is
     public boolean getRAMode(String alias) {
-        String key = alias + "." + CONFIG_OPERATIONMODE;
+        String key = alias + DOT + CONFIG_OPERATIONMODE;
         String value = getValue(key, alias);
         return isRAMode(value);
     }
 
     public void setRAMode(String alias, boolean ramode) {
-        String key = alias + "." + CONFIG_OPERATIONMODE;
+        String key = alias + DOT + CONFIG_OPERATIONMODE;
         setValue(key, getOperationalMode(ramode), alias);
     }
 
@@ -298,22 +299,22 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
 
 
     public String getAuthenticationModule(String alias) {
-        String key = alias + "." + CONFIG_AUTHENTICATIONMODULE;
+        String key = alias + DOT + CONFIG_AUTHENTICATIONMODULE;
         return getValue(key, alias);
     }
 
     public void setAuthenticationModule(String alias, String authModule) {
-        String key = alias + "." + CONFIG_AUTHENTICATIONMODULE;
+        String key = alias + DOT + CONFIG_AUTHENTICATIONMODULE;
         setValue(key, authModule, alias);
     }
 
     public String getAuthenticationParameters(String alias) {
-        String key = alias + "." + CONFIG_AUTHENTICATIONPARAMETERS;
+        String key = alias + DOT + CONFIG_AUTHENTICATIONPARAMETERS;
         return getDecryptedValue(getValue(key, alias));
     }
 
     public void setAuthenticationParameters(String alias, String authParams) {
-        String key = alias + "." + CONFIG_AUTHENTICATIONPARAMETERS;
+        String key = alias + DOT + CONFIG_AUTHENTICATIONPARAMETERS;
         setValue(key, getEncryptedValue(authParams), alias);
     }
 
@@ -333,12 +334,12 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     }
 
     public String getExtractUsernameComponent(String alias) {
-        String key = alias + "." + CONFIG_EXTRACTUSERNAMECOMPONENT;
+        String key = alias + DOT + CONFIG_EXTRACTUSERNAMECOMPONENT;
         return getValue(key, alias);
     }
 
     public void setExtractUsernameComponent(String alias, String extractComponent) {
-        String key = alias + "." + CONFIG_EXTRACTUSERNAMECOMPONENT;
+        String key = alias + DOT + CONFIG_EXTRACTUSERNAMECOMPONENT;
         setValue(key, extractComponent, alias);
     }
 
@@ -348,7 +349,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @return the boolean status of whether Vendor Certificate Mode is activated
      */
     public boolean getVendorMode(String alias) {
-        String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
+        String key = alias + DOT + CONFIG_VENDORCERTIFICATEMODE;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
@@ -360,7 +361,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @param vendormode boolean value of Vendor Certificate Mode
      */
     public void setVendorMode(String alias, boolean vendormode) {
-        String key = alias + "." + CONFIG_VENDORCERTIFICATEMODE;
+        String key = alias + DOT + CONFIG_VENDORCERTIFICATEMODE;
         setValue(key, Boolean.toString(vendormode), alias);
     }
 
@@ -371,7 +372,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @return the semicolon separated list of CA IDs
      */
     public String getVendorCaIds(String alias) {
-        String key = alias + "." + CONFIG_VENDORCAIDS;
+        String key = alias + DOT + CONFIG_VENDORCAIDS;
         return getValue(key, alias);
     }
 
@@ -383,7 +384,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @param vendorCA the semicolon separated list of CA IDs
      */
     public void setVendorCaIds(String alias, String vendorCA) {
-        String key = alias + "." + CONFIG_VENDORCAIDS;
+        String key = alias + DOT + CONFIG_VENDORCAIDS;
         setValue(key, vendorCA, alias);
     }
 
@@ -394,7 +395,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @return the semicolon separated list of CA IDs.
      */
     public String getResponseCaPubsCA(String alias) {
-        String key = alias + "." + CONFIG_RESPONSE_CAPUBS_CA;
+        String key = alias + DOT + CONFIG_RESPONSE_CAPUBS_CA;
         return getValue(key, alias);
     }
 
@@ -407,7 +408,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @param caIdString the semicolon separated list of CA IDs.
      */
     public void setResponseCaPubsCA(String alias, String caIdString) {
-        String key = alias + "." + CONFIG_RESPONSE_CAPUBS_CA;
+        String key = alias + DOT + CONFIG_RESPONSE_CAPUBS_CA;
         setValue(key, caIdString, alias);
     }
 
@@ -418,7 +419,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @return true if the issuing CA certificate is added.
      */
     public boolean getResponseCaPubsIssuingCA(String alias) {
-        String key = alias + "." + CONFIG_RESPONSE_CAPUBS_ISSUING_CA;
+        String key = alias + DOT + CONFIG_RESPONSE_CAPUBS_ISSUING_CA;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
@@ -430,7 +431,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @param add   true if the issuing CA certificate has to be added.
      */
     public void setResponseCaPubsIssuingCA(String alias, boolean add) {
-        String key = alias + "." + CONFIG_RESPONSE_CAPUBS_ISSUING_CA;
+        String key = alias + DOT + CONFIG_RESPONSE_CAPUBS_ISSUING_CA;
         setValue(key, Boolean.toString(add), alias);
     }
 
@@ -441,7 +442,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @return the semicolon separated list of CA IDs.
      */
     public String getResponseExtraCertsCA(String alias) {
-        String key = alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA;
+        String key = alias + DOT + CONFIG_RESPONSE_EXTRACERTS_CA;
         return getValue(key, alias);
     }
 
@@ -454,90 +455,90 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      * @param caIdString the semicolon separated list of CA IDs.
      */
     public void setResponseExtraCertsCA(String alias, String caIdString) {
-        String key = alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA;
+        String key = alias + DOT + CONFIG_RESPONSE_EXTRACERTS_CA;
         setValue(key, caIdString, alias);
     }
 
     public boolean getAllowRAVerifyPOPO(String alias) {
-        String key = alias + "." + CONFIG_ALLOWRAVERIFYPOPO;
+        String key = alias + DOT + CONFIG_ALLOWRAVERIFYPOPO;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
 
     public void setAllowRAVerifyPOPO(String alias, boolean raVerifyPopo) {
-        String key = alias + "." + CONFIG_ALLOWRAVERIFYPOPO;
+        String key = alias + DOT + CONFIG_ALLOWRAVERIFYPOPO;
         setValue(key, Boolean.toString(raVerifyPopo), alias);
     }
 
 
     public String getRANameGenScheme(String alias) {
-        String key = alias + "." + CONFIG_RA_NAMEGENERATIONSCHEME;
+        String key = alias + DOT + CONFIG_RA_NAMEGENERATIONSCHEME;
         return getValue(key, alias);
     }
 
     public void setRANameGenScheme(String alias, String scheme) {
-        String key = alias + "." + CONFIG_RA_NAMEGENERATIONSCHEME;
+        String key = alias + DOT + CONFIG_RA_NAMEGENERATIONSCHEME;
         setValue(key, scheme, alias);
     }
 
 
     public String getRANameGenParams(String alias) {
-        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPARAMS;
+        String key = alias + DOT + CONFIG_RA_NAMEGENERATIONPARAMS;
         return getValue(key, alias);
     }
 
     public void setRANameGenParams(String alias, String params) {
-        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPARAMS;
+        String key = alias + DOT + CONFIG_RA_NAMEGENERATIONPARAMS;
         setValue(key, params, alias);
     }
 
 
     public String getRANameGenPrefix(String alias) {
-        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPREFIX;
+        String key = alias + DOT + CONFIG_RA_NAMEGENERATIONPREFIX;
         return getValue(key, alias);
     }
 
     public void setRANameGenPrefix(String alias, String prefix) {
-        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPREFIX;
+        String key = alias + DOT + CONFIG_RA_NAMEGENERATIONPREFIX;
         setValue(key, prefix, alias);
     }
 
 
     public String getRANameGenPostfix(String alias) {
-        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPOSTFIX;
+        String key = alias + DOT + CONFIG_RA_NAMEGENERATIONPOSTFIX;
         return getValue(key, alias);
     }
 
     public void setRANameGenPostfix(String alias, String postfix) {
-        String key = alias + "." + CONFIG_RA_NAMEGENERATIONPOSTFIX;
+        String key = alias + DOT + CONFIG_RA_NAMEGENERATIONPOSTFIX;
         setValue(key, postfix, alias);
     }
 
 
     public String getRAPwdGenParams(String alias) {
-        String key = alias + "." + CONFIG_RA_PASSWORDGENPARAMS;
+        String key = alias + DOT + CONFIG_RA_PASSWORDGENPARAMS;
         return getValue(key, alias);
     }
 
     public void setRAPwdGenParams(String alias, String params) {
-        String key = alias + "." + CONFIG_RA_PASSWORDGENPARAMS;
+        String key = alias + DOT + CONFIG_RA_PASSWORDGENPARAMS;
         setValue(key, params, alias);
     }
 
     public boolean getAllowRACustomSerno(String alias) {
-        String key = alias + "." + CONFIG_RA_ALLOWCUSTOMCERTSERNO;
+        String key = alias + DOT + CONFIG_RA_ALLOWCUSTOMCERTSERNO;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
 
     public void setAllowRACustomSerno(String alias, boolean allowCustomSerno) {
-        String key = alias + "." + CONFIG_RA_ALLOWCUSTOMCERTSERNO;
+        String key = alias + DOT + CONFIG_RA_ALLOWCUSTOMCERTSERNO;
         setValue(key, Boolean.toString(allowCustomSerno), alias);
     }
 
 
     public String getRAEEProfile(String alias) {
-        String key = alias + "." + CONFIG_RA_ENDENTITYPROFILEID;
+        String key = alias + DOT + CONFIG_RA_ENDENTITYPROFILEID;
         return getValue(key, alias);
     }
 
@@ -553,7 +554,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
             Integer.parseInt(eep);
         }
 
-        String key = alias + "." + CONFIG_RA_ENDENTITYPROFILEID;
+        String key = alias + DOT + CONFIG_RA_ENDENTITYPROFILEID;
         if (!data.containsKey(key)) {
             //Lazy initialization for upgrade
             data.put(key, DEFAULT_RA_EEPROFILE);
@@ -563,89 +564,89 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
 
 
     public String getRACertProfile(String alias) {
-        String key = alias + "." + CONFIG_RA_CERTIFICATEPROFILE;
+        String key = alias + DOT + CONFIG_RA_CERTIFICATEPROFILE;
         return getValue(key, alias);
     }
 
     public void setRACertProfile(String alias, String certp) {
-        String key = alias + "." + CONFIG_RA_CERTIFICATEPROFILE;
+        String key = alias + DOT + CONFIG_RA_CERTIFICATEPROFILE;
         setValue(key, certp, alias);
     }
 
 
     public String getRACAName(String alias) {
-        String key = alias + "." + CONFIG_RACANAME;
+        String key = alias + DOT + CONFIG_RACANAME;
         return getValue(key, alias);
     }
 
     public void setRACAName(String alias, String caname) {
-        String key = alias + "." + CONFIG_RACANAME;
+        String key = alias + DOT + CONFIG_RACANAME;
         setValue(key, caname, alias);
     }
 
     public String getRACertPath(String alias) {
-        String key = alias + "." + CONFIG_RACERT_PATH;
+        String key = alias + DOT + CONFIG_RACERT_PATH;
         return getValue(key, alias);
     }
 
     public void setRACertPath(String alias, String certpath) {
-        String key = alias + "." + CONFIG_RACERT_PATH;
+        String key = alias + DOT + CONFIG_RACERT_PATH;
         setValue(key, certpath, alias);
     }
 
     public boolean getOmitVerificationsInEEC(String alias) {
-        String key = alias + "." + CONFIG_RA_OMITVERIFICATIONSINEEC;
+        String key = alias + DOT + CONFIG_RA_OMITVERIFICATIONSINEEC;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
 
     public void setOmitVerificationsInEEC(String alias, boolean omit) {
-        String key = alias + "." + CONFIG_RA_OMITVERIFICATIONSINEEC;
+        String key = alias + DOT + CONFIG_RA_OMITVERIFICATIONSINEEC;
         setValue(key, Boolean.toString(omit), alias);
     }
 
     public boolean getKurAllowAutomaticUpdate(String alias) {
-        String key = alias + "." + CONFIG_ALLOWAUTOMATICKEYUPDATE;
+        String key = alias + DOT + CONFIG_ALLOWAUTOMATICKEYUPDATE;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
 
     public void setKurAllowAutomaticUpdate(String alias, boolean allowAutomaticUpdate) {
-        String key = alias + "." + CONFIG_ALLOWAUTOMATICKEYUPDATE;
+        String key = alias + DOT + CONFIG_ALLOWAUTOMATICKEYUPDATE;
         setValue(key, Boolean.toString(allowAutomaticUpdate), alias);
     }
 
     public boolean getAllowServerGeneratedKeys(String alias) {
-        String key = alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS;
+        String key = alias + DOT + CONFIG_ALLOWSERVERGENERATEDKEYS;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
 
     public void setAllowServerGeneratedKeys(String alias, boolean allowSrvGenKeys) {
-        String key = alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS;
+        String key = alias + DOT + CONFIG_ALLOWSERVERGENERATEDKEYS;
         setValue(key, Boolean.toString(allowSrvGenKeys), alias);
     }
 
 
     public boolean getKurAllowSameKey(String alias) {
-        String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
+        String key = alias + DOT + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
 
     public void setKurAllowSameKey(String alias, boolean allowSameKey) {
-        String key = alias + "." + CONFIG_ALLOWUPDATEWITHSAMEKEY;
+        String key = alias + DOT + CONFIG_ALLOWUPDATEWITHSAMEKEY;
         setValue(key, Boolean.toString(allowSameKey), alias);
     }
 
     public boolean getUseExtendedValidation(String alias) {
-        String key = alias + "." + CONFIG_EXTENDEDVALIDATION;
+        String key = alias + DOT + CONFIG_EXTENDEDVALIDATION;
         String value = getValue(key, alias);
         return StringUtils.equalsIgnoreCase(value, "true");
     }
 
     public void setUseExtendedValidation(String alias, boolean use) {
-        String key = alias + "." + CONFIG_EXTENDEDVALIDATION;
+        String key = alias + DOT + CONFIG_EXTENDEDVALIDATION;
         setValue(key, Boolean.toString(use), alias);
     }
 
@@ -654,7 +655,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     @Deprecated
     public String getCertReqHandlerClass(String alias) {
-        String key = alias + "." + CONFIG_CERTREQHANDLER_CLASS;
+        String key = alias + DOT + CONFIG_CERTREQHANDLER_CLASS;
         return getValue(key, alias);
     }
 
@@ -663,7 +664,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     @Deprecated
     public void setCertReqHandlerClass(String alias, String certReqClass) {
-        String key = alias + "." + CONFIG_CERTREQHANDLER_CLASS;
+        String key = alias + DOT + CONFIG_CERTREQHANDLER_CLASS;
         setValue(key, certReqClass, alias);
     }
 
@@ -886,22 +887,49 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     @Override
     public void upgrade() {
-        if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
+        float version = getVersion();
+        if (Float.compare(LATEST_VERSION, version) != 0) {
             // New version of the class, upgrade
-            log.info("Upgrading CMP Configuration with version " + getVersion());
+            log.info("Upgrading CMP Configuration with version " + version);
             Set<String> aliases = getAliasList();
-            // v9
-            for (String alias : aliases) {
-                data.putIfAbsent(alias + "." + CONFIG_RESPONSE_CAPUBS_ISSUING_CA, DEFAULT_RESPONSE_CAPUBS_ISSUING_CA);
+            // v10
+            if (isOlderThan(version, 10f)) {
+                applyV10(aliases);
             }
-            // v4
-            for (String alias : aliases) {
-                data.put(alias + "." + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);
-
-                data.putIfAbsent(alias + "." + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
-                data.putIfAbsent(alias + "." + CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
+            // v9
+            if (isOlderThan(version, 9f)) {
+                applyV9(aliases);
+            }
+            // v8
+            if (isOlderThan(version, 8f)) {
+                applyV8(aliases);
             }
             data.put(VERSION, LATEST_VERSION);
+        }
+    }
+
+    private boolean isOlderThan(float version, float v) {
+        return Float.compare(version, v) < 0;
+    }
+
+    private void applyV8(Set<String> aliases) {
+        for (String alias : aliases) {
+            data.put(alias + DOT + CONFIG_ALLOWSERVERGENERATEDKEYS, DEFAULT_ALLOW_SERVERGENERATED_KEYS);
+            data.putIfAbsent(alias + DOT + CONFIG_RESPONSE_CAPUBS_CA, DEFAULT_RESPONSE_CAPUBS_CA);
+            data.putIfAbsent(alias + DOT + CONFIG_RESPONSE_EXTRACERTS_CA, DEFAULT_RESPONSE_EXTRACERTS_CA);
+        }
+    }
+
+    private void applyV9(Set<String> aliases) {
+        for (String alias : aliases) {
+            data.putIfAbsent(alias + DOT + CONFIG_RESPONSE_CAPUBS_ISSUING_CA, DEFAULT_RESPONSE_CAPUBS_ISSUING_CA);
+        }
+    }
+
+    private void applyV10(Set<String> aliases) {
+        for (String alias : aliases) {
+            data.putIfAbsent(alias + DOT + CONFIG_EXTENDEDVALIDATION, DEFAULT_EXTENDEDVALIDATION);
+            data.putIfAbsent(alias + DOT + CONFIG_VENDORCAIDS, DEFAULT_VENDOR_CA_IDS);
         }
     }
 
@@ -914,7 +942,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
     public void filterDiffMapForLogging(Map<Object, Object> diff) {
         Set<String> aliases = getAliasList();
         for (String alias : aliases) {
-            filterDiffMapForLogging(diff, alias + "." + CONFIG_AUTHENTICATIONPARAMETERS);
+            filterDiffMapForLogging(diff, alias + DOT + CONFIG_AUTHENTICATIONPARAMETERS);
         }
     }
 

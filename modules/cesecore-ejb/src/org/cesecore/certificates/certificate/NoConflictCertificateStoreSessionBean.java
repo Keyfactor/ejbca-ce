@@ -55,6 +55,7 @@ import org.cesecore.util.ValidityDate;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * These methods call CertificateStoreSession for certificates that are plain CertificateData entities.
@@ -102,7 +103,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
      */
     @Override
     public boolean canRevokeNonExisting(final String issuerDN) {
-        final int caid = CertTools.stringToBCDNString(StringTools.strip(issuerDN)).hashCode();
+        final int caid = DnComponents.stringToBCDNString(StringTools.strip(issuerDN)).hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
         return canRevokeNonExisting(cainfo, issuerDN);
     }
@@ -113,7 +114,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
      * @param issuerDN Subject DN of CA, for safety check against CAId collisions.
      */
     private boolean canRevokeNonExisting(final CAInfo cainfo, final String issuerDN) {
-        String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        String dn = DnComponents.stringToBCDNString(StringTools.strip(issuerDN));
         if (cainfo == null || !cainfo.getSubjectDN().equals(dn) || !cainfo.isAcceptRevocationNonExistingEntry()) {
             return false;
         }
@@ -136,7 +137,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         }
 
         // Throw away CA or missing certificate
-        final int caid = CertTools.stringToBCDNString(StringTools.strip(issuerdn)).hashCode();
+        final int caid = DnComponents.stringToBCDNString(StringTools.strip(issuerdn)).hashCode();
         final CAInfo cainfo = caSession.getCAInfoInternal(caid);
         if (!canRevokeNonExisting(cainfo, issuerdn)) {
             if (cainfo == null && log.isDebugEnabled()) {
@@ -161,7 +162,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
             log.trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First, try to look up in CertificateData
-        final String dn = CertTools.stringToBCDNString(issuerDN);
+        final String dn = DnComponents.stringToBCDNString(issuerDN);
         CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serno);
         if (!canRevokeNonExisting(issuerDN) || status != CertificateStatus.NOT_AVAILABLE) {
             log.trace("<getStatus()");
@@ -323,7 +324,7 @@ public class NoConflictCertificateStoreSessionBean implements NoConflictCertific
         }
 
         // Must be authorized to CA in order to change status is certificates issued by the CA
-        String bcdn = CertTools.stringToBCDNString(certificateData.getIssuerDN());
+        String bcdn = DnComponents.stringToBCDNString(certificateData.getIssuerDN());
         int caid = bcdn.hashCode();
         authorizedToCA(admin, caid);
         

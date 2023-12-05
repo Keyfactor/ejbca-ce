@@ -26,7 +26,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.core.model.UsernameGenerateMode;
-import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.Test;
 

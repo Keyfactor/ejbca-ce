@@ -38,7 +38,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 
 import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -182,7 +182,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
         CAInfo caInfo = null;
         final String caDnDefault;
         
-        caInfo = caSession.getCAInfoInternal(CertTools.stringToBCDNString(caDn).hashCode(), null, true);
+        caInfo = caSession.getCAInfoInternal(DnComponents.stringToBCDNString(caDn).hashCode(), null, true);
         
         // Null caInfo, try with the default ca from cmp alias
         if (caInfo == null) {
@@ -192,9 +192,9 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 LOG.error("No CMP Default CA exists in Alias");
                 throw new CADoesntExistsException("No CMP DefaultCA exists");
             } else {
-                caDnDefault = CertTools.stringToBCDNString(cmpDefaultCA);
+                caDnDefault = DnComponents.stringToBCDNString(cmpDefaultCA);
                 caInfo = caSession.getCAInfoInternal(caDnDefault.hashCode(), null, true);
-                LOG.info("Could not find Recipient CA with DN '" + CertTools.stringToBCDNString(caDn) + "'."
+                LOG.info("Could not find Recipient CA with DN '" + DnComponents.stringToBCDNString(caDn) + "'."
                         + " Trying to use CMP DefaultCA instead with DN '" + caDnDefault + "' (" + caDnDefault.hashCode() + ").");
             }
         }

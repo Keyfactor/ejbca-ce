@@ -12,10 +12,30 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
+import java.math.BigInteger;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
+import javax.transaction.TransactionSynchronizationRegistry;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -47,28 +67,11 @@ import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.transaction.TransactionSynchronizationRegistry;
-import java.math.BigInteger;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * An {@link EndEntityInformation} Data Access Object (DAO).
@@ -132,7 +135,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             log.trace(">findUserBySubjectDN(" + LogRedactionUtils.getSubjectDnLogSafe(subjectdn)+ ")");
         }
         // String used in SQL so strip it
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(subjectdn));
         if (log.isDebugEnabled()) {
             log.debug("Looking for users with subjectdn: " + LogRedactionUtils.getSubjectDnLogSafe(dn));
         }
@@ -170,8 +173,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             log.trace(">findUserBySubjectAndIssuerDN(" + LogRedactionUtils.getSubjectDnLogSafe(subjectdn) + ", " + issuerdn + ")");
         }
         // String used in SQL so strip it
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-        final String issuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerdn));
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(subjectdn));
+        final String issuerDN = DnComponents.stringToBCDNString(StringTools.strip(issuerdn));
         if (log.isDebugEnabled()) {
             log.debug("Looking for users with subjectdn: " + LogRedactionUtils.getSubjectDnLogSafe(dn) + ", issuerdn : " + issuerDN);
         }
@@ -739,7 +742,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     @Override
     public CertificateWrapper getCertificate(AuthenticationToken authenticationToken, String certSNinHex, String issuerDN)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        final String bcString = CertTools.stringToBCDNString(issuerDN);
+        final String bcString = DnComponents.stringToBCDNString(issuerDN);
         final int caId = bcString.hashCode();
         caSession.verifyExistenceOfCA(caId);
         final String[] rules = {StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate", StandardRules.CAACCESS.resource() + caId};

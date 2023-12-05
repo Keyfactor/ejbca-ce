@@ -28,8 +28,8 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.pub.ServletUtils;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Servlet used to distribute  CRLs.<br>
@@ -75,7 +75,7 @@ public class GetCRLServlet extends BaseAdminServlet {
             res.sendError(HttpServletResponse.SC_NOT_FOUND, "Missing 'issuer' parameter.");
             return;
         }
-        issuerDn = CertTools.stringToBCDNString(issuerDn);
+        issuerDn = DnComponents.stringToBCDNString(issuerDn);
         final String partitionString = req.getParameter(PARTITION_PROPERTY);
         final int crlPartitionIndex = StringUtils.isNotBlank(partitionString) ? Integer.valueOf(partitionString) : CertificateConstants.NO_CRL_PARTITION;
         final String command = StringUtils.defaultString(req.getParameter(COMMAND_PROPERTY_NAME));
@@ -129,18 +129,18 @@ public class GetCRLServlet extends BaseAdminServlet {
 	 * @return base filename, without extension, with CN, or SN (of CN is null) or O, with spaces removed so name is compacted.
 	 */
 	private String getBaseFileName(String dn) {
-		String dnpart = CertTools.getPartFromDN(dn, "CN");
+		String dnpart = DnComponents.getPartFromDN(dn, "CN");
 		if (dnpart == null) {
-			dnpart = CertTools.getPartFromDN(dn, "SN");
+			dnpart = DnComponents.getPartFromDN(dn, "SN");
 		}
 		if (dnpart == null) {
-			dnpart = CertTools.getPartFromDN(dn, "DN");
+			dnpart = DnComponents.getPartFromDN(dn, "DN");
 		}
 		if (dnpart == null) {
-			dnpart = CertTools.getPartFromDN(dn, "OU");
+			dnpart = DnComponents.getPartFromDN(dn, "OU");
 		}
 		if (dnpart == null) {
-			dnpart = CertTools.getPartFromDN(dn, "O");
+			dnpart = DnComponents.getPartFromDN(dn, "O");
 		}
 		if (dnpart == null) {
 			dnpart = Long.toString(System.currentTimeMillis());

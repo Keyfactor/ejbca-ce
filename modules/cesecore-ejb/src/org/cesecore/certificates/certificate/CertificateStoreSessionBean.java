@@ -12,12 +12,43 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import com.google.common.base.Preconditions;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
+import java.math.BigInteger;
+import java.security.PublicKey;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
+import javax.ejb.Stateless;
+import javax.ejb.Timeout;
+import javax.ejb.Timer;
+import javax.ejb.TimerConfig;
+import javax.ejb.TimerService;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -55,41 +86,13 @@ import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.cvc.PublicKeyEC;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import java.math.BigInteger;
-import java.security.PublicKey;
-import java.security.cert.CertPathValidatorException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.ECParameterSpec;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import com.google.common.base.Preconditions;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -403,7 +406,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">listAllCertificates()");
         }
         // This method was only used from CertificateDataTest and it didn't care about the expireDate, so it will only select fingerprints now.
-        return certificateDataSession.findFingerprintsByIssuerDN(CertTools.stringToBCDNString(StringTools.strip(issuerdn)));
+        return certificateDataSession.findFingerprintsByIssuerDN(DnComponents.stringToBCDNString(StringTools.strip(issuerdn)));
     }
     
     @Override
@@ -411,7 +414,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">listRevokedCertInfo()");
         }
-        return certificateDataSession.getRevokedCertInfos(CertTools.stringToBCDNString(StringTools.strip(issuerDN)), deltaCrl, crlPartitionIndex, lastBaseCrlDate, allowInvalidityDate);
+        return certificateDataSession.getRevokedCertInfos(DnComponents.stringToBCDNString(StringTools.strip(issuerDN)), deltaCrl, crlPartitionIndex, lastBaseCrlDate, allowInvalidityDate);
     }
 
     @Override
@@ -441,8 +444,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     public List<CertificateDataWrapper> getCertificateDatasBySubjectAndIssuer(String subjectDN, String issuerDN, boolean onlyActive) {
         // First make a DN in our well-known format
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectDN));
-        final String issuerdn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(subjectDN));
+        final String issuerdn = DnComponents.stringToBCDNString(StringTools.strip(issuerDN));
 
         final List<CertificateDataWrapper> ret = new ArrayList<>();
         final Query query;
@@ -477,8 +480,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">findUsernamesByIssuerDNAndSubjectDN(), issuer='" + issuerDN + "'");
         }
         // First make a DN in our well-known format
-        final String transformedIssuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
-        final String transformedSubjectDN = CertTools.stringToBCDNString(StringTools.strip(subjectDN));
+        final String transformedIssuerDN = DnComponents.stringToBCDNString(StringTools.strip(issuerDN));
+        final String transformedSubjectDN = DnComponents.stringToBCDNString(StringTools.strip(subjectDN));
 
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN +
@@ -500,7 +503,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">findUsernamesByIssuerDNAndSubjectKeyId(), issuer='" + issuerDN + "'");
         }
         // First make a DN in our well-known format
-        final String transformedIssuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final String transformedIssuerDN = DnComponents.stringToBCDNString(StringTools.strip(issuerDN));
         final String sSubjectKeyId = new String(Base64.encode(subjectKeyId, false));
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"
@@ -540,9 +543,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(), issuer='" + issuerDN + "'");
         }
         // First make a DN in our well-known format
-        final String transformedIssuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final String transformedIssuerDN = DnComponents.stringToBCDNString(StringTools.strip(issuerDN));
         final String sSubjectKeyId = new String(Base64.encode(subjectKeyId, false));
-        final String transformedSubjectDN = CertTools.stringToBCDNString(StringTools.strip(subjectDN));
+        final String transformedSubjectDN = DnComponents.stringToBCDNString(StringTools.strip(subjectDN));
 
         if (log.isDebugEnabled()) {
             log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN +
@@ -581,7 +584,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     public List<CertificateDataWrapper> getCertificateDatasBySubject(final String subjectDN) {
         // First make a DN in our well-known format
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectDN));
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(subjectDN));
 
         final List<CertificateDataWrapper> ret = new ArrayList<>();
         for (final CertificateData certificateData : certificateDataSession.findBySubjectDN(dn)) {
@@ -840,7 +843,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // Selecting an int column is optimal speed
         final Query query = entityManager.createQuery("SELECT 1 FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
         // First make a DN in our well-known format
-        query.setParameter("issuerDN", CertTools.stringToBCDNString(StringTools.strip(issuerDN)));
+        query.setParameter("issuerDN", DnComponents.stringToBCDNString(StringTools.strip(issuerDN)));
         query.setParameter("serialNumber", serno.toString());
         final boolean ret = query.getResultList().size() > 0;
         if (log.isTraceEnabled()) {
@@ -863,7 +866,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">findCertificateByIssuerAndSerno(), dn:" + issuerDN + ", serno=" + serno);
         }
         // First make a DN in our well-known format
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(issuerDN));
         if (log.isDebugEnabled()) {
             log.debug("Looking for cert with (transformed)DN: " + LogRedactionUtils.getSubjectDnLogSafe(dn));
         }
@@ -895,7 +898,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     public CertificateDataWrapper getCertificateDataByIssuerAndSerno(String issuerDN, BigInteger serno) {
         // First make a DN in our well-known format
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(issuerDN));
         final List<CertificateData> certs = certificateDataSession.findByIssuerDNSerialNumber(dn, serno.toString());
         if (log.isDebugEnabled()) {
             log.debug("Found "+certs.size()+" cert(s) with (transformed) DN: " + LogRedactionUtils.getSubjectDnLogSafe(dn) + " serialNumber: " + serno.toString());
@@ -921,13 +924,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
     @Override
     public CertificateInfo findFirstCertificateInfo(final String issuerDN, final BigInteger serno) {
-        return certificateDataSession.findFirstCertificateInfo(CertTools.stringToBCDNString(issuerDN), serno.toString());
+        return certificateDataSession.findFirstCertificateInfo(DnComponents.stringToBCDNString(issuerDN), serno.toString());
     }
 
     @Override
     public int getFirstStatusByIssuerAndSerno(final String issuerDN, final BigInteger serno) {
         final Query query = entityManager.createQuery("SELECT a.status FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
-        query.setParameter("issuerDN", CertTools.stringToBCDNString(issuerDN));
+        query.setParameter("issuerDN", DnComponents.stringToBCDNString(issuerDN));
         query.setParameter("serialNumber", serno.toString());
         final int status;
         @SuppressWarnings("rawtypes")
@@ -973,7 +976,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (null == issuerDN || issuerDN.length() <= 0 || null == sernos || sernos.isEmpty()) {
             ret = new ArrayList<>();
         } else {
-            String dn = CertTools.stringToBCDNString(issuerDN);
+            String dn = DnComponents.stringToBCDNString(issuerDN);
             if (log.isDebugEnabled()) {
                 log.debug("Looking for cert with (transformed)DN: " + dn);
             }
@@ -1006,7 +1009,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">findUsernameByCertSerno(), serno: " + serno.toString(16) + ", issuerdn: " + issuerdn);
         }
-        final String ret = certificateDataSession.findLastUsernameByIssuerDNSerialNumber(CertTools.stringToBCDNString(issuerdn), serno.toString());
+        final String ret = certificateDataSession.findLastUsernameByIssuerDNSerialNumber(DnComponents.stringToBCDNString(issuerdn), serno.toString());
         if (log.isTraceEnabled()) {
             log.trace("<findUsernameByCertSerno(), ret=" + ret);
         }
@@ -1187,7 +1190,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         List<Certificate> ret;
         // FIXME: These queries can easily make the server run out of memory on a large database
         if (null != issuerDN && issuerDN.length() > 0) {
-            ret = certificateDataSession.findActiveCertificatesByTypeAndIssuer(ctypes, CertTools.stringToBCDNString(issuerDN));
+            ret = certificateDataSession.findActiveCertificatesByTypeAndIssuer(ctypes, DnComponents.stringToBCDNString(issuerDN));
         } else {
             ret = certificateDataSession.findActiveCertificatesByType(ctypes);
         }
@@ -1339,7 +1342,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         int revoked = 0;
 
         // Must be authorized to CA in order to change status is certificates issued by the CA
-        String bcdn = CertTools.stringToBCDNString(issuerdn);
+        String bcdn = DnComponents.stringToBCDNString(issuerdn);
     	int caid = bcdn.hashCode();
         authorizedToCA(admin, caid);
         try {
@@ -1395,7 +1398,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">isRevoked(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
-        String dn = CertTools.stringToBCDNString(issuerDN);
+        String dn = DnComponents.stringToBCDNString(issuerDN);
         boolean ret = false;
         try {
             Collection<CertificateData> coll = certificateDataSession.findByIssuerDNSerialNumber(dn, serno.toString());
@@ -1435,7 +1438,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">getStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
-        final String dn = CertTools.stringToBCDNString(issuerDN);
+        final String dn = DnComponents.stringToBCDNString(issuerDN);
 
         try {
             Collection<CertificateData> coll = certificateDataSession.findByIssuerDNSerialNumber(dn, serno.toString());
@@ -1469,7 +1472,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">getCertificateAndStatus(), dn:" + issuerDN + ", serno=" + serno.toString(16));
         }
         // First make a DN in our well-known format
-        final String dn = CertTools.stringToBCDNString(issuerDN);
+        final String dn = DnComponents.stringToBCDNString(issuerDN);
         Collection<CertificateData> collection = certificateDataSession.findByIssuerDNSerialNumber(dn, serno.toString());
         if (collection.size() > 1) {
             final String msg = INTRES.getLocalizedMessage("store.errorseveralissuerserno", issuerDN, serno.toString(16));
@@ -1502,7 +1505,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
 
         // Must be authorized to CA in order to change status is certificates issued by the CA
-        String bcdn = CertTools.stringToBCDNString(certificateData.getIssuerDN());
+        String bcdn = DnComponents.stringToBCDNString(certificateData.getIssuerDN());
         int caid = bcdn.hashCode();
         authorizedToCA(admin, caid);
 

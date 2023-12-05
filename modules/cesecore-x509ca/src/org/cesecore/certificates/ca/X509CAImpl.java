@@ -158,6 +158,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -250,6 +251,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setCaSerialNumberOctetSize(cainfo.getCaSerialNumberOctetSize());
         setDoPreProduceOcspResponses(cainfo.isDoPreProduceOcspResponses());
         setDoStoreOcspResponsesOnDemand(cainfo.isDoStoreOcspResponsesOnDemand());
+        setDoPreProduceOcspResponseUponIssuanceAndRevocation(cainfo.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
         setUsePartitionedCrl(cainfo.getUsePartitionedCrl());
         setCrlPartitions(cainfo.getCrlPartitions());
         setSuspendedCrlPartitions(cainfo.getSuspendedCrlPartitions());
@@ -296,6 +298,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 .setCaSerialNumberOctetSize(getSerialNumberOctetSize())
                 .setDoPreProduceOcspResponses(isDoPreProduceOcspResponses())
                 .setDoStoreOcspResponsesOnDemand(isDoStoreOcspResponsesOnDemand())
+                .setDoPreProduceIndividualOcspResponses(isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                 .setRevocationReason(getRevocationReason())
                 .setRevocationDate(getRevocationDate())
                 .setPolicies(getPolicies())
@@ -774,10 +777,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      */
     @Override
     public boolean isDoPreProduceOcspResponses() {
-        if(data.containsKey(DO_PRE_PRODUCE_OCSP_RESPONSES)) {
-            return (Boolean) data.get(DO_PRE_PRODUCE_OCSP_RESPONSES);
-        }
-        return false;
+        return containsOcspKey(DO_PRE_PRODUCE_OCSP_RESPONSES);
     }
     
     /* (non-Javadoc)
@@ -790,17 +790,31 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
     @Override
     public boolean isDoStoreOcspResponsesOnDemand() {
-        if (data.containsKey(DO_STORE_OCSP_ON_DEMAND)) {
-            return (Boolean) data.get(DO_STORE_OCSP_ON_DEMAND);
-        }
-        return false;
+        return containsOcspKey(DO_STORE_OCSP_ON_DEMAND);
     }
     
     @Override
     public void setDoStoreOcspResponsesOnDemand(boolean doStoreOcspResponsesOnDemand) {
         data.put(DO_STORE_OCSP_ON_DEMAND, doStoreOcspResponsesOnDemand);
     }
-    
+
+    @Override
+    public boolean isDoPreProduceOcspResponseUponIssuanceAndRevocation() {
+        return containsOcspKey(DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES);
+    }
+
+    @Override
+    public void setDoPreProduceOcspResponseUponIssuanceAndRevocation(boolean doPreProduceIndividualOcspResponses) {
+        data.put(DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES, doPreProduceIndividualOcspResponses);
+    }
+
+    private boolean containsOcspKey(String key) {
+        if (data.containsKey(key)) {
+            return (Boolean) data.get(key);
+        }
+        return false;
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public Map<String, List<String>> getAlternateCertificateChains() {
@@ -846,6 +860,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         setCaSerialNumberOctetSize(info.getCaSerialNumberOctetSize());
         setDoPreProduceOcspResponses(info.isDoPreProduceOcspResponses());
         setDoStoreOcspResponsesOnDemand(info.isDoStoreOcspResponsesOnDemand());
+        setDoPreProduceOcspResponseUponIssuanceAndRevocation(info.isDoPreProduceOcspResponseUponIssuanceAndRevocation());
         setUsePartitionedCrl(info.getUsePartitionedCrl());
         setCrlPartitions(info.getCrlPartitions());
         setMsCaCompatible(info.isMsCaCompatible());
@@ -913,11 +928,18 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             final PrivateKey privateKey = cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             if (privateKey == null) {
-                String msg1 = "createPKCS7: Private key does not exist!";
+                final String msg1 = "createPKCS7: Private key does not exist!";
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, privateKey.getAlgorithm());
+            final PublicKey publicKey = cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            if (publicKey == null) {
+                final String msg1 = "createPKCS7: Public key does not exist!";
+                log.debug(msg1);
+                throw new SignRequestSignatureException(msg1);
+            }
+            // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3
+            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
             try {
                 final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
                 final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -978,7 +1000,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, privateKey.getAlgorithm());
+            final PublicKey publicKey = cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            if (publicKey == null) {
+                String msg1 = "createPKCS7: Public key does not exist!";
+                log.debug(msg1);
+                throw new SignRequestSignatureException(msg1);
+            }
+            // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3            
+            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
             try {
                 final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
                 final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -1040,7 +1069,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         } else {
             nameStyle = CeSecoreNameStyle.INSTANCE;
         }
-        X500Name x509dn = CertTools.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
+        X500Name x509dn = DnComponents.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
         PKCS10CertificationRequest req;
         try {
             final CAToken catoken = getCAToken();
@@ -1287,7 +1316,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 final String stripped = StringTools.strip(ei.getRawSubjectDn());
                 // Since support for multi-value RDNs in EJBCA 7.0.0, see ECA-3934, we don't automatically escape + signs anymore
                 final String emptiesRemoved = DNFieldsUtil.removeAllEmpties(stripped);
-                final X500Name subjectDNNameFromEei = CertTools.stringToUnorderedX500Name(emptiesRemoved, CeSecoreNameStyle.INSTANCE);
+                final X500Name subjectDNNameFromEei = DnComponents.stringToUnorderedX500Name(emptiesRemoved, CeSecoreNameStyle.INSTANCE);
                 if (subjectDNNameFromEei.toString().length()>0) {
                     subjectDNName = subjectDNNameFromEei;
                     if (log.isDebugEnabled()) {
@@ -1295,10 +1324,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                         log.debug("ExtendedInformation.getRawSubjectDn(): " + LogRedactionUtils.getSubjectDnLogSafe(ei.getRawSubjectDn(), subject.getEndEntityProfileId()) + " will use: " + LogRedactionUtils.getSubjectDnLogSafe(CeSecoreNameStyle.INSTANCE.toString(subjectDNName), subject.getEndEntityProfileId()));
                     }
                 } else {
-                    subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
+                    subjectDNName = DnComponents.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
                 }
             } else {
-                subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
+                subjectDNName = DnComponents.stringToBcX500Name(dn, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
             }
         }
         // Make sure the DN does not contain dangerous characters
@@ -1358,7 +1387,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 altName = certProfile.createSubjectAltNameSubSet(altName);
             }
             if (altName != null && altName.length() > 0) {
-                altNameGNs = CertTools.getGeneralNamesFromAltName(altName);
+                altNameGNs = DnComponents.getGeneralNamesFromAltName(altName);
             }
             CABase.checkNameConstraints(cacert, subjectDNName, altNameGNs);
         }
@@ -1937,7 +1966,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
     @Override
     public ExtensionsGenerator getSubjectAltNameExtensionForCert(Extension subAltNameExt, boolean publishToCT) throws IOException {
-        GeneralNames names = CertTools.getGeneralNamesFromExtension(subAltNameExt);
+        GeneralNames names = DnComponents.getGeneralNamesFromExtension(subAltNameExt);
         GeneralName[] gns = names !=null ? names.getNames() : new GeneralName[0];
         boolean sanEdited = false;
         ASN1EncodableVector nrOfRecactedLables = new ASN1EncodableVector();
@@ -1945,7 +1974,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             GeneralName generalName = gns[j];
             // Look for DNS name
             if (generalName.getTagNo() == 2) {
-                final String str = CertTools.getGeneralNameString(2, generalName.getName());
+                final String str = DnComponents.getGeneralNameString(2, generalName.getName());
                 if(StringUtils.contains(str, "(") && StringUtils.contains(str, ")") ) { // if it contains parts that should be redacted
                     // Remove the parentheses from the SubjectAltName that will end up on the certificate
                     String certBuilderDNSValue = StringUtils.remove(str, "dNSName=");
@@ -1964,7 +1993,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
             // Look for rfc822Name
             if(generalName.getTagNo() == 1) {
-                final String str = CertTools.getGeneralNameString(1, generalName.getName());
+                final String str = DnComponents.getGeneralNameString(1, generalName.getName());
                 if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
                     String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
@@ -1989,7 +2018,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     @Override
     public ExtensionsGenerator getSubjectAltNameExtensionForCTCert(Extension subAltNameExt) throws IOException {
         Pattern parenthesesRegex = Pattern.compile("\\(.*\\)"); // greedy match, so against "(a).(b).example.com" it will match "(a).(b)", like the old code did
-        GeneralNames names = CertTools.getGeneralNamesFromExtension(subAltNameExt);
+        GeneralNames names = DnComponents.getGeneralNamesFromExtension(subAltNameExt);
         GeneralName[] gns = names != null ? names.getNames() : new GeneralName[0];
         for (int j = 0; j<gns.length; j++) {
             GeneralName generalName = gns[j];
@@ -2003,7 +2032,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 }
             }
             if(generalName.getTagNo() == 1) {
-                final String str = CertTools.getGeneralNameString(1, generalName.getName());
+                final String str = DnComponents.getGeneralNameString(1, generalName.getName());
                 if(StringUtils.contains(str, "\\+") ) { // if it contains a '+' character that should be unescaped
                     // Remove '\' from the email that will end up on the certificate
                     String certBuilderEmailValue = StringUtils.remove(str, "rfc822name=");
@@ -2061,7 +2090,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             } else {
                 nameStyle = CeSecoreNameStyle.INSTANCE;
             }
-            issuer = CertTools.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
+            issuer = DnComponents.stringToBcX500Name(getSubjectDN(), nameStyle, getUseLdapDNOrder());
         } else {
             issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
         }
