@@ -128,10 +128,10 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Marks certificate for  key recovery.")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "Certificate marked for key recovery successfully"),
-                            @ApiResponse(code = 500, message = "General error while trying to mark the certificate for key recovery"),})
+                            @ApiResponse(code = 500, message = "General error, while trying to mark the certificate for key recovery"),})
     public Response markCertificateForKeyRecovery(@Context HttpServletRequest requestContext,
             @ApiParam(value = "Subject DN of the issuing CA") @PathParam("issuer_dn") String issuerDN,
-            @ApiParam(value = "hex serial number (without prefix, e.g. '00')") @PathParam("certificate_serial_number") String certificateSerialNumber)
+            @ApiParam(value = "Hex serial number (without prefix, e.g. '00')") @PathParam("certificate_serial_number") String certificateSerialNumber)
             throws CADoesntExistsException, AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException {
         return super.markCertificateForKeyRecovery(requestContext, certificateSerialNumber, issuerDN);
     }
