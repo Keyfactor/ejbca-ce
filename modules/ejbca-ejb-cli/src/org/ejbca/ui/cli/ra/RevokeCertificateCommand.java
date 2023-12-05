@@ -33,7 +33,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Revokes a certificate in the database.
@@ -76,7 +76,7 @@ public class RevokeCertificateCommand extends BaseRaCommand {
     public CommandResult execute(ParameterContainer parameters) {
 
         final String issuerDNStr = parameters.get(DN_KEY);
-        final String issuerDN = CertTools.stringToBCDNString(issuerDNStr);
+        final String issuerDN = DnComponents.stringToBCDNString(issuerDNStr);
         final String certserno = parameters.get(SERIAL_NUMBER_KEY);
         final BigInteger serno;
         

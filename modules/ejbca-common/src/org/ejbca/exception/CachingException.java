@@ -18,7 +18,9 @@ package org.ejbca.exception;
  */
 public class CachingException extends RuntimeException {
 
-	public CachingException(String message) {
+	private static final long serialVersionUID = 1L;
+
+    public CachingException(String message) {
 		super(message);
 	}
 

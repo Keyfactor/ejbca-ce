@@ -62,6 +62,7 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.KeyGenParams;
@@ -244,11 +245,11 @@ public class InternalKeyBindingMgmtTest {
             endEntityInformation.setPassword("foo123");
             // Request a CSR for the key pair
             // First make a couple of requests with different DN to see that that part works
-            final X500Name x500name = CertTools.stringToBcX500Name("CN=name,O=org,C=SE", false);
+            final X500Name x500name = DnComponents.stringToBcX500Name("CN=name,O=org,C=SE", false);
             final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, x500name.getEncoded());
             final JcaPKCS10CertificationRequest jcareq = new JcaPKCS10CertificationRequest(csr);
             assertEquals("Wrong order of DN, should be X500 with C first", "C=SE,O=org,CN=name", jcareq.getSubject().toString());
-            final X500Name x500name2 = CertTools.stringToBcX500Name("CN=name,O=org,C=SE", true);
+            final X500Name x500name2 = DnComponents.stringToBcX500Name("CN=name,O=org,C=SE", true);
             final byte[] csr2 = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, x500name2.getEncoded());
             final JcaPKCS10CertificationRequest jcareq2 = new JcaPKCS10CertificationRequest(csr2);
             assertEquals("Wrong order of DN, should be LDAP with CN first", "CN=name,O=org,C=SE", jcareq2.getSubject().toString());
@@ -298,7 +299,7 @@ public class InternalKeyBindingMgmtTest {
                     KEY_BINDING_NAME, InternalKeyBindingStatus.ACTIVE, null, cryptoTokenId, KEY_PAIR_ALIAS, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, null);
             log.debug("Created InternalKeyBinding with id " + internalKeyBindingId);
             // Request a CSR for the key pair
-            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, CertTools.stringToBcX500Name("CN="+KEY_BINDING_NAME+",O=workflow", true).getEncoded());
+            final byte[] csr = internalKeyBindingMgmtSession.generateCsrForNextKey(alwaysAllowToken, internalKeyBindingId, DnComponents.stringToBcX500Name("CN="+KEY_BINDING_NAME+",O=workflow", true).getEncoded());
             // Issue a certificate in EJBCA for the public key
             final EndEntityInformation user = new EndEntityInformation(TESTCLASSNAME+"_" + TEST_METHOD_NAME, "CN="+TESTCLASSNAME +"_" + TEST_METHOD_NAME, x509ca.getCAId(), null, null,
                     EndEntityTypes.ENDUSER.toEndEntityType(), 1, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER,

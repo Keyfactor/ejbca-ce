@@ -12,7 +12,9 @@
  *************************************************************************/
 package org.ejbca.core.model.ra;
 
-import com.keyfactor.util.CertTools;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.LogRedactionUtils;
@@ -20,8 +22,7 @@ import org.ejbca.core.model.UsernameGenerateMode;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class used to generate special usernames.
@@ -92,7 +93,7 @@ public class UsernameGenerator {
                 }
                 String[] parts = StringUtils.split(params.getDNGeneratorComponent(), ';');
                 for (String part : parts) {
-                    str = CertTools.getPartFromDN(name, part);
+                    str = DnComponents.getPartFromDN(name, part);
                     // If this DN component exists, break here.
                     if (str != null) {
                         break;

@@ -53,6 +53,7 @@ import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import org.ejbca.util.query.BasicMatch;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * @version $Id$
@@ -174,7 +175,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			super(_jobData);
 			this.pkcs10 = CertTools.genPKCS10CertificationRequest(
 			         keys.getPublic().getAlgorithm().equals("RSA") ? "SHA1WithRSA" : "SHA256withECDSA",
-			         CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+			         DnComponents.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
 			this.ejbcaWS = _ejbcaWS;
 		}
 		@Override
@@ -204,7 +205,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			StressTestCommand.this.performanceTest.getLog().error("no certificate generated for user "+jobData.userName);
 			return false;
 		}
-		final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
+		final String commonName = DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "CN");
 		if (validateUsername && !commonName.equals(jobData.userName)) {
 			StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
 			return false;
@@ -455,7 +456,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			try {
                 this.pkcs10 = CertTools.genPKCS10CertificationRequest(
                         keys.getPublic().getAlgorithm().equals("RSA") ? "SHA1WithRSA" : "SHA256withECDSA", 
-                        CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+                        DnComponents.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
             } catch (OperatorCreationException e) {
                 getPrintStream().println(e.getLocalizedMessage());
                 e.printStackTrace(getPrintStream());

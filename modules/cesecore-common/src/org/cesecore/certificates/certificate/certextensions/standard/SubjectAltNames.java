@@ -23,7 +23,7 @@ import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class for standard X509 certificate extension. 
@@ -50,7 +50,7 @@ public class SubjectAltNames extends StandardCertificateExtension {
         	altName = certProfile.createSubjectAltNameSubSet(altName);
         }
         if ( (altName != null) && (altName.length() > 0) ) {
-        	ret = CertTools.getGeneralNamesFromAltName(altName);
+        	ret = DnComponents.getGeneralNamesFromAltName(altName);
         }
 		if (ret == null) {
 			if (log.isDebugEnabled()) {

@@ -45,6 +45,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
@@ -88,8 +89,8 @@ public class OcspExtensionsTest {
         KeyPair certificateKeyPair = KeyTools.genKeys("1024", "RSA");
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(certificateKeyPair.getPublic().getEncoded());
         final String certDn = "CN=TEST,SN=4711";
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(certDn, false), new BigInteger(serno).abs(),
-                firstDate, lastDate, CertTools.stringToBcX500Name(certDn, false), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name(certDn, false), new BigInteger(serno).abs(),
+                firstDate, lastDate, DnComponents.stringToBcX500Name(certDn, false), pkinfo);
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder("SHA256WithRSA").setProvider(
                 BouncyCastleProvider.PROVIDER_NAME).build(caKeyPair.getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);

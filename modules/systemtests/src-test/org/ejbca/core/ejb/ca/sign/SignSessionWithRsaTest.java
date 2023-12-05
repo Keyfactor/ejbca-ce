@@ -452,7 +452,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
@@ -567,32 +567,32 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             log.debug("Changed user: " + ei.getUsername() + ", " + ei.getDN() + ", " + ei.getSubjectAltName());
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
-            String altNames = CertTools.getSubjectAlternativeName(cert);
+            String altNames = DnComponents.getSubjectAlternativeName(cert);
             log.debug("Altnames1: "+altNames);
-            List<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            List<String> list = DnComponents.getPartsFromDN(altNames, DnComponents.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));
-            String name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            String name = DnComponents.getPartFromDN(altNames, DnComponents.URI);
             assertEquals("http://www.a.se/", name);
-            List<String> names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            List<String> names = DnComponents.getPartsFromDN(altNames, DnComponents.URI);
             assertEquals("There should be 2 URIs", 2, names.size());
             assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
-            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.EMAIL);
             assertEquals("tomas@a.se", name);
-            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            list = DnComponents.getPartsFromDN(altNames, DnComponents.DNS);
             assertEquals(2, list.size());
             assertTrue(list.contains("www.a.se"));
             assertTrue(list.contains("www.b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.IPADDR);
             assertEquals("10.1.1.1", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            name = DnComponents.getPartFromDN(altNames, CertTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.XMPPADDR);
             assertEquals("tomas@xmpp.domain.com", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.SRVNAME);
             assertEquals("_Service.Name", name);
-            name = CertTools.getPartFromDN(altNames, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD);
+            name = DnComponents.getPartFromDN(altNames, RFC4683Tools.SUBJECTIDENTIFICATIONMETHOD);
             // Compare the SIM, we know the input that was used to generate the SIM above
             // MyStrongPassword, 1.2.410.200004.10.1.1.10.1 and SIIValue
             String[] simtokens = StringUtils.split(name, "::");
@@ -615,30 +615,30 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             log.debug("Changed user: " + ei.getUsername() + ", " + ei.getDN() + ", " + ei.getSubjectAltName());
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
-            altNames = CertTools.getSubjectAlternativeName(cert);
+            altNames = DnComponents.getSubjectAlternativeName(cert);
             log.debug("Altnames2: "+altNames);
-            list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            list = DnComponents.getPartsFromDN(altNames, DnComponents.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.URI);
             assertEquals("http://www.a.se/", name);
-            names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            names = DnComponents.getPartsFromDN(altNames, DnComponents.URI);
             assertEquals("There should be 2 URIs", 2, names.size());
             assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
-            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.EMAIL);
             assertEquals("tomas@a.se", name);
-            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            list = DnComponents.getPartsFromDN(altNames, DnComponents.DNS);
             assertEquals(2, list.size());
             assertTrue(list.contains("www.a.se"));
             assertTrue(list.contains("www.b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.IPADDR);
             assertEquals("10.1.1.1", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            name = DnComponents.getPartFromDN(altNames, CertTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.XMPPADDR);
             assertEquals("tomas1@xmpp.domain.com", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.SRVNAME);
             assertEquals("_Service1.Name", name);
         } finally {
             // Clean up
@@ -693,32 +693,32 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
-            String altNames = CertTools.getSubjectAlternativeName(cert);
+            String altNames = DnComponents.getSubjectAlternativeName(cert);
             log.debug("Altnames1: "+altNames);
-            List<String> list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            List<String> list = DnComponents.getPartsFromDN(altNames, DnComponents.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));
-            String name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            String name = DnComponents.getPartFromDN(altNames, DnComponents.URI);
             assertEquals("http://www.a.se/", name);
-            List<String> names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            List<String> names = DnComponents.getPartsFromDN(altNames, DnComponents.URI);
             assertEquals("There should be 2 URIs", 2, names.size());
             assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
-            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.EMAIL);
             assertEquals("tomas@a.se", name);
-            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            list = DnComponents.getPartsFromDN(altNames, DnComponents.DNS);
             assertEquals(2, list.size());
             assertTrue(list.contains("www.a.se"));
             assertTrue(list.contains("www.b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.IPADDR);
             assertEquals("10.1.1.1", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            name = DnComponents.getPartFromDN(altNames, CertTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.XMPPADDR);
             assertEquals("tomas@xmpp.domain.com", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.SRVNAME);
             assertEquals("_Service.Name", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.FASCN);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.FASCN);
             assertEquals("0419d23210d8210c2c1a843085a16858300842108608823210c3e1", name);
             // Change a user that we know...
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
@@ -730,32 +730,32 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", new PublicKeyWrapper(rsakeys.getPublic()));
             assertNotNull("Failed to create certificate", cert);
-            altNames = CertTools.getSubjectAlternativeName(cert);
+            altNames = DnComponents.getSubjectAlternativeName(cert);
             log.debug("Altnames2: "+altNames);
-            list = CertTools.getPartsFromDN(altNames, CertTools.UPN);
+            list = DnComponents.getPartsFromDN(altNames, DnComponents.UPN);
             assertEquals(2, list.size());
             assertTrue(list.contains("foo@a.se"));
             assertTrue(list.contains("foo@b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.URI);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.URI);
             assertEquals("http://www.a.se/", name);
-            names = CertTools.getPartsFromDN(altNames, CertTools.URI);
+            names = DnComponents.getPartsFromDN(altNames, DnComponents.URI);
             assertEquals("There should be 2 URIs", 2, names.size());
             assertEquals("urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6", names.get(1));
-            name = CertTools.getPartFromDN(altNames, CertTools.EMAIL);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.EMAIL);
             assertEquals("tomas@a.se", name);
-            list = CertTools.getPartsFromDN(altNames, CertTools.DNS);
+            list = DnComponents.getPartsFromDN(altNames, DnComponents.DNS);
             assertEquals(2, list.size());
             assertTrue(list.contains("www.a.se"));
             assertTrue(list.contains("www.b.se"));
-            name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.IPADDR);
             assertEquals("10.1.1.1", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.REGISTEREDID);
+            name = DnComponents.getPartFromDN(altNames, CertTools.REGISTEREDID);
             assertEquals("1.1.1.2", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.XMPPADDR);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.XMPPADDR);
             assertEquals("tomas1@xmpp.domain.com", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.SRVNAME);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.SRVNAME);
             assertEquals("_Service1.Name", name);
-            name = CertTools.getPartFromDN(altNames, CertTools.FASCN);
+            name = DnComponents.getPartFromDN(altNames, DnComponents.FASCN);
             assertEquals("0419d23210d8210c2c1a843085a16858300842108608823210c3e1", name);
         } finally {
             // Clean up
@@ -808,7 +808,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", new PublicKeyWrapper(anotheKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
-            assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
+            assertEquals(DnComponents.stringToBCDNString("cn=qc,c=SE"), DnComponents.stringToBCDNString(dn));
             // Since we do not have pkixQCSyntax_v1 or pkixQCSyntax_v2, no semanticsId will be added
             assertNull("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
             Collection<String> ids = QCStatementExtension.getQcStatementIds(cert);
@@ -830,7 +830,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", new PublicKeyWrapper(anotheKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             dn = cert.getSubjectDN().getName();
-            assertEquals(CertTools.stringToBCDNString("cn=qc,c=SE"), CertTools.stringToBCDNString(dn));
+            assertEquals(DnComponents.stringToBCDNString("cn=qc,c=SE"), DnComponents.stringToBCDNString(dn));
             // Since we have pkixQCSyntax_v2, a semanticsId will be added
             assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
             ids = QCStatementExtension.getQcStatementIds(cert);
@@ -971,7 +971,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
                     new PublicKeyWrapper(anotherKey.getPublic()), -1, null, cal.getTime());
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
-            assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
+            assertEquals(DnComponents.stringToBCDNString("cn=validityoverride,c=SE"), DnComponents.stringToBCDNString(dn));
             Date notAfter = cert.getNotAfter();
             cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, 297);
@@ -999,7 +999,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()), -1,
                     notBefore.getTime(), cal.getTime());
             assertNotNull("Failed to create certificate", cert);
-            assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
+            assertEquals(DnComponents.stringToBCDNString("cn=validityoverride,c=SE"), DnComponents.stringToBCDNString(dn));
             notAfter = cert.getNotAfter();
             cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, 11);
@@ -1037,7 +1037,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()), -1,
                     notBefore.getTime(), cal.getTime());
             assertNotNull("Failed to create certificate", cert);
-            assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
+            assertEquals(DnComponents.stringToBCDNString("cn=validityoverride,c=SE"), DnComponents.stringToBCDNString(dn));
             Date certNotBefore = cert.getNotBefore();
             // Override was enabled. But we can still not get a certificate valid before the CA becomes valid.
             assertEquals("certificate NotBefore date should match the CA, if set to be on or before the CA NotBefore date", certNotBefore, caNotBefore);
@@ -1092,7 +1092,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", new PublicKeyWrapper(swedeKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             log.debug("Cert=" + cert.toString());
-            assertEquals("Wrong DN with Swedish characters", CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"),
+            assertEquals("Wrong DN with Swedish characters", DnComponents.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"),
                     CertTools.getSubjectDN(cert));
         } finally {
             endEntityManagementSession.deleteUser(internalAdmin, username);
@@ -1330,7 +1330,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // Create a P10 with extensions, in this case altNames with a lot of DNS names
             ASN1EncodableVector extensionattr = new ASN1EncodableVector();
             extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
+            GeneralNames san = DnComponents.getGeneralNamesFromAltName(altnames);
             ExtensionsGenerator extgen = new ExtensionsGenerator();
             extgen.addExtension(Extension.subjectAlternativeName, false, san);
             // Add a second extension, CertificatePolicies
@@ -1385,7 +1385,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             c = cert.getSubjectAlternativeNames();
             assertNotNull(c);
             assertEquals(21, c.size());
-            String retAltNames = CertTools.getSubjectAlternativeName(cert);
+            String retAltNames = DnComponents.getSubjectAlternativeName(cert);
             List<String> originalNames = Arrays.asList(altnames.split(","));
             List<String> returnNames = Arrays.asList(retAltNames.split(", "));
             assertTrue(originalNames.containsAll(returnNames));
@@ -1431,7 +1431,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             c = cert.getSubjectAlternativeNames();
             assertNotNull(c);
             assertEquals(21, c.size());
-            retAltNames = CertTools.getSubjectAlternativeName(cert);
+            retAltNames = DnComponents.getSubjectAlternativeName(cert);
             originalNames = Arrays.asList(altnames.split(","));
             returnNames = Arrays.asList(retAltNames.split(", "));
             assertTrue(originalNames.containsAll(returnNames));
@@ -1451,7 +1451,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             c = cert.getSubjectAlternativeNames();
             assertNotNull(c);
             assertEquals(21, c.size());
-            retAltNames = CertTools.getSubjectAlternativeName(cert);
+            retAltNames = DnComponents.getSubjectAlternativeName(cert);
             originalNames = Arrays.asList(altnames.split(","));
             returnNames = Arrays.asList(retAltNames.split(", "));
             assertTrue(originalNames.containsAll(returnNames));
@@ -1463,7 +1463,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             // Create a P10 with extensions, in this case altNames with a lot of DNS names
             extensionattr = new ASN1EncodableVector();
             extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-            san = CertTools.getGeneralNamesFromAltName("ipAddress=10.1.1.2, iPAddress=FE80:0000:0000:0000:0202:B3FF:FE1E:8329");
+            san = DnComponents.getGeneralNamesFromAltName("ipAddress=10.1.1.2, iPAddress=FE80:0000:0000:0000:0202:B3FF:FE1E:8329");
             extgen = new ExtensionsGenerator();
             extgen.addExtension(Extension.subjectAlternativeName, false, san);            
             exts = extgen.generate();        
@@ -1497,7 +1497,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             c = cert.getSubjectAlternativeNames();
             assertNotNull(c);
             assertEquals(2, c.size());
-            retAltNames = CertTools.getSubjectAlternativeName(cert);
+            retAltNames = DnComponents.getSubjectAlternativeName(cert);
             assertEquals("Altnames should have proper IP adresses, ipv4 and ipv6", "iPAddress=10.1.1.2, iPAddress=fe80:0:0:0:202:b3ff:fe1e:8329", retAltNames);
         } finally {
             certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
@@ -1698,7 +1698,7 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"), dsakeys
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithDSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"), dsakeys
                 .getPublic(), new DERSet(), dsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
