@@ -66,12 +66,14 @@ import java.security.Security;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * @see CryptoTokenManagementSession
@@ -762,9 +764,8 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
                 final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
                 final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
-                //remove hardcoded keyUsage 
-                final boolean[] hardcodedKeyUsage = new boolean[]{true, true, false, false};// final boolean[] hardcodedkeyUsage = cryptoToken.getKeyUsageFromPrivateKey(alias);
-                final String keyUsage = getKeyUsageStringForKeyPairInfo(hardcodedKeyUsage);
+                Set<Long> keyUsageSet = cryptoToken.getKeyUsagesFromPrivateKey(alias);
+                final String keyUsage = getKeyUsageStringForKeyPairInfo(keyUsageSet);
                 ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, keyUsage));
             } else {
                 log.warn("Could not read pubkey for alias '" + alias +"', got null, this is probably an unknown key type.");
@@ -773,18 +774,24 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return ret;
     }
     
-    private String getKeyUsageStringForKeyPairInfo(final boolean[] keyUsage) {
-        final boolean[] SIGN = new boolean[]{true, false, true, true};
-        final boolean[] ENCRYPT = new boolean[]{true, true, false, false};
-        final boolean[] SIGN_ENCRYPT = new boolean[] {true, true, true, true};
-        if (Arrays.equals(SIGN, keyUsage)) {
-            return KeyPairTemplate.SIGN.toString();
-        } else if (Arrays.equals(ENCRYPT, keyUsage)) {
+    private String getKeyUsageStringForKeyPairInfo(final Set<Long> keyUsage) {
+        final long DECRYPT = 261;
+        final long SIGN = 264;
+        final Set<Long> ENCRYPT_DECRYPT  = new HashSet<Long>();
+        final Set<Long> SIGN_VERIFY  = new HashSet<Long>();
+        final Set<Long> SIGN_ENCRYPT  = new HashSet<Long>();
+        ENCRYPT_DECRYPT.add(DECRYPT);
+        SIGN_VERIFY.add(SIGN);
+        SIGN_ENCRYPT.add(DECRYPT);
+        SIGN_ENCRYPT.add(SIGN);
+        if (keyUsage.equals(ENCRYPT_DECRYPT)) {
             return KeyPairTemplate.ENCRYPT.toString();
-        } else if (Arrays.equals(SIGN_ENCRYPT, keyUsage)) {
+        } else if (keyUsage.equals(SIGN_VERIFY)) {
+            return KeyPairTemplate.SIGN.toString();
+        }else if (keyUsage.equals(SIGN_ENCRYPT)) {
             return KeyPairTemplate.SIGN_ENCRYPT.toString();
         }
-        return "";
+        return null;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -821,11 +828,9 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
         final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
-        final boolean[] hardcodedKeyUsage = new boolean[]{true, true, false, false};// final boolean[] hardcodedkeyUsage = cryptoToken.getKeyUsageFromPrivateKey(alias);
-        final String keyUsage = getKeyUsageStringForKeyPairInfo(hardcodedKeyUsage);
-        //if (pkcs11ngcryptotoken)
-        //final String cryptoToken.getKeyUsageFromPrivateKey(alias);
-        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, /*hardcoded*/keyUsage);
+        Set<Long> keyUsageSet = cryptoToken.getKeyUsagesFromPrivateKey(alias);
+        final String keyUsage = getKeyUsageStringForKeyPairInfo(keyUsageSet);
+        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, keyUsage);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
