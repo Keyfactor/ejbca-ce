@@ -63,7 +63,7 @@ import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 
 import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -185,7 +185,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		}
 		
 		if (serno != null && issuer != null) {
-		    final String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
+		    final String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", DnComponents.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 		    LOG.info(iMsg);
 		    try {
 		        // If it was a certificate authenticated admin, we want to use this admin token to pass down core layers which will make 
@@ -202,16 +202,16 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
                         LOG.trace("Using AlwaysAllow admin to call EJB, admin: " + adminForEjb.toString());
                     }               
 		        }
-		        endEntityManagementSession.revokeCert(adminForEjb, serno.getValue(), CertTools.stringToBCDNString(issuer.toString()), reason);
+		        endEntityManagementSession.revokeCert(adminForEjb, serno.getValue(), DnComponents.stringToBCDNString(issuer.toString()), reason);
 		        status = ResponseStatus.SUCCESS;
 		    } catch (AuthorizationDeniedException e) {
 		        failInfo = FailInfo.NOT_AUTHORIZED;
-		        final String errMsg = INTRES.getLocalizedMessage("cmp.errornotauthrevoke", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
+		        final String errMsg = INTRES.getLocalizedMessage("cmp.errornotauthrevoke", DnComponents.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 		        failText = errMsg; 
 		        LOG.info(failText);
 		    } catch (NoSuchEndEntityException e) {
 		        failInfo = FailInfo.BAD_CERTIFICATE_ID;
-		        final String errMsg = INTRES.getLocalizedMessage("cmp.errorcertnofound", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
+		        final String errMsg = INTRES.getLocalizedMessage("cmp.errorcertnofound", DnComponents.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 		        failText = errMsg; 
                 // This is already info logged in endEntityManagementSession.revokeCert
                 // LOG.info(failText);
@@ -331,9 +331,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Get recipient CA from recipient: "+caDN);
             }
-            caId = CertTools.stringToBCDNString(caDN).hashCode();
+            caId = DnComponents.stringToBCDNString(caDN).hashCode();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("CA DN is '"+caDN+"' and resulting caId is "+caId+", after CertTools.stringToBCDNString conversion.");
+                LOG.debug("CA DN is '"+caDN+"' and resulting caId is "+caId+", after DnComponents.stringToBCDNString conversion.");
             }
         }
         ca = caSession.getCA(admin, caId);

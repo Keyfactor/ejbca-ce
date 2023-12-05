@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.ui.web;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.io.ByteArrayInputStream;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
@@ -43,11 +46,9 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * @version $Id$
@@ -115,8 +116,8 @@ public class RequestHelperTest {
         Date lastDate = new Date();
         // validity in days = validity*24*60*60*1000 milliseconds
         lastDate.setTime(lastDate.getTime() + (24 * 60 * 60 * 1000));
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name("CN=foo"),
-                new java.math.BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(signedCertDn), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name("CN=foo"),
+                new java.math.BigInteger(serno).abs(), firstDate, lastDate, DnComponents.stringToBcX500Name(signedCertDn), pkinfo);
         final ContentSigner signer = new BufferingContentSigner(new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_SHA1_WITH_RSA).setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caKeys
                 .getPrivate()), 20480);
         final X509CertificateHolder certHolder = certbuilder.build(signer);

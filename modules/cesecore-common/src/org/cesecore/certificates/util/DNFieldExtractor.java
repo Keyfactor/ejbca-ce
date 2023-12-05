@@ -32,7 +32,6 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ietf.ldap.LDAPDN;
 
 import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
@@ -281,11 +280,11 @@ public class DNFieldExtractor implements Serializable {
                         final String dnexupper = dnex.toUpperCase();
                         if (id == DNFieldExtractor.URI) {
                             // Fix up URI, which can have several forms
-                            if (dnexupper.contains(CertTools.URI.toUpperCase(Locale.ENGLISH) + "=")) {
-                                field = CertTools.URI.toUpperCase(Locale.ENGLISH) + "=";
+                            if (dnexupper.contains(DnComponents.URI.toUpperCase(Locale.ENGLISH) + "=")) {
+                                field = DnComponents.URI.toUpperCase(Locale.ENGLISH) + "=";
                             }
-                            if (dnexupper.contains(CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=")) {
-                                field = CertTools.URI1.toUpperCase(Locale.ENGLISH) + "=";
+                            if (dnexupper.contains(DnComponents.URI1.toUpperCase(Locale.ENGLISH) + "=")) {
+                                field = DnComponents.URI1.toUpperCase(Locale.ENGLISH) + "=";
                             }
                         }
 

@@ -2424,9 +2424,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         CA ca = (CA) caSession.getCA(authenticationToken, caId);
-        CertificateProfile cp = certificateProfileSession.getCertificateProfile(cpId);
         log.debug("Creating KEC as certificate not found with subjectDN=[ CN=" + cNPartOfSubjectDN + CAConstants.KEY_EXCHANGE_CERTIFICATE_SDN_ENDING + " ]");
-        return caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cp);
+        return caAdminSession.createKeyExchangeCertificate(authenticationToken, ca, cpId);
     }
 
     @Override
@@ -3045,7 +3044,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
-        final int caId = CertTools.stringToBCDNString(issuerDn).hashCode();
+        final int caId = DnComponents.stringToBCDNString(issuerDn).hashCode();
         caSession.verifyExistenceOfCA(caId);
         endEntityManagementSession.revokeCert(authenticationToken, certSerNo, revocationDate, /*invalidityDate*/null, issuerDn, reason, checkDate);
     }
@@ -3062,7 +3061,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CADoesntExistsException, CertificateProfileDoesNotExistException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
-        final int caId = CertTools.stringToBCDNString(certRevocationDto.getIssuerDN()).hashCode();
+        final int caId = DnComponents.stringToBCDNString(certRevocationDto.getIssuerDN()).hashCode();
         caSession.verifyExistenceOfCA(caId);
         endEntityManagementSession.revokeCertWithMetadata(authenticationToken, certRevocationDto);
     }
@@ -3076,7 +3075,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public CertificateStatus getCertificateStatus(AuthenticationToken authenticationToken, String issuerDn, BigInteger serNo) throws CADoesntExistsException, AuthorizationDeniedException {
         // First check if we handle the CA, to fail-fast, and reflect the functionality of remote API (WS)
-        final int caId = CertTools.stringToBCDNString(issuerDn).hashCode();
+        final int caId = DnComponents.stringToBCDNString(issuerDn).hashCode();
         caSession.verifyExistenceOfCA(caId);
         // Check if we are authorized to this CA
         if (!authorizationSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + caId)) {
@@ -3328,7 +3327,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public void republishCertificate(AuthenticationToken authenticationToken, String serialNumberInHex, String issuerDN)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        final String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
+        final String bcIssuerDN = DnComponents.stringToBCDNString(issuerDN);
         caSession.verifyExistenceOfCA(bcIssuerDN.hashCode());
         final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(new BigInteger(serialNumberInHex, 16), bcIssuerDN);
         if (certReqHistory == null) {

@@ -33,7 +33,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 public class UpdateCommand extends BaseCmpConfigCommand {
 
@@ -86,7 +86,7 @@ public class UpdateCommand extends BaseCmpConfigCommand {
                         throw new IllegalStateException(e);
                     }
                     getCmpConfiguration().setValue(key, defaultCa, alias);
-               }else if ( EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(CertTools.getCommonNameFromSubjectDn(value))){
+               }else if ( EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).existsCa(DnComponents.getCommonNameFromSubjectDn(value))){
                     defaultCa = value;
                     getCmpConfiguration().setValue(key, defaultCa, alias);
                     

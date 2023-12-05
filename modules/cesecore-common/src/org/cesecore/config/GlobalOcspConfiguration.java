@@ -12,14 +12,14 @@
  *************************************************************************/
 package org.cesecore.config;
 
+import java.io.Serializable;
+import java.util.Objects;
+
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keybind.impl.OcspKeyBinding.ResponderIdType;
 
-import com.keyfactor.util.CertTools;
-
-import java.io.Serializable;
-import java.util.Objects;
+import com.keyfactor.util.certificate.DnComponents;
 
 public class GlobalOcspConfiguration extends ConfigurationBase implements Serializable {
 
@@ -63,7 +63,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     }
 
     public String getOcspDefaultResponderReference() {
-        return CertTools.stringToBCDNString((String) data.get(DEFAULT_OCSP_RESPONDER_REFERENCE));
+        return DnComponents.stringToBCDNString((String) data.get(DEFAULT_OCSP_RESPONDER_REFERENCE));
     }
     
     public void setOcspDefaultResponderReference(String reference) {

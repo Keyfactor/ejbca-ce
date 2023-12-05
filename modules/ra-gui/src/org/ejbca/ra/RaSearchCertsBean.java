@@ -13,6 +13,7 @@
 package org.ejbca.ra;
 
 import com.keyfactor.util.EJBTools;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -242,10 +243,34 @@ public class RaSearchCertsBean implements Serializable {
     }
 
     private void searchForCertificates() {
-        lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
+        if (isStagedRequestValid()) {
+            lastExecutedResponse = raMasterApiProxyBean.searchForCertificates(raAuthenticationBean.getAuthenticationToken(), stagedRequest);
+        } else {
+            // if the request is deemed invalid, we can bypass sending it for execution and simply generate an empty response
+            lastExecutedResponse = new RaCertificateSearchResponse();
+        }
         lastExecutedRequest = stagedRequest;
         stagedRequest = new RaCertificateSearchRequest(stagedRequest);
         filterTransformSort();
+    }
+
+    /**
+     * Determine if the current search criteria would result in a valid request.
+     *
+     * @return true if the request appears to be valid and should be executed, false otherwise
+     */
+    private boolean isStagedRequestValid() {
+        return isAtLeastOneCriteriaCheckboxTicked() ||
+                StringUtils.isEmpty(genericSearchString) ||
+                StringUtils.isNotEmpty(stagedRequest.getSerialNumberSearchStringFromDec()) ||
+                StringUtils.isNotEmpty(stagedRequest.getSerialNumberSearchStringFromHex());
+    }
+
+    /**
+     * @return true if at least one of the search criteria checkboxes is ticked
+     */
+    private boolean isAtLeastOneCriteriaCheckboxTicked() {
+        return searchSubjectDistinguishedName || searchSubjectAlternativeName || searchUsername || searchExternalAccountId;
     }
 
     /**
@@ -487,6 +512,7 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setSearchSubjectDistinguishedName(boolean searchSubjectDistinguishedName) {
         this.searchSubjectDistinguishedName = searchSubjectDistinguishedName;
+        updateStringSearchCriteria();
     }
 
     public boolean isSearchSubjectAlternativeName() {
@@ -495,6 +521,7 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setSearchSubjectAlternativeName(boolean searchSubjectAlternativeName) {
         this.searchSubjectAlternativeName = searchSubjectAlternativeName;
+        updateStringSearchCriteria();
     }
 
     public boolean isSearchUsername() {
@@ -503,6 +530,7 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setSearchUsername(boolean searchUsername) {
         this.searchUsername = searchUsername;
+        updateStringSearchCriteria();
     }
 
     public boolean isSearchExternalAccountId() {
@@ -511,6 +539,7 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setSearchExternalAccountId(boolean searchExternalAccountId) {
         this.searchExternalAccountId = searchExternalAccountId;
+        updateStringSearchCriteria();
     }
 
     /**
@@ -545,12 +574,16 @@ public class RaSearchCertsBean implements Serializable {
 
     public void setGenericSearchString(final String genericSearchString) {
         this.genericSearchString = genericSearchString;
-        stagedRequest.setSubjectDnSearchString(this.searchSubjectDistinguishedName ? genericSearchString : null);
-        stagedRequest.setSubjectAnSearchString(this.searchSubjectAlternativeName ? genericSearchString : null);
-        stagedRequest.setUsernameSearchString(this.searchUsername ? genericSearchString : null);
+        updateStringSearchCriteria();
+    }
+
+    private void updateStringSearchCriteria() {
+        stagedRequest.setSubjectDnSearchString(this.searchSubjectDistinguishedName ? genericSearchString : "");
+        stagedRequest.setSubjectAnSearchString(this.searchSubjectAlternativeName ? genericSearchString : "");
+        stagedRequest.setUsernameSearchString(this.searchUsername ? genericSearchString : "");
         stagedRequest.setSerialNumberSearchStringFromDec(genericSearchString);
         stagedRequest.setSerialNumberSearchStringFromHex(genericSearchString);
-        stagedRequest.setExternalAccountIdSearchString(this.searchExternalAccountId ? genericSearchString : null);
+        stagedRequest.setExternalAccountIdSearchString(this.searchExternalAccountId ? genericSearchString : "");
     }
 
     public String getHttpSearchQueryParameter() {
