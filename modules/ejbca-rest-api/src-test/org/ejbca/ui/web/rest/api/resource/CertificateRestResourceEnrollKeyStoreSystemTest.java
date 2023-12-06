@@ -38,7 +38,9 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -77,12 +79,21 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     private static final List<String> addedUserNames = new ArrayList<>();
     private static final Random RANDOM = new Random();
     
+    private static boolean useKeyRecoveryBkup;
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
         
+        useKeyRecoveryBkup = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(
+                GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfiguration.setEnableKeyRecovery(true);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, globalConfiguration);
+        
         // only RSA CA is being tested, key recovery with ECDSA CA should be tested independently
-        X509CA testX509Ca = CaTestUtils.createTestX509CA(TEST_CA_DN, null, false, 
+        testX509Ca = CaTestUtils.createTestX509CA(TEST_CA_DN, null, false, 
                             X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         X509CAInfo caInfo = (X509CAInfo) testX509Ca.getCAInfo();
         caInfo.setDoEnforceUniquePublicKeys(false);
@@ -124,6 +135,11 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     @AfterClass
     public static void afterClass() throws Exception {
         RestResourceSystemTestBase.afterClass();
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration)
+                globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        globalConfiguration.setEnableKeyRecovery(useKeyRecoveryBkup);
+        globalConfigurationSession.saveConfiguration(INTERNAL_ADMIN_TOKEN, globalConfiguration);
+        
         for (String user: addedUserNames) {
             endEntityManagementSession.revokeAndDeleteUser(INTERNAL_ADMIN_TOKEN, user, 0);
             internalCertificateStoreSession.removeCertificatesByUsername(user);
@@ -184,6 +200,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
                 CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, keyAlgorithm, keySpec);
         
         // TODO: process response body
+        log.error(responseBody);
         
         // TODO: process key recovery
         String certificateSerialNo = null;
