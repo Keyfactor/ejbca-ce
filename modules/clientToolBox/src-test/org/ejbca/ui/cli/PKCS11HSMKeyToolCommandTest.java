@@ -297,6 +297,21 @@ public class PKCS11HSMKeyToolCommandTest {
     }
 
     @Test
+    public void testA9BatchGenerationOfKeysOnToken1() throws IOException {
+        String batchGenerateProperties = aliases[3] + " secp192r1\n" + aliases[0] + " 2048";
+        File batchFile = folder.newFile("batchGenerate.txt");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(batchFile)) {
+            fileOutputStream.write(batchGenerateProperties.getBytes());
+        }
+        //PKCS11HSMKeyTool batchgenerate ${p11m} ${batchGenerateFile} TOKEN_LABEL:${label_1}
+        String[] args = new String[]{"PKCS11HSMKeyTool", "batchgenerate", PKCS11_LIBRARY, batchFile.getCanonicalPath(),
+                "TOKEN_LABEL:" + SLOT_LABEL, "-password", TOKEN_PIN};
+        command.execute(args);
+    }
+
+
+    
+    @Test
     public void testB10EccOnToken1() {
         exit.expectSystemExitWithStatus(0);
         int numberOfThreads = 10;
