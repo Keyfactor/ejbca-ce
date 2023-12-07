@@ -1746,9 +1746,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    private KeyPairTemplate matchTemplate(String ku) {
-        if (ku != null) {
-            return KeyPairTemplate.valueOf(ku);
+    private KeyPairTemplate matchTemplate(String keyUsage) {
+        if (keyUsage != null) {
+            return KeyPairTemplate.valueOf(keyUsage);
         }
         return null;
     }
