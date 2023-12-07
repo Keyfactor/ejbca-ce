@@ -135,7 +135,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_CVC_ECC_CA_NAME = "TESTCVCAECC";
     public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_DN = "CN=TDVEC-D,C=SE";
     public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME = "TESTDVECC-D";
-    public static final String TEST_DSA_CA_NAME = "TESTDSA";
     
     private static final int CA_CREATION_FAIL = -1;
     

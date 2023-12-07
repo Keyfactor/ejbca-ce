@@ -77,9 +77,6 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private static final String EC_KEY_HEADER = "-----BEGIN EC PRIVATE KEY-----\n";
     private static final String EC_KEY_FOOTER = "-----END EC PRIVATE KEY-----";
     
-    private static final String DSA_KEY_HEADER = "-----BEGIN DSA PRIVATE KEY-----\n";
-    private static final String DSA_KEY_FOOTER = "-----END DSA PRIVATE KEY-----";
-    
     {
         registerParameter(new Parameter(PRIVATEKEYFILEPATH, "Private key file path", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Path to the file containing private key."));

@@ -185,8 +185,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     private static final String PKIX_OCSP_NONCE = "123456789";
 
     public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
-
-    private static final String DSA_DN = "CN=OCSPDSATEST,O=Foo,C=SE";
     
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
@@ -316,7 +314,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     @After
     public void tearDown() throws Exception {
         CaTestCase.removeTestCA();
-        removeDSACA();
         removeECDSACA();
     }
 
@@ -1653,38 +1650,6 @@ Content-Type: text/html; charset=iso-8859-1
             this.helper.verifyStatusGood(this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
         } finally {
             internalCertStoreSession.removeCertificate(this.ocspTestCert);
-        }
-    }
-    
-    
-    /**
-     * removes DSA CA
-     *
-     * @throws Exception
-     *           error
-     */
-    public void removeDSACA() throws Exception {
-        try {
-            if (caSession.existsCa(DSA_DN.hashCode())) {
-                final int cryptoTokenId = caSession.getCAInfo(admin, DSA_DN.hashCode()).getCAToken().getCryptoTokenId();
-                CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
-            }
-        } catch (Exception e) {
-            log.error("", e);
-        }
-        try {
-            if (caSession.existsCa(DSA_DN.hashCode())) {
-                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, DSA_DN.hashCode()));
-            }
-        } catch (Exception e) {
-            log.info("Could not remove CA with SubjectDN " + DSA_DN);
-        }
-        try {
-            if (caSession.existsCa("CN=OCSPDSAIMPCATEST".hashCode())) {
-                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPDSAIMPCATEST".hashCode()));
-            }
-        } catch (Exception e) {
-            log.info("Could not remove CA with SubjectDN CN=OCSPDSAIMPCATEST");
         }
     }
 
