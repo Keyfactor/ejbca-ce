@@ -24,6 +24,8 @@ import java.security.PublicKey;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.BaseCryptoToken;
@@ -136,5 +138,19 @@ public class DummyCryptoToken extends BaseCryptoToken {
         return doPermitExtractablePrivateKey();
     }
 
+    @Override
+    public Set<Long> getKeyUsagesFromKey(String arg0, boolean arg1, long... arg2) throws CryptoTokenOfflineException {
+        return new TreeSet<Long>();
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPrivateKey(String arg0) throws CryptoTokenOfflineException {
+        return new TreeSet<Long>();
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPublicKey(String arg0) throws CryptoTokenOfflineException {
+        return new TreeSet<Long>();
+    }
 }
 

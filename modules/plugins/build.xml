@@ -39,10 +39,14 @@
         <path location="${plugins.build.dir}"/>
         <path location="${plugins.build-test.dir}"/>
         <path location="${mod.ejbca-ejb-interface.lib}"/>
-	<path refid="lib.commons-io.classpath"/>
-	<path location="${mod.systemtest-common.lib}"/>
-	<path location="${mod.systemtest-interface.lib}"/>
-	<path location="${mod.systemtest-ejb.lib}"/>
+        <path refid="lib.commons-io.classpath"/>
+        <path location="${mod.systemtest-common.lib}"/>
+        <path location="${mod.systemtest-interface.lib}"/>
+        <path location="${mod.systemtest-ejb.lib}"/>
+        <path location="${mod.cesecore-entity.lib}"/>
+        <path location="${mod.cesecore-x509ca.lib}"/>
+        <path refid="lib.x509-common-util.classpath"/>
+        <path refid="lib.jee-client.classpath"/>
     </path>
 
     <target name="clean" description="Clean up this module">
@@ -107,6 +111,11 @@
          ================================= -->
     <target name="runone" depends="tests-compile">
         <fail message="'test.runone' is not set. Example -Dtest.runone=TestName . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+        <condition property="remoteDebugJvmArgs"
+                   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+                   else="-ea">
+            <istrue value="${remoteDebug}"/>
+        </condition>
         <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
             <classpath>
                 <path refid="test.classpath"/>
@@ -117,6 +126,7 @@
                 <fileset dir="${plugins.build-test.dir}" includes="**/${test.runone}.class"/>
             </batchtest>
             <jvmarg line="${tests.jvmargs}"/>
+            <jvmarg value="${remoteDebugJvmArgs}"/>
         </junit>
     </target>
 </project>
