@@ -68,6 +68,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -270,7 +271,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         final String extcachainName = parameters.get(EXTERNAL_CHAIN_KEY);
 
         final String caname = parameters.get(CA_NAME_KEY);
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(parameters.get(DN_KEY)));
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(parameters.get(DN_KEY)));
         final String subjectAltName = parameters.get(ALT_NAME_KEY);
         if (subjectAltName != null && !checkSubjectAltName(subjectAltName)) {
             log.error("Invalid Subject Alternative Name");
@@ -538,7 +539,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // Generate CA keys if it is a soft CryptoToken
             if ("soft".equals(catokentype)) {
                 final String signKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-                final String signKeySpecification = "DSA".equals(keytype) ? "DSA" + keyspec : keyspec;
+                final String signKeySpecification = keyspec;
                 try {
                     cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(), cryptoTokenId, signKeyAlias, KeyGenParams.builder(signKeySpecification).build());
                 } catch (InvalidAlgorithmParameterException e) {
@@ -574,7 +575,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             switch (type) {
             case CVC:
                 // Get keysequence from SERIALNUMBER in DN is it exists
-                final String keysequence = CertTools.getPartFromDN(dn, "SN");
+                final String keysequence = DnComponents.getPartFromDN(dn, "SN");
                 if (keysequence != null) {
                     getLogger().info("CVC key sequence: " + keysequence);
                     caToken.setKeySequence(keysequence);

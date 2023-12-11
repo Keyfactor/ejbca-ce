@@ -39,9 +39,9 @@ import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
 import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
 
@@ -124,8 +124,8 @@ public class CvcRequestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 						keytype = "ECDSA";
 					}
 					KeyPair keyPair = KeyTools.genKeys(keySpec, keytype);
-					String country = CertTools.getPartFromDN(dn, "C");
-					String mnemonic = CertTools.getPartFromDN(dn, "CN");
+					String country = DnComponents.getPartFromDN(dn, "C");
+					String mnemonic = DnComponents.getPartFromDN(dn, "CN");
 					if (sequence.equalsIgnoreCase("null")) {
 						sequence = RandomStringUtils.randomNumeric(5);
 						getPrintStream().println("No sequence given, using random 5 number sequence: "+sequence);

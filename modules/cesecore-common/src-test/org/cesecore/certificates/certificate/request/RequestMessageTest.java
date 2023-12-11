@@ -12,6 +12,18 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.request;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
@@ -30,19 +42,8 @@ import org.junit.Test;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
-
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Testing various aspects of request messages.
@@ -278,7 +279,7 @@ public class RequestMessageTest {
         altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         // AltNames
         // String[] namearray = altnames.split(",");
-        GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo1.bar.com");
+        GeneralNames san = DnComponents.getGeneralNamesFromAltName("dNSName=foo1.bar.com");
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         extgen.addExtension(Extension.subjectAlternativeName, false, san );
         Extensions exts = extgen.generate();

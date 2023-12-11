@@ -49,7 +49,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
@@ -307,7 +306,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
                 new PublicKeyWrapper(rsakeyPrivKeyUsagePeriod.getPublic()), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
-        assertEquals(CertTools.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), CertTools.stringToBCDNString(dn));
+        assertEquals(DnComponents.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), DnComponents.stringToBCDNString(dn));
         return cert;
     }
 

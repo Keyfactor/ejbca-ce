@@ -12,22 +12,24 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
-import com.keyfactor.util.CertTools;
-import org.apache.commons.lang.StringUtils;
-import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import org.apache.commons.lang.StringUtils;
+import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Validation annotation for input parameter with built-in validator. An input AddEndEntityRestRequest is validated for:
@@ -107,7 +109,7 @@ public @interface ValidAddEndEntityRestRequest {
                 return false;
             }
             try{
-                CertTools.stringToBCDNString(subjectDn);
+                DnComponents.stringToBCDNString(subjectDn);
             }catch (Exception e){
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.nullOrEmpty}");
                 return false;

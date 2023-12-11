@@ -287,7 +287,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final int endEntityProfileId = endEntityInformationCopy.getEndEntityProfileId();
         final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
         FieldValidator.validate(endEntity, endEntityProfileId, endEntityProfileName);
-        final String dn = CertTools.stringToBCDNString(StringTools.strip(endEntityInformationCopy.getDN()));
+        final String dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformationCopy.getDN()));
         endEntityInformationCopy.setDN(dn);
         endEntityInformationCopy.setSubjectAltName(StringTools.strip(endEntityInformationCopy.getSubjectAltName()));
         endEntityInformationCopy.setEmail(StringTools.strip(endEntityInformationCopy.getEmail()));
@@ -463,8 +463,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // will cause an error to be thrown later if name constraints are used
             final boolean ldapOrder = x509cainfo.getUseLdapDnOrder() && certProfile.getUseLdapDnOrder();
 
-            X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapOrder);
-            GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
+            X500Name subjectDNName = DnComponents.stringToBcX500Name(dn, nameStyle, ldapOrder);
+            GeneralNames subjectAltName = DnComponents.getGeneralNamesFromAltName(altName);
             try {
                 CABase.checkNameConstraints(caCert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
@@ -623,7 +623,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     /* Does not check authorization. Calling code is responsible for this. */
     private boolean isSubjectDnSerialnumberUnique(final int caId, final String subjectDN, final String username) {
-        final String serialnumber = CertTools.getPartFromDN(subjectDN, "SN");
+        final String serialnumber = DnComponents.getPartFromDN(subjectDN, "SN");
         if (log.isDebugEnabled()) {
             log.debug("subjectDN=" + LogRedactionUtils.getSubjectDnLogSafe(subjectDN)+ " extracted SN=" + serialnumber);
         }
@@ -639,7 +639,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Even though we push down most of the work to the database we still have to verify the serialnumber here since
         // for example serialnumber '1' will match both "SN=1" and "SN=10" etc
         for (final String currentSubjectDN : subjectDNs) {
-            final String currentSn = CertTools.getPartFromDN(currentSubjectDN, "SN");
+            final String currentSn = DnComponents.getPartFromDN(currentSubjectDN, "SN");
             if (serialnumber.equals(currentSn)) {
                 return false;
             }
@@ -863,7 +863,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         FieldValidator.validate(endEntityInformation, endEntityProfileId, eeProfileName);
         
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
-        String dn = CertTools.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
+        String dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
         String altName = endEntityInformation.getSubjectAltName();
         if (log.isTraceEnabled()) {
             log.trace(">changeUser(" + username + ", " + LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId) + ", "
@@ -989,7 +989,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         final CAInfo caInfo = ca.getCAInfo();
         final boolean nameChanged = // only check when name is changed so existing end-entities can be changed even if they violate NCs
-                !userData.getSubjectDnNeverNull().equals(CertTools.stringToBCDNString(dn)) ||
+                !userData.getSubjectDnNeverNull().equals(DnComponents.stringToBCDNString(dn)) ||
                 (userData.getSubjectAltName() != null && !userData.getSubjectAltName().equals(altName));
         if (nameChanged && caInfo instanceof X509CAInfo && !caInfo.getCertificateChain().isEmpty()) {
             final X509CAInfo x509cainfo = (X509CAInfo) caInfo;
@@ -1006,8 +1006,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             // will cause an error to be thrown later if name constraints are used
             final boolean ldapOrder = x509cainfo.getUseLdapDnOrder() && (certProfile != null && certProfile.getUseLdapDnOrder());
 
-            X500Name subjectDNName = CertTools.stringToBcX500Name(dn, nameStyle, ldapOrder);
-            GeneralNames subjectAltName = CertTools.getGeneralNamesFromAltName(altName);
+            X500Name subjectDNName = DnComponents.stringToBcX500Name(dn, nameStyle, ldapOrder);
+            GeneralNames subjectAltName = DnComponents.getGeneralNamesFromAltName(altName);
             try {
                 CABase.checkNameConstraints(cacert, subjectDNName, subjectAltName);
             } catch (IllegalNameException e) {
@@ -2367,8 +2367,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         final String subject = paramGen.interpolate(userNotification.getNotificationSubject());
                         final String message = paramGen.interpolate(userNotification.getNotificationMessage());
                         MailSender.sendMailOrThrow(fromemail, Collections.singletonList(recipientEmail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
-                        final String logmsg = intres.getLocalizedMessage("ra.sentnotification", endEntityInformation.getUsername(), recipientEmail);
-                        log.info(logmsg);
                     } catch (MailException e) {
                         final String msg = intres.getLocalizedMessage("ra.errorsendnotification", endEntityInformation.getUsername(), recipientEmail);
                         log.error(msg, e);

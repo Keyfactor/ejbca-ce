@@ -51,6 +51,7 @@ import org.ejbca.core.model.era.RaSelfRenewCertificateData;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -177,7 +178,7 @@ public class RaRenewBean implements Serializable {
             certGenerationDone = true; // Don't generate certificate twice, if the user retries the download (or double clicks the button)
             if (newToken != null) {
                 log.debug("Admin client certificate renewal was successful. Sending token file to browser.");
-                String name = CertTools.getPartFromDN(newSubjectDn, "CN");
+                String name = DnComponents.getPartFromDN(newSubjectDn, "CN");
                 if (name == null){
                     name = "certificate";
                 }
@@ -292,14 +293,6 @@ public class RaRenewBean implements Serializable {
 
     public List<SelectItem> getAvailableAlgorithmSelectItems() {
         final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
-         if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength == 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 for (final int availableBitLength : availableBitLengths) {
                     if (availableBitLength >= 1024) {

@@ -88,6 +88,7 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
@@ -349,7 +350,7 @@ public class RaCertificateDetails implements Serializable {
                 }
               
                 this.typeVersion = Integer.toString(x509Certificate.getVersion());
-                this.subjectAn = CertTools.getSubjectAlternativeName(certificate);
+                this.subjectAn = DnComponents.getSubjectAlternativeName(certificate);
                 try {
                     this.subjectDa = SubjectDirAttrExtension.getSubjectDirectoryAttributes(certificate);
                 } catch (ParseException e) {
@@ -1026,7 +1027,7 @@ public class RaCertificateDetails implements Serializable {
         ec.setResponseContentLength(token.length);
         String fileNameWithoutExtension = "request_csr";
         if (certificateData.getSubjectDN() != null) {
-            fileNameWithoutExtension = CertTools.getPartFromDN(certificateData.getSubjectDN(), "CN");
+            fileNameWithoutExtension = DnComponents.getPartFromDN(certificateData.getSubjectDN(), "CN");
         }
 
         final String filename = StringTools.stripFilename(fileNameWithoutExtension + fileExtension);

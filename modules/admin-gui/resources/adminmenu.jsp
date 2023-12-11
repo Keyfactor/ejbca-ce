@@ -232,7 +232,7 @@ org.ejbca.util.HTMLTools
          out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_VAFUNCTIONS")+"</strong><ul>");
          vaheaderprinted=true;
          }  %>
-    <li><a href="<%= OCSP_RESPONDER_LINK %>"><%=ejbcawebbean.getText("NAV_OCSPRESPONDERS") %></a></li>
+        <li><a href="<%= OCSP_RESPONDER_LINK %>"><%=ejbcawebbean.getText("NAV_OCSPRESPONDERS") %></a></li></ul></li>
         <% } %>
 <%
    // --------------------------------------------------------------------------
@@ -429,7 +429,8 @@ if(configheaderprinted){
 		</li>
 <% } %>
 
+<% if (ejbcawebbean.getGlobalConfiguration().getUseSessionTimeout()) { %>
 		<li id="cat11"><a href="<%= LOGOUT_LINK %>" target="_top"><%=ejbcawebbean.getText("LOGOUT") %></a></li>
-
+<% } %>
 	</ul><!-- class="navbar" -->
 	</div><!-- id="navigation" -->
