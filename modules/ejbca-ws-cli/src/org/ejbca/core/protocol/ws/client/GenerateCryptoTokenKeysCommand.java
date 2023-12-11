@@ -74,6 +74,6 @@ public class GenerateCryptoTokenKeysCommand extends EJBCAWSRABaseCommand impleme
         getPrintStream().println("Command used to generate a keypair for a specific cryptotoken");
         getPrintStream().println("Usage : generatectkeys <cryptotokenName> <keypairAlias> <keySpecification>");
         getPrintStream().println();
-        getPrintStream().println("Examples of key specifications: RSA2048, secp256r1, DSA1024, gost3410, dstu4145");
+        getPrintStream().println("Examples of key specifications: RSA2048, secp256r1");
     }
 }
