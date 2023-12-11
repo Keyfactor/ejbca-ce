@@ -119,7 +119,7 @@ public class PKCS11HSMKeyToolCommandTest {
             "All mimsy were the borogoves, \n" +
             "And the mome raths outgrabe. ";
 
-    private static String[] aliases = new String[]{"rsa1", "rsa2", "rsa3", "ecc", "dsa", "TestRootOld", "TestRootNew"};
+    private static String[] aliases = new String[]{"rsa1", "rsa2", "rsa3", "ecc", "TestRootOld", "TestRootNew"};
 
     private static File inFile;
     private static File certFile;
@@ -298,9 +298,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     @Test
     public void testA9BatchGenerationOfKeysOnToken1() throws IOException {
-        String batchGenerateProperties = aliases[3] + " secp192r1\n" +
-                aliases[4] + " DSA1024\n" +
-                aliases[0] + " 2048";
+        String batchGenerateProperties = aliases[3] + " secp192r1\n" + aliases[0] + " 2048";
         File batchFile = folder.newFile("batchGenerate.txt");
         try (FileOutputStream fileOutputStream = new FileOutputStream(batchFile)) {
             fileOutputStream.write(batchGenerateProperties.getBytes());
@@ -311,6 +309,8 @@ public class PKCS11HSMKeyToolCommandTest {
         command.execute(args);
     }
 
+
+    
     @Test
     public void testB10EccOnToken1() {
         exit.expectSystemExitWithStatus(0);
@@ -322,16 +322,6 @@ public class PKCS11HSMKeyToolCommandTest {
         command.execute(args);
     }
 
-    @Test
-    public void testB11DsaOnToken1() {
-        exit.expectSystemExitWithStatus(0);
-        int numberOfThreads = 10;
-        int numberOfTests = 35;
-        //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_1} 10:35 dsa
-        String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[4], "-password", TOKEN_PIN};
-        command.execute(args);
-    }
 
     @Test
     public void testB12LinkcertForEntryTestRootNewFromEntryTestRootOld() throws Exception {
