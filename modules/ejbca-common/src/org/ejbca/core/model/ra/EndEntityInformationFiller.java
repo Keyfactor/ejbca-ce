@@ -36,7 +36,6 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
@@ -147,7 +146,7 @@ public class EndEntityInformationFiller {
             return StringUtils.EMPTY;
         }
         StringBuilder specifiedSans = new StringBuilder();
-        String commonName = CertTools.getCommonNameFromSubjectDn(subjectDn);
+        String commonName = DnComponents.getCommonNameFromSubjectDn(subjectDn);
         if (StringUtils.isNotEmpty(commonName)) {
             int[] field = null;
             final int numberOfFields = endEntityProfile.getSubjectAltNameFieldOrderLength();
@@ -478,7 +477,7 @@ public class EndEntityInformationFiller {
             
             if(dnParts.length==2 || !curDn.contains("+") ||
                     startsWithIgnoreCase(curDn, DnComponents.UNIFORMRESOURCEID) ||
-                    startsWithIgnoreCase(curDn, CertTools.URI1)) {
+                    startsWithIgnoreCase(curDn, DnComponents.URI1)) {
                 // multi-valued RDN must have unescaped + in them
                 // URI may contain unescaped + as part of query string
                 value = curDn.substring(dnParts[0].length()+1).trim();

@@ -13,6 +13,24 @@
 
 package org.ejbca.core.ejb.ra;
 
+import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Date;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -58,26 +76,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyStoreTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.Date;
 
 /**
  * Implementation of KeyStoreCreateSession
@@ -420,7 +422,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             keyRecoverySession.addKeyRecoveryData(administrator, EJBTools.wrap(cert), username, EJBTools.wrap(rsaKeys));
         }
         //  Use CN if as alias in the keystore, if CN is not present use username
-        String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+        String alias = DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
         if (alias == null) {
             alias = username;
         }

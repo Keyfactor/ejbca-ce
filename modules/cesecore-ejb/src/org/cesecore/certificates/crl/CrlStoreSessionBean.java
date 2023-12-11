@@ -12,7 +12,22 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import com.keyfactor.util.CertTools;
+import java.util.Date;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import javax.ejb.EJB;
+import javax.ejb.EJBException;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
+import javax.persistence.TypedQuery;
+
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -30,20 +45,7 @@ import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValueExtractor;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs. CRLs are signed using
@@ -82,7 +84,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             log.trace(">storeCRL(" + cafp + ", " + number + ")");
         }
         // Check that user is authorized to the CA that issued this CRL
-        String bcdn = CertTools.stringToBCDNString(issuerDN);
+        String bcdn = DnComponents.stringToBCDNString(issuerDN);
         int caid = bcdn.hashCode();
         authorizedToCA(admin, caid);
 

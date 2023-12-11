@@ -40,6 +40,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /** ASN.1 OCSP extension used to map a UNID to a Fnr, OID for this extension is 2.16.578.1.16.3.2
  * 
@@ -99,7 +100,7 @@ public class OCSPUnidExtension implements OCSPExtension {
         }
         
         // The Unid is in the DN component serialNumber
-        serialNumber = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "SN");
+        serialNumber = DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "SN");
         if (serialNumber != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Found serialNumber: " + serialNumber);

@@ -33,7 +33,7 @@ import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
 
 import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * FNR is the Norwegian equivalent of a SSN or personal number, i.e, a unique numerical identifier for a Norwegian national. Norwegian regulation 
@@ -90,7 +90,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
             LOG.debug("Certificate profile " + certificateProfileName + " was not named correctly for UnidFNR operations.");
             return result;
         } else {
-            X500Name modifiedDN = getModifiedX500Name(unidPrefix, CertTools.stringToBcX500Name(endEntityInformation.getDN()));
+            X500Name modifiedDN = getModifiedX500Name(unidPrefix, DnComponents.stringToBcX500Name(endEntityInformation.getDN()));
             if(modifiedDN != null) {
                 result.setDN(modifiedDN.toString());
             } 
