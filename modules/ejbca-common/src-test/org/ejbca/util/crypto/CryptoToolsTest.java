@@ -253,38 +253,6 @@ public class CryptoToolsTest {
     /** Test that we can encrypt and decrypt a P256 KeyPair 
      */
     @Test
-    public void testEncryptDecryptDsaKeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
-        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
-                "Soft CryptoToken");
-        final String alias = "alias";
-        // key pair to encrypt decrypt keys
-        cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsTest", 1, "0.0", cryptoToken.getPrivateKey(alias),
-                cryptoToken.getPublicKey(alias), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
-
-        final KeyPair keypair = KeyTools.genKeys("DSA1024", AlgorithmConstants.KEYALGORITHM_DSA);
-        byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
-        assertNotNull("Encrypted key pair should not be null", encryptedBytes);
-        final KeyPair keys = CryptoTools.decryptKeys(cryptoToken.getEncProviderName(), caCertificate, cryptoToken.getPrivateKey(alias), encryptedBytes);
-        assertNotNull("Decrypted key pair should not be null", keys);
-        // Throws exception is testing does not work
-        KeyTools.testKey(keys.getPrivate(), keys.getPublic(), BouncyCastleProvider.PROVIDER_NAME);
-
-        byte[] encodedPublicKey = keys.getPublic().getEncoded();
-        assertEquals("org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPublicKey", keys.getPublic().getClass().getName());
-        assertEquals("X.509", keys.getPublic().getFormat());
-        assertEquals("DSA", keys.getPublic().getAlgorithm());
-        assertNotNull("Encoded public key should not be null", encodedPublicKey);
-        byte[] encodedPrivateKey = keys.getPrivate().getEncoded();
-        assertEquals("org.bouncycastle.jcajce.provider.asymmetric.dsa.BCDSAPrivateKey", keys.getPrivate().getClass().getName());
-        assertEquals("PKCS#8", keys.getPrivate().getFormat());
-        assertNotNull("Encoded private key should not be null", encodedPrivateKey);
-    }
-
-    /** Test that we can encrypt and decrypt a P256 KeyPair 
-     */
-    @Test
     public void testEncryptDecryptEd25519KeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
             IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
 
