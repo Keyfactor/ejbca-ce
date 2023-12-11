@@ -14,6 +14,7 @@ package org.cesecore.azure;
 
 public class AzureException extends Exception {
 
+    private static final long serialVersionUID = 1L;
     public AzureException(String message) {
         super(message);
     }

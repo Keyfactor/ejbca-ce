@@ -49,6 +49,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
@@ -139,7 +140,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-            EndEntityInformation userdata = new EndEntityInformation(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname,
+            EndEntityInformation userdata = new EndEntityInformation(username, DnComponents.stringToBCDNString(dn), getTestCAId(), subjectaltname,
                     email, EndEntityConstants.STATUS_NEW, type, profileid, certificatetypeid, null, null, token, null);
             userdata.setPassword(password);
             if (endEntityAccessSession.findUser(administrator, username) != null) {

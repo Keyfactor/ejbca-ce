@@ -45,6 +45,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class implementing logic for importing a certificate from file.
@@ -160,7 +161,7 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
         } else if (StringUtils.equalsIgnoreCase(usernameFilter, "CN")) {
             // Use CN if requested, but fallback to DN if it's empty, or if DN is empty as well, fall back to filename.
             final String dn = CertTools.getSubjectDN(certificate);
-            final String cn = CertTools.getPartFromDN(dn, "CN");
+            final String cn = DnComponents.getPartFromDN(dn, "CN");
             if (cn == null || cn.length() == 0) {
                 if (dn == null || dn.length() == 0) {
                     log.warn("WARN: Certificate with serial '" + CertTools.getSerialNumberAsString(certificate)
@@ -203,8 +204,8 @@ class CertificateImporter implements Callable<CertificateImporter.Result> {
             return userdata;
         } else {
             // Add a "user" to map this certificate to
-            final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
-            final String email = CertTools.getEMailAddress(certificate);
+            final String subjectAltName = DnComponents.getSubjectAlternativeName(certificate);
+            final String email = DnComponents.getEMailAddress(certificate);
             userdata = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
                     EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null,
                     null, SecConst.TOKEN_SOFT_BROWSERGEN, null);

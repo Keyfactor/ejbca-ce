@@ -13,6 +13,11 @@
 
 package org.ejbca.core.ejb.ca.sign;
 
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -72,13 +77,9 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * 
@@ -169,7 +170,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         BigInteger serno = SernoGeneratorRandom.instance(20).getSerno();
         log.debug("serno: " + serno);
 
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.toASN1Structure().getEncoded());
@@ -206,7 +207,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         BigInteger serno = ((X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername("foo")).iterator().next()).getSerialNumber();
         log.debug("foo serno: " + serno);
 
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo2"),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo2"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.toASN1Structure().getEncoded());
@@ -240,7 +241,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         BigInteger serno = ((X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername("foo")).iterator().next()).getSerialNumber();
         log.debug("foo serno: " + serno);
 
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo3"),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo3"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.toASN1Structure().getEncoded());
@@ -277,7 +278,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         BigInteger serno = SernoGeneratorRandom.instance(8).getSerno();
         log.debug("serno: " + serno);
 
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
                 rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.getEncoded());

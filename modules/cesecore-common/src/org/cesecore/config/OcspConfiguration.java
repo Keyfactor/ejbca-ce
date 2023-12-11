@@ -13,19 +13,19 @@
 
 package org.cesecore.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConversionException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 
-import com.keyfactor.util.CertTools;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
@@ -312,7 +312,7 @@ public class OcspConfiguration {
     public static String getDefaultResponderId() {
         final String ret = ConfigurationHolder.getExpandedString(DEFAULT_RESPONDER);
         if (ret != null) {
-            return CertTools.stringToBCDNString(ret);
+            return DnComponents.stringToBCDNString(ret);
         }
         return ret;
     }

@@ -12,12 +12,12 @@
  *************************************************************************/
 package org.ejbca.ui.cli.ra;
 
-import java.math.BigInteger;
+import static org.junit.Assert.assertTrue;
+
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -51,8 +51,6 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
-import static org.junit.Assert.assertTrue;
-
 /**
  * @version $Id$
  *
@@ -61,8 +59,6 @@ public class RevokeCertificateCommandTest {
 
     private static final String TESTCLASS_NAME = KeyRecoveryNewestCommandTest.class.getSimpleName();
     private static final String END_ENTITY_SUBJECT_DN = "C=SE, O=PrimeKey, CN=" + TESTCLASS_NAME;
-
-    private static final Logger log = Logger.getLogger(RevokeCertificateCommandTest.class);
 
     private RevokeCertificateCommand command = new RevokeCertificateCommand();
 

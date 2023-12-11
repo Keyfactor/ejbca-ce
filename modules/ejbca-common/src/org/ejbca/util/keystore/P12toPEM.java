@@ -37,6 +37,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
@@ -179,7 +180,7 @@ public class P12toPEM {
 
         byte[] output = userX509Certificate.getEncoded();
         String sn = CertTools.getSubjectDN(userX509Certificate);
-        String userFile = CertTools.getPartFromDN(sn, "CN");
+        String userFile = DnComponents.getPartFromDN(sn, "CN");
         String filetype = ".pem";
 
         File path = new File(exportpath);

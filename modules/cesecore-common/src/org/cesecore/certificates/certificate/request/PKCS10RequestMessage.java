@@ -52,12 +52,12 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.cesecore.util.LogRedactionUtils;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
-
-import org.cesecore.util.LogRedactionUtils;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * <p>Class to handle PKCS10 request messages sent to the CA.
@@ -348,7 +348,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         		Extension ext = exts.getExtension(Extension.subjectAlternativeName);
                 if (ext != null) {
                     // Finally read the value
-            		ret = CertTools.getAltNameStringFromExtension(ext);
+            		ret = DnComponents.getAltNameStringFromExtension(ext);
                 } else {
                     if (log.isDebugEnabled()) {
                     	log.debug("no subject altName extension");

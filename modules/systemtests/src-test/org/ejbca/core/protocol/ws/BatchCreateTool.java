@@ -12,6 +12,30 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.security.GeneralSecurityException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ejb.FinderException;
+import javax.ejb.ObjectNotFoundException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -54,32 +78,10 @@ import org.ejbca.util.keystore.P12toPEM;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.security.GeneralSecurityException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Test tool so that tests stop using the batch command. 
@@ -482,9 +484,7 @@ public abstract class BatchCreateTool {
             String sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
             if (props.getKeyAlg().equals("ECDSA")) {
                 sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-            } else if (props.getKeyAlg().equals("DSA")) {
-                sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            } else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+            }else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
             } else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;
@@ -541,7 +541,7 @@ public abstract class BatchCreateTool {
         }
 
         // Use CN if as alias in the keystore, if CN is not present use username
-        String alias = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+        String alias = DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
         if (alias == null) {
             alias = username;
         }

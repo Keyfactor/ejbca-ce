@@ -68,6 +68,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Used to stress test the REST interface.
@@ -128,7 +129,7 @@ class RESTTest extends ClientToolBox {
         }
         private PKCS10CertificationRequest genCertReq(final X500Name userDN) throws IOException {
             // Add an altName extension with an email address
-            GeneralNames san = CertTools.getGeneralNamesFromAltName("rfc822Name=tomas@primekey.se");
+            GeneralNames san = DnComponents.getGeneralNamesFromAltName("rfc822Name=tomas@primekey.se");
             ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
             extensionsGenerator.addExtension(Extension.subjectAlternativeName, false, san);
             final Extensions extensions = extensionsGenerator.generate();

@@ -757,10 +757,14 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final List<KeyPairInfo> ret = new ArrayList<KeyPairInfo>();
         for (final String alias : getKeyPairAliasesInternal(cryptoToken)) {
             final PublicKey publicKey = cryptoToken.getPublicKey(alias);
-            final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-            final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
-            final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
-            ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId));
+            if (publicKey != null) {
+                final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
+                final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
+                final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
+                ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId));
+            } else {
+                log.warn("Could not read pubkey for alias '" + alias +"', got null, this is probably an unknown key type.");
+            }
         }
         return ret;
     }
@@ -918,13 +922,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         assertAliasNotInUse(cryptoToken, newAlias);
         final PublicKey publicKey = cryptoToken.getPublicKey(currentAlias);
-        final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-        final String keySpecification;
-        if (AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlgorithm)) {
-            keySpecification = AlgorithmConstants.KEYALGORITHM_DSA + AlgorithmTools.getKeySpecification(publicKey);
-        } else {
-            keySpecification = AlgorithmTools.getKeySpecification(publicKey);
-        }
+        final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         KeyTools.checkValidKeyLength(keySpecification);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);

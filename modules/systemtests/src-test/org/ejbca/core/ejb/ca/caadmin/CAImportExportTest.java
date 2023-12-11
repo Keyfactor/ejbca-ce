@@ -179,25 +179,6 @@ public class CAImportExportTest  {
         }
 	    log.trace("<test05ImportExport()");
 	}
-	
-	/**
-     * Tries to export and import a CA that is using SHA1withDSA as signature algorithm.
-     *
-     * @throws Exception
-     */
-    @Test
-	public void test06ImportExportSHA1withDSA() throws Exception {
-	    log.trace("<test06ImportExport..()");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, TEST_PASSWORD.toCharArray(), true, false, "test06", "DSA1024", RSA_1024, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-        try {
-            final CAToken catokeninfo = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-            subTest(catokeninfo);
-        } finally {
-            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId);
-        }
-	    log.trace("<test06ImportExport()");
-	}
-
     
     @Test
     public void test07ImportWithNewSession() throws Exception {

@@ -28,7 +28,6 @@ import javax.faces.context.FacesContext;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
-import org.cesecore.authentication.tokens.PublicWebPrincipal;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.WebPrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -44,6 +43,7 @@ import org.ejbca.ui.web.admin.LinkView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class representing the view of one ApprovalDataVO data
@@ -141,13 +141,13 @@ public class ApprovalDataVOView implements Serializable {
         final AuthenticationToken reqAdmin = data.getApprovalRequest().getRequestAdmin();
         if (cert != null) {
             final String dn = CertTools.getSubjectDN(cert);
-            String o = CertTools.getPartFromDN(dn, "O");
+            String o = DnComponents.getPartFromDN(dn, "O");
             if (o == null) {
                 o = "";
             } else {
                 o = ", " + o;
             }
-            retval = CertTools.getPartFromDN(dn, "CN") + o;
+            retval = DnComponents.getPartFromDN(dn, "CN") + o;
         } else {
             if (reqAdmin != null) {
                 for (final Principal principal : reqAdmin.getPrincipals()) {

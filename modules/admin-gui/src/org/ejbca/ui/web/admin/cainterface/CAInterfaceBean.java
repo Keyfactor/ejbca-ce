@@ -110,7 +110,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  * <p>
@@ -163,9 +162,11 @@ public class CAInterfaceBean implements Serializable {
           keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
           authenticationToken = ejbcawebbean.getAdminObject();
           this.ejbcawebbean = ejbcawebbean;
-
           initialized =true;
+        } else {
+            log.debug("=initialize(): already initialized");
         }
+        log.trace("<initialize()");
     }
 
     public CertificateView[] getCACertificates(int caid) {

@@ -523,7 +523,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableKeyAlgorithmsAsList(AlgorithmTools.getAvailableKeyAlgorithms());
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
-        setAvailableSecurityLevelsAsList(new ArrayList<>(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU));
         setSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
@@ -1355,12 +1354,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return  doSelectedEcRequirebitLenths()
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)
-                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
     public boolean isKeyAlgorithmsRequireSecurityLevel() {
-        return  getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU);
+        return false;
     }
 
     public String[] getAvailableKeyAlgorithms() {
@@ -3416,12 +3414,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 throw new IllegalKeyException(intres.getLocalizedMessage("createcert.illegaleccurve", keySpecification));
             }
         }
-        if (AlgorithmTools.isPQC(keyAlgorithm) && !AlgorithmConstants.KEYALGORITHM_NTRU.equals(keyAlgorithm)) {
+        if (AlgorithmTools.isPQC(keyAlgorithm)) {
             //We implicitly allow a specific key length when configuring FALCON and/or DILITHIUM algorithms, 
             //hence we don't need to check for key length compliancy with the certificate profile.
-            //NTRU allow for the configuration of 128, 192, 256 bits
             return;
-        }
+         }
         // Verify key length that it is compliant with certificate profile
         if (keyLength == -1) {
             throw new IllegalKeyException(intres.getLocalizedMessage("createcert.unsupportedkeytype", publicKey.getClass().getName()));
@@ -3707,9 +3704,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_DSTU4145);
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECGOST3410);
                 }
-                if (getMinimumAvailableBitLength()>1024 || getMaximumAvailableBitLength()<1024) {
-                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_DSA);
-                }
                 if (getMaximumAvailableBitLength()<1024) {
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_RSA);
                 }
@@ -3783,18 +3777,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseTruncatedSubjectKeyIdentifier(false);
             }
 
-            upgradeCpDataToVersion51();
             data.put(VERSION, LATEST_VERSION);
         }
         log.trace("<upgrade");
     }
 
-    private void upgradeCpDataToVersion51() {
-        //  NTRU algorithm requires defined security Levels
-        if (isKeyAlgorithmsRequireSecurityLevel()) {
-            setAvailableSecurityLevelsAsList(new ArrayList<>(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU));
-        }
-    }
 
     /**
      * Determine if the certificate profile supports Elliptic Curve Cryptography (ECC).

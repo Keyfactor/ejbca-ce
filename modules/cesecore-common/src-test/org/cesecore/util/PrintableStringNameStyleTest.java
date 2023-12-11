@@ -22,7 +22,7 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.junit.Test;
 
 import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Tests that we can produce DNs with wither UTF8String (which should be used according to RFC5280), or configured with more legacy PrintableString.
@@ -40,14 +40,14 @@ public class PrintableStringNameStyleTest {
         
         final String dnstr = "C=SE,O=Test,CN=Test,UniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023";
         
-        final X500Name xn1 = CertTools.stringToBcX500Name(dnstr, new CeSecoreNameStyle(), false);
+        final X500Name xn1 = DnComponents.stringToBcX500Name(dnstr, new CeSecoreNameStyle(), false);
         assertTrue("When using CeSecoreNameStyle, C was not of PrintableString type", xn1.getRDNs()[0].getFirst().getValue() instanceof DERPrintableString);
         assertTrue("When using CeSecoreNameStyle, O was not of UTF8String type", xn1.getRDNs()[1].getFirst().getValue() instanceof DERUTF8String);
         assertTrue("When using CeSecoreNameStyle, CN was not of UTF8String type", xn1.getRDNs()[2].getFirst().getValue() instanceof DERUTF8String);
         assertTrue("When using CeSecoreNameStyle, UniqueIdentifier was not of UTF8String type", xn1.getRDNs()[3].getFirst().getValue() instanceof DERUTF8String);
         assertTrue("When using CeSecoreNameStyle, CertificationID was not of ASN1Sequence type", xn1.getRDNs()[4].getFirst().getValue() instanceof ASN1Sequence);
         
-        final X500Name xn2 = CertTools.stringToBcX500Name(dnstr, new PrintableStringNameStyle(), false);
+        final X500Name xn2 = DnComponents.stringToBcX500Name(dnstr, new PrintableStringNameStyle(), false);
         assertTrue("When using PrintableStringNameStyle, C was not of PrintableString type", xn2.getRDNs()[0].getFirst().getValue() instanceof DERPrintableString);
         assertTrue("When using PrintableStringNameStyle, O was not of PrintableString type", xn2.getRDNs()[1].getFirst().getValue() instanceof DERPrintableString);
         assertTrue("When using PrintableStringNameStyle, CN was not of PrintableString type", xn2.getRDNs()[2].getFirst().getValue() instanceof DERPrintableString);

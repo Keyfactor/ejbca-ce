@@ -12,24 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.cache;
 
-import com.keyfactor.util.CertTools;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.cert.ocsp.CertificateID;
-import org.bouncycastle.cert.ocsp.OCSPException;
-import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.bc.BcDigestCalculatorProvider;
-import org.cesecore.certificates.ocsp.exception.OcspFailureException;
-import org.cesecore.util.LogRedactionUtils;
-
 import java.math.BigInteger;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +20,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.cesecore.util.LogRedactionUtils;
+
+import com.keyfactor.util.CertTools;
 
 /**
  * Hold information needed to create OCSP responses without database lookups.

@@ -934,7 +934,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (pkcs10CertificateRequest != null) {
                 final Extension sanExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
                 if (sanExtension != null) {
-                    populateRequestFields(RequestFieldType.AN, CertTools.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
+                    populateRequestFields(RequestFieldType.AN, DnComponents.getAltNameStringFromExtension(sanExtension), getSubjectAlternativeName().getFieldInstances());
                     getSubjectAlternativeName().update();
                 }
                 final Extension subjectDirectoryAttributes = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectDirectoryAttributes.getId());
@@ -965,7 +965,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * Populate the fieldInstances parameter with values from the CSR when the instances are modifiable
      */
     private void populateRequestFields(final RequestFieldType type, final String subject, final Collection<FieldInstance> fieldInstances) {
-        final List<String> subjectFieldsFromParsedCsr = CertTools.getX500NameComponents(subject);
+        final List<String> subjectFieldsFromParsedCsr = DnComponents.getX500NameComponents(subject);
 
         final int eepId = getEndEntityInformation().getEndEntityProfileId();
 
@@ -1547,7 +1547,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @return the file name to use in the content disposition header, filename safe characters
      */
     private String getFileName() {
-        String commonName = CertTools.getPartFromDN(getEndEntityInformation().getDN(), "CN");
+        String commonName = DnComponents.getPartFromDN(getEndEntityInformation().getDN(), "CN");
         if (isRenderSshEnrolmentFields()) {
             commonName = getSshKeyId();
         }

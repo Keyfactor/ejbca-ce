@@ -38,13 +38,13 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
+import org.ejbca.core.protocol.cmp.CmpMessageProtectionVerifyer;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
 import org.ejbca.core.protocol.cmp.CmpPbmac1Verifyer;
-import org.ejbca.core.protocol.cmp.CmpMessageProtectionVerifyer;
 import org.ejbca.core.protocol.cmp.InvalidCmpProtectionException;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Checks the authentication of the PKIMessage.
@@ -325,7 +325,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
             LOG.debug("extractUsernameComponent: "+usernameComp);
         }
         if(StringUtils.isNotEmpty(usernameComp)) {
-            String username = CertTools.getPartFromDN(dn,usernameComp);
+            String username = DnComponents.getPartFromDN(dn,usernameComp);
             String fix = cmpConfiguration.getRANameGenPrefix(this.confAlias);
             if (StringUtils.isNotBlank(fix)) {
                 LOG.info("Preceded RA name prefix '" + fix + "' to username '" + username + "' in CMP vendor mode.");

@@ -444,9 +444,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
     public List<SelectItem> getAvailableSecurityLevel() {
         Set<Integer> availableSecurityLevel = new TreeSet<>();
-        if (certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_NTRU)) {
-            availableSecurityLevel.addAll(AlgorithmTools.DEFAULTSECURITYLEVEL_NTRU);
-        }
         final List<SelectItem> ret = new ArrayList<>();
         if (!availableSecurityLevel.isEmpty() && certificateProfile.isKeyAlgorithmsRequireSecurityLevel()) {
             for (final Integer current : availableSecurityLevel) {
@@ -464,9 +461,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_EC) ||
                 certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECDSA)    ) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_EC);
-        }
-        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSA);
         }
         if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_RSA);

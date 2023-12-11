@@ -930,11 +930,18 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             final PrivateKey privateKey = cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             if (privateKey == null) {
-                String msg1 = "createPKCS7: Private key does not exist!";
+                final String msg1 = "createPKCS7: Private key does not exist!";
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, privateKey.getAlgorithm());
+            final PublicKey publicKey = cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            if (publicKey == null) {
+                final String msg1 = "createPKCS7: Public key does not exist!";
+                log.debug(msg1);
+                throw new SignRequestSignatureException(msg1);
+            }
+            // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3
+            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
             try {
                 final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
                 final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -995,7 +1002,14 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, privateKey.getAlgorithm());
+            final PublicKey publicKey = cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            if (publicKey == null) {
+                String msg1 = "createPKCS7: Public key does not exist!";
+                log.debug(msg1);
+                throw new SignRequestSignatureException(msg1);
+            }
+            // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3            
+            String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
             try {
                 final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
                 final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);

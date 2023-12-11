@@ -12,8 +12,30 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cainterface;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
+import javax.ejb.EJB;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+import javax.servlet.http.Part;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -36,28 +58,9 @@ import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import javax.ejb.EJB;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.http.Part;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * JSF Managed Bean or the ca functions page in the CA UI.
@@ -222,7 +225,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
         }
 
         public String getSubjectDN() {
-            return CertTools.getUnescapedRdnValue(subjectDN);
+            return DnComponents.getUnescapedRdnValue(subjectDN);
         }
 
         public boolean isCertExists() {

@@ -47,6 +47,7 @@ import org.ejbca.ui.web.pub.ServletUtils;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Servlet used to handle certificate requests between CAs.<br>
@@ -138,7 +139,7 @@ public class CACertReqServlet extends BaseAdminServlet {
                         // Apparently it wasn't a CVC certificate, was it a certificate request?
                         try {
                             PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
-                            filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
+                            filename = DnComponents.getPartFromDN(p10.getRequestX500Name().toString(), "CN") + "_csr";
                             String subjectDN = p10.getRequestDN();
                             isAuthorizedToCABySubjectDN(caBean, subjectDN);
                         } catch (AuthorizationDeniedException e) {
@@ -146,7 +147,7 @@ public class CACertReqServlet extends BaseAdminServlet {
                         } catch (Exception e) { // NOPMD
                             // Nope, not a certificate request either, see if it was an X.509 certificate
                             Certificate cert = CertTools.getCertfromByteArray(request, Certificate.class);
-                            filename = CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
+                            filename = DnComponents.getPartFromDN(CertTools.getSubjectDN(cert), "CN");
                             if (filename == null) {
                                 filename = "cert";
                             }
@@ -267,7 +268,7 @@ public class CACertReqServlet extends BaseAdminServlet {
     }
 
     private void isAuthorizedToCABySubjectDN(CAInterfaceBean caBean, String subjectDN) throws AuthorizationDeniedException {
-        final String bcdn = CertTools.stringToBCDNString(subjectDN);
+        final String bcdn = DnComponents.stringToBCDNString(subjectDN);
         final CAData cadata = caSession.findBySubjectDN(bcdn);
         if (cadata != null) {
             boolean authorized = caSession.authorizedToCA(caBean.getAuthenticationToken(), cadata.getCaId());

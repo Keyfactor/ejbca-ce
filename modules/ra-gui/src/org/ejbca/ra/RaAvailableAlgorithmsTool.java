@@ -12,22 +12,23 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import org.apache.commons.lang3.ObjectUtils;
-import org.apache.log4j.Logger;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.config.CesecoreConfiguration;
-import org.ejbca.config.WebConfiguration;
-
-import javax.faces.model.SelectItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.faces.model.SelectItem;
+
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.config.CesecoreConfiguration;
+import org.ejbca.config.WebConfiguration;
+
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 public class RaAvailableAlgorithmsTool {
     private static final Logger log = Logger.getLogger(RaAvailableAlgorithmsTool.class);
@@ -37,14 +38,6 @@ public class RaAvailableAlgorithmsTool {
         if (certificateProfile!=null) {
             final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
             final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength == 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 for (final int availableBitLength : availableBitLengths) {
                     if (availableBitLength >= 1024) {
@@ -90,15 +83,7 @@ public class RaAvailableAlgorithmsTool {
             if (WebConfiguration.isPQCEnabled()) {
                 for (String algorithm : availableKeyAlgorithms) {
                     if (AlgorithmTools.isPQC(algorithm)) {
-                        if (algorithm.equals(AlgorithmConstants.KEYALGORITHM_NTRU) &&
-                                certificateProfile.getAvailableSecurityLevelsAsList() != null) {
-                            for (int level : certificateProfile.getAvailableSecurityLevelsAsList()) {
-                                availableAlgorithmSelectItems.add(new SelectItem(algorithm+ "_" + level,
-                                        algorithm + " " + level));
-                            }
-                        } else {
                             availableAlgorithmSelectItems.add(new SelectItem(algorithm));
-                        }
                     }
                 }
             }

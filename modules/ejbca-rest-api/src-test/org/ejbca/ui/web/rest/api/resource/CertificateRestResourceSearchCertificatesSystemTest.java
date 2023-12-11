@@ -35,7 +35,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -88,6 +87,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -97,7 +97,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  */
 public class CertificateRestResourceSearchCertificatesSystemTest extends RestResourceSystemTestBase {
 
-    private static final Logger log = Logger.getLogger(CertificateRestResourceSearchCertificatesSystemTest.class);
     private static final String TEST_CA_NAME = "RestCertificateResourceTestSearchCa";
     private static final String TEST_EEP_NAME = "RestCertificateResourceTestSearchEep";
     private static final String TEST_CERTP_NAME = "RestCertificateResourceTestSearchCertP";
@@ -196,9 +195,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         byte [] certBytes2 = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
         X509Certificate actualCertificate = CertTools.getCertfromByteArray(certBytes2, X509Certificate.class);
         String issuerDN = CertTools.getIssuerDN(actualCertificate);
-        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualCaName = DnComponents.getPartFromDN(issuerDN, "CN");
         String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
-        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+        String actualCName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
 
         assertNotNull("Serial number not null.", actualSerialNumber);
         assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
@@ -252,9 +251,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         byte [] certBytes2 = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
         X509Certificate actualCertificate = CertTools.getCertfromByteArray(certBytes2, X509Certificate.class);
         String issuerDN = CertTools.getIssuerDN(actualCertificate);
-        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualCaName = DnComponents.getPartFromDN(issuerDN, "CN");
         String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
-        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+        String actualCName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
 
         assertNotNull("Serial number not null.", actualSerialNumber);
         assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
@@ -306,9 +305,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         byte [] actualCertBytes = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
         X509Certificate actualCertificate = CertTools.getCertfromByteArray(actualCertBytes, X509Certificate.class);
         String issuerDN = CertTools.getIssuerDN(actualCertificate);
-        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualCaName = DnComponents.getPartFromDN(issuerDN, "CN");
         String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
-        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+        String actualCName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
 
         assertNotNull("Serial number not null.", actualSerialNumber);
         assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
@@ -367,9 +366,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         byte [] certBytes2 = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
         X509Certificate actualCertificate = CertTools.getCertfromByteArray(certBytes2, X509Certificate.class);
         String issuerDN = CertTools.getIssuerDN(actualCertificate);
-        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualCaName = DnComponents.getPartFromDN(issuerDN, "CN");
         String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
-        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+        String actualCName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
 
         assertNotNull("Serial number not null.", actualSerialNumber);
         assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
@@ -421,9 +420,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         byte [] certBytes2 = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
         X509Certificate actualCertificate = CertTools.getCertfromByteArray(certBytes2, X509Certificate.class);
         String issuerDN = CertTools.getIssuerDN(actualCertificate);
-        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualCaName = DnComponents.getPartFromDN(issuerDN, "CN");
         String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
-        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+        String actualCName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
 
         assertNotNull("Serial number not null.", actualSerialNumber);
         assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
@@ -502,9 +501,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         byte [] certBytes2 = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
         X509Certificate actualCertificate = CertTools.getCertfromByteArray(certBytes2, X509Certificate.class);
         String issuerDN = CertTools.getIssuerDN(actualCertificate);
-        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualCaName = DnComponents.getPartFromDN(issuerDN, "CN");
         String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
-        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+        String actualCName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
 
         assertNotNull("Serial number not null.", actualSerialNumber);
         assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
@@ -573,9 +572,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         byte [] certBytes2 = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
         X509Certificate actualCertificate = CertTools.getCertfromByteArray(certBytes2, X509Certificate.class);
         String issuerDN = CertTools.getIssuerDN(actualCertificate);
-        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualCaName = DnComponents.getPartFromDN(issuerDN, "CN");
         String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
-        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+        String actualCName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
 
         assertNotNull("Serial number not null.", actualSerialNumber);
         assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);
@@ -645,9 +644,9 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         byte [] certBytes2 = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
         X509Certificate actualCertificate = CertTools.getCertfromByteArray(certBytes2, X509Certificate.class);
         String issuerDN = CertTools.getIssuerDN(actualCertificate);
-        String actualCaName = CertTools.getPartFromDN(issuerDN, "CN");
+        String actualCaName = DnComponents.getPartFromDN(issuerDN, "CN");
         String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
-        String actualCName = CertTools.getPartFromDN(actualSubjectDN, "CN");
+        String actualCName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
 
         assertNotNull("Serial number not null.", actualSerialNumber);
         assertEquals("Serial number should be as expected.", expectedSerialNumber, actualSerialNumber);

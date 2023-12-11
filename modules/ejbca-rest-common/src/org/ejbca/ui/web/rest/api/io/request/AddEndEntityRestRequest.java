@@ -50,8 +50,10 @@ public class AddEndEntityRestRequest {
     private String endEntityProfileName;
     @ApiModelProperty(value = "Token type property", allowableValues = "USERGENERATED, P12, JKS, PEM", example = "P12")
     private String token;
-    @ApiModelProperty(value = "Account Binding ID", example = "1234567890")
+    @ApiModelProperty(value = "Account Binding ID", example = "1234567890", required=false)
     private String accountBindingId;
+    @ApiModelProperty(value = "Key recoverable or not", example = "false", required=false)
+    private Boolean keyRecoverable;
     
     /** default constructor needed for serialization */
     public AddEndEntityRestRequest() {}
@@ -69,6 +71,7 @@ public class AddEndEntityRestRequest {
         private String endEntityProfileName;
         private String token;
         private String accountBindingId;
+        private Boolean keyRecoverable;
 
         
         public Builder certificateProfileName(final String certificateProfileName) {
@@ -132,6 +135,11 @@ public class AddEndEntityRestRequest {
             return this;
         }
 
+        public Builder keyRecoverable(Boolean keyRecoverable) {
+            this.keyRecoverable = keyRecoverable;
+            return this;
+        }
+
         public AddEndEntityRestRequest build() {
             return new AddEndEntityRestRequest(this);
         }
@@ -150,6 +158,7 @@ public class AddEndEntityRestRequest {
         this.customData = builder.customData;
         this.token = builder.token;
         this.accountBindingId = builder.accountBindingId;
+        this.keyRecoverable = builder.keyRecoverable;
     }
 
     /**
@@ -165,26 +174,24 @@ public class AddEndEntityRestRequest {
 
         public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest) throws RestException {
             final ExtendedInformation extendedInfo = new ExtendedInformation();
-            if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
-                if (addEndEntityRestRequest.getAccountBindingId() != null) {
-                    extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
-                }
-                if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
-                    addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-                        // Dynamic Custom extensions are added with OID and data
-                        // See org.cesecore.certificates.endentity.ExtendedInformation
-                        extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
-                    });
-                }
-                if (addEndEntityRestRequest.getCustomData() != null && !addEndEntityRestRequest.getCustomData().isEmpty()) {
-                    addEndEntityRestRequest.getCustomData().forEach((extendedInformation) -> {
-                        // There are two different types of custom data ExtendedInformation
-                        // Custom Data starting with customdata_ (like validity) and pure string fields (like certificate serial number and other things)
-                        // We require the API caller to add the customdata_ before the actual variable, where that is needed, for example customdata_STARTTIME
-                        // See org.cesecore.certificates.endentity.ExtendedInformation
-                        extendedInfo.setStringKeyData(extendedInformation.getName(), extendedInformation.getValue());                            
-                    });
-                }
+            if (addEndEntityRestRequest.getAccountBindingId() != null) {
+                extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
+            }
+            if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
+                addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
+                    // Dynamic Custom extensions are added with OID and data
+                    // See org.cesecore.certificates.endentity.ExtendedInformation
+                    extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
+                });
+            }
+            if (addEndEntityRestRequest.getCustomData() != null && !addEndEntityRestRequest.getCustomData().isEmpty()) {
+                addEndEntityRestRequest.getCustomData().forEach((extendedInformation) -> {
+                    // There are two different types of custom data ExtendedInformation
+                    // Custom Data starting with customdata_ (like validity) and pure string fields (like certificate serial number and other things)
+                    // We require the API caller to add the customdata_ before the actual variable, where that is needed, for example customdata_STARTTIME
+                    // See org.cesecore.certificates.endentity.ExtendedInformation
+                    extendedInfo.setStringKeyData(extendedInformation.getName(), extendedInformation.getValue());
+                });
             }
             extendedInfo.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
             extendedInfo.setCustomData(ExtendedInformation.CA_NAME, addEndEntityRestRequest.getCaName());
@@ -208,6 +215,9 @@ public class AddEndEntityRestRequest {
                     tokenType,
                     extendedInfo);
             eeInformation.setPassword(addEndEntityRestRequest.getPassword());
+            if (addEndEntityRestRequest.getKeyRecoverable() != null) {
+                eeInformation.setKeyRecoverable(addEndEntityRestRequest.getKeyRecoverable());
+            }
             return eeInformation;
         }
     }
@@ -307,7 +317,15 @@ public class AddEndEntityRestRequest {
     public void setAccountBindingId(String accountBindingId) {
         this.accountBindingId = accountBindingId;
     }	
-	
+
+    public Boolean getKeyRecoverable() {
+        return keyRecoverable;
+    }
+
+    public void setKeyRecoverble(boolean keyRecoverable) {
+        this.keyRecoverable = keyRecoverable;
+    }   
+
 	public enum EndEntityStatus {
     	NEW(EndEntityConstants.STATUS_NEW),
     	FAILED(EndEntityConstants.STATUS_FAILED),

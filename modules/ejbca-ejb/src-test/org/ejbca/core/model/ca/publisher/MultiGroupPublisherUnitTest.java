@@ -54,7 +54,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Unit test for MultiGroupPublisher.
@@ -68,8 +68,8 @@ public class MultiGroupPublisherUnitTest {
     private static final String TEST_PUBLISHER_DESCRIPTION = "This is a test";
     private static final String TEST_PUBLISHER_NAME = "SomeMultiGroupPublisher";
     private static final String EE_SERIAL = "665544332211";
-    private static final String EE_DN = CertTools.stringToBCDNString("CN=Some User,OU=Quality Assurance,O=TestOrg");
-    private static final String EE_ISSUERDN = CertTools.stringToBCDNString("CN=Issuing CA,O=TestOrg");
+    private static final String EE_DN = DnComponents.stringToBCDNString("CN=Some User,OU=Quality Assurance,O=TestOrg");
+    private static final String EE_ISSUERDN = DnComponents.stringToBCDNString("CN=Issuing CA,O=TestOrg");
     private static final String EE_PASSWORD = "s0MeThiNg";
 
     @Mock(MockType.STRICT)

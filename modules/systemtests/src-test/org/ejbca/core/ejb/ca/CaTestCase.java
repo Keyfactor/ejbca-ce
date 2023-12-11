@@ -103,6 +103,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -127,14 +128,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_DSTU4145_CA_NAME = "TESTDSTU4145";
     public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
     public static final String TEST_SHA256_WITH_MFG1_CA_DN = "CN="+TEST_SHA256_WITH_MFG1_CA_NAME;
-    public static final String TEST_RSA_REVSERSE_CA_DN = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE"); 
+    public static final String TEST_RSA_REVSERSE_CA_DN = DnComponents.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE"); 
     public static final String TEST_CVC_RSA_CA_DN = "CN=TESTCVCA,C=SE";
     public static final String TEST_CVC_RSA_CA_NAME = "TESTCVCA";
     public static final String TEST_CVC_ECC_CA_DN = "CN=TCVCAEC,C=SE";
     public static final String TEST_CVC_ECC_CA_NAME = "TESTCVCAECC";
     public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_DN = "CN=TDVEC-D,C=SE";
     public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME = "TESTDVECC-D";
-    public static final String TEST_DSA_CA_NAME = "TESTDSA";
     
     private static final int CA_CREATION_FAIL = -1;
     
@@ -403,9 +403,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             throw new IllegalArgumentException("Could not create CA.", e);
         }
         final CAInfo info = caSession.getCAInfo(internalAdmin, caName);
-        final String normalizedDN = CertTools.stringToBCDNString(dn);
+        final String normalizedDN = DnComponents.stringToBCDNString(dn);
         final X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-        final String normalizedCertDN = CertTools.stringToBCDNString(cert.getSubjectDN().toString());
+        final String normalizedCertDN = DnComponents.stringToBCDNString(cert.getSubjectDN().toString());
         if (!normalizedCertDN.equals(normalizedDN)) {
             log.error("CA certificate DN is not what it should. Is '" + normalizedDN + "'. Should be '" + normalizedCertDN + "'.");
             return CA_CREATION_FAIL;
@@ -781,20 +781,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         cvccainfo.setDescription("JUnit CVC CA");
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cvccainfo);
-    }
-    
-    protected static void createDefaultDsaCa(final String sigAlg) throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
-        removeOldCa(TEST_DSA_CA_NAME, "CN="+TEST_DSA_CA_NAME);        
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSA_CA_NAME, "DSA1024", RSA_1024, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, sigAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-        // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTDSA", TEST_DSA_CA_NAME, CAConstants.CA_ACTIVE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, catoken);
-        cainfo.setDescription("JUnit DSA CA");
-        cainfo.setExtendedCAServiceInfos(extendedcaservices);
-        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-        caAdminSession.createCA(internalAdmin, cainfo);
     }
     
     protected static void createDefaultCvcEccCa() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException {
