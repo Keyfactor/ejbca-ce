@@ -15,6 +15,7 @@ package org.ejbca.util.mail;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -39,6 +40,8 @@ import org.ejbca.core.ejb.ServiceLocatorException;
 public class MailSender {
 	
 	private static final Logger log = Logger.getLogger(MailSender.class);
+
+	private static final int TIMEOUT_PERIOD = 15000;
 	
 	// Some constants to make it easier to read the client code
 	public final static List<String> NO_TO = null;	//List<String>
@@ -114,6 +117,10 @@ public class MailSender {
         // mail.smtp.timeout
         // mail.smtp.connectiontimeout
         // mail.smtp.writetimeout
+		mailSession.getProperties().put("mail.smtp.timeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtps.timeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtp.connectiontimeout", TIMEOUT_PERIOD);
+		mailSession.getProperties().put("mail.smtps.connectiontimeout", TIMEOUT_PERIOD);
         Message msg = new MimeMessage(mailSession);
         try {
         	if (log.isDebugEnabled()) {
@@ -171,7 +178,15 @@ public class MailSender {
 	        }
 	        msg.setHeader("X-Mailer", "JavaMailer");
 	        msg.setSentDate(new Date());
-	        Transport.send(msg);
+			Executors.newSingleThreadExecutor().submit(() -> {
+				try {
+					Transport.send(msg);
+					log.info("Sending email is successful.");
+				} catch (MessagingException e) {
+					log.error("Unable to send email: ", e);
+				}
+			});
+
 		} catch (MessagingException e) {
 			log.error("Unable to send email: ", e);
 			return false;

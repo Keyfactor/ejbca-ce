@@ -105,6 +105,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -251,7 +252,7 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
-        String altNames = CertTools.getSubjectAlternativeName(cert);
+        String altNames = DnComponents.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
         // Send a confirm message to the CA
@@ -287,7 +288,7 @@ public class CrmfRequestTest extends CmpTestCase {
         resp = sendCmpHttp(ba, 200, cmpAlias);
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, this.cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), true, "primekey", false);
         cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
-        altNames = CertTools.getSubjectAlternativeName(cert);
+        altNames = DnComponents.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
         log.trace("<test03CrmfHttpOkUser");
@@ -560,8 +561,8 @@ public class CrmfRequestTest extends CmpTestCase {
             final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<ExtendedCAServiceInfo>(2);
             extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-            String caname = CertTools.getPartFromDN(subcaDN, "CN");
-            boolean ldapOrder = !CertTools.isDNReversed(subcaDN);
+            String caname = DnComponents.getPartFromDN(subcaDN, "CN");
+            boolean ldapOrder = !DnComponents.isDNReversed(subcaDN);
             X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(subcaDN, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA,
                     "3650d", this.caid, this.testx509ca.getCertificateChain(), catoken);
             cainfo.setDescription("JUnit RSA SubCA");

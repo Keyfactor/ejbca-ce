@@ -83,6 +83,7 @@ import org.ejbca.cvc.exception.ConstructionException;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -281,8 +282,8 @@ public abstract class CaTestUtils {
         final CAToken catoken = createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, signingKeyName, encryptionKeyName);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        String caname = CertTools.getPartFromDN(cadn, "CN");
-        boolean ldapOrder = !CertTools.isDNReversed(cadn);
+        String caname = DnComponents.getPartFromDN(cadn, "CN");
+        boolean ldapOrder = !DnComponents.isDNReversed(cadn);
         int certificateProfile = (signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, certificateProfile, "3650d",
                 signedBy, null, catoken);
@@ -306,9 +307,7 @@ public abstract class CaTestUtils {
                     signingKeyName);
             final String keyalg = AlgorithmTools.getKeyAlgorithm(publicKey);
             String sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-            if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                sigalg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            } else if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+            if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             }
             X509Certificate cacert;
@@ -336,12 +335,12 @@ public abstract class CaTestUtils {
                 signingKeyName, encryptionKeyName);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        String caname = CertTools.getPartFromDN(cadn, "CN");
+        String caname = DnComponents.getPartFromDN(cadn, "CN");
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "3650d",
                 signedBy, null, catoken);
         cainfo.setDescription("JUnit RSA CA");
         cainfo.setExtendedCAServiceInfos(extendedCaServices);
-        boolean ldapOrder = !CertTools.isDNReversed(cadn);
+        boolean ldapOrder = !DnComponents.isDNReversed(cadn);
         cainfo.setUseLdapDnOrder(ldapOrder);
         cainfo.setCmpRaAuthSecret("foo123");
         X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);

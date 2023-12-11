@@ -13,8 +13,19 @@
 
 package org.ejbca.core.ejb.rest;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -51,17 +62,9 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaRestHelperSessionRemote")
@@ -213,7 +216,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
         String altName = null;
         final Extension subjectAlternativeNameExtension = CertTools.getExtension(pkcs10CertificateRequest, Extension.subjectAlternativeName.getId());
         if (subjectAlternativeNameExtension != null) {
-            altName = CertTools.getAltNameStringFromExtension(subjectAlternativeNameExtension);
+            altName = DnComponents.getAltNameStringFromExtension(subjectAlternativeNameExtension);
         }
         return altName;
     }

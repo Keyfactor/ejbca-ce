@@ -87,6 +87,7 @@ import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Check the authentication of the PKIMessage by verifying the signature of the administrator who sent the message
@@ -395,7 +396,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 }
                 // Extract the username from extraCert to use for  further authentication
                 String subjectDN = CertTools.getSubjectDN(extraCert);
-                extraCertUsername = CertTools.getPartFromDN(subjectDN, this.cmpConfiguration.getExtractUsernameComponent(this.confAlias));
+                extraCertUsername = DnComponents.getPartFromDN(subjectDN, this.cmpConfiguration.getExtractUsernameComponent(this.confAlias));
                 if (log.isDebugEnabled()) {
                     log.debug("Username ("+extraCertUsername+") was extracted from the '" + this.cmpConfiguration.getExtractUsernameComponent(this.confAlias) + "' part of the subjectDN of the certificate in the 'extraCerts' field.");
                 }
@@ -739,7 +740,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
 
         } else if(tagnr == CmpPKIBodyConstants.REVOCATIONREQUEST) {
             final String issuerdn = getIssuerDNFromRevRequest((RevReqContent) msg.getBody().getContent());
-            final int caid = CertTools.stringToBCDNString(issuerdn).hashCode();
+            final int caid = DnComponents.stringToBCDNString(issuerdn).hashCode();
             if(!authSession.isAuthorizedNoLogging(reqAuthToken, StandardRules.CAACCESS.resource() + caid)) {
                 if(log.isDebugEnabled()) {
                     log.debug("Administrator " + reqAuthToken.toString() + " NOT authorized to revoke certificates issues by " + issuerdn);

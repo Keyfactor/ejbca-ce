@@ -30,10 +30,10 @@ import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaMsCompatibilityIrreversibleException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -75,6 +75,7 @@ import org.junit.runners.MethodSorters;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -505,8 +506,8 @@ public class CrlGenerationUponRevocationSystemTest extends CaTestCase {
         final X509Certificate cert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
 
         // Re-factor.
-        final String normalizedDN = CertTools.stringToBCDNString("CN=" + caName);
-        final String normalizedCertDN = CertTools.stringToBCDNString(cert.getSubjectDN().toString());
+        final String normalizedDN = DnComponents.stringToBCDNString("CN=" + caName);
+        final String normalizedCertDN = DnComponents.stringToBCDNString(cert.getSubjectDN().toString());
         String message = null;
         if (!normalizedCertDN.equals(normalizedDN)) {
             message = "CA certificate DN is not what it should. Is '" + normalizedDN + "'. Should be '" + normalizedCertDN + "'.";

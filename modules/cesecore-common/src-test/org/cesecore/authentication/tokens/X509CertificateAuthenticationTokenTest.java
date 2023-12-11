@@ -47,6 +47,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -160,7 +161,7 @@ public class X509CertificateAuthenticationTokenTest {
     public void testMatchWithFullDN() {
         AccessUserAspect accessUser;
         X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
-        int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
+        int caid = (DnComponents.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
         
         accessUser = EasyMock.createMock(AccessUserAspectData.class);
         
@@ -184,7 +185,7 @@ public class X509CertificateAuthenticationTokenTest {
     @Test
     public void testMatchWithAllValues() {
         X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
-        int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
+        int caid = (DnComponents.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
         AccessUserAspect accessUser;
         X500PrincipalAccessMatchValue[] allValues = X500PrincipalAccessMatchValue.values();
         for (X500PrincipalAccessMatchValue matchValue : allValues) {
@@ -247,7 +248,7 @@ public class X509CertificateAuthenticationTokenTest {
     @Test
     public void testAuthFailAfterSerialization() throws IOException, ClassNotFoundException {
         final X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
-        int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
+        int caid = (DnComponents.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
         final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASE, CertTools.getSerialNumberAsString(certificate));
         // Verify happy path first
         assertTrue("Regular matching was not successful.", authenticationToken.matches(accessUser));
@@ -263,7 +264,7 @@ public class X509CertificateAuthenticationTokenTest {
     @Test
     public void testBadSerialNumber() {
         final X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
-        int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
+        int caid = (DnComponents.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
         final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASE, "qwerty_1");
         // Will always return false, but not throw an exception
         assertFalse("matching was succesful, should not have been.", authenticationToken.matches(accessUser));

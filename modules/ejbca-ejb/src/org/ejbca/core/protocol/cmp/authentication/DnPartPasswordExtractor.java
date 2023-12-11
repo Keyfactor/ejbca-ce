@@ -23,7 +23,7 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Extracts password from the request DN of a CMRF/PKCS#10 request message
@@ -67,7 +67,7 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
             log.debug("Extracting password from SubjectDN '" +  LogRedactionUtils.getSubjectDnLogSafe(dnString) + "' and DN part '" + dnPart + "'");
         }
         if (dnString != null) {
-            password = CertTools.getPartFromDN(dnString, dnPart);
+            password = DnComponents.getPartFromDN(dnString, dnPart);
         }
             
         if(password == null) {

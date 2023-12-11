@@ -106,6 +106,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Used to stress test the CMP interface.
@@ -179,7 +180,7 @@ class CMPTest extends ClientToolBox {
                 // Some altNames
                 ExtensionsGenerator extgen = new ExtensionsGenerator();
                 {
-                    final GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=rfc822Name@my.com");
+                    final GeneralNames san = DnComponents.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=rfc822Name@my.com");
                     extgen.addExtension(Extension.subjectAlternativeName, false, san);
                 }
                 {

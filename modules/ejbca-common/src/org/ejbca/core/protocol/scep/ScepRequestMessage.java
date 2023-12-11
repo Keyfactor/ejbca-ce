@@ -30,9 +30,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -81,6 +78,10 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 
 /**
@@ -630,7 +631,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
             ret = super.getUsername();
             if (ret == null) {
                 // For Cisco boxes they can sometimes send DN as SN instead of CN
-                String name = CertTools.getPartFromDN(getRequestDN(), "SN");
+                String name = DnComponents.getPartFromDN(getRequestDN(), "SN");
                 if (name == null) {
                     log.error("No SN in DN: " + LogRedactionUtils.getRedactedMessage(getRequestDN()));
                     return null;
@@ -711,7 +712,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 init();
                 decrypt();
             }
-            ret = CertTools.stringToBCDNString(issuerAndSerno.getName().toString());
+            ret = DnComponents.stringToBCDNString(issuerAndSerno.getName().toString());
         } catch (IOException e) {
             log.error("PKCS7 not inited!");
         } catch (CMSException e) {

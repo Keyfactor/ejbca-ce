@@ -42,7 +42,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -200,7 +200,7 @@ public class BaseCmpMessageHandler {
 	        caDn = cmpConfiguration.getCMPDefaultCA(this.confAlias);
 	    }
 	    int errorResponseSigningCaId;
-	    errorResponseSigningCaId = CertTools.stringToBCDNString(caDn).hashCode();
+	    errorResponseSigningCaId = DnComponents.stringToBCDNString(caDn).hashCode();
 	    CACommon signCa = null;
 	    String aliasCertSign = null;
 	    PrivateKey signKey = null;
