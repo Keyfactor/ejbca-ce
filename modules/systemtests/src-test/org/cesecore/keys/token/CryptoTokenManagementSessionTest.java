@@ -87,17 +87,6 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void basicCryptoTokenForCAWithDSA() throws Exception {
-        int cryptoTokenId = 0;
-        try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testCaDsa", "DSA1024", "DSA1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-            subTest(cryptoTokenId, "DSA1024");
-        } finally {
-            CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
-        }
-    }
-
-    @Test
     public void basicCryptoTokenForCAWithECDSA() throws Exception {
         int cryptoTokenId = 0;
         try {

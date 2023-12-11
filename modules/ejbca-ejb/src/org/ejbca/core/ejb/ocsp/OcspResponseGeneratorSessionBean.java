@@ -2485,9 +2485,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     /**
      * Returns a signing algorithm to use selecting from a list of possible algorithms.
      * 
-     * @param sigalgs the list of possible algorithms, ;-separated. Example "SHA1WithRSA;SHA1WithECDSA".
+     * @param sigalgs the list of possible algorithms, ;-separated. Example "SHA256WithRSA;SHA256WithECDSA".
      * @param pk public key of signer, so we can choose between RSA, DSA and ECDSA algorithms
-     * @return A single algorithm to use Example: SHA1WithRSA, SHA1WithDSA or SHA1WithECDSA
+     * @return A single algorithm to use Example: SHA256WithRSA or SHA256WithECDSA
      */
     private static String getSigningAlgFromAlgSelection(String sigalgs, PublicKey pk) {
         String sigAlg = null;

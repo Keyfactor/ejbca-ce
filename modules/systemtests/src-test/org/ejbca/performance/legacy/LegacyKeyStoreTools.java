@@ -272,26 +272,6 @@ public class LegacyKeyStoreTools {
         }
     }
 
-    private void generateDSA(final int keySize, final String keyEntryName) {
-        if (log.isTraceEnabled()) {
-            log.trace(">generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
-        }
-        // Generate the RSA Keypair
-        KeyPairGenerator kpg;
-        try {
-            kpg = KeyPairGenerator.getInstance("DSA", this.providerName);
-        } catch (NoSuchAlgorithmException e) {
-           throw new IllegalStateException("Algorithm " + "DSA" + "was not recognized.", e);
-        } catch (NoSuchProviderException e) {
-            throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-        }
-        kpg.initialize(keySize);
-        generateKeyPair(kpg, keyEntryName, "SHA1withDSA");
-        if (log.isTraceEnabled()) {
-            log.trace("<generate: keySize " + keySize + ", keyEntryName " + keyEntryName);
-        }
-    }
-
     /** Generates asymmteric keys in the Keystore token.
      * 
      * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
@@ -299,10 +279,7 @@ public class LegacyKeyStoreTools {
      */
     public void generateKeyPair(final String keySpec, final String keyEntryName) throws
             InvalidAlgorithmParameterException {
-
-        if (keySpec.toUpperCase().startsWith("DSA")) {
-            generateDSA(Integer.parseInt(keySpec.substring(3).trim()), keyEntryName);
-        } else if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
+        if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
             generateGOST3410(keySpec, keyEntryName);
         } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keySpec.startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
             generateDSTU4145(keySpec, keyEntryName);
@@ -346,10 +323,7 @@ public class LegacyKeyStoreTools {
         String algorithm = "EC";
         String sigAlg = "SHA1withECDSA";
         String specName = spec.getClass().getName();
-        if (specName.contains("DSA")) {
-        	algorithm = "DSA";
-            sigAlg = "SHA1withDSA";
-        } else if (specName.contains("RSA")) {
+        if (specName.contains("RSA")) {
         	algorithm = "RSA";
             sigAlg = "SHA1withRSA";
         }

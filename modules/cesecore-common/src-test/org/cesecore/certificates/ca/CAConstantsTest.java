@@ -39,11 +39,7 @@ public class CAConstantsTest {
     }
 
     @Test
-    public void testGetPreSignKeys() {
-        assertNotNull("Should find presign DSA key",
-                CAConstants.getPreSignPublicKey(
-                        AlgorithmConstants.SIGALG_SHA256_WITH_DSA,
-                        KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_DSA_PRIV).getPublic()));
+    public void testGetPreSignKeys() {  
         assertNotNull("Should find presign RSA key",
                 CAConstants.getPreSignPublicKey(
                         AlgorithmConstants.SIGALG_SHA256_WITH_RSA,

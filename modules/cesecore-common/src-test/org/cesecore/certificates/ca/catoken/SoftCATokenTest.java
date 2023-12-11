@@ -39,12 +39,6 @@ public class SoftCATokenTest extends CATokenTestBase {
         doCaTokenRSA("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
-    @Test
-    public void testCATokenDSA() throws Exception {
-    	CryptoToken cryptoToken = createSoftToken(true);
-        doCaTokenDSA("DSA1024", cryptoToken, getCaTokenProperties("dsatest" + CAToken.DEFAULT_KEYSEQUENCE));
-    }
-
 	@Test
     public void testCATokenECC() throws Exception {
     	CryptoToken cryptoToken = createSoftToken(true);
