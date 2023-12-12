@@ -484,9 +484,7 @@ public abstract class BatchCreateTool {
             String sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
             if (props.getKeyAlg().equals("ECDSA")) {
                 sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-            } else if (props.getKeyAlg().equals("DSA")) {
-                sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            } else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
+            }else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410;
             } else if (props.getKeyAlg().equals(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
                 sigAlg = AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145;

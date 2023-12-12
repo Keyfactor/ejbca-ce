@@ -460,6 +460,10 @@ public class RaEndEntityDetails implements Serializable {
         return endEntityInformation.getKeyRecoverable();
     }
 
+    public boolean isKeyRecoverableUsed() {
+        return getEndEntityProfile() != null && getEndEntityProfile().isKeyRecoverableUsed();
+    }
+
     public boolean isEmailEnabled() {
         return getEndEntityProfile() != null && getEndEntityProfile().isEmailUsed();
     }
