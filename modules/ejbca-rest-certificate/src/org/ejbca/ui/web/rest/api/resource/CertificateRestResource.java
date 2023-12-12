@@ -35,6 +35,8 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
@@ -123,6 +125,9 @@ public class CertificateRestResource extends BaseRestResource {
 
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
+
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     public Response enrollPkcs10Certificate(final HttpServletRequest requestContext,
                                             final EnrollCertificateRestRequest enrollCertificateRestRequest)
@@ -356,11 +361,12 @@ public class CertificateRestResource extends BaseRestResource {
             throws AuthorizationDeniedException, CertificateEncodingException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, true);
         int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
+        final int validMaxForDatabase = maxNumberOfResults > 0 ? maxNumberOfResults : getGlobalCesecoreConfiguration().getMaximumQueryCount();
         final Collection<Certificate> expiringCertificates = EJBTools
-                .unwrapCertCollection(raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset));
-        int processedResults = offset + maxNumberOfResults;
+                .unwrapCertCollection(raMasterApi.getCertificatesByExpirationTime(admin, days, validMaxForDatabase, offset));
+        int processedResults = offset + validMaxForDatabase;
         PaginationRestResponseComponent paginationRestResponseComponent = PaginationRestResponseComponent.builder().setMoreResults(count > processedResults)
-                .setNextOffset(offset + maxNumberOfResults)
+                .setNextOffset(offset + validMaxForDatabase)
                 .setNumberOfResults(count - processedResults)
                 .build();
         CertificatesRestResponse certificatesRestResponse = new CertificatesRestResponse(
@@ -510,5 +516,9 @@ public class CertificateRestResource extends BaseRestResource {
         final RaCertificateSearchRequest raCertificateSearchRequest = SearchCertificatesRestRequest.converter().toEntity(searchCertificatesRestRequest);
         final RaCertificateSearchResponse raCertificateSearchResponse = raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest);
         return SearchCertificatesRestResponse.converter().toRestResponse(raCertificateSearchResponse, availableEndEntityProfiles, availableCertificateProfiles);
+    }
+
+    private GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
+        return (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
     }
 }
