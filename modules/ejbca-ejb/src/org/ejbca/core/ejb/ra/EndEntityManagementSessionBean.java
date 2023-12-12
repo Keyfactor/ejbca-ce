@@ -2384,8 +2384,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         final String subject = paramGen.interpolate(userNotification.getNotificationSubject());
                         final String message = paramGen.interpolate(userNotification.getNotificationMessage());
                         MailSender.sendMailOrThrow(fromemail, Collections.singletonList(recipientEmail), MailSender.NO_CC, subject, message, MailSender.NO_ATTACHMENTS);
-                        final String logmsg = intres.getLocalizedMessage("ra.sentnotification", endEntityInformation.getUsername(), recipientEmail);
-                        log.info(logmsg);
                     } catch (MailException e) {
                         final String msg = intres.getLocalizedMessage("ra.errorsendnotification", endEntityInformation.getUsername(), recipientEmail);
                         log.error(msg, e);

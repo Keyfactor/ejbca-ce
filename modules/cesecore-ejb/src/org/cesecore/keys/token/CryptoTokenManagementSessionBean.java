@@ -922,13 +922,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final CryptoToken cryptoToken = getCryptoTokenAndAssertExistence(cryptoTokenId);
         assertAliasNotInUse(cryptoToken, newAlias);
         final PublicKey publicKey = cryptoToken.getPublicKey(currentAlias);
-        final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
-        final String keySpecification;
-        if (AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlgorithm)) {
-            keySpecification = AlgorithmConstants.KEYALGORITHM_DSA + AlgorithmTools.getKeySpecification(publicKey);
-        } else {
-            keySpecification = AlgorithmTools.getKeySpecification(publicKey);
-        }
+        final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         KeyTools.checkValidKeyLength(keySpecification);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", "Generated new keypair in CryptoToken " + cryptoTokenId);
