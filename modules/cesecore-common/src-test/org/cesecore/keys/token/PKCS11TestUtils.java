@@ -57,9 +57,6 @@ public class PKCS11TestUtils {
     public static final String ECC_TEST_KEY_1 = "ecctest00001";
     public static final String ECC_TEST_KEY_2 = "ecctest00002";
     public static final String ECC_TEST_KEY_3 = "ecctest00003";
-    public static final String DSA_TEST_KEY_1 = "dsatest00001";
-    public static final String DSA_TEST_KEY_2 = "dsatest00002";
-    public static final String DSA_TEST_KEY_3 = "dsatest00003";
     
     public static final String NON_EXISTING_KEY = "sdkfjhsdkfjhsd777";
     

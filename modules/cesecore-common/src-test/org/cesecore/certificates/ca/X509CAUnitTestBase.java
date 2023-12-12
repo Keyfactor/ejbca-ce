@@ -125,8 +125,6 @@ public class X509CAUnitTestBase {
             algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA) ||
             algName.equals(AlgorithmConstants.SIGALG_ED25519) ||
             algName.equals(AlgorithmConstants.SIGALG_ED448) ||
-            algName.equals(AlgorithmConstants.SIGALG_SHA1_WITH_DSA) ||
-            algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_DSA) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA) ||
             algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1) ||
@@ -154,10 +152,6 @@ public class X509CAUnitTestBase {
             return "2048"; // RSA-PSS required at least 2014 bits
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {
             return "2048"; // RSA-PSS required at least 2014 bits
-        } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA1_WITH_DSA)) {
-            return "DSA1024";
-        } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA256_WITH_DSA)) {
-            return "DSA1024";
         } else if (algName.equals(AlgorithmConstants.SIGALG_DILITHIUM3)) {
             return AlgorithmConstants.KEYALGORITHM_DILITHIUM3;
         } else if (algName.equals(AlgorithmConstants.SIGALG_FALCON512)) {
