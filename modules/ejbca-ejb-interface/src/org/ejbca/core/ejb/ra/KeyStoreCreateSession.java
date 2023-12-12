@@ -94,7 +94,7 @@ public interface KeyStoreCreateSession {
      * @param password password for user
      * @param caid caid of the CA the user is registered for
      * @param keyspec name of ECDSA key or length of RSA and DSA keys (endEntityInformation.extendedInformation.keyStoreAlgorithmSubType has priority over this value)
-     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA (endEntityInformation.extendedInformation.keyStoreAlgorithmType has priority over this value)
+     * @param keyalg AlgorithmConstants.KEYALGORITHM_* (endEntityInformation.extendedInformation.keyStoreAlgorithmType has priority over this value)
      * @param notBefore The date at which the private key starts to be valid, or null
      * @param notAfter The date at which the private key should be considered expired, or null
      * @param keystoreType a constant from {@link org.ejbca.core.model.SecConst} specifying the type of keystore to create
@@ -150,7 +150,7 @@ public interface KeyStoreCreateSession {
      * @param password password for user
      * @param caid caid of the CA the user is registered for
      * @param keyspec name of ECDSA key or length of RSA and DSA keys (endEntityInformation.extendedInformation.keyStoreAlgorithmSubType has priority over this value)
-     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA (endEntityInformation.extendedInformation.keyStoreAlgorithmType has priority over this value)
+     * @param keyalg AlgorithmConstants.KEYALGORITHM_* (endEntityInformation.extendedInformation.keyStoreAlgorithmType has priority over this value)
      * @param notBefore The date at which the private key starts to be valid, or null
      * @param notAfter The date at which the private key should be considered expired, or null
      * @param keystoreType a constant from {@link org.ejbca.core.model.SecConst} specifying the type of keystore to create
