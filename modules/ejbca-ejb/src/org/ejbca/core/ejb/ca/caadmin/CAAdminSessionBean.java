@@ -3744,7 +3744,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // SHA1WithECDSA returns as ECDSA for certSigAlg (has been always, don't know why), while keySigAlgs will contain SHA1WithECDSA
             // therefore we need to make a more complex match, checking if keySigAlgs contains the part,
             // ignoring case so that SHA256WITHRSA matches SHA256WithRSA, and ECDSA matches SHA1WithECDSA (or SHA256WithECDSA)
-            // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or SHA256WithDSA, or... 
+            // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or... 
             boolean containsAlg = keySigAlgs.stream().anyMatch(x -> StringUtils.containsIgnoreCase(x, certSigAlg));
             if (certSigAlg == null || !containsAlg) {
                 if (log.isDebugEnabled()) {

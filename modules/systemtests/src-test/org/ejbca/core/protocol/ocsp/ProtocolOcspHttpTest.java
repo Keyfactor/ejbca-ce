@@ -46,7 +46,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -131,7 +130,6 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
 import org.cesecore.keybind.impl.OcspKeyBinding;
@@ -144,7 +142,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -188,8 +185,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     private static final String PKIX_OCSP_NONCE = "123456789";
 
     public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
-
-    private static final String DSA_DN = "CN=OCSPDSATEST,O=Foo,C=SE";
     
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
@@ -265,14 +260,11 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             .getBytes());
     
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);  
     private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
     private final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final OcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(OcspResponseGeneratorSessionRemote.class);
 
     @Rule
     public final TestWatcher traceLogMethodsRule = new TestWatcher() {
@@ -322,7 +314,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     @After
     public void tearDown() throws Exception {
         CaTestCase.removeTestCA();
-        removeDSACA();
         removeECDSACA();
     }
 
@@ -585,24 +576,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     public void test15MultipleGetRequests() throws Exception {
         super.test15MultipleGetRequests();
     }
-
-    /**
-     * Tests ocsp message
-     *
-     * @throws Exception
-     *           error
-     */
-    @Test
-    public void test16OcspDsaGood() throws Exception {
-        int dsacaid = DSA_DN.hashCode();
-        X509Certificate ecdsacacert = addDSACA(DSA_DN, "DSA1024");
-        helper.reloadKeys();
-
-        // Make user and ocspTestCert that we know...
-        createUserCert(dsacaid);
-
-        this.helper.verifyStatusGood( dsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
-    } // test16OcspDsaGood
 
     /**
      * Verify that Internal OCSP responses are signed by CA signing key.
@@ -1679,38 +1652,6 @@ Content-Type: text/html; charset=iso-8859-1
             internalCertStoreSession.removeCertificate(this.ocspTestCert);
         }
     }
-    
-    
-    /**
-     * removes DSA CA
-     *
-     * @throws Exception
-     *           error
-     */
-    public void removeDSACA() throws Exception {
-        try {
-            if (caSession.existsCa(DSA_DN.hashCode())) {
-                final int cryptoTokenId = caSession.getCAInfo(admin, DSA_DN.hashCode()).getCAToken().getCryptoTokenId();
-                CryptoTokenTestUtils.removeCryptoToken(admin, cryptoTokenId);
-            }
-        } catch (Exception e) {
-            log.error("", e);
-        }
-        try {
-            if (caSession.existsCa(DSA_DN.hashCode())) {
-                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, DSA_DN.hashCode()));
-            }
-        } catch (Exception e) {
-            log.info("Could not remove CA with SubjectDN " + DSA_DN);
-        }
-        try {
-            if (caSession.existsCa("CN=OCSPDSAIMPCATEST".hashCode())) {
-                CaTestUtils.removeCa(admin, caSession.getCAInfo(admin, "CN=OCSPDSAIMPCATEST".hashCode()));
-            }
-        } catch (Exception e) {
-            log.info("Could not remove CA with SubjectDN CN=OCSPDSAIMPCATEST");
-        }
-    }
 
     /**
      * removes ECDSA CA
@@ -1881,54 +1822,6 @@ Content-Type: text/html; charset=iso-8859-1
         assertTrue("Creating ECDSA CA failed", ret);
         log.trace("<addECDSACA()");
         return info;
-    }
-
-    /**
-     * adds a CA Using DSA keys to the database.
-     *
-     * It also checks that the CA is stored correctly.
-     *
-     * @throws Exception
-     *           error
-     */
-    private X509Certificate addDSACA(String dn, String keySpec) throws Exception {
-        log.trace(">addDSACA()");
-        boolean ret = false;
-        X509Certificate cacert = null;
-        int cryptoTokenId = 0;
-        try {
-            cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(admin, dn, keySpec, keySpec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-            final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-            // Create and active OSCP CA Service.
-            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-            extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-            final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
-            policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-
-            X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, dn, CAConstants.CA_ACTIVE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
-            cainfo.setDescription("JUnit DSA CA");
-            cainfo.setPolicies(policies);
-            caAdminSession.createCA(admin, cainfo);
-
-            CAInfo info = caSession.getCAInfo(admin, dn);
-
-            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-            assertEquals("Error in created ca certificate", dn, CertTools.getSubjectDN(cert));
-            assertEquals("Creating CA failed, DN was incorrect.", dn, info.getSubjectDN());
-            assertTrue("Public key was not an instance of DSAPublicKey", cert.getPublicKey() instanceof DSAPublicKey);
-
-            ret = true;
-            Collection<Certificate> coll = info.getCertificateChain();
-            Object[] certs = coll.toArray();
-            cacert = (X509Certificate) certs[0];
-        } catch (CAExistsException e) {
-            log.info("CA exists.");
-            throw e;
-        }
-        assertTrue("Creating DSA CA failed", ret);
-        log.trace("<addDSACA()");
-        return cacert;
     }
     
     private X509Certificate createSubCA(String subcaDN, int signbyID) throws CryptoTokenOfflineException, 
