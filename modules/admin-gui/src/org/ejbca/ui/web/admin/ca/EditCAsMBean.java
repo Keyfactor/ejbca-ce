@@ -2442,8 +2442,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             // Never suggest SHA1 based signature algorithms as default
             if (availableSigningAlgorithmSelectItems.get(0).getLabel() == AlgorithmConstants.SIGALG_SHA1_WITH_RSA) {
                 caInfoDto.setSignatureAlgorithmParam(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);                
-            } else if (availableSigningAlgorithmSelectItems.get(0).getLabel() == AlgorithmConstants.SIGALG_SHA1_WITH_DSA) {
-                    caInfoDto.setSignatureAlgorithmParam(AlgorithmConstants.SIGALG_SHA256_WITH_DSA);
             } else if (availableSigningAlgorithmSelectItems.get(0).getLabel() == AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA) {
                 caInfoDto.setSignatureAlgorithmParam(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             } else {

@@ -339,7 +339,10 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
      */
     @Override
     public void testConnection() throws PublisherConnectionException {
-        JSch jsch = new JSch();
+        if (StringUtils.isBlank(certSCPDestination) && StringUtils.isBlank(crlSCPDestination)){
+            throw new PublisherConnectionException("Neither Certificate nor CRL destination URLs are configured.");
+        }
+        final JSch jsch = new JSch();
         try {
             if (privateKeyPassword != null) {
                 jsch.addIdentity(scpPrivateKey, privateKeyPassword);
@@ -347,23 +350,23 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
                 jsch.addIdentity(scpPrivateKey);
             }
         } catch (JSchException e) {
-            String msg = "Could not access private key. ";
+            final String msg = "Could not access private key. ";
             log.info(msg + e.getMessage());
             throw new PublisherConnectionException(msg, e);
         }
         try {
             jsch.setKnownHosts(scpKnownHosts);
         } catch (JSchException e) {
-            String msg = "Could not access known_hosts file. ";
+            final String msg = "Could not access known_hosts file. ";
             log.info(msg + e.getMessage());
             throw new PublisherConnectionException(msg, e);
         }
 
-        List<PublisherConnectionException> caughtExceptions = new ArrayList<>();
+        final List<PublisherConnectionException> caughtExceptions = new ArrayList<>();
         if (StringUtils.isNotEmpty(certSCPDestination)) {
             Session session = null;
             try {
-                Destination destination = buildDestination(certSCPDestination, sshPort);
+                final Destination destination = buildDestination(certSCPDestination, sshPort);
                 session = destination.port != null
                     ? jsch.getSession(sshUsername, destination.host, destination.port)
                     : jsch.getSession(sshUsername, destination.host);
@@ -386,7 +389,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         if (StringUtils.isNotEmpty(crlSCPDestination)) {
             Session session = null;
             try {
-                Destination destination = buildDestination(crlSCPDestination, sshPort);
+                final Destination destination = buildDestination(crlSCPDestination, sshPort);
                 session = destination.port != null
                     ? jsch.getSession(sshUsername, destination.host, destination.port)
                     : jsch.getSession(sshUsername, destination.host);
@@ -408,7 +411,7 @@ public class ScpPublisher extends CustomPublisherContainer implements ICustomPub
         }
 
         if (!caughtExceptions.isEmpty()) {
-            StringBuilder msg = new StringBuilder("Could not connect to destination(s). Reasons: ");
+            final StringBuilder msg = new StringBuilder("Could not connect to destination(s). Reasons: ");
             for (PublisherConnectionException e : caughtExceptions) {
                 msg.append("\n");
                 msg.append(e.getMessage());
