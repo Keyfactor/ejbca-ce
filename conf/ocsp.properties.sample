@@ -26,8 +26,8 @@
 # if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used and if 
 # DSA keys are used in the OCSP signing certificate, the algorithm with DSA will be used.
 #
-# Default: SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;SHA1WithDSA;Ed25519;Ed448
-#ocsp.signaturealgorithm=SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;SHA1WithDSA;Ed25519;Ed448
+# Default: SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;Ed25519;Ed448
+#ocsp.signaturealgorithm=SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;Ed25519;Ed448
 
 # The interval on which the the OCSP signing certificates are updated in seconds.
 # If set to 0 or negative these certificate are never updated.

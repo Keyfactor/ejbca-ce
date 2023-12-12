@@ -713,7 +713,7 @@ public interface RaMasterApi {
      * @param admin is the requesting administrator
      * @param userdata contains information about the user that is about to get a keystore
      * @param keyspec name of ECDSA key or length of RSA and DSA keys  
-     * @param keyalg AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_DSA or AlgorithmConstants.KEYALGORITHM_ECDSA
+     * @param keyalg AlgorithmConstants.KEYALGORITHM_*
      * @param createJKS true to create a JKS, false to create a PKCS12
      * @return an encoded keystore of the type specified 
      * @throws EndEntityProfileValidationException if the certificate does not match the profiles.
