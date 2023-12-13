@@ -30,6 +30,8 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -306,6 +308,26 @@ public class PublicCryptoToken implements CryptoToken {
     @Override
     public void setTokenName(final String tokenName) {
         this.tokenName = tokenName;
+    }
+    
+    @Override
+    public Set<Long> getKeyUsagesFromKey(String arg0, boolean arg1, long... arg2) throws CryptoTokenOfflineException {
+        if (!arg1) {
+            throw new CryptoTokenOfflineException("Implementation does not contain any private keys to use for test.");
+        }
+        // Not implemented.
+        return new TreeSet<Long>();
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPrivateKey(String arg0) throws CryptoTokenOfflineException {
+        throw new CryptoTokenOfflineException("Implementation does not contain any private keys to use for test.");
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPublicKey(String arg0) throws CryptoTokenOfflineException {
+    	// Not implemented.
+        return new TreeSet<Long>();
     }
 
 }
