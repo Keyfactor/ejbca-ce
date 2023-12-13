@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -36,6 +37,7 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.NoResultException;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.core.Response;
@@ -155,10 +157,22 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
 
-        // Finding username from db first, as it is needed by key recovery code flow.
-        final String certDecimalSerialNumber = new BigInteger(certificateSerialNumber, 16).toString();
-        final String userName = certDataSession.findUsernameByIssuerDnAndSerialNumber(issuerDN, certDecimalSerialNumber);
+        String certDecimalSerialNumber = StringUtils.EMPTY;
+        try {
+            certDecimalSerialNumber = new BigInteger(certificateSerialNumber, 16).toString();
+        } catch (NumberFormatException ex) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid certificate serial number is provided in the reques.");
+        }
 
+        // Finding username from db first, as it is needed by key recovery code flow.
+        String userName = StringUtils.EMPTY;
+
+        try {
+            userName = certDataSession.findUsernameByIssuerDnAndSerialNumber(issuerDN, certDecimalSerialNumber);
+        } catch (Exception ex) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
+                    "No username found for the combination of the issuer dn and certificate serial number.");
+        }
         // Using same logic as in the web service code.
         raMasterApi.keyRecoverWS(authenticationToken, userName, certificateSerialNumber, issuerDN);
 
