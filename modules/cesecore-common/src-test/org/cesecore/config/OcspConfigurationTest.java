@@ -26,7 +26,6 @@ import org.junit.Test;
 /**
  * Tests the OcspConfiguration class
  * 
- * @version $Id$
  */
 public class OcspConfigurationTest {
 	
@@ -36,11 +35,9 @@ public class OcspConfigurationTest {
 	}
 
 	@Test
-	public void testMaxAgeNextUpdateDefaults() {
+	public void testMaxAgeDefault() {
 		long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-		long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 		assertEquals(30000, maxAge);
-		assertEquals(0, nextUpdate);
 	}
 
     @Test

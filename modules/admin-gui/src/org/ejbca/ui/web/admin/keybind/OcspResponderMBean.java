@@ -107,6 +107,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private String ocspAuditLogPattern;
     private String ocspAuditLogValues;
     private String ocspLoggingDateFormat;
+    private long defaultResponseValidityTime;
 
 
     private String currentOcspExtension = null;
@@ -143,6 +144,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         ocspAuditLogPattern = globalConfiguration.getOcspAuditLogPattern();
         ocspAuditLogValues = globalConfiguration.getOcspAuditLogValues();
         ocspLoggingDateFormat = globalConfiguration.getOcspLoggingDateFormat();
+        defaultResponseValidityTime = globalConfiguration.getDefaultValidityTime();
     }
 
     @Override
@@ -320,6 +322,32 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         this.responderIdType = responderIdType;
     }
 
+    public long getDefaultResponseValidity() {
+        return defaultResponseValidityTime;
+    }
+    
+    public void setDefaultResponseValidity(final long defaultResponseValidity) {
+        this.defaultResponseValidityTime = defaultResponseValidity;
+    }
+    
+    public void saveDefaultResponseValidity() {
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        configuration.setDefaultValidityTime(this.defaultResponseValidityTime);
+        try {
+            globalConfigurationSession.saveConfiguration(getAdmin(), configuration);
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Current administrator not authorized to modify global OCSP configuration.", null));
+        }
+    }
+    
+    public boolean isValiditiesUnchanged() {
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        return this.defaultResponseValidityTime == configuration.getDefaultValidityTime();
+    }
+    
     @SuppressWarnings("unchecked")
     public List<SelectItem/*<String,String>*/> getDefaultResponderTargets() {
         final List<SelectItem> ret = new ArrayList<>();

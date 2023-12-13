@@ -30,7 +30,6 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
  * 
- * @version $Id$
  */
 public class OcspConfiguration {
 
@@ -55,7 +54,8 @@ public class OcspConfiguration {
     public static final String REKEYING_TRIGGERING_PASSWORD = "ocsp.rekeying.trigging.password";
     public static final String REKEYING_UPDATE_TIME_IN_SECONDS = "ocsp.rekeying.update.time.in.seconds";
     public static final String REKEYING_SAFETY_MARGIN_IN_SECONDS = "ocsp.rekeying.safety.margin.in.seconds";
-    public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
+    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    private static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
     public static final String REVOKED_UNTIL_NEXT_UPDATE = "ocsp.revoked.untilNextUpdate";
     public static final String MAX_AGE = "ocsp.maxAge";
     public static final String CACHE_HEADER_MAX_AGE = "ocsp.expires.useMaxAge";
@@ -399,7 +399,10 @@ public class OcspConfiguration {
     
     /**
      * The default number of milliseconds a response is valid, or 0 to disable. See RFC5019.
+     * 
+     * @deprecated Do not use with CertificateProfileConstants.CERTPROFILE_NO_PROFILE, since the global value has been moved to the database.
      */
+    @Deprecated
     public static long getUntilNextUpdate(int certProfileId) {
         long value = 0;
         Configuration config = ConfigurationHolder.instance();
