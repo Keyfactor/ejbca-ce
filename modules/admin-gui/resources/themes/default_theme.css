@@ -244,7 +244,11 @@ div#footer {
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 .main-wrapper {
-	margin: .5em auto .5em 15%;
+	margin: .5em 25% .5em 25%;
+}
+
+.table-wrapper {
+	margin: .5em auto .5em auto;
 }
 
 h1 {
