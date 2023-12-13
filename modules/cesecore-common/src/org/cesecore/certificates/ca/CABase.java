@@ -466,7 +466,9 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
      */
     @Override
     public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore,
-            String encodedValidity, CertificateProfile certProfile, String sequence, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException, OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+            String encodedValidity, CertificateProfile certProfile, String sequence, AvailableCustomCertificateExtensionsConfiguration cceConfig)
+            throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
+            OperatorCreationException, CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
         // Calculate the notAfter date
         if (notBefore == null) {
             notBefore = new Date();
