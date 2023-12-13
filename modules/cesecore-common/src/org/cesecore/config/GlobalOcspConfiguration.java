@@ -39,6 +39,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_OCSP_AUDIT_LOG_PATTERN = "ocspAuditLogPattern";
     private static final String PROPERTY_OCSP_AUDIT_LOG_VALUES = "ocspAuditLogValues";
     private static final String PROPERTY_OCSP_LOGGING_DATE_FORMAT = "ocspLoggingDateFormat";
+    private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY = "ocspDefaultResponseValidity";
 
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
         if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {
@@ -198,6 +199,26 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     @Override
     public String getConfigurationId() {
         return OCSP_CONFIGURATION_ID;
+    }
+    
+    /**
+     * 
+     * @return the default validity time, in seconds
+     */
+    public long getDefaultValidityTime() {
+        if(data.get(PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY) == null) {
+            return 0L;
+        } else {
+            return (long) data.get(PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY);
+        }
+    }
+    
+    /**
+     * 
+     * @param validityTime the default validity time, in seconds
+     */
+    public void setDefaultValidityTime(long validityTime) {
+        data.put(PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY, validityTime);
     }
 
 }

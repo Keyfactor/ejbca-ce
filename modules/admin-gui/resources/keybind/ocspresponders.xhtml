@@ -205,14 +205,40 @@
 				<h:panelGroup>
 					<h:selectBooleanCheckbox id="globallyEnableOcspBrowserCacheUnknownStatus"
 											 disabled="#{ocspResponderMBean.forbiddenToEdit}"
-											 value="#{ocspResponderMBean.cacheHeaderUnauthorizedResponses}"
-					/>
+											 value="#{ocspResponderMBean.cacheHeaderUnauthorizedResponses}"/>
 					<h:outputLabel for="globallyEnableOcspSigningCacheUpdate" value="#{web.text.USE}"/>
 				</h:panelGroup>
 				<h:commandButton action="#{ocspResponderMBean.saveEnableExplicitNoCacheUnauthorizedResponses}"
 								 rendered="#{ocspResponderMBean.allowedToEdit}"
 								 value="#{web.text.INTERNALKEYBINDING_SAVE}"
 				/>
+			</h:panelGrid>
+		</h:form>
+		
+		<h:form id="defaultValitidyTimes">
+			<h3>
+				<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_DEFAULTS}"/>
+				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/OCSP_Responders.html')}" escape="false"/>
+			</h3>
+			<h:panelGroup>
+				<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_HELP}" styleClass="help" style="font-size: smaller"/>
+			</h:panelGroup>
+			<h:panelGrid columns="2">
+				<h:panelGroup>
+					<h:outputText value="#{web.text.INTERNALKEYBINDING_VALIDITY_RESPONSE}"/>				
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.defaultResponseValidity}"
+						onchange="this.form.submit()">
+							<f:converter converterId="javax.faces.Long"/>			
+					</h:inputText>
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:commandButton action="#{ocspResponderMBean.saveDefaultResponseValidity}"
+								 rendered="#{ocspResponderMBean.allowedToEdit}"
+								 disabled="#{ocspResponderMBean.validitiesUnchanged}"
+								 value="#{web.text.INTERNALKEYBINDING_SAVE}" />
+				</h:panelGroup>
 			</h:panelGrid>
 		</h:form>
 
