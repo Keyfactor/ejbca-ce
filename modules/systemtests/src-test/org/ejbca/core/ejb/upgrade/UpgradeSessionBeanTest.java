@@ -70,6 +70,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
@@ -1443,6 +1444,31 @@ public class UpgradeSessionBeanTest {
         upgradeSession.upgrade(null, "7.11.0", false);
         config = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
         assertTrue("Doc signing EKU should be present after upgrade", config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36"));
+    }
+    
+    @Test
+    public void testMigrateOcspSettings830() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        //Store old value
+        long oldUntilNextUpdate = globalOcspConfiguration.getDefaultValidityTime();
+        try {
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("8.0.0");
+            guc.setPostUpgradedToVersion("8.0.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set ocsp.untilNextUpdate to a non-default value
+            cesecoreConfigSession.setConfigurationValue("ocsp.untilNextUpdate", "50");
+            upgradeSession.upgrade(null, "8.0.0", false);
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.untilNextUpdate was not migrated to GlobalOcspConfiguration", 50, globalOcspConfiguration.getDefaultValidityTime());
+        } finally {
+            //Restore old value
+            globalOcspConfiguration.setDefaultValidityTime(oldUntilNextUpdate);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {

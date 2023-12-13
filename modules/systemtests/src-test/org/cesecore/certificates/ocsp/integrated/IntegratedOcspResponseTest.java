@@ -342,7 +342,7 @@ public class IntegratedOcspResponseTest {
     public void testOcspPreProducedResponseDoNotStoreStatusUnknown() throws Exception {
         final BigInteger unknownSerialNumber = BigInteger.valueOf(1111111111111L);
         // Enable OCSP pre production, store responses on demand and make sure the response has nextUpdate set.
-        final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("3600");
+        final long originalNextUpdateTime = setOcspDefaultNextUpdateTime(3600L);
         testx509ca.setDoPreProduceOcspResponses(true);
         testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
@@ -377,7 +377,7 @@ public class IntegratedOcspResponseTest {
     @Test
     public void testOcspPreProducedResponseOnDemandUseCannedResponse() throws Exception {
         // Enable OCSP pre production, store responses on demand and make sure the response has nextUpdate set.
-        final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("3600");
+        final long originalNextUpdateTime = setOcspDefaultNextUpdateTime(3600L);
         testx509ca.setDoPreProduceOcspResponses(true);
         testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
@@ -418,7 +418,7 @@ public class IntegratedOcspResponseTest {
     @Test
     public void testOcspPreProducedResponseInvalidated() throws Exception {
         // Enable OCSP pre production and make sure the response expires after 1 second.
-        final String originalNextUpdateTime = setOcspDefaultNextUpdateTime("1");
+        final long originalNextUpdateTime = setOcspDefaultNextUpdateTime(1L);
         testx509ca.setDoPreProduceOcspResponses(true);
         testx509ca.setDoStoreOcspResponsesOnDemand(true);
         try {
@@ -453,7 +453,7 @@ public class IntegratedOcspResponseTest {
             long secondResponseProducedAt = ((BasicOCSPResp) secondOcspResponse.getResponseObject()).getProducedAt().getTime();
             assertNotEquals("Expired OCSP response was returned", firstResponseProducedAt, secondResponseProducedAt);
         } finally {
-            cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, originalNextUpdateTime);
+            setOcspDefaultNextUpdateTime(originalNextUpdateTime);
         }
     }
 
@@ -500,9 +500,16 @@ public class IntegratedOcspResponseTest {
         return originalDefaultResponder;
     }
 
-    private String setOcspDefaultNextUpdateTime(final String nextUpdateInSeconds) {
-        final String originalConfigurationValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, nextUpdateInSeconds);
+    private long setOcspDefaultNextUpdateTime(final long nextUpdateInSeconds) {
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long originalConfigurationValue = ocspConfiguration.getDefaultValidityTime();
+        ocspConfiguration.setDefaultValidityTime(nextUpdateInSeconds);
+        try {
+            globalConfigurationSession.saveConfiguration(internalAdmin, ocspConfiguration);
+        } catch (AuthorizationDeniedException e) {
+            throw new IllegalStateException(e);
+        }
         return originalConfigurationValue;
     }
 
