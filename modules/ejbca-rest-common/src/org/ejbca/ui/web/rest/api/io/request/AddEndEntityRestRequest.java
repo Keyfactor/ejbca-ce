@@ -174,26 +174,24 @@ public class AddEndEntityRestRequest {
 
         public EndEntityInformation toEntity(final AddEndEntityRestRequest addEndEntityRestRequest) throws RestException {
             final ExtendedInformation extendedInfo = new ExtendedInformation();
-            if (addEndEntityRestRequest.getAccountBindingId() != null || addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
-                if (addEndEntityRestRequest.getAccountBindingId() != null) {
-                    extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
-                }
-                if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
-                    addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
-                        // Dynamic Custom extensions are added with OID and data
-                        // See org.cesecore.certificates.endentity.ExtendedInformation
-                        extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
-                    });
-                }
-                if (addEndEntityRestRequest.getCustomData() != null && !addEndEntityRestRequest.getCustomData().isEmpty()) {
-                    addEndEntityRestRequest.getCustomData().forEach((extendedInformation) -> {
-                        // There are two different types of custom data ExtendedInformation
-                        // Custom Data starting with customdata_ (like validity) and pure string fields (like certificate serial number and other things)
-                        // We require the API caller to add the customdata_ before the actual variable, where that is needed, for example customdata_STARTTIME
-                        // See org.cesecore.certificates.endentity.ExtendedInformation
-                        extendedInfo.setStringKeyData(extendedInformation.getName(), extendedInformation.getValue());                            
-                    });
-                }
+            if (addEndEntityRestRequest.getAccountBindingId() != null) {
+                extendedInfo.setAccountBindingId(addEndEntityRestRequest.getAccountBindingId());
+            }
+            if (addEndEntityRestRequest.getExtensionData() != null && !addEndEntityRestRequest.getExtensionData().isEmpty()) {
+                addEndEntityRestRequest.getExtensionData().forEach((extendedInformation) -> {
+                    // Dynamic Custom extensions are added with OID and data
+                    // See org.cesecore.certificates.endentity.ExtendedInformation
+                    extendedInfo.setExtensionData(extendedInformation.getName(), extendedInformation.getValue());
+                });
+            }
+            if (addEndEntityRestRequest.getCustomData() != null && !addEndEntityRestRequest.getCustomData().isEmpty()) {
+                addEndEntityRestRequest.getCustomData().forEach((extendedInformation) -> {
+                    // There are two different types of custom data ExtendedInformation
+                    // Custom Data starting with customdata_ (like validity) and pure string fields (like certificate serial number and other things)
+                    // We require the API caller to add the customdata_ before the actual variable, where that is needed, for example customdata_STARTTIME
+                    // See org.cesecore.certificates.endentity.ExtendedInformation
+                    extendedInfo.setStringKeyData(extendedInformation.getName(), extendedInformation.getValue());
+                });
             }
             extendedInfo.setCustomData(ExtendedInformation.MARKER_FROM_REST_RESOURCE, "dummy");
             extendedInfo.setCustomData(ExtendedInformation.CA_NAME, addEndEntityRestRequest.getCaName());

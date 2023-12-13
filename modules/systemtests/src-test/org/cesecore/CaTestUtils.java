@@ -307,9 +307,7 @@ public abstract class CaTestUtils {
                     signingKeyName);
             final String keyalg = AlgorithmTools.getKeyAlgorithm(publicKey);
             String sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
-            if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                sigalg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            } else if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+            if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             }
             X509Certificate cacert;
