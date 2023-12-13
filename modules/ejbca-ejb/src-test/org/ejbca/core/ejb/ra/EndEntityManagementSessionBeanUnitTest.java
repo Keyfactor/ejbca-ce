@@ -53,4 +53,9 @@ public class EndEntityManagementSessionBeanUnitTest {
     public void isUsernameValidUnderscore() {
         assertTrue("Username with Underscore is valid", EndEntityManagementSessionBean.isUsernameValid("Some_username"));
     }
+
+    @Test
+    public void isUsernameValidManyChars() {
+        assertTrue("Username with '?:/=(*@~)_-,. A1' is valid", EndEntityManagementSessionBean.isUsernameValid("?:/=(*@~)_-,. 'A1"));
+    }
 }

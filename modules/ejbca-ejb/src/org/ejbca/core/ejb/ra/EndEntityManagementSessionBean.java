@@ -355,7 +355,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         endEntity.setSubjectAltName(cnAppendedSan);
 
         if (!isUsernameValid(endEntity.getUsername())) {
-            throw new IllegalNameException("Only characters, numbers, whitespace, comma, period, _, @, ~, *, -, :, /, ?, \\, =, (, ), and vertical bar are allowed in Username");
+            throw new IllegalNameException("Only characters, numbers, whitespace, comma, period, ', _, @, ~, *, -, :, /, ?, =, (, ), and vertical bar are allowed in Username");
         }
         if( profile.getAllowMergeDn()) {
             endEntity = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntity, profile);
