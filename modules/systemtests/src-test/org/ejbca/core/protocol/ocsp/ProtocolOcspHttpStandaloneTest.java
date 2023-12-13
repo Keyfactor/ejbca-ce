@@ -339,9 +339,13 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     /** Verify the RFC5019 headers of a successful GET request with untilNextUpdate and maxAge. */
     @Test
     public void test17VerifyHttpGetHeaders() throws Exception {
-        final String oldConfigurationValue1 = configurationSession.getConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE);
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long oldConfigurationValue1 = globalOcspConfiguration.getDefaultValidityTime();
+        globalOcspConfiguration.setDefaultValidityTime(5L);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
+        
+        
         final String oldConfigurationValue2 = configurationSession.getConfigurationValue(OcspConfiguration.MAX_AGE);
-        configurationSession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, "5");
         configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, "30");
         // Make sure that we run the test with a CA where this is no OcspKeyBinding
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.DISABLED);
@@ -350,10 +354,12 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
             testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate);
             // Test with expires/nextUpdate after ocsp signing certificate expire date (value is set in seconds)
             long expires = (ocspSigningCertificate.getNotAfter().getTime() - System.currentTimeMillis() + 10000) / 1000; 
-            configurationSession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, String.valueOf(expires));
+            globalOcspConfiguration.setDefaultValidityTime(expires);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
             testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate);
         } finally {
-            configurationSession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, oldConfigurationValue1);
+            globalOcspConfiguration.setDefaultValidityTime(oldConfigurationValue1);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
             configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, oldConfigurationValue2);
             OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         }
@@ -451,9 +457,11 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     /** Verify the response of a successful GET request with untilNextUpdate and maxAge. */
     @Test
     public void test18NextUpdateThisUpdate() throws Exception {
-        final String oldConfigurationValue1 = configurationSession.getConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE);
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long oldConfigurationValue1 = globalOcspConfiguration.getDefaultValidityTime();
+        globalOcspConfiguration.setDefaultValidityTime(5L);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         final String oldConfigurationValue2 = configurationSession.getConfigurationValue(OcspConfiguration.MAX_AGE);
-        configurationSession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, "5");
         configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, "30");
         // Make sure that we run the test with a CA where this is no OcspKeyBinding
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.DISABLED);
@@ -461,7 +469,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         try {
             testNextUpdateThisUpdate(caCertificate, ocspSigningCertificate.getSerialNumber());
         } finally {
-            configurationSession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, oldConfigurationValue1);
+            globalOcspConfiguration.setDefaultValidityTime(oldConfigurationValue1);
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
             configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, oldConfigurationValue2);
             OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         }
