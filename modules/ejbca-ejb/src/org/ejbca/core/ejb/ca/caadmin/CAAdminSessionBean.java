@@ -109,6 +109,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
+import org.cesecore.certificates.ca.HybridCa;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -786,9 +787,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 }
-                EndEntityInformation cadata = makeEndEntityInformation(cainfo);                
-                cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
-                        cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
+                EndEntityInformation cadata = makeEndEntityInformation(cainfo); 
+                
+                if (ca instanceof HybridCa) {
+                    HybridCa hybridCa = (HybridCa) ca;
+                    final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                    cacertificate = hybridCa.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
+                            cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
+                            cceConfig);
+                } else {
+                    cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
+                            cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
+                }
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
                 }
