@@ -361,7 +361,8 @@ public class CertificateRestResource extends BaseRestResource {
             throws AuthorizationDeniedException, CertificateEncodingException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, true);
         int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
-        final int validMaxForDatabase = maxNumberOfResults > 0 ? maxNumberOfResults : getGlobalCesecoreConfiguration().getMaximumQueryCount();
+        int maxLimit = getGlobalCesecoreConfiguration().getMaximumQueryCount();
+        final int validMaxForDatabase = maxNumberOfResults > 0 && maxLimit >= maxNumberOfResults ? maxNumberOfResults : maxLimit;
         final Collection<Certificate> expiringCertificates = EJBTools
                 .unwrapCertCollection(raMasterApi.getCertificatesByExpirationTime(admin, days, validMaxForDatabase, offset));
         int processedResults = offset + validMaxForDatabase;
