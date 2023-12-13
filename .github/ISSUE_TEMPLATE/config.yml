@@ -2,5 +2,4 @@ blank_issues_enabled: true
 contact_links:
   - name: GitHub Discussions
     url: https://github.com/Keyfactor/ejbca-ce/discussions
-    about: Join in-depth discussions or ask questions
-    
+    about: Join in-depth discussions or ask questions 
