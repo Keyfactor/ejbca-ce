@@ -25,6 +25,7 @@ public class AutoEnrollmentDTO {
     private String msaeForestRoot;
     private String msaeDomain;
     private String policyName;
+    private Integer policyUpdateInterval;
     private String servicePrincipalName;
     private byte[] keyTabFileBytes;
     private byte[] krb5ConfFileBytes;
@@ -51,6 +52,7 @@ public class AutoEnrollmentDTO {
             msaeForestRoot = autoEnrollmentConfiguration.getMsaeForestRoot(alias);
             msaeDomain = autoEnrollmentConfiguration.getMsaeDomain(alias);
             policyName = autoEnrollmentConfiguration.getPolicyName(alias);
+            policyUpdateInterval = autoEnrollmentConfiguration.getPolicyUpdateInterval(alias);
             servicePrincipalName = autoEnrollmentConfiguration.getSpn(alias);
             keyTabFileBytes = autoEnrollmentConfiguration.getMsaeKeyTabBytes(alias);
             keyTabFilename = autoEnrollmentConfiguration.getMsaeKeyTabFilename(alias);
@@ -100,6 +102,14 @@ public class AutoEnrollmentDTO {
 
     public void setPolicyName(String policyName) {
         this.policyName = policyName;
+    }
+    
+    public Integer getPolicyUpdateInterval() {
+        return policyUpdateInterval;
+    }
+
+    public void setPolicyUpdateInterval(Integer policyUpdateInterval) {
+        this.policyUpdateInterval = policyUpdateInterval;
     }
 
     public String getServicePrincipalName() {
