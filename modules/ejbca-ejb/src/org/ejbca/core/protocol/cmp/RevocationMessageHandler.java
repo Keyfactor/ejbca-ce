@@ -72,21 +72,21 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * Message handler for the CMP revocation request messages
  */
 public class RevocationMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
-	
+
 	private static final Logger LOG = Logger.getLogger(RevocationMessageHandler.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
-	
+
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
-	
+
 	private EndEntityManagementSession endEntityManagementSession;
     private CertificateStoreSession certificateStoreSession;
     private AuthorizationSession authorizationSession;
     private EndEntityAccessSession endEntityAccessSession;
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
     private CryptoTokenSessionLocal cryptoTokenSession;
-	
+
     public RevocationMessageHandler(final AuthenticationToken authenticationToken, final CmpConfiguration cmpConfiguration, final String configAlias,
     		final EjbBridgeSessionLocal ejbBridgeSession, final CryptoTokenSessionLocal cryptoTokenSession) {
         super(authenticationToken, cmpConfiguration, configAlias, ejbBridgeSession);
@@ -103,7 +103,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
-		
+
         // Try to find a HMAC/SHA1 protection key
         final String keyId = CmpMessageHelper.getStringFromOctets(msg.getHeader().getSenderKID());
         CACommon ca = null;
@@ -121,14 +121,14 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
             return sendSignedErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage());
         }
-		
+
 		// if version == 1 it is cmp1999 and we should not return a message back
 		ResponseStatus status = ResponseStatus.FAILURE;
 		FailInfo failInfo = FailInfo.BAD_MESSAGE_CHECK;
 		String failText = null;
 
 		//Verify the authenticity of the message
-		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), this.confAlias, admin, caSession, endEntityAccessSession, certificateStoreSession, 
+		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), this.confAlias, admin, caSession, endEntityAccessSession, certificateStoreSession,
 		        authorizationSession, endEntityProfileSession, certificateProfileSession, authenticationProviderSession, endEntityManagementSession, this.cmpConfiguration);
 		ICMPAuthenticationModule authenticationModule = messageVerifyer.getUsedAuthenticationModule(msg.getMessage(), null, authenticated);
 		if(authenticationModule == null) {
@@ -151,7 +151,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		final CertTemplate ct = rd.getCertDetails();
 		final ASN1Integer serno = ct.getSerialNumber();
 		final X500Name issuer = ct.getIssuer();
-		// Get the revocation reason if it exists, it is optional. 
+		// Get the revocation reason if it exists, it is optional.
 		int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
         // CRL Entry Extensions is the only thing allowed in CMPv2
 		final Extensions crlExt = rd.getCrlEntryDetails();
@@ -183,36 +183,36 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        LOG.debug("No CRL entry extensions present");
 		    }
 		}
-		
+
 		if (serno != null && issuer != null) {
 		    final String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
 		    LOG.info(iMsg);
 		    try {
-		        // If it was a certificate authenticated admin, we want to use this admin token to pass down core layers which will make 
+		        // If it was a certificate authenticated admin, we want to use this admin token to pass down core layers which will make
 		        // authorization checks on it
 		        final AuthenticationToken adminForEjb;
 		        if (authenticationModule.getAuthenticationToken() != null) {
-		            adminForEjb = authenticationModule.getAuthenticationToken();		                
+		            adminForEjb = authenticationModule.getAuthenticationToken();
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("Using admin from AuthenticationModule to call EJB. AuthModule=" + authenticationModule.getName() + ", admin: " + adminForEjb.toString());
                     }
 		        } else {
-	                adminForEjb = admin;		            
+	                adminForEjb = admin;
                     if (LOG.isTraceEnabled()) {
                         LOG.trace("Using AlwaysAllow admin to call EJB, admin: " + adminForEjb.toString());
-                    }               
+                    }
 		        }
 		        endEntityManagementSession.revokeCert(adminForEjb, serno.getValue(), CertTools.stringToBCDNString(issuer.toString()), reason);
 		        status = ResponseStatus.SUCCESS;
 		    } catch (AuthorizationDeniedException e) {
 		        failInfo = FailInfo.NOT_AUTHORIZED;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.errornotauthrevoke", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
-		        failText = errMsg; 
+		        failText = errMsg;
 		        LOG.info(failText);
 		    } catch (NoSuchEndEntityException e) {
 		        failInfo = FailInfo.BAD_CERTIFICATE_ID;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.errorcertnofound", CertTools.stringToBCDNString(issuer.toString()), serno.getValue().toString(16));
-		        failText = errMsg; 
+		        failText = errMsg;
                 // This is already info logged in endEntityManagementSession.revokeCert
                 // LOG.info(failText);
 		    } catch (WaitingForApprovalException e) {
@@ -220,12 +220,12 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    } catch (ApprovalException e) {
 		        failInfo = FailInfo.BAD_REQUEST;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.erroralreadyrequested");
-		        failText = errMsg; 
+		        failText = errMsg;
 		        LOG.info(failText);
 		    } catch (AlreadyRevokedException e) {
 		        failInfo = FailInfo.CERT_REVOKED;
 		        final String errMsg = INTRES.getLocalizedMessage("cmp.erroralreadyrevoked");
-		        failText = errMsg; 
+		        failText = errMsg;
 		        // This is already info logged in endEntityManagementSession.revokeCert
 		        // LOG.info(failText);
 		    }
@@ -234,24 +234,16 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             final String errMsg = INTRES.getLocalizedMessage("cmp.errormissingissuerrevoke",
                     (issuer != null ? issuer.toString() : "<no issuer in request>"),
                     (serno != null ? serno.getValue().toString(16) : "<no serial number in request>"));
-		    failText = errMsg; 
+		    failText = errMsg;
 		    LOG.info(failText);
 		}
-		
+
 		if (LOG.isDebugEnabled()) {
 		    LOG.debug("Creating a PKI revocation message response: "+responseProtection);
 		}
 		final CmpRevokeResponseMessage rresp = new CmpRevokeResponseMessage();
 		rresp.setRecipientNonce(msg.getSenderNonce());
 		rresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-		// The revocation message may have had an empty recipient, in which case we got the recipient from the CMP configuration (see above)
-		if (StringUtils.isEmpty(msg.getRecipient().getName().toString())) {
-		    final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
-		    final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
-		    rresp.setSender(sender);
-		} else {
-	        rresp.setSender(msg.getRecipient());		    
-		}
 		rresp.setRecipient(msg.getSender());
 		rresp.setTransactionId(msg.getTransactionId());
 		rresp.setFailInfo(failInfo);
@@ -259,7 +251,15 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		rresp.setStatus(status);
 
 		if (StringUtils.equals(responseProtection, "pbe")) {
-		    final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
+			// The revocation message may have had an empty recipient, in which case we got the recipient from the CMP configuration (see above)
+			if (StringUtils.isEmpty(msg.getRecipient().getName().toString())) {
+				final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
+				final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
+				rresp.setSender(sender);
+			} else {
+				rresp.setSender(msg.getRecipient());
+			}
+			final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
 			CmpMessageProtectionVerifyer verifyer = hmacmodule.getPasswordBasedProtectionVerifyer();
 			if (verifyer instanceof CmpPbeVerifyer) {
 				final CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
@@ -267,7 +267,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 				final String macAlg = pbeVerifyer.getMacOid();
 				final int iterationCount = CmpMessageHelper.DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT;
 				final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
-				
+
 				if (owfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
 					// Set all protection parameters
 					if (LOG.isDebugEnabled()) {
@@ -292,6 +292,10 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 			}
 		} else if(StringUtils.equals(responseProtection, "signature")) {
 		    try {
+			    final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
+		    	final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
+		    	rresp.setSender(sender);
+
 		        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
 		        final String aliasCertSign = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
 		        rresp.setSignKeyInfo(ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
