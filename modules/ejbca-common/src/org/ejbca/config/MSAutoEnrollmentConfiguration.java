@@ -51,7 +51,6 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String POLICY_NAME = "policyName";
     private static final String POLICY_UID = "policyUid";
     private static final String SPN = "servicePrincipalName";
-
     
     // MSAE Krb5Conf
     public static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
@@ -66,6 +65,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String AD_LOGIN_DN = "adLoginDN";
     private static final String AD_LOGIN_PASSWORD = "adLoginPassword";
     private static final String AUTH_KEY_BINDING = "authKeyBinding";
+    private static final String POLICY_UPDATE_INTERVAL = "policyUpdateInterval";
 
     // MS Enrollment Servlet Settings
     private static final String CA_NAME = "caName";
@@ -75,11 +75,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     // Template to Settings
     public static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
-
-    private static final int DEFAULT_AD_CONNECTION_PORT = 389;
-    
-    private static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds
-    
+    private static final int DEFAULT_POLICY_UPDATE_INTERVAL = 8; // In hours
+    private static final int DEFAULT_AD_CONNECTION_PORT = 389;    
+    private static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds    
     private static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
 
     public MSAutoEnrollmentConfiguration() {
@@ -127,6 +125,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             data.put(alias + CA_NAME, "");
             data.put(alias + KEY_EXCHANGE_CERT_PROFILE_NAME, "");
             data.put(alias + MS_TEMPLATE_SETTINGS, new ArrayList<>());
+            data.put(alias + POLICY_UPDATE_INTERVAL, String.valueOf(DEFAULT_POLICY_UPDATE_INTERVAL));
         } else {
             log.debug("No alias found");
         }
@@ -153,6 +152,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         keys.add(alias + CA_NAME);
         keys.add(alias + KEY_EXCHANGE_CERT_PROFILE_NAME);
         keys.add(alias + MS_TEMPLATE_SETTINGS);
+        keys.add(alias + POLICY_UPDATE_INTERVAL);
         return keys;
     }
     
@@ -198,6 +198,17 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public void setPolicyName(String alias, final String policyName) {
         String key = alias + "." + POLICY_NAME;
         setValue(key, policyName, alias);
+    }
+    
+    public int getPolicyUpdateInterval(String alias) {
+        String key = alias + "." + POLICY_UPDATE_INTERVAL;
+        String value = getValue(key, alias);
+        return value == null ? DEFAULT_POLICY_UPDATE_INTERVAL : Integer.valueOf(value);
+    }
+
+    public void setPolicyUpdateInterval(String alias, final int policyUpdateInterval) {
+        String key = alias + "." + POLICY_UPDATE_INTERVAL;
+        setValue(key, String.valueOf(policyUpdateInterval), alias);
     }
     
     public String getSpn(String alias) {
