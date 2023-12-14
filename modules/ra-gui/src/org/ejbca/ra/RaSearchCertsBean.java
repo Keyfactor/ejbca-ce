@@ -384,6 +384,16 @@ public class RaSearchCertsBean implements Serializable {
     }
 
     /**
+     * @return message to display when there are no matching search results for the current criteria.
+     */
+    public String getNoResultsMessage() {
+        if (!isAtLeastOneCriteriaCheckboxTicked()) {
+            return raLocaleBean.getMessage("search_certs_page_info_extend_criteria");
+        }
+        return raLocaleBean.getMessage("search_certs_page_info_noresult");
+    }
+
+    /**
      * @return true if there might be more search results for the current criteria than shown here.
      */
     public boolean isResultsMoreAvailable() {
