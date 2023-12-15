@@ -992,20 +992,20 @@
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />
 
             <h:panelGroup styleClass="pure-u-2-3 ra-endEntityNavEditBar">
-                <h:commandButton action="#{raEndEntityBean.revokeCertificatesAndDeleteEndEntity}"
-                                 value="#{msg.endentity_page_command_edit_revoke_delete}"
-                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
-                                 rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
                 <h:commandButton action="#{raEndEntityBean.editEditEndEntity}"
                                  value="#{msg.endentity_page_command_edit}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
                                  rendered="#{not raEndEntityBean.deleted and raAccessBean.authorizedToEditEndEntities and !raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible and raEndEntityBean.endEntity != null}" />
+                <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}"
+                                 value="#{msg.endentity_page_command_editsave}"
+                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                 rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
                 <h:commandButton action="#{raEndEntityBean.editEditEndEntityCancel}"
                                  value="#{msg.endentity_page_command_editcancel}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
                                  rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
-                <h:commandButton action="#{raEndEntityBean.editEditEndEntitySave}"
-                                 value="#{msg.endentity_page_command_editsave}"
+                <h:commandButton action="#{raEndEntityBean.revokeCertificatesAndDeleteEndEntity}"
+                                 value="#{msg.endentity_page_command_edit_revoke_delete}"
                                  styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
                                  rendered="#{raAccessBean.authorizedToEditEndEntities and raEndEntityBean.editEditEndEntityMode and raEndEntityBean.apiEditCompatible}" />
                 <h:commandButton action="#{raEndEntityBean.backToSearch}" value="#{msg.search_ees_page_cdclose_command}"
