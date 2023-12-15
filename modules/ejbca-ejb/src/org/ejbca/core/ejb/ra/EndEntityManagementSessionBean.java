@@ -355,7 +355,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         endEntity.setSubjectAltName(cnAppendedSan);
 
         if (!isUsernameValid(endEntity.getUsername())) {
-            throw new IllegalNameException("Only characters, numbers, whitespace, comma, period, ', _, @, ~, *, -, :, /, ?, =, (, ), and vertical bar are allowed in Username");
+            throw new IllegalNameException("Only characters, numbers, whitespace, comma, period, ', _, @, *, -, :, /, =, (, ), and vertical bar are allowed in Username");
         }
         if( profile.getAllowMergeDn()) {
             endEntity = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntity, profile);
@@ -599,7 +599,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (StringUtils.isEmpty(username)){
            return true;
         }
-        String regex = "[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\~\\*\\,\\-:\\/\\?\\'\\=\\(\\)\\|.]";
+        String regex = "[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\'\\=\\(\\)\\|.]";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(username);
 
