@@ -252,6 +252,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 
 		if (StringUtils.equals(responseProtection, "pbe")) {
 			// The revocation message may have had an empty recipient, in which case we got the recipient from the CMP configuration (see above)
+			// see https://datatracker.ietf.org/doc/html/rfc9483#section-3.1 for reasoning about the choice of the sender information
 			if (StringUtils.isEmpty(msg.getRecipient().getName().toString())) {
 				final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
 				final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
@@ -292,6 +293,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 			}
 		} else if(StringUtils.equals(responseProtection, "signature")) {
 		    try {
+				// see https://datatracker.ietf.org/doc/html/rfc9483#section-3.1 for reasoning about the choice of the sender information
+				// be aware that the sender field of the CMP message is of type GeneralName and not RDNSequence as the subject field of the certificate
+				// therefore they are not byte-by-byte equal
 			    final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
 		    	final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
 		    	rresp.setSender(sender);
