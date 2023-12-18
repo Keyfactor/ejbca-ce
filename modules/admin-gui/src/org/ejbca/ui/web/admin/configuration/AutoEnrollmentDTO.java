@@ -25,7 +25,7 @@ public class AutoEnrollmentDTO {
     private String msaeForestRoot;
     private String msaeDomain;
     private String policyName;
-    private Integer policyUpdateInterval;
+    private int policyUpdateInterval = 8;
     private String servicePrincipalName;
     private byte[] keyTabFileBytes;
     private byte[] krb5ConfFileBytes;
