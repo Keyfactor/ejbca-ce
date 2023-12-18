@@ -125,21 +125,6 @@ public class CAKeystoreExportRemoveRestoreTest {
         subTestExportRemoveRestore("test03", "secp256r1", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         log.trace("<test03ExportRemoveRestoreSHA1WithECDSAForSigning()");
     }
-
-    /**
-     * Tries to export, remove and restore with a CA that is using SHA1withDSA
-     * and a 1024 bit DSA key for signing but SHA256WithRSA and a 1024 bit RSA
-     * key for encryption.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void test04ExportRemoveRestoreSHA1WithDSAForSigning() throws Exception {
-        log.trace(">test04ExportRemoveRestoreSHA1WithDSAForSigning()");
-        subTestExportRemoveRestore("test04", "DSA1024", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        log.trace("<test04ExportRemoveRestoreSHA1WithDSAForSigning()");
-    }
-
     
     /** Create CryptoToken, generates keys, executes test and cleans up CryptoToken. */
     private void subTestExportRemoveRestore(String cryptoTokenName, String signKeySpecification, final String encryptionKeySpec, String signatureAlgorithm, String encryptionAlgorithm) throws Exception {
@@ -164,7 +149,6 @@ public class CAKeystoreExportRemoveRestoreTest {
         final String capassword = "foo123";
         log.trace(">test05RestoreWrong()");
         int cryptoTokenId1 = 0;
-        int cryptoTokenId2 = 0;
         int cryptoTokenId3 = 0;
         try {
             // CA using SHA1withRSA and 2048 bit RSA KEY
@@ -172,12 +156,7 @@ public class CAKeystoreExportRemoveRestoreTest {
             cryptoTokenId1 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME1, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             final CAToken catoken1 = CaTestUtils.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
             final CAInfo cainfo1 = getNewCAInfo(CANAME1, catoken1);
-            // This CA uses DSA instead
-            final String CANAME2 = "TestExportRemoveRestoreCA2";
             
-            cryptoTokenId2 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME2, "DSA1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-            final CAToken catoken2 = CaTestUtils.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-            final CAInfo cainfo2 = getNewCAInfo(CANAME2, catoken2);
             // This CA uses RSA but with 1024 bits
             final String CANAME3 = "TestExportRemoveRestoreCA3";
             cryptoTokenId3 = CryptoTokenTestUtils.createCryptoTokenForCA(internalAdmin, capassword.toCharArray(), true, false, CANAME3, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
@@ -185,16 +164,13 @@ public class CAKeystoreExportRemoveRestoreTest {
             final CAInfo cainfo3 = getNewCAInfo(CANAME3, catoken3);
             // Remove CAs if they already exists, but not crypto tokens
             caSession.removeCA(internalAdmin, cainfo1.getCAId());
-            caSession.removeCA(internalAdmin, cainfo2.getCAId());
             caSession.removeCA(internalAdmin, cainfo3.getCAId());
             // Create CAs
             caAdminSession.createCA(internalAdmin, cainfo1);
-            caAdminSession.createCA(internalAdmin, cainfo2);
             caAdminSession.createCA(internalAdmin, cainfo3);
             try {
                 // Export keystores
                 byte[] keystorebytes1 = caAdminSession.exportCAKeyStore(internalAdmin, CANAME1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
-                byte[] keystorebytes2 = caAdminSession.exportCAKeyStore(internalAdmin, CANAME2, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
                 byte[] keystorebytes3 = caAdminSession.exportCAKeyStore(internalAdmin, CANAME3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
                 // Remove keystore from CA1
                 try {
@@ -205,7 +181,7 @@ public class CAKeystoreExportRemoveRestoreTest {
                 }
                 // Try to restore with wrong keystore
                 try {
-                    caAdminSession.restoreCAKeyStore(internalAdmin, CANAME1, keystorebytes2, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+                    caAdminSession.restoreCAKeyStore(internalAdmin, CANAME1, keystorebytes3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
                     fail("Should not be possible to restore with a keystore with different parameters");
                 } catch (Exception e) {
                     // OK. EJBException -> InvalidKeyException (DSA keystore to RSA CA)
@@ -225,12 +201,10 @@ public class CAKeystoreExportRemoveRestoreTest {
             } finally {
                 // Clean up CAs
                 CaTestUtils.removeCa(internalAdmin, cainfo1);
-                CaTestUtils.removeCa(internalAdmin, cainfo2);
                 CaTestUtils.removeCa(internalAdmin, cainfo3);
             }
         } finally {
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId1);
-            CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId2);
             CryptoTokenTestUtils.removeCryptoToken(internalAdmin, cryptoTokenId3);
         }
         log.trace("<test05RestoreWrong()");

@@ -2021,7 +2021,7 @@
         "certificate_chain": {
           "type": "array",
           "example": "[\"MII123efg...345xyz0=\"]",
-          "description": "Certificate chain",
+          "description": "CA Certificate chain",
           "items": {
             "type": "array",
             "items": {
