@@ -786,6 +786,43 @@
         }
       }
     },
+    "/v2/certificate/{issuer_dn}/{certificate_serial_number}/keyrecover": {
+      "put": {
+        "tags": [
+          "v2/certificate"
+        ],
+        "summary": "Marks certificate for  key recovery.",
+        "description": "",
+        "operationId": "markCertificateForKeyRecovery",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "Subject DN of the issuing CA",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "certificate_serial_number",
+            "in": "path",
+            "description": "Hex serial number (without prefix, e.g. '00')",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate marked for key recovery successfully"
+          },
+          "500": {
+            "description": "General error, while trying to mark the certificate for key recovery"
+          }
+        }
+      }
+    },
     "/v1/configdump/status": {
       "get": {
         "tags": [
