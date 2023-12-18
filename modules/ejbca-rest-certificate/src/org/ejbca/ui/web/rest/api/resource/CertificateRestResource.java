@@ -270,7 +270,7 @@ public class CertificateRestResource extends BaseRestResource {
 
     private static X509Certificate getFirstCertificate(byte[] keyStoreBytes, String keyStoreType, String keyStorePassword)
             throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
-        return CertTools.extractCertificatesFromKeychain(keyStoreBytes, keyStoreType, keyStorePassword).get(0);
+        return CertTools.extractEndEntityCertificateFromKeyStore(keyStoreBytes, keyStoreType, keyStorePassword).get(0);
     }
 
     public Response revocationStatus(final HttpServletRequest requestContext, final String issuerDn, final String serialNumber)
