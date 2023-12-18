@@ -38,14 +38,6 @@ public class RaAvailableAlgorithmsTool {
         if (certificateProfile!=null) {
             final List<String> availableKeyAlgorithms = certificateProfile.getAvailableKeyAlgorithmsAsList();
             final List<Integer> availableBitLengths = certificateProfile.getAvailableBitLengthsAsList();
-            if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength == 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 for (final int availableBitLength : availableBitLengths) {
                     if (availableBitLength >= 1024) {
