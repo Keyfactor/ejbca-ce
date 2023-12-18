@@ -15,10 +15,15 @@ package org.ejbca.ui.web.rest.api.resource.swagger;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Info;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.SwaggerDefinition.Scheme;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
@@ -33,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -85,6 +91,7 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
         return super.getCertificateCount(requestContext, isActive);
     }
 
+    @Override
     @POST
     @Path("/search")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -101,6 +108,7 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
         return super.searchCertificates(requestContext, searchCertificatesRestRequest);
     }
 
+    @Override
     @GET
     @Path("/profile/{profile_name}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -112,6 +120,20 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
             @PathParam("profile_name") String certProfileName
             ) throws AuthorizationDeniedException, RestException {
         return super.getCertificateProfileInfo(requestContext, certProfileName);
+    }
+    
+    @Override
+    @PUT
+    @Path("/{issuer_dn}/{certificate_serial_number}/keyrecover")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Marks certificate for  key recovery.")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "Certificate marked for key recovery successfully"),
+                            @ApiResponse(code = 500, message = "General error, while trying to mark the certificate for key recovery"),})
+    public Response markCertificateForKeyRecovery(@Context HttpServletRequest requestContext,
+            @ApiParam(value = "Subject DN of the issuing CA") @PathParam("issuer_dn") String issuerDN,
+            @ApiParam(value = "Hex serial number (without prefix, e.g. '00')") @PathParam("certificate_serial_number") String certificateSerialNumber)
+            throws CADoesntExistsException, AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException {
+        return super.markCertificateForKeyRecovery(requestContext, certificateSerialNumber, issuerDN);
     }
 
 }

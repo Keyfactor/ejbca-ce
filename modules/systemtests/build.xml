@@ -412,7 +412,7 @@
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="runweb" depends="build, assert-appserverrunning" description="Run web-realted system tests">
+	<target name="runweb" depends="build, assert-appserverrunning" description="Run web-related system tests">
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
@@ -425,7 +425,7 @@
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
 					<include name="org/ejbca/core/protocol/scep/ProtocolScepHttpTest.class" />
-					<include name="org/ejbca/core/protocol/scep/ProtocolOcspHttpTest.class" />
+					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRequestTest.class" />
 					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
 					<include name="org/ejbca/ui/web/pub/WebdistHttpTest.class" />
