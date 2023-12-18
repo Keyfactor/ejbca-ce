@@ -615,6 +615,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setMsaeForestRoot(getDto().getAlias(), getDto().getMsaeForestRoot());
             autoEnrollmentConfiguration.setMsaeDomain(getDto().getAlias(), getDto().getMsaeDomain());
             autoEnrollmentConfiguration.setPolicyName(getDto().getAlias(), getDto().getPolicyName());
+            autoEnrollmentConfiguration.setPolicyUpdateInterval(getDto().getAlias(), getDto().getPolicyUpdateInterval());
             autoEnrollmentConfiguration.setPolicyUid(getDto().getAlias());
             autoEnrollmentConfiguration.setSpn(getDto().getAlias(), getDto().getServicePrincipalName());
 
