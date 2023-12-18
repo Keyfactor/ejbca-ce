@@ -38,7 +38,7 @@ public class CertificateEnrollmentRestResponse {
 	@ApiModelProperty(value = "Response format", example = "DER")
 	private final String responseFormat;
 
-	@ApiModelProperty(value = "Certificate chain", example = "[\"MII123efg...345xyz0=\"]")
+	@ApiModelProperty(value = "CA Certificate chain", example = "[\"MII123efg...345xyz0=\"]")
 	private final List<byte[]> certificateChain;
 
 	private CertificateEnrollmentRestResponse(final CertificateRestResponseBuilder builder) {

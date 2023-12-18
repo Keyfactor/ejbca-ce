@@ -1535,12 +1535,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getAvailableKeySpecs() {
         final List<SelectItem> availableKeySpecs = new ArrayList<>();
         final int[] SIZES_RSA = { 1024, 1536, 2048, 3072, 4096, 6144, 8192 };
-        final int[] SIZES_DSA = { 1024 };
         for (int size : SIZES_RSA) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + size, AlgorithmConstants.KEYALGORITHM_RSA + " " + size));
-        }
-        for (int size : SIZES_DSA) {
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + size, AlgorithmConstants.KEYALGORITHM_DSA + " " + size));
         }
         try {
             final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) || AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()));
@@ -1719,7 +1715,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
-        final String keyspec = KeyTools.keyalgspecToKeyspec(keyPairGuiInfo.getKeyAlgorithm(), keyPairGuiInfo.getRawKeySpec());
+        final String keyspec = keyPairGuiInfo.getRawKeySpec();
         try {
             cryptoTokenManagementSession.createKeyPairFromTemplate(getAdmin(), getCurrentCryptoTokenId(), alias, keyspec);
         } catch (CryptoTokenOfflineException e) {

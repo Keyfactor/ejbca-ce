@@ -116,7 +116,7 @@
 	<classpathentry kind="lib" path="lib/httpmime-4.5.13.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-5.12.1.jar"/>
-	<classpathentry kind="lib" path="lib/jacknji11-1.2.8.jar"/>
+	<classpathentry kind="lib" path="lib/jacknji11-1.2.10.jar"/>
 	<classpathentry kind="lib" path="lib/ext/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-4.13.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/javax.ws.rs-api-2.1.1.jar"/>
@@ -160,9 +160,9 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-0.10.13.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-0.12.0.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-12.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/p11ng-0.5.4.jar" sourcepath="/p11ng"/>
+	<classpathentry kind="lib" path="lib/p11ng-0.5.12.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>

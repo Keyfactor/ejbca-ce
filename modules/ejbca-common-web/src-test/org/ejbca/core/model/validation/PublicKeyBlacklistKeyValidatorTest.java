@@ -85,7 +85,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
 
         // B-1: Test public key blacklist validation OK with match but other algorithm.
         algorithms = new ArrayList<String>();
-        algorithms.add(AlgorithmConstants.KEYALGORITHM_DSA);
+        algorithms.add(AlgorithmConstants.KEYALGORITHM_ECDSA);
         keyValidator.setKeyAlgorithms(algorithms);
         messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);
@@ -126,7 +126,7 @@ public class PublicKeyBlacklistKeyValidatorTest {
         
         // B-1: Test public key blacklist validation OK with match but other algorithm.
         algorithms = new ArrayList<String>();
-        algorithms.add(AlgorithmConstants.KEYALGORITHM_DSA);
+        algorithms.add(AlgorithmConstants.KEYALGORITHM_RSA);
         keyValidator.setKeyAlgorithms(algorithms);
         messages = keyValidator.validate(keyPair.getPublic(), null);
         log.trace("Key validation error messages: " + messages);

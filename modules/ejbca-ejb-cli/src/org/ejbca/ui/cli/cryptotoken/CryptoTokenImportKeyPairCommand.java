@@ -77,9 +77,6 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private static final String EC_KEY_HEADER = "-----BEGIN EC PRIVATE KEY-----\n";
     private static final String EC_KEY_FOOTER = "-----END EC PRIVATE KEY-----";
     
-    private static final String DSA_KEY_HEADER = "-----BEGIN DSA PRIVATE KEY-----\n";
-    private static final String DSA_KEY_FOOTER = "-----END DSA PRIVATE KEY-----";
-    
     {
         registerParameter(new Parameter(PRIVATEKEYFILEPATH, "Private key file path", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "Path to the file containing private key."));
@@ -189,10 +186,6 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             privateKey = privateKey.replace(EC_KEY_HEADER, StringUtils.EMPTY);
             privateKey = privateKey.replace(EC_KEY_FOOTER, StringUtils.EMPTY);
             break;
-        case "DSA":
-            privateKey = privateKey.replace(DSA_KEY_HEADER, StringUtils.EMPTY);
-            privateKey = privateKey.replace(DSA_KEY_FOOTER, StringUtils.EMPTY);
-            break;
         default:
             privateKey = privateKey.replace(RSA_KEY_HEADER, StringUtils.EMPTY);
             privateKey = privateKey.replace(RSA_KEY_FOOTER, StringUtils.EMPTY);
@@ -235,9 +228,6 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
     private String getSignatureAlgorithm(final String keyAlgorithm) {
         String signatureAlgorithm = null;
         switch (keyAlgorithm) {
-        case "DSA-SHA1":
-            signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
-            break;
         case "RSA-SHA256":
             signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
             break;

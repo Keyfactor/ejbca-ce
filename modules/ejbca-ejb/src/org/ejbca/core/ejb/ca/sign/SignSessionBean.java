@@ -1508,6 +1508,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (privateKey == null) {
             throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + signingCaId);
         }
+        final PublicKey publicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (publicKey == null) {
+            throw new CryptoTokenOfflineException("Could not retrieve public certSignKey from CA with ID " + signingCaId);
+        }
         final X509Certificate signerCert;
         try {
             signerCert = (X509Certificate) ca.getCACertificate();
@@ -1515,8 +1519,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("Not possible to sign a payload using a CV CA", e);
         }
         final CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+        // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3            
         final String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(catoken.getSignatureAlgorithm(),
-                privateKey.getAlgorithm());
+                publicKey.getAlgorithm());
         try {
             final ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
             final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder()
