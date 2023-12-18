@@ -564,7 +564,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         while(itr.hasNext()) {
             String oldkey = itr.next();
             String newkey = oldkey;
-            newkey = StringUtils.replace(newkey, oldAlias, newAlias);
+            newkey = StringUtils.replace(newkey, oldAlias + ".", newAlias + ".");
             Object value = data.get(oldkey);
             data.put(newkey, value);
         }
