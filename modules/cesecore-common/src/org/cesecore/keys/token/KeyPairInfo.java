@@ -30,9 +30,9 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
     private String keySpecification;
     private String subjectKeyID = "";
     public enum KeyUsage {
-        SIGN_ENCRYPT, ENCRYPT, SIGN, NULL
+        SIGN, ENCRYPT, SIGN_ENCRYPT
     }
-    private KeyUsage keyUsage = KeyUsage.NULL;
+    private KeyUsage keyUsage = null;
 
 
     public KeyPairInfo(final String alias, final String keyAlgorithm, final String keySpecification, final String subjectKeyID, final KeyUsage keyUsage) {
