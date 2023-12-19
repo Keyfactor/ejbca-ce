@@ -597,10 +597,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private final String keySpecification; // to be displayed in GUI
         private final String rawKeySpec; // to be used for key generation
         private final String subjectKeyID;
-        private final String keyUsage;
         private final boolean placeholder;
         private boolean selected = false;
         private int selectedKakCryptoTokenId;
+        private String keyUsage = null;
         private String selectedKakKeyAlias;
         private String selectedPaddingScheme;
         private boolean initialized;
@@ -615,7 +615,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 keySpecification = rawKeySpec;
             }
             subjectKeyID = keyPairInfo.getSubjectKeyID();
-            keyUsage = keyPairInfo.getKeyUsage().toString();
+            if (keyPairInfo.getKeyUsage() != null) {
+                keyUsage = keyPairInfo.getKeyUsage().toString();
+            }
             placeholder = false;
             initialized = cryptoTokenManagementSession.isKeyInitialized(authenticationToken, getCurrentCryptoTokenId(), alias);
         }
@@ -634,7 +636,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             } else {
                 keySpecification = rawKeySpec;
             }
-            keyUsage = pieces.length >= 3 ? pieces[2] : KeyPairInfo.KeyUsage.NULL.toString();
+            keyUsage = pieces.length >= 3 ? pieces[2] : null;
             subjectKeyID = "";
             placeholder = true;
             initialized = false;
@@ -1722,8 +1724,10 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         KeyPairTemplate template = null;
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
-        keyUsage = keyPairGuiInfo.getKeyUsage().toString();
-        if (keyUsage != null && !keyUsage.equals("null") && !keyUsage.equals("NULL")) {
+        if (keyPairGuiInfo.getKeyUsage() != null) {
+            keyUsage = keyPairGuiInfo.getKeyUsage().toString();
+        }
+        if (keyUsage != null && !keyUsage.equals("null")) {
             template = matchTemplate(keyUsage);
         }
         final String keyspec = keyPairGuiInfo.getRawKeySpec();
