@@ -767,7 +767,11 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
                 Set<Long> keyUsageSet = cryptoToken.getKeyUsagesFromPrivateKey(alias);
                 final String keyUsage = getKeyUsageStringForKeyPairInfo(keyUsageSet);
-                ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, KeyPairInfo.KeyUsage.valueOf(keyUsage)));
+                if (keyUsage != null) {
+                    ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, KeyPairInfo.KeyUsage.valueOf(keyUsage)));
+                } else {
+                    ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, null));
+                }
             } else {
                 log.warn("Could not read pubkey for alias '" + alias +"', got null, this is probably an unknown key type.");
             }
@@ -798,7 +802,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }else if (keyUsage.equals(SIGN_ENCRYPT)) {
             return KeyPairTemplate.SIGN_ENCRYPT.toString();
         }
-        return KeyPairInfo.KeyUsage.NULL.toString();
+        return null;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -837,7 +841,10 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
         Set<Long> keyUsageSet = cryptoToken.getKeyUsagesFromPrivateKey(alias);
         final String keyUsage = getKeyUsageStringForKeyPairInfo(keyUsageSet);
-        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, KeyPairInfo.KeyUsage.valueOf(keyUsage));
+        if (keyUsage != null) {
+            return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, KeyPairInfo.KeyUsage.valueOf(keyUsage));
+        }
+        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, null);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
