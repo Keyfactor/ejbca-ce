@@ -42,6 +42,7 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
@@ -766,7 +767,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
                 Set<Long> keyUsageSet = cryptoToken.getKeyUsagesFromPrivateKey(alias);
                 final String keyUsage = getKeyUsageStringForKeyPairInfo(keyUsageSet);
-                ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, keyUsage));
+                ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, KeyPairInfo.KeyUsage.valueOf(keyUsage)));
             } else {
                 log.warn("Could not read pubkey for alias '" + alias +"', got null, this is probably an unknown key type.");
             }
@@ -774,6 +775,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         return ret;
     }
     
+    /*
+     CryptoToken.getKeyUsagesFromPrivateKey returns the following PKCS#11 attributes, depending on private key usage:
+     CKA_SIGN 0x00000108UL    (dec: 264)
+     CKA_DECRYPT 0x00000105UL (dec: 261)
+     http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/os/pkcs11-base-v2.40-os.html
+    */
     private String getKeyUsageStringForKeyPairInfo(final Set<Long> keyUsage) {
         final long DECRYPT = 261;
         final long SIGN = 264;
@@ -791,7 +798,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         }else if (keyUsage.equals(SIGN_ENCRYPT)) {
             return KeyPairTemplate.SIGN_ENCRYPT.toString();
         }
-        return null;
+        return KeyPairInfo.KeyUsage.NULL.toString();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -830,7 +837,7 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
         Set<Long> keyUsageSet = cryptoToken.getKeyUsagesFromPrivateKey(alias);
         final String keyUsage = getKeyUsageStringForKeyPairInfo(keyUsageSet);
-        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, keyUsage);
+        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, KeyPairInfo.KeyUsage.valueOf(keyUsage));
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -970,14 +977,17 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
     @Override
     public void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification, KeyPairTemplate template)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
+        final KeyGenParamsBuilder paramsBuilder = KeyGenParams.builder(keySpecification);
+        KeyGenParams params = null;
         if (template != null) {
-            createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecification).withKeyPairTemplate(template).build());
+            params = paramsBuilder.withKeyPairTemplate(template).build();
         } else {
-            createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecification).build());       
+            params = paramsBuilder.build();
         }
+        createKeyPair(authenticationToken, cryptoTokenId, alias, params);
         removeKeyPairPlaceholder(authenticationToken, cryptoTokenId, alias);
     }
-
+        
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isAliasUsedInCryptoToken(final int cryptoTokenId, final String alias) {

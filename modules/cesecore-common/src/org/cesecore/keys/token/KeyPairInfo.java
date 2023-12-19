@@ -29,9 +29,13 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
     private String keyAlgorithm;
     private String keySpecification;
     private String subjectKeyID = "";
-    private String keyUsage = "";
+    public enum KeyUsage {
+        SIGN_ENCRYPT, ENCRYPT, SIGN, NULL
+    }
+    private KeyUsage keyUsage = KeyUsage.NULL;
 
-    public KeyPairInfo(final String alias, final String keyAlgorithm, final String keySpecification, final String subjectKeyID, final String keyUsage) {
+
+    public KeyPairInfo(final String alias, final String keyAlgorithm, final String keySpecification, final String subjectKeyID, final KeyUsage keyUsage) {
         this.alias = alias;
         this.keyAlgorithm = keyAlgorithm;
         this.keySpecification = keySpecification;
@@ -47,8 +51,8 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
     public void setKeySpecification(String keySpecification) { this.keySpecification = keySpecification; }
     public String getSubjectKeyID() { return subjectKeyID; }
     public void setSubjectKeyID(String subjectKeyID) { this.subjectKeyID = subjectKeyID; }
-    public String getKeyUsage() { return keyUsage; }
-    public void setKeyUsage(String keyUsage) { this.keyUsage = keyUsage; }
+    public KeyUsage getKeyUsage() { return keyUsage; }
+    public void setKeyUsage(KeyUsage keyUsage) { this.keyUsage = keyUsage; }
 
 
     @Override
@@ -93,7 +97,7 @@ public class KeyPairInfo implements Serializable, Comparable<KeyPairInfo> {
         return StringUtils.equals(alias, other.alias)
                 && StringUtils.equals(keyAlgorithm, other.keyAlgorithm)
                 && StringUtils.equals(keySpecification, other.keySpecification)
-                && StringUtils.equals(keyUsage, other.keyUsage)
+                && keyUsage == other.keyUsage
                 && StringUtils.equals(subjectKeyID, other.subjectKeyID);
     }
 }
