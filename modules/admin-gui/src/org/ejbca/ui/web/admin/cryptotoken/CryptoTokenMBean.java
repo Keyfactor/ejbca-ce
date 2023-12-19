@@ -615,7 +615,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 keySpecification = rawKeySpec;
             }
             subjectKeyID = keyPairInfo.getSubjectKeyID();
-            keyUsage = keyPairInfo.getKeyUsage();
+            keyUsage = keyPairInfo.getKeyUsage().toString();
             placeholder = false;
             initialized = cryptoTokenManagementSession.isKeyInitialized(authenticationToken, getCurrentCryptoTokenId(), alias);
         }
@@ -634,7 +634,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             } else {
                 keySpecification = rawKeySpec;
             }
-            keyUsage = pieces.length >= 3 ? pieces[2] : null;
+            keyUsage = pieces.length >= 3 ? pieces[2] : KeyPairInfo.KeyUsage.NULL.toString();
             subjectKeyID = "";
             placeholder = true;
             initialized = false;
@@ -1722,8 +1722,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         KeyPairTemplate template = null;
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
-        keyUsage = keyPairGuiInfo.getKeyUsage();
-        if (keyUsage != null && !keyUsage.equals("null")) {
+        keyUsage = keyPairGuiInfo.getKeyUsage().toString();
+        if (keyUsage != null && !keyUsage.equals("null") && !keyUsage.equals("NULL")) {
             template = matchTemplate(keyUsage);
         }
         final String keyspec = keyPairGuiInfo.getRawKeySpec();
