@@ -30,8 +30,13 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMKeyPair;
@@ -55,6 +60,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -65,6 +71,7 @@ import com.keyfactor.util.keys.KeyTools;
 public class CreateCsrCommand extends EjbcaCommandBase {
 
     private static final String SDN_ARG = "--subjectdn";
+    private static final String SAN_ARG = "--subjectaltname";
     
     private static final String KEYALG_ARG = "--keyalg";
     private static final String ALT_KEYALG_ARG = "--altkeyalg";
@@ -92,6 +99,8 @@ public class CreateCsrCommand extends EjbcaCommandBase {
     {
         registerParameter(new Parameter(SDN_ARG, "Subject DN", MandatoryMode.MANDATORY, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT, "Requested Subject DN of the enrolled user."));
+        registerParameter(new Parameter(SAN_ARG, "Subject Alt Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
+                ParameterMode.ARGUMENT, "Requested Subject Alternative name of the enrolled user."));
         registerParameter(new Parameter(PUBLICKEY_ARG, "Public Key File", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Complete path to the public key to sign. Key cipher and algorithm arguments will be ignored if this is provided."));
         registerParameter(new Parameter(PRIVATEKEY_ARG, "Private Key file", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -172,6 +181,8 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         
         final String subjectDn = parameters.get(SDN_ARG);
         
+        final String subjectAltName = parameters.get(SAN_ARG);
+        
         final String pubkeyFilename = parameters.get(PUBLICKEY_ARG);
         final String privkeyFilename = parameters.get(PRIVATEKEY_ARG); 
         
@@ -248,6 +259,22 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         
         final PKCS10CertificationRequestBuilder pkcs10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name(subjectDn),
                 primaryKeyPair.getPublic());
+        
+        
+        if (!StringUtils.isBlank(subjectAltName)) {
+            ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
+            GeneralNames san = DnComponents.getGeneralNamesFromAltName(subjectAltName);
+            try {
+                extensionsGenerator.addExtension(Extension.subjectAlternativeName, false, san);
+            } catch (IOException e) {
+                log.error("Failed to add extensions. " + e.getMessage());
+                log.error("debug", e);
+                return CommandResult.CLI_FAILURE;
+            }
+            final Extensions extensions = extensionsGenerator.generate();
+            // Add the extension(s) to the PKCS#10 request as a pkcs_9_at_extensionRequest
+            pkcs10CertificationRequestBuilder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extensions);
+        }
         
         List<String> primarySigAlgs = AlgorithmTools.getSignatureAlgorithms(primaryKeyPair.getPublic());
         if (primarySigAlgs.size() == 0) {
