@@ -13,6 +13,7 @@
 package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -39,7 +40,7 @@ public abstract class BaseCertificateDataSessionBean {
         final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
         query.setMaxResults(maxResults);
         int firstResult = 0;
-        final CompressedCollection<RevokedCertInfo> revokedCertInfos = new CompressedCollection<>(RevokedCertInfo.class);
+        final List<RevokedCertInfo> revokedCertInfos = new ArrayList<>();
         while (true) {
             query.setFirstResult(firstResult);
             @SuppressWarnings("unchecked")
@@ -72,7 +73,6 @@ public abstract class BaseCertificateDataSessionBean {
             }
             firstResult += maxResults;
         }
-        revokedCertInfos.closeForWrite();
         return revokedCertInfos;
     }
     

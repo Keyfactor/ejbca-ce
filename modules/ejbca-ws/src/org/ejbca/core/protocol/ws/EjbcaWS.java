@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -94,6 +95,7 @@ import org.ejbca.config.WebServiceConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.EnterpriseEditionWSBridgeSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
@@ -2388,7 +2390,7 @@ public class EjbcaWS implements IEjbcaWS {
             if (cainfo == null) {
                 throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
             }
-            publishingCrlSession.forceCRL(admin, cainfo.getCAId());
+            publishingCrlSession.forceCRL(admin, cainfo.getCAId(), new CrlCreationParams(5, TimeUnit.MINUTES));
             publishingCrlSession.forceDeltaCRL(admin, cainfo.getCAId());
 		} catch (AuthorizationDeniedException e) {
             throw getEjbcaExceptionUnredacted(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
