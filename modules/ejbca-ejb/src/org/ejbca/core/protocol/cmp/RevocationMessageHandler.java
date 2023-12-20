@@ -301,12 +301,14 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 
 		        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
 		        final String aliasCertSign = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-		        rresp.setSignKeyInfo(ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
+		        rresp.setSignKeyInfo(ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign), 
+		                ca.getCAToken().getSignatureAlgorithm(), cryptoToken.getSignProviderName());
                 if(msg.getHeader().getProtectionAlg() != null) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("RevReq request message header has protection alg: " + msg.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
-                    rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                    // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
+                    rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("RevReq request message header has no protection alg, using default alg in response.");
                 }
