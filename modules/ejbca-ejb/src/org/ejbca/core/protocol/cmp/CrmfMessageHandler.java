@@ -191,7 +191,8 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("CRMF request message header has protection alg: " + crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
-                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                    // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
+                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("CRMF request message header has no protection alg, using default alg in response.");
                 }
