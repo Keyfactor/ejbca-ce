@@ -294,7 +294,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public int getADConnectionPort(String alias) {
         String key = alias + "." + AD_CONNECTION_PORT;
         String value = getValue(key, alias);
-        return value == null ? DEFAULT_AD_CONNECTION_PORT : Integer.valueOf(value);
+        return value == null ? DEFAULT_AD_CONNECTION_PORT : Integer.parseInt(value);
     }
 
     public void setAdConnectionPort(String alias, final int port) {
@@ -305,7 +305,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public int getLdapReadTimeout(String alias) {
         String key = alias + "." + LDAP_READ_TIMEOUT;
         String value = getValue(key, alias);
-        return value == null ? DEFAULT_LDAP_READ_TIMEOUT : Integer.valueOf(value);
+        return value == null ? DEFAULT_LDAP_READ_TIMEOUT : Integer.parseInt(value);
     }
 
     public void setLdapReadTimeout(String alias, final int ldapReadTimeout) {
@@ -316,7 +316,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public int getLdapConnectTimeout(String alias) {
         String key = alias + "." + LDAP_CONNECT_TIMEOUT;
         String value = getValue(key, alias);
-        return value == null ? DEFAULT_LDAP_CONNECT_TIMEOUT : Integer.valueOf(value);
+        return value == null ? DEFAULT_LDAP_CONNECT_TIMEOUT : Integer.parseInt(value);
     }
 
     public void setLdapConnectTimeout(String alias, final int ldapConnectTimeout) {
@@ -469,7 +469,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
     public List<String> getSortedAliasList() {
         List<String> result = new ArrayList<>(getAliasList());
-        Collections.sort(result, new Comparator<String>() {
+        result.sort(new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
                 return o1.compareToIgnoreCase(o2);
@@ -597,11 +597,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             return;
         }
 
-        Iterator<String> itr = getAllAliasKeys(originAlias).iterator();
-        while(itr.hasNext()) {
-            String originalKey = itr.next();
+        for (String originalKey : getAllAliasKeys(originAlias)) {
             String cloneKey = originalKey;
-            cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
+            cloneKey = StringUtils.replace(cloneKey, originAlias + ".", cloneAlias + ".");
             Object value = data.get(originalKey);
             data.put(cloneKey, value);
         }
@@ -615,9 +613,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public Properties getAsProperties() {
         final Properties properties = new Properties();
         Set<String> aliases = getAliasList();
-        Iterator<String> itr = aliases.iterator();
-        while(itr.hasNext()) {
-            String alias = itr.next();
+        for (String alias : aliases) {
             Properties aliasp = getAsProperties(alias);
             properties.putAll(aliasp);
         }
@@ -627,11 +623,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public Properties getAsProperties(String alias) {
         if(aliasExists(alias)) {
             final Properties properties = new Properties();
-            final Iterator<String> i = getAllAliasKeys(alias).iterator();
-            while (i.hasNext()) {
-                final String key = i.next();
+            for (String key : getAllAliasKeys(alias)) {
                 final Object value = data.get(key);
-                properties.setProperty(key, value == null? "" : value.toString());
+                properties.setProperty(key, value == null ? "" : value.toString());
             }
             return properties;
         }
