@@ -27,6 +27,9 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.Date;
 
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.certificate.DnComponents;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -57,14 +60,10 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.Time;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.Arrays;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
-
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Certificate request message (crmf) according to RFC4211.
@@ -109,6 +108,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     private byte[] pkimsgbytes = null;
     private transient CertReqMsg req = null;
 
+    /** preferred digest algorithm to use in replies, if applicable (for signature protection)
+     * is set from the request message, and this is brought into the algorithm selecting response protection if response
+     * is signature protected. */
+    private String preferredDigestAlg = null;
+
     /** Because CertReqMsg is not serializable we may need to encode/decode bytes if the object is lost during deserialization. */
     private CertReqMsg getReq() {
         if (req == null) {
@@ -116,9 +120,6 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         }
         return this.req;
     }
-
-    /** preferred digest algorithm to use in replies, if applicable */
-    private String preferredDigestAlg = CMSSignedGenerator.DIGEST_SHA256;
 
     public CrmfRequestMessage() { }
 
@@ -361,7 +362,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             name = X500Name.getInstance(new CeSecoreNameStyle(), name);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Request X500Name is: " + LogRedactionUtils.getSubjectDnLogSafe(name.toString()));
+            log.debug("Request X500Name is: " + LogRedactionUtils.getSubjectDnLogSafe(name != null ? name.toString() : null));
         }
         return name;
     }
