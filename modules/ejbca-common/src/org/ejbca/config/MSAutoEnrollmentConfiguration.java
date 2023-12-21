@@ -153,6 +153,8 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         keys.add(alias + CA_NAME);
         keys.add(alias + KEY_EXCHANGE_CERT_PROFILE_NAME);
         keys.add(alias + MS_TEMPLATE_SETTINGS);
+        keys.add(alias + LDAP_CONNECT_TIMEOUT);
+        keys.add(alias + LDAP_READ_TIMEOUT);
         return keys;
     }
     
