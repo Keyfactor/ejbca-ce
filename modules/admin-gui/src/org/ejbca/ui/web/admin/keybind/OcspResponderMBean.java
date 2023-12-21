@@ -108,6 +108,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private String ocspAuditLogValues;
     private String ocspLoggingDateFormat;
     private long defaultResponseValidityTime;
+    private long defaultResponseMaxAge;
 
 
     private String currentOcspExtension = null;
@@ -330,10 +331,20 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         this.defaultResponseValidityTime = defaultResponseValidity;
     }
     
+    public long getDefaultResponseMaxAge() {
+        return defaultResponseMaxAge;
+    }
+    
+    public void setDefaultResponseMaxAge(final long defaultResponseMaxAge) {
+        this.defaultResponseMaxAge = defaultResponseMaxAge;
+    }
+
     public void saveDefaultResponseValidity() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         configuration.setDefaultValidityTime(this.defaultResponseValidityTime);
+        configuration.setDefaultResponseMaxAge(this.defaultResponseMaxAge);
+
         try {
             globalConfigurationSession.saveConfiguration(getAdmin(), configuration);
         } catch (AuthorizationDeniedException e) {
@@ -345,7 +356,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     public boolean isValiditiesUnchanged() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        return this.defaultResponseValidityTime == configuration.getDefaultValidityTime();
+        return this.defaultResponseValidityTime == configuration.getDefaultValidityTime() && this.defaultResponseMaxAge == configuration.getDefaultResponseMaxAge();
     }
     
     @SuppressWarnings("unchecked")

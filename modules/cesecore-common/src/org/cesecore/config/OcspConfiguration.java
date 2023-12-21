@@ -57,7 +57,8 @@ public class OcspConfiguration {
     @Deprecated //Only used for upgrades to 8.3.0 and beyond
     private static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
     public static final String REVOKED_UNTIL_NEXT_UPDATE = "ocsp.revoked.untilNextUpdate";
-    public static final String MAX_AGE = "ocsp.maxAge";
+    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    private static final String MAX_AGE = "ocsp.maxAge";
     public static final String CACHE_HEADER_MAX_AGE = "ocsp.expires.useMaxAge";
     public static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
@@ -464,7 +465,10 @@ public class OcspConfiguration {
 
     /**
      * The default number of milliseconds a HTTP-response should be cached. See RFC5019.
+     * 
+     * @deprecated Do not use with CertificateProfileConstants.CERTPROFILE_NO_PROFILE, since the global value has been moved to the database.
      */
+    @Deprecated
     public static long getMaxAge(int certProfileId) {
         long value = 30;
         Configuration config = ConfigurationHolder.instance();

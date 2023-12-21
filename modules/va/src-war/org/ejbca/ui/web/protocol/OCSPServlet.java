@@ -13,11 +13,23 @@
 
 package org.ejbca.ui.web.protocol;
 
+import java.io.IOException;
+import java.net.URLDecoder;
+import java.security.InvalidKeyException;
+import java.security.cert.X509Certificate;
+import java.util.Set;
+
+import javax.ejb.EJB;
+import javax.servlet.ServletException;
+import javax.servlet.ServletInputStream;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
@@ -43,18 +55,6 @@ import org.ejbca.util.IPatternLogger;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import javax.ejb.EJB;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.net.URLDecoder;
-import java.security.InvalidKeyException;
-import java.security.cert.X509Certificate;
-import java.util.Set;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -268,7 +268,7 @@ public class OCSPServlet extends HttpServlet {
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(
                     responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null),
-                    OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE),
+                    configuration.getDefaultResponseMaxAge() * 1000L,
                     null
                 );
                 if (transactionLogger.isEnabled()) {
@@ -294,7 +294,7 @@ public class OCSPServlet extends HttpServlet {
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(
                     responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null),
-                    OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE),
+                    configuration.getDefaultResponseMaxAge()*1000L,
                     null
                 );
                 if (transactionLogger.isEnabled()) {
