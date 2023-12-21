@@ -1047,6 +1047,7 @@
                                          rendered="#{editCAsMBean.renderSelectCertificateProfile}"
                                          disabled="#{!editCAsMBean.hasEditRight or editCAsMBean.signedByExternal and !editCAsMBean.caUninitialized}">
                             <f:selectItems value="#{editCAsMBean.certificateProfiles}"/>
+                            <f:ajax render="@form"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
 
@@ -1200,6 +1201,11 @@
                                          cols="38" value="#{editCAsMBean.caInfoDto.nameConstraintsPermitted}"
                                          disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}"/>
                         <br/>
+                        <h:outputText
+                                rendered="#{editCAsMBean.renderNameConstraintsWarning}"
+                                styleClass="warning"
+                                value="#{web.text.NAME_CONSTRAINTS_WARNING}"/>
+                        <br/>
                         <h:outputText styleClass="smallHelp"
                                       value="#{web.text.EXT_PKIX_NC_PERMITTED_HELP1}"/>
                         <br/>
@@ -1225,6 +1231,11 @@
                         <h:inputTextarea id="textfieldnameconstraintsexcluded" rows="4"
                                          cols="38" value="#{editCAsMBean.caInfoDto.nameConstraintsExcluded}"
                                          disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}"/>
+                        <br/>
+                        <h:outputText
+                                rendered="#{editCAsMBean.renderNameConstraintsWarning}"
+                                styleClass="warning"
+                                value="#{web.text.NAME_CONSTRAINTS_WARNING}"/>
                         <br/>
                         <h:outputText styleClass="smallHelp"
                                       value="#{web.text.EXT_PKIX_NC_EXCLUDED_HELP1}"/>
