@@ -121,7 +121,7 @@ public class PreSigningOcspResponseSystemTest extends CaTestCase {
 		addDefaultRole();
 
 		x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(DEFAULT_CA_DN, TEST_CERTIFICATE_PASSWORD.toCharArray(), true,
-				false, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+				false, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 		caSession.addCA(admin, x509ca);
 		certificateStoreSessionRemote.storeCertificateRemote(admin, EJBTools.wrap(x509ca.getCACertificate()),
 				"SYSTEMCA",
