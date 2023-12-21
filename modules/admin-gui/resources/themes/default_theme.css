@@ -244,7 +244,7 @@ div#footer {
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 .main-wrapper {
-	margin: .5em 25% .5em 25%;
+	margin: 1em auto;
 }
 
 .table-wrapper {
@@ -252,8 +252,8 @@ div#footer {
 }
 
 h1 {
-	margin-top: 0em;
-	margin-bottom: .2em;
+	margin-top: 0;
+	margin-bottom: 1em;
 	text-align: left;
 	font-size: 2em;
 	color: #284E81;
