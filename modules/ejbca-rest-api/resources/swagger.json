@@ -35,7 +35,7 @@
       "name": "v1/ssh"
     },
     {
-      "name": "v1/system"    
+      "name": "v1/system"
     }
   ],
   "schemes": [
@@ -261,7 +261,7 @@
           {
             "name": "deltacrl",
             "in": "query",
-            "description": "true to also create the deltaCRL, false to only create the base CRL",
+            "description": "true to create the deltaCRL, false to create the base CRL",
             "required": false,
             "type": "boolean",
             "default": false
@@ -1814,7 +1814,7 @@
             "description": "OK Successful request"
           }
         }
-      }  
+      }
     }
   },
   "definitions": {

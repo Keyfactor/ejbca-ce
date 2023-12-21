@@ -45,6 +45,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
@@ -205,6 +206,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             } catch (AuthorizationDeniedException e) {
                 // Should never happen.
                 log.error("Failed to sign new CRL upon revocation because not authorized to CA: " + e.getMessage());
+            } catch (DeltaCrlException e) {
+                // already logged. ignore
             }
         }
     }
@@ -306,6 +309,8 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                     } catch (AuthorizationDeniedException e) {
                         // Should never happen.
                         log.error("Failed to sign new CRL upon revocation because not authorized to CA: " + e.getMessage());
+                    } catch (DeltaCrlException e) {
+                        // already logged. ignore
                     }
                 }
             }
