@@ -2574,11 +2574,15 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase830() throws UpgradeFailedException {
         log.debug(">migrateDatabase830");
         // ECA-10671: Migrate ocsp.untilNextUpdate from ocsp.properties into Global Configuration
-        //Retrieve the old value, in ms and convert to seconds (smallest granularity 
-        @SuppressWarnings("deprecation")
-        long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000;
+        //Retrieve the old value, in ms and convert to seconds (smallest granularity
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        
+        @SuppressWarnings("deprecation")
+        long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
         globalOcspConfiguration.setDefaultValidityTime(nextUpdate);
+        @SuppressWarnings("deprecation")
+        long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
+        globalOcspConfiguration.setDefaultResponseMaxAge(maxAge);
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {

@@ -1459,10 +1459,12 @@ public class UpgradeSessionBeanTest {
             globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
             //Set ocsp.untilNextUpdate to a non-default value
             cesecoreConfigSession.setConfigurationValue("ocsp.untilNextUpdate", "50");
+            cesecoreConfigSession.setConfigurationValue("ocsp.maxAge", "60");
             upgradeSession.upgrade(null, "8.0.0", false);
             globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             assertEquals("ocsp.untilNextUpdate was not migrated to GlobalOcspConfiguration", 50, globalOcspConfiguration.getDefaultValidityTime());
+            assertEquals("ocsp.maxAge was not migrated to GlobalOcspConfiguration", 60, globalOcspConfiguration.getDefaultResponseMaxAge());
         } finally {
             //Restore old value
             globalOcspConfiguration.setDefaultValidityTime(oldUntilNextUpdate);
