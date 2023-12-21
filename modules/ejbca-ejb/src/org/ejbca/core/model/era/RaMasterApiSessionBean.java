@@ -1322,7 +1322,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         try {
             if (countOnly) {
-                final long count = (long) query.getSingleResult();
+                final long count = ((Number) query.getSingleResult()).longValue();
                 response.setTotalCount(count);
                 response.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
                 if (log.isDebugEnabled()) {
