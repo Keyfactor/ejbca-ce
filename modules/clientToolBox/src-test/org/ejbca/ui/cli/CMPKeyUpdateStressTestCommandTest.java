@@ -87,8 +87,6 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Run stress tests with ClientToolBax command CMPKeyUpdateStressTest
- *
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CMPKeyUpdateStressTestCommandTest {
@@ -153,7 +151,7 @@ public class CMPKeyUpdateStressTestCommandTest {
         httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
 
         x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(DEFAULT_CA_DN, "foo123".toCharArray(), true,
-                false, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+                false, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         caSession.addCA(authToken, x509ca);
 
         final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
