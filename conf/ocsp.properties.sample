@@ -110,14 +110,6 @@
 # If this configuration is set, its value will override the global value in case of certificate with a revoked status..
 #ocsp.999.revoked.untilNextUpdate = 50
 
-# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
-# maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
-# Ignored if untilNextUpdate is disabled. 0 = disable.
-# Note that for responses of certificates with unknown status, the HTTP response header "Cache-control" will not contain the max age, but 
-# "no-cache, must-revalidate" instead. That is to prevent caching of unknown status.
-# Default: 30
-#ocsp.maxAge = 30
-
 # Base 'Expires' cache header on max-age instead of than nextUpdate.
 # Enabling this is not compliant to RFC 5019 
 # Default: false

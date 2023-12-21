@@ -40,6 +40,7 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_OCSP_AUDIT_LOG_VALUES = "ocspAuditLogValues";
     private static final String PROPERTY_OCSP_LOGGING_DATE_FORMAT = "ocspLoggingDateFormat";
     private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY = "ocspDefaultResponseValidity";
+    private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE = "ocspDefaultResponseMaxAge";
 
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
         if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {
@@ -219,6 +220,27 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
      */
     public void setDefaultValidityTime(long validityTime) {
         data.put(PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY, validityTime);
+    }
+    
+    /**
+     * 
+     * @return the default validity time, in seconds
+     */
+    public long getDefaultResponseMaxAge() {
+        if(data.get(PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE) == null) {
+            return 30L;
+        } else {
+            return (long) data.get(PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE);
+        }
+    }
+    
+    /**
+     * 
+     * @param responseMaxAge the default response max age, in seconds
+     * 
+     */
+    public void setDefaultResponseMaxAge(long responseMaxAge) {        
+        data.put(PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE, responseMaxAge);
     }
 
 }
