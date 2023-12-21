@@ -341,12 +341,13 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     public void test17VerifyHttpGetHeaders() throws Exception {
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         final long oldConfigurationValue1 = globalOcspConfiguration.getDefaultValidityTime();
+        final long oldConfigurationValue2 = globalOcspConfiguration.getDefaultResponseMaxAge();
         globalOcspConfiguration.setDefaultValidityTime(5L);
+        globalOcspConfiguration.setDefaultResponseMaxAge(30L);
         globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         
         
-        final String oldConfigurationValue2 = configurationSession.getConfigurationValue(OcspConfiguration.MAX_AGE);
-        configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, "30");
+        
         // Make sure that we run the test with a CA where this is no OcspKeyBinding
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.DISABLED);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
@@ -359,8 +360,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
             testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate);
         } finally {
             globalOcspConfiguration.setDefaultValidityTime(oldConfigurationValue1);
+            globalOcspConfiguration.setDefaultValidityTime(oldConfigurationValue2);
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
-            configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, oldConfigurationValue2);
             OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         }
     }
@@ -459,10 +460,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     public void test18NextUpdateThisUpdate() throws Exception {
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         final long oldConfigurationValue1 = globalOcspConfiguration.getDefaultValidityTime();
+        final long oldConfigurationValue2 = globalOcspConfiguration.getDefaultResponseMaxAge();
         globalOcspConfiguration.setDefaultValidityTime(5L);
+        globalOcspConfiguration.setDefaultResponseMaxAge(30L);
         globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
-        final String oldConfigurationValue2 = configurationSession.getConfigurationValue(OcspConfiguration.MAX_AGE);
-        configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, "30");
         // Make sure that we run the test with a CA where this is no OcspKeyBinding
         OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.DISABLED);
         ocspResponseGeneratorTestSession.reloadOcspSigningCache();
@@ -470,8 +471,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
             testNextUpdateThisUpdate(caCertificate, ocspSigningCertificate.getSerialNumber());
         } finally {
             globalOcspConfiguration.setDefaultValidityTime(oldConfigurationValue1);
+            globalOcspConfiguration.setDefaultResponseMaxAge(oldConfigurationValue2);
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
-            configurationSession.setConfigurationValue(OcspConfiguration.MAX_AGE, oldConfigurationValue2);
             OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         }
     }
