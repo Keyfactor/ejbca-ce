@@ -109,7 +109,7 @@ public class CaRestResourceSwagger extends CaRestResource {
     @ApiOperation(value = "Create CRL(main, partition and delta) issued by this CA", response = CreateCrlRestResponse.class)
     public Response createCrl(@Context HttpServletRequest httpServletRequest,
                               @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
-                              @ApiParam(value = "true to also create the deltaCRL, false to only create the base CRL", required = false, defaultValue = "false")
+                              @ApiParam(value = "true to create the deltaCRL, false to create the base CRL", required = false, defaultValue = "false")
                               @QueryParam("deltacrl") boolean deltacrl
     ) throws AuthorizationDeniedException, RestException, CADoesntExistsException {
         return super.createCrl(httpServletRequest, issuerDn, deltacrl);

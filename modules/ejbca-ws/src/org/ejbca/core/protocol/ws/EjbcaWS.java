@@ -80,6 +80,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -2378,7 +2379,7 @@ public class EjbcaWS implements IEjbcaWS {
     @WebMethod
     @Action(input="http://ws.protocol.core.ejbca.org/createCRL")
 	public void createCRL(String caName) throws CADoesntExistsException, ApprovalException, EjbcaException,
-            CryptoTokenOfflineException, CAOfflineException {
+            CryptoTokenOfflineException, CAOfflineException, DeltaCrlException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
 			AuthenticationToken admin = getAdmin(true);
