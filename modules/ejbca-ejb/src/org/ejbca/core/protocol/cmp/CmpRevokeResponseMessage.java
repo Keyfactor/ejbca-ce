@@ -24,6 +24,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
+import com.keyfactor.util.CertTools;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -47,11 +49,8 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.util.LogRedactionUtils;
 
-import com.keyfactor.util.CertTools;
-
 /**
  * A very simple confirmation message, no protection and a nullbody
- * @author tomas
  */
 public class CmpRevokeResponseMessage extends BaseCmpMessage implements ResponseMessage {
 
@@ -77,7 +76,8 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
     private transient Collection<Certificate> signCertChain = null;
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
-
+    /** Signature algorithm normally used to sign with above signKey, for example CAs signatue algorithm */
+    private transient String signAlg = null;
     
 	/** The encoded response message */
     private byte[] responseMessage = null;
@@ -172,7 +172,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
             }
 		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
             try {
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider);
             } catch (CertificateEncodingException | SecurityException | SignatureException e) {
                 log.error("Failed to sign CMPRevokeResponseMessage");
                 log.error(e.getLocalizedMessage(), e);
@@ -202,11 +202,10 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 	}
 
 	@Override
-	public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key,
-			String provider) {
-	    
+	public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String alg, String provider) {
         this.signCertChain = certs;
         this.signKey = key;
+        this.signAlg = alg;
         if (provider != null) {
             this.provider = provider;
         }

@@ -35,7 +35,7 @@
       "name": "v1/ssh"
     },
     {
-      "name": "v1/system"    
+      "name": "v1/system"
     }
   ],
   "schemes": [
@@ -261,7 +261,7 @@
           {
             "name": "deltacrl",
             "in": "query",
-            "description": "true to also create the deltaCRL, false to only create the base CRL",
+            "description": "true to create the deltaCRL, false to create the base CRL",
             "required": false,
             "type": "boolean",
             "default": false
@@ -559,7 +559,7 @@
           "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
+              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
             }
           }
         }
@@ -630,7 +630,7 @@
           "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
+              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
             }
           }
         }
@@ -664,7 +664,7 @@
           "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
+              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
             }
           }
         }
@@ -782,6 +782,43 @@
             "schema": {
               "$ref": "#/definitions/CertificateProfileInfoRestResponseV2"
             }
+          }
+        }
+      }
+    },
+    "/v2/certificate/{issuer_dn}/{certificate_serial_number}/keyrecover": {
+      "put": {
+        "tags": [
+          "v2/certificate"
+        ],
+        "summary": "Marks certificate for  key recovery.",
+        "description": "",
+        "operationId": "markCertificateForKeyRecovery",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "Subject DN of the issuing CA",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "certificate_serial_number",
+            "in": "path",
+            "description": "Hex serial number (without prefix, e.g. '00')",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certificate marked for key recovery successfully"
+          },
+          "500": {
+            "description": "General error, while trying to mark the certificate for key recovery"
           }
         }
       }
@@ -1814,7 +1851,7 @@
             "description": "OK Successful request"
           }
         }
-      }  
+      }
     }
   },
   "definitions": {
@@ -1993,6 +2030,42 @@
           "type": "string",
           "example": "ExampleEEP",
           "description": "End Entity profile name"
+        }
+      }
+    },
+    "CertificateEnrollmentRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "array",
+          "example": "MIIDXzCCA...eW1Zro0=",
+          "description": "Certificate",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "serial_number": {
+          "type": "string",
+          "example": "1234567890ABCDEF",
+          "description": "Hex Serial Number"
+        },
+        "response_format": {
+          "type": "string",
+          "example": "DER",
+          "description": "Response format"
+        },
+        "certificate_chain": {
+          "type": "array",
+          "example": "[\"MII123efg...345xyz0=\"]",
+          "description": "CA Certificate chain",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "byte"
+            }
+          }
         }
       }
     },
@@ -2709,6 +2782,11 @@
           "type": "string",
           "example": "1234567890",
           "description": "Account Binding ID"
+        },
+	"key_recoverable": {
+          "description": "Key recoverable or not",
+          "example": false,
+          "type": "boolean"
         },
         "custom_data": {
           "items": {

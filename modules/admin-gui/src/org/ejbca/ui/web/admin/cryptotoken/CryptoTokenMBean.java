@@ -600,11 +600,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         private final boolean placeholder;
         private boolean selected = false;
         private int selectedKakCryptoTokenId;
+        private String keyUsage = null;
         private String selectedKakKeyAlias;
         private String selectedPaddingScheme;
         private boolean initialized;
         private boolean authorized;
-
         private KeyPairGuiInfo(KeyPairInfo keyPairInfo) {
             alias = keyPairInfo.getAlias();
             keyAlgorithm = keyPairInfo.getKeyAlgorithm();
@@ -615,6 +615,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 keySpecification = rawKeySpec;
             }
             subjectKeyID = keyPairInfo.getSubjectKeyID();
+            if (keyPairInfo.getKeyUsage() != null) {
+                keyUsage = keyPairInfo.getKeyUsage().toString();
+            }
             placeholder = false;
             initialized = cryptoTokenManagementSession.isKeyInitialized(authenticationToken, getCurrentCryptoTokenId(), alias);
         }
@@ -633,6 +636,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
             } else {
                 keySpecification = rawKeySpec;
             }
+            keyUsage = pieces.length >= 3 ? pieces[2] : null;
             subjectKeyID = "";
             placeholder = true;
             initialized = false;
@@ -672,6 +676,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
 
         public String getKeySpecification() {
             return keySpecification;
+        }
+        public String getKeyUsage() {
+            return keyUsage;
         }
 
         public String getRawKeySpec() {
@@ -1713,15 +1720,23 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (log.isTraceEnabled()) {
             log.trace(">generateFromTemplate");
         }
+        String keyUsage = null;
+        KeyPairTemplate template = null;
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
+        if (keyPairGuiInfo.getKeyUsage() != null) {
+            keyUsage = keyPairGuiInfo.getKeyUsage().toString();
+        }
+        if (keyUsage != null && !keyUsage.equals("null")) {
+            template = matchTemplate(keyUsage);
+        }
         final String keyspec = keyPairGuiInfo.getRawKeySpec();
         try {
-            cryptoTokenManagementSession.createKeyPairFromTemplate(getAdmin(), getCurrentCryptoTokenId(), alias, keyspec);
+            cryptoTokenManagementSession.createKeyPairFromTemplate(getAdmin(), getCurrentCryptoTokenId(), alias, keyspec, template);
         } catch (CryptoTokenOfflineException e) {
             addNonTranslatedErrorMessage("Token is offline. Keypair cannot be generated.");
         } catch (Exception e) {
-            addNonTranslatedErrorMessage(e);
+            addNonTranslatedErrorMessage(e);;
             final String logMsg = getAdmin().toString() + " failed to generate a keypair: ";
             log.info(logMsg + e.getMessage());
         }
@@ -1729,6 +1744,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (log.isTraceEnabled()) {
             log.trace("<generateFromTemplate");
         }
+    }
+
+    private KeyPairTemplate matchTemplate(String keyUsage) {
+        if (keyUsage != null) {
+            return KeyPairTemplate.valueOf(keyUsage);
+        }
+        return null;
     }
 
     /**

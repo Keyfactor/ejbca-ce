@@ -200,16 +200,6 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
     }
 
     @Test
-    public void testIllegalCAKeyLengthDsa() throws Exception {
-        try {
-            CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthDsa", "DSA512", "DSA512", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-            fail("Shouldn't be able to generate CA keystore keys with 512 bit DSA");
-        } catch (RuntimeException e) {
-            assertEquals(InvalidKeyException.class.getName(), e.getCause().getClass().getName());
-        }
-    }
-
-    @Test
     public void testIllegalCAKeyLengthEcdsa() throws Exception {
         try {
             CryptoTokenTestUtils.createCryptoTokenForCA(roleMgmgToken, "testIllegalCAKeyLengthEcdsa", "prime192v1", "prime192v1", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);

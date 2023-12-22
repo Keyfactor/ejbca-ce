@@ -98,5 +98,19 @@ public final class SecConst {
     };
     public static final int HIGN_REASON_BOUNDRARY = 11;
 
-
+    public static String getKeyStoreTypeAsString(int keystoreType) {
+        switch (keystoreType) {
+            case SecConst.TOKEN_SOFT_JKS:
+                return "JKS";
+            case SecConst.TOKEN_SOFT_PEM:
+                return "PEM";
+            case SecConst.TOKEN_SOFT_P12:
+            case SecConst.TOKEN_SOFT_BROWSERGEN:
+                return "PKCS12";
+            case SecConst.TOKEN_SOFT_BCFKS:
+                return "BCFKS";
+            default:
+                return "UNKNOWN";
+        }
+    }
 }

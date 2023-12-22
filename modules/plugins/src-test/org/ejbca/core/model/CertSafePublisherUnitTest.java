@@ -50,9 +50,9 @@ import sun.reflect.ReflectionFactory;
  * @version $Id$
  *
  */
-public class CertSafePublisherTest {
+public class CertSafePublisherUnitTest {
 
-    private static final Logger log = Logger.getLogger(CertSafePublisherTest.class);
+    private static final Logger log = Logger.getLogger(CertSafePublisherUnitTest.class);
 
     @BeforeClass
     public static void beforeClass() {
