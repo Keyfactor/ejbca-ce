@@ -340,6 +340,11 @@ public class OcspResponseGeneratorSessionUnitTest {
     @Test(expected = MalformedRequestException.class)
     public void emptyRequest() throws Exception {
         log.trace(">emptyRequest");
+        GlobalOcspConfiguration ocspConfiguration = new GlobalOcspConfiguration();
+        ocspConfiguration.setDefaultValidityTime(60L);
+        ocspConfiguration.setDefaultResponseMaxAge(30L);
+        expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).andReturn(ocspConfiguration).once();
+        replay(globalConfigurationSessionMock);
         ocspResponseGeneratorSession.getOcspResponse(new byte[0], null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
         log.trace("<emptyRequest");
     }
@@ -350,6 +355,10 @@ public class OcspResponseGeneratorSessionUnitTest {
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, OIWObjectIdentifiers.idSHA1, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        GlobalOcspConfiguration ocspConfiguration = new GlobalOcspConfiguration();
+        ocspConfiguration.setDefaultValidityTime(60L);
+        ocspConfiguration.setDefaultResponseMaxAge(30L);
+        expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).andReturn(ocspConfiguration).once();
         replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
         prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
@@ -363,6 +372,10 @@ public class OcspResponseGeneratorSessionUnitTest {
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha224, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        GlobalOcspConfiguration ocspConfiguration = new GlobalOcspConfiguration();
+        ocspConfiguration.setDefaultValidityTime(60L);
+        ocspConfiguration.setDefaultResponseMaxAge(30L);
+        expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).andReturn(ocspConfiguration).once();
         replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
         prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
@@ -376,6 +389,10 @@ public class OcspResponseGeneratorSessionUnitTest {
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha256, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        GlobalOcspConfiguration ocspConfiguration = new GlobalOcspConfiguration();
+        ocspConfiguration.setDefaultValidityTime(60L);
+        ocspConfiguration.setDefaultResponseMaxAge(30L);
+        expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).andReturn(ocspConfiguration).once();
         replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
         prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
@@ -389,6 +406,10 @@ public class OcspResponseGeneratorSessionUnitTest {
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha384, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        GlobalOcspConfiguration ocspConfiguration = new GlobalOcspConfiguration();
+        ocspConfiguration.setDefaultValidityTime(60L);
+        ocspConfiguration.setDefaultResponseMaxAge(30L);
+        expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).andReturn(ocspConfiguration).once();
         replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
         prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
@@ -402,6 +423,10 @@ public class OcspResponseGeneratorSessionUnitTest {
         final byte[] req = makeOcspRequest(getIssuerCert(), REQUEST_SERIAL, NISTObjectIdentifiers.id_sha512, null);
         expectLoggerChecks();
         expect(certificateStoreSessionMock.getStatus(ISSUER_CERT_DN, REQUEST_SERIAL)).andReturn(status).once();
+        GlobalOcspConfiguration ocspConfiguration = new GlobalOcspConfiguration();
+        ocspConfiguration.setDefaultValidityTime(60L);
+        ocspConfiguration.setDefaultResponseMaxAge(30L);
+        expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).andReturn(ocspConfiguration).once();
         replay(caSessionMock, auditLogger, transactionLogger, globalConfigurationSessionMock, certificateStoreSessionMock, ocspDataSessionMock);
         prepareOcspCache();
         final OcspResponseInformation respInfo = ocspResponseGeneratorSession.getOcspResponse(req, null, REQUEST_IP, null, null, auditLogger, transactionLogger, false, false, false);
@@ -411,7 +436,7 @@ public class OcspResponseGeneratorSessionUnitTest {
 
     private void setupOcspResponseCache() {
         GlobalOcspConfiguration ocspConfiguration = new GlobalOcspConfiguration();
-        ocspConfiguration.setDefaultValidityTime(60000L);
+        ocspConfiguration.setDefaultValidityTime(60L);
 
         expect(globalConfigurationSessionMock.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).andReturn(ocspConfiguration).once();
         OcspDataConfigCacheEntry entry = new OcspDataConfigCacheEntry(getIssuerCert(), ISSUER_CAID, true, false, false);
