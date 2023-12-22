@@ -1322,6 +1322,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         try {
             if (countOnly) {
+                // This query is created by nativeQuery, in which caste the return value from may be any 
+                // java.lang.Number, depending on database type and driver
                 final long count = ((Number) query.getSingleResult()).longValue();
                 response.setTotalCount(count);
                 response.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
