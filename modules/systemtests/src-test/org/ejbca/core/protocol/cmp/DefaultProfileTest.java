@@ -25,6 +25,13 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -84,13 +91,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.string.StringConfigurationCache;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -410,7 +410,8 @@ public class DefaultProfileTest extends CmpTestCase {
                 PKIMessage msg = genCertReq(ca1.getSubjectDN(), USERDN, keys, cacert1, nonce, transid, false, null, null, null, null, pAlg,
                         new DEROctetString(nonce));
                 assertNotNull("Generating CrmfRequest failed.", msg);
-                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                        AlgorithmTools.getAlgorithmNameFromOID(pAlg.getAlgorithm()), BouncyCastleProvider.PROVIDER_NAME);
                 assertNotNull(msg);
     
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -440,7 +441,8 @@ public class DefaultProfileTest extends CmpTestCase {
                 PKIMessage msg = genCertReq(ca1.getSubjectDN(), USERDN, keys, cacert1, nonce, transid, false, null, null, null, null, pAlg,
                         new DEROctetString(nonce));
                 assertNotNull("Generating CrmfRequest failed.", msg);
-                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(),
+                        AlgorithmTools.getAlgorithmNameFromOID(pAlg.getAlgorithm()), BouncyCastleProvider.PROVIDER_NAME);
                 assertNotNull(msg);
     
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -496,7 +498,8 @@ public class DefaultProfileTest extends CmpTestCase {
                 PKIMessage msg = genCertReq(ca1.getSubjectDN(), USERDN, keys, cacert1, nonce, transid, false, null, null, null, null, pAlg,
                         new DEROctetString(nonce));
                 assertNotNull("Generating CrmfRequest failed.", msg);
-                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                        AlgorithmTools.getAlgorithmNameFromOID(pAlg.getAlgorithm()), BouncyCastleProvider.PROVIDER_NAME);
                 assertNotNull(msg);
     
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -527,7 +530,8 @@ public class DefaultProfileTest extends CmpTestCase {
                 PKIMessage msg = genCertReq(ca1.getSubjectDN(), USERDN, keys, cacert1, nonce, transid, false, null, null, null, null, pAlg,
                         new DEROctetString(nonce));
                 assertNotNull("Generating CrmfRequest failed.", msg);    
-                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), pAlg.getAlgorithm().getId(), BouncyCastleProvider.PROVIDER_NAME);
+                msg = CmpMessageHelper.buildCertBasedPKIProtection(msg, extraCert, admkeys.getPrivate(), 
+                        AlgorithmTools.getAlgorithmNameFromOID(pAlg.getAlgorithm()), BouncyCastleProvider.PROVIDER_NAME);
                 assertNotNull(msg);
     
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -592,7 +596,7 @@ public class DefaultProfileTest extends CmpTestCase {
             CertReqMessages kur = (CertReqMessages) req.getBody().getContent();
             final int reqId = kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             req = CmpMessageHelper.buildCertBasedPKIProtection(req, extraCert, admkeys.getPrivate(), 
-                    AlgorithmTools.getDigestFromSigAlg(pAlg.getAlgorithm().getId()), BouncyCastleProvider.PROVIDER_NAME);
+                    AlgorithmTools.getAlgorithmNameFromOID(pAlg.getAlgorithm()), BouncyCastleProvider.PROVIDER_NAME);
             assertNotNull(req);
             
             ByteArrayOutputStream bao = new ByteArrayOutputStream();

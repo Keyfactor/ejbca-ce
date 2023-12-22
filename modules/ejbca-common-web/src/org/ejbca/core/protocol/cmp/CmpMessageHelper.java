@@ -91,6 +91,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.MacCalculator;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.jcajce.JcePBMac1CalculatorBuilder;
@@ -163,8 +164,27 @@ public class CmpMessageHelper {
         return pkiHeader;
     }
 
-    public static byte[] signPKIMessage(PKIMessage pkiMessage, Collection<Certificate> signCertChain, PrivateKey signKey, String digestAlg, 
-    		String provider) throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException,
+    /**
+     * Creates signature protection on a CMP message based on lots of parameters
+     * 
+     * @param pkiMessage the CMP message to sign
+     * @param signCertChain the signer certificate chain to be included as extraCerts in the CMP (response) message
+     * @param signKey the key to sign message with
+     * @param signAlg the default signature algorithm used with signKey
+     * @param requestDigestAlg if the request has come in with a different signature algorithm for example SHA256WithRSA 
+     *   and signAlg is SHA384WithRSA, the message signature is downgraded to SHA256WithRSA to make sure the client can handle it
+     * @param provider the signature provider to use for signing, BC for software keys and another provider for HSM keys (P11, Azure, etc)
+     * @return returns the ASN.1 encoded signed CMP message, ready to send to the server, or back to the client
+     * @throws InvalidKeyException
+     * @throws NoSuchProviderException
+     * @throws NoSuchAlgorithmException
+     * @throws SecurityException
+     * @throws SignatureException
+     * @throws CertificateEncodingException
+     */
+    public static byte[] signPKIMessage(PKIMessage pkiMessage, Collection<Certificate> signCertChain, 
+            PrivateKey signKey, String signAlg, String requestDigestAlg, String provider) 
+    		        throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException,
             CertificateEncodingException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">signPKIMessage()");
@@ -174,7 +194,20 @@ public class CmpMessageHelper {
             extraCertsList.add(CMPCertificate.getInstance(((X509Certificate)certificate).getEncoded()));
         }
         final CMPCertificate[] extraCerts = extraCertsList.toArray(new CMPCertificate[signCertChain.size()]);
-        final PKIMessage signedPkiMessage = buildCertBasedPKIProtection(pkiMessage, extraCerts, signKey, digestAlg, provider);
+
+        // Select which signature algorithm we should use for the response, based on the digest algorithm and key type.
+        // If we have an algorithm requested from the sender, take that into account
+        String responseSignatureAlgo = signAlg;
+        if (requestDigestAlg != null) {
+            final String fromDigest = AlgorithmTools.getAlgorithmNameFromDigestAndKey(requestDigestAlg, signKey.getAlgorithm());
+            if (fromDigest != null) {
+                responseSignatureAlgo = fromDigest;
+            }
+        }
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Signature algorithm: " + responseSignatureAlgo + ", from signAlg " + signAlg + ", request digest " + requestDigestAlg + " and key algorithm: " + signKey.getAlgorithm());
+        }
+        final PKIMessage signedPkiMessage = buildCertBasedPKIProtection(pkiMessage, extraCerts, signKey, responseSignatureAlgo, provider);
         if (LOG.isTraceEnabled()) {
             LOG.trace("<signPKIMessage()");
         }
@@ -182,38 +215,32 @@ public class CmpMessageHelper {
         return pkiMessageToByteArray(signedPkiMessage);
     }
 
-    public static PKIMessage buildCertBasedPKIProtection(PKIMessage pkiMessage, CMPCertificate[] extraCerts, PrivateKey key, String digestAlg,
+    public static PKIMessage buildCertBasedPKIProtection(PKIMessage pkiMessage, CMPCertificate[] extraCerts, PrivateKey key, String signAlg,
             String provider) throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException {
-        // Select which signature algorithm we should use for the response, based on the digest algorithm and key type.
-        ASN1ObjectIdentifier oid = AlgorithmTools.getSignAlgOidFromDigestAndKey(digestAlg, key.getAlgorithm());
-        if (LOG.isDebugEnabled()) {
-            LOG.debug("Selected signature alg oid: " + oid.getId()+", key algorithm: "+key.getAlgorithm());
-        }
+        PKIHeaderBuilder headerBuilder = getHeaderBuilder(pkiMessage.getHeader());
         // According to PKCS#1 AlgorithmIdentifier for RSA-PKCS#1 has null Parameters, this means a DER Null (asn.1 encoding of null), not Java null.
         // For the RSA signature algorithms specified above RFC3447 states "...the parameters MUST be present and MUST be NULL."
-        PKIHeaderBuilder headerBuilder = getHeaderBuilder(pkiMessage.getHeader());
-        AlgorithmIdentifier pAlg = null;
-        if ("RSA".equalsIgnoreCase(key.getAlgorithm())) {
-            pAlg = new AlgorithmIdentifier(oid, DERNull.INSTANCE);
-        } else {
-            pAlg = new AlgorithmIdentifier(oid);
+        // The DefaultSignatureAlgorithmIdentifierFinder handles all that, including PKCS#1 and MGF1 parameters for RSA-PSS
+        DefaultSignatureAlgorithmIdentifierFinder finder = new DefaultSignatureAlgorithmIdentifierFinder();
+        AlgorithmIdentifier pAlg = finder.find(signAlg);
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Selected signature alg oid: " + pAlg.getAlgorithm().getId() + ", from signAlg " + signAlg + " and key algorithm: "+key.getAlgorithm());
         }
         headerBuilder.setProtectionAlg(pAlg);
         // Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
         // we use BC classes to translate it into a signature algorithm name instead
         PKIHeader head = headerBuilder.build();
-        String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromOID(oid);
         if (LOG.isDebugEnabled()) {
-            LOG.debug("Signing CMP message with signature alg: " + signatureAlgorithmName);
+            LOG.debug("Signing CMP message with signature alg: " + signAlg);
         }
         final String prov;
         if (BouncyCastleProvider.PROVIDER_NAME.equals(provider)) {
             // Ability to use the PQC provider
-            prov = CryptoProviderTools.getProviderNameFromAlg(signatureAlgorithmName);
+            prov = CryptoProviderTools.getProviderNameFromAlg(signAlg);
         } else {
             prov = provider;
         }
-        Signature sig = Signature.getInstance(signatureAlgorithmName, prov);
+        Signature sig = Signature.getInstance(signAlg, prov);
         sig.initSign(key);
         sig.update(getProtectedBytes(head, pkiMessage.getBody()));
         final PKIMessage protectedPkiMessage;
@@ -540,8 +567,8 @@ public class CmpMessageHelper {
         return cresp;
     }
 
-    public static CmpErrorResponseMessage createSignedErrorMessage(PKIHeader pkiHeader, FailInfo failInfo, String failText, List<Certificate> signCaChain, PrivateKey privateKey,
-            String provider ) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+    public static CmpErrorResponseMessage createSignedErrorMessage(PKIHeader pkiHeader, FailInfo failInfo, String failText, List<Certificate> signCaChain, 
+            PrivateKey privateKey, String signAlg, String provider ) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         final CmpErrorResponseMessage errorMessage = new CmpErrorResponseMessage();
             if (pkiHeader == null) {
                 pkiHeader = new PKIHeader(PKIHeader.CMP_2000, PKIHeader.NULL_NAME, PKIHeader.NULL_NAME);
@@ -568,13 +595,14 @@ public class CmpMessageHelper {
             }
             final AlgorithmIdentifier protectionAlgorithm = pkiHeader.getProtectionAlg();
             if (protectionAlgorithm != null) {
-                errorMessage.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(protectionAlgorithm.getAlgorithm().getId()));
+                // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
+                errorMessage.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(protectionAlgorithm.getAlgorithm().getId(), null));
             } else {
                 errorMessage.setPreferredDigestAlg(CMSSignedGenerator.DIGEST_SHA256);
             }
             errorMessage.setFailInfo(failInfo);
             errorMessage.setFailText(failText);
-            errorMessage.setSignKeyInfo(signCaChain, privateKey, provider);
+            errorMessage.setSignKeyInfo(signCaChain, privateKey, signAlg, provider);
             errorMessage.create();
         return errorMessage;
     }
