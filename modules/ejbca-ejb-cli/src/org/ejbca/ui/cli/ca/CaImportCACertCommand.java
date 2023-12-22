@@ -103,12 +103,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
                 try {
                     //Try to parse as PEM
                     certs = CertTools.getCertsFromPEM(certificateFile, Certificate.class);
-                    if (certs.size() != 1) {
-                        log.error("PEM file must only contain one CA certificate, this PEM file contains " + certs.size() + ".");
-                        return CommandResult.FUNCTIONAL_FAILURE;
-                    } else {
-                        certificate = certs.iterator().next();
-                    }
+                    certificate = certs.iterator().next();
                 } catch (CertificateParsingException e) {
                     //Try parsing as binary instead.
                     try {
