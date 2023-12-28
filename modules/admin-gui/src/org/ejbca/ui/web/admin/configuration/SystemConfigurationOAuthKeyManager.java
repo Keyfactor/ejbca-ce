@@ -102,6 +102,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         private String realm;
         private String audience;
         private boolean audienceCheckDisabled = false;
+        private boolean fetchUserInfo = false;
         private String scope;
         private Part publicKeyFile;
         
@@ -309,6 +310,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             this.url = oauthKey.getUrl();
             this.audience = oauthKey.getAudience();
             this.audienceCheckDisabled = oauthKey.isAudienceCheckDisabled();
+            this.fetchUserInfo = oauthKey.isFetchUserInfo();
             this.label = oauthKey.getLabel();
             this.client = oauthKey.getClient();
             this.realm = oauthKey.getRealm();
@@ -342,6 +344,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             clientSecret = null;
             audience = null;
             audienceCheckDisabled = false;
+            fetchUserInfo = false;
             realm = null;
             scope = null;
             oauthKeyBeingEdited = null;
@@ -402,6 +405,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
 
         public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
             this.audienceCheckDisabled = audienceCheckDisabled;
+        }
+
+        public boolean isFetchUserInfo() {
+            return fetchUserInfo;
+        }
+
+        public void setFetchUserInfo(boolean fetchUserInfo) {
+            this.fetchUserInfo = fetchUserInfo;
         }
     }
 
@@ -661,6 +672,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setScope(oauthKeyEditor.getScope());
         newOauthKey.setAudience(oauthKeyEditor.getAudience());
         newOauthKey.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
+        newOauthKey.setFetchUserInfo(oauthKeyEditor.isFetchUserInfo());
         newOauthKey.setClient(oauthKeyEditor.getClient());
         newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
         newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
@@ -838,6 +850,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setScope(oauthKeyEditor.getScope());
         oauthKeyToUpdate.setAudience(oauthKeyEditor.getAudience());
         oauthKeyToUpdate.setAudienceCheckDisabled(oauthKeyEditor.isAudienceCheckDisabled());
+        oauthKeyToUpdate.setFetchUserInfo(oauthKeyEditor.isFetchUserInfo());
         oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
         if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
