@@ -153,6 +153,10 @@
         </copy>
     </target-->
 
+	<target name="test:unit" description="Run Unit tests for this module - Nothing to do here.">
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+    </target>
+	
     <!--target name="test:unit" depends="compile-unit-tests" description="Run Unit tests for this module">
         <antcall target="showtime" inheritall="true" inheritrefs="true"/>
         <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-ejb-cli.dir}">
