@@ -8,12 +8,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.Principal;
 import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.AppenderSkeleton;
@@ -26,7 +23,6 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -39,17 +35,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
-import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTokenReferenceRegistry;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
-import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.FixMethodOrder;
@@ -84,37 +74,16 @@ public class CaImportProfilesCommandSystemTest {
 
     private static CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class, "cesecore-ejb");
     private static CertificateProfileSessionRemote certificateProfileSession = JndiHelper.getRemoteSession(CertificateProfileSessionRemote.class, "cesecore-ejb");
-    // private static CliAuthenticationProviderSessionRemote cliAuthenticationProviderSession = JndiHelper.getRemoteSession(CliAuthenticationProviderSessionRemote.class, "ejbca-ejb");
-    // private static CliAuthenticationToken cliAuthenticationToken;
     private static EndEntityProfileSessionRemote endEntityProfileSession = JndiHelper.getRemoteSession(EndEntityProfileSessionRemote.class, "ejbca-ejb");
     private static PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class, "ejbca-ejb");
 
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(CaImportProfilesCommandSystemTest.class.getSimpleName());
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaImportProfilesCommandSystemTest"));
 
     private CaImportProfilesCommand caImportProfilesCommand;
 
     @Before
     public void setUp() throws AuthorizationDeniedException {
-        caImportProfilesCommand = new CaImportProfilesCommand() {
-            protected AuthenticationToken getAuthenticationToken() {
-                Set<Principal> principals = new HashSet<Principal>();
-                // TODO EJBCAINTER-629. hard coded user and pwd otherwise NPE and failing test.
-                principals.add(new UsernamePrincipal("ejbca"));
-
-                AuthenticationSubject subject = new AuthenticationSubject(principals, null);
-
-                CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(
-                        CliAuthenticationProviderSessionRemote.class).authenticate(subject);       
-                if (authenticationToken == null) {
-                    return null;
-                } else {
-                    // Set hashed value anew in order to send back
-                   // TODO EJBCAINTER-629: TEMPORARY. hard coded user and pwd otherwise NPE and failing test.
-                    authenticationToken.setSha1HashFromCleartextPassword("ejbca");
-                    return authenticationToken;
-                }
-            }
-        };
+        caImportProfilesCommand = new CaImportProfilesCommand();
     }
 
     @After
@@ -142,9 +111,9 @@ public class CaImportProfilesCommandSystemTest {
     @Test
     public void test_01_shouldFailOnMissingDirectoryParameter() {
         // given
-        final ParameterContainer parameterContainer = new ParameterContainer();
+        final String[] params = new String[] {};
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.CLI_FAILURE, commandResult);
         assertLog("ERROR - Directory parameter is mandatory.");
@@ -154,31 +123,24 @@ public class CaImportProfilesCommandSystemTest {
     public void test_02_shouldFailOnNonExistingCAInput() throws AuthorizationDeniedException {
         // given
         final String caName = "IDon'tExist";
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", "some", true);
-        parameterContainer.put("--caname", caName, true);
+        final String[] params = new String[] { "-d", "some", "--caname", caName };
         assertEquals("CA must not exists before test.", caSession.getCAInfo(admin, caName), null);
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("ERROR - CA '" + caName + "' does not exist.");
     }
 
-    // @Test
-    // TODO EJBCAINTER-629
+    @Test
     public void test_03_shouldFailOnAuthorizationDeniedExceptionOnCAInput() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, AuthorizationDeniedException, CAExistsException {
         // given
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-u", "tomcat", true);
-        parameterContainer.put("--clipassword", "changeit", true);
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
-        parameterContainer.put("--caname", caName, true);
+        final String[] params = new String[] { "-u", "tomcat", "--clipassword", "serverpwd", "-d", "some", "--caname", caName };
         
         createCa(caName);
         
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.AUTHORIZATION_FAILURE, commandResult);
         assertLog("ERROR - CLI user not authorized to CA '" + caName  + "'.");
@@ -187,10 +149,9 @@ public class CaImportProfilesCommandSystemTest {
     @Test
     public void test_04_shouldFailOnCannotRead() {
         // given
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", "some", true);
+        final String[] params = new String[] { "-d", "some" };
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("ERROR - 'some' cannot be read.");
@@ -200,10 +161,9 @@ public class CaImportProfilesCommandSystemTest {
     public void test_05_shouldFailOnFileInput() throws IOException {
         // given
         final File inputFile = temporaryFolder.newFile("InputFile.file");
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", inputFile.getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", inputFile.getAbsolutePath() };
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("ERROR - '" + inputFile.getAbsolutePath() + "' is not a directory.");
@@ -213,10 +173,9 @@ public class CaImportProfilesCommandSystemTest {
     public void test_06_shouldFailOnEmptyDirectoryInput() throws IOException {
         // given
         final File inputDir = temporaryFolder.newFolder("empty_folder");
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", inputDir.getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", inputDir.getAbsolutePath() };
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("ERROR - '" + inputDir.getAbsolutePath() + "' is empty.");
@@ -227,10 +186,9 @@ public class CaImportProfilesCommandSystemTest {
         // given
         final String fileName = "certprofile.txt";
         temporaryFolder.newFile(fileName);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -242,10 +200,9 @@ public class CaImportProfilesCommandSystemTest {
         // given
         final String fileName = "certprofile_.a";
         temporaryFolder.newFile(fileName);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -258,10 +215,9 @@ public class CaImportProfilesCommandSystemTest {
         // given
         final String fileName = "entityprofile_.a";
         temporaryFolder.newFile(fileName);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -275,10 +231,9 @@ public class CaImportProfilesCommandSystemTest {
         final String profileName = "ENDUSER";
         final String fileName = "certprofile_" + profileName + "-1.xml";
         temporaryFolder.newFile(fileName);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -291,10 +246,9 @@ public class CaImportProfilesCommandSystemTest {
         final String profileName = "EMPTY";
         final String fileName = "entityprofile_" + profileName + "-1.xml";
         temporaryFolder.newFile(fileName);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -308,11 +262,10 @@ public class CaImportProfilesCommandSystemTest {
         final String profileName = "CP";
         final String fileName = "certprofile_" + profileName + "-" + profileId + ".xml";
         temporaryFolder.newFile(fileName);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         assertEquals("Certificate profile ID does not match.", certificateProfileSession.getCertificateProfileId(profileName), 0);
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -328,15 +281,14 @@ public class CaImportProfilesCommandSystemTest {
         final File inputFile = temporaryFolder.newFile(fileName);
         final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_CaImportProfilesCommandUnitTest-609758752.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         if (certificateProfileSession.getCertificateProfile(profileId) == null) {
             certificateProfileSession.addCertificateProfile(admin, profileId, cpName, new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
         }
         assertNotNull("Certificate profile with ID " + profileId + " is null.", certificateProfileSession.getCertificateProfile(profileId));
         assertNull("Certificate profile " + profileName + " is not null.", certificateProfileSession.getCertificateProfile(profileName));
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -350,8 +302,7 @@ public class CaImportProfilesCommandSystemTest {
         final String profileName = "EP";
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
         temporaryFolder.newFile(fileName);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         
         if (endEntityProfileSession.getEndEntityProfile(profileName) == null) {
             endEntityProfileSession.addEndEntityProfile(admin, profileId, profileName, new EndEntityProfile(true));
@@ -359,7 +310,7 @@ public class CaImportProfilesCommandSystemTest {
         assertNotNull("End entity profile must not be null.", endEntityProfileSession.getEndEntityProfile(profileName));
         
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -376,15 +327,16 @@ public class CaImportProfilesCommandSystemTest {
         final File inputFile = temporaryFolder.newFile(fileName);
         final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_CaImportProfilesCommandUnitTest-198381618.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
+        
         if (endEntityProfileSession.getEndEntityProfile(profileId) == null) {
             endEntityProfileSession.addEndEntityProfile(admin, profileId, eepName, new EndEntityProfile(0));
         }
+        
         assertNotNull("End entity profile with ID " + profileId + " is null.", endEntityProfileSession.getEndEntityProfile(profileId));
         assertNull("End entity profile " + profileName + " is not null.", endEntityProfileSession.getEndEntityProfile(profileName));
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -401,8 +353,7 @@ public class CaImportProfilesCommandSystemTest {
         final File inputFile = temporaryFolder.newFile(fileName);
         final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_CaImportProfilesCommandUnitTest-609758752-CA.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         
         assertFalse("CA to remove " + caToRemove + " must not exist.", caSession.existsCa(caToRemove));
         
@@ -418,9 +369,9 @@ public class CaImportProfilesCommandSystemTest {
         
         final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.setAvailableCAs(List.of(1020));
-        certificateProfileSession.addCertificateProfile(getCliAdmin(), cpId, cpName, cp);
+        certificateProfileSession.addCertificateProfile(admin, cpId, cpName, cp);
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
@@ -438,31 +389,28 @@ public class CaImportProfilesCommandSystemTest {
         final File inputFile = temporaryFolder.newFile(fileName);
         final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_CaImportProfilesCommandUnitTest-609758752-CA.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
-        parameterContainer.put("--caname", caName, true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath(), "--caname", caName };
         
         createCa(caName);
         
         assertNull("CAInfo for CA with ID " + caToRemove + " must be null", caSession.getCAInfo(admin, caToRemove));
-        
         assertFalse("CA to remove " + caToRemove + " must not exist.", caSession.existsCa(caToRemove));
         
         if (certificateProfileSession.getCertificateProfileId(profileName) != 0) {
-            certificateProfileSession.removeCertificateProfile(getCliAdmin(), profileName);
+            certificateProfileSession.removeCertificateProfile(admin, profileName);
         }
         assertTrue("Certificate profile " + profileName + " must not exist.", certificateProfileSession.getCertificateProfileId(profileName) == 0);
         
         if (certificateProfileSession.getCertificateProfile(profileId) != null) { 
-            certificateProfileSession.removeCertificateProfile(getCliAdmin(), certificateProfileSession.getCertificateProfileName(profileId));
+            certificateProfileSession.removeCertificateProfile(admin, certificateProfileSession.getCertificateProfileName(profileId));
         }
         assertNull("Certificate profile " + profileId + " must not exist.", certificateProfileSession.getCertificateProfile(profileId));
         
         final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.setAvailableCAs(List.of(1020));
-        certificateProfileSession.addCertificateProfile(getCliAdmin(), cpId, cpName, cp);
+        certificateProfileSession.addCertificateProfile(admin, cpId, cpName, cp);
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
@@ -480,13 +428,12 @@ public class CaImportProfilesCommandSystemTest {
         final File inputFile = temporaryFolder.newFile(fileName);
         final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_CaImportProfilesCommandUnitTest-609758752-Publisher.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         assertNull("Certificate profile " + profileName + " is not null.", certificateProfileSession.getCertificateProfile(profileName));
         assertNull("Certificate profile with ID " + profileId + " is not null.", certificateProfileSession.getCertificateProfile(profileId));
         assertNull("Publisher with ID " + publisherToRemove + " is not null.", publisherSession.getPublisher(publisherToRemove));
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("WARN - Publisher with id " + publisherToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
@@ -502,13 +449,12 @@ public class CaImportProfilesCommandSystemTest {
         final File inputFile = temporaryFolder.newFile(fileName);
         final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_CaImportProfilesCommandUnitTest-198381618-CertProfile.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         assertNull("End entity profile " + profileName + " is not null.", endEntityProfileSession.getEndEntityProfile(profileName));
         assertNull("End entity profile with ID " + profileId + " is not null.", endEntityProfileSession.getEndEntityProfile(profileId));
         assertNull("Certificate profile with ID " + profileId + " is not null.", certificateProfileSession.getCertificateProfile(profileId));
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -525,8 +471,7 @@ public class CaImportProfilesCommandSystemTest {
         final File inputFile = temporaryFolder.newFile(fileName);
         final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_CaImportProfilesCommandUnitTest-198381618-CA.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         assertFalse("CA with ID " + -1027462528 + " is not null.", caSession.existsCa(-1027462528));
         assertNull("Certificate profile with ID " + cpId + " is not null.", certificateProfileSession.getCertificateProfile(cpId));
         certificateProfileSession.addCertificateProfile(admin, cpId, cpName, new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER));
@@ -534,7 +479,7 @@ public class CaImportProfilesCommandSystemTest {
         assertNull("End entity profile with ID " + profileId + " is not null.", endEntityProfileSession.getEndEntityProfile(profileId));
         // endEntityProfileSession.addEndEntityProfile(adminToken, profileId, profileName, new EndEntityProfile(true));
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -553,9 +498,7 @@ public class CaImportProfilesCommandSystemTest {
         final File inputFile = temporaryFolder.newFile(fileName);
         final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_CaImportProfilesCommandUnitTest-198381618-CA.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
-        final ParameterContainer parameterContainer = new ParameterContainer();
-        parameterContainer.put("-d", temporaryFolder.getRoot().getAbsolutePath(), true);
-        parameterContainer.put("--caname", caName, true);
+        final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath(), "--caname", caName };
         
         createCa(caName);
         assertNull("CAInfo for CA with ID " + caToRemove + " must be null", caSession.getCAInfo(admin, caToRemove));
@@ -566,7 +509,7 @@ public class CaImportProfilesCommandSystemTest {
         assertNull("End entity profile with ID " + profileId + " is not null.", endEntityProfileSession.getEndEntityProfile(profileId));
         
         // when
-        final CommandResult commandResult = caImportProfilesCommand.execute(parameterContainer);
+        final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
         assertLog("INFO - Filename: '" + fileName + "'");
@@ -582,25 +525,6 @@ public class CaImportProfilesCommandSystemTest {
         assertNotNull("CAInfo for CA " + name + " must not be null", caSession.getCAInfo(admin, name));
     }
     
-    // TODO EJBCAINTER-629. Might be not required.
-    private CliAuthenticationToken getCliAdmin() {
-        final String username = EjbcaConfiguration.getCliDefaultUser();
-        final String password = EjbcaConfiguration.getCliDefaultPassword();
-        final Set<Principal> principals = new HashSet<>();
-        principals.add(new UsernamePrincipal(username));
-
-        final AuthenticationSubject subject = new AuthenticationSubject(principals, null);
-        final CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(
-                CliAuthenticationProviderSessionRemote.class).authenticate(subject);
-
-        assertNotNull("Authentication failed.", authenticationToken);
-        authenticationToken.setSha1HashFromCleartextPassword(password);
-        
-        CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
-        
-        return authenticationToken;
-    }
-    
     private void assertLog(final String logString) {
         // The test might fail on Jenkins randomly in single runs (-Drun.one=...),
         // or after another system tests have failed if the test is executed inside a test-suite.
@@ -612,7 +536,6 @@ public class CaImportProfilesCommandSystemTest {
     
     // Uses log4j compatibility mode. Do not reuse.
     
-    // Use local class due to EasyMock.
     static class TestLogAppenderResource extends ExternalResource {
 
         private static final String APPENDER_NAME = "log4jRuleAppender";
