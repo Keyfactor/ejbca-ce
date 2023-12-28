@@ -89,6 +89,7 @@ public final class OAuthKeyInfo implements Serializable {
 
     private String audience;
     private boolean audienceCheckDisabled = false;
+    private boolean fetchUserInfo = false;
     
     // if null, use client secret
     private Integer keyBinding;
@@ -364,6 +365,7 @@ public final class OAuthKeyInfo implements Serializable {
                 .append("url=").append(getUrl()).append(", ")
                 .append("audience=").append(getAudience()).append(", ")
                 .append("audienceCheckDisabled=").append(isAudienceCheckDisabled()).append(", ")
+                .append("fetchUserInfo=").append(isFetchUserInfo()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
@@ -412,6 +414,14 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
         this.audienceCheckDisabled = audienceCheckDisabled;
+    }
+    
+    public boolean isFetchUserInfo() {
+        return fetchUserInfo;
+    }
+
+    public void setFetchUserInfo(boolean fetchUserInfo) {
+        this.fetchUserInfo = fetchUserInfo;
     }
 
 }
