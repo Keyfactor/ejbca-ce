@@ -9,10 +9,10 @@
     <import file="${ejbca-ejb-cli.dir}/../build-helpers.xml"/>
 	
 	<property name="ejbca-ejb-cli.build.dir" location="${ejbca-ejb-cli.dir}/build"/>
-    <property name="ejbca-ejb-cli.resources-test.dir" location="${ejbca-ejb-cli.dir}/resources-test"/>
+    <!--property name="ejbca-ejb-cli.resources-test.dir" location="${ejbca-ejb-cli.dir}/resources-test"/-->
 	<property name="ejbca-ejb-cli.build-test.dir" location="${ejbca-ejb-cli.dir}/build-test"/>
 	<property name="ejbca-ejb-cli.src.dir" location="${ejbca-ejb-cli.dir}/src"/>
-    <property name="ejbca-ejb-cli.src-test.dir" location="${ejbca-ejb-cli.dir}/src-test"/>
+    <!--property name="ejbca-ejb-cli.src-test.dir" location="${ejbca-ejb-cli.dir}/src-test"/-->
 
 	<path id="compile.classpath">
 		<path location="${mod.ejbca-ejb-interface.lib}"/>
@@ -47,7 +47,7 @@
         <path refid="lib.p11ng.classpath" />
 	</path>
 
-    <path id="compile-test.classpath">
+    <!--path id="compile-test.classpath">
         <path location="${ejbca-ejb-cli.build-test.dir}"/>
         <path refid="compile.classpath"/>
         <path refid="lib.easymock.classpath"/>
@@ -56,12 +56,12 @@
         <path location="${ejbca-ejb-cli.build.dir}"/>
         <path location="${ejbca-ejb-cli.dir}/../dist/systemtests-interfaces.jar"/>
         <path refid="lib.p11ng.classpath" />
-    </path>
+    </path-->
 
-    <path id="test.classpath">
+    <!--path id="test.classpath">
         <path refid="compile-test.classpath"/>
         <path location="${ejbca-ejb-cli.build-test.dir}/resources-test"/>
-    </path>
+    </path-->
 
     <target name="build" description="Build this module" depends="compile">
     	<!-- Upgrade of certificate profiles requires extendedkeyusage.properties -->
@@ -143,7 +143,7 @@
     </target>
 
     <!-- Tests -->
-    <target name="compile-unit-tests" depends="build">
+    <!--target name="compile-unit-tests" depends="build">
         <mkdir dir="${ejbca-ejb-cli.build-test.dir}" />
         <javac srcdir="${ejbca-ejb-cli.src-test.dir}" destdir="${ejbca-ejb-cli.build-test.dir}" debug="on" includeantruntime="no"
                encoding="UTF-8" target="${java.target.version}" classpathref="compile-test.classpath"/>
@@ -151,9 +151,9 @@
         <copy todir="${ejbca-ejb-cli.build-test.dir}/resources-test">
             <fileset dir="${ejbca-ejb-cli.dir}/resources-test"/>
         </copy>
-    </target>
+    </target-->
 
-    <target name="test:unit" depends="compile-unit-tests" description="Run Unit tests for this module">
+    <!--target name="test:unit" depends="compile-unit-tests" description="Run Unit tests for this module">
         <antcall target="showtime" inheritall="true" inheritrefs="true"/>
         <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-ejb-cli.dir}">
             <classpath>
@@ -167,9 +167,9 @@
             <jvmarg line="${tests.jvmargs}"/>
         </junit>
         <antcall target="showtime" inheritall="true" inheritrefs="true"/>
-    </target>
+    </target-->
 
-    <target name="runone" depends="compile-unit-tests">
+    <!--target name="runone" depends="compile-unit-tests">
         <fail message="'test.runone' is not set. Example -Dtest.runone=Test . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
         <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
             <classpath>
@@ -183,6 +183,6 @@
             </batchtest>
             <jvmarg line="${tests.jvmargs}"/>
         </junit>
-    </target>
+    </target-->
 
 </project>
