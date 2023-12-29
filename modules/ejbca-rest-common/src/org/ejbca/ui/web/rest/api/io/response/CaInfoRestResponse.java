@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 
@@ -39,6 +40,8 @@ public class CaInfoRestResponse {
     private String issuerDn;
     @ApiModelProperty(value = "Expiration date", example = "2038-01-19T03:14:07Z")
     private Date expirationDate;
+    @ApiModelProperty(value = "Is external (whether CA certificate was imported)", example = "true")
+    private boolean external;
 
     /**
      * Simple constructor.
@@ -46,12 +49,13 @@ public class CaInfoRestResponse {
     public CaInfoRestResponse() {
     }
 
-    private CaInfoRestResponse(final Integer id, final String name, final String subjectDn, final String issuerDn, final Date expirationDate) {
+    private CaInfoRestResponse(final Integer id, final String name, final String subjectDn, final String issuerDn, final Date expirationDate, final boolean external) {
         this.id = id;
         this.name = name;
         this.subjectDn = subjectDn;
         this.issuerDn = issuerDn;
         this.expirationDate = expirationDate;
+        this.external = external;
     }
 
     /**
@@ -109,6 +113,15 @@ public class CaInfoRestResponse {
     }
 
     /**
+     * Gets an indication if this is an external CA Certificate, i.e. an imported CA Certificate.
+     *
+     * @return <code>True</code> is it is external, <code>false</code> otherwise.
+     */
+    public boolean isExternal() {
+        return external;
+    }
+
+    /**
      * Sets an identifier.
      *
      * @param id identifier.
@@ -154,6 +167,15 @@ public class CaInfoRestResponse {
     }
 
     /**
+     * Sets indication if this is an external CA Certificate, i.e. an imported CA Certificate.
+     *
+     * @param external Whether the CA Certificate is external.
+     */
+    public void setExternal(boolean external) {
+        this.external = external;
+    }
+
+    /**
      * Builder of this class.
      */
     public static class CaInfoRestResponseBuilder {
@@ -163,6 +185,7 @@ public class CaInfoRestResponse {
         private String subjectDn;
         private String issuerDn;
         private Date expirationDate;
+        private boolean external;
 
         CaInfoRestResponseBuilder() {
         }
@@ -228,6 +251,18 @@ public class CaInfoRestResponse {
         }
 
         /**
+         * Sets an external boolean in this builder.
+         *
+         * @param external external boolean.
+         *
+         * @return instance of this builder.
+         */
+        public CaInfoRestResponseBuilder external(final boolean external) {
+            this.external = external;
+            return this;
+        }
+
+        /**
          * Builds an instance of CaInfoRestResponse using this builder.
          *
          * @return instance of CaInfoRestResponse using this builder.
@@ -238,7 +273,8 @@ public class CaInfoRestResponse {
                     name,
                     subjectDn,
                     issuerDn,
-                    expirationDate
+                    expirationDate,
+                    external
             );
         }
     }
@@ -274,6 +310,7 @@ public class CaInfoRestResponse {
                     .subjectDn(caInfo.getSubjectDN())
                     .issuerDn(extractIssuerDn(caInfo))
                     .expirationDate(caInfo.getExpireTime())
+                    .external(caInfo.getStatus() == CAConstants.CA_EXTERNAL)
                     .build();
         }
 
