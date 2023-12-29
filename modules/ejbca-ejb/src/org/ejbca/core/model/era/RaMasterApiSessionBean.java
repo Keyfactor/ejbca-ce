@@ -2064,9 +2064,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
         IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
-        List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
+        List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedCaInfos(authenticationToken);
         for (CAInfo caInfo : authorizedCAInfosList) {
-            if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
+            if (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
                 authorizedCAInfos.put(caInfo.getCAId(), caInfo.getName(), caInfo);
             }
         }
