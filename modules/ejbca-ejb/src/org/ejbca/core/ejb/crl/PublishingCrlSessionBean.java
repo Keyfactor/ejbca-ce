@@ -455,7 +455,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     @Override
     public boolean forceDeltaCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException, DeltaCrlException {
         boolean result = true;
-        if (caSession.getCAInfoInternal(caId).getCAType() != X509CAInfo.CATYPE_X509) {
+        if (caSession.getCAInfoInternal(caId).getCAType() != CAInfo.CATYPE_X509) {
             return false;
         }
         result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
