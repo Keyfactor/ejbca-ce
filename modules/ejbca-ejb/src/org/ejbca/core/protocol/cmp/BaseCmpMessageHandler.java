@@ -216,7 +216,8 @@ public class BaseCmpMessageHandler {
 	        aliasCertSign = signCa.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
 	        signKey = cryptoTokenSession.getCryptoToken(signCa.getCAToken().getCryptoTokenId()).getPrivateKey(aliasCertSign);
 	        provider = cryptoTokenSession.getCryptoToken(signCa.getCAToken().getCryptoTokenId()).getSignProviderName();
-	        return CmpMessageHelper.createSignedErrorMessage(cmpMessage.getHeader(), failInfo,  errmsg, signCachain, signKey, provider);
+	        return CmpMessageHelper.createSignedErrorMessage(cmpMessage.getHeader(), failInfo,  errmsg, signCachain, signKey, 
+	                signCa.getCAToken().getSignatureAlgorithm(), provider);
 	    } catch (AuthorizationDeniedException | CryptoTokenOfflineException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
 	        if (LOG.isDebugEnabled()) {
 	            LOG.debug("Could not sign CmpErrorResponseMessage, creating unprotected message. " + e.getMessage());
