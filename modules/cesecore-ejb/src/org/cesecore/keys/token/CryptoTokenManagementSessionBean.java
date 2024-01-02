@@ -42,6 +42,8 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import javax.ejb.EJB;
@@ -65,12 +67,14 @@ import java.security.Security;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * @see CryptoTokenManagementSession
@@ -761,12 +765,44 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
                 final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
                 final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
-                ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId));
+                Set<Long> keyUsageSet = cryptoToken.getKeyUsagesFromPrivateKey(alias);
+                final String keyUsage = getKeyUsageStringForKeyPairInfo(keyUsageSet);
+                if (keyUsage != null) {
+                    ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, KeyPairInfo.KeyUsage.valueOf(keyUsage)));
+                } else {
+                    ret.add(new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, null));
+                }
             } else {
                 log.warn("Could not read pubkey for alias '" + alias +"', got null, this is probably an unknown key type.");
             }
         }
         return ret;
+    }
+    
+    /*
+     CryptoToken.getKeyUsagesFromPrivateKey returns the following PKCS#11 attributes, depending on private key usage:
+     CKA_SIGN 0x00000108UL    (dec: 264)
+     CKA_DECRYPT 0x00000105UL (dec: 261)
+     http://docs.oasis-open.org/pkcs11/pkcs11-base/v2.40/os/pkcs11-base-v2.40-os.html
+    */
+    private String getKeyUsageStringForKeyPairInfo(final Set<Long> keyUsage) {
+        final long DECRYPT = 261;
+        final long SIGN = 264;
+        final Set<Long> ENCRYPT_DECRYPT  = new HashSet<Long>();
+        final Set<Long> SIGN_VERIFY  = new HashSet<Long>();
+        final Set<Long> SIGN_ENCRYPT  = new HashSet<Long>();
+        ENCRYPT_DECRYPT.add(DECRYPT);
+        SIGN_VERIFY.add(SIGN);
+        SIGN_ENCRYPT.add(DECRYPT);
+        SIGN_ENCRYPT.add(SIGN);
+        if (keyUsage.equals(ENCRYPT_DECRYPT)) {
+            return KeyPairTemplate.ENCRYPT.toString();
+        } else if (keyUsage.equals(SIGN_VERIFY)) {
+            return KeyPairTemplate.SIGN.toString();
+        }else if (keyUsage.equals(SIGN_ENCRYPT)) {
+            return KeyPairTemplate.SIGN_ENCRYPT.toString();
+        }
+        return null;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -803,7 +839,12 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
         final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
         final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
         final String subjectKeyId = new String(Hex.encode(KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier()));
-        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId);
+        Set<Long> keyUsageSet = cryptoToken.getKeyUsagesFromPrivateKey(alias);
+        final String keyUsage = getKeyUsageStringForKeyPairInfo(keyUsageSet);
+        if (keyUsage != null) {
+            return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, KeyPairInfo.KeyUsage.valueOf(keyUsage));
+        }
+        return new KeyPairInfo(alias, keyAlgorithm, keySpecification, subjectKeyId, null);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -941,12 +982,19 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
+    public void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification, KeyPairTemplate template)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException {
-        createKeyPair(authenticationToken, cryptoTokenId, alias, KeyGenParams.builder(keySpecification).build());       
+        final KeyGenParamsBuilder paramsBuilder = KeyGenParams.builder(keySpecification);
+        KeyGenParams params = null;
+        if (template != null) {
+            params = paramsBuilder.withKeyPairTemplate(template).build();
+        } else {
+            params = paramsBuilder.build();
+        }
+        createKeyPair(authenticationToken, cryptoTokenId, alias, params);
         removeKeyPairPlaceholder(authenticationToken, cryptoTokenId, alias);
     }
-
+        
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean isAliasUsedInCryptoToken(final int cryptoTokenId, final String alias) {

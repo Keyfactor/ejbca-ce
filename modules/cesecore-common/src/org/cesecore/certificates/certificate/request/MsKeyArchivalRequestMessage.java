@@ -27,6 +27,9 @@ import java.util.Random;
 
 import javax.crypto.Cipher;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -47,6 +50,7 @@ import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cms.CMSEnvelopedDataParser;
 import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedDataParser;
 import org.bouncycastle.cms.CMSTypedStream;
 import org.bouncycastle.cms.RecipientInformation;
@@ -63,9 +67,6 @@ import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateCreateException;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
 
@@ -165,8 +166,8 @@ public class MsKeyArchivalRequestMessage extends PKCS10RequestMessage {
             
             // should also verify the private key hash as enveloped private key is not signed(unauthenticated)
             final MessageDigest md = MessageDigest.getInstance(
-                    AlgorithmTools.getDigestFromSigAlg(pkcs10.getSignatureAlgorithm().getAlgorithm().getId())
-                            ); // may be sha1 always
+                    AlgorithmTools.getDigestFromSigAlg(pkcs10.getSignatureAlgorithm().getAlgorithm().getId(), CMSSignedDataGenerator.DIGEST_SHA256)
+                            ); // Use SHA256 as default, but may be SHA1 always from the sender
             envelopedPrivKeyHash = md.digest(encryptedPrivateKey);
             final String envelopedPrivKeyHashStr = Hex.toHexString(envelopedPrivKeyHash);
             
