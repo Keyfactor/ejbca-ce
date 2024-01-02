@@ -2369,7 +2369,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             publishCACertificate(authenticationToken, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
             
             // Generate a new CRL, but not partitions, which could take very long time.
-            if (ca.getCAType() != CAInfo.CATYPE_CVC) {
+            if (ca.getCAType() == CAInfo.CATYPE_X509) {
                 publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION, new Date());
                 publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
                 if (ca instanceof X509CA && ((X509CA) ca).isMsCaCompatible() && ((X509CA) ca).getCrlPartitions() != 0) {
