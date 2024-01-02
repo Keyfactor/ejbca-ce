@@ -31,13 +31,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.keyfactor.util.CertTools;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -62,7 +63,6 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.cert.crmf.CRMFException;
 import org.bouncycastle.cert.crmf.jcajce.JceCRMFEncryptorBuilder;
 import org.bouncycastle.cms.CMSAlgorithm;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.jcajce.JceAsymmetricKeyWrapper;
 import org.cesecore.certificates.certificate.Base64CertData;
@@ -71,8 +71,6 @@ import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-
-import com.keyfactor.util.CertTools;
 
 /**
  * CMP certificate response message.
@@ -114,8 +112,9 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** transaction id */
     private String transactionId = null;
 
-    /** Default digest algorithm for CMP response message, can be overridden */
-    private String digest  = CMSSignedGenerator.DIGEST_SHA256;
+    /** Default digest algorithm for CMP response message used for signature protection, is nothing. Can be set/overridden from 
+     * request message with setPreferredDigestAlg() on the request message. If unset (default) value is taken from signer */
+    private String digest  = null;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
     private String provider = BouncyCastleProvider.PROVIDER_NAME;
 
@@ -131,6 +130,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     private transient Collection<Certificate> extraCerts = new ArrayList<>();
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
+    /** Signature algorithm normally used to sign with above signKey, for example CAs signatue algorithm */
+    private transient String signAlg = null;
     /** The request message this response is for */
     private transient ICrmfRequestMessage reqMsg;
     /** used to choose response body type */
@@ -419,13 +420,11 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 responseMessage = CmpMessageHelper.pkiMessageToByteArray(CmpMessageHelper.protectPKIMessageWithPBMAC1(myPKIMessage, pbmac1KeyId,
                         pbmac1Key, pbmac1MacAlg, pbmac1IterationCount, pbmac1DkLen, pbmac1PrfAlg));
             } else {
-                myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(new ASN1ObjectIdentifier(digest)));
                 if (signCert != null) {
                 	// set sender Key ID as well when the response is signed, so the signer (CA) can have multiple certificates out there
                 	// with the same DN but different keys
                     myPKIHeader.setSenderKID(CertTools.getSubjectKeyId(signCert));
                 }
-                PKIHeader header = myPKIHeader.build();
                 final Collection<Certificate> extraCertsList = new ArrayList<>(signCertChain);
                 for (Certificate extraCert : extraCerts) {
                     if (log.isDebugEnabled()) {
@@ -435,8 +434,8 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                         extraCertsList.add(extraCert);
                     }
                 }
-                myPKIMessage = new PKIMessage(header, myPKIBody);
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, digest, provider);
+                myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider);
             }
             
             ret = true;
@@ -464,9 +463,10 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider) {
+    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String alg, String provider) {
         this.signCertChain = certs;
         this.signKey = key;
+        this.signAlg = alg;
         if (provider != null) {
             this.provider = provider;
         }
