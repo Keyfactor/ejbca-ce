@@ -85,6 +85,7 @@ public final class OAuthKeyInfo implements Serializable {
     
     // PingID fields
     private String tokenUrl;
+    private String userInfoUrl;
     private String logoutUrl;
 
     private String audience;
@@ -274,7 +275,18 @@ public final class OAuthKeyInfo implements Serializable {
             default:
                 return tokenUrl;
         }
-
+    }
+    
+    public String getUserInfoUrl() {
+        switch (getType()){
+            case TYPE_AZURE:
+            case TYPE_KEYCLOAK:
+                return getTypeSpecificUrl("userinfo");
+            case TYPE_GENERIC:
+            case TYPE_PINGID:
+            default:
+                return userInfoUrl;
+        }
     }
 
     public String getLogoutUrl() {
@@ -351,6 +363,10 @@ public final class OAuthKeyInfo implements Serializable {
     public void setTokenUrl(String tokenUrl) {
         this.tokenUrl = tokenUrl;
     }
+    
+    public void setUserInfoUrl(String userInfoUrl) {
+        this.userInfoUrl = userInfoUrl;
+    }
 
     public void setLogoutUrl(String logoutUrl) {
         this.logoutUrl = logoutUrl;
@@ -367,6 +383,7 @@ public final class OAuthKeyInfo implements Serializable {
                 .append("audienceCheckDisabled=").append(isAudienceCheckDisabled()).append(", ")
                 .append("fetchUserInfo=").append(isFetchUserInfo()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
+                .append("userInfoUrl=").append(getTokenUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
                 .append("keys=[");
