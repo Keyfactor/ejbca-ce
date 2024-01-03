@@ -243,65 +243,6 @@ public abstract class CATokenTestBase {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
 	}
 
-	protected void doCaTokenDSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
-	        CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException,
-	        InvalidAlgorithmParameterException {
-        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
-		CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
-		// Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
-		catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-		catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-		catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
-		catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-		// First we start by deleting all old entries
-        for (int i=0; i<4; i++) {
-            cryptoToken.deleteEntry("dsatest0000"+i);
-        }
-		// Try to delete something that does not exist, it should work without error
-		cryptoToken.deleteEntry("sdkfjhsdkfjhsd777");
-
-		// Even though the token is empty it can still be active
-		assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
-		assertEquals("SHA1WithDSA", catoken.getSignatureAlgorithm());
-		assertEquals("SHA256WithRSA", catoken.getEncryptionAlgorithm());
-		assertEquals(getProvider(), cryptoToken.getSignProviderName());
-		cryptoToken.activate(TOKEN_PIN.toCharArray());
-		assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
-		assertEquals(CAToken.DEFAULT_KEYSEQUENCE, catoken.getKeySequence());
-		// Generate the first key, will get name rsatest+nextsequence = rsatest00001
-		Integer seq = Integer.valueOf(CAToken.DEFAULT_KEYSEQUENCE);
-        final String firstSignKeyAlias = catoken.generateNextSignKeyAlias();
-        cryptoToken.generateKeyPair(keySpecification, firstSignKeyAlias);
-        cryptoToken.generateKeyPair("1024", ENCRYPTION_KEY);
-        catoken.activateNextSignKey();
-		// Now sequence should be 1, generated and activated new keys
-		seq += 1;
-		assertEquals(seq, Integer.valueOf(catoken.getKeySequence()));
-		// When generating keys with renew = false, we generate initial keys, which means generating the key aliases
-		// we have specified for signature and encryption keys
-		// After this all needed CAToken keys are generated and status will be active
-		assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
-        PrivateKey priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        PublicKey pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-		KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
-		assertEquals(1024, KeyTools.getKeyLength(pub));
-		assertEquals("DSA", AlgorithmTools.getKeyAlgorithm(pub));
-		// Generate key above should have generated the sign key (DSA) and an encryption key with the alias of the "default" key
-		// The encryption key is always RSA and we generate it as 1024 bits to speed up the test
-		PrivateKey privenc = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
-		PublicKey pubenc = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
-		assertEquals(1024, KeyTools.getKeyLength(pubenc));
-		assertEquals("RSA", AlgorithmTools.getKeyAlgorithm(pubenc));
-		KeyTools.testKey(privenc, pubenc, cryptoToken.getSignProviderName());
-		try {
-			KeyTools.testKey(privenc, pub, cryptoToken.getSignProviderName());
-			assertTrue("Should have thrown because the encryption key and signature key should not be the same", false);
-		} catch (InvalidKeyException e) {
-			// NOPMD: ignore this is what we want
-		}
-        log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
-	}
-
 	protected void doCaTokenECC(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
 	        CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());

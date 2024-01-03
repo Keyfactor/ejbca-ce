@@ -22,6 +22,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.util.Collection;
 
+import com.keyfactor.util.CertTools;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -38,11 +40,8 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.util.LogRedactionUtils;
 
-import com.keyfactor.util.CertTools;
-
 /**
  * A very simple confirmation message, no protection and a nullbody
- * @author tomas
  */
 public class CmpConfirmResponseMessage extends BaseCmpMessage implements ResponseMessage {
 
@@ -67,6 +66,8 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	private transient Collection<Certificate> signCertChain = null;
 	/** Private key used to sign the response message */
 	private transient PrivateKey signKey = null;
+	/** Signature algorithm normally used to sign with above signKey, for example CAs signatue algorithm */
+	private transient String signAlg = null;
 
 	/** The encoded response message */
     private byte[] responseMessage = null;
@@ -141,8 +142,8 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	                    // with the same DN but different keys
                         myPKIHeader.setSenderKID(CertTools.getSubjectKeyId(signCertChain.iterator().next()));
 			        }
-				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
-					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, digestAlg, provider);
+				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);				    
+					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, signKey, signAlg, digestAlg, provider);
 				} catch (CertificateEncodingException | SecurityException | SignatureException e) {
 					log.error("Error creating CmpConfirmMessage: ", LogRedactionUtils.getRedactedException(e));
 				} 		
@@ -166,9 +167,10 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	}
 	
 	@Override
-	public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider) {
+	public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String alg, String provider) {
 		this.signCertChain = certs;
 		this.signKey = key;
+		this.signAlg = alg;
 		if (provider != null) {
 			this.provider = provider;
 		}
