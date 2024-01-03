@@ -152,20 +152,6 @@ public final class CAConstants {
                     "ojP8Ay3AJ3Ms1cAT+uYp+ySa1LPNsOk=\n" +
                     "-----END EC PRIVATE KEY-----";
 
-    public static final String PRESIGN_VALIDATION_KEY_DSA_PRIV =
-            "-----BEGIN DSA PRIVATE KEY-----\n" +
-                    "MIIBvAIBAAKBgQD9f1OBHXUSKVLfSpwu7OTn9hG3UjzvRADDHj+AtlEmaUVdQCJR\n" +
-                    "+1k9jVj6v8X1ujD2y5tVbNeBO4AdNG/yZmC3a5lQpaSfn+gEexAiwk+7qdf+t8Yb\n" +
-                    "+DtX58aophUPBPuD9tPFHsMCNVQTWhaRMvZ1864rYdcq7/IiAxmd0UgBxwIVAJdg\n" +
-                    "UI8VIwvMspK5gqLrhAvwWBz1AoGBAPfhoIXWmz3ey7yrXDa4V7l5lK+7+jrqgvlX\n" +
-                    "TAs9B4JnUVlXjrrUWU/mcQcQgYC0SRZxI+hMKBYTt88JMozIpuE8FnqLVHyNKOCj\n" +
-                    "rh4rs6Z1kW6jfwv6ITVi8ftiegEkO8yk8b6oUZCJqIPf4VrlnwaSi2ZegHtVJWQB\n" +
-                    "TDv+z0kqAoGBAJRiL6UUbPHmkKbfYeCUAgKfQhDkOydXe5A6+s84M0fnNqdxj6Dx\n" +
-                    "s3xdkycSp/nHb1heQY37cAEhp0z6WnMwksDtlq7aIZeqMCxkvaz57bDUumVzMkV1\n" +
-                    "T/wuZztd3gz7p70NyDkt/1JfwlKGcC+wNVMF4T1a/Y7xLloTq3yH32h7AhRTckHA\n" +
-                    "LPjKPKEFrG18K7yFkH5xGg==\n" +
-                    "-----END DSA PRIVATE KEY-----\n";
-
     public static final String PRESIGN_VALIDATION_KEY_ED25519_PRIV =
             "-----BEGIN PRIVATE KEY-----\n" +
                     "MC4CAQAwBQYDK2VwBCIEIErU1sdUkfufFIiIjeyB6XCqEKR4dFtTYejBjH/jeM4O\n" +
@@ -731,8 +717,6 @@ public final class CAConstants {
                             " There are hardcoded keypairs defined for P-256 and P-384. I will use P-256 to sign the pre-sign certificate.");
                     return KeyTools.getKeyPairFromPEM(PRESIGN_VALIDATION_KEY_EC_SECP256R1_PRIV);
                 }
-            case AlgorithmConstants.KEYALGORITHM_DSA:
-                return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_DSA_PRIV);
             case AlgorithmConstants.KEYALGORITHM_ED25519:
                 return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_ED25519_PRIV);
             case AlgorithmConstants.KEYALGORITHM_ED448:

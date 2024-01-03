@@ -142,6 +142,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     private transient Certificate caCert = null;
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
+    /** Signature algorithm normally used to sign with above signKey, for example CAs signatue algorithm */
+    private transient String signAlg = null;
+
     /** If the CA certificate should be included in the reponse or not, default to true = yes */
     private transient boolean includeCACert = true;
 
@@ -322,7 +325,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
                 if (recipientKeyInfo != null) {
                     try {
                         X509Certificate rec = CertTools.getCertfromByteArray(recipientKeyInfo, X509Certificate.class);
-                        log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
+                        if (log.isDebugEnabled()) {
+                            log.debug("Added recipient information - issuer: '" + CertTools.getIssuerDN(rec) + "', serno: '" + CertTools.getSerialNumberAsString(rec));
+                        }
                         edGen.addRecipientInfoGenerator(new JceKeyTransRecipientInfoGenerator(rec, aid).setProvider(BouncyCastleProvider.PROVIDER_NAME));
                     } catch (CertificateParsingException e) {
                         throw new IllegalArgumentException("Can not decode recipients self signed certificate!", e);
@@ -363,7 +368,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             // TransactionId
             if (transactionId != null) {
                 oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_transId);
-                log.debug("Added transactionId: " + transactionId);
+                if (log.isDebugEnabled()) {
+                    log.debug("Added transactionId: " + transactionId);
+                }
                 value = new DERSet(new DERPrintableString(transactionId));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
@@ -377,7 +384,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
             if (status.equals(ResponseStatus.FAILURE)) {
                 oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_failInfo);
-                log.debug("Added failInfo: " + failInfo.getValue());
+                if (log.isDebugEnabled()) {
+                    log.debug("Added failInfo: " + failInfo.getValue());
+                }
                 value = new DERSet(new DERPrintableString(failInfo.getValue()));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
@@ -386,7 +395,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             // senderNonce
             if (senderNonce != null) {
                 oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce);
-                log.debug("Added senderNonce: " + senderNonce);
+                if (log.isDebugEnabled()) {
+                    log.debug("Added senderNonce: " + senderNonce);
+                }
                 value = new DERSet(new DEROctetString(Base64.decode(senderNonce.getBytes())));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
@@ -395,7 +406,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             // recipientNonce
             if (recipientNonce != null) {
                 oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_recipientNonce);
-                log.debug("Added recipientNonce: " + recipientNonce);
+                if (log.isDebugEnabled()) {
+                    log.debug("Added recipientNonce: " + recipientNonce);
+                }
                 value = new DERSet(new DEROctetString(Base64.decode(recipientNonce.getBytes())));
                 attr = new Attribute(oid, value);
                 attributes.put(attr.getAttrType(), attr);
@@ -403,7 +416,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
             // Add our signer info and sign the message
             Certificate cacert = signCertChain.iterator().next();
-            log.debug("Signing SCEP message with cert: "+ CertTools.getSubjectDN(cacert));
+            if (log.isDebugEnabled()) {
+                log.debug("Signing SCEP message with cert: "+ CertTools.getSubjectDN(cacert));
+            }
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(digestAlg, signKey.getAlgorithm());
             try {
                 ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(provider).build(signKey);
@@ -448,9 +463,10 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String prov) {
+    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String alg, String prov) {
         this.signCertChain = certs;
         this.signKey = key;
+        this.signAlg = alg;
         if (prov != null) {
             this.provider = prov;
         }     

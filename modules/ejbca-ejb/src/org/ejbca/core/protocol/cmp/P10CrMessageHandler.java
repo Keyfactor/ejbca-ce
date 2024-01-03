@@ -175,7 +175,8 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("P10CR request message header has protection alg: " + p10CrReq.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
-                    p10CrReq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(p10CrReq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                    // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
+                    p10CrReq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(p10CrReq.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("P10CR request message header has no protection alg, using default alg in response.");
                 }

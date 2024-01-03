@@ -539,7 +539,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             // Generate CA keys if it is a soft CryptoToken
             if ("soft".equals(catokentype)) {
                 final String signKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-                final String signKeySpecification = "DSA".equals(keytype) ? "DSA" + keyspec : keyspec;
+                final String signKeySpecification = keyspec;
                 try {
                     cryptoTokenManagementSession.createKeyPair(getAuthenticationToken(), cryptoTokenId, signKeyAlias, KeyGenParams.builder(signKeySpecification).build());
                 } catch (InvalidAlgorithmParameterException e) {

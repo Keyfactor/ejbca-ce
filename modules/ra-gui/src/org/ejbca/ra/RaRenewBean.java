@@ -293,14 +293,6 @@ public class RaRenewBean implements Serializable {
 
     public List<SelectItem> getAvailableAlgorithmSelectItems() {
         final List<SelectItem> availableAlgorithmSelectItems = new ArrayList<>();
-         if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)) {
-                for (final int availableBitLength : availableBitLengths) {
-                    if (availableBitLength == 1024) {
-                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA + "_" + availableBitLength,
-                                AlgorithmConstants.KEYALGORITHM_DSA + " " + availableBitLength + " bits"));
-                    }
-                }
-            }
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
                 for (final int availableBitLength : availableBitLengths) {
                     if (availableBitLength >= 1024) {

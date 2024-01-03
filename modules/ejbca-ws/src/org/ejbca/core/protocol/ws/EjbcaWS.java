@@ -80,6 +80,7 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
@@ -521,7 +522,7 @@ public class EjbcaWS implements IEjbcaWS {
      *
      * @param cryptoTokenName The name of the cryptotoken
      * @param keyPairAlias Key pair alias
-     * @param keySpecification Key specification, for example RSA2048, secp256r1, DSA1024, gost3410, dstu4145
+     * @param keySpecification Key specification, for example RSA2048, secp256r1
      * @throws AuthorizationDeniedException if client isn't authorized to request
      * @throws EjbcaException if an error occurred
      */
@@ -558,7 +559,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @param validityInDays Validity of the CA in days.
      * @param certProfile Makes the CA use the certificate profile 'cert profile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
-     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA,
+     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA,
      * GOST3411withECGOST3410, GOST3411withDSTU4145
      * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA). For externally signed CAs, use {@link #createExternallySignedCa()}
      * @param cryptoTokenName The name of the crypto token associated with the CA
@@ -600,7 +601,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @param validityInDays Validity of the CA in days.
      * @param certProfile Makes the CA use the certificate profile 'cert profile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
-     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA,
+     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA,
      * GOST3411withECGOST3410, GOST3411withDSTU4145
      * @param cryptoTokenName The name of the crypto token associated with the CA
      * @param purposeKeyMapping The mapping the the crypto token keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
@@ -2378,7 +2379,7 @@ public class EjbcaWS implements IEjbcaWS {
     @WebMethod
     @Action(input="http://ws.protocol.core.ejbca.org/createCRL")
 	public void createCRL(String caName) throws CADoesntExistsException, ApprovalException, EjbcaException,
-            CryptoTokenOfflineException, CAOfflineException {
+            CryptoTokenOfflineException, CAOfflineException, DeltaCrlException {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
 		try {
 			AuthenticationToken admin = getAdmin(true);

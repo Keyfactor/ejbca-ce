@@ -48,6 +48,18 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -186,18 +198,6 @@ import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
-
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Creates and signs certificates.
@@ -1034,6 +1034,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             //Create the response message with all nonces and checks etc
             ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(),
                     cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                    ca.getCAToken().getSignatureAlgorithm(),
                     cryptoToken.getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
             ret.setFailInfo(failInfo);
@@ -1147,7 +1148,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             //Create the response message with all nonces and checks etc
             ret = ResponseMessageUtils.createResponseMessage(responseClass, req, ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign),
-                    cryptoToken.getSignProviderName());
+                    ca.getCAToken().getSignatureAlgorithm(), cryptoToken.getSignProviderName());
 
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!).
@@ -1508,6 +1509,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (privateKey == null) {
             throw new CryptoTokenOfflineException("Could not retrieve private certSignKey from CA with ID " + signingCaId);
         }
+        final PublicKey publicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        if (publicKey == null) {
+            throw new CryptoTokenOfflineException("Could not retrieve public certSignKey from CA with ID " + signingCaId);
+        }
         final X509Certificate signerCert;
         try {
             signerCert = (X509Certificate) ca.getCACertificate();
@@ -1515,8 +1520,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("Not possible to sign a payload using a CV CA", e);
         }
         final CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
+        // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3            
         final String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(catoken.getSignatureAlgorithm(),
-                privateKey.getAlgorithm());
+                publicKey.getAlgorithm());
         try {
             final ContentSigner contentSigner = new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey);
             final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder()

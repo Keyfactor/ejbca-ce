@@ -24,10 +24,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
-import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1661,81 +1659,6 @@ public class SignSessionWithRsaTest extends SignSessionCommon {
             endEntityManagementSession.deleteUser(internalAdmin, dnOverrideEndEntityName);
         }
     }
-    
-    @Test
-    public void testsignSessionDSAWithRSACA() throws Exception {
-        log.trace(">test23SignSessionDSAWithRSACA()");
-        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
-        log.debug("Reset status of 'foo' to NEW");
-        // user that we know exists...
-        KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
-        X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_DSA, false);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", selfcert);
-        assertNotNull("Failed to create certificate", cert);
-        log.debug("Cert=" + cert.toString());
-        PublicKey pk = cert.getPublicKey();
-        if (pk instanceof DSAPublicKey) {
-            DSAPublicKey ecpk = (DSAPublicKey) pk;
-            assertEquals(ecpk.getAlgorithm(), "DSA");
-        } else {
-            fail("Public key is not DSA");
-        }
-        try {
-            X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0]; 
-            cert.verify(rsacacert.getPublicKey());
-        } catch (Exception e) {
-            fail("Verification failed: " + e.getMessage());
-        }
-        log.trace("<test23SignSessionDSAWithRSACA()");
-    }
-    
-    @Test
-    public void testBCPKCS10DSAWithRSACA() throws Exception {
-        log.trace(">test24TestBCPKCS10DSAWithRSACA()");
-
-        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
-        log.debug("Reset status of 'foo' to NEW");
-        // Create certificate request
-        KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithDSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"), dsakeys
-                .getPublic(), new DERSet(), dsakeys.getPrivate(), null);
-        ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-        ASN1OutputStream dOut = ASN1OutputStream.create(bOut, ASN1Encoding.DER);
-        dOut.writeObject(req.toASN1Structure());
-        dOut.close();
-
-        PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(dsakeys.getPublic());
-        boolean verify = req2.isSignatureValid(verifier);
-        log.debug("Verify returned " + verify);
-        assertTrue(verify);
-        log.debug("CertificationRequest generated successfully.");
-        byte[] bcp10 = bOut.toByteArray();
-        PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
-        p10.setUsername(RSA_USERNAME);
-        p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
-        Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), Certificate.class);
-        assertNotNull("Failed to create certificate", cert);
-        log.debug("Cert=" + cert.toString());
-        PublicKey pk = cert.getPublicKey();
-        if (pk instanceof DSAPublicKey) {
-            DSAPublicKey dsapk = (DSAPublicKey) pk;
-            assertEquals(dsapk.getAlgorithm(), "DSA");
-        } else {
-            fail("Public key is not DSA");
-        }
-        try {
-            X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0]; 
-            cert.verify(rsacacert.getPublicKey());
-        } catch (Exception e) {
-            fail("Verify failed: " + e.getMessage());
-        }
-        log.trace("<test24TestBCPKCS10DSAWithRSACA()");
-    }
-    
-
     
     @Override
     public String getRoleName() {

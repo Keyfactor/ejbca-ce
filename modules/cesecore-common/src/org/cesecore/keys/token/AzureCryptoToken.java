@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -808,6 +809,24 @@ public class AzureCryptoToken extends BaseCryptoToken {
         }
     }
 
+    @Override
+    public Set<Long> getKeyUsagesFromKey(String arg0, boolean arg1, long... arg2) throws CryptoTokenOfflineException {
+        // Not implemented.
+        return new TreeSet<Long>();
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPrivateKey(String arg0) throws CryptoTokenOfflineException {
+        // Not implemented.
+        return new TreeSet<Long>();
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPublicKey(String arg0) throws CryptoTokenOfflineException {
+        // Not implemented.
+        return new TreeSet<Long>();
+    }
+    
     /** 
      * @param alias the key alias you want to access, or null if the key alias should be left out of the returned URL
      * @return a URL to access a key (without trailing /), i.e. https://vaultname.vault.azure.net/keys/alias, or if alias is null https://vaultname.vault.azure.net/keys

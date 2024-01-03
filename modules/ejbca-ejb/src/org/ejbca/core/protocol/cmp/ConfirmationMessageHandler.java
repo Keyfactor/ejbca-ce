@@ -18,6 +18,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.X509Certificate;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -37,12 +43,6 @@ import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.EjbBridgeSessionLocal;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
 /**
  * Message handler for certificate request confirmation message.
  * 
@@ -53,8 +53,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * 
  * However, EJBCA does not keep track of the transaction and always responds
  * with a ResponseStatus.SUCCESS Certificate Confirmation ACK.
- * 
- * @version $Id$
  */
 public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
 	
@@ -160,13 +158,14 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(caToken.getCryptoTokenId());
             cresp.setSignKeyInfo(caInfo.getCertificateChain(), cryptoToken.getPrivateKey(
                     caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), 
-                    cryptoToken.getSignProviderName());
+                    caToken.getSignatureAlgorithm(), cryptoToken.getSignProviderName());
             final AlgorithmIdentifier protectionAlgorithm = cmpRequestMessage.getHeader().getProtectionAlg();
             if (protectionAlgorithm != null) {
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("Confirm request message (update) header has protection alg: " + protectionAlgorithm.getAlgorithm().getId());
                 }
-                cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(protectionAlgorithm.getAlgorithm().getId()));
+                // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
+                cresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(protectionAlgorithm.getAlgorithm().getId(), null));
             } else if (LOG.isDebugEnabled()) {
                 LOG.debug("CMP Confirm message header has no protection alg, using default alg in response.");
             }

@@ -116,8 +116,9 @@ public class CMS {
     /**
      * @param is data to be signed
      * @param os signed data
-     * @param key to do be used for signing
+     * @param key private key to be used for signing
      * @param providerName the provider that should do the signing
+     * @param cert the signing certificate corresponding to the private key, or null and SignerInfo will be set to fixed string "hej" 
      * @throws Exception
      */
     public static void sign(final InputStream is, OutputStream os, PrivateKey key, String providerName, X509Certificate cert) throws Exception {
