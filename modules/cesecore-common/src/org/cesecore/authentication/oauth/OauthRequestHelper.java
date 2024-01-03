@@ -80,4 +80,9 @@ public class OauthRequestHelper {
         request.setRedirectUri(redirectUri);
         return request.execute(codeOrToken, isRefresh);
     }
+    
+    public OAuthUserInfoResponse sendUserInfoRequest() {
+        final OAuthUserInfoRequest request = new OAuthUserInfoRequest();
+        return new OAuthUserInfoResponse();
+    }
 }
