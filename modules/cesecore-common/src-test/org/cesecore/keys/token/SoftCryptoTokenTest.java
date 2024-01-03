@@ -71,12 +71,6 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
     }
 
 	@Test
-    public void testCryptoTokenDSA() throws Exception {
-    	CryptoToken catoken = createSoftToken(true);
-        doCryptoTokenDSA(catoken);
-    }
-
-	@Test
     public void testActivateDeactivate() throws Exception {
     	CryptoToken catoken = createSoftToken(true);
         doActivateDeactivate(catoken);

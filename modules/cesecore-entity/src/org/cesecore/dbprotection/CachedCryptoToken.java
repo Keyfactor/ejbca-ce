@@ -28,6 +28,7 @@ import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -258,4 +259,18 @@ public class CachedCryptoToken implements CryptoToken {
         return wrappedCryptoToken.isAutoActivationPinPresent();
     }
 
+    @Override
+    public Set<Long> getKeyUsagesFromKey(String arg0, boolean arg1, long... arg2) throws CryptoTokenOfflineException {
+        return wrappedCryptoToken.getKeyUsagesFromKey(arg0, arg1, arg2);
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPrivateKey(String arg0) throws CryptoTokenOfflineException {
+        return wrappedCryptoToken.getKeyUsagesFromPrivateKey(arg0);
+    }
+
+    @Override
+    public Set<Long> getKeyUsagesFromPublicKey(String arg0) throws CryptoTokenOfflineException {
+        return wrappedCryptoToken.getKeyUsagesFromPublicKey(arg0);
+    }
 }
