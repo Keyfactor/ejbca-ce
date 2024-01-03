@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,23 +40,30 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.resource.util.CertificateRestResourceSystemTestUtil;
 import org.ejbca.ui.web.rest.api.resource.util.TestEndEntityParamHolder;
+import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourceSystemTestBase {
     
@@ -84,6 +92,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     
     @BeforeClass
     public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         RestResourceSystemTestBase.beforeClass();
         
         useKeyRecoveryBkup = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(
@@ -202,12 +211,32 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
         
         // TODO: process response body
         log.error(responseBody);
+        String certificateSerialNo = null;
+        try {
+            final JSONObject keyStoreEnrollResponse = (JSONObject) jsonParser.parse(responseBody);
+            
+            assertTrue(keyStoreEnrollResponse.containsKey("certificate"));
+            assertTrue(keyStoreEnrollResponse.containsKey("serial_number"));
+            assertTrue(keyStoreEnrollResponse.containsKey("response_format"));
+            assertTrue(keyStoreEnrollResponse.containsKey("certificate_chain"));
+            
+            certificateSerialNo = (String) keyStoreEnrollResponse.get("serial_number");
+        } catch (ParseException e1) {
+            log.error(e1);
+            fail("failed to parse keystore enroll response");
+        }
         
         // TODO: process key recovery
-        String certificateSerialNo = null;
         if (eeProfileName.equals(TEST_EE_PROFILE_KEY_RECOVERY_NAME)) {
             byte[] keyStoreRecovered = null;
             try {
+                try {
+                    endEntityManagementSession.setPassword(INTERNAL_ADMIN_TOKEN, userName, 
+                                            CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD);
+                } catch (NoSuchEndEntityException | EndEntityProfileValidationException e) {
+                    // TODO Auto-generated catch block
+                    throw new IllegalStateException(e);
+                }
                 keyStoreRecovered = raMasterApiProxyBean.keyRecoverEnrollWS(INTERNAL_ADMIN_TOKEN, userName, certificateSerialNo, 
                         TEST_CA_DN, CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, null);
             } catch (CADoesntExistsException | AuthorizationDeniedException | EjbcaException | WaitingForApprovalException e) {
@@ -218,7 +247,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
             assertNotNull("Failed to recover key(keyStore null): key algo: " + keyAlgorithm + 
                     ", tokenType: " + tokenType, keyStoreRecovered);
             assertTrue("Failed to recover key(keyStore empty): key algo: " + keyAlgorithm + 
-                    ", tokenType: " + tokenType, keyStoreRecovered.length==0);
+                    ", tokenType: " + tokenType, keyStoreRecovered.length!=0);
 
         }
         
@@ -241,6 +270,7 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
                             .withTokenType(tokenType)
                             .withKeyAlgo(keyalgorithm)
                             .withKeySpec(keySpec)
+                            .withKeyRecoverable(eeProfileName.equals(TEST_EE_PROFILE_KEY_RECOVERY_NAME))
                             .build());
         } catch (Exception e) {
             log.error("Failed to create user:", e);
@@ -291,31 +321,31 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     // negative: empty user name, password, CA, non-existent EE, wrong password, not allowed bit length, not allowed algo
     @Test
     public void badEnrollEmptyUsername() {
-        String responseBody = enrollKeyStoreRestCall("", "foo123", "RSA", "2048");
+        String responseBody = enrollKeyStoreRestCall("", "foo123", "RSA", "2048", true);
         log.error("badEnrollEmptyUsername" + responseBody);
     }
 
     @Test
     public void badEnrollEmptyPassword() {
-        String responseBody = enrollKeyStoreRestCall("user", "", "RSA", "2048");
+        String responseBody = enrollKeyStoreRestCall("user", "", "RSA", "2048", true);
         log.error("badEnrollEmptyPassword" + responseBody);
     }
 
     @Test
     public void badEnrollEmptyAlgo() {
-        String responseBody = enrollKeyStoreRestCall("user", "foo123", "", "256");
+        String responseBody = enrollKeyStoreRestCall("user", "foo123", "", "256", true);
         log.error("badEnrollEmptyAlgo" + responseBody);
     }
 
     @Test
     public void badEnrollEmptySpec() {
-        String responseBody = enrollKeyStoreRestCall("user", "foo123", "RSA", "");
+        String responseBody = enrollKeyStoreRestCall("user", "foo123", "RSA", "", true);
         log.error("badEnrollEmptySpec" + responseBody);
     }
     
     @Test
     public void badEnrollNonExistentEndEntity() {
-        String responseBody = enrollKeyStoreRestCall("user" + RANDOM.nextLong(), "foo123", "RSA", "2048");
+        String responseBody = enrollKeyStoreRestCall("user" + RANDOM.nextLong(), "foo123", "RSA", "2048", true);
         log.error("badEnrollNonExistentEndEntity" + responseBody);
     }
 
@@ -326,8 +356,24 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
                 "2048");
         
         String responseBody = enrollKeyStoreRestCall(userName, 
-                CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, AlgorithmConstants.KEYALGORITHM_RSA, "4096");
+                CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, 
+                AlgorithmConstants.KEYALGORITHM_RSA, "4096");
         log.error("badEnrollNotAllowedBitLength" + responseBody);
+        
+        try {
+            final JSONObject keyStoreEnrollResponse = (JSONObject) jsonParser.parse(responseBody);
+            X509Certificate enrolledCert = CertTools.extractEndEntityCertificateFromKeyStore(
+                    Base64.decode(((String) keyStoreEnrollResponse.get("certificate")).getBytes()), 
+                    SecConst.getKeyStoreTypeAsString(SecConst.TOKEN_SOFT_P12), 
+                    CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD).get(0);
+            
+            assertEquals(enrolledCert.getPublicKey().getAlgorithm(), "RSA"); 
+            assertEquals(KeyTools.getKeyLength(enrolledCert.getPublicKey()), 2048);
+            
+        } catch (Exception e1) {
+            log.error(e1);
+            fail("failed to parse keystore enroll response");
+        }
         
     }
     
@@ -338,8 +384,24 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
                 "2048");
         
         String responseBody = enrollKeyStoreRestCall(userName, 
-                CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1");
+                CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, 
+                AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1");
         log.error("badEnrollNotAllowedAlgorithm" + responseBody);
+        
+        try {
+            final JSONObject keyStoreEnrollResponse = (JSONObject) jsonParser.parse(responseBody);
+            X509Certificate enrolledCert = CertTools.extractEndEntityCertificateFromKeyStore(
+                    Base64.decode(((String) keyStoreEnrollResponse.get("certificate")).getBytes()), 
+                    SecConst.getKeyStoreTypeAsString(SecConst.TOKEN_SOFT_P12),
+                    CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD).get(0);
+            
+            assertEquals(enrolledCert.getPublicKey().getAlgorithm(), "RSA"); 
+            
+        } catch (Exception e1) {
+            log.error(e1);
+            fail("failed to parse keystore enroll response");
+        }
+        
         
     }
 }
