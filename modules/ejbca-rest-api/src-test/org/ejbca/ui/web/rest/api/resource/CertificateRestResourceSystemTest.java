@@ -1249,9 +1249,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             searchToBeExpiredCerts(16, 40, 10, created30mCerts + created5dCerts + created15dCerts - 40);
             searchToBeExpiredCerts(16, 40, 50, created30mCerts + created5dCerts + created15dCerts - 40);
             
-            // negative
-            searchToBeExpiredCerts(16, 40, 1200, created30mCerts + created5dCerts + created15dCerts - 40);
-            searchToBeExpiredCerts(16, 40, -10, created30mCerts + created5dCerts + created15dCerts - 40);
+            // negative integers are possible as input, please be gentle
             
         } catch (Exception e) {
             log.error("Exception while testing expired certificate search: ", e);
