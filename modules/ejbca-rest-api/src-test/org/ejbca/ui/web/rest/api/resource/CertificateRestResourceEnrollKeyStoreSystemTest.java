@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -251,6 +252,10 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     }
     
     private String enrollKeyStoreRestCall(String username, String password, String keyAlgo, String keySpec) {
+        return enrollKeyStoreRestCall(username, password, keyAlgo, keySpec, false);
+    }
+    
+    private String enrollKeyStoreRestCall(String username, String password, String keyAlgo, String keySpec, boolean expectError) {
         
         Map<String, String> requestBody = new HashMap<>();
         requestBody.put("username", username);
@@ -268,6 +273,11 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
             actualJsonString = actualResponse.readEntity(String.class);
             // Verify response
             assertJsonContentType(actualResponse);
+            if (expectError) {
+                assertTrue("Unexpected status code for bad keystore enroll request", actualResponse.getStatus() > 399);
+            } else {
+                assertEquals("Unexpected status code for good keystore enroll request", actualResponse.getStatus(), 201);
+            }
         } catch (Exception e) {
             log.error("Failed to enroll keystore:", e);
             log.error("Failed to enroll keystore: request: " + requestBody + ", response: " +  actualJsonString);
@@ -279,8 +289,57 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     }
         
     // negative: empty user name, password, CA, non-existent EE, wrong password, not allowed bit length, not allowed algo
-    // PEM not allowed
-    
-    // with and without key recovery
+    @Test
+    public void badEnrollEmptyUsername() {
+        String responseBody = enrollKeyStoreRestCall("", "foo123", "RSA", "2048");
+        log.error("badEnrollEmptyUsername" + responseBody);
+    }
 
+    @Test
+    public void badEnrollEmptyPassword() {
+        String responseBody = enrollKeyStoreRestCall("user", "", "RSA", "2048");
+        log.error("badEnrollEmptyPassword" + responseBody);
+    }
+
+    @Test
+    public void badEnrollEmptyAlgo() {
+        String responseBody = enrollKeyStoreRestCall("user", "foo123", "", "256");
+        log.error("badEnrollEmptyAlgo" + responseBody);
+    }
+
+    @Test
+    public void badEnrollEmptySpec() {
+        String responseBody = enrollKeyStoreRestCall("user", "foo123", "RSA", "");
+        log.error("badEnrollEmptySpec" + responseBody);
+    }
+    
+    @Test
+    public void badEnrollNonExistentEndEntity() {
+        String responseBody = enrollKeyStoreRestCall("user" + RANDOM.nextLong(), "foo123", "RSA", "2048");
+        log.error("badEnrollNonExistentEndEntity" + responseBody);
+    }
+
+    @Test
+    public void badEnrollNotAllowedBitLength() {
+        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_RSA_ONLY_NAME, 
+                SecConst.TOKEN_SOFT_P12, AlgorithmConstants.KEYALGORITHM_RSA, 
+                "2048");
+        
+        String responseBody = enrollKeyStoreRestCall(userName, 
+                CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, AlgorithmConstants.KEYALGORITHM_RSA, "4096");
+        log.error("badEnrollNotAllowedBitLength" + responseBody);
+        
+    }
+    
+    @Test
+    public void badEnrollNotAllowedAlgorithm() {
+        String userName = createUser(TEST_EE_PROFILE_NAME, TEST_CERT_PROFILE_RSA_ONLY_NAME, 
+                SecConst.TOKEN_SOFT_P12, AlgorithmConstants.KEYALGORITHM_RSA, 
+                "2048");
+        
+        String responseBody = enrollKeyStoreRestCall(userName, 
+                CertificateRestResourceSystemTestUtil.DEFAULT_PASSWORD, AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1");
+        log.error("badEnrollNotAllowedAlgorithm" + responseBody);
+        
+    }
 }
