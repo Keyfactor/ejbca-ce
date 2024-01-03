@@ -120,6 +120,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         // PingID-specific fields
         private String logoutUrl;
         private String tokenUrl;
+        private String userInfoUrl;
 
         public String getKeyIdentifier() {
             return keyIdentifier;
@@ -325,6 +326,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             
             this.logoutUrl = oauthKey.getLogoutUrl();
             this.tokenUrl = oauthKey.getTokenUrl();
+            this.userInfoUrl = oauthKey.getUserInfoUrl();
         }
 
         /**
@@ -338,6 +340,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             url = null;
             logoutUrl = null;
             tokenUrl = null;
+            userInfoUrl = null;
             keyBinding = null;
             label = null;
             client = null;
@@ -370,18 +373,26 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         public String getLogoutUrl() {
             return logoutUrl;
         }
+        
+        public void setLogoutUrl(String logoutUrl) {
+            this.logoutUrl = logoutUrl;
+        }
 
         public String getTokenUrl() {
             return tokenUrl;
         }
 
-        public void setLogoutUrl(String logoutUrl) {
-            this.logoutUrl = logoutUrl;
-        }
-
         public void setTokenUrl(String tokenUrl) {
             this.tokenUrl = tokenUrl;
         }
+        
+        public String getUserInfoUrl() {
+            return userInfoUrl;
+        }
+
+        public void setUserInfoUrl(String userInfoUrl) {
+            this.userInfoUrl = userInfoUrl;
+        }        
 
         public final String getAudience() {
             return audience;
@@ -676,6 +687,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         newOauthKey.setClient(oauthKeyEditor.getClient());
         newOauthKey.setTokenUrl(oauthKeyEditor.getTokenUrl());
         newOauthKey.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
+        newOauthKey.setUserInfoUrl(oauthKeyEditor.getUserInfoUrl());
         newOauthKey.setClientSecretAndEncrypt(oauthKeyEditor.getClientSecret());
         if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
             newOauthKey.setPublicKeyUrl(oauthKeyEditor.getPublicKeyUrl());
@@ -853,6 +865,7 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
         oauthKeyToUpdate.setFetchUserInfo(oauthKeyEditor.isFetchUserInfo());
         oauthKeyToUpdate.setLogoutUrl(oauthKeyEditor.getLogoutUrl());
         oauthKeyToUpdate.setTokenUrl(oauthKeyEditor.getTokenUrl());
+        oauthKeyToUpdate.setUserInfoUrl(oauthKeyEditor.getUserInfoUrl());
         if (!StringUtils.isEmpty(oauthKeyEditor.getPublicKeyUrl())) {
             oauthKeyToUpdate.setPublicKeyUrl(oauthKeyEditor.getPublicKeyUrl());
         }
