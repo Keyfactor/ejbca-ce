@@ -244,7 +244,7 @@ div#footer {
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 .main-wrapper {
-	margin: .5em 1em .5em 18em;
+	margin: .5em auto .5em 15%;
 }
 
 h1 {

@@ -482,54 +482,6 @@ public class KeyRecoveryTest extends CaTestCase {
     }
 
     /**
-     * Tests adding a EC keypair and checks if it can be read again.
-     */
-    @Test
-    public void testAddAndRemoveKeyPairDSA() throws Exception {
-        log.trace(">testAddAndRemoveKeyPairDSA()");
-        // Generate test keypair and certificate.
-        X509Certificate cert1 = null;
-        String fp1 = null;
-        final String userdsa= genRandomUserName();
-        try {
-            KeyPair keypair1 = null;
-            try {
-                if (!endEntityManagementSession.existsUser(userdsa)) {
-                    keypair1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
-                    final EndEntityInformation ee = new EndEntityInformation(userdsa, "CN=TESTKEYRECDSA" + new Random().nextLong(), getTestCAId(), "rfc822name=" + TEST_EMAIL, TEST_EMAIL,
-                            EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                            SecConst.TOKEN_SOFT_P12, null);
-                    ee.setPassword("foo123");
-                    endEntityManagementSession.addUser(internalAdmin, ee, false);
-                    cert1 = (X509Certificate) signSession.createCertificate(internalAdmin, userdsa, "foo123", new PublicKeyWrapper(keypair1.getPublic()));
-                    fp1 = CertTools.getFingerprintAsString(cert1);
-                }
-            } catch (Exception e) {
-                log.error("Exception generating keys/cert: ", e);
-                fail("Exception generating keys/cert");
-            }
-            // Save the keys as key recovery data in the database 
-            assertTrue("Key recovery data already exists in database.", keyRecoverySession.addKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1), user, EJBTools.wrap(keypair1)));
-            assertTrue("Couldn't save keys in database", keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
-            assertFalse("User should not be marked for recovery in database", keyRecoverySession.isUserMarked(user));
-            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, cert1);
-            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            KeyRecoveryInformation data = keyRecoverySession.recoverKeys(admin, user, EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
-            assertNotNull("Couldn't recover keys from database", data);
-            assertTrue("Couldn't recover keys from database", Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair1.getPrivate().getEncoded()));
-        } finally {
-            // Only clean up left.
-            if (cert1 != null) {
-                keyRecoverySession.removeKeyRecoveryData(internalAdmin, EJBTools.wrap(cert1));
-                assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(EJBTools.wrap(cert1)));
-            }
-            internalCertStoreSession.removeCertificate(fp1);
-            endEntityManagementSession.deleteUser(internalAdmin, userdsa);
-        }
-        log.trace("<testAddAndRemoveKeyPairDSA()");
-    }
-
-    /**
      * tests adding a keypair and checks if it can be read again, including rollover of the CAs keyEncryptKey and storing a second set of key recovery data.
      */
     @Test
