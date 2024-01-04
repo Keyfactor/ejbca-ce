@@ -365,9 +365,10 @@ public class CertificateRestResource extends BaseRestResource {
         final int validMaxForDatabase = maxNumberOfResults > 0 && maxLimit >= maxNumberOfResults ? maxNumberOfResults : maxLimit;
         final Collection<Certificate> expiringCertificates = EJBTools
                 .unwrapCertCollection(raMasterApi.getCertificatesByExpirationTime(admin, days, validMaxForDatabase, offset));
-        int processedResults = offset + validMaxForDatabase;
+        final int numberOfResults = expiringCertificates.size();
+        int processedResults = offset + numberOfResults;
         PaginationRestResponseComponent paginationRestResponseComponent = PaginationRestResponseComponent.builder().setMoreResults(count > processedResults)
-                .setNextOffset(offset + validMaxForDatabase)
+                .setNextOffset(offset + numberOfResults)
                 .setNumberOfResults(count - processedResults)
                 .build();
         CertificatesRestResponse certificatesRestResponse = new CertificatesRestResponse(
