@@ -104,11 +104,11 @@ public class AutoEnrollmentDTO {
         this.policyName = policyName;
     }
     
-    public Integer getPolicyUpdateInterval() {
+    public int getPolicyUpdateInterval() {
         return policyUpdateInterval;
     }
 
-    public void setPolicyUpdateInterval(Integer policyUpdateInterval) {
+    public void setPolicyUpdateInterval(int policyUpdateInterval) {
         this.policyUpdateInterval = policyUpdateInterval;
     }
 
