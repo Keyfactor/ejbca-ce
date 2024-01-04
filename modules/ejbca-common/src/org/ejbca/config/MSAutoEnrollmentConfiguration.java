@@ -27,8 +27,10 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.ConfigurationBase;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Configuration for the Microsoft Auto Enrollment
@@ -39,6 +41,8 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
     private static final Logger log = Logger.getLogger(MSAutoEnrollmentConfiguration.class);
     
+    protected static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
     // Aliases 
     private static final String ALIAS_LIST = "aliaslist";
     private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
@@ -79,6 +83,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final int DEFAULT_AD_CONNECTION_PORT = 389;    
     private static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds    
     private static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
+    
+    private static final int MINIMUM_POLICY_UPDATE_INTERVAL = 1; // In hours
+    private static final int MAXIMUM_POLICY_UPDATE_INTERVAL = 2147483647; // In hours
 
     public MSAutoEnrollmentConfiguration() {
         super();
@@ -208,7 +215,10 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         return value == null ? DEFAULT_POLICY_UPDATE_INTERVAL : Integer.valueOf(value);
     }
 
-    public void setPolicyUpdateInterval(String alias, final int policyUpdateInterval) {
+    public void setPolicyUpdateInterval(String alias, final int policyUpdateInterval) throws InvalidConfigurationException {
+        if (policyUpdateInterval > MAXIMUM_POLICY_UPDATE_INTERVAL || policyUpdateInterval < MINIMUM_POLICY_UPDATE_INTERVAL) {
+            throw new InvalidConfigurationException(intres.getLocalizedMessage("msae.invalidpolicyupdateinterval"));
+        }
         String key = alias + "." + POLICY_UPDATE_INTERVAL;
         setValue(key, String.valueOf(policyUpdateInterval), alias);
     }

@@ -14,9 +14,6 @@ package org.cesecore.config;
 
 /**
  * Thrown to show that a configuration value was not correctly set. 
- * 
- * @version $Id$
- *
  */
 public class InvalidConfigurationException extends Exception {
 
