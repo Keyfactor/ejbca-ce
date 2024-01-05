@@ -2583,6 +2583,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         @SuppressWarnings("deprecation")
         long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
         globalOcspConfiguration.setDefaultResponseMaxAge(maxAge);
+        @SuppressWarnings("deprecation")
+        boolean useMaxAgeForExpired = OcspConfiguration.getCacheHeaderMaxAge();
+        globalOcspConfiguration.setUseMaxValidityForExpiration(useMaxAgeForExpired);
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {

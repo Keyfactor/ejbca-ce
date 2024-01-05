@@ -109,7 +109,7 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private String ocspLoggingDateFormat;
     private long defaultResponseValidityTime;
     private long defaultResponseMaxAge;
-
+    private boolean useMaxValidityForExpiration;
 
     private String currentOcspExtension = null;
     private ListDataModel<InternalKeyBindingTrustEntry> signOcspResponseForCas = null;
@@ -146,6 +146,8 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         ocspAuditLogValues = globalConfiguration.getOcspAuditLogValues();
         ocspLoggingDateFormat = globalConfiguration.getOcspLoggingDateFormat();
         defaultResponseValidityTime = globalConfiguration.getDefaultValidityTime();
+        defaultResponseMaxAge = globalConfiguration.getDefaultResponseMaxAge();
+        useMaxValidityForExpiration = globalConfiguration.getUseMaxValidityForExpiration();
     }
 
     @Override
@@ -339,11 +341,12 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         this.defaultResponseMaxAge = defaultResponseMaxAge;
     }
 
-    public void saveDefaultResponseValidity() {
+    public void saveGlobalResponseValues() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         configuration.setDefaultValidityTime(this.defaultResponseValidityTime);
         configuration.setDefaultResponseMaxAge(this.defaultResponseMaxAge);
+        configuration.setUseMaxValidityForExpiration(this.useMaxValidityForExpiration);
 
         try {
             globalConfigurationSession.saveConfiguration(getAdmin(), configuration);
@@ -356,7 +359,17 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     public boolean isValiditiesUnchanged() {
         GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        return this.defaultResponseValidityTime == configuration.getDefaultValidityTime() && this.defaultResponseMaxAge == configuration.getDefaultResponseMaxAge();
+        return this.defaultResponseValidityTime == configuration.getDefaultValidityTime() 
+                && this.defaultResponseMaxAge == configuration.getDefaultResponseMaxAge()
+                && this.useMaxValidityForExpiration == configuration.getUseMaxValidityForExpiration();
+    }
+    
+    public boolean getUseMaxValidityForExpiration() {
+        return this.useMaxValidityForExpiration;
+    }
+    
+    public void setUseMaxValidityForExpiration(boolean useMaxValidityForExpiration) {
+        this.useMaxValidityForExpiration = useMaxValidityForExpiration;
     }
     
     @SuppressWarnings("unchecked")

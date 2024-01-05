@@ -95,13 +95,10 @@
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
 # You can find the certificateProfileId (999 in the example below) in the CA UI.
 # If no specific certificateProfileId is specified the default value from ocsp.untilNextUpdate is used.
+#
+# NOTE: This function has been deprecated in EJBCA 8.3.0 and will be removed in the following release
+#
 #ocsp.999.untilNextUpdate = 50
-
-# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
-# untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
-# If this configuration is set, its value will override the global value in case of certificate with a revoked status..
-# Default: 0
-#ocsp.revoked.untilNextUpdate = 0
 
 # You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
@@ -110,31 +107,23 @@
 # If this configuration is set, its value will override the global value in case of certificate with a revoked status..
 #ocsp.999.revoked.untilNextUpdate = 50
 
-# Base 'Expires' cache header on max-age instead of than nextUpdate.
-# Enabling this is not compliant to RFC 5019 
-# Default: false
-#ocsp.expires.useMaxAge=false
-
 # You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
 # You can find the certificateProfileId (999 in the example below) in the CA UI.
 # If no specific certificateProfileId is specified the default value from ocsp.maxAge is used.
+#
+# NOTE: This function has been deprecated in EJBCA 8.3.0 and will be removed in the following release
+#
 #ocsp.999.maxAge = 100
 
-# For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
-# maxAge is how long a response will be cached, in seconds. Should be less than untilNextUpdate.
-# Ignored if untilNextUpdate is disabled. 0 = disable.
-# Note that for responses of certificates with unknown status, the HTTP response header "Cache-control" will not contain the max age, but 
-# "no-cache, must-revalidate" instead. That is to prevent caching of unknown status.
-# If this configuration is set, its value will override the global value in case of certificate with a revoked status.
-# Default: 30
-#ocsp.revoked.maxAge = 30
-
 # You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
 # This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
 # You can find the certificateProfileId (999 in the example below) in the CA UI.
 # If no specific certificateProfileId is specified the default value from ocsp.maxAge is used.
 # If this configuration is set, its value will override the global value in case of certificate with a revoked status.
+#
+# NOTE: This function has been deprecated in EJBCA 8.3.0 and will be removed in the following release
+#
 #ocsp.999.revoked.maxAge = 100
 
 # Setting this to true will enable unidfnr extension in EJBCA.

@@ -1451,6 +1451,8 @@ public class UpgradeSessionBeanTest {
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         //Store old value
         long oldUntilNextUpdate = globalOcspConfiguration.getDefaultValidityTime();
+        long oldMaxAge = globalOcspConfiguration.getDefaultResponseMaxAge();
+        boolean oldUseMaxAgeForExpired = globalOcspConfiguration.getUseMaxValidityForExpiration();
         try {
             final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
@@ -1460,14 +1462,18 @@ public class UpgradeSessionBeanTest {
             //Set ocsp.untilNextUpdate to a non-default value
             cesecoreConfigSession.setConfigurationValue("ocsp.untilNextUpdate", "50");
             cesecoreConfigSession.setConfigurationValue("ocsp.maxAge", "60");
+            cesecoreConfigSession.setConfigurationValue("ocsp.expires.useMaxAge", "true");
             upgradeSession.upgrade(null, "8.0.0", false);
             globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
                     .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             assertEquals("ocsp.untilNextUpdate was not migrated to GlobalOcspConfiguration", 50, globalOcspConfiguration.getDefaultValidityTime());
             assertEquals("ocsp.maxAge was not migrated to GlobalOcspConfiguration", 60, globalOcspConfiguration.getDefaultResponseMaxAge());
+            assertEquals("ocsp.expires.useMaxAg was not migrated to GlobalOcspConfiguration", true, globalOcspConfiguration.getUseMaxValidityForExpiration());
         } finally {
-            //Restore old value
+            //Restore old values
             globalOcspConfiguration.setDefaultValidityTime(oldUntilNextUpdate);
+            globalOcspConfiguration.setDefaultResponseMaxAge(oldMaxAge);
+            globalOcspConfiguration.setUseMaxValidityForExpiration(oldUseMaxAgeForExpired);
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
         }
 
