@@ -535,9 +535,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      * The test sets ocsp.untilNextUpdate and ocsp.revoked.untilNextUpdate to different values and then verified that the response's next update value matches 
      * the setting of ocsp.revoked.untilNextUpdate and not ocsp.untilNextUpdate
      * 
-     * @throws Exception
-     *             error
+     *             
+     * @deprecated Slated for removal after 8.3, see ECA-12084
      */
+    @Deprecated
     @Test
     public void testRevokedNextUpdate() throws Exception {
        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
