@@ -5,6 +5,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Category;
 import org.apache.log4j.Layout;
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
@@ -526,11 +528,14 @@ public class CaImportProfilesCommandSystemTest {
     }
     
     private void assertLog(final String logString) {
-        // The test might fail on Jenkins randomly in single runs (-Drun.one=...),
-        // or after another system tests have failed if the test is executed inside a test-suite.
-        // assertTrue("Event log is missing: " + log, testLog.getAppender().getMessages().contains(log));
-        if (!testLog.getAppender().getMessages().contains(logString)) {
-            log.warn("Event log is missing: " + logString);
+        final List<String> logMessages = testLog.getAppender().getMessages();
+        if (!logMessages.contains(logString)) {
+            final String errorMessage = "Event log is missing: " + logString;
+            log.error(errorMessage);
+            for (final String logMessage : logMessages) {
+                log.error("log: " + logMessage);
+            }
+            fail(errorMessage);
         }
     }
     
@@ -554,7 +559,15 @@ public class CaImportProfilesCommandSystemTest {
         protected void before() {
             appender.setName(APPENDER_NAME);
             appender.setLayout(LAYOUT);
-            logger.addAppender(appender);
+            appender.setThreshold(Level.DEBUG);
+            // Add the Appender to the root logger
+            Category cat = logger;
+            while (cat.getParent() != null) {
+                cat.setAdditivity(true); // pass log entries to parent also
+                cat = cat.getParent();
+            }
+            cat.addAppender(appender);
+            appender.clear();
         }
 
         @Override
@@ -570,7 +583,7 @@ public class CaImportProfilesCommandSystemTest {
 
     static class TestAppender extends AppenderSkeleton {
         
-        private final List<LoggingEvent> log = new ArrayList<>();
+        private final List<LoggingEvent> events = new ArrayList<>();
         private final List<String> messages = new ArrayList<>();
 
         @Override
@@ -582,15 +595,20 @@ public class CaImportProfilesCommandSystemTest {
         protected void append(final LoggingEvent loggingEvent) {
             final String logMessage = loggingEvent.getLevel() + " - " + ((SimpleMessage) loggingEvent.getMessage()).getFormattedMessage();
             messages.add(logMessage);
-            log.add(loggingEvent);
+            events.add(loggingEvent);
         }
 
         @Override
         public void close() {
         }
-        
+
         public List<String> getMessages() {
-            return new ArrayList<String>(messages);
+            return new ArrayList<>(messages);
+        }
+
+        public void clear() {
+            events.clear();
+            messages.clear();
         }
     }
 }
