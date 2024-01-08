@@ -277,7 +277,10 @@ public class OCSPServlet extends HttpServlet {
                 }
                 if (auditLogger.isEnabled()) {
                     auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
+                    auditLogger.writeln();
                 }
+                transactionLogger.flush();
+                auditLogger.flush();
             } catch (Throwable e) { // NOPMD, we really want to catch everything here to return internal error on unexpected errors
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
@@ -303,7 +306,10 @@ public class OCSPServlet extends HttpServlet {
                 }
                 if (auditLogger.isEnabled()) {
                     auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
+                    auditLogger.writeln();
                 }
+                transactionLogger.flush();
+                auditLogger.flush();
             }
 
             byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();
@@ -324,6 +330,7 @@ public class OCSPServlet extends HttpServlet {
             
             response.getOutputStream().write(ocspResponseBytes);
             response.getOutputStream().flush();
+            
         } catch (Exception e) {
             log.error("", e);
             transactionLogger.flush();
