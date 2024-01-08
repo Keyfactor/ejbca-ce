@@ -15,9 +15,7 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.IOException;
 import java.net.URLDecoder;
-import java.security.InvalidKeyException;
 import java.security.cert.X509Certificate;
-import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletException;
@@ -44,7 +42,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.GUIDGenerator;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
-import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -54,7 +51,7 @@ import org.ejbca.util.IPatternLogger;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.StringTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
@@ -72,8 +69,6 @@ public class OCSPServlet extends HttpServlet {
     @EJB
     private OcspResponseGeneratorSessionLocal integratedOcspResponseGeneratorSession;
     @EJB
-    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
-    @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @Override
@@ -82,8 +77,6 @@ public class OCSPServlet extends HttpServlet {
             if (log.isTraceEnabled()) {
                 log.trace(">doGet()");
             }
-            final String keyRenewalSignerDN =  request.getParameter("renewSigner");
-            final boolean performKeyRenewal = keyRenewalSignerDN!=null && keyRenewalSignerDN.length()>0;           
             // We have a command to force reloading of keys that can only be run from localhost
             final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
             final String newConfig = request.getParameter("newConfig");
@@ -127,39 +120,7 @@ public class OCSPServlet extends HttpServlet {
                 log.info("Call from " + remote + " to restore configuration.");
                 return;
             }
-            if ( performKeyRenewal ) {
-                final Set<String> rekeyingTriggeringHosts = OcspConfiguration.getRekeyingTriggingHosts();
-                if ( !rekeyingTriggeringHosts.contains(remote) ) {
-                    log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.unauthorized.ip", remote) );
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
-                }
-                final String rekeyingTriggingPassword = OcspConfiguration.getRekeyingTriggingPassword();
-                if ( rekeyingTriggingPassword==null ) {
-                    log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.not.enabled",remote) );
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
-                }
-                final String requestPassword = request.getParameter("password");
-                final String keyrenewalSignerDn =  request.getParameter("renewSigner");
-                if ( !rekeyingTriggingPassword.equals(requestPassword) ) {
-                    log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.wrong.password", remote) );
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
-                }
-                try {
-                    ocspKeyRenewalSession.renewKeyStores(keyrenewalSignerDn);
-                } catch (CryptoTokenOfflineException e) {
-                    log.info( intres.getLocalizedMessage("ocsp.rekey.cryptotoken.notactivated", remote) );
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
-                } catch (InvalidKeyException e) {                   
-                    log.info( intres.getLocalizedMessage("ocsp.rekey.invalid.key", remote) );
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
-                }
-                return;
-            }
+            
             processOcspRequest(request, response, HttpMethod.GET);
         } finally {
             if (log.isTraceEnabled()) {
