@@ -23,8 +23,7 @@
 
 # Specifies which signature algorithms can be used in OCSP responses. You can specify several algorithm
 # separated by ';'. If RSA keys are used in the OCSP signing certificate, the algorithm with RSA will be used, and
-# if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used and if 
-# DSA keys are used in the OCSP signing certificate, the algorithm with DSA will be used.
+# if ECDSA keys are used in the OCSP signing certificate, the algorithm with ECDSA will be used.
 #
 # Default: SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;Ed25519;Ed448
 #ocsp.signaturealgorithm=SHA256WithRSA;SHA256withRSAandMGF1;SHA384WithRSA;SHA512WithRSA;SHA224withECDSA;SHA256withECDSA;SHA384withECDSA;SHA512withECDSA;Ed25519;Ed448
@@ -171,32 +170,3 @@
 #
 # Default: 30000ms 
 #ocspconfigurationcache.cachetime=30000
-
-#------------------- Re-keying used by external OCSP responder------------------------------
-# When this feature is enabled a new signing key will automatically be generated a specified time before the certificate of the used key expires.
-# A certificate for the new key will be fetched by WS from EJBCA.
-# You also need to configure an AuthenticationKeyBinding as client SSL credential. (It will be created for you
-# during upgrade to EJBCA 6.0.0 where a client SSL keystore existed previously.)
-
-# Password for rekeying via the servlet. 
-# Default: null
-#ocsp.rekeying.trigging.password=
-
-# URL to webservice from which the certificate for a newly generated OCSP responder key should be fetched.
-# The automatic re-keying feature is disabled if this property is not defined.
-# Default: null
-#ocsp.rekeying.wsurl = https://milton:8443/ejbca/ejbcaws/ejbcaws
-
-# Specifies how often the signing certificates should be checked. Default value is 3600 seconds, but consider lowering this value if signing certificates are expected
-# to be valid less than 24h 
-#ocsp.rekeying.update.time.in.seconds=
-
-# Specifies how much safety margin a certificate should have before it's updated, i.e when it should be considered a candidate for renewal. The effective
-# validity time for a signing certificate is it's actual validity minus this value. Timer will output warnings if this value is less than the update time.
-#
-# The default for this value is 24h 
-#ocsp.rekeying.safety.margin.in.seconds=
-
-# Limits what hosts may request a manual rekeying via web service. Multiple hosts may be separated with a semicolon. 
-# Default: 127.0.0.1
-#ocsp.rekeying.trigging.hosts=
