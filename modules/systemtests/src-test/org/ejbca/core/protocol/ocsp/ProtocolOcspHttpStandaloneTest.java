@@ -344,6 +344,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         final long oldConfigurationValue2 = globalOcspConfiguration.getDefaultResponseMaxAge();
         globalOcspConfiguration.setDefaultValidityTime(5L);
         globalOcspConfiguration.setDefaultResponseMaxAge(30L);
+        globalOcspConfiguration.setUseMaxValidityForExpiration(false);
         globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         
         
@@ -370,6 +371,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     public void test17VerifyHttpGetHeadersOcspKeyBinding() throws Exception {
         final long oldValue1 = OcspTestUtils.setOcspKeyBindingUntilNextUpdate(authenticationToken, internalKeyBindingId, 5L);
         final long oldValue2 = OcspTestUtils.setOcspKeyBindingMaxAge(authenticationToken, internalKeyBindingId, 30L);
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        globalOcspConfiguration.setUseMaxValidityForExpiration(false);
+        globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         try {
             ocspResponseGeneratorTestSession.reloadOcspSigningCache();
             testVerifyHttpGetHeaders(caCertificate, ocspSigningCertificate);
@@ -432,7 +436,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         assertTrue("RFC 5019 6.2: No 'max-age' HTTP header Cache-Control present as it SHOULD.", matcher.matches());
         int maxAge = Integer.parseInt(matcher.group(1));
         log.debug("maxAge="+maxAge + " (expires-lastModified)/1000=" + ((expires - lastModified) / 1000));
-        assertTrue("thisUpdate and nextUpdate should not be the same (Make sure ocsp.untilNextUpdate and ocsp.maxAge are configured for this test)",
+        assertTrue("thisUpdate and nextUpdate should not be the same (Make sure untilNextUpdate and maxAge are configured in OcspGlobalConfiguration for this test)",
                 expires != lastModified);
         assertTrue("RFC 5019 6.2: [maxAge] SHOULD be 'later than thisUpdate but earlier than nextUpdate'.", maxAge < (expires - lastModified) / 1000);
         // assertTrue("Response cannot be produced after it was sent.",
