@@ -369,14 +369,19 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
             log.debug("findCountOfPendingEntriesForPublisher result: "+resultList.toString());
         }
     	List<Integer> returnList;
-    	// Derby returns Integers, MySQL returns BigIntegers, Oracle returns BigDecimal
+    	// Note that resultList is returned by query created by createNativeQuery, which does not conform to
+    	// the JPA spec.  When countOnly is true, the return value from this query may be any java.lang.Number,
+    	// not necessarily a Integer.  Casting may throw an exception for some database drivers.
+        // Derby returns Integers, MySQL returns BigIntegers, Oracle returns BigDecimal
     	if (resultList.size()==0) {
     		returnList = new ArrayList<Integer>();
     	} else if (resultList.get(0) instanceof Integer) {
-    		returnList = (List<Integer>) resultList;	// This means we can return it in it's current format
+    		returnList = (List<Integer>) resultList; // This means we can return it in it's current format
     	} else {
     		returnList = new ArrayList<Integer>();
     		for (Object o : resultList) {
+    		    // The best way to retrieve the count is to cast to java.lang.Number and use Number::intValue.
+    		    // ValueExtractor does that, perhaps in a more cumbersome way than simply casting to Number...
     			returnList.add(ValueExtractor.extractIntValue(o));
     		}
     	}

@@ -13,12 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -26,6 +20,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
@@ -35,7 +36,6 @@ import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.CaTestUtils;
@@ -69,12 +69,11 @@ import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * This test runs in CMP client mode.
@@ -190,7 +189,7 @@ public class P10CrRequestTest extends CmpTestCase {
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signCert);
 
-        byte[] ba = CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, BouncyCastleProvider.PROVIDER_NAME);
+        byte[] ba = CmpMessageHelper.signPKIMessage(req, signCertColl, this.keys.getPrivate(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, null, BouncyCastleProvider.PROVIDER_NAME);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
         checkCmpResponseGeneral(resp, ISSUER_DN, USER_DN, this.cacert, nonce, transid, true, null,

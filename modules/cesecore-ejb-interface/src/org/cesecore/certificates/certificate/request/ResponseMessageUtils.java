@@ -31,7 +31,7 @@ public abstract class ResponseMessageUtils {
     private static final Logger log = Logger.getLogger(ResponseMessageUtils.class);
     
     public static CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req,
-            Collection<Certificate> certs, PrivateKey signPriv, String provider) {
+            Collection<Certificate> certs, PrivateKey signPriv, String sigAlg, String provider) {
         CertificateResponseMessage ret = null;
         // Create the response message and set all required fields
         try {
@@ -42,7 +42,7 @@ public abstract class ResponseMessageUtils {
             return null;
         } 
         if (ret.requireSignKeyInfo()) {
-            ret.setSignKeyInfo(certs, signPriv, provider);
+            ret.setSignKeyInfo(certs, signPriv, sigAlg, provider);
         }
         if (req.getSenderNonce() != null) {
             ret.setRecipientNonce(req.getSenderNonce());

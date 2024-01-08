@@ -307,8 +307,6 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
             String sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
             if (getProps().getKeyAlg().equals("ECDSA")) {
                 sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
-            } else if (getProps().getKeyAlg().equals("DSA")) {
-                sigAlg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
             } else if (getProps().getKeyAlg().equalsIgnoreCase(AlgorithmConstants.SIGALG_ED25519)) {
                 sigAlg = AlgorithmConstants.SIGALG_ED25519;
             } else if (getProps().getKeyAlg().equalsIgnoreCase(AlgorithmConstants.SIGALG_ED448)) {

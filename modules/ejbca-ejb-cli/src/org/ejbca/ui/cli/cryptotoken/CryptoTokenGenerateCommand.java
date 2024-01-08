@@ -45,7 +45,7 @@ public class CryptoTokenGenerateCommand extends BaseCryptoTokenCommand {
         registerParameter(new Parameter(KEY_PAIR_ALIAS_KEY, "Alias", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key pair alias"));
         registerParameter(new Parameter(KEY_SPECIFICATION_KEY, "Key Specification", MandatoryMode.MANDATORY, StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT, "Key specification, for example 2048, secp256r1, DSA1024, gost3410, dstu4145"));
+                ParameterMode.ARGUMENT, "Key specification, for example 2048, secp256r1"));
         registerParameter(
                 new Parameter(KEY_USAGE, "Key usage", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT, 
                         "A key usage emplate, describing how the key is allowed to be used. Applicable for PKCS#11 NG Crypto Tokens and has no function "

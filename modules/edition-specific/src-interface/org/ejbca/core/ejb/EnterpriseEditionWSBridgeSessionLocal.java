@@ -69,7 +69,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param admin An authentication token
      * @param cryptoTokenName The name of the cryptotoken
      * @param keyPairAlias Key pair alias
-     * @param keySpecification Key specification, for example RSA2048, secp256r1, DSA1024, gost3410, dstu4145
+     * @param keySpecification Key specification, for example RSA2048, secp256r1, gost3410, dstu4145
      * 
      * @throws UnsupportedMethodException When trying to access this method in the community version
      * @throws InvalidKeyException if key generation failed
@@ -91,7 +91,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param encodedValidity Validity of the CA  encoded for example as "3650d".
      * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
-     *        SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
+     *        SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, 
      *        GOST3411withECGOST3410, GOST3411withDSTU4145
      * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA). Externally signed CA's should be created with 
      *          the createExternallySignedCa call. 
@@ -123,7 +123,7 @@ public interface EnterpriseEditionWSBridgeSessionLocal {
      * @param encodedValidity Validity of the CA  encoded for example as "3650d".
      * @param certprofile Makes the CA use the certificate profile 'certprofile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
-     *        SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, SHA1WithDSA, 
+     *        SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA, 
      *        GOST3411withECGOST3410, GOST3411withDSTU4145
      * @param cryptoTokenName The name of the cryptotoken associated with the CA
      * @param purposeKeyMapping The mapping the the cryptotoken keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
