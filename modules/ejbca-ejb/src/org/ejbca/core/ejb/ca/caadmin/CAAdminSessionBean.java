@@ -142,6 +142,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -747,6 +748,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                                 .build()
                 );
                 throw new EJBException(e);
+            } catch (DeltaCrlException e) {
+                // already logged. ignore
             }
         } else {
             log.error("CA status not active when creating CA, extended services not created. CA status: " + castatus);
@@ -1616,7 +1619,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         publishCACertificate(authenticationToken, chain, ca.getCRLPublishers(), ca.getSubjectDN());
         // Create initial CRL
         publishingCrlSession.forceCRL(authenticationToken, caid);
-        publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
+        try {
+            publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
+        } catch (DeltaCrlException e) {
+            //already logged ignore
+        }
     }
 
     private void setMsCompatCAParams(final CA ca) {
@@ -3129,6 +3136,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Newly created CA with ID: " + ca.getCAId() + " was not found in database.");
+        } catch (DeltaCrlException e) {
+           // already logged. ignore
         }
         return ca;
     }
@@ -3744,7 +3753,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // SHA1WithECDSA returns as ECDSA for certSigAlg (has been always, don't know why), while keySigAlgs will contain SHA1WithECDSA
             // therefore we need to make a more complex match, checking if keySigAlgs contains the part,
             // ignoring case so that SHA256WITHRSA matches SHA256WithRSA, and ECDSA matches SHA1WithECDSA (or SHA256WithECDSA)
-            // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or SHA256WithDSA, or... 
+            // But SHA1WithECDSA, or ECDSA does not match SHA1WithRSA, or Ed448, or... 
             boolean containsAlg = keySigAlgs.stream().anyMatch(x -> StringUtils.containsIgnoreCase(x, certSigAlg));
             if (certSigAlg == null || !containsAlg) {
                 if (log.isDebugEnabled()) {

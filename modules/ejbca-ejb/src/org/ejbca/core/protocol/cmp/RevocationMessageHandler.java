@@ -234,24 +234,17 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             final String errMsg = INTRES.getLocalizedMessage("cmp.errormissingissuerrevoke",
                     (issuer != null ? issuer.toString() : "<no issuer in request>"),
                     (serno != null ? serno.getValue().toString(16) : "<no serial number in request>"));
-		    failText = errMsg; 
+		    failText = errMsg;
 		    LOG.info(failText);
 		}
-		
+
 		if (LOG.isDebugEnabled()) {
 		    LOG.debug("Creating a PKI revocation message response: "+responseProtection);
 		}
 		final CmpRevokeResponseMessage rresp = new CmpRevokeResponseMessage();
 		rresp.setRecipientNonce(msg.getSenderNonce());
 		rresp.setSenderNonce(new String(Base64.encode(CmpMessageHelper.createSenderNonce())));
-		// The revocation message may have had an empty recipient, in which case we got the recipient from the CMP configuration (see above)
-		if (StringUtils.isEmpty(msg.getRecipient().getName().toString())) {
-		    final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
-		    final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
-		    rresp.setSender(sender);
-		} else {
-	        rresp.setSender(msg.getRecipient());		    
-		}
+		rresp.setSender(msg.getRecipient()); // Default may be changed when creating protection
 		rresp.setRecipient(msg.getSender());
 		rresp.setTransactionId(msg.getTransactionId());
 		rresp.setFailInfo(failInfo);
@@ -259,7 +252,14 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		rresp.setStatus(status);
 
 		if (StringUtils.equals(responseProtection, "pbe")) {
-		    final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
+		    // The revocation message may have had an empty recipient, in which case we got the recipient from the CMP configuration (see above)
+		    // see https://datatracker.ietf.org/doc/html/rfc9483#section-3.1 for reasoning about the choice of the sender information
+		    if (StringUtils.isEmpty(msg.getRecipient().getName().toString())) {
+		        final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
+		        final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
+		        rresp.setSender(sender);
+            }
+			final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
 			CmpMessageProtectionVerifyer verifyer = hmacmodule.getPasswordBasedProtectionVerifyer();
 			if (verifyer instanceof CmpPbeVerifyer) {
 				final CmpPbeVerifyer pbeVerifyer = (CmpPbeVerifyer) verifyer;
@@ -267,7 +267,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 				final String macAlg = pbeVerifyer.getMacOid();
 				final int iterationCount = CmpMessageHelper.DEFAULT_PASSWORD_BASED_MAC_ITERATION_COUNT;
 				final String cmpRaAuthSecret = hmacmodule.getAuthenticationString();
-				
+
 				if (owfAlg != null && macAlg != null && cmpRaAuthSecret != null) {
 					// Set all protection parameters
 					if (LOG.isDebugEnabled()) {
@@ -290,23 +290,32 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 					rresp.setPbmac1Parameters(keyId, cmpRaAuthSecret, prfAlg, macAlg, iterationCount, dkLen);
 				}
 			}
-		} else if(StringUtils.equals(responseProtection, "signature")) {
+		} else if (StringUtils.equals(responseProtection, "signature")) {
 		    try {
+				// see https://datatracker.ietf.org/doc/html/rfc9483#section-3.1 for reasoning about the choice of the sender information
+				// be aware that the sender field of the CMP message is of type GeneralName and not RDNSequence as the subject field of the certificate
+				// therefore they are not byte-by-byte equal
+			    final X509Certificate cacert = (X509Certificate)ca.getCACertificate();
+			    final GeneralName sender = new GeneralName(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()));
+		    	rresp.setSender(sender);
+
 		        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
 		        final String aliasCertSign = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-		        rresp.setSignKeyInfo(ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
+		        rresp.setSignKeyInfo(ca.getCertificateChain(), cryptoToken.getPrivateKey(aliasCertSign), 
+		                ca.getCAToken().getSignatureAlgorithm(), cryptoToken.getSignProviderName());
                 if(msg.getHeader().getProtectionAlg() != null) {
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("RevReq request message header has protection alg: " + msg.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
-                    rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                    // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
+                    rresp.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("RevReq request message header has no protection alg, using default alg in response.");
                 }
 		    } catch (CryptoTokenOfflineException e) {
 		        LOG.error(e.getLocalizedMessage(), e);
 		    }
-		}
+		} // responseProtection can only be pbe or signature, it will never be blank
 		try {
 		    rresp.create();
 		} catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {

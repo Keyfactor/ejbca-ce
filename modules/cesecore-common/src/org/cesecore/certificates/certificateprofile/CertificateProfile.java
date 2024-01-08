@@ -1344,7 +1344,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return  doSelectedEcRequirebitLenths()
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)
-                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_DSA)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
@@ -3554,9 +3553,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECDSA);
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_DSTU4145);
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECGOST3410);
-                }
-                if (getMinimumAvailableBitLength()>1024 || getMaximumAvailableBitLength()<1024) {
-                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_DSA);
                 }
                 if (getMaximumAvailableBitLength()<1024) {
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_RSA);
