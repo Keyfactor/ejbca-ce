@@ -36,9 +36,8 @@ import org.cesecore.util.ValidityDate;
 
 import com.keyfactor.util.CertTools;
 
-/** Class used to construct validity times based on a range of different input parameters and configuration. 
- * 
- * @version $Id$
+/**
+ * Class used to construct validity times based on a range of different input parameters and configuration.
  */
 public class CertificateValidity {
 
@@ -133,6 +132,9 @@ public class CertificateValidity {
 			log.debug("Certificate profile expiration restrictions weekdays: "+Arrays.toString(certProfile.getExpirationRestrictionWeekdays()));
 			log.debug("Certificate profile expiration restrictions for weekdays before: "+certProfile.getExpirationRestrictionForWeekdaysExpireBefore());
 		}
+
+        final boolean expiredValidityEndDateAllowed = certProfile.getAllowExpiredValidityEndDate();
+
 		if ( TOO_LATE_EXPIRE_DATE==null ) {
 		    throw new IllegalStateException("ca.toolateexpiredate in cesecore.properties is not a valid date.");
 		}
@@ -181,15 +183,18 @@ public class CertificateValidity {
                 log.warn("Expiration restriction of certificate profile could not be applied!");
             }
         }
+
         //If it is a link certificate that we create, we use the old CA's expire date, as requested, as link certificate expire date
         if (isLinkCertificate) {
             lastDate = notAfter;
         }
+
         if (lastDate == null) {
         	lastDate = certProfileLastDate;
         }
+
         // Limit validity: No not allow lastDate to be set in the past, unless certificate is being created as a backdated revocation or as a link certificate
-        if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate) {
+        if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate && !certProfile.getAllowExpiredValidityEndDate()) {
             String msg = "notAfter (" + lastDate.toString() +") in request for user '" + subject.getUsername() + "' set before the current date (" + now
                     + "), which is only allowed for backdated revocations or link certificates.";
             log.info(msg);
@@ -214,13 +219,21 @@ public class CertificateValidity {
     		// Update lastDate if we use maximum validity
     	}
 
-    	
-		// Limit validity: We do not allow a certificate to be valid after the the validity of the certificate profile
+		// Limit validity: We do not allow a certificate to be valid after the validity of the certificate profile
     	if (lastDate.after(certProfileLastDate)) {
     		log.info(intres.getLocalizedMessage("createcert.errorbeyondmaxvalidity",lastDate,subject.getUsername(),certProfileLastDate));
     		lastDate = certProfileLastDate;
+
+            // Combination of Validity Override and firstDate in past beyond Encoded Validity might result in
+            // a certificateProfileLastDate and create an already expired certificate.
+            if (lastDate.before(now) && subject.getStatus() != EndEntityConstants.STATUS_REVOKED && !isLinkCertificate) {
+                final String msg = intres.getLocalizedMessage("createcert.erroralreadyexpired", firstDate);
+                log.info(msg);
+                throw new IllegalValidityException(msg);
+            }
     	}
-		// Limit validity: We do not allow a certificate to be valid after the the validity of the CA (unless it's RootCA during renewal)
+
+		// Limit validity: We do not allow a certificate to be valid after the validity of the CA (unless it's RootCA during renewal)
     	if (cacert != null && !isRootCA) {
     	    final Date caNotAfter = CertTools.getNotAfter(cacert);
     	    if (lastDate.after(caNotAfter)) {
@@ -236,6 +249,15 @@ public class CertificateValidity {
     	        firstDate = caNotBefore;
     	    }
         }
+
+        // Edge case where allowing expired validity might cause inverted validity if firstDate is before
+        // CA's issuance date.
+        if (expiredValidityEndDateAllowed && firstDate.after(lastDate)) {
+            final String msg = intres.getLocalizedMessage("createcert.errorlimitedvalidity", firstDate);
+            log.info(msg);
+            throw new IllegalValidityException(msg);
+        }
+
         if ( !lastDate.before(CertificateValidity.TOO_LATE_EXPIRE_DATE) ) {
         	String msg = intres.getLocalizedMessage("createcert.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.TOO_LATE_EXPIRE_DATE.toString()); 
         	log.info(msg);
