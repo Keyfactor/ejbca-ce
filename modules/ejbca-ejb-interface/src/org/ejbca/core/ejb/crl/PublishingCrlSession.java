@@ -21,6 +21,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import org.cesecore.certificates.crl.DeltaCrlException;
 
 /**
  * @version $Id$
@@ -99,7 +100,7 @@ public interface PublishingCrlSession {
      * @return true if a CRL was generated
      */
     boolean forceDeltaCRL(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException,
-            CryptoTokenOfflineException, CAOfflineException;
+            CryptoTokenOfflineException, CAOfflineException, DeltaCrlException;
 
     /**
      * Method that forces generation of a CRL for a certain CA. This method generates the CRL for a specific CRL partition only.
@@ -116,5 +117,5 @@ public interface PublishingCrlSession {
      * @see #forceCRL(AuthenticationToken, int)
      */
     boolean forceDeltaCRL(AuthenticationToken admin, int caid, int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException,
-            CryptoTokenOfflineException, CAOfflineException;
+            CryptoTokenOfflineException, CAOfflineException, DeltaCrlException;
 }

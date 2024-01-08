@@ -132,6 +132,9 @@ public class CertificateValidity {
 			log.debug("Certificate profile expiration restrictions weekdays: "+Arrays.toString(certProfile.getExpirationRestrictionWeekdays()));
 			log.debug("Certificate profile expiration restrictions for weekdays before: "+certProfile.getExpirationRestrictionForWeekdaysExpireBefore());
 		}
+
+        final boolean expiredValidityEndDateAllowed = certProfile.getAllowExpiredValidityEndDate();
+
 		if ( TOO_LATE_EXPIRE_DATE==null ) {
 		    throw new IllegalStateException("ca.toolateexpiredate in cesecore.properties is not a valid date.");
 		}
@@ -246,6 +249,15 @@ public class CertificateValidity {
     	        firstDate = caNotBefore;
     	    }
         }
+
+        // Edge case where allowing expired validity might cause inverted validity if firstDate is before
+        // CA's issuance date.
+        if (expiredValidityEndDateAllowed && firstDate.after(lastDate)) {
+            final String msg = intres.getLocalizedMessage("createcert.errorlimitedvalidity", firstDate);
+            log.info(msg);
+            throw new IllegalValidityException(msg);
+        }
+
         if ( !lastDate.before(CertificateValidity.TOO_LATE_EXPIRE_DATE) ) {
         	String msg = intres.getLocalizedMessage("createcert.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.TOO_LATE_EXPIRE_DATE.toString()); 
         	log.info(msg);
