@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConversionException;
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 
@@ -42,7 +41,6 @@ public class OcspConfiguration {
     public static final String SIGNING_TRUSTSTORE_VALID_TIME = "ocsp.signtrustvalidtime";
     public static final String SIGNATUREREQUIRED = "ocsp.signaturerequired";
     public static final String CARD_PASSWORD = "ocsp.keys.cardPassword";
-    public static final String REKEYING_WSURL = "ocsp.rekeying.wsurl";
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
     public static final String NON_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
     public static final String NON_EXISTING_IS_GOOD_URI = NON_EXISTING_IS_GOOD+".uri.";
@@ -50,10 +48,7 @@ public class OcspConfiguration {
     public static final String NON_EXISTING_IS_REVOKED = "ocsp.nonexistingisrevoked";
     public static final String NON_EXISTING_IS_REVOKED_URI = NON_EXISTING_IS_REVOKED+".uri.";
     public static final String NON_EXISTING_IS_UNAUTHORIZED = "ocsp.nonexistingisunauthorized";
-    public static final String REKEYING_TRIGGERING_HOSTS =  "ocsp.rekeying.trigging.hosts";
-    public static final String REKEYING_TRIGGERING_PASSWORD = "ocsp.rekeying.trigging.password";
-    public static final String REKEYING_UPDATE_TIME_IN_SECONDS = "ocsp.rekeying.update.time.in.seconds";
-    public static final String REKEYING_SAFETY_MARGIN_IN_SECONDS = "ocsp.rekeying.safety.margin.in.seconds";
+
     @Deprecated //Only used for upgrades to 8.3.0 and beyond
     private static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
     @Deprecated // Slated for removal in the release after 8.3.0
@@ -64,6 +59,7 @@ public class OcspConfiguration {
     private static final String CACHE_HEADER_MAX_AGE = "ocsp.expires.useMaxAge";
     @Deprecated //Only used for upgrades to 8.3.0 and beyond
     private static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
+
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
     
@@ -111,22 +107,6 @@ public class OcspConfiguration {
      */
     public static void clearAcceptedSignatureAlgorithmCache() {
         acceptedSignatureAlgorithms = new HashSet<>();
-    }
-    
-    /**
-     * 
-     * @return How often the standalone OCSP certificate cache should be checked for expiring certificates. Default value i 1 hour
-     */
-    public static long getRekeyingUpdateTimeInSeconds() {
-        return Long.parseLong(ConfigurationHolder.getString(REKEYING_UPDATE_TIME_IN_SECONDS));
-    }
-    
-    /**
-     * 
-     * @return How long from true expiry time that a certificate should be renewed. Default value is 1 day
-     */
-    public static long getRekeyingSafetyMarginInSeconds() {
-        return Long.parseLong(ConfigurationHolder.getString(REKEYING_SAFETY_MARGIN_IN_SECONDS));
     }
     
     /**
@@ -594,34 +574,6 @@ public class OcspConfiguration {
     @Deprecated //Remove this method once upgrading VAs to EJBCA 6 has been dropped
     public static String getSunP11ConfigurationFile() {
         return ConfigurationHolder.getString("ocsp.p11.sunConfigurationFile");
-    }
-
-    /**
-     * Get set of host IPs that are allowed to trigger rekeying.
-     * @return the array
-     */
-    public static Set<String> getRekeyingTriggingHosts() {
-        final String sHosts = ConfigurationHolder.getString(REKEYING_TRIGGERING_HOSTS);
-        if (sHosts == null) {
-            return new HashSet<>();
-        } else {
-            return new HashSet<>(Arrays.asList(StringUtils.split(sHosts.trim(), ';')));
-        }
-    }
-    /**
-     * Get password needed for triggering rekey. Null means that it is not possible to trigger rekey.
-     * @return the password
-     */
-    public static String getRekeyingTriggingPassword() {
-        return ConfigurationHolder.getString(REKEYING_TRIGGERING_PASSWORD);
-    }
-   
-
-    /**
-     * @return EJBCA web service URL
-     */
-    public static String getEjbcawsracliUrl() {
-        return ConfigurationHolder.getString(REKEYING_WSURL);
     }
 
     /**
