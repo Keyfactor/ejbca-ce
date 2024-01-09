@@ -41,6 +41,16 @@ public class EndEntityManagementSessionBeanUnitTest {
     }
 
     @Test
+    public void isUsernameValidQuestionMark() {
+        assertFalse("Username with Question Mark is a invalid", EndEntityManagementSessionBean.isUsernameValid("Some?username"));
+    }
+
+    @Test
+    public void isUsernameValidTilde() {
+        assertFalse("Username with Tilde is a invalid", EndEntityManagementSessionBean.isUsernameValid("Some~username"));
+    }
+
+    @Test
     public void isUsernameValidAsterisk() {
         assertTrue("Username with Asterisk is valid", EndEntityManagementSessionBean.isUsernameValid("Some*username"));
     }
@@ -49,6 +59,7 @@ public class EndEntityManagementSessionBeanUnitTest {
     public void isUsernameValidSlash() {
         assertTrue("Username with Slash is valid", EndEntityManagementSessionBean.isUsernameValid("Some/username"));
     }
+
     @Test
     public void isUsernameValidUnderscore() {
         assertTrue("Username with Underscore is valid", EndEntityManagementSessionBean.isUsernameValid("Some_username"));
@@ -56,6 +67,6 @@ public class EndEntityManagementSessionBeanUnitTest {
 
     @Test
     public void isUsernameValidManyChars() {
-        assertTrue("Username with '?:/=(*@~)_-,. A1' is valid", EndEntityManagementSessionBean.isUsernameValid("?:/=(*@~)_-,. 'A1"));
+        assertTrue("Username with ':/=(*@)_-,. A1' is valid", EndEntityManagementSessionBean.isUsernameValid(":/=(*@)_-,. 'A1"));
     }
 }
