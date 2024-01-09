@@ -39,6 +39,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     List<CertificateData> findBySubjectDN(String subjectDN);
 
     /** @return return the query results as a List. */
+    List<Certificate> findActiveBySubjectDnAndType(final String subjectDN, final Collection<Integer> certificateTypes);
+
+    /** @return return the query results as a List. */
     List<CertificateData> findBySerialNumber(String serialNumber);
 
     /** @return return the query results as a List. */
