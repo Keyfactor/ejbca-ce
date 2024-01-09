@@ -170,6 +170,7 @@ import com.keyfactor.util.certificate.DnComponents;
 public class EndEntityManagementSessionBean implements EndEntityManagementSessionLocal, EndEntityManagementSessionRemote {
     private static final Logger log = Logger.getLogger(EndEntityManagementSessionBean.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    public static final String INVALID_SYMBOLS_INUSERNAME = "Only characters, numbers, whitespace, comma, period, ', _, @, *, -, :, /, =, (, ), and vertical bar are allowed in Username";
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -355,7 +356,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         endEntity.setSubjectAltName(cnAppendedSan);
 
         if (!isUsernameValid(endEntity.getUsername())) {
-            throw new IllegalNameException("Only characters, numbers, whitespace, comma, period, ', _, @, *, -, :, /, =, (, ), and vertical bar are allowed in Username");
+            throw new IllegalNameException(INVALID_SYMBOLS_INUSERNAME);
         }
         if( profile.getAllowMergeDn()) {
             endEntity = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntity, profile);
@@ -599,8 +600,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (StringUtils.isEmpty(username)){
            return true;
         }
-        String regex = "[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\'\\=\\(\\)\\|.]";
-        Pattern pattern = Pattern.compile(regex);
+        Pattern pattern = Pattern.compile(EndEntityInformation.VALID_USERNAME_REGEX);
         Matcher matcher = pattern.matcher(username);
 
         if (matcher.find()) {
@@ -961,7 +961,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final String trimmedNewUsername = StringTools.trim(newUsername);
 
         if (!isUsernameValid(trimmedNewUsername)) {
-            throw new IllegalNameException("Only characters, numbers, underscores, minus and whitespace are allowed in Username");
+            throw new IllegalNameException(INVALID_SYMBOLS_INUSERNAME);
         }
         // Check if user fulfills it's profile.
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
