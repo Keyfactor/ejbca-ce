@@ -91,6 +91,20 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         return query.getResultList();
     }
 
+    /**
+     * @return active certificates that match the specified types and subjectDN
+     */
+    @Override
+    public List<Certificate> findActiveBySubjectDnAndType(final String subjectDN, final Collection<Integer> certificateTypes) {
+        final TypedQuery<CertificateData> query = entityManager
+                .createQuery("SELECT a FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes) AND a.subjectDN=:subjectDN", CertificateData.class);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("ctypes", certificateTypes);
+        query.setParameter("subjectDN", subjectDN);
+        return getCertificateList(query.getResultList());
+    }
+
     /** @return return the query results as a List. */
     @Override
     public List<CertificateData> findBySerialNumber(final String serialNumber) {
