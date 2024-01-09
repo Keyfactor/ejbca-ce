@@ -139,10 +139,6 @@
         <ant antfile="build.xml" dir="modules/cits" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" inheritall="true" inheritrefs="true"/>
-    </target>
-
     <target name="test:runone" description="run a single Test specified -Dtest.runone=classname" depends="deleteDirectories">
     	<fail message="'test.runone' is not set. Example -Dtest.runone=TestDnComponents . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
     	<!-- Locate the right module where the test resides.. -->
