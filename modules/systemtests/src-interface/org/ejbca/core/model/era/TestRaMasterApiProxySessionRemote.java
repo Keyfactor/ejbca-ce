@@ -19,6 +19,7 @@ import javax.ejb.Remote;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -127,5 +128,8 @@ public interface TestRaMasterApiProxySessionRemote {
             String rootSubjectDnHash);
     
     RaAuthorizationResult getAuthorization(final AuthenticationToken authenticationToken) throws AuthenticationFailedException;
+
+    byte[] keyRecoverEnrollWS(AuthenticationToken authenticationToken, String username, String certSNinHex, String issuerDN, String password,
+            String hardTokenSN) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException, WaitingForApprovalException;
     
 }
