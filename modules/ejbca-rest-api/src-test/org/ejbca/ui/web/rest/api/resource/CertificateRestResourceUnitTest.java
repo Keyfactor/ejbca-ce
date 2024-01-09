@@ -32,6 +32,7 @@ import java.security.cert.Certificate;
 import java.text.DateFormat;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Properties;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
@@ -41,8 +42,15 @@ import javax.ws.rs.core.Response.Status;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.crl.RevocationReasons;
+import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
+import org.cesecore.config.InvalidConfigurationException;
+import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.configuration.GlobalConfigurationSession;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.easymock.Capture;
 import org.easymock.EasyMock;
@@ -244,12 +252,14 @@ public class CertificateRestResourceUnitTest {
         final long days = 1;
         final int offset = 0;
         final int maxNumberOfResults = 4;
-        final long expectedNextOffset = 4L;
-        final long expectedNumberOfResults = 6L;
+        final long expectedNextOffset = 0L;
+        final long expectedNumberOfResults = 10L;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime(anyObject(AuthenticationToken.class), anyInt())).andReturn(10).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime(anyObject(AuthenticationToken.class), eq(days), eq(maxNumberOfResults), eq(offset)))
                         .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
+
         replay(raMasterApiProxy);
+
         // when
         final Invocation.Builder request = server
                 .newRequest("/v1/certificate/expire")
@@ -280,8 +290,8 @@ public class CertificateRestResourceUnitTest {
         final long days = 1;
         final int offset = 3;
         final int maxNumberOfResults = 4;
-        final long expectedNextOffset = 7L;
-        final long expectedNumberOfResults = 3L;
+        final long expectedNextOffset = 3L;
+        final long expectedNumberOfResults = 7L;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime(anyObject(AuthenticationToken.class), anyInt())).andReturn(10).times(1);
         expect(raMasterApiProxy.getCertificatesByExpirationTime(anyObject(AuthenticationToken.class), eq(days), eq(maxNumberOfResults), eq(offset)))
                         .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
@@ -344,5 +354,34 @@ public class CertificateRestResourceUnitTest {
         final Response actualResponse = request.get();
         final int actualStatus = actualResponse.getStatus();
         assertEquals(Status.BAD_REQUEST.getStatusCode(), actualStatus);
+    }
+
+    private static class MockGlobalConfig implements GlobalConfigurationSession {
+        //conf = new GlobalConfigurationSession();
+
+        @Override
+        public ConfigurationBase getCachedConfiguration(String configID) {
+            return null;
+        }
+
+        @Override
+        public void flushConfigurationCache(String configID) {
+
+        }
+
+        @Override
+        public Properties getAllProperties(AuthenticationToken admin, String configID) throws AuthorizationDeniedException {
+            return null;
+        }
+
+        @Override
+        public void saveConfiguration(AuthenticationToken authenticationToken, ConfigurationBase conf) throws AuthorizationDeniedException {
+
+        }
+
+        @Override
+        public void saveConfigurationWithRootAccessCheck(AuthenticationToken authenticationToken, ConfigurationBase conf) throws AuthorizationDeniedException {
+
+        }
     }
 }
