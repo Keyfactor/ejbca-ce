@@ -18,13 +18,12 @@
 # Application server home directory used during development. The path can not end with a slash or backslash.
 # On windows use / instead of \
 # Default: $APPSRV_HOME
-#appserver.home=/opt/jboss-as-7.1.1.Final
-#appserver.home=/opt/glassfish3/glassfish
-#appserver.home=/Program Files/wildfly-10.1.0Final
+#appserver.home=/opt/jboss-as-7.4.0.Final
+#appserver.home=/Program Files/wildfly-24.0.1Final
 #appserver.home=${env.APPSRV_HOME}
 
 # Which application server is used? Normally this is auto-detected from 'appserver.home' and should not be configured. 
-# Possible values: jboss, glassfish
+# Possible values: jboss
 # Default: <auto-detect>
 #appserver.type=jboss
 
