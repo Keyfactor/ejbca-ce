@@ -534,16 +534,10 @@
 		<antcall target="va_replacings_in_application.xml" inheritall="true" inheritrefs="true">
 			<param name="application.xml" value="${eardd.src}/META-INF/application.xml"/>
 		</antcall>
-		<!-- Include Hibernate JPA libraries if they don't exist in the current application server. -->
-		<condition property="bundle-hibernate-exclude" value="" else="**">
-			<isset property="bundle-hibernate-jpa"/>
-		</condition>
 		<!-- Include Xerces library if it don't exist in the current application server (jboss6 won't start with it). -->
 		<condition property="bundle-xerces-exclude" value="xerces*.jar" else="">
 			<isset property="exclude-xerces"/>
 		</condition>
-		<!-- Special JBoss EAP 6 handling -->
-    	<condition property="jbosseap6-specials" value="true"><equals arg1="jbosseap6" arg2="${appserver.subtype}"/></condition>
 		<!-- Remove possible "leftovers" from previous plugin runs! -->
 	    <delete dir="${ejbca.plugin.gen.path}"/>
         <!-- Plugin build starts here... -->
@@ -564,8 +558,7 @@
                 <include name="bctls-jdk18on-*.jar"/>
 				<include name="bcutil-jdk18on-*.jar"/>
                 <include name="cert-cvc-*.jar" />
-            	<!-- JBoss EAP 6 comes with a new Log4j and there may be issues if we bundle it. -->
-                <include name="log4j-*.jar" unless="jbosseap6-specials"/>
+                <include name="log4j-*.jar"/>
                 <include name="jldap-*.jar" />
             	<include name="adsddl-*.jar"/>
                 <include name="commons-*.jar" />
@@ -654,8 +647,7 @@
         		<include name="cesecore-cvcca.jar" />
         		<include name="ejbca-extensions.jar" />
                 <include name="ejbca-properties.jar" />
-                <include name="log4jconfig.jar" unless="jbosseap6-specials"/>
-                <include name="jbosslog4jsafer.jar" if="jbosseap6-specials"/>
+                <include name="log4jconfig.jar" />
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         		<include name="${in-test-mode-include}systemtests-common.jar"/>
         	    <include name="ct.jar" />
@@ -691,7 +683,6 @@
         		     same as the ejbca-ws-cli.jar, except there is no classpath and mainclass in the META-INF/MANIFEST file. -->
         		<include name="${mod.ejbca-ws-client.libname}" />
         	</zipfileset>
-        	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-common.jar"/>
 		</ear>
     	<antcall target="signjar" inheritall="true" inheritrefs="true">
