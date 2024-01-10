@@ -1508,7 +1508,7 @@ function checkallfields(){
                                 id="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"
                                 onchange="toggleModifySubjectAltName(this, '<%= TEXTFIELD_SUBJECTALTNAME + i %>')"
                                 checked disabled>
-                            <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>">Use entity CN</label><br />
+                            <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"><c:out value="<%= ejbcawebbean.getText(\"USESCNFIELDDATA\") %>" /></label><br />
                         <% }
 				        final Map<String,Serializable> validation = profile.getValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
                         final String regex = (validation != null ? (String)validation.get(RegexFieldValidator.class.getName()) : null); %>
