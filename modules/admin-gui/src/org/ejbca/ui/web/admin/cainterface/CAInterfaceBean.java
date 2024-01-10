@@ -1209,8 +1209,8 @@ public class CAInterfaceBean implements Serializable {
     public List<String> getAvailableCryptoTokenEncryptionAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
         final List<String> aliases = new ArrayList<>();
         for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
-            if (cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_ECDSA)
-                    || cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_EC)) {
+            if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())
+                    || AlgorithmConstants.KEYALGORITHM_EC.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
                 //Only a limited subset of EC curves are available for ECCDH
                 if (AlgorithmConstants.ECCDH_PERMITTED_CURVES.contains(cryptoTokenKeyPairInfo.getKeySpecification())) {
                     aliases.add(cryptoTokenKeyPairInfo.getAlias());
