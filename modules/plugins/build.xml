@@ -82,7 +82,7 @@
         </copy>
         <!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
         <copy file="${systemtests.properties.file}" todir="${plugins.build-test.dir}" failonerror="false"/>
-        <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
+        <!-- jndi.properties needs to be in the classpath, if it exists -->
         <copy file="${jndi.properties.file}" tofile="${plugins.build-test.dir}/jndi.properties" failonerror="false"/>
         <copy file="${jboss-ejb-client.properties}" todir="${plugins.build-test.dir}" failonerror="true"/>
         <javac srcdir="${plugins.src.plugins.test.dir}" destdir="${plugins.build-test.dir}" debug="on" includeantruntime="no"
@@ -91,17 +91,44 @@
         </javac>
     </target>
 
-    <target name="test" depends="tests-compile">
+    <target name="test:unit" depends="tests-compile" description="Run unit tests for this module">
         <antcall target="showtime" inheritall="true" inheritrefs="true"/>
-        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${plugins.dir}">
+        <condition property="remoteDebugJvmArgs"
+                   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+                   else="-ea">
+            <istrue value="${remoteDebug}"/>
+        </condition>
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${plugins.dir}" fork="true" forkmode="once">
             <classpath>
                 <path refid="test.classpath"/>
             </classpath>
             <formatter type="xml" />
             <batchtest fork="yes" todir="${reports.dir}">
-                <fileset dir="${plugins.build-test.dir}" includes="**/*Test.class" />
+                <fileset dir="${plugins.build-test.dir}" includes="**/*UnitTest.class"/>
             </batchtest>
             <jvmarg line="${tests.jvmargs}"/>
+            <jvmarg value="${remoteDebugJvmArgs}"/>
+        </junit>
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system" depends="tests-compile" description="Run system tests for this module">
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+        <condition property="remoteDebugJvmArgs"
+                   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+                   else="-ea">
+            <istrue value="${remoteDebug}"/>
+        </condition>
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${plugins.dir}" fork="true">
+            <classpath>
+                <path refid="test.classpath"/>
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${plugins.build-test.dir}" includes="**/*SystemTest.class"/>
+            </batchtest>
+            <jvmarg line="${tests.jvmargs}"/>
+            <jvmarg value="${remoteDebugJvmArgs}"/>
         </junit>
         <antcall target="showtime" inheritall="true" inheritrefs="true"/>
     </target>

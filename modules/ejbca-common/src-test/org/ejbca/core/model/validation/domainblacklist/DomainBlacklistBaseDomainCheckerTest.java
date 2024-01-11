@@ -22,15 +22,17 @@ import org.junit.Test;
 
 /**
  * Tests DomainBlacklistBaseDomainChecker functions.
- * @version $Id$
  */
 public class DomainBlacklistBaseDomainCheckerTest {
 
     private static final Map<String,String> BLACKLIST = MapTools.unmodifiableMap(
             "something.com", "somethingORIG.com", // normalized -> original, un-normalized, domain
-            "bank", "bankORIG",
-            "paypal.com", "paypalORIG.com"
+            "bank",  "bankORIG",
+            "paypal.com", "paypalORIG.com"    
             );
+    
+    private static final  Map<String,String> WIlDCARD_BLACKLIST  = MapTools.unmodifiableMap(
+            "wildcard", "*.bank.com");
 
     @Test(expected = IllegalStateException.class)
     public void checkNotInitialized() throws Exception {
@@ -86,4 +88,19 @@ public class DomainBlacklistBaseDomainCheckerTest {
         assertNull("'login.paypal.com' domain should be accepted by Base Domain checker", result);
     }
 
+    @Test
+    public void checkWildCardInBlackList() {
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
+        checker.initialize(null, WIlDCARD_BLACKLIST);
+        final String result = checker.check("*.bank.com");
+        assertNull("Wildcard entry '*.bank.com' domain should not be accepted by Base Domain checker", result);
+    }
+    
+    @Test
+    public void checkWildCardInBlackListSubdomain() {
+        DomainBlacklistBaseDomainChecker checker = new DomainBlacklistBaseDomainChecker();
+        checker.initialize(null, WIlDCARD_BLACKLIST);
+        final String result = checker.check("*.sub.bank.com");
+        assertNull("Wildcard entry '*.sub.bank.com' domain should be accepted by Base Domain checke, due to exact checking", result);
+    }
 }

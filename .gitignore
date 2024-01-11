@@ -16,3 +16,4 @@ modules/ra-gui/resources/js/jquery.min.js
 *.iml
 .project
 /.idea
+/.metadata
