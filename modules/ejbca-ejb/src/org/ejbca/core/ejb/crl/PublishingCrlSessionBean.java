@@ -72,7 +72,6 @@ import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CompressedCollection;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 
@@ -521,7 +520,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     }
                     //Make sure new compressed collection is created if revokedCertificatesBeforeLastCANameChange need to be added!
                     Collection<RevokedCertInfo> revokedCertificatesAfterLastCANameChange = revokedCertificates;
-                    revokedCertificates = new CompressedCollection<>(RevokedCertInfo.class);
+                    revokedCertificates = new ArrayList<>();
                     if(!revokedCertificatesBeforeLastCANameChange.isEmpty()){
                         revokedCertificates.addAll(revokedCertificatesBeforeLastCANameChange);
                     }
@@ -596,11 +595,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             // Should really not happen
             log.error(e);
             throw new EJBException(e);
-        } finally {
-            // Special treatment of our CompressedCollection to ensure that we release all resources
-            if (revokedCertificates!=null) {
-                revokedCertificates.clear();
-            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<internalCreateCRL()");
@@ -642,7 +636,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
         }
         byte[] crlBytes = null;
         Collection<RevokedCertInfo> revcertinfos = null;
-        CompressedCollection<RevokedCertInfo> certs = null;
+        Collection<RevokedCertInfo> filteredCertInfos = null;
         try {
             final Certificate cacert = getCaCertificate(cainfo);
             final String caCertSubjectDN = cacert==null ? null : CertTools.getSubjectDN(cacert);
@@ -713,7 +707,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     }
                     //Make sure new compressed collection is created if revokedCertificatesBeforeLastCANameChange need to be added!
                     Collection<RevokedCertInfo> revokedCertificatesAfterLastCANameChange = revcertinfos;
-                    revcertinfos = new CompressedCollection<>(RevokedCertInfo.class);
+                    revcertinfos = new ArrayList<>();
                     if(!revokedCertificatesBeforeLastCANameChange.isEmpty()){
                         revcertinfos.addAll(revokedCertificatesBeforeLastCANameChange);
                     }
@@ -724,7 +718,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     log.debug("Found "+revcertinfos.size()+" revoked certificates.");
                 }
                 // Go through them and create a CRL, i.e. add to cert list to be included in CRL
-                certs = new CompressedCollection<>(RevokedCertInfo.class);
+                filteredCertInfos = new ArrayList<>();
                 for (final RevokedCertInfo ci : revcertinfos) {
                     final boolean certificateIsReleasedFromHold = ci.getReason() == RevocationReasons.REMOVEFROMCRL.getDatabaseValue();
                     final boolean certificateAppearsOnBaseCrl = lastBaseCrlInfo.getCrl().getRevokedCertificate(ci.getUserCertificate()) != null;
@@ -740,11 +734,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     if (log.isTraceEnabled()) {
                         log.trace("Adding " + ci + " to CRL.");
                     }
-                    certs.add(ci);
+                    filteredCertInfos.add(ci);
                 }
-                revcertinfos.clear();  // Release unused resources
                 // create a delta CRL
-                crlBytes = generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, lastBaseCrlInfo, true, new Date());
+                crlBytes = generateAndStoreCRL(admin, ca, crlPartitionIndex, filteredCertInfos, lastBaseCrlInfo, true, new Date());
                 if (log.isDebugEnabled()) {
                     X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);
                     log.debug("Created delta CRL with expire date: "+crl.getNextUpdate());
@@ -758,14 +751,6 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
             // Should really not happen
             log.error(e);
             throw new EJBException(e);
-        } finally {
-            // Special treatment of our CompressedCollections to ensure that we release all resources
-            if (revcertinfos!=null) {
-                revcertinfos.clear();
-            }
-            if (certs!=null) {
-                certs.clear();
-            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<internalCreateDeltaCRL: "+cainfo.getSubjectDN());
