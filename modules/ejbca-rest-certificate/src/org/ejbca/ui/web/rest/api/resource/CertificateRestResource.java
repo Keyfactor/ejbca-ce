@@ -355,11 +355,11 @@ public class CertificateRestResource extends BaseRestResource {
                                                  final int maxNumberOfResults)
             throws AuthorizationDeniedException, CertificateEncodingException, RestException {
         final AuthenticationToken admin = getAdmin(requestContext, true);
-        int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
+        final int count = raMasterApi.getCountOfCertificatesByExpirationTime(admin, days);
         final Collection<Certificate> expiringCertificates = EJBTools
                 .unwrapCertCollection(raMasterApi.getCertificatesByExpirationTime(admin, days, maxNumberOfResults, offset));
         final int numberOfResults = expiringCertificates.size();
-        int processedResults = offset + numberOfResults;
+        final int processedResults = offset + numberOfResults;
         PaginationRestResponseComponent paginationRestResponseComponent = PaginationRestResponseComponent.builder().setMoreResults(count > processedResults)
                 .setNextOffset(offset + numberOfResults)
                 .setNumberOfResults(count - processedResults)
