@@ -1818,10 +1818,19 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void reloadCaCertificateCache() {
         log.info("Reloading CA certificate cache.");
-        Collection<Certificate> certs = certificateDataSession.findActiveCaCertificatesByType(Arrays.asList(CertificateConstants.CERTTYPE_SUBCA,
+        Collection<Certificate> caCerts = certificateDataSession.findActiveCaCertificatesByType(Arrays.asList(CertificateConstants.CERTTYPE_SUBCA,
                         CertificateConstants.CERTTYPE_ROOTCA));
-        CaCertificateCache.INSTANCE.loadCertificates(certs);
-        log.info("Reloaded CA certificate cache with "+certs.size()+" certificates");
+        // Very old CAs might not have the SYSTEMCA username, therefore we need to double-check that they are included
+        final List<CAData> caDatas = caSession.findAll();
+        for (final CAData caData : caDatas) {
+            final List<Certificate> queryResults = certificateDataSession.findActiveBySubjectDnAndType(caData.getSubjectDN(),
+                    Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
+            if (queryResults != null && queryResults.size() > 0 && !caCerts.contains(queryResults.get(0))) {
+                caCerts.add(queryResults.get(0));
+            }
+        }
+        CaCertificateCache.INSTANCE.loadCertificates(caCerts);
+        log.info("Reloaded CA certificate cache with " + caCerts.size() + " certificates");
     }
 
     /**

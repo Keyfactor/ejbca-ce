@@ -27,8 +27,10 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.ConfigurationBase;
+import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
  * Configuration for the Microsoft Auto Enrollment
@@ -39,6 +41,8 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
     private static final Logger log = Logger.getLogger(MSAutoEnrollmentConfiguration.class);
     
+    protected static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
     // Aliases 
     private static final String ALIAS_LIST = "aliaslist";
     private static final Set<String> DEFAULT_ALIAS_LIST      = new LinkedHashSet<>();
@@ -51,7 +55,6 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String POLICY_NAME = "policyName";
     private static final String POLICY_UID = "policyUid";
     private static final String SPN = "servicePrincipalName";
-
     
     // MSAE Krb5Conf
     public static final Object MSAE_KRB5_CONF_BYTES = "msaeKrb5ConfBytes";
@@ -66,6 +69,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     private static final String AD_LOGIN_DN = "adLoginDN";
     private static final String AD_LOGIN_PASSWORD = "adLoginPassword";
     private static final String AUTH_KEY_BINDING = "authKeyBinding";
+    private static final String POLICY_UPDATE_INTERVAL = "policyUpdateInterval";
 
     // MS Enrollment Servlet Settings
     private static final String CA_NAME = "caName";
@@ -75,12 +79,13 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     // Template to Settings
     public static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
-
-    private static final int DEFAULT_AD_CONNECTION_PORT = 389;
-    
-    private static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds
-    
+    private static final int DEFAULT_POLICY_UPDATE_INTERVAL = 8; // In hours
+    private static final int DEFAULT_AD_CONNECTION_PORT = 389;    
+    private static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds    
     private static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
+    
+    private static final int MINIMUM_POLICY_UPDATE_INTERVAL = 1; // In hours
+    private static final int MAXIMUM_POLICY_UPDATE_INTERVAL = 2147483647; // In hours
 
     public MSAutoEnrollmentConfiguration() {
         super();
@@ -127,6 +132,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             data.put(alias + CA_NAME, "");
             data.put(alias + KEY_EXCHANGE_CERT_PROFILE_NAME, "");
             data.put(alias + MS_TEMPLATE_SETTINGS, new ArrayList<>());
+            data.put(alias + POLICY_UPDATE_INTERVAL, String.valueOf(DEFAULT_POLICY_UPDATE_INTERVAL));
         } else {
             log.debug("No alias found");
         }
@@ -153,6 +159,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         keys.add(alias + CA_NAME);
         keys.add(alias + KEY_EXCHANGE_CERT_PROFILE_NAME);
         keys.add(alias + MS_TEMPLATE_SETTINGS);
+        keys.add(alias + LDAP_CONNECT_TIMEOUT);
+        keys.add(alias + LDAP_READ_TIMEOUT);
+        keys.add(alias + POLICY_UPDATE_INTERVAL);
         return keys;
     }
     
@@ -198,6 +207,20 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public void setPolicyName(String alias, final String policyName) {
         String key = alias + "." + POLICY_NAME;
         setValue(key, policyName, alias);
+    }
+    
+    public int getPolicyUpdateInterval(String alias) {
+        String key = alias + "." + POLICY_UPDATE_INTERVAL;
+        String value = getValue(key, alias);
+        return value == null ? DEFAULT_POLICY_UPDATE_INTERVAL : Integer.valueOf(value);
+    }
+
+    public void setPolicyUpdateInterval(String alias, final int policyUpdateInterval) throws InvalidConfigurationException {
+        if (policyUpdateInterval > MAXIMUM_POLICY_UPDATE_INTERVAL || policyUpdateInterval < MINIMUM_POLICY_UPDATE_INTERVAL) {
+            throw new InvalidConfigurationException(intres.getLocalizedMessage("msae.invalidpolicyupdateinterval"));
+        }
+        String key = alias + "." + POLICY_UPDATE_INTERVAL;
+        setValue(key, String.valueOf(policyUpdateInterval), alias);
     }
     
     public String getSpn(String alias) {
@@ -292,7 +315,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public int getADConnectionPort(String alias) {
         String key = alias + "." + AD_CONNECTION_PORT;
         String value = getValue(key, alias);
-        return value == null ? DEFAULT_AD_CONNECTION_PORT : Integer.valueOf(value);
+        return value == null ? DEFAULT_AD_CONNECTION_PORT : Integer.parseInt(value);
     }
 
     public void setAdConnectionPort(String alias, final int port) {
@@ -303,7 +326,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public int getLdapReadTimeout(String alias) {
         String key = alias + "." + LDAP_READ_TIMEOUT;
         String value = getValue(key, alias);
-        return value == null ? DEFAULT_LDAP_READ_TIMEOUT : Integer.valueOf(value);
+        return value == null ? DEFAULT_LDAP_READ_TIMEOUT : Integer.parseInt(value);
     }
 
     public void setLdapReadTimeout(String alias, final int ldapReadTimeout) {
@@ -314,7 +337,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public int getLdapConnectTimeout(String alias) {
         String key = alias + "." + LDAP_CONNECT_TIMEOUT;
         String value = getValue(key, alias);
-        return value == null ? DEFAULT_LDAP_CONNECT_TIMEOUT : Integer.valueOf(value);
+        return value == null ? DEFAULT_LDAP_CONNECT_TIMEOUT : Integer.parseInt(value);
     }
 
     public void setLdapConnectTimeout(String alias, final int ldapConnectTimeout) {
@@ -467,7 +490,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
 
     public List<String> getSortedAliasList() {
         List<String> result = new ArrayList<>(getAliasList());
-        Collections.sort(result, new Comparator<String>() {
+        result.sort(new Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
                 return o1.compareToIgnoreCase(o2);
@@ -564,7 +587,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         while(itr.hasNext()) {
             String oldkey = itr.next();
             String newkey = oldkey;
-            newkey = StringUtils.replace(newkey, oldAlias, newAlias);
+            newkey = StringUtils.replace(newkey, oldAlias + ".", newAlias + ".");
             Object value = data.get(oldkey);
             data.put(newkey, value);
         }
@@ -595,11 +618,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             return;
         }
 
-        Iterator<String> itr = getAllAliasKeys(originAlias).iterator();
-        while(itr.hasNext()) {
-            String originalKey = itr.next();
+        for (String originalKey : getAllAliasKeys(originAlias)) {
             String cloneKey = originalKey;
-            cloneKey = StringUtils.replace(cloneKey, originAlias, cloneAlias);
+            cloneKey = StringUtils.replace(cloneKey, originAlias + ".", cloneAlias + ".");
             Object value = data.get(originalKey);
             data.put(cloneKey, value);
         }
@@ -613,9 +634,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public Properties getAsProperties() {
         final Properties properties = new Properties();
         Set<String> aliases = getAliasList();
-        Iterator<String> itr = aliases.iterator();
-        while(itr.hasNext()) {
-            String alias = itr.next();
+        for (String alias : aliases) {
             Properties aliasp = getAsProperties(alias);
             properties.putAll(aliasp);
         }
@@ -625,11 +644,9 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     public Properties getAsProperties(String alias) {
         if(aliasExists(alias)) {
             final Properties properties = new Properties();
-            final Iterator<String> i = getAllAliasKeys(alias).iterator();
-            while (i.hasNext()) {
-                final String key = i.next();
+            for (String key : getAllAliasKeys(alias)) {
                 final Object value = data.get(key);
-                properties.setProperty(key, value == null? "" : value.toString());
+                properties.setProperty(key, value == null ? "" : value.toString());
             }
             return properties;
         }

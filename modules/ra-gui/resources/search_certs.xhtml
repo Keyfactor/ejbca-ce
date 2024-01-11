@@ -321,7 +321,7 @@
 
                 <h:panelGroup id="filteredResults" layout="block" style="margin-top: 10px;">
                     <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsNone}"
-                                  value="#{msg.search_certs_page_info_noresult}"/>
+                                  value="#{raSearchCertsBean.noResultsMessage}"/>
                     <h:outputText styleClass="fineprint" rendered="#{raSearchCertsBean.resultsMoreAvailable}"
                                   value="#{msg.search_certs_page_info_moreresults}"/>
                     <h:outputText styleClass="monospace" rendered="#{raSearchCertsBean.resultsTimeout}"

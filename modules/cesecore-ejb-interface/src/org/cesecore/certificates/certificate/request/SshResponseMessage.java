@@ -24,8 +24,6 @@ import org.cesecore.certificates.certificate.CertificateData;
 
 /**
  * SSH Response message.
- *
- * @version $Id$
  */
 public class SshResponseMessage implements CertificateResponseMessage{
 
@@ -89,7 +87,7 @@ public class SshResponseMessage implements CertificateResponseMessage{
     }
 
     @Override
-    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider) {
+    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String alg, String provider) {
     }
 
     @Override

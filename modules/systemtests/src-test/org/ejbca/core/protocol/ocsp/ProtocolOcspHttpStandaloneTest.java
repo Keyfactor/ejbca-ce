@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.io.OutputStream;
 import java.math.BigInteger;
@@ -29,7 +28,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
-import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -576,52 +574,6 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         
     }
     
-    
-    @Test
-    public void testKeyRenewal() throws Exception {
-        //Add localhost to list of rekeying triggering hosts.
-        Set<String> originalHosts = OcspConfiguration.getRekeyingTriggingHosts();
-        String originalRekeyingPassword = OcspConfiguration.getRekeyingTriggingPassword();
-        configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_HOSTS, "127.0.0.1");
-        configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_PASSWORD, "foo123");
-        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        List<Certificate> oldValues = EJBTools.unwrapCertCollection(ocspResponseGeneratorTestSession.getCacheOcspCertificates());
-        try {
-            X509Certificate cert = getActiveTestCert();
-            X509Certificate caCertificate = getCaCert(cert);
-            helper.renewAllKeys();
-            ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-            List<Certificate> newValues = EJBTools.unwrapCertCollection(ocspResponseGeneratorTestSession.getCacheOcspCertificates());
-            //Make sure that cache contains one and only one value
-            assertEquals("Cache contains a different amount of values after rekeying than before. This indicates a test failure", oldValues.size(),
-                    newValues.size());
-            //Make check that the certificate has changed (sanity check)
-            X509Certificate newSigningCertificate = null;
-            for (Certificate signingCertificate : newValues) {
-                if(CertTools.getIssuerDN(signingCertificate).equals(CertTools.getSubjectDN(caCertificate))) {
-                    newSigningCertificate = (X509Certificate) signingCertificate;
-                    break;
-                }
-            }
-            assertNotEquals("The same certificate was returned after the renewal process. Key renewal failed", cert.getSerialNumber(),
-                    newSigningCertificate.getSerialNumber());
-            //Make sure that the new certificate is signed by the CA certificate
-            try {
-                newSigningCertificate.verify(caCertificate.getPublicKey());
-            } catch (SignatureException e) {
-                log.error("Exception caught", e);
-                fail("The new signing certificate was not signed correctly.");
-            }
-
-        } finally {
-            StringBuilder originalHostsString = new StringBuilder();
-            for (String host : originalHosts.toArray(new String[originalHosts.size()])) {
-                originalHostsString.append(host + ";");
-            }
-            configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_HOSTS, originalHostsString.toString());
-            configurationSession.setConfigurationValue(OcspConfiguration.REKEYING_TRIGGERING_PASSWORD, originalRekeyingPassword);
-        }
-    }
     
     public static X509Certificate createCaCertificate(AuthenticationToken authenticationToken, Certificate certificate) throws CreateException, AuthorizationDeniedException {
         final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE

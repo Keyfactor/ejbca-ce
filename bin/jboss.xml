@@ -24,7 +24,6 @@
     <condition property="jboss7">
 		<or>
         	<equals arg1="${appserver.subtype}" arg2="jboss7" />
-        	<equals arg1="${appserver.subtype}" arg2="jbosseap6" />
         </or>
     </condition>
 
