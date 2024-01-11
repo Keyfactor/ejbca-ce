@@ -24,6 +24,7 @@ import org.cesecore.keys.util.PublicKeyWrapper;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
@@ -200,7 +201,7 @@ public interface CryptoTokenManagementSession {
      * 
      * @see #createKeyPair(AuthenticationToken, int, String, String)
      */
-    void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification)
+    void createKeyPairFromTemplate(AuthenticationToken authenticationToken, int cryptoTokenId, String alias, String keySpecification, KeyPairTemplate template)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InvalidKeyException, InvalidAlgorithmParameterException;
 
     /** @throws InvalidKeyException if the CryptoToken is available, but the key test failed */

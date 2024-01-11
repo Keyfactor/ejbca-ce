@@ -17,6 +17,9 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.SecConst;
+
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 public class TestEndEntityParamHolder {
 
@@ -28,6 +31,10 @@ public class TestEndEntityParamHolder {
 	private final EndEntityProfileSessionRemote endEntityProfileSessionRemote;
 	private final CertificateProfileSessionRemote certificateProfileSession;
 	private final EndEntityManagementSessionRemote endEntityManagementSession;
+	private final int tokenType;
+	private final String keyAlgo;
+	private final String keySpec;
+	private final boolean keyRecoverable;
 
 	private TestEndEntityParamHolder(Builder builder) {
 		this.testUsername = builder.testUsername;
@@ -38,6 +45,10 @@ public class TestEndEntityParamHolder {
 		this.endEntityProfileSessionRemote = builder.endEntityProfileSessionRemote;
 		this.certificateProfileSession = builder.certificateProfileSession;
 		this.endEntityManagementSession = builder.endEntityManagementSession;
+		this.tokenType = builder.tokenType;
+		this.keyAlgo = builder.keyAlgo;
+		this.keySpec = builder.keySpec;
+		this.keyRecoverable = builder.keyRecoverable;
 	}
 
 	public static Builder newBuilder() {
@@ -76,7 +87,23 @@ public class TestEndEntityParamHolder {
 		return endEntityManagementSession;
 	}
 
-	public static class Builder {
+	public int getTokenType() {
+        return tokenType;
+    }
+
+    public String getKeyAlgo() {
+        return keyAlgo;
+    }
+
+    public String getKeySpec() {
+        return keySpec;
+    }
+
+    public boolean isKeyRecoverable() {
+        return keyRecoverable;
+    }
+
+    public static class Builder {
 
 		private String testUsername;
 		private String testCertProfileName;
@@ -86,6 +113,10 @@ public class TestEndEntityParamHolder {
 		private EndEntityProfileSessionRemote endEntityProfileSessionRemote;
 		private CertificateProfileSessionRemote certificateProfileSession;
 		private EndEntityManagementSessionRemote endEntityManagementSession;
+		private int tokenType=-1;
+		private String keyAlgo;
+	    private String keySpec;
+	    private boolean keyRecoverable;
 
 		public Builder withTestUsername(String testUsername) {
 			this.testUsername = testUsername;
@@ -126,8 +157,37 @@ public class TestEndEntityParamHolder {
 			this.endEntityManagementSession = endEntityManagementSession;
 			return this;
 		}
+		
+		public Builder withTokenType(int tokenType) {
+		    this.tokenType = tokenType;
+            return this;
+		}
+		
+		public Builder withKeyAlgo(String keyAlgo) {
+            this.keyAlgo = keyAlgo;
+            return this;
+        }
+		
+		public Builder withKeySpec(String keySpec) {
+            this.keySpec = keySpec;
+            return this;
+        }
+		
+		public Builder withKeyRecoverable(boolean keyRecoverable) {
+            this.keyRecoverable = keyRecoverable;
+            return this;
+        }
 
 		public TestEndEntityParamHolder build() {
+		    if (this.tokenType==-1) {
+		        this.tokenType = SecConst.TOKEN_SOFT_P12;
+		    }
+		    if (this.keyAlgo==null) {
+                this.keyAlgo = AlgorithmConstants.KEYALGORITHM_RSA;
+            }
+		    if (this.keySpec==null) {
+                this.keySpec = "2048";
+            }
 			return new TestEndEntityParamHolder(this);
 		}
 
