@@ -698,6 +698,7 @@
                     <h:outputLabel for="checkallowbackdatedrevokation"
                         value="#{web.text.ALLOW} " />
                 </h:panelGroup>
+
                 <h:panelGroup rendered="#{!certProfileBean.typeCA}">
                     <h:outputLabel for="checkUseCertificateStorageGroup"
                         value="#{web.text.USECERTIFICATESTORAGE}" />
@@ -846,7 +847,6 @@
                     <h:outputText styleClass="help"
                         value=" #{web.text.EXT_PKIX_TRUNCATEDSUBJECTKEYID_HELP}" />
                 </h:panelGroup>
-
             </h:panelGrid>
 
             <h:panelGrid columns="2" styleClass="edit-top subsection"
@@ -1612,20 +1612,21 @@
             </h:panelGrid>
 
 
-            <h:panelGrid id="qcStatementsGrid" columns="2"
+            <h:panelGrid id="etsiExtensionGrid" columns="2"
                 styleClass="edit-top" cellspacing="3" cellpadding="3"
                 border="0" width="100%" rowClasses="Row0,Row1"
                 columnClasses="editColumn1,editColumn2" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
 
-                <!-- Qualified Certificates Statements (qcStatements) extension -->
-                <h:outputLabel for="header_qcStatements"
-                    value="#{web.text.EXT_HEADER_QCSTATEMENTS}"
+                <!-- ETSI extensions -->
+                <h:outputLabel for="header_etsi_extensions"
+                    value="#{web.text.EXT_HEADER_ETSI}"
                     style="font-weight: bold;" />
-                <h:panelGroup id="header_qcStatements" />
+                <h:panelGroup id="header_etsi_extensions" />
 
                 <h:panelGroup>
                     <h:outputLabel for="checkuseqcstatementgroup"
-                        value="#{web.text.EXT_PKIX_QCSTATEMENTS}" />
+                        value="#{web.text.EXT_PKIX_QCSTATEMENTS}"
+                        style="font-weight: bold;"/>
                     <h:outputText
                         value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Qualified_Certificate_Statement')}"
                         escape="false" />
@@ -1636,7 +1637,7 @@
                         value="#{certProfileBean.certificateProfile.useQCStatement}"
                         rendered="#{!web.legacyInternetExplorer}"
                         disabled="#{certProfileBean.viewOnly}">
-                        <f:ajax  execute="@form" render=":content:qcStatementsGrid" />
+                        <f:ajax  execute="@form" render=":content:etsiExtensionGrid" />
                     </h:selectBooleanCheckbox>
                     <h:outputLabel for="checkuseqcstatement"
                         value="#{web.text.USE}…"
@@ -1929,14 +1930,14 @@
                             value="#{web.text.DELETE}"
                             action="#{certProfileBean.deleteQCEtsiPds}"
                             disabled="#{certProfileBean.viewOnly or not certProfileBean.ableToDeletePDSUrl}" >
-                             <f:ajax execute="@form" render="content:qcStatementsGrid"/> 
+                             <f:ajax execute="@form" render="content:etsiExtensionGrid"/>
                         </h:commandButton>
                         <f:facet name="footer">
                             <h:commandButton id="buttonaddqcetsipds"
                                 value="#{web.text.ADDANOTHER}"
                                 action="#{certProfileBean.addQCEtsiPds}"
                                 disabled="#{certProfileBean.viewOnly}">
-                                <f:ajax execute="@form" render="content:qcStatementsGrid"/>  
+                                <f:ajax execute="@form" render="content:etsiExtensionGrid"/>
                             </h:commandButton>
                         </f:facet>
                     </h:column>
@@ -1992,6 +1993,32 @@
                     title="#{web.text.FORMAT_STRING}"
                     disabled="#{!certProfileBean.certificateProfile.useQCCustomString or certProfileBean.viewOnly}" />
 
+                <!-- Validity Assured - Short Term -->
+                <h:panelGroup>
+                    <h:outputLabel
+                            for="checkValidityAssuredShortTermGroup"
+                            value="#{web.text.EXT_ETSI_VALIDITY_ASSURED_SHORT_TERM}"
+                            style="font-weight: bold;"/>
+                    <h:outputText
+                            value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Validity_Assured_-_Short_Term')}"
+                            escape="false"/>
+                </h:panelGroup>
+                <h:panelGroup id="checkValidityAssuredShortTermGroup">
+                    <h:selectBooleanCheckbox
+                            id="checkValidityAssuredShortTermUse"
+                            value="#{certProfileBean.certificateProfile.useValidityAssuredShortTerm}"
+                            disabled="#{certProfileBean.viewOnly}">
+                        <f:ajax execute="@form" render=":content:checkValidityAssuredShortTermGroup"/>
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel for="checkValidityAssuredShortTermUse"
+                                   value="#{web.text.USE} "/>
+                    <h:selectBooleanCheckbox
+                            id="checkValidityAssuredShortTermCritical"
+                            value="#{certProfileBean.certificateProfile.validityAssuredShortTermCritical}"
+                            disabled="#{!certProfileBean.certificateProfile.useValidityAssuredShortTerm or certProfileBean.viewOnly}"/>
+                    <h:outputLabel for="checkValidityAssuredShortTermCritical"
+                                   value="#{web.text.EXT_CRITICAL}"/>
+                </h:panelGroup>
             </h:panelGrid>
 
             <h:panelGrid id="ctgrid" columns="2" styleClass="edit-top"
