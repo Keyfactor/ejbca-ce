@@ -88,8 +88,7 @@ import java.util.Date;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Run stress tests with ClientToolBax command Ocsp stress
- * @version $id$
+ * Run stress tests with ClientToolBox command Ocsp stress
  */
 public class OCSPStressCommandTest {
     Ocsp command = new Ocsp();
@@ -124,7 +123,7 @@ public class OCSPStressCommandTest {
         httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
 
         x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(DEFAULT_CA_DN, "foo123".toCharArray(), true,
-                false, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+                false, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         caSession.addCA(authToken, x509ca);
         caAdminSession.publishCACertificate(authToken, x509ca.getCertificateChain(), null, x509ca.getSubjectDN());
         OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(

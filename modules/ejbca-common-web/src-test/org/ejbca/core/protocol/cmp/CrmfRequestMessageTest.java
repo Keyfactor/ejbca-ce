@@ -13,10 +13,31 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.KeyTools;
+
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1Encoding;
@@ -49,8 +70,8 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.model.UsernameGenerateMode;
@@ -58,26 +79,6 @@ import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyPair;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -89,8 +90,6 @@ import static org.junit.Assert.fail;
 /**
  * Test to verify that CrmfRequestMessage can be properly Serialized.
  * Previously the fields in the inherited class BaseCmpMessage could not be properly Serialized.
- *
- * @version $Id$
  */
 public class CrmfRequestMessageTest {
 
@@ -233,15 +232,15 @@ public class CrmfRequestMessageTest {
 
     @Test
     public void testNovosecClientRequestSHA1() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
-        doNovosecClientRequest("SHA1WithRSA", CMSSignedGenerator.DIGEST_SHA1, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
+        doNovosecClientRequest("SHA1WithRSA", PKCSObjectIdentifiers.sha1WithRSAEncryption.getId());
     }
 
     @Test
     public void testNovosecClientRequestSHA256() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
-        doNovosecClientRequest("SHA256WithRSA", CMSSignedGenerator.DIGEST_SHA256, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
+        doNovosecClientRequest("SHA256WithRSA", PKCSObjectIdentifiers.sha256WithRSAEncryption.getId());
     }
 
-    private void doNovosecClientRequest(final String sigAlg, final String digestAlg, final String expectedAlgOid) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
+    private void doNovosecClientRequest(final String sigAlg, final String expectedAlgOid) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
         // Check that we can parse a request from  Novosec (patched by EJBCA).
         // Read an initialization request with a signature POP and signature protection to see that we can process it
         {
@@ -285,7 +284,7 @@ public class CrmfRequestMessageTest {
                 // Re-sign the message
                 Collection<Certificate> signCertChain = new ArrayList<Certificate>();
                 signCertChain.add(signCert);
-                byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), digestAlg, "BC");
+                byte[] newmsg = CmpMessageHelper.signPKIMessage(myPKIMessage, signCertChain, keys.getPrivate(), sigAlg, null, BouncyCastleProvider.PROVIDER_NAME);
                 in.close();
                 in = new ASN1InputStream(newmsg);
                 derObject = in.readObject();
@@ -293,7 +292,7 @@ public class CrmfRequestMessageTest {
                 // We have to do this twice, because Novosec caches ProtectedBytes in the PKIMessage object, so we need to
                 // encode it and re-decode it again to get the changes from ECA-2104 encoded correctly.
                 // Not needed when simply signing a new message that you create, only when re-signing
-                newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCertChain, keys.getPrivate(), digestAlg, "BC");
+                newmsg = CmpMessageHelper.signPKIMessage(pkimsg, signCertChain, keys.getPrivate(), sigAlg, null, BouncyCastleProvider.PROVIDER_NAME);
                 in.close();
                 in = new ASN1InputStream(newmsg);
                 derObject = in.readObject();
