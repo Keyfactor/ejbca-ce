@@ -29,11 +29,11 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
@@ -84,7 +84,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  *
  */
 @Named("ocspResponderMBean")
-@SessionScoped
+@ViewScoped
 public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     private static final long serialVersionUID = 1L;
