@@ -3225,8 +3225,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate", null);
             throw new AuthorizationDeniedException(msg);
         }
-        Date findDate = getDate(days);
-        return EJBTools.wrapCertCollection(certificateStoreSession.findExpiringCertificates(findDate, maxNumberOfResults, offset));
+        final Date findDate = getDate(days);
+        final int globalLimit = getGlobalCesecoreConfiguration().getMaximumQueryCount();
+        final int validMaxForDatabase = maxNumberOfResults > 0 && globalLimit >= maxNumberOfResults ? maxNumberOfResults : globalLimit;
+        return EJBTools.wrapCertCollection(certificateStoreSession.findExpiringCertificates(findDate, validMaxForDatabase, offset));
     }
 
     @Override

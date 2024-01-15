@@ -65,7 +65,6 @@ public class CertificateProfileTest {
     	assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
     	// ECA-5141: old setValidity methods are removed, getValidity only reads the old validity value from 
     	// DB to display it on GUI. After post-upgrade the method is supposed not to be called anymore!
-//    	assertEquals(730, prof.getValidity());
     	assertEquals("2y", prof.getEncodedValidity());
     	assertNull(prof.getSignatureAlgorithm());
         assertEquals(false, prof.getAllowValidityOverride());
@@ -149,7 +148,8 @@ public class CertificateProfileTest {
         assertEquals(false, prof.getUseQCCustomString());
         assertEquals("", prof.getQCCustomStringOid());
         assertEquals("", prof.getQCCustomStringText());
-        
+        assertEquals(false, prof.getUseValidityAssuredShortTerm());
+        assertEquals(false, prof.getValidityAssuredShortTermCritical());
         assertEquals(false, prof.getUseSubjectDirAttributes());
         assertEquals(false, prof.getUseAuthorityInformationAccess());
         final Collection<String> cai = prof.getCaIssuers();
@@ -378,7 +378,7 @@ public class CertificateProfileTest {
     }
     
     @Test
-    public void test04createSubjectDNSubSet() throws Exception{
+    public void test04createSubjectDNSubSet() {
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
     	
         ArrayList<Integer> dnsubset = new ArrayList<>();
@@ -420,7 +420,7 @@ public class CertificateProfileTest {
     }
 
     @Test
-    public void test06CertificateExtensions() throws Exception{
+    public void test06CertificateExtensions() {
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
     	
     	// Check standard values for the certificate profile
@@ -456,10 +456,11 @@ public class CertificateProfileTest {
     	profile.setUseMicrosoftTemplate(true);
     	profile.setUseOcspNoCheck(true);
     	profile.setUseQCStatement(true);
+    	profile.setUseValidityAssuredShortTerm(true);
     	profile.setUseExtendedKeyUsage(true);
     	profile.setUseSubjectDirAttributes(true);
     	l = profile.getUsedStandardCertificateExtensions();
-    	assertEquals(16, l.size());
+    	assertEquals(17, l.size());
     	assertTrue(l.contains(Extension.keyUsage.getId()));
     	assertTrue(l.contains(Extension.basicConstraints.getId()));
     	assertTrue(l.contains(Extension.subjectKeyIdentifier.getId()));
@@ -473,10 +474,11 @@ public class CertificateProfileTest {
     	assertTrue(l.contains(Extension.freshestCRL.getId()));
     	assertTrue(l.contains(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId()));
     	assertTrue(l.contains(Extension.qCStatements.getId()));
+    	assertTrue(l.contains(CertTools.OID_VALIDITY_ASSURED_SHORT_TERM));
     	assertTrue(l.contains(Extension.subjectDirectoryAttributes.getId()));
     	assertTrue(l.contains(CertTools.OID_MSTEMPLATE));
     	assertTrue(l.contains(CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT));
-    } // test09CertificateExtensions
+    }
 
     @Test
     public void test08Clone() throws Exception {
@@ -594,7 +596,7 @@ public class CertificateProfileTest {
     }
 
     @Test
-    public void test10CertificateProfileValues() throws Exception {
+    public void test10CertificateProfileValues() {
         CertificateProfile ep = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         List<CertificatePolicy> l = ep.getCertificatePolicies();
         assertEquals(0, l.size());
@@ -634,7 +636,7 @@ public class CertificateProfileTest {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
-    public void test11CertificatePolicyClassUpgrade() throws Exception {
+    public void test11CertificatePolicyClassUpgrade() {
         CertificateProfile ep = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         List<CertificatePolicy> l = ep.getCertificatePolicies();
         assertEquals(0, l.size());

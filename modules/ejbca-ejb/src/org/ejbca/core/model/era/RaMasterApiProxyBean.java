@@ -2872,7 +2872,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
                     resultCount += raMasterApi.getCountOfCertificatesByExpirationTime(authenticationToken, days);
-                    if (resultCount > offset && result.size() < maxNumberOfResults) {
+                    if (resultCount > offset) {
                         int nodeOffset;
                         if (result.size() > 0) {
                             nodeOffset = 0;
@@ -2881,9 +2881,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                         }
                         final Collection<CertificateWrapper> certificates = raMasterApi.getCertificatesByExpirationTime(authenticationToken, days, (maxNumberOfResults - result.size()), nodeOffset);
                         for (CertificateWrapper certificate : certificates) {
-                            if (result.size() < maxNumberOfResults) {
-                                result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
-                            }
+                            result.put(CertTools.getFingerprintAsString(certificate.getCertificate()), certificate);
                         }
                     }
                     oneSucceeded = true;
