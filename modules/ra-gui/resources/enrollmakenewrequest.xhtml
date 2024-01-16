@@ -999,9 +999,9 @@
 									value="#{msg.enroll_username} *" />
 								<h:inputText id="usernameField"
 									styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).required ? 'required-input' : ''}"
-									value="#{enrollMakeNewRequestBean.endEntityInformation.username}">
+									value="#{enrollMakeNewRequestBean.endEntityInformation.inputUsernameValue}">
 									<f:ajax event="change" execute="@this"
-										listener="#{enrollMakeNewRequestBean.checkUserCredentials}"
+										listener="#{enrollMakeNewRequestBean.validateUsername}"
 										render=":requestInfoForm:userCredentialsMessage" />
 									<f:validator validatorId="extendedRequiredValidator"/>
 									<f:attribute name="_required" value="true"/>

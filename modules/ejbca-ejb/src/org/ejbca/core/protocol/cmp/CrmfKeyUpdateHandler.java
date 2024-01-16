@@ -68,8 +68,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Message handler for update messages using the CRMF format for the request itself.
- * 
- * @version $Id$
  */
 public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
     
@@ -137,7 +135,8 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if (LOG.isDebugEnabled()) {
                         LOG.debug("CRMF request message (update) header has protection alg: " + crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId());
                     }
-                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId()));
+                    // We don't need a default digest algorithm, if setPreferredDigestAlg is null, the sender cert's algorithm will be used
+                    crmfreq.setPreferredDigestAlg(AlgorithmTools.getDigestFromSigAlg(crmfreq.getHeader().getProtectionAlg().getAlgorithm().getId(), null));
                 } else if (LOG.isDebugEnabled()) {
                     LOG.debug("CRMF request message (update) header has no protection alg, using default alg in response.");
                 }
