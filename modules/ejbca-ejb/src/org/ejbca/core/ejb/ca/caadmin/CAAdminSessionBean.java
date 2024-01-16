@@ -837,8 +837,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // Create CA certificate
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
-                final Certificate cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
-                        null, cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
+                final Certificate cacertificate;
+                if (ca instanceof HybridCa) {
+                    HybridCa hybridCa = (HybridCa) signca;
+                    final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                    cacertificate = hybridCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
+                            cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
+                            cceConfig);
+                } else {
+                    cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
+                            null, cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
+                }
+                
                 // Build Certificate Chain
                 List<Certificate> rootcachain = signca.getCertificateChain();
                 certificatechain = new ArrayList<>();
