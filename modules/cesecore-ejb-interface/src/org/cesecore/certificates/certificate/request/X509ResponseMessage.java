@@ -29,8 +29,6 @@ import com.keyfactor.util.CertTools;
 /**
  * A response message consisting of a single X509 or CVC Certificate. Name is nowadays slightly misleading since the class can
  * care any type of "Certificate", for example a CV certificate.
- *
- * @version $Id$
  */
 public class X509ResponseMessage implements CertificateResponseMessage {
     /**
@@ -224,7 +222,7 @@ public class X509ResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider) {
+    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String alg, String provider) {
     }
 
     @Override

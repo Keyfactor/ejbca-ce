@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -615,6 +616,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setMsaeForestRoot(getDto().getAlias(), getDto().getMsaeForestRoot());
             autoEnrollmentConfiguration.setMsaeDomain(getDto().getAlias(), getDto().getMsaeDomain());
             autoEnrollmentConfiguration.setPolicyName(getDto().getAlias(), getDto().getPolicyName());
+            autoEnrollmentConfiguration.setPolicyUpdateInterval(getDto().getAlias(), getDto().getPolicyUpdateInterval());
             autoEnrollmentConfiguration.setPolicyUid(getDto().getAlias());
             autoEnrollmentConfiguration.setSpn(getDto().getAlias(), getDto().getServicePrincipalName());
 
@@ -647,6 +649,12 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             log.error("Cannot save the configuration for the MS Auto Enrollment because the current "
                     + "administrator is not authorized. Error description: " + e.getMessage());
             addErrorMessage("MSAE_AUTOENROLLMENT_SAVE_ERROR");
+            return null;
+        } catch (InvalidConfigurationException e) {
+            String message = "Cannot save the configuration for the MS Auto Enrollment due to failing validation. "
+                    + "Error description: " + e.getLocalizedMessage();
+            log.error(message);
+            super.addNonTranslatedErrorMessage(message);
             return null;
         }
     }

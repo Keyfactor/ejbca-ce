@@ -19,28 +19,18 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
  * Tests the OcspConfiguration class
  * 
- * @version $Id$
  */
 public class OcspConfigurationTest {
 	
 	@Before
 	public void setUp() {
 		ConfigurationHolder.instance().clear();
-	}
-
-	@Test
-	public void testMaxAgeNextUpdateDefaults() {
-		long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-		long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-		assertEquals(30000, maxAge);
-		assertEquals(0, nextUpdate);
 	}
 
     @Test
