@@ -35,8 +35,6 @@ import java.util.Collection;
  * resp.create();
  * byte[] responseMessage = resp.getResponseMessage();
  * </code>
- *
- * @version $Id$
  */
 public interface ResponseMessage extends Serializable {
 
@@ -132,7 +130,7 @@ public interface ResponseMessage extends Serializable {
             throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, CertificateEncodingException, CRLException;
 
     /**
-     * indicates if this message needs recipients public and private key to sign. If this returns
+     * indicates if this message needs senders public (cert) and private key to sign the message. If this returns
      * true, setSignKeyInfo() should be called.
      *
      * @return True if public and private key is needed.
@@ -145,11 +143,12 @@ public interface ResponseMessage extends Serializable {
      *
      * @param certs certificates containing the public key.
      * @param key private key.
+     * @param alg the default signature algorithm used with this private key, can be null in which case a default algorithm will be calculated
      * @param provider the provider to use, if the private key is on a HSM you must use a special provider. If null is given, the default BC provider is used.
      *
      * @see #requireSignKeyInfo()
      */
-    void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String provider);
+    void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String alg, String provider);
 
     /**
      * Sets a senderNonce if it should be present in the response

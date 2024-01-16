@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource.util;
 
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -22,12 +22,14 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 import java.util.Arrays;
 
 public class CertificateRestResourceSystemTestUtil {
+    
+    public static final String DEFAULT_PASSWORD = "foo123";
 
 	/**
 	 * Creates a test End Entity.
@@ -38,30 +40,46 @@ public class CertificateRestResourceSystemTestUtil {
 	public EndEntityInformation createTestEndEntity(TestEndEntityParamHolder paramHolder) throws Exception {
 		X509CA x509TestCa = paramHolder.getX509TestCa();
 		final int certificateProfileId = createCertificateProfile(paramHolder);
-		final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-		endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
-		endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
-		endEntityProfile.setAvailableCAs(Arrays.asList(x509TestCa.getCAId()));
-		endEntityProfile.setDefaultCA(x509TestCa.getCAId());
-		final int endEntityProfileId = paramHolder.getEndEntityProfileSessionRemote().addEndEntityProfile(
-				paramHolder.getInternalAdminToken(), paramHolder.getTestEeProfileName(), endEntityProfile);
+		
+		int endEntityProfileId = EndEntityConstants.EMPTY_END_ENTITY_PROFILE;
+		if (StringUtils.isNotEmpty(paramHolder.getTestEeProfileName()) && 
+		        !paramHolder.getTestEeProfileName().equalsIgnoreCase("EMPTY")) {
+		    
+		    try {
+		        endEntityProfileId = paramHolder.getEndEntityProfileSessionRemote()
+		                .getEndEntityProfileId(paramHolder.getTestEeProfileName());
+		    } catch (EndEntityProfileNotFoundException e) {
+		        // ignore
+		    }
+		
+    		if (endEntityProfileId==EndEntityConstants.EMPTY_END_ENTITY_PROFILE) {
+        		EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        		endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        		endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
+        		endEntityProfile.setAvailableCAs(Arrays.asList(x509TestCa.getCAId()));
+        		endEntityProfile.setDefaultCA(x509TestCa.getCAId());
+        		endEntityProfileId = paramHolder.getEndEntityProfileSessionRemote().addEndEntityProfile(
+        				paramHolder.getInternalAdminToken(), paramHolder.getTestEeProfileName(), endEntityProfile);
+    		}
+		}
+		
 		String testUsername = paramHolder.getTestUsername();
-
 		final EndEntityInformation userdata = new EndEntityInformation(testUsername,
 				"CN=" + testUsername,
 				x509TestCa.getCAId(),
 				null,
 				null,
 				new EndEntityType(EndEntityTypes.ENDUSER),
-				EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+				endEntityProfileId,
 				certificateProfileId,
-				SecConst.TOKEN_SOFT_P12,
+				paramHolder.getTokenType(),
 				new ExtendedInformation());
-		userdata.setPassword("foo123");
+		userdata.setPassword(DEFAULT_PASSWORD);
 		userdata.setStatus(EndEntityConstants.STATUS_NEW);
-		userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-		userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+		userdata.getExtendedInformation().setKeyStoreAlgorithmType(paramHolder.getKeyAlgo());
+		userdata.getExtendedInformation().setKeyStoreAlgorithmSubType(paramHolder.getKeySpec());
 		userdata.setEndEntityProfileId(endEntityProfileId);
+		userdata.setKeyRecoverable(paramHolder.isKeyRecoverable());
 		return paramHolder
 				.getEndEntityManagementSession()
 				.addUser(paramHolder.getInternalAdminToken(), userdata, false);
