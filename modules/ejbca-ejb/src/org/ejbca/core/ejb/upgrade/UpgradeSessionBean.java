@@ -82,6 +82,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
@@ -631,6 +632,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+        if (isLesserThan(oldVersion, "8.3.0")) {
+            try {
+                upgradeSession.migrateDatabase830();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }        
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -2557,6 +2565,29 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.debug("Added RFC9336 Extended Key Usage to availabe key usages list");
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, config);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+    }
+    
+    @Override
+    public void migrateDatabase830() throws UpgradeFailedException {
+        log.debug(">migrateDatabase830");
+        // ECA-10671: Migrate ocsp.untilNextUpdate from ocsp.properties into Global Configuration
+        //Retrieve the old value, in ms and convert to seconds (smallest granularity
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        
+        @SuppressWarnings("deprecation")
+        long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
+        globalOcspConfiguration.setDefaultValidityTime(nextUpdate);
+        @SuppressWarnings("deprecation")
+        long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
+        globalOcspConfiguration.setDefaultResponseMaxAge(maxAge);
+        @SuppressWarnings("deprecation")
+        boolean useMaxAgeForExpired = OcspConfiguration.getCacheHeaderMaxAge();
+        globalOcspConfiguration.setUseMaxValidityForExpiration(useMaxAgeForExpired);
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {
             log.error("Always allow token was denied authoriation to global configuration table.", e);
         }
