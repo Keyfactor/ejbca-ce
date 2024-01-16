@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
@@ -67,7 +68,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 51.0;
+    public static final float LATEST_VERSION = (float) 52.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -168,6 +169,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE = "expirationrestrictionforweekdaysbefore";
     protected static final String EXPIRATION_RESTRICTION_WEEKDAYS = "expirationrestrictionweekdays";
     protected static final String ALLOWVALIDITYOVERRIDE = "allowvalidityoverride";
+    protected static final String ALLOWEXPIREDVALIDITYENDDATE = "allowexpiredvalidityenddate";
     protected static final String ALLOWKEYUSAGEOVERRIDE = "allowkeyusageoverride";
     protected static final String ALLOWBACKDATEDREVOCATION = "allowbackdatedrevokation";
     protected static final String ALLOWEXTENSIONOVERRIDE = "allowextensionoverride";
@@ -312,6 +314,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
+    protected static final String USE_VALIDITY_ASSURED_SHORT_TERM = "usevalidityassuredshortterm";
+    protected static final String VALIDITY_ASSURED_SHORT_TERM_CRITICAL = "validityassuredshorttermcritical";
     protected static final String USENAMECONSTRAINTS = "usenameconstraints";
     protected static final String NAMECONSTRAINTSCRITICAL = "nameconstraintscritical";
     protected static final String USECABFORGANIZATIONIDENTIFIER = "usecabforganizationidentifier";
@@ -433,6 +437,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, Extension.subjectKeyIdentifier.getId());
         useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
         useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
+        useStandardCertificateExtensions.put(USE_VALIDITY_ASSURED_SHORT_TERM, CertTools.OID_VALIDITY_ASSURED_SHORT_TERM);
     }
 
 
@@ -480,6 +485,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setExpirationRestrictionForWeekdaysExpireBefore(true);
         setDefaultExpirationRestrictionWeekdays();
         setAllowValidityOverride(false);
+        setAllowExpiredValidityEndDate(false);
         setDescription("");
 
         setAllowExtensionOverride(false);
@@ -585,6 +591,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setQCCustomStringText(null);
         setQCEtsiPds(null);
         setQCEtsiType(null);
+
+        setUseValidityAssuredShortTerm(false);
+        setValidityAssuredShortTermCritical(false);
 
         setUseCertificateTransparencyInCerts(false);
         setUseCertificateTransparencyInOCSP(false);
@@ -904,6 +913,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setExpirationRestrictionWeekday(Calendar.SUNDAY, true);
     }
 
+    public boolean getUseValidityAssuredShortTerm() {
+        return Optional.ofNullable((Boolean) data.get(USE_VALIDITY_ASSURED_SHORT_TERM)).orElse(false);
+    }
+
+    public void setUseValidityAssuredShortTerm(boolean enabled) {
+        data.put(USE_VALIDITY_ASSURED_SHORT_TERM, enabled);
+    }
+
+    public boolean getValidityAssuredShortTermCritical() {
+        return Optional.ofNullable((Boolean) data.get(VALIDITY_ASSURED_SHORT_TERM_CRITICAL)).orElse(false);
+    }
+
+    public void setValidityAssuredShortTermCritical(boolean critical) {
+        data.put(VALIDITY_ASSURED_SHORT_TERM_CRITICAL, critical);
+    }
+
     /**
      * If validity override is allowed, a certificate can have a shorter validity than the one specified in the certificate profile, but never longer.
      * A certificate created with validity override can hava a starting point in the future.
@@ -920,6 +945,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setAllowValidityOverride(boolean allowvalidityoverride) {
         data.put(ALLOWVALIDITYOVERRIDE, allowvalidityoverride);
+    }
+
+    /**
+     * Allows creation of certificates with end date in the past.
+     */
+    public boolean getAllowExpiredValidityEndDate() {
+        final Object d = data.get(ALLOWEXPIREDVALIDITYENDDATE);
+        return d != null && (Boolean) d;
+    }
+
+    /**
+     * Allows creation of certificates with end date in the past.
+     * @param   allowExpiredValidityEndDate
+     */
+    public void setAllowExpiredValidityEndDate(boolean allowExpiredValidityEndDate) {
+        data.put(ALLOWEXPIREDVALIDITYENDDATE, allowExpiredValidityEndDate);
     }
 
     /**
@@ -3557,6 +3598,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setAllowValidityOverride(false);
             }
 
+            if (data.get(ALLOWEXPIREDVALIDITYENDDATE) == null) {
+                setAllowExpiredValidityEndDate(false);
+            }
+
             if (data.get(CRLISSUER) == null) {
                 setCRLIssuer(null); // v20
             }
@@ -3775,6 +3820,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             // v50 truncated subject key identifier
             if (data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER) == null) {
                 setUseTruncatedSubjectKeyIdentifier(false);
+            }
+
+            // v52. ETSI Validity Assured - Short Term certificate extension specified in EN 319 412-01.
+            if (data.get(USE_VALIDITY_ASSURED_SHORT_TERM) == null) {
+                setUseValidityAssuredShortTerm(false);
+                setValidityAssuredShortTermCritical(false);
             }
 
             data.put(VERSION, LATEST_VERSION);

@@ -36,6 +36,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
@@ -88,6 +89,7 @@ import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -1368,6 +1370,38 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             log.error("Error while accessing ca bean!", e);
         }
         return false;
+    }
+
+    public boolean isRenderNameConstraintsWarning() {
+        if (isEditCA) {
+            String certProfileName = caInfoDto.getCurrentCertProfile();
+            if (StringUtils.isNotBlank(certProfileName)) {
+                CertificateProfile cp = certificateProfileSession.getCertificateProfile(certProfileName);
+                if (Objects.nonNull(cp)) {
+                    return !cp.getUseNameConstraints();
+                } else {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        } else {
+            String certProfileId = caInfoDto.getCurrentCertProfile();
+            if (Objects.nonNull(certProfileId)) {
+                if (Objects.nonNull(certProfileId)) {
+                    CertificateProfile cp = certificateProfileSession.getCertificateProfile(Integer.valueOf(certProfileId));
+                    if (Objects.nonNull(cp)) {
+                        return !cp.getUseNameConstraints();
+                    } else {
+                        return true;
+                    }
+                } else {
+                    return true;
+                }
+            } else {
+                return true;
+            }
+        }
     }
 
     public boolean isRenderSelectCertificateProfile() {

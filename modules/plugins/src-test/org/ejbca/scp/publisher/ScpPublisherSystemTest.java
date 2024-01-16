@@ -66,7 +66,7 @@ import static org.junit.Assert.assertThrows;
  * @version $Id$
  *
  */
-public class ScpPublisherTest {
+public class ScpPublisherSystemTest {
 
     private static final byte[] testCrl = Base64.decode(("MIIBjjB4AgEBMA0GCSqGSIb3DQEBBQUAMBUxEzARBgNVBAMMCkx1bmFDQTEwMjQX"
             +"DTEwMTEyNTEwMzkwMFoXDTEwMTEyNjEwMzkwMFqgLzAtMB8GA1UdIwQYMBaAFHxk"

@@ -1115,6 +1115,7 @@
                                          rendered="#{editCAsMBean.renderSelectCertificateProfile}"
                                          disabled="#{!editCAsMBean.hasEditRight or editCAsMBean.signedByExternal and !editCAsMBean.caUninitialized}">
                             <f:selectItems value="#{editCAsMBean.certificateProfiles}"/>
+                            <f:ajax render="warningNameConstraintsPermitted warningNameConstraintsExcluded"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
 
@@ -1267,7 +1268,12 @@
                         <h:inputTextarea id="textfieldnameconstraintspermitted" rows="4"
                                          cols="38" value="#{editCAsMBean.caInfoDto.nameConstraintsPermitted}"
                                          disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}"/>
-                        <br/>
+                        <h:panelGroup layout="block" id="warningNameConstraintsPermitted">
+                            <h:outputText
+                                    rendered="#{editCAsMBean.renderNameConstraintsWarning}"
+                                    styleClass="warning"
+                                    value="#{web.text.NAME_CONSTRAINTS_WARNING}"/>
+                        </h:panelGroup>
                         <h:outputText styleClass="smallHelp"
                                       value="#{web.text.EXT_PKIX_NC_PERMITTED_HELP1}"/>
                         <br/>
@@ -1293,7 +1299,12 @@
                         <h:inputTextarea id="textfieldnameconstraintsexcluded" rows="4"
                                          cols="38" value="#{editCAsMBean.caInfoDto.nameConstraintsExcluded}"
                                          disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}"/>
-                        <br/>
+                        <h:panelGroup layout="block" id="warningNameConstraintsExcluded">
+                            <h:outputText
+                                    rendered="#{editCAsMBean.renderNameConstraintsWarning}"
+                                    styleClass="warning"
+                                    value="#{web.text.NAME_CONSTRAINTS_WARNING}"/>
+                        </h:panelGroup>
                         <h:outputText styleClass="smallHelp"
                                       value="#{web.text.EXT_PKIX_NC_EXCLUDED_HELP1}"/>
                         <br/>

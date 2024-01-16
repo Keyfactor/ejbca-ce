@@ -980,10 +980,11 @@ public class CAsTest extends CaTestCase {
         try {
             // Set a policy in the CA settings, and check for values
             X509CAInfo xinfo = (X509CAInfo)info;
-            List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+            List<CertificatePolicy> policies = new ArrayList<>();
             CertificatePolicy pol = new CertificatePolicy("2.2.2.2", null, null);
             policies.add(pol);
             xinfo.setPolicies(policies);
+            xinfo.setDeltaCRLPeriod(100_100); // Enable delta CRLs
             caSession.editCA(admin, xinfo);
             caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
             info = caSession.getCAInfo(admin, getTestCAId());
@@ -1001,7 +1002,7 @@ public class CAsTest extends CaTestCase {
             assertTrue("Renewed CA expire time should be after old one: "+info.getExpireTime()+", old: "+oldExpire, oldExpire.before(info.getExpireTime()));
             // Add a new policy to the certificate profile, and renew again to verify certificate policy handling during renewal
             final CertificateProfile caProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-            policies = new ArrayList<CertificatePolicy>();
+            policies = new ArrayList<>();
             pol = new CertificatePolicy("1.1.1.1", null, null);
             policies.add(pol);
             caProfile.setCertificatePolicies(policies);
@@ -1049,7 +1050,7 @@ public class CAsTest extends CaTestCase {
             cacert5.verify(cacert2.getPublicKey());
 
             // Test make request just making a request using the old keys
-            byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<>(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             assertNotNull(request);
             PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
             PublicKey pk1 = cacert4.getPublicKey();

@@ -2,7 +2,7 @@
 <%@page import="org.ejbca.ui.web.ParameterException"%>
 <%@page import="org.apache.commons.lang.StringUtils"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ taglib uri="http://www.owasp.org/index.php/Category:OWASP_CSRFGuard_Project/Owasp.CsrfGuard.tld" prefix="csrf" %>
+<%@ taglib uri="https://owasp.org/www-project-csrfguard/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <%
     response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding());
@@ -1508,7 +1508,7 @@ function checkallfields(){
                                 id="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"
                                 onchange="toggleModifySubjectAltName(this, '<%= TEXTFIELD_SUBJECTALTNAME + i %>')"
                                 checked disabled>
-                            <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>">Use entity CN</label><br />
+                            <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"><c:out value="<%= ejbcawebbean.getText(\"USESCNFIELDDATA\") %>" /></label><br />
                         <% }
 				        final Map<String,Serializable> validation = profile.getValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
                         final String regex = (validation != null ? (String)validation.get(RegexFieldValidator.class.getName()) : null); %>

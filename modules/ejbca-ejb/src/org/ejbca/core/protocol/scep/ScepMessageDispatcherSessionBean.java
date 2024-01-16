@@ -926,7 +926,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
             Collection<Certificate> racertColl = new ArrayList<>();
             racertColl.add(signingCertificate);
-            ret.setSignKeyInfo(racertColl, signingKey, caCryptoToken.getSignProviderName());
+            ret.setSignKeyInfo(racertColl, signingKey, caToken.getSignatureAlgorithm(), caCryptoToken.getSignProviderName());
         }
         if (req.getSenderNonce() != null) {
             ret.setRecipientNonce(req.getSenderNonce());
@@ -979,7 +979,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
             }
             Collection<Certificate> racertColl = new ArrayList<>();
             racertColl.add(signingCertificate);
-            ret.setSignKeyInfo(racertColl, signingKey, BouncyCastleProvider.PROVIDER_NAME);
+            ret.setSignKeyInfo(racertColl, signingKey, caToken.getSignatureAlgorithm(), BouncyCastleProvider.PROVIDER_NAME);
         }
         if (req.getSenderNonce() != null) {
             ret.setRecipientNonce(req.getSenderNonce());

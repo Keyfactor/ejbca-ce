@@ -50,7 +50,7 @@
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins-ee" target="runsa" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
@@ -92,7 +92,7 @@
     </target>
     <condition property="plugins.exist"><available file="modules/plugins/build.xml" /></condition>
     <target name="optionaltestplugins" if="${plugins.exist}">
-        <ant antfile="build.xml" dir="modules/plugins" target="test" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/plugins" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="plugins-ee.exist"><available file="modules/plugins-ee/build.xml" /></condition>
     <target name="optionaltestplugins-ee" if="${plugins-ee.exist}">
@@ -137,10 +137,6 @@
     </target>
     <target name="optionaltestcits-system" if="${cits.exists}">
         <ant antfile="build.xml" dir="modules/cits" target="test:system" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:runone" description="run a single Test specified -Dtest.runone=classname" depends="deleteDirectories">
@@ -432,6 +428,16 @@
 
     <target name="test:unit:cesecore-ejb" description="run all JUnit tests for cesecore-ejb." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:plugins" description="run all JUnit tests for plugins." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:plugins" description="run all System tests for plugins." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/plugins" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

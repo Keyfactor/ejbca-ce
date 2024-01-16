@@ -235,8 +235,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             
             CertificateDataWrapper certWrapper = createCertificate(admin, endEntityInformation, ca, requestMessage, reqpk, keyusage, notBefore, notAfter, exts, sequence, certGenParams, updateTime);
-            // Create the response message with all nonces and checks etc            
-            ret = ResponseMessageUtils.createResponseMessage(responseClass, requestMessage, cachain, cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
+            // Create the response message with all nonces and checks etc
+            ret = ResponseMessageUtils.createResponseMessage(responseClass, requestMessage, cachain, cryptoToken.getPrivateKey(alias), ca.getCAToken().getSignatureAlgorithm(), cryptoToken.getEncProviderName());
             ResponseStatus status = ResponseStatus.SUCCESS;
             FailInfo failInfo = null;
             String failText = null;

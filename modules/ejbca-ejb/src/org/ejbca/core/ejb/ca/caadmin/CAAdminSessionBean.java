@@ -143,6 +143,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -748,6 +749,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                                 .build()
                 );
                 throw new EJBException(e);
+            } catch (DeltaCrlException e) {
+                // already logged. ignore
             }
         } else {
             log.error("CA status not active when creating CA, extended services not created. CA status: " + castatus);
@@ -1636,7 +1639,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         publishCACertificate(authenticationToken, chain, ca.getCRLPublishers(), ca.getSubjectDN());
         // Create initial CRL
         publishingCrlSession.forceCRL(authenticationToken, caid);
-        publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
+        try {
+            publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
+        } catch (DeltaCrlException e) {
+            //already logged ignore
+        }
     }
 
     private void setMsCompatCAParams(final CA ca) {
@@ -2382,12 +2389,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             publishCACertificate(authenticationToken, cachain, ca.getCRLPublishers(), ca.getSubjectDN());
             
             // Generate a new CRL, but not partitions, which could take very long time.
-            publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION, new Date());
-            publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
-            if (ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible() && ((X509CA)ca).getCrlPartitions() != 0) {
-                for (int crlPartitionIndex = 1; crlPartitionIndex <= ((X509CA)ca).getCrlPartitions(); crlPartitionIndex++) {
-                    publishingCrlSession.forceCRL(authenticationToken, caid, crlPartitionIndex, new Date());
-                    publishingCrlSession.forceDeltaCRL(authenticationToken, caid, crlPartitionIndex);
+            if (ca.getCAType() == CAInfo.CATYPE_X509) {
+                publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION, new Date());
+                publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
+                if (ca instanceof X509CA && ((X509CA) ca).isMsCaCompatible() && ((X509CA) ca).getCrlPartitions() != 0) {
+                    for (int crlPartitionIndex = 1; crlPartitionIndex <= ((X509CA) ca).getCrlPartitions(); crlPartitionIndex++) {
+                        publishingCrlSession.forceCRL(authenticationToken, caid, crlPartitionIndex, new Date());
+                        publishingCrlSession.forceDeltaCRL(authenticationToken, caid, crlPartitionIndex);
+                    }
                 }
             }
 
@@ -3149,6 +3158,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Newly created CA with ID: " + ca.getCAId() + " was not found in database.");
+        } catch (DeltaCrlException e) {
+           // already logged. ignore
         }
         return ca;
     }

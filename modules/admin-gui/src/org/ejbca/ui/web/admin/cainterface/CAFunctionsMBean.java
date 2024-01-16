@@ -52,6 +52,7 @@ import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.DeltaCrlException;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
@@ -452,7 +453,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     public void createNewDeltaCrl(final int caid) throws CAOfflineException, CryptoTokenOfflineException {
         try {
             publishingCrlSession.forceDeltaCRL(getAdmin(), caid);
-        } catch (final CADoesntExistsException | AuthorizationDeniedException e) {
+        } catch (final CADoesntExistsException | AuthorizationDeniedException | DeltaCrlException e) {
             throw new IllegalStateException(e);
         }
         refreshCaGuiInfos();

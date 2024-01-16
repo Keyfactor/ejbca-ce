@@ -163,7 +163,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      */
     public CmpConfiguration(CmpConfiguration cmpConfiguration) {
         super();
-        setAliasList(new LinkedHashSet<String>());
+        setAliasList(new LinkedHashSet<>());
         for (String alias : cmpConfiguration.getAliasList()) {
             addAlias(alias);
             for (String key : getAllAliasKeys(alias)) {
@@ -705,7 +705,7 @@ public class CmpConfiguration extends ConfigurationBase implements Serializable 
      *
      * @param aliaslist LinkedHashSet of aliases,
      */
-    public void setAliasList(final LinkedHashSet<String> aliaslist) {
+    public void setAliasList(final Set<String> aliaslist) {
         data.put(ALIAS_LIST, aliaslist);
     }
 

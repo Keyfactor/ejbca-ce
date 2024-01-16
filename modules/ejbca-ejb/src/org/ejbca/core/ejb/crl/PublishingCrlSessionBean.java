@@ -67,6 +67,7 @@ import org.cesecore.certificates.certificate.NoConflictCertificateStoreSessionLo
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
@@ -134,7 +135,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     @Override
     public Set<Integer> createCRLs(final AuthenticationToken admin, final Collection<Integer> caids, final long addtocrloverlaptime) throws AuthorizationDeniedException {
         final Collection<Integer> caIdsToProcess;
-        if (caids==null || caids.contains(Integer.valueOf(CAConstants.ALLCAS))) {
+        if (caids==null || caids.contains(CAConstants.ALLCAS)) {
             caIdsToProcess = caSession.getAllCaIds();
         } else {
             caIdsToProcess = caids;
@@ -162,7 +163,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     @Override
     public Set<Integer> createDeltaCRLs(final AuthenticationToken admin, final Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
         final Collection<Integer> caIdsToProcess;
-        if (caids==null || caids.contains(Integer.valueOf(CAConstants.ALLCAS))) {
+        if (caids==null || caids.contains(CAConstants.ALLCAS)) {
             caIdsToProcess = caSession.getAllCaIds();
         } else {
             caIdsToProcess = caids;
@@ -219,7 +220,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     if (cacert != null && CertTools.getNotAfter(cacert).after(now)) {
                         if (cainfo.getStatus() == CAConstants.CA_OFFLINE )  {
                             // Normal event to not create CRLs for CAs that are deliberately set off line
-                            String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));
+                            String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), cainfo.getCAId());
                             log.info(msg);
                         } else {
                             boolean result = createCrlForActiveCa(admin, ca, cacert, CertificateConstants.NO_CRL_PARTITION, now, addToCrlOverlapTime);
@@ -344,7 +345,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                         if (cainfo.getDeltaCRLPeriod() > 0) {
                             if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
                                 // Normal event to not create CRLs for CAs that are deliberately set off line
-                                String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));
+                                String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), cainfo.getCAId());
                                 log.info(msg);
                             } else {
                                 boolean result = createDeltaCrlForActiveCa(admin, ca, cacert, CertificateConstants.NO_CRL_PARTITION, now, addToCrlOverlapTime);
@@ -405,19 +406,25 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     @Override
-    public boolean forceDeltaCRL(final AuthenticationToken admin, final int caid, final int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
+    public boolean forceDeltaCRL(final AuthenticationToken admin, final int caid, final int crlPartitionIndex) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException, DeltaCrlException {
         final CA ca = (CA) caSession.getCA(admin, caid);
         final CRLInfo lastBaseCrlInfo = crlSession.getLastCRLInfo(CertTools.getSubjectDN(getCaCertificate(ca.getCAInfo())), crlPartitionIndex, false);
         // if no full CRL has been generated we can't create a delta CRL
         boolean ret = false;
+        CAInfo cainfo = ca.getCAInfo();
         if (lastBaseCrlInfo != null) {
-            CAInfo cainfo = ca.getCAInfo();
             if (cainfo.getDeltaCRLPeriod() > 0) {
                 byte[] crl = publishingCrlSession.internalCreateDeltaCRL(admin, ca, crlPartitionIndex, lastBaseCrlInfo);
                 ret = (crl != null);
+            } else {
+                String msg = intres.getLocalizedMessage("createcrl.errordeltadisabled", cainfo.getName(), cainfo.getCAId());
+                log.info(msg);
+                throw new DeltaCrlException(msg);
             }
         } else {
-            log.info("No full CRL exists when trying to generate (force) delta CRL for caid "+caid);
+            log.info("No full CRL exists when trying to generate (force) delta CRL for caid " + caid);
+            String msg = intres.getLocalizedMessage("createcrl.errorbasemissing", cainfo.getName(), cainfo.getCAId());
+            throw new DeltaCrlException(msg);
         }
         return ret;
     }
@@ -431,7 +438,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     @Override
     public boolean forceCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
         boolean result = true;
-        if(caSession.getCAInfoInternal(caId).getCAType() != X509CAInfo.CATYPE_X509) {
+        if (caSession.getCAInfoInternal(caId).getCAType() != X509CAInfo.CATYPE_X509) {
             return false;
         }
         
@@ -446,9 +453,9 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     }
 
     @Override
-    public boolean forceDeltaCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException {
+    public boolean forceDeltaCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException, DeltaCrlException {
         boolean result = true;
-        if(caSession.getCAInfoInternal(caId).getCAType() != X509CAInfo.CATYPE_X509) {
+        if (caSession.getCAInfoInternal(caId).getCAType() != CAInfo.CATYPE_X509) {
             return false;
         }
         result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
@@ -508,7 +515,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN,
                                         false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
-                                for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
+                                
+                                for (RevokedCertInfo tmp : revokedCertInfo) { //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
                             }
@@ -583,7 +591,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                 //              fos.close();
                 //              }
             } else {
-                String msg = intres.getLocalizedMessage("createcrl.errornotactive", cainfo.getName(), Integer.valueOf(cainfo.getCAId()), cainfo.getStatus());
+                String msg = intres.getLocalizedMessage("createcrl.errornotactive", cainfo.getName(), cainfo.getCAId(), cainfo.getStatus());
                 log.info(msg);
                 throw new CAOfflineException(msg);
             }
@@ -702,7 +710,8 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, false, 
                                         crlPartitionIndex, -1, true, getAllowInvalidityDate(cainfo));
-                                for(RevokedCertInfo tmp : revokedCertInfo){ //for loop is necessary because revokedCertInfo.toArray is not supported...
+                                
+                                for (RevokedCertInfo tmp : revokedCertInfo) { //for loop is necessary because revokedCertInfo.toArray is not supported...
                                     revokedCertificatesBeforeLastCANameChange.add(tmp);
                                 }
                             }
@@ -747,7 +756,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                     log.debug("Created delta CRL with expire date: "+crl.getNextUpdate());
                 }
             } else {
-                String msg = intres.getLocalizedMessage("createcrl.errornotactive", cainfo.getName(), Integer.valueOf(cainfo.getCAId()), cainfo.getStatus());
+                String msg = intres.getLocalizedMessage("createcrl.errornotactive", cainfo.getName(), cainfo.getCAId(), cainfo.getStatus());
                 log.info(msg);
                 throw new CAOfflineException(msg);
             }
@@ -810,7 +819,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
 
         final int deltacrlnumber = crlSession.getLastCRLNumber(certSubjectDN, crlPartitionIndex, true);
         // nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
-        final int nextCrlNumber = ( fullcrlnumber > deltacrlnumber ? fullcrlnumber : deltacrlnumber ) +1;
+        final int nextCrlNumber = (Math.max(fullcrlnumber, deltacrlnumber)) +1;
         final byte[] crlBytes = crlCreateSession.generateAndStoreCRL(admin, ca, crlPartitionIndex, certs, delta?fullcrlnumber:-1, nextCrlNumber, validFrom);
         this.publisherSession.storeCRL(admin, ca.getCRLPublishers(), crlBytes, cafp, nextCrlNumber, certSubjectDN);
         return crlBytes;

@@ -142,6 +142,9 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     private transient Certificate caCert = null;
     /** Private key used to sign the response message */
     private transient PrivateKey signKey = null;
+    /** Signature algorithm normally used to sign with above signKey, for example CAs signatue algorithm */
+    private transient String signAlg = null;
+
     /** If the CA certificate should be included in the reponse or not, default to true = yes */
     private transient boolean includeCACert = true;
 
@@ -460,9 +463,10 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     }
 
     @Override
-    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String prov) {
+    public void setSignKeyInfo(Collection<Certificate> certs, PrivateKey key, String alg, String prov) {
         this.signCertChain = certs;
         this.signKey = key;
+        this.signAlg = alg;
         if (prov != null) {
             this.provider = prov;
         }     
