@@ -194,11 +194,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 addErrorMessage("ONEAVAILABLEBITLENGTH");
                 success = false;
             }
-            if (prof.isKeyAlgorithmsRequireSecurityLevel() &&
-                    (prof.getAvailableSecurityLevelsAsList() == null || prof.getAvailableSecurityLevelsAsList().isEmpty())) {
-                addErrorMessage("ONEAVAILABLESECURITYLEVEL");
-                success = false;
-            }
             if (isCtEnabled()) {
                 final int numEnabledLabels = prof.getEnabledCtLabels().size();
                 final boolean isNumOfSctsCustom = prof.isNumberOfSctByCustom();
@@ -438,19 +433,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             }
         } else {
             ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOECCURVECHOSEN")));
-        }
-        return ret;
-    }
-
-    public List<SelectItem> getAvailableSecurityLevel() {
-        Set<Integer> availableSecurityLevel = new TreeSet<>();
-        final List<SelectItem> ret = new ArrayList<>();
-        if (!availableSecurityLevel.isEmpty() && certificateProfile.isKeyAlgorithmsRequireSecurityLevel()) {
-            for (final Integer current : availableSecurityLevel) {
-                ret.add(new SelectItem(current, current.toString()));
-            }
-        } else {
-            ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOALGORITHMWITHSELECTABLESECURITYLEVEL")));
         }
         return ret;
     }

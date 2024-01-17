@@ -181,7 +181,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
     protected static final String AVAILABLEECCURVES = "availableeccurves";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
-    protected static final String AVAILABLESECURITYLEVEL = "availablesecuritylevel";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
     
@@ -189,7 +188,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final String ALTERNATIVE_AVAILABLEKEYALGORITHMS = "alternativeAvailableKeyAlgorithms";
     private static final String ALTERNATIVE_AVAILABLEECCURVES = "alternativeAvailableECCurves";
     private static final String ALTERNATIVE_AVAILABLEBITLENGTHS = "alternativeAvailableBitLengths";
-    private static final String ALTERNATIVE_AVAILABLESECURITYLEVEL = "alternativeAvailableSecurityLevel";
     private static final String ALTERNATIVE_MINIMUMAVAILABLEBITLENGTH = "alternativeMinimumAvailableBitlength";
     private static final String ALTERNATIVE_MAXIMUMAVAILABLEBITLENGTH = "alternativeMaximumAvailableBitlength";
     
@@ -1398,10 +1396,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
-    public boolean isKeyAlgorithmsRequireSecurityLevel() {
-        return false;
-    }
-
     public String[] getAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
@@ -1477,19 +1471,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(ALTERNATIVE_AVAILABLEECCURVES, new ArrayList<>(alternateAvailableEcCurves));
     }
 
-
-    public int[] getAvailableSecurityLevels(){
-        final List<Integer> availableSecurityLevels = getAvailableSecurityLevelsAsList();
-        if (availableSecurityLevels != null) {
-            final int[] returnval = new int[availableSecurityLevels.size()];
-            for (int i = 0; i < availableSecurityLevels.size(); i++) {
-                returnval[i] = availableSecurityLevels.get(i);
-            }
-            return returnval;
-        }
-        return new int[]{};
-    }
-
     public int[] getAvailableBitLengths() {
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
         final int[] returnval = new int[availablebitlengths.size()];
@@ -1506,44 +1487,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             returnval[i] = availablebitlengths.get(i);
         }
         return returnval;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Integer> getAvailableSecurityLevelsAsList() {
-        return (List<Integer>) data.get(AVAILABLESECURITYLEVEL);
-    }
-
-    public void setAvailableSecurityLevelsAsList(final List<Integer> availableSecurityLevels) {
-        data.put(AVAILABLESECURITYLEVEL, availableSecurityLevels);
-    }
-
-    public void setAvailableSecurityLevels(int[] availableSecurityLevelsArray) {
-        setAvailableSecurityLevelsAsList(Arrays.stream(availableSecurityLevelsArray).boxed().collect(Collectors.toList()));
-    }
-    
-    public int[] getAlternativetAvailableSecurityLevels(){
-        final List<Integer> availableSecurityLevels = getAlternativeAvailableSecurityLevelsAsList(); 
-        if (availableSecurityLevels != null) {
-            final int[] returnval = new int[availableSecurityLevels.size()];
-            for (int i = 0; i < availableSecurityLevels.size(); i++) {
-                returnval[i] = availableSecurityLevels.get(i);
-            }
-            return returnval;
-        }
-        return new int[]{};
-    }
-    
-    @SuppressWarnings("unchecked")
-    public List<Integer> getAlternativeAvailableSecurityLevelsAsList() {
-        return (List<Integer>) data.get(ALTERNATIVE_AVAILABLESECURITYLEVEL);
-    }
-
-    public void setAlternativeAvailableSecurityLevelsAsList(final List<Integer> availableSecurityLevels) {
-        data.put(ALTERNATIVE_AVAILABLESECURITYLEVEL, availableSecurityLevels);
-    }
-
-    public void setAlternativeAvailableSecurityLevels(int[] availableSecurityLevelsArray) {
-        setAlternativeAvailableSecurityLevelsAsList(Arrays.stream(availableSecurityLevelsArray).boxed().collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")
