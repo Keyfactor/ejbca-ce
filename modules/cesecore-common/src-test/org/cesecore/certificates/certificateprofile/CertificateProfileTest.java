@@ -689,27 +689,6 @@ public class CertificateProfileTest {
                 Collections.EMPTY_LIST);
 
     }
-    
-    /**
-     * Simple smoke test to just verify that the values associated with alternative keys and signatures kan be stored and retrieved.
-     */
-    @Test
-    public void testAlternativeSecurityLevelsCRUD() {
-        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-        certificateProfile.setAlternativeAvailableSecurityLevels(new int[] { 1, 2, 3 });
-        assertTrue(
-                "Available key algorithms could not be saved/retrieved, was: "
-                        + Arrays.toString(certificateProfile.getAlternativetAvailableSecurityLevels()),
-                Arrays.equals(certificateProfile.getAlternativetAvailableSecurityLevels(), new int[] { 1, 2, 3 }));
-        certificateProfile.setAlternativeAvailableSecurityLevelsAsList(Arrays.asList(4, 5, 6));
-        assertEquals(
-                "Available security keveks could not be saved/retrieved as a list, was: "
-                        + certificateProfile.getAlternativeAvailableSecurityLevelsAsList(),
-                CollectionUtils.subtract(certificateProfile.getAlternativeAvailableSecurityLevelsAsList(), Arrays.asList(4, 5, 6)),
-                Collections.EMPTY_LIST);
-
-    }
-    
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test

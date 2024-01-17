@@ -24,18 +24,15 @@ public class CertificateProfileInfoRestResponseV2 {
     private Integer certificateProfileId;
     private List<String> availableKeyAlgs;    
     private List<Integer> availableBitLenghts;
-    private List<Integer> availableSecurityLevels;
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     
     public CertificateProfileInfoRestResponseV2(List<String> availableKeyAlgs, List<Integer> availableBitLengths,
-            List<String> availableEcdsaCurves, List<Integer> availableSecurityLevels, List<String> availableCas,
-                                                final Integer certificateProfileId) {
+            List<String> availableEcdsaCurves, List<String> availableCas, final Integer certificateProfileId) {
         this.certificateProfileId = certificateProfileId;
         this.availableKeyAlgs = availableKeyAlgs;
         this.availableBitLenghts = availableBitLengths;
         this.availableEcdsaCurves = availableEcdsaCurves;
-        this.availableSecurityLevels = availableSecurityLevels;
         this.availableCas = availableCas;
     }
     
@@ -59,10 +56,6 @@ public class CertificateProfileInfoRestResponseV2 {
         return availableEcdsaCurves;
     }
 
-    public List<Integer> getAvailableSecurityLevels() {
-        return availableSecurityLevels;
-    }
-
     public List<String> getAvailableCas() {
         return availableCas;
     }
@@ -80,7 +73,6 @@ public class CertificateProfileInfoRestResponseV2 {
         private Integer certificateProfileId;
         private List<String> availableProfileAlgos;
         private List<Integer> availableProfileBitLengths;
-        private List<Integer> availableProfileSecurityLevels;
         private List<String> availableProfileEcdsaCurves;
         private List<String> availableProfileCas;
         
@@ -101,11 +93,6 @@ public class CertificateProfileInfoRestResponseV2 {
             return this;
         }
 
-        public CertificateProfileInfoRestResponseBuilderV2 setAvailableProfileSecurityLevels(List<Integer> availableProfileSecurityLevels) {
-            this.availableProfileSecurityLevels = availableProfileSecurityLevels;
-            return this;
-        }
-
         public CertificateProfileInfoRestResponseBuilderV2 setAvailableEcdsaCurves(List<String> availableProfileEcdsaCurves ) {
             this.availableProfileEcdsaCurves = availableProfileEcdsaCurves;
             return this;
@@ -118,7 +105,7 @@ public class CertificateProfileInfoRestResponseV2 {
 
         public CertificateProfileInfoRestResponseV2 build() {
             return new CertificateProfileInfoRestResponseV2(availableProfileAlgos, availableProfileBitLengths, 
-                    availableProfileEcdsaCurves, availableProfileSecurityLevels,  availableProfileCas, certificateProfileId);
+                    availableProfileEcdsaCurves, availableProfileCas, certificateProfileId);
         }
     }
     
@@ -133,7 +120,6 @@ public class CertificateProfileInfoRestResponseV2 {
             return CertificateProfileInfoRestResponseV2.builder().setCertificateProfileId(raResponse.getCertificateProfileId())
                     .setAvailableAlgos(raResponse.getAvailableAlgorithms())
                     .setAvailableBitLengths(raResponse.getAvailableBitLengths())
-                    .setAvailableProfileSecurityLevels(raResponse.getAvailableSecurityLevels())
                     .setAvailableEcdsaCurves(raResponse.getAvailableEcdsaCurves())
                     .setAvailableProfileCAs(raResponse.getAvailableCas())
                     .build();
