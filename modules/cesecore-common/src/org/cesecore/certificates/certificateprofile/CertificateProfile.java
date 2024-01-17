@@ -28,7 +28,6 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -186,11 +185,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     //Alternative key settings, with a focus on hybrid certificates
     private static final String ALTERNATIVE_AVAILABLEKEYALGORITHMS = "alternativeAvailableKeyAlgorithms";
-    private static final String ALTERNATIVE_AVAILABLEECCURVES = "alternativeAvailableECCurves";
-    private static final String ALTERNATIVE_AVAILABLEBITLENGTHS = "alternativeAvailableBitLengths";
-    private static final String ALTERNATIVE_MINIMUMAVAILABLEBITLENGTH = "alternativeMinimumAvailableBitlength";
-    private static final String ALTERNATIVE_MAXIMUMAVAILABLEBITLENGTH = "alternativeMaximumAvailableBitlength";
-    
+
     public static final String TYPE = "type";
     protected static final String AVAILABLECAS = "availablecas";
     protected static final String USEDPUBLISHERS = "usedpublishers";
@@ -1450,38 +1445,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setAvailableEcCurvesAsList(final List<String> availableEcCurves) {
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
     }
-    
-    
-    public String[] getAlternativeAvailableEcCurves() {
-        final List<String> availableEcCurves = getAlternativeAvailableEcCurvesAsList();
-        return availableEcCurves.toArray(new String[availableEcCurves.size()]);
-    }
-    
-    
-    @SuppressWarnings("unchecked")
-    public List<String> getAlternativeAvailableEcCurvesAsList() {
-        return (ArrayList<String>) data.get(ALTERNATIVE_AVAILABLEECCURVES);
-    }
-
-    public void setAlternativeAvailableEcCurves(final String[] alternateAvailableEcCurves) {
-        setAlternativeAvailableEcCurvesAsList(Arrays.asList(alternateAvailableEcCurves));
-    }
-
-    public void setAlternativeAvailableEcCurvesAsList(final List<String> alternateAvailableEcCurves) {
-        data.put(ALTERNATIVE_AVAILABLEECCURVES, new ArrayList<>(alternateAvailableEcCurves));
-    }
 
     public int[] getAvailableBitLengths() {
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
-        final int[] returnval = new int[availablebitlengths.size()];
-        for (int i = 0; i < availablebitlengths.size(); i++) {
-            returnval[i] = availablebitlengths.get(i);
-        }
-        return returnval;
-    }
-    
-    public int[] getAlternativeAvailableBitLengths() {
-        final List<Integer> availablebitlengths = getAlternativeAvailableBitLengthsAsList();
         final int[] returnval = new int[availablebitlengths.size()];
         for (int i = 0; i < availablebitlengths.size(); i++) {
             returnval[i] = availablebitlengths.get(i);
@@ -1523,39 +1489,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableBitLengthsAsList(availbitlengths);
     }
 
-
-    
-    @SuppressWarnings("unchecked")
-    public List<Integer> getAlternativeAvailableBitLengthsAsList() {
-        return (List<Integer>) data.get(ALTERNATIVE_AVAILABLEBITLENGTHS);
-    }
-
-    public void setAlternativeAvailableBitLengthsAsList(final List<Integer> availableBitLengths) {
-        // Strange values here, but it makes the <> below work for sure
-        int minimumavailablebitlength = 99999999;
-        int maximumavailablebitlength = 0;
-        for (Integer availablebitlength : availableBitLengths) {
-            if (availablebitlength > maximumavailablebitlength) {
-                maximumavailablebitlength = availablebitlength;
-            }
-            if (availablebitlength < minimumavailablebitlength) {
-                minimumavailablebitlength = availablebitlength;
-            }
-        }
-        data.put(ALTERNATIVE_AVAILABLEBITLENGTHS, availableBitLengths);
-        data.put(ALTERNATIVE_MINIMUMAVAILABLEBITLENGTH, minimumavailablebitlength);
-        data.put(ALTERNATIVE_MAXIMUMAVAILABLEBITLENGTH, maximumavailablebitlength);
-    }
-
-    public void setAlternativeAvailableBitLengths(int[] availablebitlengths) {
-        List<Integer> availbitlengths = new ArrayList<>(availablebitlengths.length);
-        for (int availablebitlength : availablebitlengths) {
-            availbitlengths.add(availablebitlength);
-        }
-        setAlternativeAvailableBitLengthsAsList(availbitlengths);
-    }
-    
-
     public int getMinimumAvailableBitLength() {
         return (Integer) data.get(MINIMUMAVAILABLEBITLENGTH);
     }
@@ -1564,14 +1497,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return (Integer) data.get(MAXIMUMAVAILABLEBITLENGTH);
     }
 
-    public int getAlternativeMinimumAvailableBitLength() {
-        return (Integer) data.get(ALTERNATIVE_MINIMUMAVAILABLEBITLENGTH);
-    }
-
-    public int getAlternativeMaximumAvailableBitLength() {
-        return (Integer) data.get(ALTERNATIVE_MAXIMUMAVAILABLEBITLENGTH);
-    }
-    
     /**
      * Returns true if the given combination of keyAlgorithm/keySpecification is allowed by this certificate profile.
      */
