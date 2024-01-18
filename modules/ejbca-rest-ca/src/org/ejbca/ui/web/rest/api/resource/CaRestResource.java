@@ -52,6 +52,8 @@ import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaCaListRequest;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -111,9 +113,12 @@ public class CaRestResource extends BaseRestResource {
      * @param httpServletRequest HttpServletRequest of a request.
      * @return The response containing the list of CAs and its general information.
      */
-    public Response listCas(final HttpServletRequest httpServletRequest) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
+    public Response listCas(final HttpServletRequest httpServletRequest, boolean includeExternal) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
-        List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken));
+        RaCaListRequest raCaListRequest = new RaCaListRequest();
+        raCaListRequest.setIncludeExternal(includeExternal);
+        IdNameHashMap<CAInfo> authorizedCAInfos = raMasterApiProxy.getAuthorizedCAInfos(adminToken, raCaListRequest);
+        List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(authorizedCAInfos);
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
                 .certificateAuthorities(caInfoRestResponseList)
                 .build();
