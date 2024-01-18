@@ -1827,8 +1827,8 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
     
     /**
-     * Provides GUI message info for testKeyPair() 
-     * @param keyUsage the key usage from KeyPairGuiInfo
+     * Provides additional GUI message info for testKeyPair() 
+     * @param keyUsage the key usage fetched from KeyPairGuiInfo
      * @return user friendly String with key usage for a key pair.
      */
     private String getKeyUsageInfoMessage(String keyUsage) {
