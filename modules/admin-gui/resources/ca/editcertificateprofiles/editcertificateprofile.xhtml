@@ -184,9 +184,6 @@
                 <h:panelGroup rendered="#{certProfileBean.certificateProfile.useAlternativeSignature}">
                     <h:outputLabel for="selectAvailableAlternativeKeyAlgorithms"
                         value="#{web.text.AVAILABLEKEYALGORITHMS_ALTERNATIVE}" />
-                    <h:outputText
-                        value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableKeyAlgorithms')}"
-                        escape="false" />
                 </h:panelGroup>
                 <h:selectManyListbox styleClass="select-list"
                     rendered="#{certProfileBean.certificateProfile.useAlternativeSignature}"
