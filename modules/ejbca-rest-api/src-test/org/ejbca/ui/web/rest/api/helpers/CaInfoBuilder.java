@@ -96,6 +96,8 @@ public class CaInfoBuilder {
     private String name = TEST_CA_NAME;
     private Date expirationDate;
 
+    private int status;
+
     /**
      * Returns a builder instance for this class.
      *
@@ -140,6 +142,18 @@ public class CaInfoBuilder {
      */
     public CaInfoBuilder expirationDate(final Date expirationDate) {
         this.expirationDate = expirationDate;
+        return this;
+    }
+
+    /**
+     * Sets the status of this CAInfo.
+     *
+     * @param status stats.
+     *
+     * @return instance of this builder.
+     */
+    public CaInfoBuilder stats(final int status) {
+        this.status = status;
         return this;
     }
 
