@@ -2064,13 +2064,28 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken) {
         IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
-        List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedCaInfos(authenticationToken);
+        List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedAndNonExternalCaInfos(authenticationToken);
         for (CAInfo caInfo : authorizedCAInfosList) {
-            if (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+            if (caInfo.getStatus() == CAConstants.CA_ACTIVE) {
                 authorizedCAInfos.put(caInfo.getCAId(), caInfo.getName(), caInfo);
             }
         }
         return authorizedCAInfos;
+    }
+
+    @Override
+    public IdNameHashMap<CAInfo> getAuthorizedCAInfos(final AuthenticationToken authenticationToken, final RaCaListRequest listRequest) {
+        if (listRequest.isIncludeExternal()) {
+            IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
+            List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedCaInfos(authenticationToken);
+            for (CAInfo caInfo : authorizedCAInfosList) {
+                if (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                    authorizedCAInfos.put(caInfo.getCAId(), caInfo.getName(), caInfo);
+                }
+            }
+            return authorizedCAInfos;
+        }
+        return getAuthorizedCAInfos(authenticationToken);
     }
 
     @Override

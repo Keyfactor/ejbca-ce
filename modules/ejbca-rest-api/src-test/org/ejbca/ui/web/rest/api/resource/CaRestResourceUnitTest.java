@@ -49,6 +49,7 @@ import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaCaListRequest;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
@@ -145,6 +146,40 @@ public class CaRestResourceUnitTest {
         assertNotNull(actualCertificateAuthorities);
         assertEquals(0, actualCertificateAuthorities.size());
         verify(raMasterApiProxy);
+    }
+
+    @Test
+    public void shouldReturnExternalCas() throws Exception {
+        // given
+        RaCaListRequest raCaListRequest = new RaCaListRequest();
+        raCaListRequest.setIncludeExternal(true);
+        final String expectedName = CaInfoBuilder.TEST_CA_NAME;
+        final int expectedId = 11;
+        final Date expectedExpirationDate = new Date();
+        final String expectedExternal = "true";
+        final CAInfo cAInfo = CaInfoBuilder.builder()
+                .id(expectedId)
+                .expirationDate(expectedExpirationDate)
+                .stats(6)
+                .build();
+        final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
+        caInfosMap.put(expectedId, expectedName, cAInfo);
+        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(caInfosMap);
+        replay(raMasterApiProxy);
+        // when
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca?includeExternal=true")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
+        // then
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
+        final JSONObject actualCaInfo0JsonObject = (JSONObject) actualCertificateAuthorities.get(0);
+        final Object actualExternalString = actualCaInfo0JsonObject.get("external");
+        assertEquals(expectedExternal, actualExternalString);
     }
 
     @Test

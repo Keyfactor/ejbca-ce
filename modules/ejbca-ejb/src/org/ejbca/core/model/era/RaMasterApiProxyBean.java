@@ -1137,6 +1137,24 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken, RaCaListRequest listRequest) {
+        final IdNameHashMap<CAInfo> ret = new IdNameHashMap<>();
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable()) {
+                try {
+                    final IdNameHashMap<CAInfo> result = raMasterApi.getAuthorizedCAInfos(authenticationToken, listRequest);
+                    if (result != null) {
+                        ret.putAll(result);
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return ret;
+    }
+
+    @Override
     public IdNameHashMap<CertificateProfile> getAllAuthorizedCertificateProfiles(AuthenticationToken authenticationToken) {
         final IdNameHashMap<CertificateProfile> ret = new IdNameHashMap<>();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
