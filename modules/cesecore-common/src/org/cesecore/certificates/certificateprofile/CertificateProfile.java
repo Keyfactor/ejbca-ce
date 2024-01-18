@@ -28,9 +28,11 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
@@ -218,6 +220,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     private static final String ALTERNATIVE_SIGNATUREALGORITHM = "alternativeSignatureAlgorithm";
+    private static final String USE_ALTERNATIVE_SIGNATURE = "useAlternativeSignature";
     
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String STORECERTIFICATEDATA = "storecertificatedata";
@@ -523,6 +526,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
         setSignatureAlgorithm(null);
+        setUseAlternativeSignature(false);
+        setAlternativeAvailableKeyAlgorithmsAsList(
+                AlgorithmTools.getAvailableKeyAlgorithms().stream().filter(alg -> AlgorithmTools.isPQC(alg)).collect(Collectors.toList()));
+        setAlternativeSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
         setKeyUsage(new boolean[9]);
@@ -1408,13 +1415,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setAvailableKeyAlgorithmsAsList(final List<String> availableKeyAlgorithms) {
         data.put(AVAILABLEKEYALGORITHMS, new ArrayList<>(availableKeyAlgorithms));
     }
-    
-    
+
     public String[] getAlternativeAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
+        if (availableKeyAlgorithms == null) {
+            return ArrayUtils.EMPTY_STRING_ARRAY;
+        }
         return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<String> getAlternativeAvailableKeyAlgorithmsAsList() {
         return (ArrayList<String>) data.get(ALTERNATIVE_AVAILABLEKEYALGORITHMS);
@@ -1574,6 +1583,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setAlternativeSignatureAlgorithm(String alternativeSignatureAlgorithm) {
         data.put(ALTERNATIVE_SIGNATUREALGORITHM, alternativeSignatureAlgorithm);
+    }
+
+    public boolean getUseAlternativeSignature() {
+        return BooleanUtils.isTrue((Boolean) data.get(USE_ALTERNATIVE_SIGNATURE));
+    }
+
+    public void setUseAlternativeSignature(boolean enabled) {
+        data.put(USE_ALTERNATIVE_SIGNATURE, enabled);
     }
 
     public boolean[] getKeyUsage() {
