@@ -409,8 +409,23 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    // SelectItem<String, String>
+    public List<SelectItem> getAvailableAlternativeKeyAlgorithmsAvailable() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
+            if (AlgorithmTools.isPQC(current)) {
+                ret.add(new SelectItem(current));
+            }
+        }
+        return ret;
+    }
+
     public int getAvailableKeyAlgorithmsSize() {
         return getAvailableKeyAlgorithmsAvailable().size();
+    }
+
+    public int getAvailableAlternativeKeyAlgorithmsSize() {
+        return getAvailableAlternativeKeyAlgorithmsAvailable().size();
     }
 
     // SelectItem<String,String>
@@ -489,6 +504,22 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    // SelectItem<String, String>
+    public List<SelectItem> getSignatureAlgorithmAvailableAlternative() {
+        final List<SelectItem> ret = new ArrayList<>();
+        // null becomes ""-value.
+        ret.add(new SelectItem(null, getEjbcaWebBean().getText("INHERITFROMCA")));
+        if (certificateProfile.getType() != CertificateConstants.CERTTYPE_SSH) {
+            for (final String sigAlg : AlgorithmConstants.AVAILABLE_SIGALGS) {
+                final String keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(sigAlg);
+                if (AlgorithmTools.isPQC(keyAlg)) {
+                    ret.add(new SelectItem(sigAlg, sigAlg));
+                }
+            }
+        }
+        return ret;
+    }
+
     public List<SelectItem> getSshCertificateTypes() {
         final List<SelectItem> ret = new ArrayList<>();
         for(SshCertificateType sshCertificateType : SshCertificateType.values()) {
@@ -535,10 +566,20 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return getCertificateProfile().getSignatureAlgorithm();
     }
 
+    public String getAlternativeSignatureAlgorithm() {
+        return getCertificateProfile().getAlternativeSignatureAlgorithm();
+    }
+
     public void setSignatureAlgorithm(final String signatureAlgorithm) {
         // Inherit signature algorithm from issuing CA is signaled by null, but is rendered as "".
-        final String sigAlg = StringUtils.isBlank(signatureAlgorithm) ? null : signatureAlgorithm;
+        final String sigAlg = StringUtils.defaultIfEmpty(signatureAlgorithm, null);
         getCertificateProfile().setSignatureAlgorithm(sigAlg);
+    }
+
+    public void setAlternativeSignatureAlgorithm(final String signatureAlgorithm) {
+        // Inherit signature algorithm from issuing CA is signaled by null, but is rendered as "".
+        final String sigAlg = StringUtils.defaultIfEmpty(signatureAlgorithm, null);
+        getCertificateProfile().setAlternativeSignatureAlgorithm(sigAlg);
     }
 
     /**
