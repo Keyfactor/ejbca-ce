@@ -482,7 +482,7 @@ public interface RaMasterApi {
      * @return map of authorized and enabled CAInfos for the provided authentication token
      * @since Initial RA Master API version (EJBCA 8.3.0)
      */
-    public IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken, RaCaListRequest listRequest);
+    IdNameHashMap<CAInfo> getRequestedAuthorizedCAInfos(AuthenticationToken authenticationToken, RaCaListRequest listRequest);
 
     /**
      * @return map of authorized certificate profiles for the provided authentication token
