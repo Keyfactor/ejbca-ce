@@ -231,11 +231,6 @@ public class WebConfiguration {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("web.manualclasspathsenabled"));
     }
     
-    /** @return the script to use to create OpenVPN installers */
-    public static String getOpenVPNCreateInstallerScript() {
-        return EjbcaConfigurationHolder.getString("web.openvpn.createInstallerScript");
-    }
-    
     /** @return the default slot in the "New CryptoToken" page */
     public static String getDefaultP11SlotNumber() {
         String s = EjbcaConfigurationHolder.getString("cryptotoken.p11.defaultslot");
