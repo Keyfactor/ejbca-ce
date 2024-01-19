@@ -260,7 +260,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         try {
             userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfo, encodedOauthBearerToken);
         } catch (IOException e) {
-            LOG.error("Userinfo request failed: " + e.getMessage(), e);
+            LOG.info("Userinfo request failed: " + e.getMessage(), e);
             return otherClaims;
         }
         JWTClaimsSet.Builder claimsSetBuilder = new JWTClaimsSet.Builder();
