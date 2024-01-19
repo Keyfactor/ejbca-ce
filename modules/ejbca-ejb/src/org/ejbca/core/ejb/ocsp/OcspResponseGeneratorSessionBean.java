@@ -1378,8 +1378,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             auditLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);
             auditLogger.paramPut(AuditLogger.OCSPREQUEST, StringTools.hex(request));
         }
+        
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);  
+        
         OCSPReq req;
-        long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+        long maxAge = ocspConfiguration.getDefaultResponseMaxAge();
         OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
         X509Certificate signerCert = null;
         String serialNrForResponseStore = null;
@@ -1410,7 +1414,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.SUCCESSFUL);
             }
             OcspSigningCacheEntry ocspSigningCacheEntry = null;
-            long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+              
+            long nextUpdate = ocspConfiguration.getDefaultValidityTime() * 1000L;
             Map<ASN1ObjectIdentifier, Extension> responseExtensions = new HashMap<>();
             
             // Look over the status requests
@@ -1449,10 +1454,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 OcspDataConfigCacheEntry ocspDataConfig = OcspDataConfigCache.INSTANCE.getEntry(certId);
                 // Locate the CA which gave out the certificate
                 if (Objects.isNull(ocspSigningCacheEntry)) {
-
-                    GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                            .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-
                     // An extra cache reload in case we are on an MS compatible CA
                     if (Objects.isNull(ocspDataConfig) && OcspDataConfigCache.INSTANCE.getCaModeCompatiblePresent() ||
                             !Objects.isNull(ocspDataConfig) && ocspDataConfig.isMsCaCompatible()) {
@@ -1613,8 +1614,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         }
                         continue;
                     } else {
-                        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
-                                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
                         String defaultResponder = ocspConfiguration.getOcspDefaultResponderReference();
                         String errMsg = intres.getLocalizedMessage("ocsp.errorfindcacert", StringTools.hex(certId.getIssuerNameHash()),
                                 defaultResponder);
@@ -2793,6 +2792,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     /** @return OcspKeyBinding properties set to the current file-based configuration (per cert profile config is ignored here) */
     @SuppressWarnings("deprecation")
     private Map<String, Serializable> getOcspKeyBindingDefaultProperties() {
+        GlobalOcspConfiguration ocspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);        
         // Use global config as defaults for each new OcspKeyBinding
         final Map<String, Serializable> dataMap = new HashMap<>();
         dataMap.put(OcspKeyBinding.PROPERTY_INCLUDE_CERT_CHAIN, OcspConfiguration.getIncludeCertChain());
@@ -2801,10 +2802,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         } else {
             dataMap.put(OcspKeyBinding.PROPERTY_RESPONDER_ID_TYPE, ResponderIdType.KEYHASH.name());
         }
-        dataMap.put(OcspKeyBinding.PROPERTY_MAX_AGE, OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L);
+        dataMap.put(OcspKeyBinding.PROPERTY_MAX_AGE, ocspConfiguration.getDefaultResponseMaxAge());
         dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD, OcspConfiguration.getNonExistingIsGood());
         dataMap.put(OcspKeyBinding.PROPERTY_NON_EXISTING_REVOKED, OcspConfiguration.getNonExistingIsRevoked());
-        dataMap.put(OcspKeyBinding.PROPERTY_UNTIL_NEXT_UPDATE, OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L);
+        dataMap.put(OcspKeyBinding.PROPERTY_UNTIL_NEXT_UPDATE, ocspConfiguration.getDefaultValidityTime());
         dataMap.put(OcspKeyBinding.PROPERTY_REQUIRE_TRUSTED_SIGNATURE, OcspConfiguration.getEnforceRequestSigning());
         return dataMap;
     }

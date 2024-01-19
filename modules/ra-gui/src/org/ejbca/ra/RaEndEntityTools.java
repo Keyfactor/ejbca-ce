@@ -15,13 +15,17 @@ package org.ejbca.ra;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.faces.component.UIComponent;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -31,8 +35,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 /**
  * Tools to handle common RA End Entity operations.
- * 
- * @version $Id$
+ *
  */
 public class RaEndEntityTools {
 
@@ -85,5 +88,19 @@ public class RaEndEntityTools {
         // Sort by date created (descending)
         certificates.sort((cert1, cert2) -> cert1.getCreated().compareTo(cert2.getCreated()) * -1);
         return certificates;
+    }
+
+    static boolean isUsernameValid(String username) {
+        if (StringUtils.isEmpty(username)){
+            return true;
+        }
+        Pattern pattern = Pattern.compile(EndEntityInformation.VALID_USERNAME_REGEX);
+        Matcher matcher = pattern.matcher(username);
+
+        if (matcher.find()) {
+            return false;
+        } else {
+            return true;
+        }
     }
 }

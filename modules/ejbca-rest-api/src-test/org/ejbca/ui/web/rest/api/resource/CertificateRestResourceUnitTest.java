@@ -26,12 +26,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.text.DateFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
@@ -39,6 +43,7 @@ import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import com.keyfactor.util.CertTools;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -77,6 +82,30 @@ public class CertificateRestResourceUnitTest {
     private static final DateFormat DATE_FORMAT_ISO8601 = JsonDateSerializer.DATE_FORMAT_ISO8601;
     private static final JSONParser jsonParser = new JSONParser();
     private static final AuthenticationToken authenticationToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("TestRunner"));
+    private static final String testCertPem = "-----BEGIN CERTIFICATE-----\n"
+        + "MIID+zCCAuOgAwIBAgIULyZUBiXtcmi2U6C4maDQLnvei5swDQYJKoZIhvcNAQEL\n"
+        + "BQAwYDEVMBMGA1UEBhMMVVMgSXNzdWVyIEROMRIwEAYDVQQKDAlNYXJrIFRlc3Qx\n"
+        + "IjAgBgNVBAsMGUNlcnRpZmljYXRpb24gQXV0aG9yaXRpZXMxDzANBgNVBAMMBlN1\n"
+        + "YiBDQTAeFw0yMTA0MTMxNjMzMzlaFw0yMzA0MTMxNjMwMjRaMIGNMQswCQYDVQQG\n"
+        + "EwJVUzESMBAGA1UECgwJTWFyayBUZXN0MQ4wDAYDVQQLDAVVc2VyczEUMBIGA1UE\n"
+        + "AwwLTWFyayBXcmlnaHQxGzAZBgoJkiaJk/IsZAEBDAttYXJrLndyaWdodDEnMCUG\n"
+        + "CSqGSIb3DQEJARYYbWFyay53cmlnaHRAcHJpbWVrZXkuY29tMIIBIjANBgkqhkiG\n"
+        + "9w0BAQEFAAOCAQ8AMIIBCgKCAQEApsNL/Qu/aqJ0yd2rgByVap9rcwXrHZ/mCcgK\n"
+        + "KKyV66vhzrMD+coRtEWui5rllaTFI+xjLWDTAFb5JBvV+XOODoa1+uh7nuLSTBed\n"
+        + "VLuP6ob/THXh6HWyyh/wxrQPXg1XWJQn2aVE51aWuX8A7l6OSTjoDyYAZceExMEk\n"
+        + "UV2mHJzhMREnKg+f3kCciECvrybq7WCY1D+nS4ZjjBJw9fBGQ8Ro+VT8MbviRgR4\n"
+        + "TxXK/Y9SXBjJkTWnSmPA5WaBCzaBBXFWN8QIoJ7Sz6HggMgki0bk41Y1uDq36pdX\n"
+        + "bmlDBrluOH5/HtzYSKvq4uwof53CDpRGQ/Q9uwn4gmBRb/jS9QIDAQABo38wfTAM\n"
+        + "BgNVHRMBAf8EAjAAMB8GA1UdIwQYMBaAFPTX2DmjnQzcD6Ebs3tXG2aIxoohMB0G\n"
+        + "A1UdJQQWMBQGCCsGAQUFBwMCBggrBgEFBQcDBDAdBgNVHQ4EFgQUXqZ5qPc4trDJ\n"
+        + "s793/9j7ztJOzYEwDgYDVR0PAQH/BAQDAgXgMA0GCSqGSIb3DQEBCwUAA4IBAQCC\n"
+        + "+T1gklNgSMe7XutXvlz6/reCbr3oUviy/UkggySffqnodsCQGhq22TlUtrifU7MD\n"
+        + "Nv++8cl4PBpdzgom29rPE6JkkfKfpJkRX0LnXQvTQKqDQW/m8tLExRniJ9BlH47w\n"
+        + "8YCE5II3oazsl7cUqn6OZWjVxysiOVE34gzDusJFSXQpL6VDjtXL6lw9tmOgYOp7\n"
+        + "BI7RwzkzsIXinbvq3SloBcDEeXFeogJ43cdXn2rui6n/wdGBfJAnZKfOQFQcz9GY\n"
+        + "7rhOXJyrdmQ3FTgQobnP55mvMLdVFukRfHyHmwr01sKcA474AtpWgIY5TcVzCyUJ\n"
+        + "imu7R06cjtJpdhQBJHgF\n"
+        + "-----END CERTIFICATE-----\n";
     // Extend class to test without security
     private static class CertificateRestResourceWithoutSecurity extends CertificateRestResourceSwagger {
         @Override
@@ -247,9 +276,14 @@ public class CertificateRestResourceUnitTest {
         final long expectedNextOffset = 4L;
         final long expectedNumberOfResults = 6L;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime(anyObject(AuthenticationToken.class), anyInt())).andReturn(10).times(1);
+
+        final Certificate testCertificate = CertTools.getCertsFromPEM(new ByteArrayInputStream(testCertPem.getBytes()), X509Certificate.class).get(0);
+        Collection<Certificate> certificates = List.of(testCertificate, testCertificate, testCertificate, testCertificate);
         expect(raMasterApiProxy.getCertificatesByExpirationTime(anyObject(AuthenticationToken.class), eq(days), eq(maxNumberOfResults), eq(offset)))
-                        .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
+                        .andReturn(EJBTools.wrapCertCollection(certificates));
+
         replay(raMasterApiProxy);
+
         // when
         final Invocation.Builder request = server
                 .newRequest("/v1/certificate/expire")
@@ -283,8 +317,11 @@ public class CertificateRestResourceUnitTest {
         final long expectedNextOffset = 7L;
         final long expectedNumberOfResults = 3L;
         expect(raMasterApiProxy.getCountOfCertificatesByExpirationTime(anyObject(AuthenticationToken.class), anyInt())).andReturn(10).times(1);
+
+        final Certificate testCertificate = CertTools.getCertsFromPEM(new ByteArrayInputStream(testCertPem.getBytes()), X509Certificate.class).get(0);
+        Collection<Certificate> certificates = List.of(testCertificate, testCertificate, testCertificate, testCertificate);
         expect(raMasterApiProxy.getCertificatesByExpirationTime(anyObject(AuthenticationToken.class), eq(days), eq(maxNumberOfResults), eq(offset)))
-                        .andReturn(EJBTools.wrapCertCollection(Collections.<Certificate> emptyList()));
+                        .andReturn(EJBTools.wrapCertCollection(certificates));
         replay(raMasterApiProxy);
         // when
         final Invocation.Builder request = server
