@@ -90,10 +90,10 @@
                 <h:outputLabel for="fetchUserInfo" value="#{web.text.OAUTHKEYCONFIGURATION_FETCHUSERINFOENABLED}" />
             </h:panelGroup>
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_USERINFOURL}" 
-                        rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls and systemConfigMBean.oauthKeyManager.oauthKeyEditor.fetchUserInfo}"/>
+                        rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fetchUserInfo}"/>
             <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.userInfoUrl}" size="46" id="keyUserInfoUrl"
                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
-                        rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls and systemConfigMBean.oauthKeyManager.oauthKeyEditor.fetchUserInfo}">
+                        rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fetchUserInfo}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
 

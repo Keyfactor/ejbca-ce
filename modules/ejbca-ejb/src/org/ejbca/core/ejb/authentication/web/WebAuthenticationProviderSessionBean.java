@@ -38,6 +38,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OAuthPublicKey;
+import org.cesecore.authentication.oauth.OAuthUserInfoResponse;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.cesecore.authentication.oauth.TokenExpiredException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -213,14 +214,18 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     }
                 }
             }
-
-            final JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            
+            JWTClaimsSet claims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
                 LOG.debug("JWT Claims:" + claims);
             }
 
             if (!verifyOauth2Audience(keyInfo, claims)) {
                 return null;
+            }
+                       
+            if (keyInfo.isFetchUserInfo()) {
+                claims = fetchUserInfoAndAddToClaims(encodedOauthBearerToken, keyInfo, claims);
             }
 
             final Date expiry = claims.getExpirationTime();
@@ -245,6 +250,33 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             LOG.info("Configured not verify OAuth2 JWT signature: " + e.getMessage(), e);
             return null;
         }
+    }
+
+    private JWTClaimsSet fetchUserInfoAndAddToClaims(String encodedOauthBearerToken, final OAuthKeyInfo keyInfo, JWTClaimsSet otherClaims)
+            throws ParseException {
+        OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
+                internalKeyBindings, certificateStoreSession, cryptoToken));
+        OAuthUserInfoResponse userInfoResponse = new OAuthUserInfoResponse();
+        try {
+            userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfo, encodedOauthBearerToken);
+        } catch (IOException e) {
+            LOG.error("Userinfo request failed: " + e.getMessage(), e);
+            return otherClaims;
+        }
+        JWTClaimsSet.Builder claimsSetBuilder = new JWTClaimsSet.Builder();
+        JWTClaimsSet userInfoClaims = null;
+        // Verify that the userinfo response is for the correct user
+        if (userInfoResponse != null && userInfoResponse.getSubject() != null && userInfoResponse.getSubject().equals(otherClaims.getSubject())) {
+            userInfoClaims = JWTClaimsSet.parse(userInfoResponse.getClaims());
+            // Merge the different sets of claims (userinfo claims and access token/id token claims). In case of conflict the claims from userinfo get overwritten.
+            for (Map.Entry<String, Object> entry : userInfoClaims.getClaims().entrySet()) {
+                claimsSetBuilder.claim(entry.getKey(), entry.getValue());
+            }
+            for (Map.Entry<String, Object> entry : otherClaims.getClaims().entrySet()) {
+                claimsSetBuilder.claim(entry.getKey(), entry.getValue());
+            }       
+        } 
+        return claimsSetBuilder.build();
     }
 
     private SignedJWT getSignedJwt(String encodedOauthBearerToken, String oauthIdToken) throws ParseException {
