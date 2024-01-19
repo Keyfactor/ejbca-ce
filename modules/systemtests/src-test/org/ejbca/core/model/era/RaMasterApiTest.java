@@ -169,6 +169,7 @@ public class RaMasterApiTest {
             new MethodApiDescriptor("getCertificateProfileAsXml", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "3fefb0435fe5"),
             new MethodApiDescriptor("getAuthorizedRoleNamespaces", "java.util.List", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "6dc827c9cf1f"),
             new MethodApiDescriptor("getAuthorizedCAInfos", "org.ejbca.core.model.era.IdNameHashMap", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken"), "a69926fdfd1c"),
+            new MethodApiDescriptor("getRequestedAuthorizedCAInfos", "org.ejbca.core.model.era.IdNameHashMap", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.RaCaListRequest"), "f96a74c94169"),
             new MethodApiDescriptor("getCertificatesByUsername", "java.util.Collection", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String", "boolean", "long"), "1ee8cad768f1"),
             new MethodApiDescriptor("getLastCaChain", "java.util.Collection", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String"), "5f79decd107d"),
             new MethodApiDescriptor("persistAcmeOrders", "java.util.List", Arrays.asList("java.util.List"), "7de72950f11a"),
