@@ -183,13 +183,6 @@ public class WebConfiguration {
 	public static String getWebContentEncoding() {
 	   	return EjbcaConfigurationHolder.getString("web.contentencoding");
 	}
-	
-	/**
-	 * The request browser certificate renewal web application is deployed
-	 */
-	public static boolean getRenewalEnabled() {
-		return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString("web.renewalenabled"));
-	}
 
     public static boolean doShowStackTraceOnErrorPage(){
         final String s=EjbcaConfigurationHolder.getString ("web.errorpage.stacktrace");
