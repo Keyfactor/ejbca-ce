@@ -19,11 +19,6 @@
 	<property name="systemtests.resources.dir" location="${systemtests.dir}/resources"/>
 	<property name="systemtests.src.interface.dir" location="${systemtests.dir}/src-interface"/>
 
-	<!-- Include endorsed jars from Glassfish -->
-	<condition property="tests.jvmargs.endorsed" value="-Djava.endorsed.dirs=${appserver.home}/modules/endorsed" else="">
-		<equals arg1="${appserver.subtype}" arg2="glassfish3"/>
-	</condition>
-
 	<!-- When running WS tests we don't want the JEE classes of the appserver, ws should be independent of that,
 	     and in the case of JBoss 6 it pulls in apache cxf that does not work with client certificates, at least the same way as sun ws does -->
 	<path id="systemtests.classpath.nojee">
@@ -227,7 +222,7 @@
 			<classpath path="${systemtests.build.test.dir}"/>
 		</javac>
 		<copy file="${log4j.test.file}" tofile="${systemtests.build.test.dir}/log4j.xml" failonerror="true"/>
-		<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
+		<!-- jndi.properties needs to be in the classpath, if it exists -->
 		<copy file="${jndi.properties.file}" todir="${systemtests.build.dir}" failonerror="false"/>
 		<copy file="${jboss-ejb-client.properties}" todir="${systemtests.build.dir}" failonerror="false"/>
 		<!-- needed by the cesecore tests -->
@@ -312,7 +307,6 @@
 			</classpath>
 			<sysproperty key="httpCmpProxyURL" value="${httpCmpProxyURL}"/>
 			<jvmarg line="${tests.jvmargs}"/>
-			<jvmarg line="${tests.jvmargs.endorsed}"/>
 			<jvmarg value="${remoteDebugJvmArgs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
@@ -349,7 +343,6 @@
 				<path refid="systemtests.classpath" />
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
-			<jvmarg line="${tests.jvmargs.endorsed}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}" includes="org/ejbca/core/ejb/ca/caadmin/CAsTest.class"/>
@@ -390,7 +383,6 @@
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
 					<!--
 					<exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />-->
-					<exclude name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
 					<!-- Tests that require unique index in the database to work -->
 					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberTest.class" />
@@ -420,7 +412,6 @@
 				<path refid="systemtests.classpath" />
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
-			<jvmarg line="${tests.jvmargs.endorsed}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
@@ -446,7 +437,6 @@
 				<path refid="systemtests.classpath" />
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
-			<jvmarg line="${tests.jvmargs.endorsed}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
@@ -494,29 +484,5 @@
 	<target name="runperf" description="Run system tests that creates lots of certificates">
 		<property name="test.runone" value="SignLotsOfCertsTest"/>
 		<antcall target="runone-internal" inheritall="true" inheritrefs="true"/>
-	</target>
-
-	<target name="rungfver" depends="build">
-		<condition property="isglassfish">
-			<matches pattern="glassfish" string="${appserver.type}"/>
-		</condition>
-		<exec command="${appserver.home}/bin/verifier" failifexecutionfails="false">
-			<arg line="-p -d ${reports.dir} ${ejbca.home}/dist/ejbca.ear"/>
-		</exec>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
-			<classpath>
-				<path location="${systemtests.build.test.dir}" />
-				<path refid="systemtests.classpath" />
-			</classpath>
-			<jvmarg line="${tests.jvmargs}"/>
-			<jvmarg line="${tests.jvmargs.endorsed}"/>
-			<jvmarg line="-Dvertest.report=${reports.dir}/ejbca.ear.xml -Dvertest.expectedErrors=0 -Dvertest.expectedFailures=3 -Dvertest.expectedWarnings=0"/>
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}" if="isglassfish">
-				<fileset dir="${systemtests.build.test.dir}">
-					<include name="org/ejbca/ejb/GlassfishVerifierReportParserTest.class" />
-				</fileset>
-			</batchtest>
-		</junit>
 	</target>
 </project>
