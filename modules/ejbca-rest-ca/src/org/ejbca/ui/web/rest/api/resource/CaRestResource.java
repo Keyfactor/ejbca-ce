@@ -117,7 +117,7 @@ public class CaRestResource extends BaseRestResource {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
         RaCaListRequest raCaListRequest = new RaCaListRequest();
         raCaListRequest.setIncludeExternal(includeExternal);
-        IdNameHashMap<CAInfo> authorizedCAInfos = raMasterApiProxy.getAuthorizedCAInfos(adminToken, raCaListRequest);
+        IdNameHashMap<CAInfo> authorizedCAInfos = raMasterApiProxy.getRequestedAuthorizedCAInfos(adminToken, raCaListRequest);
         List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(authorizedCAInfos);
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
                 .certificateAuthorities(caInfoRestResponseList)

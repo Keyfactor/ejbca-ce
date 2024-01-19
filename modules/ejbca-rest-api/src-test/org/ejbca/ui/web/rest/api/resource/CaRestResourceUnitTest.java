@@ -164,7 +164,7 @@ public class CaRestResourceUnitTest {
                 .build();
         final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
         caInfosMap.put(expectedId, expectedName, cAInfo);
-        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(caInfosMap);
+        expect(raMasterApiProxy.getRequestedAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(caInfosMap);
         replay(raMasterApiProxy);
         // when
         final Invocation.Builder request = server
