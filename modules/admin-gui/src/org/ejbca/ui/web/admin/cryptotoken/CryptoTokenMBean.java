@@ -1817,10 +1817,15 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
         final String keyUsage = keyPairGuiInfo.getKeyUsage();
-        final String keyUsageInfoMessage = getKeyUsageInfoMessage(keyUsage);
+        final String messageString;
+        if (keyUsage == null) {
+            messageString = "Keypair with alias " + alias + " tested successfully.";
+        } else {
+            messageString = "Keypair with alias " + alias + getKeyUsageInfoMessage(keyUsage);
+        }
         try {
             cryptoTokenManagementSession.testKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
-            super.addNonTranslatedInfoMessage(alias + " tested successfully " + keyUsageInfoMessage);
+            super.addNonTranslatedInfoMessage(messageString);
         } catch (Exception e) {
             addNonTranslatedErrorMessage(e);
         }
@@ -1834,9 +1839,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     private String getKeyUsageInfoMessage(String keyUsage) {
         String keyUsageInfoMessageString = "";
         if (keyUsage.equals("SIGN") || (keyUsage.equals("SIGN_ENCRYPT"))){
-            keyUsageInfoMessageString = " using signing and verification operations.";
+            keyUsageInfoMessageString = " tested successfully using signing and verification operations.";
         } else if (keyUsage.equals("ENCRYPT")){
-            keyUsageInfoMessageString = " using encryption and decryption operations.";
+            keyUsageInfoMessageString = " tested successfully using encryption and decryption operations.";
         }
         return keyUsageInfoMessageString;
     }
