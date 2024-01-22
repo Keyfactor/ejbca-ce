@@ -52,6 +52,7 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ocsp.PreSigningOcspResponseSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -73,6 +74,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Used for evoking certificates in the system, manages revocation by:
@@ -113,6 +115,9 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
+    /** Only allow expired certificate archival to run for 10 seconds when generating CRLs on revocation. */
+    private static final long MAX_REVOKE_CRL_ARCHIVAL_SECS = 10;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
@@ -199,7 +204,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
             AuthenticationToken newAdmin = getOrCreateAuthorizedTokenCreateCrl(admin, caInfo.getName());
             try {
-                publishCrlSession.forceCRL(newAdmin, caId);
+                publishCrlSession.forceCRL(newAdmin, caId, new CrlCreationParams(MAX_REVOKE_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS));
                 publishCrlSession.forceDeltaCRL(newAdmin, caId);
             } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException e) {
                 log.error("Failed to sign new CRL upon revocation: " + e.getMessage());
@@ -295,6 +300,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         CAInfo caInfo = null;
         for (ArrayList<CertificateDataWrapper> revokedCertificates : generateCrlsForCas.values()) {
             if (revokedCertificates.size() > 0) {
+                // FIXME looks like this will not work correctly when certs from multiple CAs are revoked
                 caId = revokedCertificates.get(0).getBaseCertificateData().getIssuerDN().hashCode();
                 caInfo = caSession.getCAInfo(admin, caId);
                 // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking 
@@ -302,7 +308,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
                     log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
                     try {
-                        publishCrlSession.forceCRL(admin, caId);
+                        publishCrlSession.forceCRL(admin, caId, new CrlCreationParams(MAX_REVOKE_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS));
                         publishCrlSession.forceDeltaCRL(admin, caId);
                     } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException e) {
                         log.error("Failed to sign new CRL upon revocation: " + e.getMessage());
