@@ -117,6 +117,7 @@ import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -367,9 +368,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>15<td>=<td>7.11.0
      * <tr><th>16<td>=<td>8.1.0
      * <tr><th>17<td>=<td>8.2.0
+     * <tr><th>18<td>=<td>8.3.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 17;
+    private static final int RA_MASTER_API_VERSION = 18;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -3674,27 +3676,44 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public <T extends ConfigurationBase> T getGlobalConfiguration(final Class<T> type) {
         T result = null;
-        if (GlobalConfiguration.class.getName().equals(type.getName())) {
+        if (type.isAssignableFrom(GlobalConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        } else if (GlobalCesecoreConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(GlobalCesecoreConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        } else if (GlobalAcmeConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(GlobalAcmeConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
-        } else if (GlobalOcspConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(GlobalOcspConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        } else if (GlobalUpgradeConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(GlobalUpgradeConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        } else if (OAuthConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(OAuthConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
-        } else if (ScepConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(ScepConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
-        } else if (EABConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(EABConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
-        } else if (CmpConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(CmpConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        } else if (EstConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(EstConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         }
+        if (log.isDebugEnabled()) {
+            if (result != null) {
+                log.debug("Found configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+            } else {
+                log.debug("Could not find configuration with class '" + type.getName() + "'. Probably the request was sent from an RA peer of a newer version");
+            }
+        }
+        return result;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends ConfigurationBase> T getGlobalConfigurationLocalFirst(final Class<T> type) {
+        T result = null;
+        if (type.isAssignableFrom(MSAutoEnrollmentConfiguration.class)) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        } 
         if (log.isDebugEnabled()) {
             if (result != null) {
                 log.debug("Found configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
