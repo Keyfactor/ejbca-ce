@@ -3863,6 +3863,27 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return null;
     }
 
+    
+    @Override
+    public <T extends ConfigurationBase> T getGlobalConfigurationLocalFirst(final Class<T> type) {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 18) {
+                try {
+                    return raMasterApi.getGlobalConfigurationLocalFirst(type);
+                } catch (IllegalStateException e) {
+                    // 7.4.x can throw NPE, which results in an IllegalStateException because the NPE is an unexpected exception.
+                    // Just ignore and try next implementation.
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed to get configuration of type " + type.getName() + ". This can happen if the peer runs 7.4.x or older and does not support the requested configuration type.");
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+    
 
     /**
      * Try dispatching a SCEP request to an Intune capable backend.
