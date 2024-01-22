@@ -916,7 +916,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().addCaIssuer(newCaIssuer);
         newCaIssuer = "";
         caIssuersModel = null;
-     //   redirectToComponent("header_x509v3extensions_valdata");
         return "";
     }
 
@@ -925,7 +924,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         getCertificateProfile().removeCaIssuer(caIssuer);
         newCaIssuer = caIssuer;
         caIssuersModel = null;
-    //    redirectToComponent("header_x509v3extensions_valdata");
         return "";
     }
 

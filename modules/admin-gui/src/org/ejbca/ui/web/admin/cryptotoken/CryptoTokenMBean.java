@@ -1816,12 +1816,34 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void testKeyPair() {
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
+        final String keyUsage = keyPairGuiInfo.getKeyUsage();
+        final String messageString;
+        if (keyUsage == null) {
+            messageString = "Keypair with alias " + alias + " tested successfully.";
+        } else {
+            messageString = "Keypair with alias " + alias + getKeyUsageInfoMessage(keyUsage);
+        }
         try {
             cryptoTokenManagementSession.testKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
-            super.addNonTranslatedInfoMessage(alias + " tested successfully.");
+            super.addNonTranslatedInfoMessage(messageString);
         } catch (Exception e) {
             addNonTranslatedErrorMessage(e);
         }
+    }
+    
+    /**
+     * Provides additional GUI message info for testKeyPair() 
+     * @param keyUsage the key usage fetched from KeyPairGuiInfo
+     * @return user friendly String with key usage for a key pair.
+     */
+    private String getKeyUsageInfoMessage(String keyUsage) {
+        String keyUsageInfoMessageString = "";
+        if (keyUsage.equals("SIGN") || (keyUsage.equals("SIGN_ENCRYPT"))){
+            keyUsageInfoMessageString = " tested successfully using signing and verification operations.";
+        } else if (keyUsage.equals("ENCRYPT")){
+            keyUsageInfoMessageString = " tested successfully using encryption and decryption operations.";
+        }
+        return keyUsageInfoMessageString;
     }
 
     /**
