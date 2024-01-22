@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
-import java.util.Date;
 import java.util.Set;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -75,7 +74,7 @@ public interface PublishingCrlSession {
      * @return true if a CRL was created
      * @throws javax.ejb.EJBException if communication or system error occurs
      */
-    boolean createCRLNewConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException,
+    boolean createCRLNewConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime, final CrlCreationParams params) throws CryptoTokenOfflineException,
             CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
     /** Method that forces generation of a CRL for a certain CA.
@@ -87,8 +86,18 @@ public interface PublishingCrlSession {
      * @param caid the id of the CA this operation regards
      * @return true if a CRL was generated
      */
-    boolean forceCRL(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
+    boolean forceCRL(AuthenticationToken admin, int caid, final CrlCreationParams params) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
             CAOfflineException;
+
+    /**
+     * Like {{@link #forceCRL(AuthenticationToken, int, CrlCreationParams)} but uses default values for
+     * the {@link CrlCreationParams}.
+     *
+     * Should mainly be used in tests. In production you usually at least want to specify a time limit
+     * for archival.
+     */
+    boolean forceCRL(AuthenticationToken admin, int caId)
+            throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException;
 
     /** Method that forces generation of a Delta CRL for a certain CA.
      * If the CA has multiple CRL partitions, then a Delta CRL is generated for each of them.
@@ -108,7 +117,7 @@ public interface PublishingCrlSession {
      * @param validFrom Date from which this CRL should be valid
      * @see #forceCRL(AuthenticationToken, int)
      */
-    boolean forceCRL(AuthenticationToken admin, int caid, int crlPartitionIndex, final Date validFrom) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
+    boolean forceCRL(AuthenticationToken admin, int caid, int crlPartitionIndex, final CrlCreationParams params) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException,
             CAOfflineException;
 
     /**
