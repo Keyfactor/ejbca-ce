@@ -1653,6 +1653,15 @@ public interface RaMasterApi {
 
 
     /**
+     * Gets the global configuration for the concrete type <T extends ConfigurationBase> trying local db first.
+     * 
+     * @param type type the concrete global configuration object class.
+     * @return the global configuration or null.
+     */
+    <T extends ConfigurationBase> T getGlobalConfigurationLocalFirst(Class<T> type);
+
+    
+    /**
      * Dispatch SCEP message over RaMasterApi, returning enough information to update status in Intune
      *
      * @param authenticationToken the origin of the request
@@ -1720,5 +1729,5 @@ public interface RaMasterApi {
      * @return renewed certificate
      */
     byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException;
-
+    
 }
