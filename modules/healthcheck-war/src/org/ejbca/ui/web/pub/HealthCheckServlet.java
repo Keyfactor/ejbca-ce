@@ -24,7 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
@@ -68,13 +70,90 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * @version $Id$
  */
 public class HealthCheckServlet extends HttpServlet {
+    
+    /**
+     * I hold all the query parameters to customize the health check.  
+     * I can also be used as key in a map to allow for rate limiting
+     * customized health checks.
+     */
+    static class QueryParameters {
+
+        final private String[] caNames;
+        final private boolean checkAllCas;
+        final private boolean checkOcsp;
+        final private boolean checkPublishers;
+        final private Map<String, String> cryptoTokensAndKeys;
+
+        public QueryParameters(HttpServletRequest request) {
+            String[] caNames = request.getParameterValues("ca");
+            // deal with possible null return
+            if (caNames == null)
+                caNames = new String[0];
+            this.caNames = caNames;
+            checkAllCas = caNames.length == 0;
+            checkOcsp = safeGetParameter(request, "ocsp", true);
+            checkPublishers = safeGetParameter(request, "publishers", EjbcaConfiguration.getHealthCheckPublisherConnections());
+            cryptoTokensAndKeys = collectTokenAndKeyParameters(request);
+        }
+        
+        /**
+         * pair up all "tokenXYZ" and "keyXYZ" pairs as a list of token/key pairs for testing
+         */
+        private Map<String, String> collectTokenAndKeyParameters(HttpServletRequest request) {
+            ArrayList<String> parameterNames = new ArrayList<>();
+            request.getParameterNames().asIterator().forEachRemaining(parameterNames::add);
+
+            Map<String, String> cryptoTokensAndKeys = new LinkedHashMap<>();
+            for (String parameterName : parameterNames) {
+                if (parameterName.startsWith("token")) {
+                    String suffix = parameterName.substring("token".length());
+                    if (parameterNames.contains("key" + suffix)) {
+                        String tokenName = request.getParameter(parameterName);
+                        String keyName = request.getParameter("key" + suffix);
+                        if (tokenName != null && keyName != null) {
+                            cryptoTokensAndKeys.put(tokenName, keyName);
+                        }
+                    }
+                }
+            }
+            return cryptoTokensAndKeys;
+        }
+
+        public void log() {
+            log.debug(String.format("Checking cas=%b ocsp=%b publishers=%b", checkAllCas, checkOcsp, checkPublishers));
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + Arrays.hashCode(caNames);
+            result = prime * result + Objects.hash(checkAllCas, checkOcsp, checkPublishers, cryptoTokensAndKeys);
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            QueryParameters other = (QueryParameters) obj;
+            return Arrays.equals(caNames, other.caNames) && checkAllCas == other.checkAllCas && checkOcsp == other.checkOcsp
+                    && checkPublishers == other.checkPublishers && cryptoTokensAndKeys.equals(cryptoTokensAndKeys);
+        }
+    }
 
     private static final Logger log = Logger.getLogger(HealthCheckServlet.class);
     private static final long serialVersionUID = 1L;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    private static final SameRequestRateLimiter<String> rateLimiter = new SameRequestRateLimiter<String>();
+    
+    // have one rate limiter per QueryParameter, since it customizes the response
+    private static final ConcurrentHashMap<QueryParameters, SameRequestRateLimiter<String>> rateLimiter = new ConcurrentHashMap<>();
     
     private String[] authIPs = null;
     private boolean anyIpAuthorized = false;
@@ -141,7 +220,9 @@ public class HealthCheckServlet extends HttpServlet {
     }
     
     private String getRateLimitedResult(HttpServletRequest request) {
-        final SameRequestRateLimiter<String>.Result result = rateLimiter.getResult();
+        // if we've got multiple HealthChecks with the same query parameters at the same time, only do one
+        final SameRequestRateLimiter<String>.Result result = rateLimiter
+                .computeIfAbsent(new QueryParameters(request), t -> new SameRequestRateLimiter<>()).getResult();
         if (result.isFirst()) {
             try {
                 result.setValue(doAllHealthChecks(request));
@@ -196,18 +277,12 @@ public class HealthCheckServlet extends HttpServlet {
     }
     
     public String doAllHealthChecks(HttpServletRequest request) {
-        String[] caNames = request.getParameterValues("ca");
-        // deal with possible null return
-        if (caNames == null)
-            caNames = new String[0];
-        boolean checkAllCas = caNames.length == 0;
-        boolean checkOcsp = safeGetParameter(request, "ocsp", true);
-        boolean checkPublishers = safeGetParameter(request, "publishers", EjbcaConfiguration.getHealthCheckPublisherConnections());
-        Map<String, String> cryptoTokensAndKeys = collectTokenAndKeyParameters(request);
+        
+        QueryParameters queryParameters = new QueryParameters(request);
         
         if (log.isDebugEnabled()) {
             log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
-            log.debug(String.format("Checking cas=%b ocsp=%b publishers=%b", checkAllCas, checkOcsp, checkPublishers));
+            queryParameters.log();
         }
         // Start by checking if we are in maintenance mode
         final Properties maintenanceProperties = getMaintenanceProperties();
@@ -239,33 +314,33 @@ public class HealthCheckServlet extends HttpServlet {
             if (minfreememory >= currentFreeMemory) {
                 sb.append("\nMEM: Error Virtual Memory is about to run out, currently free memory :").append(String.valueOf(Runtime.getRuntime().freeMemory()));    
             }
-            if (checkAllCas) {
+            if (queryParameters.checkAllCas) {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking all CAs with 'include in health check' enabled.");
                 }
                 sb.append(caAdminSession.healthCheck());
             }
             // if checkAllCas not specified, maybe specific cas were
-            else if (caNames.length > 0 && !caNames[0].equals("none")) {
+            else if (queryParameters.caNames.length > 0 && !queryParameters.caNames[0].equals("none")) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Checking specified CAs: " + String.join(",", caNames));
+                    log.debug("Checking specified CAs: " + String.join(",", queryParameters.caNames));
                 }
 
-                sb.append(caAdminSession.healthCheck(Arrays.asList(caNames)));
+                sb.append(caAdminSession.healthCheck(Arrays.asList(queryParameters.caNames)));
             }
-            if (cryptoTokensAndKeys.size() > 0) {
+            if (queryParameters.cryptoTokensAndKeys.size() > 0) {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking cryptotoken(s).");
                 }
-                sb.append(cryptoTokenHealthCheck(cryptoTokensAndKeys));
+                sb.append(cryptoTokenHealthCheck(queryParameters.cryptoTokensAndKeys));
             }
-            if (checkPublishers) {
+            if (queryParameters.checkPublishers) {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking publishers.");
                 }
                 sb.append(publisherSession.testAllConnections());
             }
-            if (checkOcsp) {
+            if (queryParameters.checkOcsp) {
                 if (log.isDebugEnabled()) {
                     log.debug("Checking OcspKeyBindings.");
                 }
@@ -285,28 +360,7 @@ public class HealthCheckServlet extends HttpServlet {
     }
 
 
-    /**
-     * pair up all "tokenXYZ" and "keyXYZ" pairs as a list of token/key pairs for testing
-     */
-    private Map<String, String> collectTokenAndKeyParameters(HttpServletRequest request) {
-        ArrayList<String> parameterNames = new ArrayList<>();
-        request.getParameterNames().asIterator().forEachRemaining(parameterNames::add);
-
-        Map<String, String> cryptoTokensAndKeys = new LinkedHashMap<>();
-        for (String parameterName : parameterNames) {
-            if (parameterName.startsWith("token")) {
-                String suffix = parameterName.substring("token".length());
-                if (parameterNames.contains("key" + suffix)) {
-                    String tokenName = request.getParameter(parameterName);
-                    String keyName = request.getParameter("key" + suffix);
-                    if (tokenName != null && keyName != null) {
-                        cryptoTokensAndKeys.put(tokenName, keyName);
-                    }
-                }
-            }
-        }
-        return cryptoTokensAndKeys;
-    }
+    
 
     /**
      * Test the named cryptotoken(s) and key(s)
