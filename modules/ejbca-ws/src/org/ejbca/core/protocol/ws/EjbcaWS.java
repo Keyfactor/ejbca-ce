@@ -2391,7 +2391,9 @@ public class EjbcaWS implements IEjbcaWS {
                 throw new CADoesntExistsException("CA with name " + caName + " doesn't exist.");
             }
             publishingCrlSession.forceCRL(admin, cainfo.getCAId(), new CrlCreationParams(5, TimeUnit.MINUTES));
-            publishingCrlSession.forceDeltaCRL(admin, cainfo.getCAId());
+            if (cainfo.getDeltaCRLPeriod() > 0) {
+                publishingCrlSession.forceDeltaCRL(admin, cainfo.getCAId()); // Only generates delta CRLs if they are enabled! See ECA-11548
+            }
 		} catch (AuthorizationDeniedException e) {
             throw getEjbcaExceptionUnredacted(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {	// EJBException, ...

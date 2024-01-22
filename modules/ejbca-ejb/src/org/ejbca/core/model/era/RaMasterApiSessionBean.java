@@ -1322,7 +1322,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         try {
             if (countOnly) {
-                final long count = (long) query.getSingleResult();
+                // This query is created by nativeQuery, in which caste the return value from may be any 
+                // java.lang.Number, depending on database type and driver
+                final long count = ((Number) query.getSingleResult()).longValue();
                 response.setTotalCount(count);
                 response.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
                 if (log.isDebugEnabled()) {
@@ -1363,6 +1365,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return response;
     }
 
+    /**
+     * Note that this returns a query created by createNativeQuery, which does not conform to
+     * the JPA spec.  When countOnly is true, the return value from this query may be any java.lang.Number,
+     * not necessarily a Long.  Casting to long may throw an exception for some database drivers.  The best
+     * way to retrieve the count is to cast to java.lang.Number and use Number::longValue.
+     */
     private Query createQuery(final RaCertificateSearchRequestV2 request,
                               final boolean countOnly,
                               final List<String> issuerDns,
@@ -3217,8 +3225,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     StandardRules.CAFUNCTIONALITY.resource() + "/view_certificate", null);
             throw new AuthorizationDeniedException(msg);
         }
-        Date findDate = getDate(days);
-        return EJBTools.wrapCertCollection(certificateStoreSession.findExpiringCertificates(findDate, maxNumberOfResults, offset));
+        final Date findDate = getDate(days);
+        final int globalLimit = getGlobalCesecoreConfiguration().getMaximumQueryCount();
+        final int validMaxForDatabase = maxNumberOfResults > 0 && globalLimit >= maxNumberOfResults ? maxNumberOfResults : globalLimit;
+        return EJBTools.wrapCertCollection(certificateStoreSession.findExpiringCertificates(findDate, validMaxForDatabase, offset));
     }
 
     @Override

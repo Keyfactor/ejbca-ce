@@ -101,7 +101,6 @@
     <property name="mod.clientToolBox.lib" location="${mod.clientToolBox.dist}/clientToolBox.jar" />
     <property name="mod.clientToolBox.path" location="${mod.path}/clientToolBox" />
     <property name="mod.logsigning.lib" location="${ejbca.dist.path}/ejbcalogsigning.jar" />
-    <property name="mod.jbosslog4jsafer.lib" location="${mod.dist.path}/jbosslog4jsafer.jar" />
 	<property name="mod.scep-ra.path" location="${mod.path}/scep-ra" />
 	<property name="mod.scep-ra.lib" location="${mod.dist.path}/scep-ra.jar" />
 	<property name="mod.statedump.dist" location="${ejbca.dist.path}/statedump" />
@@ -373,17 +372,7 @@
 	<!-- Remote EJB requires application specific implementation to be available -->
 	<path id="lib.jee-client.classpath">
 		<fileset dir="${appserver.home}">
-			<!-- JBoss 7.1.1 and EAP 6.0 for remote EJB ...-->
-			<include name="bin/client/jboss-client*.jar"/>
-			<!-- Glassfish 3.1 -->
-			<include name="lib"/>
-			<include name="lib/gf-client.jar"/>
-			<include name="lib/jndi-properties.jar"/>
-			<!-- FIXME These are supposed to be loaded automatically by gf-client. Why doens't that work? -->
-			<include name="modules/*.jar"/>
-			<!-- Glassfish 4.0 -->
-			<include name="glassfish/lib/gf-client.jar"/>			
-			<include name="glassfish/lib/jndi.properties.jar"/>			
+			<include name="bin/client/jboss-client*.jar"/>		
 		</fileset>
 		<fileset dir="${ejbca.home}">
 			<include name="lib/jee-client/*.jar"/>
