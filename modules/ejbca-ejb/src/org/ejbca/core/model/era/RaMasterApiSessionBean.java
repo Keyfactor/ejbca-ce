@@ -367,6 +367,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>15<td>=<td>7.11.0
      * <tr><th>16<td>=<td>8.1.0
      * <tr><th>17<td>=<td>8.2.0
+     * <tr><th>18<td>=<td>8.3.0
      * </table>
      */
     private static final int RA_MASTER_API_VERSION = 17;
