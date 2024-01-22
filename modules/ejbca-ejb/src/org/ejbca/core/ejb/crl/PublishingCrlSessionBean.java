@@ -464,7 +464,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
     @Override
     public boolean forceDeltaCRL(final AuthenticationToken admin, final int caId) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException, CAOfflineException, DeltaCrlException {
         boolean result = true;
-        if (caSession.getCAInfoInternal(caId).getCAType() != X509CAInfo.CATYPE_X509) {
+        if (caSession.getCAInfoInternal(caId).getCAType() != CAInfo.CATYPE_X509) {
             return false;
         }
         result &= forceDeltaCRL(admin, caId, CertificateConstants.NO_CRL_PARTITION); // Always generate a main CRL
@@ -524,7 +524,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN,
                                         false, crlPartitionIndex, lastBaseCrlCreationDate.getTime(), keepExpiredCertsOnCrl, getAllowInvalidityDate(cainfo));
-                                revokedCertificatesBeforeLastCANameChange.addAll(revokedCertInfo);
+                                
+                                for (RevokedCertInfo tmp : revokedCertInfo) { //for loop is necessary because revokedCertInfo.toArray is not supported...
+                                    revokedCertificatesBeforeLastCANameChange.add(tmp);
+                                }
                             }
                         }
                     }
@@ -730,7 +733,10 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
                                 differentSubjectDNs.add(renewedCertificateSubjectDN);
                                 Collection<RevokedCertInfo> revokedCertInfo = noConflictCertificateStoreSession.listRevokedCertInfo(renewedCertificateSubjectDN, false, 
                                         crlPartitionIndex, -1, true, getAllowInvalidityDate(cainfo));
-                                revokedCertificatesBeforeLastCANameChange.addAll(revokedCertInfo);
+                                
+                                for (RevokedCertInfo tmp : revokedCertInfo) { //for loop is necessary because revokedCertInfo.toArray is not supported...
+                                    revokedCertificatesBeforeLastCANameChange.add(tmp);
+                                }
                             }
                         }
                     }

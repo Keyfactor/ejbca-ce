@@ -35,6 +35,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.OcspNoCheck
 import org.cesecore.certificates.certificate.certextensions.standard.PrivateKeyUsagePeriod;
 import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
 import org.cesecore.certificates.certificate.certextensions.standard.SeisCardNumber;
+import org.cesecore.certificates.certificate.certextensions.standard.ValidityAssuredShortTerm;
 import org.cesecore.certificates.certificate.certextensions.standard.StandardCertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.standard.SubjectAltNames;
 import org.cesecore.certificates.certificate.certextensions.standard.SubjectDirectoryAttributes;
@@ -85,6 +86,7 @@ public class CertificateExtensionFactory {
 		standardCertificateExtensions.put(SeisCardNumber.OID_CARDNUMBER, SeisCardNumber.class.getName());
 		standardCertificateExtensions.put(Extension.privateKeyUsagePeriod.getId(), PrivateKeyUsagePeriod.class.getName());
 		standardCertificateExtensions.put(CabForumOrganizationIdentifier.OID, CabForumOrganizationIdentifier.class.getName());
+		standardCertificateExtensions.put(CertTools.OID_VALIDITY_ASSURED_SHORT_TERM, ValidityAssuredShortTerm.class.getName());
 	}
 	
 	private CertificateExtensionFactory(){}

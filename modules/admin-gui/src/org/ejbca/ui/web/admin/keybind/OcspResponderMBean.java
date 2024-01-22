@@ -29,11 +29,11 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
@@ -84,7 +84,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  *
  */
 @Named("ocspResponderMBean")
-@SessionScoped
+@ViewScoped
 public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
 
     private static final long serialVersionUID = 1L;
@@ -107,7 +107,9 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
     private String ocspAuditLogPattern;
     private String ocspAuditLogValues;
     private String ocspLoggingDateFormat;
-
+    private long defaultResponseValidityTime;
+    private long defaultResponseMaxAge;
+    private boolean useMaxValidityForExpiration;
 
     private String currentOcspExtension = null;
     private ListDataModel<InternalKeyBindingTrustEntry> signOcspResponseForCas = null;
@@ -143,6 +145,9 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         ocspAuditLogPattern = globalConfiguration.getOcspAuditLogPattern();
         ocspAuditLogValues = globalConfiguration.getOcspAuditLogValues();
         ocspLoggingDateFormat = globalConfiguration.getOcspLoggingDateFormat();
+        defaultResponseValidityTime = globalConfiguration.getDefaultValidityTime();
+        defaultResponseMaxAge = globalConfiguration.getDefaultResponseMaxAge();
+        useMaxValidityForExpiration = globalConfiguration.getUseMaxValidityForExpiration();
     }
 
     @Override
@@ -320,6 +325,53 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
         this.responderIdType = responderIdType;
     }
 
+    public long getDefaultResponseValidity() {
+        return defaultResponseValidityTime;
+    }
+    
+    public void setDefaultResponseValidity(final long defaultResponseValidity) {
+        this.defaultResponseValidityTime = defaultResponseValidity;
+    }
+    
+    public long getDefaultResponseMaxAge() {
+        return defaultResponseMaxAge;
+    }
+    
+    public void setDefaultResponseMaxAge(final long defaultResponseMaxAge) {
+        this.defaultResponseMaxAge = defaultResponseMaxAge;
+    }
+
+    public void saveGlobalResponseValues() {
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        configuration.setDefaultValidityTime(this.defaultResponseValidityTime);
+        configuration.setDefaultResponseMaxAge(this.defaultResponseMaxAge);
+        configuration.setUseMaxValidityForExpiration(this.useMaxValidityForExpiration);
+
+        try {
+            globalConfigurationSession.saveConfiguration(getAdmin(), configuration);
+        } catch (AuthorizationDeniedException e) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_ERROR, "Current administrator not authorized to modify global OCSP configuration.", null));
+        }
+    }
+    
+    public boolean isValiditiesUnchanged() {
+        GlobalOcspConfiguration configuration = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        return this.defaultResponseValidityTime == configuration.getDefaultValidityTime() 
+                && this.defaultResponseMaxAge == configuration.getDefaultResponseMaxAge()
+                && this.useMaxValidityForExpiration == configuration.getUseMaxValidityForExpiration();
+    }
+    
+    public boolean getUseMaxValidityForExpiration() {
+        return this.useMaxValidityForExpiration;
+    }
+    
+    public void setUseMaxValidityForExpiration(boolean useMaxValidityForExpiration) {
+        this.useMaxValidityForExpiration = useMaxValidityForExpiration;
+    }
+    
     @SuppressWarnings("unchecked")
     public List<SelectItem/*<String,String>*/> getDefaultResponderTargets() {
         final List<SelectItem> ret = new ArrayList<>();

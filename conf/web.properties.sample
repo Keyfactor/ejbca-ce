@@ -31,7 +31,7 @@ superadmin.dn=CN=${superadmin.cn}
 # Choose a good password here.
 superadmin.password=ejbca
 
-# Set this to false if you want to fetch the certificate from the EJBCA public web pages, instead of
+# Set this to false if you want to enroll the certificate from the EJBCA RA GUI pages, instead of
 # importing the P12-keystore. This can be used to put the initial superadmin-certificate on a smart card.
 superadmin.batch=true
 
@@ -124,11 +124,6 @@ httpsserver.tokentype=JKS
 # deprecated in newer versions. For new installations ONLY "web.reqauth" should be used.
 # Default: true
 #(Read the warning!)web.reqauth=true
-
-# Deploy the request browser certificate renewal web application and show a
-# link to it from the EJBCA public web.
-# Default = false
-#web.renewalenabled=false
 
 # Whether it should be possible to manually specify a custom class name in
 # the admin web (e.g. for a custom Publisher or Service), or if the choice
