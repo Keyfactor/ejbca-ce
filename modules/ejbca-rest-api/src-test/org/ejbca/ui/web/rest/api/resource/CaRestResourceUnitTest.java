@@ -41,6 +41,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.codec.binary.Base64;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
@@ -160,7 +161,7 @@ public class CaRestResourceUnitTest {
         final CAInfo cAInfo = CaInfoBuilder.builder()
                 .id(expectedId)
                 .expirationDate(expectedExpirationDate)
-                .stats(6)
+                .status(CAConstants.CA_EXTERNAL)
                 .build();
         final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
         caInfosMap.put(expectedId, expectedName, cAInfo);
