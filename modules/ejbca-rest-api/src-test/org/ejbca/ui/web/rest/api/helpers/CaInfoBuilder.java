@@ -148,11 +148,11 @@ public class CaInfoBuilder {
     /**
      * Sets the status of this CAInfo.
      *
-     * @param status stats.
+     * @param status status.
      *
      * @return instance of this builder.
      */
-    public CaInfoBuilder stats(final int status) {
+    public CaInfoBuilder status(final int status) {
         this.status = status;
         return this;
     }
