@@ -16,7 +16,7 @@ package com.keyfactor.util.test;
 /** Interface for version enums used by MethodApiDescriptor */
 public interface ApiVersion {
 
-    public static final ApiVersion INITIAL_VERSION = new ApiVersion() {
+    ApiVersion INITIAL_VERSION = new ApiVersion() {
         @Override
         public int versionOrdinal() {
             return -1;
@@ -27,7 +27,7 @@ public interface ApiVersion {
         }
     };
 
-    public static final ApiVersion ALL_VERSIONS = new ApiVersion() {
+    ApiVersion ALL_VERSIONS = new ApiVersion() {
         @Override
         public int versionOrdinal() {
             return Integer.MAX_VALUE;
