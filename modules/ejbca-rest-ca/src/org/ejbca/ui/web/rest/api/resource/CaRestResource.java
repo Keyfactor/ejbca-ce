@@ -111,6 +111,7 @@ public class CaRestResource extends BaseRestResource {
      * Returns the Response containing the list of CAs with general information per CA as Json.
      *
      * @param httpServletRequest HttpServletRequest of a request.
+     * @param includeExternal boolean true to get external cartificates, false to not include external certificates
      * @return The response containing the list of CAs and its general information.
      */
     public Response listCas(final HttpServletRequest httpServletRequest, boolean includeExternal) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
