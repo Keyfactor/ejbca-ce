@@ -83,7 +83,7 @@ public class CaRestResourceSwagger extends CaRestResource {
             notes = "Returns the Response containing the list of CAs with general information per CA as Json",
             response = CaInfosRestResponse.class)
     public Response listCas(@Context final HttpServletRequest httpServletRequest,
-            @ApiParam(value = "true to get external (i.e. imported) cartificates, false to not include get external (i.e. imported) certificates", required = false, defaultValue = "false")
+            @ApiParam(value = "true to get external (i.e. imported) cartificates, false to not get external (i.e. imported) certificates", required = false, defaultValue = "false")
             @QueryParam("includeExternal") boolean includeExternal
             ) throws AuthorizationDeniedException,
             CADoesntExistsException, RestException {
