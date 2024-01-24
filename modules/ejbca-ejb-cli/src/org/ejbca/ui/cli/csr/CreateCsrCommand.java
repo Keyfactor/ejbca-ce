@@ -32,6 +32,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -97,7 +98,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
     final StringBuffer signatureAlgorithmsFormatted = new StringBuffer(); 
 
     {
-        registerParameter(new Parameter(SDN_ARG, "Subject DN", MandatoryMode.MANDATORY, StandaloneMode.FORBID,
+        registerParameter(new Parameter(SDN_ARG, "Subject DN", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT, "Requested Subject DN of the enrolled user."));
         registerParameter(new Parameter(SAN_ARG, "Subject Alt Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID,
                 ParameterMode.ARGUMENT, "Requested Subject Alternative name of the enrolled user."));
@@ -179,7 +180,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
             destination = new File(System.getProperty("user.dir"));
         }
         
-        final String subjectDn = parameters.get(SDN_ARG);
+        final X500Name subjectDn; ;
         
         final String subjectAltName = parameters.get(SAN_ARG);
         
@@ -189,6 +190,12 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         final KeyPair primaryKeyPair;
         
         final KeyPair alternativeKeyPair;
+        
+        if(parameters.containsKey(SDN_ARG)) {            
+            subjectDn = new X500Name(parameters.get(SDN_ARG));
+        } else {
+            subjectDn = new X500Name(new RDN[0]);
+        }
         
         if(StringUtils.isEmpty(pubkeyFilename) ^ StringUtils.isEmpty(privkeyFilename)) {
             log.error("If using an existing key pair, both keys must be supplied as arguments.");
@@ -257,7 +264,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
             }
         }
         
-        final PKCS10CertificationRequestBuilder pkcs10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name(subjectDn),
+        final PKCS10CertificationRequestBuilder pkcs10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(subjectDn,
                 primaryKeyPair.getPublic());
         
         
