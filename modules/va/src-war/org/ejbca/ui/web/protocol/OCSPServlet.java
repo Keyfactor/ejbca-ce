@@ -28,7 +28,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
@@ -53,9 +52,10 @@ import org.ejbca.util.IPatternLogger;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.StringTools;
 
+
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
- * For a detailed description of OCSP refer to RFC2560.
+ * For a detailed description of OCSP refer to RFC 6960.
  */
 public class OCSPServlet extends HttpServlet {
 
@@ -229,7 +229,7 @@ public class OCSPServlet extends HttpServlet {
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(
                     responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null),
-                    OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE),
+                    configuration.getDefaultResponseMaxAge() * 1000L,
                     null
                 );
                 if (transactionLogger.isEnabled()) {
@@ -258,7 +258,7 @@ public class OCSPServlet extends HttpServlet {
                 // RFC 2560: responseBytes are not set on error.
                 ocspResponseInformation = new OcspResponseInformation(
                     responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null),
-                    OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE),
+                    configuration.getDefaultResponseMaxAge()*1000L,
                     null
                 );
                 if (transactionLogger.isEnabled()) {
@@ -309,13 +309,16 @@ public class OCSPServlet extends HttpServlet {
         long nextUpdate = ocspResponseInformation.getNextUpdate();
         String responseHeader = ocspResponseInformation.getResponseHeader();
         
+        GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        
         // RFC 5019 6.2: Last-Modified: date and time at which the OCSP responder last modified the response. == thisUpdate
         response.setDateHeader("Last-Modified", thisUpdate);
         // Custom 'Expires' header. Not compliant with RFC 5019.
-        if (OcspConfiguration.getCacheHeaderMaxAge()) {
+        if (ocspConfig.getUseMaxValidityForExpiration()) {
             response.setDateHeader("Expires", thisUpdate + ocspResponseInformation.getMaxAge());
             if (log.isDebugEnabled()) {
-                log.debug("ocsp.expires.useMaxAge enabled. Setting 'Expires' header to thisUpdate + max-age");
+                log.debug("OCSP servlet configured to use Max Age for Expired response validities. Setting 'Expires' header to thisUpdate + max-age");
             }
         } else {
             // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.
@@ -360,11 +363,14 @@ public class OCSPServlet extends HttpServlet {
         // RFC 5019 6.2: Last-Modified: date and time at which the OCSP responder last modified the response. == thisUpdate
         response.setDateHeader("Last-Modified", thisUpdate);
 
+        GlobalOcspConfiguration ocspConfig = (GlobalOcspConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        
         // Custom 'Expires' header. Not compliant with RFC 5019.
-        if (OcspConfiguration.getCacheHeaderMaxAge()) {
+        if (ocspConfig.getUseMaxValidityForExpiration()) {
             response.setDateHeader("Expires", thisUpdate + ocspResponseInformation.getMaxAge());
             if (log.isDebugEnabled()) {
-                log.debug("ocsp.expires.useMaxAge enabled. Setting 'Expires' header to thisUpdate + max-age");
+                log.debug("OCSP servlet configured to use Max Age for Expired response validities. Setting 'Expires' header to thisUpdate + max-age");
             }
         } else {
             // RFC 5019 6.2: Expires: This date and time will be the same as the nextUpdate timestamp in the OCSP response itself.

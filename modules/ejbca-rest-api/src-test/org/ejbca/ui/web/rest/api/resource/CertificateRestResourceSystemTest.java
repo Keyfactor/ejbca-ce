@@ -942,9 +942,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
         // when
         revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
-        createCrl(false);
         Thread.sleep(1000);
         revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        createCrl(false);
         final X509CRL deltaCrl = createCrl(true);
         // then
         assertEquals("Wrong revocation reason in Delta CRL", updatedRevocationReason, getRevocationReason(deltaCrl, serialNumber));
@@ -953,20 +953,20 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     @Test
     public void shouldContainBackdatedRevocationDateInDeltaCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
-        // Scenario: base CRL > initial revocation > revocation backdating with a date after last base CRL > delta CRL
+        // Scenario: initial revocation > revocation backdating with a date after last base CRL > base CRL > delta CRL
         // given
         enableRevocationReasonChange();
         enableRevocationBackdating();
         final String serialNumber = generateTestSerialNumber();
         final String revocationReason = KEYCOMPROMISE.getStringValue();
         // when
-        createCrl(false);
         Thread.sleep(1000);
         final String backdatedRevocationDate = getRevocationRequestDate();
         final long backdatedRevocationTime = DatatypeConverter.parseDateTime(backdatedRevocationDate).getTime().getTime();
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, null); // revoke using sysdate
         Thread.sleep(1000);
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, backdatedRevocationDate); // backdate
+        createCrl(false);
         final X509CRL deltaCrl = createCrl(true);
         // then
         assertNotNull("Certificate should be present in delta CRL", deltaCrl.getRevokedCertificate(CertTools.getSerialNumberFromString(serialNumber)));
@@ -985,10 +985,11 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // when
         revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
         final X509CRL initialCrl = getLatestCrl(false);
+
         revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
         final X509CRL lastCrl = getLatestCrl(false);
         // then
-        assertTrue("CRL number should be greater then the last", CrlExtensions.getCrlNumber(lastCrl).compareTo(CrlExtensions.getCrlNumber(initialCrl)) == 1);
+        assertTrue("CRL number should be greater then the last", CrlExtensions.getCrlNumber(lastCrl).compareTo(CrlExtensions.getCrlNumber(initialCrl)) > 0);
         assertEquals("Revocation reasons should match", initialRevocationReason, getRevocationReason(initialCrl, serialNumber));
         assertEquals("Revocation reasons should match", updatedRevocationReason, getRevocationReason(lastCrl, serialNumber));
     }
