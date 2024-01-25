@@ -563,6 +563,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             persistedTemplate.setIncludeUPNInSubjectSAN(newTemplateSettings.isIncludeUPNInSubjectSAN());
             persistedTemplate.setPublishToActiveDirectory(newTemplateSettings.isPublishToActiveDirectory());
             persistedTemplate.setArchivePrivateKey(newTemplateSettings.isArchivePrivateKey());
+            persistedTemplate.setSupplySubjectInformationInRequest(newTemplateSettings.isSupplySubjectInformationInRequest());
         }
     }
 
