@@ -87,13 +87,17 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
 
     @PostConstruct
     public void initialize() {
-        final String alias = getSelectedCmpAlias();
-        if (alias != null) {
-            cmpDto = readCmpDto(alias);
-        } else {
-            cmpDto = getDefaultCmpDto();
-        }
+        getEjbcaWebBean().clearCmpConfigClone();
 
+        String aliasName = cmpConfigMBean.getSelectedCmpAlias();
+        
+        if (cmpDto == null) {
+            if (StringUtils.isEmpty(aliasName)) {
+                this.cmpDto = getDefaultCmpDto();
+            } else {
+                this.cmpDto = readCmpDtoFromDB(aliasName);
+            }
+        }
         final String hmacAuthParam = getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC);
         final String eeCertParam = getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         final String dnPartPwdParam = getAuthenticationParameter(CmpConfiguration.AUTHMODULE_DN_PART_PWD);
@@ -134,108 +138,119 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         this.cmpDto = cmpDto;
     }
 
+    /**
+     * Used when there is no alias available such as when creating a new alias), to load the default cmp data
+     * @return data class containing default cmp data
+     */
     protected CmpDto getDefaultCmpDto() {
-        CmpDto cmpDto = new CmpDto();
-        cmpDto.setCMPDefaultCA(CmpConfiguration.DEFAULT_DEFAULTCA);
-        cmpDto.setResponseProtection(CmpConfiguration.DEFAULT_RESPONSE_PROTECTION);
-        cmpDto.setRaMode(CmpConfiguration.isRAMode(CmpConfiguration.DEFAULT_OPERATION_MODE));
-        cmpDto.setAuthenticationModule(CmpConfiguration.DEFAULT_CLIENT_AUTHENTICATION_MODULE);
-        cmpDto.setAuthenticationParameters(CmpConfiguration.DEFAULT_CLIENT_AUTHENTICATION_PARAMS);
-        cmpDto.setExtractUsernameComponent(CmpConfiguration.DEFAULT_EXTRACT_USERNAME_COMPONENT);
-        cmpDto.setVendorMode(Boolean.parseBoolean(CmpConfiguration.DEFAULT_VENDOR_MODE));
-        cmpDto.setVendorCaIds(CmpConfiguration.DEFAULT_VENDOR_CA_IDS);
-        cmpDto.setResponseCaPubsCA(CmpConfiguration.DEFAULT_RESPONSE_CAPUBS_CA);
-        cmpDto.setResponseCaPubsIssuingCA(Boolean.parseBoolean(CmpConfiguration.DEFAULT_RESPONSE_CAPUBS_ISSUING_CA));
-        cmpDto.setResponseExtraCertsCA(CmpConfiguration.DEFAULT_RESPONSE_EXTRACERTS_CA);
-        cmpDto.setAllowRAVerifyPOPO(Boolean.parseBoolean(CmpConfiguration.DEFAULT_ALLOW_RA_VERIFY_POPO));
-        cmpDto.setRaNameGenScheme(CmpConfiguration.DEFAULT_RA_USERNAME_GENERATION_SCHEME);
-        cmpDto.setRaNameGenParams(CmpConfiguration.DEFAULT_RA_USERNAME_GENERATION_PARAMS);
-        cmpDto.setRaNameGenPrefix(CmpConfiguration.DEFAULT_RA_USERNAME_GENERATION_PREFIX);
-        cmpDto.setRaNameGenPostfix(CmpConfiguration.DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
-        cmpDto.setRaPwdGenParams(CmpConfiguration.DEFAULT_RA_PASSWORD_GENERARION_PARAMS);
-        cmpDto.setAllowRACustomSerno(Boolean.parseBoolean(CmpConfiguration.DEFAULT_RA_ALLOW_CUSTOM_SERNO));
-//        data.put(alias + CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
-        cmpDto.setRaEEProfile(CmpConfiguration.DEFAULT_RA_EEPROFILE);
-        cmpDto.setRaCertProfile(CmpConfiguration.DEFAULT_RA_CERTPROFILE);
-        cmpDto.setRaCAName(CmpConfiguration.DEFAULT_RA_CANAME);
-        cmpDto.setRaCertPath(CmpConfiguration.DEFAULT_RACERT_PATH);
-        cmpDto.setOmitVerificationsInEEC(Boolean.parseBoolean(CmpConfiguration.DEFAULT_RA_OMITVERIFICATIONSINEEC));
-        cmpDto.setKurAllowAutomaticUpdate(Boolean.parseBoolean(CmpConfiguration.DEFAULT_KUR_ALLOW_AUTOMATIC_KEYUPDATE));
-        cmpDto.setAllowServerGeneratedKeys(Boolean.parseBoolean(CmpConfiguration.DEFAULT_ALLOW_SERVERGENERATED_KEYS));
-        cmpDto.setKurAllowSameKey(Boolean.parseBoolean(CmpConfiguration.DEFAULT_KUR_ALLOW_SAME_KEY));
-        cmpDto.setCertReqHandlerClass(CmpConfiguration.DEFAULT_CERTREQHANDLER);
-        cmpDto.setUseExtendedValidation(Boolean.parseBoolean(CmpConfiguration.DEFAULT_EXTENDEDVALIDATION));
-        return cmpDto;
+        final CmpDto cmpDtoDefault = new CmpDto();
+        cmpDtoDefault.setCMPDefaultCA(CmpConfiguration.DEFAULT_DEFAULTCA);
+        cmpDtoDefault.setResponseProtection(CmpConfiguration.DEFAULT_RESPONSE_PROTECTION);
+        cmpDtoDefault.setRaMode(CmpConfiguration.isRAMode(CmpConfiguration.DEFAULT_OPERATION_MODE));
+        cmpDtoDefault.setAuthenticationModule(CmpConfiguration.DEFAULT_CLIENT_AUTHENTICATION_MODULE);
+        cmpDtoDefault.setAuthenticationParameters(CmpConfiguration.DEFAULT_CLIENT_AUTHENTICATION_PARAMS);
+        cmpDtoDefault.setExtractUsernameComponent(CmpConfiguration.DEFAULT_EXTRACT_USERNAME_COMPONENT);
+        cmpDtoDefault.setVendorMode(Boolean.parseBoolean(CmpConfiguration.DEFAULT_VENDOR_MODE));
+        cmpDtoDefault.setVendorCaIds(CmpConfiguration.DEFAULT_VENDOR_CA_IDS);
+        cmpDtoDefault.setResponseCaPubsCA(CmpConfiguration.DEFAULT_RESPONSE_CAPUBS_CA);
+        cmpDtoDefault.setResponseCaPubsIssuingCA(Boolean.parseBoolean(CmpConfiguration.DEFAULT_RESPONSE_CAPUBS_ISSUING_CA));
+        cmpDtoDefault.setResponseExtraCertsCA(CmpConfiguration.DEFAULT_RESPONSE_EXTRACERTS_CA);
+        cmpDtoDefault.setAllowRAVerifyPOPO(Boolean.parseBoolean(CmpConfiguration.DEFAULT_ALLOW_RA_VERIFY_POPO));
+        cmpDtoDefault.setRaNameGenScheme(CmpConfiguration.DEFAULT_RA_USERNAME_GENERATION_SCHEME);
+        cmpDtoDefault.setRaNameGenParams(CmpConfiguration.DEFAULT_RA_USERNAME_GENERATION_PARAMS);
+        cmpDtoDefault.setRaNameGenPrefix(CmpConfiguration.DEFAULT_RA_USERNAME_GENERATION_PREFIX);
+        cmpDtoDefault.setRaNameGenPostfix(CmpConfiguration.DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
+        cmpDtoDefault.setRaPwdGenParams(CmpConfiguration.DEFAULT_RA_PASSWORD_GENERARION_PARAMS);
+        cmpDtoDefault.setAllowRACustomSerno(Boolean.parseBoolean(CmpConfiguration.DEFAULT_RA_ALLOW_CUSTOM_SERNO));
+        cmpDtoDefault.setRaEEProfile(CmpConfiguration.DEFAULT_RA_EEPROFILE);
+        cmpDtoDefault.setRaCertProfile(CmpConfiguration.DEFAULT_RA_CERTPROFILE);
+        cmpDtoDefault.setRaCAName(CmpConfiguration.DEFAULT_RA_CANAME);
+        cmpDtoDefault.setRaCertPath(CmpConfiguration.DEFAULT_RACERT_PATH);
+        cmpDtoDefault.setOmitVerificationsInEEC(Boolean.parseBoolean(CmpConfiguration.DEFAULT_RA_OMITVERIFICATIONSINEEC));
+        cmpDtoDefault.setKurAllowAutomaticUpdate(Boolean.parseBoolean(CmpConfiguration.DEFAULT_KUR_ALLOW_AUTOMATIC_KEYUPDATE));
+        cmpDtoDefault.setAllowServerGeneratedKeys(Boolean.parseBoolean(CmpConfiguration.DEFAULT_ALLOW_SERVERGENERATED_KEYS));
+        cmpDtoDefault.setKurAllowSameKey(Boolean.parseBoolean(CmpConfiguration.DEFAULT_KUR_ALLOW_SAME_KEY));
+        cmpDtoDefault.setCertReqHandlerClass(CmpConfiguration.DEFAULT_CERTREQHANDLER);
+        cmpDtoDefault.setUseExtendedValidation(Boolean.parseBoolean(CmpConfiguration.DEFAULT_EXTENDEDVALIDATION));
+        return cmpDtoDefault;
     }
 
 
-    protected CmpDto readCmpDto(final String aliasName) {
-        CmpConfiguration cmpConfiguration = getEjbcaWebBean().getCmpConfigForEdit(aliasName);
-        CmpDto cmpDto = new CmpDto();
-        cmpDto.setAlias(aliasName);
-        cmpDto.setCMPDefaultCA(cmpConfiguration.getCMPDefaultCA(aliasName));
-        cmpDto.setResponseProtection(cmpConfiguration.getResponseProtection(aliasName));
-        cmpDto.setRaMode(cmpConfiguration.getRAMode(aliasName));
-        cmpDto.setAuthenticationModule(cmpConfiguration.getAuthenticationModule(aliasName));
-        cmpDto.setAuthenticationParameters(cmpConfiguration.getAuthenticationParameters(aliasName));
-        cmpDto.setExtractUsernameComponent(cmpConfiguration.getExtractUsernameComponent(aliasName));
-        cmpDto.setVendorMode(cmpConfiguration.getVendorMode(aliasName));
-        cmpDto.setVendorCaIds(cmpConfiguration.getVendorCaIds(aliasName));
-        cmpDto.setResponseCaPubsCA(cmpConfiguration.getResponseCaPubsCA(aliasName));
-        cmpDto.setResponseCaPubsIssuingCA(cmpConfiguration.getResponseCaPubsIssuingCA(aliasName));
-        cmpDto.setResponseExtraCertsCA(cmpConfiguration.getResponseExtraCertsCA(aliasName));
-        cmpDto.setAllowRAVerifyPOPO(cmpConfiguration.getAllowRAVerifyPOPO(aliasName));
-        cmpDto.setRaNameGenScheme(cmpConfiguration.getRANameGenScheme(aliasName));
-        cmpDto.setRaNameGenParams(cmpConfiguration.getRANameGenParams(aliasName));
-        cmpDto.setRaNameGenPrefix(cmpConfiguration.getRANameGenPrefix(aliasName));
-        cmpDto.setRaNameGenPostfix(cmpConfiguration.getRANameGenPostfix(aliasName));
-        cmpDto.setRaPwdGenParams(cmpConfiguration.getRAPwdGenParams(aliasName));
-        cmpDto.setAllowRACustomSerno(cmpConfiguration.getAllowRACustomSerno(aliasName));
-        cmpDto.setRaEEProfile(cmpConfiguration.getRAEEProfile(aliasName));
-        cmpDto.setRaCertProfile(cmpConfiguration.getRACertProfile(aliasName));
-        cmpDto.setRaCAName(cmpConfiguration.getRACAName(aliasName));
-        cmpDto.setRaCertPath(cmpConfiguration.getRACertPath(aliasName));
-        cmpDto.setOmitVerificationsInEEC(cmpConfiguration.getOmitVerificationsInEEC(aliasName));
-        cmpDto.setKurAllowAutomaticUpdate(cmpConfiguration.getKurAllowAutomaticUpdate(aliasName));
-        cmpDto.setAllowServerGeneratedKeys(cmpConfiguration.getAllowServerGeneratedKeys(aliasName));
-        cmpDto.setKurAllowSameKey(cmpConfiguration.getKurAllowSameKey(aliasName));
-        cmpDto.setCertReqHandlerClass(cmpConfiguration.getCertReqHandlerClass(aliasName));
-        cmpDto.setUseExtendedValidation(cmpConfiguration.getUseExtendedValidation(aliasName));
-        return cmpDto;
+    /**
+     * Reads the existing data associated with the given cmp alias from database    
+     * @param alias cmp alias to load data from database for
+     * @return a data class containing cmp information read from db
+     */
+    protected CmpDto readCmpDtoFromDB(final String alias) {
+        CmpConfiguration cmpConfiguration = getEjbcaWebBean().getCmpConfiguration();
+        final CmpDto cmpDTOFromDB = new CmpDto();
+        cmpDTOFromDB.setAlias(alias); 
+        cmpDTOFromDB.setCMPDefaultCA(cmpConfiguration.getCMPDefaultCA(alias));
+        cmpDTOFromDB.setResponseProtection(cmpConfiguration.getResponseProtection(alias));
+        cmpDTOFromDB.setRaMode(cmpConfiguration.getRAMode(alias)); 
+        cmpDTOFromDB.setAuthenticationModule(cmpConfiguration.getAuthenticationModule(alias));
+        cmpDTOFromDB.setAuthenticationParameters(cmpConfiguration.getAuthenticationParameters(alias));
+        cmpDTOFromDB.setExtractUsernameComponent(cmpConfiguration.getExtractUsernameComponent(alias));
+        cmpDTOFromDB.setVendorMode(cmpConfiguration.getVendorMode(alias));
+        cmpDTOFromDB.setVendorCaIds(cmpConfiguration.getVendorCaIds(alias));
+        cmpDTOFromDB.setResponseCaPubsCA(cmpConfiguration.getResponseCaPubsCA(alias));
+        cmpDTOFromDB.setResponseCaPubsIssuingCA(cmpConfiguration.getResponseCaPubsIssuingCA(alias));
+        cmpDTOFromDB.setResponseExtraCertsCA(cmpConfiguration.getResponseExtraCertsCA(alias));
+        cmpDTOFromDB.setAllowRAVerifyPOPO(cmpConfiguration.getAllowRAVerifyPOPO(alias));
+        cmpDTOFromDB.setRaNameGenScheme(cmpConfiguration.getRANameGenScheme(alias));
+        cmpDTOFromDB.setRaNameGenParams(cmpConfiguration.getRANameGenParams(alias));
+        cmpDTOFromDB.setRaNameGenPrefix(cmpConfiguration.getRANameGenPrefix(alias));
+        cmpDTOFromDB.setRaNameGenPostfix(cmpConfiguration.getRANameGenPostfix(alias));
+        cmpDTOFromDB.setRaPwdGenParams(cmpConfiguration.getRAPwdGenParams(alias));
+        cmpDTOFromDB.setAllowRACustomSerno(cmpConfiguration.getAllowRACustomSerno(alias));
+        cmpDTOFromDB.setRaEEProfile(cmpConfiguration.getRAEEProfile(alias));
+        cmpDTOFromDB.setRaCertProfile(cmpConfiguration.getRACertProfile(alias));
+        cmpDTOFromDB.setRaCAName(cmpConfiguration.getRACAName(alias));
+        cmpDTOFromDB.setRaCertPath(cmpConfiguration.getRACertPath(alias));
+        cmpDTOFromDB.setOmitVerificationsInEEC(cmpConfiguration.getOmitVerificationsInEEC(alias));
+        cmpDTOFromDB.setKurAllowAutomaticUpdate(cmpConfiguration.getKurAllowAutomaticUpdate(alias));
+        cmpDTOFromDB.setAllowServerGeneratedKeys(cmpConfiguration.getAllowServerGeneratedKeys(alias));
+        cmpDTOFromDB.setKurAllowSameKey(cmpConfiguration.getKurAllowSameKey(alias));
+        cmpDTOFromDB.setCertReqHandlerClass(cmpConfiguration.getCertReqHandlerClass(alias));
+        cmpDTOFromDB.setUseExtendedValidation(cmpConfiguration.getUseExtendedValidation(alias));
+        return cmpDTOFromDB;
     }
 
-    protected CmpConfiguration updateCmpConfiguration(CmpDto dto) {
-        final String alias = dto.getAlias();
+    /**
+     * Updates the current cmp alias data, using info given in the UI
+     * @param alias that its data need to be updated
+     * @param cmpDto the data class containing up to date information from UI
+     */
+    protected void updateCmpConfiguration(final String alias, final CmpDto cmpDto) {
         CmpConfiguration cmpConfiguration = getEjbcaWebBean().getCmpConfigForEdit(alias);
-        cmpConfiguration.setCMPDefaultCA(alias, dto.getCMPDefaultCA());
-        cmpConfiguration.setResponseProtection(alias, dto.getResponseProtection());
-        cmpConfiguration.setRAMode(alias, dto.isRaMode());
-        cmpConfiguration.setAuthenticationModule(alias, dto.getAuthenticationModule());
-        cmpConfiguration.setAuthenticationParameters(alias, dto.getAuthenticationParameters());
-        cmpConfiguration.setExtractUsernameComponent(alias, dto.getExtractUsernameComponent());
-        cmpConfiguration.setVendorMode(alias, dto.isVendorMode());
-        cmpConfiguration.setVendorCaIds(alias, dto.getVendorCaIds());
-        cmpConfiguration.setResponseCaPubsCA(alias, dto.getResponseCaPubsCA());
-        cmpConfiguration.setResponseExtraCertsCA(alias, dto.getResponseExtraCertsCA());
-        cmpConfiguration.setResponseCaPubsIssuingCA(alias, dto.isResponseCaPubsIssuingCA());
-        cmpConfiguration.setAllowRAVerifyPOPO(alias, dto.isAllowRAVerifyPOPO());
-        cmpConfiguration.setRANameGenScheme(alias, dto.getRaNameGenScheme());
-        cmpConfiguration.setRANameGenParams(alias, dto.getRaNameGenParams());
-        cmpConfiguration.setRANameGenPrefix(alias, dto.getRaNameGenPrefix());
-        cmpConfiguration.setRANameGenPostfix(alias, dto.getRaNameGenPostfix());
-        cmpConfiguration.setRAPwdGenParams(alias, dto.getRaPwdGenParams());
-        cmpConfiguration.setAllowRACustomSerno(alias, dto.isAllowRACustomSerno());
-        cmpConfiguration.setRAEEProfile(alias, dto.getRaEEProfile());
-        cmpConfiguration.setRACertProfile(alias, dto.getRaCertProfile());
-        cmpConfiguration.setRACAName(alias, dto.getRaCAName());
-        cmpConfiguration.setRACertPath(alias, dto.getRaCertPath());
-        cmpConfiguration.setOmitVerificationsInEEC(alias, dto.isOmitVerificationsInEEC());
-        cmpConfiguration.setKurAllowAutomaticUpdate(alias, dto.isKurAllowAutomaticUpdate());
-        cmpConfiguration.setAllowServerGeneratedKeys(alias, dto.isAllowServerGeneratedKeys());
-        cmpConfiguration.setKurAllowSameKey(alias, dto.isKurAllowSameKey());
-        cmpConfiguration.setCertReqHandlerClass(alias, dto.getCertReqHandlerClass());
-        cmpConfiguration.setUseExtendedValidation(alias, dto.isUseExtendedValidation());
-        return cmpConfiguration;
+        cmpConfiguration.setCMPDefaultCA(alias, cmpDto.getCMPDefaultCA());
+        cmpConfiguration.setResponseProtection(alias, cmpDto.getResponseProtection());
+        cmpConfiguration.setRAMode(alias, cmpDto.isRaMode());
+        cmpConfiguration.setAuthenticationModule(alias, cmpDto.getAuthenticationModule());
+        cmpConfiguration.setAuthenticationParameters(alias, cmpDto.getAuthenticationParameters());
+        cmpConfiguration.setExtractUsernameComponent(alias, cmpDto.getExtractUsernameComponent());
+        cmpConfiguration.setVendorMode(alias, cmpDto.isVendorMode());
+        cmpConfiguration.setVendorCaIds(alias, cmpDto.getVendorCaIds());
+        cmpConfiguration.setResponseCaPubsCA(alias, cmpDto.getResponseCaPubsCA());
+        cmpConfiguration.setResponseExtraCertsCA(alias, cmpDto.getResponseExtraCertsCA());
+        cmpConfiguration.setResponseCaPubsIssuingCA(alias, cmpDto.isResponseCaPubsIssuingCA());
+        cmpConfiguration.setAllowRAVerifyPOPO(alias, cmpDto.isAllowRAVerifyPOPO());
+        cmpConfiguration.setRANameGenScheme(alias, cmpDto.getRaNameGenScheme());
+        cmpConfiguration.setRANameGenParams(alias, cmpDto.getRaNameGenParams());
+        cmpConfiguration.setRANameGenPrefix(alias, cmpDto.getRaNameGenPrefix());
+        cmpConfiguration.setRANameGenPostfix(alias, cmpDto.getRaNameGenPostfix());
+        cmpConfiguration.setRAPwdGenParams(alias, cmpDto.getRaPwdGenParams());
+        cmpConfiguration.setAllowRACustomSerno(alias, cmpDto.isAllowRACustomSerno());
+        cmpConfiguration.setRAEEProfile(alias, cmpDto.getRaEEProfile());
+        cmpConfiguration.setRACertProfile(alias, cmpDto.getRaCertProfile());
+        cmpConfiguration.setRACAName(alias, cmpDto.getRaCAName());
+        cmpConfiguration.setRACertPath(alias, cmpDto.getRaCertPath());
+        cmpConfiguration.setOmitVerificationsInEEC(alias, cmpDto.isOmitVerificationsInEEC());
+        cmpConfiguration.setKurAllowAutomaticUpdate(alias, cmpDto.isKurAllowAutomaticUpdate());
+        cmpConfiguration.setAllowServerGeneratedKeys(alias, cmpDto.isAllowServerGeneratedKeys());
+        cmpConfiguration.setKurAllowSameKey(alias, cmpDto.isKurAllowSameKey());
+        cmpConfiguration.setCertReqHandlerClass(alias, cmpDto.getCertReqHandlerClass());
+        cmpConfiguration.setUseExtendedValidation(alias, cmpDto.isUseExtendedValidation());
     }
 
     public boolean renameOrAddAlias() throws AuthorizationDeniedException {
@@ -274,22 +289,29 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         return true;
     }
 
+    /**
+     * Saves the updated cmp configuration from UI, into the database by calling updateCmpConfigFromClone from EjbcaWebBean class.
+     * @return string pointing to the result page (cmp aliases page)
+     * @throws AuthorizationDeniedException
+     */
     public String save() throws AuthorizationDeniedException {
+
         if (!renameOrAddAlias()) {
             return null;
         }
+        getEjbcaWebBean().clearCmpConfigClone();
 
-        if (UsernameGenerateMode.RANDOM.name().equals(getCmpDto().getRaNameGenScheme()) ||
-                UsernameGenerateMode.USERNAME.name().equals(getCmpDto().getRaNameGenScheme())) {
+        if (UsernameGenerateMode.RANDOM.name().equals(getCmpDto().getRaNameGenScheme())
+                || UsernameGenerateMode.USERNAME.name().equals(getCmpDto().getRaNameGenScheme())) {
             getCmpDto().setRaNameGenParams("");
         }
 
-        updateCmpConfiguration(getCmpDto());
-
         setAuthParameters();
-        getEjbcaWebBean().updateCmpConfigFromClone(getSelectedCmpAlias());
-        getEjbcaWebBean().clearCmpConfigClone();
-        getEjbcaWebBean().reloadCmpConfiguration();
+
+        final String currentCmpAlias = this.cmpDto.getAlias();
+
+        updateCmpConfiguration(currentCmpAlias, this.cmpDto);
+        getEjbcaWebBean().updateCmpConfigFromClone(currentCmpAlias);
         return "done";
     }
 
