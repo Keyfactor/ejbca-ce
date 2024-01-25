@@ -91,7 +91,7 @@ public class CmpConfigMBean extends BaseManagedBean implements Serializable {
         return "done";
     }
 
-    public String addAlias() throws AuthorizationDeniedException {
+    public String addAlias() {
         selectedCmpAlias = null;
         viewOnly = false;
         return "edit";
