@@ -672,7 +672,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         RaCsrTools.validateCsr(value, this, raLocaleBean, getCertificateProfile(), requestId, false);
         try {
-            if(!getCertificateProfile().getAllowDNOverride()) {
+            if(getCertificateProfile().getAllowDNOverride()) {
                 RaCsrTools.validetaNumberOfFieldsInSubjectDn(authorizedEndEntityProfiles.get(getEndEntityInformation().getEndEntityProfileId()), getCertificateRequest(), raLocaleBean, requestId,
                         false);
             }
