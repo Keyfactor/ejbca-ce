@@ -146,25 +146,6 @@
                     <f:selectItems value="#{certProfileBean.availableBitLengthsAvailable}" />
                     <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectManyListbox>
-                <h:panelGroup rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
-                    <h:outputLabel for="selectavailabSecurityLevel"
-                                   value="#{web.text.AVAILABLESECURITYLEVEL}" />
-                    <h:outputText
-                            value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#availableBitLengths')}"
-                            escape="false" />
-                    <br/>
-                    <h:panelGroup styleClass="help">
-                        <h:outputText
-                                value="#{web.text.PQCMEANSSECURITYSTRENGTH}" />
-                    </h:panelGroup>
-                </h:panelGroup>
-                <h:selectManyListbox id="selectavailabSecurityLevel" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}"
-                                     value="#{certProfileBean.certificateProfile.availableSecurityLevels}"
-                                     size="5" styleClass="number select-list"
-                                     disabled="#{certProfileBean.viewOnly || !certProfileBean.certificateProfile.keyAlgorithmsRequireSecurityLevel}">
-                    <f:selectItems value="#{certProfileBean.availableSecurityLevel}" />
-                    <f:ajax event="change" execute="@this" render="@none"/>
-                </h:selectManyListbox>
                 <h:outputLabel for="selectsignaturealgorithm"
                     value="#{web.text.SIGNATUREALGORITHM}" />
                 <h:selectOneMenu id="selectsignaturealgorithm"
@@ -174,15 +155,63 @@
                         value="#{certProfileBean.signatureAlgorithmAvailable}" />
                     <f:ajax event="change" execute="@this" render="@none"/>
                 </h:selectOneMenu>
+            </h:panelGrid>
+        </h:form>
+        <!-- Alternative Signature -->
+        <h:form id="alternativeSignature" rendered="#{!certProfileBean.typeSsh and !certProfileBean.typeIts}">
+            <h:panelGrid columns="2" styleClass="edit-ctnd"
+                cellspacing="3" cellpadding="3" border="0" width="100%"
+                rowClasses="Row0,Row0"
+                columnClasses="editColumn1,editColumn2">
+                <h:panelGroup>
+                    <h:outputLabel
+                        for="checkUseAlternativeSignature"
+                        value="#{web.text.CERT_ALTERNATIVE_SIGNATURE}" />
+                    <h:outputText
+                        value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html#Alternative_Signature')}"
+                        escape="false" />
+                </h:panelGroup>
+                <h:panelGroup id="checkUseAlternativeSignatureGroup">
+                    <h:selectBooleanCheckbox
+                        id="checkUseAlternativeSignature"
+                        value="#{certProfileBean.certificateProfile.useAlternativeSignature}"
+                        disabled="#{certProfileBean.viewOnly}">
+                         <f:ajax event="change" execute="@this" render="@form"/>
+                    </h:selectBooleanCheckbox>
+                    <h:outputLabel for="checkUseAlternativeSignature"
+                        value="#{web.text.USE} " />
+                </h:panelGroup>
+                <h:panelGroup rendered="#{certProfileBean.certificateProfile.useAlternativeSignature}">
+                    <h:outputLabel for="selectAvailableAlternativeKeyAlgorithms"
+                        value="#{web.text.AVAILABLEKEYALGORITHMS_ALTERNATIVE}" />
+                </h:panelGroup>
+                <h:selectManyListbox styleClass="select-list"
+                    rendered="#{certProfileBean.certificateProfile.useAlternativeSignature}"
+                    id="selectAvailableAlternativeKeyAlgorithms"
+                    value="#{certProfileBean.certificateProfile.alternativeAvailableKeyAlgorithms}"
+                    size="#{certProfileBean.availableAlternativeKeyAlgorithmsSize}" disabled="#{certProfileBean.viewOnly}">
+                    <f:selectItems value="#{certProfileBean.availableAlternativeKeyAlgorithmsAvailable}" />
+                    <f:ajax event="change" execute="@this" render="@none"/>
+                </h:selectManyListbox>
+                <h:outputLabel for="selectsignaturealgorithm"
+                    rendered="#{certProfileBean.certificateProfile.useAlternativeSignature}"
+                    value="#{web.text.SIGNATUREALGORITHMALTERNATIVE}" />
+                <h:selectOneMenu id="selectsignaturealgorithm"
+                    rendered="#{certProfileBean.certificateProfile.useAlternativeSignature}"
+                    value="#{certProfileBean.alternativeSignatureAlgorithm}"
+                    disabled="#{certProfileBean.viewOnly}">
+                    <f:selectItems
+                        value="#{certProfileBean.signatureAlgorithmAvailableAlternative}" />
+                    <f:ajax event="change" execute="@this" render="@none"/>
+                </h:selectOneMenu>
+            </h:panelGrid>
+        </h:form>
 
-			</h:panelGrid>
-		</h:form>
-		
         <!-- Validity -->
 		<h:form id="content">
 			<h:panelGrid columns="2" styleClass="edit-ctnd"
                 cellspacing="3" cellpadding="3" border="0" width="100%"
-                rowClasses="Row0,Row1"
+                rowClasses="Row1,Row0"
                 columnClasses="editColumn1,editColumn2">
                 <h:panelGroup>
                     <h:outputLabel for="textfieldvalidity"
