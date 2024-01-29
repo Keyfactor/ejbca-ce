@@ -68,6 +68,7 @@ import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -710,7 +711,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         scepConfiguration.setIncludeCA(scepAlias, false);
         scepConfiguration.setAllowLegacyDigestAlgorithm(scepAlias, true);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
-        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
@@ -722,7 +723,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
     public void test09ScepGetCrlSHA1NoLegacyDigestAlgorithmAllowed() throws Exception {
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
-        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
@@ -735,7 +736,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
     public void test09ScepGetCrlSHA256() throws Exception {
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
-        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);

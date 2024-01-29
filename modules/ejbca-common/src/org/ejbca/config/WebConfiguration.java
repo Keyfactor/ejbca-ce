@@ -183,13 +183,6 @@ public class WebConfiguration {
 	public static String getWebContentEncoding() {
 	   	return EjbcaConfigurationHolder.getString("web.contentencoding");
 	}
-	
-	/**
-	 * The request browser certificate renewal web application is deployed
-	 */
-	public static boolean getRenewalEnabled() {
-		return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString("web.renewalenabled"));
-	}
 
     public static boolean doShowStackTraceOnErrorPage(){
         final String s=EjbcaConfigurationHolder.getString ("web.errorpage.stacktrace");
@@ -236,11 +229,6 @@ public class WebConfiguration {
     /** @return true if the user is allowed to enter class names manually in the Publishers and Services pages */
     public static boolean isManualClassPathsEnabled() {
         return Boolean.valueOf(EjbcaConfigurationHolder.getString("web.manualclasspathsenabled"));
-    }
-    
-    /** @return the script to use to create OpenVPN installers */
-    public static String getOpenVPNCreateInstallerScript() {
-        return EjbcaConfigurationHolder.getString("web.openvpn.createInstallerScript");
     }
     
     /** @return the default slot in the "New CryptoToken" page */
