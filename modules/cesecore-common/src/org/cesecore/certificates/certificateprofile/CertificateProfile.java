@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
@@ -181,18 +182,12 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
     protected static final String AVAILABLEECCURVES = "availableeccurves";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
-    protected static final String AVAILABLESECURITYLEVEL = "availablesecuritylevel";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
     
     //Alternative key settings, with a focus on hybrid certificates
     private static final String ALTERNATIVE_AVAILABLEKEYALGORITHMS = "alternativeAvailableKeyAlgorithms";
-    private static final String ALTERNATIVE_AVAILABLEECCURVES = "alternativeAvailableECCurves";
-    private static final String ALTERNATIVE_AVAILABLEBITLENGTHS = "alternativeAvailableBitLengths";
-    private static final String ALTERNATIVE_AVAILABLESECURITYLEVEL = "alternativeAvailableSecurityLevel";
-    private static final String ALTERNATIVE_MINIMUMAVAILABLEBITLENGTH = "alternativeMinimumAvailableBitlength";
-    private static final String ALTERNATIVE_MAXIMUMAVAILABLEBITLENGTH = "alternativeMaximumAvailableBitlength";
-    
+
     public static final String TYPE = "type";
     protected static final String AVAILABLECAS = "availablecas";
     protected static final String USEDPUBLISHERS = "usedpublishers";
@@ -225,6 +220,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     private static final String ALTERNATIVE_SIGNATUREALGORITHM = "alternativeSignatureAlgorithm";
+    private static final String USE_ALTERNATIVE_SIGNATURE = "useAlternativeSignature";
     
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String STORECERTIFICATEDATA = "storecertificatedata";
@@ -530,6 +526,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
         setSignatureAlgorithm(null);
+        setUseAlternativeSignature(false);
+        setAlternativeAvailableKeyAlgorithmsAsList(
+                AlgorithmTools.getAvailableKeyAlgorithms().stream().filter(alg -> AlgorithmTools.isPQC(alg)).collect(Collectors.toList()));
+        setAlternativeSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
         setKeyUsage(new boolean[9]);
@@ -1398,10 +1398,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
-    public boolean isKeyAlgorithmsRequireSecurityLevel() {
-        return false;
-    }
-
     public String[] getAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
@@ -1419,13 +1415,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setAvailableKeyAlgorithmsAsList(final List<String> availableKeyAlgorithms) {
         data.put(AVAILABLEKEYALGORITHMS, new ArrayList<>(availableKeyAlgorithms));
     }
-    
-    
+
     public String[] getAlternativeAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
+        if (availableKeyAlgorithms == null) {
+            return ArrayUtils.EMPTY_STRING_ARRAY;
+        }
         return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
     }
-    
+
     @SuppressWarnings("unchecked")
     public List<String> getAlternativeAvailableKeyAlgorithmsAsList() {
         return (ArrayList<String>) data.get(ALTERNATIVE_AVAILABLEKEYALGORITHMS);
@@ -1456,39 +1454,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setAvailableEcCurvesAsList(final List<String> availableEcCurves) {
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
     }
-    
-    
-    public String[] getAlternativeAvailableEcCurves() {
-        final List<String> availableEcCurves = getAlternativeAvailableEcCurvesAsList();
-        return availableEcCurves.toArray(new String[availableEcCurves.size()]);
-    }
-    
-    
-    @SuppressWarnings("unchecked")
-    public List<String> getAlternativeAvailableEcCurvesAsList() {
-        return (ArrayList<String>) data.get(ALTERNATIVE_AVAILABLEECCURVES);
-    }
-
-    public void setAlternativeAvailableEcCurves(final String[] alternateAvailableEcCurves) {
-        setAlternativeAvailableEcCurvesAsList(Arrays.asList(alternateAvailableEcCurves));
-    }
-
-    public void setAlternativeAvailableEcCurvesAsList(final List<String> alternateAvailableEcCurves) {
-        data.put(ALTERNATIVE_AVAILABLEECCURVES, new ArrayList<>(alternateAvailableEcCurves));
-    }
-
-
-    public int[] getAvailableSecurityLevels(){
-        final List<Integer> availableSecurityLevels = getAvailableSecurityLevelsAsList();
-        if (availableSecurityLevels != null) {
-            final int[] returnval = new int[availableSecurityLevels.size()];
-            for (int i = 0; i < availableSecurityLevels.size(); i++) {
-                returnval[i] = availableSecurityLevels.get(i);
-            }
-            return returnval;
-        }
-        return new int[]{};
-    }
 
     public int[] getAvailableBitLengths() {
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
@@ -1497,53 +1462,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             returnval[i] = availablebitlengths.get(i);
         }
         return returnval;
-    }
-    
-    public int[] getAlternativeAvailableBitLengths() {
-        final List<Integer> availablebitlengths = getAlternativeAvailableBitLengthsAsList();
-        final int[] returnval = new int[availablebitlengths.size()];
-        for (int i = 0; i < availablebitlengths.size(); i++) {
-            returnval[i] = availablebitlengths.get(i);
-        }
-        return returnval;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Integer> getAvailableSecurityLevelsAsList() {
-        return (List<Integer>) data.get(AVAILABLESECURITYLEVEL);
-    }
-
-    public void setAvailableSecurityLevelsAsList(final List<Integer> availableSecurityLevels) {
-        data.put(AVAILABLESECURITYLEVEL, availableSecurityLevels);
-    }
-
-    public void setAvailableSecurityLevels(int[] availableSecurityLevelsArray) {
-        setAvailableSecurityLevelsAsList(Arrays.stream(availableSecurityLevelsArray).boxed().collect(Collectors.toList()));
-    }
-    
-    public int[] getAlternativetAvailableSecurityLevels(){
-        final List<Integer> availableSecurityLevels = getAlternativeAvailableSecurityLevelsAsList(); 
-        if (availableSecurityLevels != null) {
-            final int[] returnval = new int[availableSecurityLevels.size()];
-            for (int i = 0; i < availableSecurityLevels.size(); i++) {
-                returnval[i] = availableSecurityLevels.get(i);
-            }
-            return returnval;
-        }
-        return new int[]{};
-    }
-    
-    @SuppressWarnings("unchecked")
-    public List<Integer> getAlternativeAvailableSecurityLevelsAsList() {
-        return (List<Integer>) data.get(ALTERNATIVE_AVAILABLESECURITYLEVEL);
-    }
-
-    public void setAlternativeAvailableSecurityLevelsAsList(final List<Integer> availableSecurityLevels) {
-        data.put(ALTERNATIVE_AVAILABLESECURITYLEVEL, availableSecurityLevels);
-    }
-
-    public void setAlternativeAvailableSecurityLevels(int[] availableSecurityLevelsArray) {
-        setAlternativeAvailableSecurityLevelsAsList(Arrays.stream(availableSecurityLevelsArray).boxed().collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")
@@ -1580,39 +1498,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableBitLengthsAsList(availbitlengths);
     }
 
-
-    
-    @SuppressWarnings("unchecked")
-    public List<Integer> getAlternativeAvailableBitLengthsAsList() {
-        return (List<Integer>) data.get(ALTERNATIVE_AVAILABLEBITLENGTHS);
-    }
-
-    public void setAlternativeAvailableBitLengthsAsList(final List<Integer> availableBitLengths) {
-        // Strange values here, but it makes the <> below work for sure
-        int minimumavailablebitlength = 99999999;
-        int maximumavailablebitlength = 0;
-        for (Integer availablebitlength : availableBitLengths) {
-            if (availablebitlength > maximumavailablebitlength) {
-                maximumavailablebitlength = availablebitlength;
-            }
-            if (availablebitlength < minimumavailablebitlength) {
-                minimumavailablebitlength = availablebitlength;
-            }
-        }
-        data.put(ALTERNATIVE_AVAILABLEBITLENGTHS, availableBitLengths);
-        data.put(ALTERNATIVE_MINIMUMAVAILABLEBITLENGTH, minimumavailablebitlength);
-        data.put(ALTERNATIVE_MAXIMUMAVAILABLEBITLENGTH, maximumavailablebitlength);
-    }
-
-    public void setAlternativeAvailableBitLengths(int[] availablebitlengths) {
-        List<Integer> availbitlengths = new ArrayList<>(availablebitlengths.length);
-        for (int availablebitlength : availablebitlengths) {
-            availbitlengths.add(availablebitlength);
-        }
-        setAlternativeAvailableBitLengthsAsList(availbitlengths);
-    }
-    
-
     public int getMinimumAvailableBitLength() {
         return (Integer) data.get(MINIMUMAVAILABLEBITLENGTH);
     }
@@ -1621,14 +1506,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return (Integer) data.get(MAXIMUMAVAILABLEBITLENGTH);
     }
 
-    public int getAlternativeMinimumAvailableBitLength() {
-        return (Integer) data.get(ALTERNATIVE_MINIMUMAVAILABLEBITLENGTH);
-    }
-
-    public int getAlternativeMaximumAvailableBitLength() {
-        return (Integer) data.get(ALTERNATIVE_MAXIMUMAVAILABLEBITLENGTH);
-    }
-    
     /**
      * Returns true if the given combination of keyAlgorithm/keySpecification is allowed by this certificate profile.
      */
@@ -1706,6 +1583,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setAlternativeSignatureAlgorithm(String alternativeSignatureAlgorithm) {
         data.put(ALTERNATIVE_SIGNATUREALGORITHM, alternativeSignatureAlgorithm);
+    }
+
+    public boolean getUseAlternativeSignature() {
+        return BooleanUtils.isTrue((Boolean) data.get(USE_ALTERNATIVE_SIGNATURE));
+    }
+
+    public void setUseAlternativeSignature(boolean enabled) {
+        data.put(USE_ALTERNATIVE_SIGNATURE, enabled);
     }
 
     public boolean[] getKeyUsage() {
