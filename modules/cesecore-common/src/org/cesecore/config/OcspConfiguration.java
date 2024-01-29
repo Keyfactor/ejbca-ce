@@ -29,7 +29,6 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * Parses configuration bundled in conf/ocsp.properties, both for the internal and external OCSP responder.
  * 
- * @version $Id$
  */
 public class OcspConfiguration {
 
@@ -49,11 +48,18 @@ public class OcspConfiguration {
     public static final String NON_EXISTING_IS_REVOKED = "ocsp.nonexistingisrevoked";
     public static final String NON_EXISTING_IS_REVOKED_URI = NON_EXISTING_IS_REVOKED+".uri.";
     public static final String NON_EXISTING_IS_UNAUTHORIZED = "ocsp.nonexistingisunauthorized";
-    public static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
-    public static final String REVOKED_UNTIL_NEXT_UPDATE = "ocsp.revoked.untilNextUpdate";
-    public static final String MAX_AGE = "ocsp.maxAge";
-    public static final String CACHE_HEADER_MAX_AGE = "ocsp.expires.useMaxAge";
-    public static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
+
+    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    private static final String UNTIL_NEXT_UPDATE = "ocsp.untilNextUpdate";
+    @Deprecated // Slated for removal in the release after 8.3.0
+    private static final String REVOKED_UNTIL_NEXT_UPDATE = "ocsp.revoked.untilNextUpdate";
+    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    private static final String MAX_AGE = "ocsp.maxAge";
+    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    private static final String CACHE_HEADER_MAX_AGE = "ocsp.expires.useMaxAge";
+    @Deprecated //Only used for upgrades to 8.3.0 and beyond
+    private static final String REVOKED_MAX_AGE = "ocsp.revoked.maxAge";
+
     public static final String INCLUDE_SIGNING_CERT = "ocsp.includesignercert";
     public static final String INCLUDE_CERT_CHAIN = "ocsp.includecertchain";
     
@@ -377,7 +383,10 @@ public class OcspConfiguration {
     
     /**
      * The default number of milliseconds a response is valid, or 0 to disable. See RFC5019.
+     * 
+     * @deprecated Do not use with CertificateProfileConstants.CERTPROFILE_NO_PROFILE, since the global value has been moved to the database.
      */
+    @Deprecated
     public static long getUntilNextUpdate(int certProfileId) {
         long value = 0;
         Configuration config = ConfigurationHolder.instance();
@@ -404,7 +413,10 @@ public class OcspConfiguration {
     
     /**
      * The default number of milliseconds a response of a revoked certificate is valid, or 0 to disable. See RFC5019.
+     * 
+     * @deprecated Slated for removal after 8.3, see ECA-12084
      */
+    @Deprecated
     public static long getRevokedUntilNextUpdate(int certProfileId) {
         long value = 0;
         Configuration config = ConfigurationHolder.instance();
@@ -420,7 +432,11 @@ public class OcspConfiguration {
         return value;
     }
     
-    /** @return true if Until Next Update is explicitly configured for the requested certificate profile in case of a revoked certificate */
+    /** @return true if Until Next Update is explicitly configured for the requested certificate profile in case of a revoked certificate 
+     *
+     * @deprecated Slated for removal after 8.3, see ECA-12084
+     */
+    @Deprecated
     public static boolean isRevokedUntilNextUpdateConfigured(final int certificateProfileId) {
         if (certificateProfileId==CertificateProfileConstants.CERTPROFILE_NO_PROFILE){
             return ConfigurationHolder.instance().containsKey(REVOKED_UNTIL_NEXT_UPDATE);
@@ -431,7 +447,10 @@ public class OcspConfiguration {
 
     /**
      * @return true if "Expires" header should be based on max-age rather than nextUpdate (violates RFC 5019)
+     * 
+     * @deprecated Configuration moved to database, only use for upgrade to 8.3
      */
+    @Deprecated
     public static boolean getCacheHeaderMaxAge() {
         String value = ConfigurationHolder.getString(CACHE_HEADER_MAX_AGE);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
@@ -439,7 +458,10 @@ public class OcspConfiguration {
 
     /**
      * The default number of milliseconds a HTTP-response should be cached. See RFC5019.
+     * 
+     * @deprecated Do not use with CertificateProfileConstants.CERTPROFILE_NO_PROFILE, since the global value has been moved to the database.
      */
+    @Deprecated
     public static long getMaxAge(int certProfileId) {
         long value = 30;
         Configuration config = ConfigurationHolder.instance();
@@ -468,7 +490,10 @@ public class OcspConfiguration {
     
     /**
      * The default number of milliseconds a HTTP-response for a revoked certificater should be cached. See RFC5019.
+     * 
+     * @deprecated Slated for removal after 8.3, see ECA-12084
      */
+    @Deprecated
     public static long getRevokedMaxAge(int certProfileId) {
         long value = 30;
         Configuration config = ConfigurationHolder.instance();
@@ -486,7 +511,12 @@ public class OcspConfiguration {
         return value;
     }
 
-    /** @return true if Until Next Update is explicitly configured for the requested certificate profile in case of a revoked certificate*/
+    /** 
+     * @return true if Until Next Update is explicitly configured for the requested certificate profile in case of a revoked certificate
+     *
+     * @deprecated Slated for removal after 8.3, see ECA-12084
+     */
+    @Deprecated
     public static boolean isRevokedMaxAgeConfigured(final int certificateProfileId) {
         if (certificateProfileId==CertificateProfileConstants.CERTPROFILE_NO_PROFILE){
             return ConfigurationHolder.instance().containsKey(REVOKED_MAX_AGE);
