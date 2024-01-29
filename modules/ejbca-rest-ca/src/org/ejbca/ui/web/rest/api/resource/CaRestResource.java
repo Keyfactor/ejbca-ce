@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -50,6 +51,7 @@ import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
@@ -157,7 +159,7 @@ public class CaRestResource extends BaseRestResource {
                 result &= publishingCrlSession.forceDeltaCRL(admin, caId);
             } else {
                 // if false, generate base CRL
-                result &= publishingCrlSession.forceCRL(admin, caId);
+                result &= publishingCrlSession.forceCRL(admin, caId, new CrlCreationParams(5, TimeUnit.MINUTES));
             }
         } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException | DeltaCrlException e) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
