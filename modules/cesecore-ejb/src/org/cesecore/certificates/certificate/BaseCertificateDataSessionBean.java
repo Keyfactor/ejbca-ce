@@ -23,7 +23,6 @@ import javax.persistence.Query;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.util.CompressedCollection;
 import org.cesecore.util.ValueExtractor;
 
 /**
@@ -40,7 +39,7 @@ public abstract class BaseCertificateDataSessionBean {
         final int maxResults = CesecoreConfiguration.getDatabaseRevokedCertInfoFetchSize();
         query.setMaxResults(maxResults);
         int firstResult = 0;
-        final List<RevokedCertInfo> revokedCertInfos = new ArrayList<>();
+        final Collection<RevokedCertInfo> revokedCertInfos = new ArrayList<>();
         while (true) {
             query.setFirstResult(firstResult);
             @SuppressWarnings("unchecked")
