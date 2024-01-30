@@ -126,8 +126,8 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-4.7.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-spi-4.7.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-undertow-4.7.9.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.2.18.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.2.18.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.2.28.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.2.28.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-4.7.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-threads-2.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
@@ -160,7 +160,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-1.0.0.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-1.2.0.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-12.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/p11ng-0.21.7.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
@@ -188,7 +188,7 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.6.4.jar"/>
-	<classpathentry kind="lib" path="lib/guava-31.1-jre.jar"/>
+	<classpathentry kind="lib" path="lib/guava-33.0.0-jre.jar"/>
 	<classpathentry kind="lib" path="lib/caffeine-3.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.14.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.14.2.jar"/>
