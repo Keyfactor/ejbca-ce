@@ -40,9 +40,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJBException;
 import javax.net.ssl.HostnameVerifier;
@@ -83,7 +85,10 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
@@ -107,6 +112,7 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -125,6 +131,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.KeyTools;
 
+import static org.ejbca.core.ejb.authorization.AuthorizationSystemSession.SUPERADMIN_ROLE;
 import static org.primefaces.util.Constants.SEMICOLON;
 
 /**
@@ -140,6 +147,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private static Logger log = Logger.getLogger(EjbcaWebBeanImpl.class);
 
     private static final char SINGLE_SPACE_CHAR = ' ';
+    private static final String PUBLIC_ACCESS_AUTHENTICATION_TOKEN = "PublicAccessAuthenticationToken";
 
     private final EjbBridgeSessionLocal ejbLocalHelper;
     private final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
@@ -155,6 +163,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private final PublisherSessionLocal publisherSession;
     private final SecurityEventsLoggerSessionLocal auditSession;
     private final RoleSessionLocal roleSession;
+    private final RoleMemberSessionLocal roleMemberSession;
     private final UpgradeSessionLocal upgradeSession;
     private final GlobalConfigurationSessionLocal globalConfigurationSession;
     private final WebAuthenticationProviderSessionLocal authenticationSession;
@@ -222,6 +231,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         publisherSession = ejbLocalHelper.getPublisherSession();
         auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
         roleSession = ejbLocalHelper.getRoleSession();
+        roleMemberSession = ejbLocalHelper.getRoleMemberSession();
         upgradeSession = ejbLocalHelper.getUpgradeSession();
         globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
         authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
@@ -2217,6 +2227,47 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
         }
         return peerConnectorPresent.booleanValue();
+    }
+
+    public boolean getRenderPublicAccessRemoval() {
+        if (!isAuthorizedNoLogSilent(new String[]{AccessRulesConstants.ROLE_ADMINISTRATOR})) {
+            return false;
+        }
+
+        List<RoleMember> members;
+        try {
+            Role superAdminRole = roleSession.getRole(authState.administrator, null, SUPERADMIN_ROLE);
+            if (Objects.isNull(superAdminRole)) {
+                return false;
+            }
+            List<Role> currentUserRoles = roleSession.getRolesAuthenticationTokenIsMemberOf(authState.administrator);
+            boolean isSuperAdmin = currentUserRoles.stream().anyMatch(role -> role.equals(superAdminRole));
+            if (!isSuperAdmin) {
+                return false;
+            }
+            members = roleMemberSession.getRoleMembersByRoleId(authState.administrator,superAdminRole.getRoleId());
+        } catch (AuthorizationDeniedException e) {
+            return false;
+        }
+        boolean hasPublicAccessMember = false;
+        if(members.size() > 0) {
+            hasPublicAccessMember = members.stream().anyMatch(member -> member.getTokenType().equals(PUBLIC_ACCESS_AUTHENTICATION_TOKEN));
+        }
+        return hasPublicAccessMember;
+    }
+
+    public void removePublicAccessRoleMember() throws AuthorizationDeniedException {
+        Role superAdminRole = roleSession.getRole(authState.administrator, null, SUPERADMIN_ROLE);
+        List<RoleMember> members = roleMemberSession.getRoleMembersByRoleId(authState.administrator,superAdminRole.getRoleId());
+
+        List<Integer> publicAccessMembers = members.stream()
+            .filter(member -> member.getTokenType().equals(PUBLIC_ACCESS_AUTHENTICATION_TOKEN))
+            .map(member -> member.getId())
+            .collect(Collectors.toList());
+
+        for (int member: publicAccessMembers) {
+            roleMemberSession.remove(authState.administrator, member);
+        }
     }
 
 }
