@@ -773,7 +773,7 @@
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <link rel="stylesheet" type="text/css" href="<c:out value='<%= ejbcawebbean.getBaseUrl() + ejbcawebbean.getCssFile() %>' />" />
-  <link rel="shortcut icon" href="<%=ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath("favicon.png")%>" type="image/png" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath(ejbcawebbean.getEditionFolder() + "/favicon.png")%>" type="image/png" />
   <script type="text/javascript">
 
   <% if(!noprofiles){ %>
