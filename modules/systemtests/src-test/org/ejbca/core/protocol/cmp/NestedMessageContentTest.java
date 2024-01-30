@@ -98,7 +98,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -164,7 +163,6 @@ public class NestedMessageContentTest extends CmpTestCase {
     private final EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private final RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     private final RoleMemberSessionRemote roleMemberSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleMemberSessionRemote.class);
-    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     
     private final int caid;
     private final X509Certificate cacert;
@@ -226,6 +224,7 @@ public class NestedMessageContentTest extends CmpTestCase {
 
         // Create a temporary directory to store ra certificates, use JUnits TemporaryFolder that is deleted on exit
         final File createdFolder = this.folder.newFolder("racerts");
+        new File(createdFolder, "not_a_file").mkdir(); // non-files should be ignored
         this.raCertsPath = createdFolder.getCanonicalPath();
         
         // Configure CMP for this test, we allow custom certificate serial numbers
