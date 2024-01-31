@@ -255,7 +255,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 LOG.debug("Using access_token");
                 return (SignedJWT) accessJwt;
             }
-        } catch (ParseException e) {
+        } catch (ParseException | NullPointerException e) {
             LOG.debug("Parse exception of access_token", e);
         }
         JWT idJwt = null;
