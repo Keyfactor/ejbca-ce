@@ -1242,7 +1242,7 @@ public class CAInterfaceBean implements Serializable {
                 if (AlgorithmConstants.ECCDH_PERMITTED_CURVES.contains(cryptoTokenKeyPairInfo.getKeySpecification())) {
                     aliases.add(cryptoTokenKeyPairInfo.getAlias());
                 }
-            } else if (cryptoTokenKeyPairInfo.getKeyAlgorithm().equals(AlgorithmConstants.KEYALGORITHM_RSA)) {
+            } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
                 //Or in case of RSA
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
