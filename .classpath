@@ -217,7 +217,7 @@
 	<classpathentry kind="lib" path="lib/hibernate/byte-buddy-1.10.17.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-5.4.25.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-validator-6.2.5.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/easymock-4.3.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/easymock-5.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/cglib-nodep-3.3.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
