@@ -112,7 +112,6 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -2230,7 +2229,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     }
 
     public boolean getRenderPublicAccessRemoval() {
-        if (!isAuthorizedNoLogSilent(new String[]{AccessRulesConstants.ROLE_ADMINISTRATOR})) {
+        if (!isAuthorizedNoLogSilent(new String[]{String.valueOf(StandardRules.ROLE_ROOT)})) {
             return false;
         }
 
