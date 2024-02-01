@@ -65,7 +65,7 @@ public class PreSigningOcspResponseSessionBean implements PreSigningOcspResponse
 		return caCertFromTheChain -> {
 			if (caCertFromTheChain instanceof X509Certificate) {
 				ocspResponseGeneratorSession.preSignOcspResponse((X509Certificate) caCertFromTheChain,
-						new BigInteger(certData.getSerialNumber()), true, true, DEFAULT_CERTID_HASH_ALGORITHM);
+						new BigInteger(certData.getSerialNumber()), false, true, DEFAULT_CERTID_HASH_ALGORITHM);
 			}
 		};
 	}
