@@ -140,8 +140,6 @@ public class OcspPresignOnRevocationTest {
     private X509Certificate caCertificate;
     private X509Certificate ocspCertificate;
 
-    private List<String> createdCertificateSerialNumbers = new ArrayList<>();
-
     public OcspPresignOnRevocationTest(CryptoTokenRunner cryptoTokenRunner) throws Exception {
         this.cryptoTokenRunner = cryptoTokenRunner;
 
@@ -172,13 +170,6 @@ public class OcspPresignOnRevocationTest {
         }
         // Restore the default value
         setOcspDefaultResponderReference(originalDefaultResponder);
-
-        for (String eeCertificateSerial : createdCertificateSerialNumbers) {
-            try {
-                internalCertificateStoreSession.removeCertificate(eeCertificateSerial);
-            } catch (Exception e) {
-            }
-        }
 
     }
 
