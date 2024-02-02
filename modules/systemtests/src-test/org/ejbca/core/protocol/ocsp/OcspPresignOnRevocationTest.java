@@ -23,12 +23,10 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
