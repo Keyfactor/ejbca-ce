@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ocsp;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -28,12 +29,14 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -214,9 +217,17 @@ public class OcspPresignOnRevocationTest {
         //Verify the nextUpdate time in the response
         long nextUpdate = ocspResponseData.getNextUpdate();
         //Regression test: Make sure that we didn't produce a forever valid response
+        //We need to verify that the OCSP responder didn't run in eIDAS mode and produce a "final" (unlimited) response, 
+        //The "final" validity time is define as one second before midnight on  December 31st, year 9999
+        TimeZone tz = TimeZone.getTimeZone("GMT");
+        Calendar cal = Calendar.getInstance(tz);
+        cal.clear();
+        cal.set(9999, 11, 31, 23, 59, 59); // 99991231235959Z
+        long finalUpdate = cal.getTimeInMillis();
+        
         assertNotEquals(
                 "Pre producing an ocsp response on revocation led to an ocsp response with unlimited validity. This is a serious compliance issue.",
-                253402300799000L, nextUpdate);
+                finalUpdate, nextUpdate);
 
         try {
 
@@ -230,7 +241,7 @@ public class OcspPresignOnRevocationTest {
             SingleResp singleResponse = basicOCSPResp.getResponses()[0];
             assertNotEquals(
                     "Pre producing an ocsp response on revocation led to an ocsp response with unlimited validity. This is a serious compliance issue.",
-                    253402300799000L, singleResponse.getNextUpdate().getTime());
+                    finalUpdate, singleResponse.getNextUpdate().getTime());
             //Assert that nextUpdate is between now and an hour plus change from now. 
             Calendar nextUpdateDate = Calendar.getInstance();
             nextUpdateDate.setTimeInMillis(singleResponse.getNextUpdate().getTime());
@@ -239,6 +250,10 @@ public class OcspPresignOnRevocationTest {
             inAnHour.add(Calendar.SECOND, nextUpdateTime + 60);
             assertTrue("nextUpdate was not set after now", nextUpdateDate.getTime().after(new Date()));
             assertTrue("nextUpdate was not set before now plus 3650 seconds", nextUpdateDate.getTime().before(inAnHour.getTime()));
+            assertEquals("Response cert did not match up with request cert", eeCertificate.getSerialNumber(),
+                    singleResponse.getCertID().getSerialNumber());
+            final RevokedStatus revokedStatus = (RevokedStatus) singleResponse.getCertStatus();
+            assertEquals("Wrong revocation reason", revokedStatus.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
         } finally {
             internalCertificateStoreSession.removeCertificate(eeCertificate);
             ocspDataSession.deleteOcspDataByCaId(testx509ca.getCAId());
