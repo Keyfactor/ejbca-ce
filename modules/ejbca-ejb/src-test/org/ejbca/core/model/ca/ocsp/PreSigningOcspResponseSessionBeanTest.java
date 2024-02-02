@@ -56,7 +56,7 @@ public class PreSigningOcspResponseSessionBeanTest {
 		BaseCertificateData certData = new CertificateData();
 		certData.setSerialNumber(SERIAL_NUMBER);
 		X509Certificate certificate = mock(X509Certificate.class);
-		ocspResponseGeneratorSession.preSignOcspResponse(eq(certificate), eq(new BigInteger(SERIAL_NUMBER)), eq(true),
+		ocspResponseGeneratorSession.preSignOcspResponse(eq(certificate), eq(new BigInteger(SERIAL_NUMBER)), eq(false),
 				eq(true), eq(DEFAULT_CERTID_HASH_ALGORITHM));
 		expectLastCall();
 		replay(ocspResponseGeneratorSession);
