@@ -127,15 +127,16 @@ public class OAuthUserInfoRequest {
                 }
                 throw new IOException("Failed to get userinfo from userinfo endpoint. HTTP status code " + response.getStatusLine().getStatusCode());
             }
+            
             final Header[] contentType = response.getHeaders(MIME.CONTENT_TYPE);
             if (contentType == null || contentType.length != 1) {
                 throw new IOException("Missing Content-Type header from userinfo response.");
-            }
-            
+            }            
             final HttpEntity entity = response.getEntity();
             if (entity == null) {
                 throw new IOException("Received empty HTTP response from userinfo endpoint.");
             }
+            
             final byte[] responseBytes = FileTools.readStreamToByteArray(entity.getContent(), -1, maxResponseBytes);
             final JSONParser parser = new JSONParser();
             final OAuthUserInfoResponse userInfoResponse = new OAuthUserInfoResponse();
