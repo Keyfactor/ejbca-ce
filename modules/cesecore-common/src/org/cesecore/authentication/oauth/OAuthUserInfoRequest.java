@@ -131,25 +131,31 @@ public class OAuthUserInfoRequest {
             if (contentType == null || contentType.length != 1) {
                 throw new IOException("Missing Content-Type header from userinfo response.");
             }
-            final String mimeType = contentType[0].getValue().toLowerCase(Locale.ROOT);
-            if (!mimeType.matches("application/json( *; *charset *= *utf-8)?")) {
-                throw new IOException("Invalid MIME type on response from userinfo endpoint: " + mimeType);
-            }
+            
             final HttpEntity entity = response.getEntity();
             if (entity == null) {
                 throw new IOException("Received empty HTTP response from userinfo endpoint.");
             }
             final byte[] responseBytes = FileTools.readStreamToByteArray(entity.getContent(), -1, maxResponseBytes);
             final JSONParser parser = new JSONParser();
-            try {
-                final JSONObject json = (JSONObject) parser.parse(new String(responseBytes, StandardCharsets.UTF_8));
-                final OAuthUserInfoResponse userInfoResponse = new OAuthUserInfoResponse();
-                userInfoResponse.setSubject((String) json.get("sub"));
-                userInfoResponse.setClaims(json.toJSONString());
-                return userInfoResponse;
-            } catch (ParseException e) {
-                throw new IOException("Failed to parse JSON response from userinfo endpoint: " + e.getMessage(), e);
+            final OAuthUserInfoResponse userInfoResponse = new OAuthUserInfoResponse();
+            
+            final String mimeType = contentType[0].getValue().toLowerCase(Locale.ROOT);
+            if (mimeType.matches("application/json( *; *charset *= *utf-8)?")) {
+                try {
+                    final JSONObject json = (JSONObject) parser.parse(new String(responseBytes, StandardCharsets.UTF_8));
+                    userInfoResponse.setSubject((String) json.get("sub"));
+                    userInfoResponse.setClaims(json.toJSONString());
+                } catch (ParseException e) {
+                    throw new IOException("Failed to parse JSON response from userinfo endpoint: " + e.getMessage(), e);
+                }
+            } else if (mimeType.matches("application/jwt")) {
+                userInfoResponse.setResponseString(new String(responseBytes, StandardCharsets.UTF_8));
+            } else {
+                throw new IOException("Invalid MIME type on response from userinfo endpoint: " + mimeType);
             }
+
+            return userInfoResponse;
         }
     }
 

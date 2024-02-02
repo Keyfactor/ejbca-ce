@@ -23,6 +23,7 @@ public final class OAuthUserInfoResponse implements Serializable {
 
     private String subject;
     private String claims;
+    private String responseString;
     
     public String getSubject() {
         return subject;
@@ -38,6 +39,14 @@ public final class OAuthUserInfoResponse implements Serializable {
     
     public void setClaims(final String claims) {
         this.claims = claims;
+    }
+    
+    public String getResponseString() {
+        return responseString;
+    }
+    
+    public void setResponseString(final String responseString) {
+        this.responseString = responseString;
     }
     
 }
