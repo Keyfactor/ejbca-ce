@@ -175,7 +175,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                         "Cannot authenticate with OAuth because no providers are available");
                 return null;
             }
-            final SignedJWT jwt = getSignedJwt(encodedOauthBearerToken, oauthIdToken);
+            final SignedJWT jwt = getSignedJwtFromBearerOrIdToken(encodedOauthBearerToken, oauthIdToken);
             if (jwt == null) {
                 return null; // Error has already been logged
             }
@@ -225,7 +225,10 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             }
                        
             if (keyInfo.isFetchUserInfo()) {
-                claims = fetchUserInfoAndAddToClaims(encodedOauthBearerToken, keyInfo, claims);
+                JWTClaimsSet tokenAndUserInfoClaims = fetchUserInfoAndAddToClaims(encodedOauthBearerToken, keyInfo, claims, oauthConfiguration, oauthIdToken);
+                if (tokenAndUserInfoClaims != null && !tokenAndUserInfoClaims.getClaims().isEmpty()) {
+                    claims = tokenAndUserInfoClaims;
+                }
             }
 
             final Date expiry = claims.getExpirationTime();
@@ -252,34 +255,106 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         }
     }
 
-    private JWTClaimsSet fetchUserInfoAndAddToClaims(String encodedOauthBearerToken, final OAuthKeyInfo keyInfo, JWTClaimsSet otherClaims)
-            throws ParseException {
+    private JWTClaimsSet fetchUserInfoAndAddToClaims(String encodedOauthBearerToken, final OAuthKeyInfo keyInfoFromToken, JWTClaimsSet tokenClaims,
+            OAuthConfiguration oauthConfiguration, String oauthIdToken) throws ParseException, JOSEException {
         OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
                 internalKeyBindings, certificateStoreSession, cryptoToken));
         OAuthUserInfoResponse userInfoResponse = new OAuthUserInfoResponse();
         try {
-            userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfo, encodedOauthBearerToken);
+            userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfoFromToken, encodedOauthBearerToken);
         } catch (IOException e) {
             LOG.info("Userinfo request failed: " + e.getMessage(), e);
-            return otherClaims;
+            return tokenClaims;
+        }
+        SignedJWT idTokenJWT = getSignedJwtFromAnyToken(oauthIdToken);
+        JWTClaimsSet idTokenClaims = idTokenJWT.getJWTClaimsSet();
+        if (idTokenClaims == null || idTokenClaims.getSubject() == null) {
+            LOG.info("Can't verify userinfo response subject due to missing subject in the id token.");
+            return tokenClaims;
         }
         JWTClaimsSet.Builder claimsSetBuilder = new JWTClaimsSet.Builder();
         JWTClaimsSet userInfoClaims = null;
-        // Verify that the userinfo response is for the correct user
-        if (userInfoResponse != null && userInfoResponse.getSubject() != null && userInfoResponse.getSubject().equals(otherClaims.getSubject())) {
+
+        // Plain JSON response from userinfo endpoint means subject field is already filled in
+        // Verify the userinfo response subject against the id token subject
+        if (userInfoResponse != null && userInfoResponse.getSubject() != null && userInfoResponse.getSubject().equals(idTokenClaims.getSubject())) {
+            // Merge the different sets of claims (userinfo claims and access token/id token claims). In case of conflict the userinfo claims take precedence.
+            for (Map.Entry<String, Object> entry : tokenClaims.getClaims().entrySet()) {
+                claimsSetBuilder.claim(entry.getKey(), entry.getValue());
+            }
             userInfoClaims = JWTClaimsSet.parse(userInfoResponse.getClaims());
-            // Merge the different sets of claims (userinfo claims and access token/id token claims). In case of conflict the claims from userinfo get overwritten.
             for (Map.Entry<String, Object> entry : userInfoClaims.getClaims().entrySet()) {
                 claimsSetBuilder.claim(entry.getKey(), entry.getValue());
             }
-            for (Map.Entry<String, Object> entry : otherClaims.getClaims().entrySet()) {
-                claimsSetBuilder.claim(entry.getKey(), entry.getValue());
-            }       
-        } 
+        }
+        // Signed response from userinfo endpoint
+        else if (userInfoResponse != null && userInfoResponse.getResponseString() != null) {
+            SignedJWT jwt = SignedJWT.parse(userInfoResponse.getResponseString());
+            if (jwt == null) {
+                LOG.info("Failed to extract JWT from userinfo endpoint response.");
+                return tokenClaims;
+            }
+            final String keyIdFromUserInfo = jwt.getHeader().getKeyID();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Signed userinfo JWT has key ID: " + keyIdFromUserInfo);
+            }
+            if (!isUserInfoSignatureValid(oauthConfiguration, jwt, keyIdFromUserInfo)) {
+                return tokenClaims;
+            }
+            
+            userInfoClaims = jwt.getJWTClaimsSet();
+            // Verify the userinfo response subject against the id token subject
+            if (userInfoClaims != null && userInfoClaims.getSubject() != null && userInfoClaims.getSubject().equals(idTokenClaims.getSubject())) {
+                for (Map.Entry<String, Object> entry : tokenClaims.getClaims().entrySet()) {
+                    claimsSetBuilder.claim(entry.getKey(), entry.getValue());
+                }
+                for (Map.Entry<String, Object> entry : userInfoClaims.getClaims().entrySet()) {
+                    claimsSetBuilder.claim(entry.getKey(), entry.getValue());
+                }
+            }
+        } else {
+            LOG.info("Unable to use userinfo response. Trying to continue without the claims from the userinfo endpoint.");
+            return tokenClaims;  
+        }
+        
         return claimsSetBuilder.build();
     }
 
-    private SignedJWT getSignedJwt(String encodedOauthBearerToken, String oauthIdToken) throws ParseException {
+    private boolean isUserInfoSignatureValid(OAuthConfiguration oauthConfiguration, SignedJWT jwt, final String keyIdFromUserInfo) throws JOSEException {
+        final OAuthKeyInfo keyInfoFromUserInfo = getJwtKey(oauthConfiguration, keyIdFromUserInfo);
+        if (keyInfoFromUserInfo == null) {
+            logAuthenticationFailure(keyIdFromUserInfo != null ? "Key ID missing from userinfo response" : "No default OAuth2 JWT key is configured");
+            return false;
+        }
+        final OAuthPublicKey oAuthPublicKey = keyInfoFromUserInfo.getKeys().get(keyIdFromUserInfo);
+        if (oAuthPublicKey != null) {
+            // Default provider (Key ID does not match)
+            if (!verifyJwt(oAuthPublicKey, jwt)) {
+                logAuthenticationFailure("Userinfo JWT signature verification failure. This key was used (SHA-256 fingerprint): " + oAuthPublicKey.getKeyFingerprint());
+                return false;
+            }
+        } else {
+            if (keyInfoFromUserInfo.getKeys().isEmpty()) {
+                logAuthenticationFailure(keyIdFromUserInfo != null ? "Could not find OAuth2 JWT key by ID" : "No default OAuth2 JWT key is configured");
+                return false;
+            } else {
+                boolean isVerified = false;
+                for (OAuthPublicKey key : keyInfoFromUserInfo.getKeys().values()) {
+                    if (verifyJwt(key, jwt)) {
+                        isVerified = true;
+                        break;
+                    }
+                }
+                if (!isVerified) {
+                    logAuthenticationFailure("Userinfo JWT signature verification failure. This provider keys were used: " + keyInfoFromUserInfo.getLabel());
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private SignedJWT getSignedJwtFromBearerOrIdToken(String encodedOauthBearerToken, String oauthIdToken) throws ParseException {
         JWT accessJwt = null;
         try {
             accessJwt = JWTParser.parse(encodedOauthBearerToken);
@@ -303,6 +378,17 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         }
         if (idJwt != null) {
             reportUnsupportedJwtType(idJwt);
+        }
+        return null;
+    }
+    
+    private SignedJWT getSignedJwtFromAnyToken(String token) throws ParseException {
+        JWT jwt = null;
+        if (StringUtils.isNotEmpty(token)) {
+            jwt = JWTParser.parse(token);
+            if (jwt instanceof SignedJWT) {
+                return (SignedJWT) jwt;
+            }
         }
         return null;
     }
@@ -400,7 +486,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     public OAuthGrantResponseInfo refreshOAuthBearerToken(final OAuthConfiguration oauthConfiguration, final String encodedOauthBearerToken, final String oauthIdToken, final String refreshToken) {
         OAuthGrantResponseInfo oAuthGrantResponseInfo;
         try {
-            final SignedJWT jwt = getSignedJwt(encodedOauthBearerToken, oauthIdToken);
+            final SignedJWT jwt = getSignedJwtFromBearerOrIdToken(encodedOauthBearerToken, oauthIdToken);
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Signed JWT has key ID: " + jwt.getHeader().getKeyID());
             }
