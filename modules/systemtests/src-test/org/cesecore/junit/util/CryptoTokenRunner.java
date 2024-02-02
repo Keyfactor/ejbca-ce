@@ -194,12 +194,12 @@ public abstract class CryptoTokenRunner {
     }
     
     protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
-            int keyusage, String validity) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
-        return createTestX509Ca(caName, cadn, tokenpin, genKeys, cryptoTokenImplementation, signedBy, keyspec, keyusage, validity, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+            String validity) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
+        return createTestX509Ca(caName, cadn, tokenpin, genKeys, cryptoTokenImplementation, signedBy, keyspec, validity, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
     
     protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
-            int keyusage, String validity, String signingAlgorithm) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
+            String validity, String signingAlgorithm) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("createTestX509CAOptionalGenKeys"));
 
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
