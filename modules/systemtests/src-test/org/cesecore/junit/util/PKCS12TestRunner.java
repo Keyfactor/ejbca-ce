@@ -52,7 +52,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
     public X509CAInfo createX509Ca(String subjectDn, String caName) throws Exception {
         caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
         X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
-                getTokenImplementation(), CAInfo.SELFSIGNED, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, "3650d");
+                getTokenImplementation(), CAInfo.SELFSIGNED, "1024", "3650d");
 
         setCaForRemoval(x509ca.getCAId(), x509ca);
         return x509ca;
@@ -69,7 +69,7 @@ public class PKCS12TestRunner extends CryptoTokenRunner {
         caSession.removeCA(alwaysAllowToken, DnComponents.stringToBCDNString(subjectDn).hashCode());
         X509CAInfo x509ca = createTestX509Ca(caName, subjectDn, DEFAULT_TOKEN_PIN.toCharArray(), true,
                 getTokenImplementation(), subjectDn.equalsIgnoreCase(issuerDn) ? CAInfo.SELFSIGNED: issuerDn.hashCode(), 
-                keySpec, X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, validity, signingAlgorithm);
+                keySpec, validity, signingAlgorithm);
 
         setCaForRemoval(x509ca.getCAId(), x509ca);
         return x509ca;
