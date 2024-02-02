@@ -100,6 +100,7 @@ public class OAuthUserInfoRequestUnitTest {
         expect(httpClientMock.execute(capture(requestCapture))).andReturn(httpResponse);
         expect(httpResponse.getStatusLine()).andReturn(new BasicStatusLine(HttpVersion.HTTP_1_1, 200, "Ok"));
         expect(httpResponse.getHeaders("Content-Type")).andReturn(new Header[] { new BasicHeader("Content-Type", "text/html") });
+        expect(httpResponse.getEntity()).andReturn(makeEntity(GOOD_RESPONSE, "text/html"));
         replay(httpClientMock, httpResponse);
         try {
             req.execute(ACCESS_TOKEN, httpClientMock);
