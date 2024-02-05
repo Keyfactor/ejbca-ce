@@ -70,7 +70,6 @@ import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.GlobalOcspConfiguration;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.junit.util.CryptoTokenRunner;
@@ -181,7 +180,7 @@ public class OcspPresignOnRevocationTest {
             CertificateCreateException, CryptoTokenOfflineException, SignRequestSignatureException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CertificateExtensionException {
         int nextUpdateTime = 3600;
-        final String originalNextUpdateTime = setOcspDefaultNextUpdateTime(Integer.toString(nextUpdateTime));
+        final long originalNextUpdateTime = setOcspDefaultNextUpdateTime(nextUpdateTime);
         //Set up the CA to use pre produced responses
         testx509ca.setDoPreProduceOcspResponses(true);
         testx509ca.setDoPreProduceOcspResponseUponIssuanceAndRevocation(true);
@@ -268,9 +267,11 @@ public class OcspPresignOnRevocationTest {
         return originalDefaultResponder;
     }
 
-    private String setOcspDefaultNextUpdateTime(final String nextUpdateInSeconds) {
-        final String originalConfigurationValue = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.UNTIL_NEXT_UPDATE, nextUpdateInSeconds);
+    private long setOcspDefaultNextUpdateTime(final long nextUpdateInSeconds) throws AuthorizationDeniedException {
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        final long originalConfigurationValue = globalOcspConfiguration.getDefaultValidityTime();
+        globalOcspConfiguration.setDefaultValidityTime(nextUpdateInSeconds);        
+        globalConfigurationSession.saveConfiguration(internalAdmin, globalOcspConfiguration);        
         return originalConfigurationValue;
     }
 }
