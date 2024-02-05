@@ -3712,7 +3712,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public <T extends ConfigurationBase> T getGlobalConfigurationLocalFirst(final Class<T> type) {
         T result = null;
         if (type.isAssignableFrom(MSAutoEnrollmentConfiguration.class)) {
-            result = (T) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            result = (T) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
         } 
         if (log.isDebugEnabled()) {
             if (result != null) {
