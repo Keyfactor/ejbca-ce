@@ -889,6 +889,9 @@ div.status h4 {
 	color: #FFF;
 	font-size: small;
 }
+div.status h4.warning {
+	background: #fb4c2f none;
+}
 div.status h4 a:link,
 div.status h4 a:visited,
 div.status h4 a:hover,
@@ -914,6 +917,9 @@ div.status table td img {
 	width: 16px;
 	height: 16px;
 	margin-top: .1em;
+}
+div.status table.grid tr:hover {
+	background: #FFF;
 }
 
 /* --- Page: CA > CryptoTokens */
