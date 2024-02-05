@@ -295,6 +295,10 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 return tokenClaims;
             }
             final String keyIdFromUserInfo = jwt.getHeader().getKeyID();
+            if (keyIdFromUserInfo == null) {
+                LOG.info("Key ID missing in userinfo response. Unable to verify signature.");
+                return tokenClaims;
+            }
             if (LOG.isDebugEnabled()) {
                 LOG.debug("Signed userinfo JWT has key ID: " + keyIdFromUserInfo);
             }
@@ -321,32 +325,31 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     }
 
     private boolean isUserInfoSignatureValid(OAuthConfiguration oauthConfiguration, SignedJWT jwt, final String keyIdFromUserInfo) throws JOSEException {
-        final OAuthKeyInfo keyInfoFromUserInfo = getJwtKey(oauthConfiguration, keyIdFromUserInfo);
-        if (keyInfoFromUserInfo == null) {
-            logAuthenticationFailure(keyIdFromUserInfo != null ? "Key ID missing from userinfo response" : "No default OAuth2 JWT key is configured");
+        final OAuthKeyInfo providerInfoFromUserInfo = getJwtKey(oauthConfiguration, keyIdFromUserInfo);
+        if (providerInfoFromUserInfo == null) {
+            logAuthenticationFailure("Can't match userinfo keyid to a Trusted OAuth Provider.");
             return false;
         }
-        final OAuthPublicKey oAuthPublicKey = keyInfoFromUserInfo.getKeys().get(keyIdFromUserInfo);
+        final OAuthPublicKey oAuthPublicKey = providerInfoFromUserInfo.getKeys().get(keyIdFromUserInfo);
         if (oAuthPublicKey != null) {
-            // Default provider (Key ID does not match)
             if (!verifyJwt(oAuthPublicKey, jwt)) {
                 logAuthenticationFailure("Userinfo JWT signature verification failure. This key was used (SHA-256 fingerprint): " + oAuthPublicKey.getKeyFingerprint());
                 return false;
             }
         } else {
-            if (keyInfoFromUserInfo.getKeys().isEmpty()) {
-                logAuthenticationFailure(keyIdFromUserInfo != null ? "Could not find OAuth2 JWT key by ID" : "No default OAuth2 JWT key is configured");
+            if (providerInfoFromUserInfo.getKeys().isEmpty()) {
+                logAuthenticationFailure("Could not find OAuth2 JWT key by ID");
                 return false;
             } else {
                 boolean isVerified = false;
-                for (OAuthPublicKey key : keyInfoFromUserInfo.getKeys().values()) {
+                for (OAuthPublicKey key : providerInfoFromUserInfo.getKeys().values()) {
                     if (verifyJwt(key, jwt)) {
                         isVerified = true;
                         break;
                     }
                 }
                 if (!isVerified) {
-                    logAuthenticationFailure("Userinfo JWT signature verification failure. This provider keys were used: " + keyInfoFromUserInfo.getLabel());
+                    logAuthenticationFailure("Userinfo JWT signature verification failure. The following provider's keys were used: " + providerInfoFromUserInfo.getLabel());
                     return false;
                 }
             }
