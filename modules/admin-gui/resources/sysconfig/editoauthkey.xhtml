@@ -78,24 +78,28 @@
                          rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.showUrls}">
                 <f:converter converterId="trimConverter"/>
             </h:inputText>
-            
+
             <!-- UserInfo -->
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_FETCHUSERINFO}"/>
             <h:panelGroup>
                 <h:selectBooleanCheckbox id="fetchUserInfo" 
 			            value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fetchUserInfo}"
 			            disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}">
-                    <f:ajax render="@form" event="change" execute="@this"/>
+                    <f:ajax render="userInfoUrlText userInfoUrlField" event="change" execute="@this"/>
                 </h:selectBooleanCheckbox>
                 <h:outputLabel for="fetchUserInfo" value="#{web.text.OAUTHKEYCONFIGURATION_FETCHUSERINFOENABLED}" />
             </h:panelGroup>
-            <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_USERINFOURL}" 
+            <h:panelGroup id="userInfoUrlText">
+                <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_USERINFOURL}"
                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fetchUserInfo}"/>
-            <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.userInfoUrl}" size="46" id="keyUserInfoUrl"
+            </h:panelGroup>
+            <h:panelGroup id="userInfoUrlField">
+                <h:inputText value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.userInfoUrl}" size="46"
                         disabled="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode}"
                         rendered="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.fetchUserInfo}">
-                <f:converter converterId="trimConverter"/>
-            </h:inputText>
+                    <f:converter converterId="trimConverter"/>
+                </h:inputText>
+            </h:panelGroup>
 
             <!-- Skew Limit -->
             <h:outputText value="#{web.text.OAUTHKEYCONFIGURATION_SKEWLIMIT}"/>
