@@ -126,13 +126,13 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-4.7.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-spi-4.7.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-undertow-4.7.9.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.2.18.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.2.18.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.2.28.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.2.28.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-4.7.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-threads-2.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.7.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.7.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.12.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.12.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-servlet-api_4.0_spec-2.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
@@ -188,7 +188,7 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs-1.6.4.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-1.6.4.jar"/>
-	<classpathentry kind="lib" path="lib/guava-31.1-jre.jar"/>
+	<classpathentry kind="lib" path="lib/guava-33.0.0-jre.jar"/>
 	<classpathentry kind="lib" path="lib/caffeine-3.1.6.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.14.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.14.2.jar"/>
@@ -223,7 +223,7 @@
 	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.15.jar"/>
-	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.21.jar"/>
+	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.24.4.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang3-3.12.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.5.jar"/>
