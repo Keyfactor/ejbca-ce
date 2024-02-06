@@ -74,6 +74,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.msae.MSAEConfigRaCacheLocal;
 import org.ejbca.statedump.ejb.StatedumpSession;
 import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 
@@ -184,6 +185,7 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return getEjbLocal().getRaMasterApiSession(); }
     @Override public OcspResponseCleanupSessionLocal getOcspResponseCleanupSession() {return getEjbLocal().getOcspResponseCleanupSession(); }
 
+    
 	@Override
 	public SctDataSessionLocal getSctDataSession() {
 		return getEjbLocal().getSctDataSession();
@@ -239,5 +241,10 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Override
     public OcspDataSessionLocal getOcspDataSession() {
         return getEjbLocal().getOcspDataSession();
+    }
+
+    @Override
+    public MSAEConfigRaCacheLocal getMsaeConfigRaCacheLocal() {
+        return getEjbLocal().getMsaeConfigRaCacheLocal();
     }
 }

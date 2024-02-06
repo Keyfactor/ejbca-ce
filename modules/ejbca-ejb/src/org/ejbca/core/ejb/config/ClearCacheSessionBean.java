@@ -43,6 +43,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.protocol.msae.KecCache;
+import org.ejbca.core.protocol.msae.MSAEConfigRaCacheLocal;
 
 import com.keyfactor.util.keys.token.CryptoToken;
 
@@ -88,6 +89,8 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
     private RoleMemberDataSessionLocal roleMemberDataSession;
     @EJB
     private KecCache kecCache;
+    @EJB
+    private MSAEConfigRaCacheLocal msaeConfigRaCache;
 
     @Override
     public void clearCaches(final boolean excludeActiveCryptoTokens) {
@@ -174,11 +177,15 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
         if(log.isDebugEnabled()) {
             log.debug("Role member cache cleared.");
         }
-        
         kecCache.flushKecCache();
         if(log.isDebugEnabled()) {
             log.debug("Key exchange certificate cache cleared.");
         }
+        msaeConfigRaCache.flushKecCache();
+        if(log.isDebugEnabled()) {
+            log.debug("MSAE RA side configuration cache cleared.");
+        }
+        
     }
     
     private void flushCryptoTokenCache(boolean withExclusion) {
