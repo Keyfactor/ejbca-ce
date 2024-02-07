@@ -74,7 +74,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
-import org.ejbca.core.protocol.msae.MSAEConfigRaCacheLocal;
+import org.ejbca.core.protocol.msae.MsaeRaConfigCacheLocal;
 import org.ejbca.statedump.ejb.StatedumpSession;
 import org.ejbca.statedump.ejb.StatedumpSessionLocal;
 
@@ -184,13 +184,10 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Override public ImportCrlSessionLocal getImportCrlSession() { return getEjbLocal().getImportCrlSession(); }
     @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return getEjbLocal().getRaMasterApiSession(); }
     @Override public OcspResponseCleanupSessionLocal getOcspResponseCleanupSession() {return getEjbLocal().getOcspResponseCleanupSession(); }
-
+    @Override public SctDataSessionLocal getSctDataSession() { return getEjbLocal().getSctDataSession(); }
+    @Override public OcspDataSessionLocal getOcspDataSession() { return getEjbLocal().getOcspDataSession(); }
+    @Override public MsaeRaConfigCacheLocal getMsaeRaConfigCacheLocal() { return getEjbLocal().getMsaeRaConfigCacheLocal(); }
     
-	@Override
-	public SctDataSessionLocal getSctDataSession() {
-		return getEjbLocal().getSctDataSession();
-	}
-
 	/**
      * Dynamically loads the StatedumpSession with JNDI. It's usually not available in the EJBCA source tree,
      * and in this case this is properly handled  by returning null.
@@ -236,15 +233,5 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
         } catch (NamingException e) {
             return null; // this is the common case, since unidfnr is an special module and is not included with EJBCA
         }
-    }
-
-    @Override
-    public OcspDataSessionLocal getOcspDataSession() {
-        return getEjbLocal().getOcspDataSession();
-    }
-
-    @Override
-    public MSAEConfigRaCacheLocal getMsaeConfigRaCacheLocal() {
-        return getEjbLocal().getMsaeConfigRaCacheLocal();
     }
 }

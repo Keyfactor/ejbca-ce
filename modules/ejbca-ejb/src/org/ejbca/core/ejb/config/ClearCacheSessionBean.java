@@ -43,7 +43,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.protocol.msae.KecCache;
-import org.ejbca.core.protocol.msae.MSAEConfigRaCacheLocal;
+import org.ejbca.core.protocol.msae.MsaeRaConfigCacheLocal;
 
 import com.keyfactor.util.keys.token.CryptoToken;
 
@@ -90,7 +90,7 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
     @EJB
     private KecCache kecCache;
     @EJB
-    private MSAEConfigRaCacheLocal msaeConfigRaCache;
+    private MsaeRaConfigCacheLocal msaeConfigRaCache;
 
     @Override
     public void clearCaches(final boolean excludeActiveCryptoTokens) {

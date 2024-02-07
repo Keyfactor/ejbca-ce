@@ -17,14 +17,14 @@ import javax.ejb.Local;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 
 @Local
-public interface MSAEConfigRaCacheLocal {
+public interface MsaeRaConfigCacheLocal {
 
     /**
      * 
      * @param alias msae alias which we are looking for its configuration in the cache
      * @return associated msae configuration given the alias
      */
-    default MSAutoEnrollmentConfiguration getCachedMSAERaConfig(final String alias) {
+    default MSAutoEnrollmentConfiguration getMsaeRaConfigCached(final String alias) {
         throw new UnsupportedOperationException("MSAE is an EJBCA Enterprise only feature");
     }
 
