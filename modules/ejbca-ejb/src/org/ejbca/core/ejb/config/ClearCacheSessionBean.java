@@ -90,7 +90,7 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
     @EJB
     private KecCache kecCache;
     @EJB
-    private MsaeRaConfigCacheLocal msaeConfigRaCache;
+    private MsaeRaConfigCacheLocal msaeRaConfigCache;
 
     @Override
     public void clearCaches(final boolean excludeActiveCryptoTokens) {
@@ -181,7 +181,7 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
         if(log.isDebugEnabled()) {
             log.debug("Key exchange certificate cache cleared.");
         }
-        msaeConfigRaCache.flushMsaeRaConfigCache();
+        msaeRaConfigCache.flushMsaeRaConfigCache();
         if(log.isDebugEnabled()) {
             log.debug("MSAE RA side configuration cache cleared.");
         }
