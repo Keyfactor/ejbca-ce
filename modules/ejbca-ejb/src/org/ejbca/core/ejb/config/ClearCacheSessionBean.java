@@ -181,7 +181,7 @@ public class ClearCacheSessionBean implements ClearCacheSessionLocal {
         if(log.isDebugEnabled()) {
             log.debug("Key exchange certificate cache cleared.");
         }
-        msaeConfigRaCache.flushKecCache();
+        msaeConfigRaCache.flushMsaeRaConfigCache();
         if(log.isDebugEnabled()) {
             log.debug("MSAE RA side configuration cache cleared.");
         }

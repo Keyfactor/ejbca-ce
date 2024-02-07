@@ -31,7 +31,7 @@ public interface MSAEConfigRaCacheLocal {
     /**
      * Clears the cache, called from {@link #ClearCacheSessionBean}
      */
-    default void flushKecCache() {
+    default void flushMsaeRaConfigCache() {
         throw new UnsupportedOperationException("MSAE is an EJBCA Enterprise only feature");
     }
 }
