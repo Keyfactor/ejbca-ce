@@ -17,16 +17,15 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
-import javax.security.cert.Certificate;
-import javax.security.cert.CertificateEncodingException;
 
 /**
  * Representation of an email attachment.
  * 
- * @version $Id$
  */
 public class MailAttachment {
 
