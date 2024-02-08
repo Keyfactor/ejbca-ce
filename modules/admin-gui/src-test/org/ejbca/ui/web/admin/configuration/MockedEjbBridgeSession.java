@@ -443,6 +443,7 @@ echo "    }"
         list.add(sctDataSession);
         list.add(ocspDataSession);
         list.add(ocspResponseCleanupSession);
+        list.add(msaeRaConfigCache);
         return list.stream().filter(x -> x != null).collect(Collectors.toList());
     }
 }
