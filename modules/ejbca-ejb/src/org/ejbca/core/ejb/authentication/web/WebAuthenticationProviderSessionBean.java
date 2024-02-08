@@ -225,7 +225,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             }
                        
             if (keyInfo.isFetchUserInfo()) {
-                JWTClaimsSet tokenAndUserInfoClaims = fetchUserInfoAndAddToClaims(encodedOauthBearerToken, keyInfo, claims, oauthConfiguration, oauthIdToken);
+                JWTClaimsSet tokenAndUserInfoClaims = fetchUserInfoAndAddToClaims(encodedOauthBearerToken, keyInfo, claims, keyId, oauthIdToken);
                 if (tokenAndUserInfoClaims != null && !tokenAndUserInfoClaims.getClaims().isEmpty()) {
                     claims = tokenAndUserInfoClaims;
                 }
@@ -255,8 +255,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         }
     }
 
-    private JWTClaimsSet fetchUserInfoAndAddToClaims(String encodedOauthBearerToken, final OAuthKeyInfo keyInfoFromToken, JWTClaimsSet tokenClaims,
-            OAuthConfiguration oauthConfiguration, String oauthIdToken) throws ParseException, JOSEException {
+    private JWTClaimsSet fetchUserInfoAndAddToClaims(final String encodedOauthBearerToken, final OAuthKeyInfo keyInfoFromToken, final JWTClaimsSet tokenClaims,
+            final String keyId, final String oauthIdToken) throws ParseException, JOSEException {
         OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
                 internalKeyBindings, certificateStoreSession, cryptoToken));
         OAuthUserInfoResponse userInfoResponse = new OAuthUserInfoResponse();
@@ -294,15 +294,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 LOG.info("Failed to extract JWT from userinfo endpoint response.");
                 return tokenClaims;
             }
-            final String keyIdFromUserInfo = jwt.getHeader().getKeyID();
-            if (keyIdFromUserInfo == null) {
-                LOG.info("Key ID missing in userinfo response. Unable to verify signature.");
-                return tokenClaims;
-            }
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("Signed userinfo JWT has key ID: " + keyIdFromUserInfo);
-            }
-            if (!isUserInfoSignatureValid(oauthConfiguration, jwt, keyIdFromUserInfo)) {
+
+            if (!isUserInfoSignatureValid(jwt, keyInfoFromToken, keyId)) {
                 return tokenClaims;
             }
             
@@ -324,32 +317,27 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         return claimsSetBuilder.build();
     }
 
-    private boolean isUserInfoSignatureValid(OAuthConfiguration oauthConfiguration, SignedJWT jwt, final String keyIdFromUserInfo) throws JOSEException {
-        final OAuthKeyInfo providerInfoFromUserInfo = getJwtKey(oauthConfiguration, keyIdFromUserInfo);
-        if (providerInfoFromUserInfo == null) {
-            logAuthenticationFailure("Can't match userinfo keyid to a Trusted OAuth Provider.");
-            return false;
-        }
-        final OAuthPublicKey oAuthPublicKey = providerInfoFromUserInfo.getKeys().get(keyIdFromUserInfo);
+    private boolean isUserInfoSignatureValid(final SignedJWT jwt, final OAuthKeyInfo providerInfo, final String keyId) throws JOSEException {
+        final OAuthPublicKey oAuthPublicKey = providerInfo.getKeys().get(keyId);
         if (oAuthPublicKey != null) {
             if (!verifyJwt(oAuthPublicKey, jwt)) {
                 logAuthenticationFailure("Userinfo JWT signature verification failure. This key was used (SHA-256 fingerprint): " + oAuthPublicKey.getKeyFingerprint());
                 return false;
             }
         } else {
-            if (providerInfoFromUserInfo.getKeys().isEmpty()) {
+            if (providerInfo.getKeys().isEmpty()) {
                 logAuthenticationFailure("Could not find OAuth2 JWT key by ID");
                 return false;
             } else {
                 boolean isVerified = false;
-                for (OAuthPublicKey key : providerInfoFromUserInfo.getKeys().values()) {
+                for (OAuthPublicKey key : providerInfo.getKeys().values()) {
                     if (verifyJwt(key, jwt)) {
                         isVerified = true;
                         break;
                     }
                 }
                 if (!isVerified) {
-                    logAuthenticationFailure("Userinfo JWT signature verification failure. The following provider's keys were used: " + providerInfoFromUserInfo.getLabel());
+                    logAuthenticationFailure("Userinfo JWT signature verification failure. The following provider's keys were used: " + providerInfo.getLabel());
                     return false;
                 }
             }
