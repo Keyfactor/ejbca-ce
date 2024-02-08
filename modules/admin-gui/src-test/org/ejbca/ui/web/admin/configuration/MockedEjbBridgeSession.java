@@ -69,6 +69,7 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
+import org.ejbca.core.protocol.msae.MsaeRaConfigCacheLocal;
 
 /**
  * Mocked clalss
@@ -177,6 +178,7 @@ echo "    }"
     private SctDataSessionLocal sctDataSession;
     private OcspDataSessionLocal ocspDataSession;
     private OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
+    private MsaeRaConfigCacheLocal msaeRaConfigCache;
 
     @Override public synchronized AdminPreferenceSessionLocal getAdminPreferenceSession() {
         if (adminPreferenceSession == null) { adminPreferenceSession = EasyMock.createStrictMock(AdminPreferenceSessionLocal.class); }
@@ -383,6 +385,11 @@ echo "    }"
         return ocspResponseCleanupSession;
     }
 
+    @Override public synchronized MsaeRaConfigCacheLocal getMsaeRaConfigCacheLocal() {
+        if (msaeRaConfigCache == null) { msaeRaConfigCache = EasyMock.createStrictMock(MsaeRaConfigCacheLocal.class); }
+        return msaeRaConfigCache;
+    }
+    
     public List<Object> getAllMockObjects() {
         final List<Object> list = new ArrayList<>();
         list.add(adminPreferenceSession);
@@ -438,5 +445,4 @@ echo "    }"
         list.add(ocspResponseCleanupSession);
         return list.stream().filter(x -> x != null).collect(Collectors.toList());
     }
-    
 }
