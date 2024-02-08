@@ -36,10 +36,26 @@ Commercial support is available for **[EJBCA Enterprise](https://www.keyfactor.c
 EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICENSE)**. 
 
 ## Related projects 
-
-* [Keyfactor/ansible-ejbca-signserver-playbooks](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks) 
 * [Keyfactor/ejbca-tools](https://github.com/Keyfactor/ejbca-tools) 
-* [Keyfactor/ejbca-vault-plugin](https://github.com/Keyfactor/ejbca-vault-plugin) 
-* [Keyfactor/ejbca-vault-monitor](https://github.com/Keyfactor/ejbca-vault-monitor) 
-* [Keyfactor/ejbca-cert-cvc](https://github.com/Keyfactor/ejbca-cert-cvc) 
 * [Keyfactor/keyfactorcommunity](https://github.com/Keyfactor/keyfactorcommunity) 
+* [Keyfactor/ejbca-cert-cvc](https://github.com/Keyfactor/ejbca-cert-cvc) 
+* [Keyfactor/signserver-ce](https://github.com/Keyfactor/signserver-ce)
+
+Integrations:
+* [Vault PKI Engine](https://github.com/Keyfactor/ejbca-vault-pki-engine)
+* [Cert-manager issuer](https://github.com/Keyfactor/ejbca-cert-manager-issuer)
+* [K8s CSR Signer](https://github.com/Keyfactor/ejbca-k8s-csr-signer)
+
+Automation and Containers:
+* [Ansible Playbooks](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks) 
+* [Community Helm Chart](https://github.com/Keyfactor/ejbca-community-helm)
+
+
+Clients and Client SDKs:
+* [Java Easy Rest Client](https://github.com/Keyfactor/ejbca-easy-rest-client)
+* [Go Client](https://github.com/Keyfactor/ejbca-go-client)
+* [Go Client SDK](https://github.com/Keyfactor/ejbca-go-client-sdk)
+* [Python Client SDK](https://github.com/Keyfactor/ejbca-python-client-sdk)
+* [Java Client SDK](https://github.com/Keyfactor/ejbca-java-client-sdk)
+* [C# Client SDK](https://github.com/Keyfactor/ejbca-csharp-client-sdk)
+
