@@ -2344,6 +2344,20 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setStatus(CAConstants.CA_ACTIVE);
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
+
+            // In the case that the CA's key algorithm was changed in the renewal, then the link certificate will need to 
+            // be signed using the previous signature algorithm. Ensure the CA's token and the Certificate Profile
+            // have the right Signature Algorithm.
+            String sCurrentSigAlg = caToken.getSignatureAlgorithm();
+            String sPreviousSigAlg = ((X509Certificate)oldCaCertificate).getSigAlgName();
+            boolean bChangedSigAlg = false;
+            if ( !sCurrentSigAlg.equals( sPreviousSigAlg)) {
+                log.info("CA key algorithm change detected. Link certificate will use the Signature Algorithm of "+sPreviousSigAlg+".");
+                bChangedSigAlg = true;
+                caToken.setSignatureAlgorithm(sPreviousSigAlg);
+                certprofile.setSignatureAlgorithm(sPreviousSigAlg);
+            }
+
             // We need to save all this, audit logging that the CA is changed
             int caidBeforeNameChange = -1;
             if (subjectDNWillBeChanged) {
@@ -2355,6 +2369,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             } else {
                 ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
                 caSession.editCA(authenticationToken, ca, true);
+            }
+            
+            // Put the Signature Algorthm settings back if we changed them to issue the Link certificate.
+            if (bChangedSigAlg) {
+                caToken.setSignatureAlgorithm(sCurrentSigAlg);
+                certprofile.setSignatureAlgorithm(sCurrentSigAlg);
             }
 
             // Publish the new CA certificate
