@@ -197,6 +197,68 @@ public class EndEntityInformationFillerTest {
         // Order changed when I did the "fix"
         // assertEquals("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
         // ->dnsName=foo1.bar.com,dnsName=foo.bar.com,rfc822Name=foo@bar.com
+
+	// Test the merge operation with SANs
+        //
+        
+        // Add a SAN (dnsName) to the EE Policy
+        profile.addField(DnComponents.DNSNAME);
+        // Set default value and make it not modifiable
+        profile.setValue(DnComponents.DNSNAME, 0, "test.org");
+        profile.setModifyable(DnComponents.DNSNAME, 0, false);
+        
+        try {
+            // Test the DN type name can have any case.
+            String sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change.", "DNSNAME=test.org", sMergedAltName);
+            
+            // Test the User cannot override the policy if the field is fixed (not-modifiable).
+            try {
+                sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            } catch (EndEntityProfileValidationException e1) {
+                assertEquals( "Exception thrown with message", "User DN has too many components for DNSNAME", e1.getMessage());
+            }
+
+            // Test the User can override the policy if the field is modifiable.
+            profile.setModifyable(DnComponents.DNSNAME, 0, true);
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should be the User's value.", "DNSNAME=test1.org", sMergedAltName);
+
+            
+            // Tests with two SANs of the same type, one fixed and the other modifiable
+            profile.addField(DnComponents.DNSNAME);
+            profile.setValue(DnComponents.DNSNAME, 1, "changeme.org");
+            profile.setModifyable(DnComponents.DNSNAME, 1, true);
+            profile.setModifyable(DnComponents.DNSNAME, 0, false);
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should have two values.", "DNSNAME=test1.org,DNSNAME=test.org", sMergedAltName);
+            
+            // Remove 2nd DNSNAME
+            profile.removeField(DnComponents.DNSNAME, 1);
+            
+            // Test two types of SANs
+            profile.addField(DnComponents.DIRECTORYNAME);
+            profile.setValue(DnComponents.DIRECTORYNAME, 0, "CN=Test,O=org");
+            profile.setModifyable(DnComponents.DIRECTORYNAME, 0, true);
+            profile.setModifyable(DnComponents.DNSNAME, 0, true);
+           
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org,directoryName=cn=Test One,O=Org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should have two types, both values override defaults.", "DNSNAME=test1.org,DIRECTORYNAME=cn=Test One,O=Org", sMergedAltName);
+           
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should have two types, one value overrides default.", "DNSNAME=test1.org,DIRECTORYNAME=CN=Test,O=org", sMergedAltName);
+
+            // Remove the DIRECTORYNAME
+            profile.removeField(DnComponents.DIRECTORYNAME, 0);
+
+            
+        } catch (EndEntityProfileValidationException e) {
+            fail("Exception not expected: "+e.getMessage());
+            
+        }
+        
+        // Cleanup
+        profile.removeField(DnComponents.DNSNAME, 0);
     }
     
     /**
