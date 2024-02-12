@@ -1456,7 +1456,6 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
         // Extensions we will add to the certificate later, when we have filled the structure with everything we want.
         final ExtensionsGenerator extgen = new ExtensionsGenerator();
-        Extensions overriddenExtensions = null;
         // First we check if there is general extension override, and add all extensions from
         // the request in that case
         if (certProfile.getAllowExtensionOverride() && extensions != null) {
@@ -1495,15 +1494,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                     }
                 }
             }
-            if(!extgen.isEmpty()) {
-                overriddenExtensions = extgen.generate();
-             }
         }
        
 
 
         // Second we see if there is Key usage override
-       
         if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
             if (log.isDebugEnabled()) {
                 log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: " + keyusage);
@@ -1513,20 +1508,13 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
-                try {
-                    if (overriddenExtensions != null && overriddenExtensions.getExtension(Extension.keyUsage) != null) {
-                        if (log.isDebugEnabled()) {
-                            log.debug("KeyUsage was already overridden by an extension, not using KeyUsage from parameter.");
-                        }
-                    } else {
+                if (!extgen.hasExtension(Extension.keyUsage)) {
+                    try {
                         extgen.addExtension(Extension.keyUsage, certProfile.getKeyUsageCritical(), ku);
+                    } catch (IOException e) {
+                        throw new IllegalStateException("Caught unexpected IOException.", e);
                     }
-                } catch (IOException e) {
-                    throw new IllegalStateException("Caught unexpected IOException.", e);
                 }
-            }
-            if (!extgen.isEmpty()) {
-                overriddenExtensions = extgen.generate();
             }
         }
 
@@ -1534,17 +1522,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         // Standard certificate extensions are defined in CertificateProfile and CertificateExtensionFactory
         // and implemented in package org.ejbca.core.model.certextensions.standard
         final CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
-
         for (String oid : certProfile.getUsedStandardCertificateExtensions()) {
             // We don't want to try to add standard extensions with the same oid if we have already added them
             // from the request, if AllowExtensionOverride is enabled.
             // Two extensions with the same oid is not allowed in the standard.
-
-            if (overriddenExtensions != null && overriddenExtensions.getExtension(new ASN1ObjectIdentifier(oid)) != null) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Extension with oid " + oid + " has been overridden, standard extension will not be added.");
-                }
-            } else {
+            if (!extgen.hasExtension(new ASN1ObjectIdentifier(oid))) {
                 final CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
                 if (certExt != null) {
                     final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caSigningPackage.getPrimaryPublicKey(), val);
@@ -1582,11 +1564,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
-                if (overriddenExtensions != null && overriddenExtensions.getExtension(new ASN1ObjectIdentifier(certExt.getOID())) != null) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Extension with oid " + certExt.getOID() + " has been overridden, custom extension will not be added.");
-                    }
-                } else {
+                if (!extgen.hasExtension(new ASN1ObjectIdentifier(certExt.getOID()))) {
                     final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caSigningPackage.getPrimaryPublicKey(),
                             val);
                     if (value != null) {
@@ -1604,11 +1582,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 for (final String oid : requestOids) {
                     // Match requested OID with wildcard in CCE configuration 
                     if (oid.matches(CertTools.getOidWildcardPattern(certExt.getOID()))) {
-                        if (overriddenExtensions != null && overriddenExtensions.getExtension(new ASN1ObjectIdentifier(oid)) != null) {
-                            if (log.isDebugEnabled()) {
-                                log.debug("Extension with oid " + oid + " has been overridden, custom extension will not be added.");
-                            }        
-                        } else {
+                        if (!extgen.hasExtension(new ASN1ObjectIdentifier(oid))) {
                             final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey,
                                     caSigningPackage.getPrimaryPublicKey(), val, oid);
                             if (value != null) {

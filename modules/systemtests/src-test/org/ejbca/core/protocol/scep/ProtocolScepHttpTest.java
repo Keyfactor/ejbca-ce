@@ -13,12 +13,6 @@
 
 package org.ejbca.core.protocol.scep;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assume.assumeTrue;
-
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,6 +29,11 @@ import java.util.Collection;
 import java.util.Random;
 
 import javax.servlet.http.HttpServletResponse;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
 
 import org.apache.commons.fileupload.util.Streams;
 import org.apache.commons.lang.StringUtils;
@@ -68,6 +67,7 @@ import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -79,6 +79,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -89,10 +90,11 @@ import org.junit.runners.MethodSorters;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assume.assumeTrue;
 
 /**
  * Tests SCEP protocol in CA mode
@@ -108,9 +110,6 @@ public class ProtocolScepHttpTest extends ScepTestBase {
     }
     
     private static final Logger log = Logger.getLogger(ProtocolScepHttpTest.class);
-
-    private static final String scepAlias = "ProtocolHttpTestScepAlias";
-    private static final String resourceScep = "publicweb/apply/scep/" + scepAlias + "/pkiclient.exe";
 
     private static final byte[] openscep = Base64.decode(("MIIGqwYJKoZIhvcNAQcCoIIGnDCCBpgCAQExDjAMBggqhkiG9w0CBQUAMIICuwYJ"
             + "KoZIhvcNAQcBoIICrASCAqgwggKkBgkqhkiG9w0BBwOgggKVMIICkQIBADGB1TCB" + "0gIBADA7MC8xDzANBgNVBAMTBlRlc3RDQTEPMA0GA1UEChMGQW5hVG9tMQswCQYD"
@@ -151,6 +150,10 @@ public class ProtocolScepHttpTest extends ScepTestBase {
     private X509Certificate cacert;
     private X509Certificate rootCaCert;
 
+    private String scepAlias;
+    private String resourceScep;
+    private String scepAliasWithCAName;
+    private String resourceScepWithCAName;
 
     private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final EndEntityAccessSessionRemote endEntityAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -175,9 +178,8 @@ public class ProtocolScepHttpTest extends ScepTestBase {
        
     }
 
-    @Before
-    public void setUp() throws Exception {
-        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
+    @BeforeClass
+    public static void beforeClass() {
         // Pre-generate key for all requests to speed things up a bit
         try {
             key1 = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -185,19 +187,29 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         } catch (Exception e) {
             throw new IllegalStateException(e);
         }
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
         
         final String rootCaName =  testName.getMethodName()+"Root";
         final String rootCaDn = "CN="+rootCaName;
         
         rootX509Ca = cryptoTokenRunner.createX509Ca(rootCaDn, rootCaName); 
         
-        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), rootCaDn, testName.getMethodName(), "365d"); 
+        x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), rootCaDn, this.getClass().getSimpleName(), "365d");
         cacert = (X509Certificate) x509ca.getCertificateChain().get(0);
         
         rootCaCert = (X509Certificate) rootX509Ca.getCertificateChain().get(0);
-                     
+                   
+        scepAlias = "ProtocolHttpTestScepAlias";
+        resourceScep = "publicweb/apply/scep/" + scepAlias + "/pkiclient.exe";
+        scepAliasWithCAName = this.getClass().getSimpleName(); 
+        resourceScepWithCAName = "publicweb/apply/scep/" + URLEncoder.encode(scepAliasWithCAName, "UTF-8") + "/pkiclient.exe";
         scepConfiguration = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
         scepConfiguration.addAlias(scepAlias);
+        scepConfiguration.addAlias(scepAliasWithCAName);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
 
     }
@@ -219,6 +231,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         }
         
         scepConfiguration.removeAlias(scepAlias);
+        scepConfiguration.removeAlias(scepAliasWithCAName);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
         
         cryptoTokenRunner.cleanUp();
@@ -625,7 +638,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         // Check that we got the right cert back. Should be the Root CA, as default is reverse order
         assertEquals(rootCaCert.getSubjectDN().getName(), cert.getSubjectDN().getName());
 
-        // Try with no default CA last, should respond with a 404
+        // Try with no default CA, should respond with a 404
         updatePropertyOnServer("scep.defaultca", "");
         reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert";
         url = new URL(reqUrl);
@@ -634,6 +647,34 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         con.getDoOutput();
         con.connect();
         assertEquals("Response code is not 404 (not found)", 404, con.getResponseCode());
+
+        // Try with the SCEP Alias URL containing the default CA name, should work
+        String reqUrlCAName = httpReqPath + '/' + resourceScepWithCAName + "?operation=GetCACert";
+        URL urlWithCAName = new URL(reqUrlCAName);
+        HttpURLConnection conWithCAName = (HttpURLConnection) urlWithCAName.openConnection();
+        conWithCAName = (HttpURLConnection) urlWithCAName.openConnection();
+        conWithCAName.setRequestMethod("GET");
+        conWithCAName.getDoOutput();
+        conWithCAName.connect();
+        assertEquals("Response code is not 200 (OK)", 200, conWithCAName.getResponseCode());
+        assertTrue("Content type is not application/x-x509-ca-ra-cert: " + conWithCAName.getContentType(), conWithCAName.getContentType().startsWith("application/x-x509-ca-ra-cert"));
+        baos = new ByteArrayOutputStream();
+        // This works for small requests, and SCEP requests are small enough
+        in = conWithCAName.getInputStream();
+        b = in.read();
+        while (b != -1) {
+            baos.write(b);
+            b = in.read();
+        }
+        baos.flush();
+        in.close();
+        respBytes = baos.toByteArray();
+        assertNotNull("Response can not be null.", respBytes);
+        assertTrue(respBytes.length > 0);
+        cert = CertTools.getCertfromByteArray(respBytes, X509Certificate.class);
+        // Check that we got the right cert back. Should be the Root CA, as default is reverse order
+        assertEquals(rootCaCert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        conWithCAName.disconnect();
 
         // Now set the CA as default CA in the alias instead, it should pick up that, if we are in RA mode
         scepConfiguration.setRADefaultCA(scepAlias, x509ca.getName());
@@ -710,7 +751,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
         scepConfiguration.setIncludeCA(scepAlias, false);
         scepConfiguration.setAllowLegacyDigestAlgorithm(scepAlias, true);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
-        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
@@ -722,7 +763,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
     public void test09ScepGetCrlSHA1NoLegacyDigestAlgorithmAllowed() throws Exception {
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
-        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA1, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
@@ -735,7 +776,7 @@ public class ProtocolScepHttpTest extends ScepTestBase {
     public void test09ScepGetCrlSHA256() throws Exception {
         scepConfiguration.setIncludeCA(scepAlias, false);
         globalConfigSession.saveConfiguration(admin, scepConfiguration);
-        publishingCrlSession.forceCRL(admin, x509ca.getCAId());
+        publishingCrlSession.forceCRL(admin, x509ca.getCAId(), new CrlCreationParams());
         byte[] msgBytes = genScepRequest(true, CMSSignedGenerator.DIGEST_SHA256, userDN1, SMIMECapability.dES_CBC);
         // Send message with GET
         byte[] retMsg = sendScep(false, msgBytes);
