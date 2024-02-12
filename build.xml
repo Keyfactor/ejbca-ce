@@ -1003,6 +1003,8 @@
                 <exclude name=".metadata/**" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
+		    	<exclude name="container" />
+		    	<exclude name="Dockerfile" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />

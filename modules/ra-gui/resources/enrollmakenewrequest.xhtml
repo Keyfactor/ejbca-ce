@@ -649,7 +649,7 @@
 								value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.requiredFieldInstances}"
 								var="instance">
 								<h:panelGroup layout="block" styleClass="pure-control-group">
-									<h:outputLabel for="subjectDirectoryField"
+									<h:outputLabel for="subjectDirectoryNonModifiableField"
 										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} = "
 										rendered="#{instance.required and !instance.modifiable}" />
 									<h:outputLabel for="subjectDirectoryField"
@@ -667,11 +667,10 @@
 										<f:ajax event="keyup" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 									</h:inputText>
-									<h:outputLabel for="subjectDirectoryNonModifiableField"
-										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} = "
-										rendered="#{!instance.modifiable and instance.required}" />
-									<h:outputText id="subjectDirectoryNonModifiableField" rendered="#{!instance.modifiable and instance.required}" value="#{instance.value}" style="color:white;"/>
-									<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
+									<h:outputLabel id="subjectDirectoryFieldNonModifiableLabel" value="#{instance.value}"
+										 rendered="#{!instance.modifiable and !instance.selectable}" styleClass="pure-control-group label" style="text-align: left">
+									</h:outputLabel>
+									<h:selectOneMenu id="subjectDirectoryNonModifiableField" value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 										<f:selectItems value="#{instance.selectableValues}" />
 										<f:attribute name="_label" value="#{instance.name}"/>
 										<f:ajax event="change" execute="@this"

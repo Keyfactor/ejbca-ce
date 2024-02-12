@@ -20,6 +20,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.collections4.SetUtils;
 
@@ -105,12 +107,14 @@ public class CRLUpdateWorker extends BaseWorker {
         Set<Integer> updatedCas = new HashSet<>();
         Set<Integer> updatedCasDelta = new HashSet<>();
         Set<Integer> caids = new HashSet<>(getAllCAIdsToCheck(caSession, true));
+        // Don't spend more than 25% of the time on archival of expired certificates
+        final CrlCreationParams params = new CrlCreationParams(getNextInterval()/4, TimeUnit.SECONDS);
         if (lock(caids)) {
             try {
                 long polltime = getNextInterval();
                 // Use true here so the service works the same as before upgrade from 3.9.0 when this function of
                 // selecting CAs did not exist, no CA = Any CA.
-                updatedCas.addAll(publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000));
+                updatedCas.addAll(publishingCrlSession.createCRLs(getAdmin(), caids, polltime*1000, params));
                 updatedCasDelta.addAll(publishingCrlSession.createDeltaCRLs(getAdmin(), caids, polltime*1000));
             } catch (AuthorizationDeniedException e) {
                 log.error("Internal authentication token was denied access to importing CRLs or revoking certificates.", e);
