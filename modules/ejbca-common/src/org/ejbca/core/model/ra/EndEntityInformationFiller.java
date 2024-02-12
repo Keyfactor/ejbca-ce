@@ -544,7 +544,8 @@ public class EndEntityInformationFiller {
     
     private static String getBcNameStyle(String parameter, String entityType) {
         if(entityType.equals(SUBJECT_ALTERNATIVE_NAME)) {
-            return parameter;
+            // The SAN's type name needs to be UPPERCASE, so it matches with the EE policy. 
+            return parameter.toUpperCase(Locale.ROOT);
         }
         return BC_STYLE_PARAMETERS.getOrDefault(parameter.toUpperCase(Locale.ROOT), parameter.toUpperCase(Locale.ROOT));
     }
