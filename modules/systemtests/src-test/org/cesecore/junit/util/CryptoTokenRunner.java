@@ -124,11 +124,11 @@ public abstract class CryptoTokenRunner {
     public abstract String getSimpleName();
 
     
-    public abstract X509CAInfo createX509Ca(String subjectDn, String username) throws Exception;
+    public abstract X509CAInfo createX509Ca(String subjectDn, String caName) throws Exception;
         
-    public abstract X509CAInfo createX509Ca(String subjectDn, String issuerDn, String username, String validity) throws Exception;
+    public abstract X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity) throws Exception;
 
-    public abstract X509CAInfo createX509Ca(String subjectDn, String issuerDn, String username, String validity, String keySpec, String signingAlgorithm) throws Exception;
+    public abstract X509CAInfo createX509Ca(String subjectDn, String issuerDn, String caName, String validity, String keySpec, String signingAlgorithm) throws Exception;
 
     public void tearDownCa(X509CAInfo ca) {
         final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
@@ -194,12 +194,12 @@ public abstract class CryptoTokenRunner {
     }
     
     protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
-            int keyusage, String validity) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
-        return createTestX509Ca(caName, cadn, tokenpin, genKeys, cryptoTokenImplementation, signedBy, keyspec, keyusage, validity, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+            String validity) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
+        return createTestX509Ca(caName, cadn, tokenpin, genKeys, cryptoTokenImplementation, signedBy, keyspec, validity, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
     }
     
     protected X509CAInfo createTestX509Ca(final String caName, String cadn, char[] tokenpin, boolean genKeys, String cryptoTokenImplementation, int signedBy, final String keyspec,
-            int keyusage, String validity, String signingAlgorithm) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
+            String validity, String signingAlgorithm) throws CryptoTokenOfflineException, CertificateParsingException, OperatorCreationException {
         final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("createTestX509CAOptionalGenKeys"));
 
         CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
@@ -221,10 +221,9 @@ public abstract class CryptoTokenRunner {
                 CaTestUtils.createCaToken(cryptoTokenId, signingAlgorithm, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, signingKeyName, encryptionKeyName);
         final List<ExtendedCAServiceInfo> extendedCaServices = new ArrayList<>(2);
         extendedCaServices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        String caname = DnComponents.getPartFromDN(cadn, "CN");
         boolean ldapOrder = !DnComponents.isDNReversed(cadn);
         int certificateProfileId = (signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
-        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, caname, CAConstants.CA_ACTIVE, certificateProfileId, validity,
+        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(cadn, caName, CAConstants.CA_ACTIVE, certificateProfileId, validity,
                 signedBy, null, catoken);
         cainfo.setDescription(caName);
         cainfo.setExtendedCAServiceInfos(extendedCaServices);

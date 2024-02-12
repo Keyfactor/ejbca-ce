@@ -48,6 +48,7 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -183,6 +184,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -295,6 +297,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * Internal localization of logs and errors
      */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+
+    /**
+     * Operations that implicitly trigger CRL generation (such as renewal) should not "freeze"
+     * for minutes or hours if there's a backlog of expired certificates to archive.
+     * So don't spend more than 30 seconds on archival.
+     */
+    private static final long MAX_CRL_ARCHIVAL_SECS = 30;
 
     @PostConstruct
     public void postConstruct() {
@@ -736,7 +745,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 caSession.editCA(admin, ca, false); // store any activates CA services
                 if (ca.getCaImplType().equals(X509CA.CA_TYPE)) {
                     // create initial CRLs
-                    publishingCrlSession.forceCRL(admin, ca.getCAId());
+                    publishingCrlSession.forceCRL(admin, ca.getCAId(), new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS));
                     publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
                 }
             } catch (CADoesntExistsException | CAOfflineException e) {
@@ -1220,7 +1229,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         log.debug("Creating new cross chain with root CA:" + rootCaSubjectDn + "; fingerprints: " + fingerprints);
         Map<String, List<String>> alternateChains = ((X509CAInfo)caInfo).getAlternateCertificateChains();
         if(alternateChains==null) {
-            alternateChains = new HashMap<String, List<String>>();
+            alternateChains = new HashMap<>();
             ((X509CAInfo)caInfo).setAlternateCertificateChains(alternateChains);
         }
         alternateChains.put(rootCaSubjectDn, fingerprints);
@@ -1638,7 +1647,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Publish CA Certificate
         publishCACertificate(authenticationToken, chain, ca.getCRLPublishers(), ca.getSubjectDN());
         // Create initial CRL
-        publishingCrlSession.forceCRL(authenticationToken, caid);
+        publishingCrlSession.forceCRL(authenticationToken, caid, new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS));
         try {
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
         } catch (DeltaCrlException e) {
@@ -2390,11 +2399,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             
             // Generate a new CRL, but not partitions, which could take very long time.
             if (ca.getCAType() == CAInfo.CATYPE_X509) {
-                publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION, new Date());
+                final CrlCreationParams crlParams = new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS);
+                publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION, crlParams);
                 publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
                 if (ca instanceof X509CA && ((X509CA) ca).isMsCaCompatible() && ((X509CA) ca).getCrlPartitions() != 0) {
                     for (int crlPartitionIndex = 1; crlPartitionIndex <= ((X509CA) ca).getCrlPartitions(); crlPartitionIndex++) {
-                        publishingCrlSession.forceCRL(authenticationToken, caid, crlPartitionIndex, new Date());
+                        publishingCrlSession.forceCRL(authenticationToken, caid, crlPartitionIndex, crlParams);
                         publishingCrlSession.forceDeltaCRL(authenticationToken, caid, crlPartitionIndex);
                     }
                 }
@@ -2504,7 +2514,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Change the status of the CA certificate from CERT_ROLLOVERPENDING to CERT_ACTIVE
             certificateStoreSession.setRolloverDoneStatus(authenticationToken, CertTools.getFingerprintAsString(rolloverChain.get(0)));
-            publishingCrlSession.forceCRL(authenticationToken, caid);
+            publishingCrlSession.forceCRL(authenticationToken, caid, new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS));
             publishingCrlSession.forceDeltaCRL(authenticationToken, caid);
             // Audit log
             logAuditEvent(
@@ -2570,7 +2580,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // but if this is a subCA these are only the "entity" certificates issued by this CA
             if (ca.getStatus() != CAConstants.CA_EXTERNAL) {
                 certificateStoreSession.revokeAllCertByCA(admin, ca.getSubjectDN(), reason);
-                publishingCrlSession.forceCRL(admin, ca.getCAId());
+                publishingCrlSession.forceCRL(admin, ca.getCAId(), new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS));
             }
             ca.setRevocationReason(reason);
             ca.setRevocationDate(new Date());
@@ -3154,7 +3164,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Create initial CRLs
         try {
-            publishingCrlSession.forceCRL(admin, ca.getCAId());
+            publishingCrlSession.forceCRL(admin, ca.getCAId(), new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS));
             publishingCrlSession.forceDeltaCRL(admin, ca.getCAId());
         } catch (CADoesntExistsException e) {
             throw new IllegalStateException("Newly created CA with ID: " + ca.getCAId() + " was not found in database.");
@@ -3946,7 +3956,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 securityEventProperties.toMap()
         );
     }
-    
+
+    @Override
     public byte[] makeRequest(AuthenticationToken administrator, int caid, byte[] caChainBytes, String nextSignKeyAlias) throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
         List<Certificate> certChain = null;
         if (caChainBytes != null) {
@@ -3973,7 +3984,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throw new IllegalStateException("Unexpected outcome.", e);
         }
     }
-    
+
+    @Override
     public byte[] makeCitsRequest(AuthenticationToken authenticationToken, int caid, byte[] caChainBytes, 
             String signKeyAlias, String verificationKeyAlias, String encryptKeyAlias) 
             throws CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
@@ -4084,7 +4096,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         return returnval;
         
     }
-    
+
+    @Override
     public void receiveCitsResponse(AuthenticationToken authenticationToken, int caid, 
                         byte[] signedCertificate) throws CADoesntExistsException, EjbcaException {
         // TODO: later support certificate chain
