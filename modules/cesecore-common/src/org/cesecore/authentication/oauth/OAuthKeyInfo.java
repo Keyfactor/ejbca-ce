@@ -254,10 +254,10 @@ public final class OAuthKeyInfo implements Serializable {
 
     public String getOauthLoginUrl() {
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
-            return getTypeSpecificUrl("auth");
+            return getKeycloakSpecificUrl("auth");
         }
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            return getTypeSpecificUrl("authorize");
+            return getAzureSpecificUrl("authorize");
         }
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID)) {
             return url;
@@ -268,8 +268,9 @@ public final class OAuthKeyInfo implements Serializable {
     public String getTokenUrl() {
         switch (getType()){
             case TYPE_AZURE:
+                return getAzureSpecificUrl("token");
             case TYPE_KEYCLOAK:
-                return getTypeSpecificUrl("token");
+                return getKeycloakSpecificUrl("token");
             case TYPE_GENERIC:
             case TYPE_PINGID:
             default:
@@ -280,8 +281,9 @@ public final class OAuthKeyInfo implements Serializable {
     public String getUserInfoUrl() {
         switch (getType()){
             case TYPE_AZURE:
+                return getAzureSpecificUrl("userinfo");
             case TYPE_KEYCLOAK:
-                return getTypeSpecificUrl("userinfo");
+                return getKeycloakSpecificUrl("userinfo");
             case TYPE_GENERIC:
             case TYPE_PINGID:
             default:
@@ -292,35 +294,28 @@ public final class OAuthKeyInfo implements Serializable {
     public String getLogoutUrl() {
         switch (getType()){
             case TYPE_AZURE:
+                return getAzureSpecificUrl("logout");
             case TYPE_KEYCLOAK:
-                return getTypeSpecificUrl("logout");
+                return getKeycloakSpecificUrl("logout");
             case TYPE_GENERIC:
             case TYPE_PINGID:
             default:
                 return logoutUrl;
         }
     }
-
-    private String getTypeSpecificUrl(String endpoint){
-        switch (getType()) {
-            case TYPE_KEYCLOAK: {
-                String uri = getUrl();
-                uri += getUrl().endsWith("/") ? "" : "/";
-                uri += "realms/" + getRealm() + "/protocol/openid-connect/" + endpoint;
-                return uri;
-            }
-            case TYPE_AZURE: {
-                String uri = getUrl();
-                uri += getUrl().endsWith("/") ? "" : "/";
-                uri += getRealm() + "/oauth2/v2.0/" + endpoint;
-                return uri;
-            }
-            case TYPE_PINGID: 
-            case TYPE_GENERIC: {
-                return getUrl();
-            }
-        }
-        return null;
+    
+    private String getKeycloakSpecificUrl(final String endpoint){
+        String uri = getUrl();
+        uri += getUrl().endsWith("/") ? "" : "/";
+        uri += "realms/" + getRealm() + "/protocol/openid-connect/" + endpoint;
+        return uri;
+    }
+    
+    private String getAzureSpecificUrl(final String endpoint){
+        String uri = getUrl();
+        uri += getUrl().endsWith("/") ? "" : "/";
+        uri += getRealm() + "/oauth2/v2.0/" + endpoint;
+        return uri;
     }
 
 
