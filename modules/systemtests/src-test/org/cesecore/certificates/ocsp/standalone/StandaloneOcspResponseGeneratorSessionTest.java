@@ -120,6 +120,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionRemote;
 import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
+import org.ejbca.core.ejb.ocsp.PresignResponseValidity;
 import org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension;
 import org.junit.After;
 import org.junit.Before;
@@ -1584,7 +1585,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
                     globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
             final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", globalOcspConfiguration);
             final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", globalOcspConfiguration);
-            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, false, false)
+            byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false)
                     .getOcspResponse();
             //We're expecting back an unsigned reply saying unauthorized, as per RFC2690 Section 2.3
             assertNotNull("OCSP responder replied null", responseBytes);
@@ -1762,7 +1763,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         final TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", globalOcspConfiguration);
         final AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "", globalOcspConfiguration);
         final OcspResponseInformation responseInformation = ocspResponseGeneratorSession.getOcspResponse(ocspRequest.getEncoded(), null, "", null, null,
-                auditLogger, transactionLogger, false, false, false);
+                auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false);
         byte[] responseBytes = responseInformation.getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
         return new OCSPResp(responseBytes);
