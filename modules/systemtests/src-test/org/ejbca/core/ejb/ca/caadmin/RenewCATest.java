@@ -97,6 +97,83 @@ public class RenewCATest extends CaTestCase {
         assertFalse(Arrays.equals(orgkey, newkey));
         log.trace("<test01renewCA()");
     }
+
+    
+    /** Test renewal of a CA using a different key algorithm. 
+     *  Note: Can run these tests alone by using: ant test:runone -Dtest.runone=RenewCATest
+    **/
+    
+    // Need these extra EJBs
+    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertificateProfileSessionRemote.class);
+
+    @Test
+    public void test02renewCA_ChangeKeyAlg() throws Exception {
+        log.trace(">test02renewCA_ChangeKeyAlg()");
+        
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
+        // Sleep at least for one second so we are not so fast that we create a new cert with the same time
+        Thread.sleep(2000);
+        
+        // Prepare to renew CA but with an EC key
+        
+        // Get the CA's token
+        final CAToken caToken = info.getCAToken();
+        
+        // The current Signing Algorithm should be RSA-based
+        String sPreviousSigAlg = ((X509Certificate)orgcert).getSigAlgName();
+        assertTrue("Current CA's Signature Algorithm should include RSA", sPreviousSigAlg.contains("RSA"));
+
+        // Set the next key alias for the token
+        String sNextKeyAlias = "TestEC";
+        
+        // Create an EC key. Need the CryptoTokeManagementSession for this
+        cryptoTokenManagementSession.createKeyPair(internalAdmin, caToken.getCryptoTokenId(), sNextKeyAlias, com.keyfactor.util.keys.token.KeyGenParams.builder("prime256v1").build());
+
+        // To get EJBCA to renew a CA with a different key algorithm, we need to:
+        //   1. set up the signing algorithm in the CA's token to support EC, 
+        //   2. ensure the certificate profile has an appropriate signature algorithm to support EC.
+        
+        // Set the signature algorithm of the token
+        caToken.setSignatureAlgorithm( AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        
+        // Need to set the Certificate Profile to use ECDSA based signature algorithm
+        // Lets copy the current profile, change it, and save a new profile (as we can't edit the current profile)
+        int iCP = info.getCertificateProfileId();
+        org.cesecore.certificates.certificateprofile.CertificateProfile cpCA = certificateProfileSession.getCertificateProfile(iCP);
+        cpCA.setSignatureAlgorithm( AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        iCP = certificateProfileSession.addCertificateProfile(internalAdmin, "TESTRENEWALWITHEC", cpCA);
+        // Update the CA
+        info.setCertificateProfileId(iCP);
+        caSession.editCA(internalAdmin, info);
+
+        // We are all set and now ready to renew the CA
+        caAdminSession.renewCA(internalAdmin, info.getCAId(), sNextKeyAlias, null, /*CreateLinkCert*/true);
+
+        // Remove the certificate profile we just created.
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTRENEWALWITHEC");
+        
+        // Let check the CA's new certificate has the ECDSA based signing algorithm
+        X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
+        String sNewSigAlg = ((X509Certificate)newcert).getSigAlgName();
+        assertTrue( "Previous Signing Algorith was "+sPreviousSigAlg+" and new Signing Algorithm was "+sNewSigAlg+". Was expecting it to be ECDSA based.",
+                sNewSigAlg.contains("ECDSA"));
+       
+        // Check the Link certificate was signed using the previous Signing Algorithm
+        byte[] linkCertificateAfterRenewal1Bytes = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
+        assertTrue("There is no available link certificate after CA renewal with EC key", linkCertificateAfterRenewal1Bytes != null);
+        @SuppressWarnings("deprecation")
+        X509Certificate linkCertificateAfterRenewal1 = (X509Certificate) CertTools.getCertfromByteArray(linkCertificateAfterRenewal1Bytes);
+        assertTrue("The Link certificate should be signed by the CA's previous signing algorithm, not "+linkCertificateAfterRenewal1.getSigAlgName(),
+                linkCertificateAfterRenewal1.getSigAlgName().equalsIgnoreCase(sPreviousSigAlg) );
+
+        // Test done!
+        log.trace("<test02renewCA_ChangeKeyAlg()");
+    }
+
     
     /** Test renewal of a subCA, using Renew CA Worker. */
     @Test
