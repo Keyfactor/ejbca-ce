@@ -29,6 +29,13 @@ public interface MsaeRaConfigCacheLocal {
     }
 
     /**
+     * Removes the given MSAE alias from the cache
+     */
+    default void removeMsaeAlias(final String alias) {
+        throw new UnsupportedOperationException("MSAE is an EJBCA Enterprise only feature");
+    }
+    
+    /**
      * Clears the cache, called from {@link #ClearCacheSessionBean}
      */
     default void flushMsaeRaConfigCache() {
