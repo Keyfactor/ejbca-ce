@@ -655,17 +655,17 @@ public class EndEntityInformationFillerTest {
         user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
-                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY", user.getSubjectAltName());
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,DIRECTORYNAME=CN=XX\\,O=YY", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY\\,C=DE");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
-                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY\\,C=DE", user.getSubjectAltName());
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,DIRECTORYNAME=CN=XX\\,O=YY\\,C=DE", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
-                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY", user.getSubjectAltName());
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,DIRECTORYNAME=CN=XX\\,O=YY", user.getSubjectAltName());
         
         // URI may include + and = in queryparam, this functionality ensures input=output
         // for single valued RDNs(not multi value)
@@ -674,28 +674,28 @@ public class EndEntityInformationFillerTest {
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
-                + "uniformResourceId=http://xxx.de/en?que\\=res", user.getSubjectAltName());
+                + "UNIFORMRESOURCEID=http://xxx.de/en?que\\=res", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",uniformResourceIdentifier=http://xxx.de/en?que=res");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
-                + "uniformResourceIdentifier=http://xxx.de/en?que=res", user.getSubjectAltName());
+                + "UNIFORMRESOURCEIDENTIFIER=http://xxx.de/en?que=res", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",uniformResourceId=http://xxx.de/en?que\\=res\\+q2\\=r2");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
-                + "uniformResourceId=http://xxx.de/en?que\\=res\\+q2\\=r2", user.getSubjectAltName());
+                + "UNIFORMRESOURCEID=http://xxx.de/en?que\\=res\\+q2\\=r2", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",uniformResourceId=http://xxx.de/en?que=res+q2=r2,1.2.3.4=qwerty");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
-                + "uniformResourceId=http://xxx.de/en?que=res+q2=r2,1.2.3.4=qwerty", user.getSubjectAltName());
+                + "UNIFORMRESOURCEID=http://xxx.de/en?que=res+q2=r2,1.2.3.4=qwerty", user.getSubjectAltName());
         
     }
-    
+	
     @Test
     public void testUniqueEntriesSan() throws Exception {
         EndEntityProfile p = new EndEntityProfile();
