@@ -38,7 +38,6 @@ public interface OcspResponseGeneratorSession {
      * @param isPreSigning true if we're using the method to presign responses.
      * @param preResponseValidity should normally be retrieved from configuration, but for eIDAS use cases may be set unlimited. USE WITH CAUTION. 
      * @param includeExpiredCertificates true to get responses for expired certificates with presigning.
-     * @param ocspResponseGenerationParams Object used to pass OCSP response generation related parameters.
      * @return a signed and encoded OCSPResponse wrapped in an OcspResponseInformation object
      * @throws MalformedRequestException if the request byte array was invalid.
      * @throws OCSPException if OCSP response generation fails
