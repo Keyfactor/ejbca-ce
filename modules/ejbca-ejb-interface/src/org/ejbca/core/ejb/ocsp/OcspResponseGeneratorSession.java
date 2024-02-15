@@ -36,16 +36,15 @@ public interface OcspResponseGeneratorSession {
      * @param auditLogger The AuditLogger to use for this transaction
      * @param transactionLogger The TransactionLogger to use for this transaction
      * @param isPreSigning true if we're using the method to presign responses.
-     * @param finalResponse TODO
+     * @param preResponseValidity should normally be retrieved from configuration, but for eIDAS use cases may be set unlimited. USE WITH CAUTION. 
      * @param includeExpiredCertificates true to get responses for expired certificates with presigning.
-     * @param ocspResponseGenerationParams Object used to pass OCSP response generation related parameters.
      * @return a signed and encoded OCSPResponse wrapped in an OcspResponseInformation object
      * @throws MalformedRequestException if the request byte array was invalid.
      * @throws OCSPException if OCSP response generation fails
      */
     OcspResponseInformation getOcspResponse(byte[] requestBytes, X509Certificate[] requestCertificates, String remoteAddress,
                                             String xForwardedFor, StringBuffer requestUrl, AuditLogger auditLogger, TransactionLogger transactionLogger,
-                                            boolean isPreSigning, boolean finalResponse, boolean includeExpiredCertificates) throws MalformedRequestException, OCSPException;
+                                            boolean isPreSigning, PresignResponseValidity preResponseValidity , boolean includeExpiredCertificates) throws MalformedRequestException, OCSPException;
     
     /** Reloads the cache of OCSP signers. */
     void reloadOcspSigningCache();
