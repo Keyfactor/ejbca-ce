@@ -104,7 +104,8 @@ public class RenewCATest extends CaTestCase {
     **/
     
     // Need these extra EJBs
-    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);
 
@@ -166,7 +167,7 @@ public class RenewCATest extends CaTestCase {
         byte[] linkCertificateAfterRenewal1Bytes = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
         assertTrue("There is no available link certificate after CA renewal with EC key", linkCertificateAfterRenewal1Bytes != null);
         @SuppressWarnings("deprecation")
-        X509Certificate linkCertificateAfterRenewal1 = (X509Certificate) CertTools.getCertfromByteArray(linkCertificateAfterRenewal1Bytes);
+        X509Certificate linkCertificateAfterRenewal1 = (X509Certificate) com.keyfactor.util.CertTools.getCertfromByteArray(linkCertificateAfterRenewal1Bytes);
         assertTrue("The Link certificate should be signed by the CA's previous signing algorithm, not "+linkCertificateAfterRenewal1.getSigAlgName(),
                 linkCertificateAfterRenewal1.getSigAlgName().equalsIgnoreCase(sPreviousSigAlg) );
 
