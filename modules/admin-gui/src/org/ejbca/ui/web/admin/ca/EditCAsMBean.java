@@ -1541,6 +1541,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             updateKeyAliases();
         }
     }
+    
+    public boolean isMixedHybridChain() {
+        if(getAlternativeSignatureAlgorithmParam()==null && caSession.getCAInfoInternal(caInfoDto.getSignedBy()).getCAToken().getAlternativeSignatureAlgorithm()!=null)  {
+            addErrorMessage("ERROR_TO_CREATE_NON_HYBRID_CA_UNDER_HYBRID_ROOT");
+                return true;
+        }
+        if(getAlternativeSignatureAlgorithmParam()!=null && caSession.getCAInfoInternal(caInfoDto.getSignedBy()).getCAToken().getAlternativeSignatureAlgorithm()==null)  {
+                addErrorMessage("ERROR_TO_CREATE_HYBRID_CA_UNDER_NON_HYBRID_ROOT");
+                return true;
+        } 
+        return false;
+    }
 
     // ===================================================== Create CA Actions ============================================= //
 
@@ -1596,7 +1608,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             illegalDnOrAltName = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
             if (illegalDnOrAltName) {
                 addErrorMessage("INVALIDSUBJECTDN");
-            }
+            } 
+            if(isMixedHybridChain())  return "";
+            
         } catch (final Exception e) {
             addNonTranslatedErrorMessage(e);
             return "";
