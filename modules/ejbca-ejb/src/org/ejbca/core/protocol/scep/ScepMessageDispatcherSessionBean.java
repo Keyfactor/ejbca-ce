@@ -306,8 +306,14 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                 }
             }
         } else if (operation.equals("GetCACaps")) {
-            final String caname = getCaName(message, scepConfig, scepConfigurationAlias);
-            final CAInfo cainfo = caSession.getCAInfoInternal(-1, caname, true);
+            CAInfo cainfo = null;
+            try {
+                final String caname = getCaName(message, scepConfig, scepConfigurationAlias);
+                cainfo = caSession.getCAInfoInternal(-1, caname, true);
+            } catch (CADoesntExistsException e) {
+                // the CA doesn't exist, it's fine GetCACaps should always return something
+            }
+            // We have two different options here, compliant with SCEP draft23 or RFC8894, we try to be compliant with both
             if (cainfo != null) {
                 final boolean hasRolloverCert = (caSession.getFutureRolloverCertificate(cainfo.getCAId()) != null);
                 // SCEP draft 23, "4.6.1.  Get Next CA Response Message Format". 
@@ -316,9 +322,8 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
                         ? ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard".getBytes())
                         : ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard".getBytes());
             } else {
-                final String msg = "CA was not found: " + caname;
-                log.debug(msg);
-                throw new CADoesntExistsException(msg);
+                // Respond more in-line with 8894 which doesn't state this dependence on of the CA has a rollover cert available
+                return ScepResponseInfo.onlyResponseBytes("POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard".getBytes());
             }
         } else {
             log.error("Invalid parameter '" + operation);
@@ -353,7 +358,7 @@ public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSe
      */
     private String getCaName(final String caName, final ScepConfiguration scepConfiguration, final String alias) throws CADoesntExistsException {
         if (scepConfiguration.getUseIntune(alias)) {
-            //Always return the RA mode default CA
+            //Always return the configured Intune SCEP CA
             return scepConfiguration.getRADefaultCA(alias);
         }
 
