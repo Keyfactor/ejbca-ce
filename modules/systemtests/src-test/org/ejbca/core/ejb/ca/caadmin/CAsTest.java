@@ -984,7 +984,6 @@ public class CAsTest extends CaTestCase {
             CertificatePolicy pol = new CertificatePolicy("2.2.2.2", null, null);
             policies.add(pol);
             xinfo.setPolicies(policies);
-            xinfo.setDeltaCRLPeriod(100_100); // Enable delta CRLs
             caSession.editCA(admin, xinfo);
             caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
             info = caSession.getCAInfo(admin, getTestCAId());
