@@ -32,8 +32,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Tests DN merging
- * 
- * @version $Id$
  */
 public class EndEntityInformationFillerTest {
 	EndEntityProfile profile;
@@ -193,13 +191,7 @@ public class EndEntityInformationFillerTest {
      */
     @Test
     public void testMergeAltName() {
-        //TODO
-        // Order changed when I did the "fix"
-        // assertEquals("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
-        // ->dnsName=foo1.bar.com,dnsName=foo.bar.com,rfc822Name=foo@bar.com
-
-	// Test the merge operation with SANs
-        //
+        // Test the merge operation with SANs
         
         // Add a SAN (dnsName) to the EE Policy
         profile.addField(DnComponents.DNSNAME);
@@ -224,7 +216,6 @@ public class EndEntityInformationFillerTest {
             sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
             assertEquals( "Merged DNSNAME should be the User's value.", "DNSNAME=test1.org", sMergedAltName);
 
-            
             // Tests with two SANs of the same type, one fixed and the other modifiable
             profile.addField(DnComponents.DNSNAME);
             profile.setValue(DnComponents.DNSNAME, 1, "changeme.org");
@@ -250,13 +241,9 @@ public class EndEntityInformationFillerTest {
 
             // Remove the DIRECTORYNAME
             profile.removeField(DnComponents.DIRECTORYNAME, 0);
-
-            
         } catch (EndEntityProfileValidationException e) {
             fail("Exception not expected: "+e.getMessage());
-            
         }
-        
         // Cleanup
         profile.removeField(DnComponents.DNSNAME, 0);
     }
