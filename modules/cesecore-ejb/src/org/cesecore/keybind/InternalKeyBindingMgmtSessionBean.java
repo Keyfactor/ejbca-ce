@@ -337,7 +337,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                             final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
                             renewedCertificateChain.add((X509Certificate) caCertificate);
                             trustedEntries.add(new TrustedChain(x509CertificateChain));
+                            log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
+                                    " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
+                                    " added to trusted certs");
                         }
+                        log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
+                                " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
+                                " ignored ");
                     }
 
                 }
@@ -362,6 +368,22 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     final List<X509Certificate> x509CertificateChain = new ArrayList<>(
                             Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                     trustedEntries.add(new CertificatePin(x509CertificateChain, trustedReference.fetchCertificateSerialNumber()));
+                    // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
+                    List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
+                            Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
+                    for (Certificate caCertificate : activeCaCertsBySubjectDn) {
+                        if (!certificateChain.contains(caCertificate)) {
+                            final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
+                            renewedCertificateChain.add((X509Certificate) caCertificate);
+                            trustedEntries.add(new TrustedChain(x509CertificateChain));
+                            log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
+                                    " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
+                                    " added to trusted certs");
+                        }
+                        log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
+                                " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
+                                " ignored ");
+                    }
                 }
             }
         }
