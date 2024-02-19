@@ -31,8 +31,14 @@ import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyTools;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -40,12 +46,6 @@ import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SshCertificateUtils;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Representation of a certificate and related information.
@@ -109,6 +109,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     private static final int LATEST_PROTECT_VERSON = 7;
 
+    // These are data fields that map to columns in the database
+    // Note that getters and setters for these must return/set the exact column value and not do modifications, otherwise it may lead to 
+    // org.hibernate.StaleObjectStateException
+    // If a get-value need to be modified another Transient method should be added, setters must be "pure" due to how hibernate works
     private String issuerDN;
     private String subjectDN;
     private String subjectAltName = null;  // @since EJBCA 6.6.0
@@ -395,7 +399,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     @Override
     public void setInvalidityDate(Long invalidityDate) {
-        this.invalidityDate = (Long) ObjectUtils.defaultIfNull(invalidityDate, -1L);
+        this.invalidityDate = invalidityDate;
     }
 
     @Override
