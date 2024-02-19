@@ -66,6 +66,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -116,6 +117,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CertificateDataSessionLocal certificateDataSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -310,7 +313,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) {
         final List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
-        
+
         List<TrustEntry> trustedEntries = new ArrayList<>();
         if (trustedReferences.size() == 0) {
             // If no trusted certificates are referenced, trust ANY certificates issued by ANY CA known to this EJBCA instance.
@@ -326,6 +329,17 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     if (!x509CertificateChain.isEmpty()) {
                         trustedEntries.add(new TrustedChain(x509CertificateChain));
                     }
+                    // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
+                    List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
+                            Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
+                    for (Certificate caCertificate : activeCaCertsBySubjectDn) {
+                        if (!certificateChain.contains(caCertificate)) {
+                            final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
+                            renewedCertificateChain.add((X509Certificate) caCertificate);
+                            trustedEntries.add(new TrustedChain(x509CertificateChain));
+                        }
+                    }
+
                 }
             }
             if(log.isDebugEnabled()) {
