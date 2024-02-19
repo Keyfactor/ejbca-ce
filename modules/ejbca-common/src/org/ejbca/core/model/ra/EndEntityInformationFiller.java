@@ -172,60 +172,65 @@ public class EndEntityInformationFiller {
     }
     
     /**
-     * This method merges user provided DNs with DNs configured in profile. We parse the user provided string to
+     * This method merges user provided DNs or altNames with DNs configured in profile. We parse the user provided string to
      * collection of javax.naming.ldap.Rdn instances while retaining order of different type of Rdns and 
      * values for each type. Then we do the same for profile. Then we override the values in profile starting 
      * with empty fields and then modifiable but non-empty values against each type of Rdns. If there are still
-     * new values in user dn is present, then exception is thrown. Otherwise, rest of the unmodifiable DN values
+     * new values in user dn/san is present, then exception is thrown. Otherwise, rest of the unmodifiable DN /SANvalues
      * from profile are appended. This is repeated for each DN type in profile. It accounts for 
      * DNs present in both user provided string and profile. Exception is also thrown if DN type is present 
      * in user configured string but not in profile.
      * <br>
-     * e.g. userDnString: CN=My Name,O=My Org1,O=My Org2<br>
+     * e.g. userDnOrSan: CN=My Name,O=My Org1,O=My Org2<br>
      * profile: CN=,O=ProfileOrg1(unmodifiable),O=ProfileOrg2(modifiable),O=(empty)<br>
      * result: CN=My Name,O=My Org1,O=My Org2,O=ProfileOrg1<br>
      * 
-     * if userDnString has one more instance of DN type O, it will result in exception.
+     * if userDnOrSan has one more instance of DN type O, it will result in exception.
      * 
-     * @param userDnString SubjectDN or Subject Alternate Name provided by user as String
-     * @param profile 
+     * The same goes for SANs, e.g.
+     * e.g. userDnOrSan: dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com<br>
+     * profile: DNSNAME=name1.example.com(unmodifiable),DNSNAME=name2.example.com(modifiable),DNSNAME=(empty)<br>
+     * result: DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=name1.example.com,rfc822Name=foo@bar.com<br>
+     * 
+     * @param userDnOrSan SubjectDN or Subject Alternate Name provided by user as String
+     * @param profile  end entity profile
      * @param entityType indicates SubjectDN or Subject Alternate Name
      * @param entityEmail email value to be merged as configured in profile
-     * @return
+     * @return DN or SAN string which is the merger between input userDnOrSan and fields with values in profile
      * @throws EndEntityProfileValidationException
      */
-    public static String mergeDnString(String userDnString, final EndEntityProfile profile, 
+    public static String mergeDnString(String userDnOrSan, final EndEntityProfile profile, 
                                 final String entityType, final String entityEmail) throws EndEntityProfileValidationException {
         
-        if (userDnString==null) {
-            userDnString = "";
+        if (userDnOrSan==null) {
+            userDnOrSan = "";
         } else {
-            userDnString = userDnString.trim();
+            userDnOrSan = userDnOrSan.trim();
         }
         
         
         // append end entity email to user dn or san to achieve the same functionality
         if(!StringUtils.isEmpty(entityEmail)) {
-            if(!StringUtils.isEmpty(userDnString)) {
-                userDnString += ",";
+            if(!StringUtils.isEmpty(userDnOrSan)) {
+                userDnOrSan += ",";
             }
             if(entityType.equals(SUBJECT_DN) && profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
-                userDnString += "E=" + entityEmail;
+                userDnOrSan += "E=" + entityEmail;
             }
             if(entityType.equals(SUBJECT_ALTERNATIVE_NAME) && profile.getUse(DnComponents.RFC822NAME, 0)) {
-                userDnString += "RFC822NAME=" + entityEmail;
+                userDnOrSan += "RFC822NAME=" + entityEmail;
             }
         }
         
-        final int numberofDnfields;
+        final int numberoffields;
         if(entityType.equals(SUBJECT_DN)) {
-            numberofDnfields = profile.getSubjectDNFieldOrderLength();
+            numberoffields = profile.getSubjectDNFieldOrderLength();
         } else {
-            numberofDnfields = profile.getSubjectAltNameFieldOrderLength();
+            numberoffields = profile.getSubjectAltNameFieldOrderLength();
         }
         
-        if(numberofDnfields==0) {
-            if(!userDnString.isEmpty()) {
+        if(numberoffields==0) {
+            if(!userDnOrSan.isEmpty()) {
                 // no fields are allowed in profile
                 throw new EndEntityProfileValidationException("Only empty " + entityType + " is supported.");
             } else {
@@ -233,7 +238,7 @@ public class EndEntityInformationFiller {
             }
         }
         
-        userDnString = escapeSpecialChars(userDnString);
+        userDnOrSan = escapeSpecialChars(userDnOrSan);
         
         LinkedHashMap<String, LinkedHashSet<Rdn>> userRdns = 
                 new LinkedHashMap<>();
@@ -248,16 +253,16 @@ public class EndEntityInformationFiller {
         LinkedHashSet<Rdn> orderedModifiableRdns;
         LinkedHashSet<Rdn> currentDnTypeUserRdns = new LinkedHashSet<>();        
 
-        parseUserDnString(userDnString, entityType, userRdns);
+        parseUserDnString(userDnOrSan, entityType, userRdns);
         
         //Build profile's DN
         LinkedHashMap<String, LinkedHashSet<Rdn>> groupedModifiableProfileRdns = 
-                new LinkedHashMap<>(numberofDnfields/AVERAGE_RDN_PER_FIELD);
+                new LinkedHashMap<>(numberoffields/AVERAGE_RDN_PER_FIELD);
         LinkedHashMap<String, LinkedHashSet<Rdn>> groupedAllProfileRdns = 
-                new LinkedHashMap<>(numberofDnfields/AVERAGE_RDN_PER_FIELD);
+                new LinkedHashMap<>(numberoffields/AVERAGE_RDN_PER_FIELD);
         
         boolean isModifiable;
-        for (int i = 0; i < numberofDnfields; i++) {
+        for (int i = 0; i < numberoffields; i++) {
             fielddata = entityType.equals(SUBJECT_DN) ? 
                     profile.getSubjectDNFieldsInOrder(i) : profile.getSubjectAltNameFieldsInOrder(i);
             value = profile.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]);
@@ -358,7 +363,7 @@ public class EndEntityInformationFiller {
 
         }
         
-        StringBuilder result = new StringBuilder(numberofDnfields*10);
+        StringBuilder result = new StringBuilder(numberoffields*10);
         if(entityType.equalsIgnoreCase(SUBJECT_ALTERNATIVE_NAME)) {
             for(Entry<String, LinkedHashSet<Rdn>> dnType: groupedAllProfileRdns.entrySet()) {
                 // finally, add all dnTypes according to sequence in profile
@@ -446,25 +451,29 @@ public class EndEntityInformationFiller {
         mergedDn = mergedDn.substring(0, mergedDn.length() - 1);
         mergedDn = unEscapeSpecialChars(mergedDn);
 
-        log.debug("merged dn: " + LogRedactionUtils.getSubjectDnLogSafe(mergedDn));
-        
+        if (log.isDebugEnabled()) {
+            log.debug("merged dn: " + LogRedactionUtils.getSubjectDnLogSafe(mergedDn));
+        }
         return mergedDn;
     }
     
-    private static void parseUserDnString(String userDnString, String entityType, 
+    /** Takes input string which is a user DN or SAN string and build a Set in userRdns parameter
+     * @return LinkedHashSet of user DN or SAN fields and values
+     */
+    private static void parseUserDnString(String userDnOrSan, String entityType, 
             LinkedHashMap<String, LinkedHashSet<Rdn>> userRdns) {
         
         LinkedHashSet<Rdn> orderedRdns;
         LinkedHashSet<Rdn> currentDnTypeUserRdns = new LinkedHashSet<>();
         
-        //Build user DN, all DN types are validated
-        String[] userDnParts = splitEscaped(userDnString, ",");
+        // Build user DN or SAN, all DN types are validated
+        String[] userDnOrSanParts = splitEscaped(userDnOrSan, ",");
         String[] dnParts;
         String parameter;
         String value;
         LinkedHashMap<String, HashSet<String>> userRdnValues = new LinkedHashMap<String, HashSet<String>>();
         
-        for (String curDn: userDnParts) {
+        for (String curDn: userDnOrSanParts) {
             currentDnTypeUserRdns.clear();
             dnParts = splitEscaped(curDn, "=");            
             if(dnParts.length==1) {
