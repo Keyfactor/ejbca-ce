@@ -217,10 +217,10 @@ public class EndEntityInformationFillerTest {
             assertEquals( "Merged DNSNAME should be the User's value.", "DNSNAME=test1.org", sMergedAltName);
 
             // Tests with two SANs of the same type, one fixed and the other modifiable
+            profile.setModifyable(DnComponents.DNSNAME, 0, false); // field 0 with a value already exist
             profile.addField(DnComponents.DNSNAME);
             profile.setValue(DnComponents.DNSNAME, 1, "changeme.org");
             profile.setModifyable(DnComponents.DNSNAME, 1, true);
-            profile.setModifyable(DnComponents.DNSNAME, 0, false);
             sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
             assertEquals( "Merged DNSNAME should have two values.", "DNSNAME=test1.org,DNSNAME=test.org", sMergedAltName);
             
@@ -241,6 +241,37 @@ public class EndEntityInformationFillerTest {
 
             // Remove the DIRECTORYNAME
             profile.removeField(DnComponents.DIRECTORYNAME, 0);
+            
+            // Test more fields and verify that ordering if kept
+            profile.removeField(DnComponents.DNSNAME, 0);
+            profile.addField(DnComponents.DNSNAME);
+            profile.addField(DnComponents.DNSNAME);
+            profile.addField(DnComponents.DNSNAME);
+            assertEquals("There should be 3 DNSNAME fields left", 3, profile.getNumberOfField(DnComponents.DNSNAME));
+            assertTrue("Field should be modifiable", profile.isModifyable(DnComponents.DNSNAME, 0));
+            assertTrue("Field should be modifiable", profile.isModifyable(DnComponents.DNSNAME, 1));
+            assertTrue("Field should be modifiable", profile.isModifyable(DnComponents.DNSNAME, 2));
+            profile.addField(DnComponents.RFC822NAME);
+            assertEquals("There should be 1 RFC822NAME field", 1, profile.getNumberOfField(DnComponents.RFC822NAME));
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change except case.", "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com", sMergedAltName);
+            // Add some default values
+            // The merge only handles consecutive default value for each DN component, i.e. defaultname for 0 and 1, not for 0 and 2
+            // If we have one too little of the DNS fields it will only add the last one
+            profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
+            profile.setValue(DnComponents.DNSNAME, 1, "server.superbad.com");
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change except case.", "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com", sMergedAltName);
+            // if server.bad.com is not modifyable though, it will be added instead of the modifyable server.superbad.com
+            profile.setModifyable(DnComponents.DNSNAME, 0, false);
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change except case.", "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,RFC822NAME=foo@bar.com", sMergedAltName);
+            // If adding all default values the resulting altName will have 4 dnsNames, allow this amount, then the first one will also be added...first
+            profile.addField(DnComponents.DNSNAME);
+            assertTrue("Field should be modifiable", profile.isModifyable(DnComponents.DNSNAME, 3));
+            assertEquals("There should be 4 DNSNAME fields", 4, profile.getNumberOfField(DnComponents.DNSNAME));
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change except case.", "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com", sMergedAltName);
         } catch (EndEntityProfileValidationException e) {
             fail("Exception not expected: "+e.getMessage());
         }
