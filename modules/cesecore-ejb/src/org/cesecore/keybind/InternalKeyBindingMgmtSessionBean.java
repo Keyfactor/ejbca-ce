@@ -384,7 +384,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                                 " ignored ");
                     }
                 } else {
-                    log.info("KOT!  References list with serial ");
                     // If a cert serialnumber is specified, then we trust only the certificate with the serial number specified
                     // in the trustedReference
                     final List<Certificate> certificateChain = caInfo.getCertificateChain();
@@ -394,12 +393,20 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 }
             }
         }
-        
-        if(trustedEntries.size() == 0) {
+
+        if (trustedEntries.size() == 0) {
             // If the trusted certificates list is empty it mean that the only trusted reference was to a non-existing specific certificate. 
             // In this case, EJBCA should not trust anything
             return null;
         }
+        log.info("KOT!  trustedEntries list: ");
+        for(TrustEntry trustEntry : trustedEntries){
+            X509Certificate certificate = trustEntry.getIssuer();
+            int i = 0;
+            log.info("KOT! " + ++i +" subjectDn = " + certificate.getSubjectDN() +
+                    " and serial = " + certificate.getSerialNumber());
+        }
+
         return trustedEntries;
     }
 
