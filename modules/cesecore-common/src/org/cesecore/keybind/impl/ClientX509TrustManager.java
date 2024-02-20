@@ -85,11 +85,26 @@ public class ClientX509TrustManager implements X509TrustManager {
             // Nothing configured in the internal key binding. Trust ANY CA known to this EJBCA instance
             return Collections.emptyList();
         }
+        log.info("KOT! getTrustedCertificateChains trustEntries list: ");
+        for (TrustEntry trustEntry : trustEntries) {
+            X509Certificate certificate = trustEntry.getIssuer();
+            int i = 0;
+            log.info("KOT! " + ++i + " subjectDn = " + certificate.getSubjectDN() +
+                    " and serial = " + certificate.getSerialNumber());
+        }
+
         final List<Collection<X509Certificate>> trustedCertificateChains = trustEntries.stream()
                 .map(trustEntry -> trustEntry.getChain(leafCertificate))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(Collectors.toList());
+        log.info("KOT! getTrustedCertificateChains trustEntries list after filtering: ");
+        for (Collection<X509Certificate> trustEntry : trustedCertificateChains) {
+            X509Certificate certificate = trustEntry.iterator().next();
+            int i = 0;
+            log.info("KOT! " + ++i + " subjectDn = " + certificate.getSubjectDN() +
+                    " and serial = " + certificate.getSerialNumber());
+        }
         return trustedCertificateChains.isEmpty() ? null : trustedCertificateChains;
     }
 
