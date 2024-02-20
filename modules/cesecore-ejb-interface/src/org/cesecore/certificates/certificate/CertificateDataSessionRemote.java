@@ -1,9 +1,9 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General Public           *
+ *  modify it under the terms of the GNU Lesser General           *
  *  License as published by the Free Software Foundation; either         *
  *  version 2.1 of the License, or any later version.                    *
  *                                                                       *
@@ -12,14 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 /**
- * The local bean which holds only internal functionality needed for the CA performance.
- * As an example the count of the total or active certificates etc.
+ * Remote interface for CertificateDataSessionBean
+ * 
  */
-@Local
-public interface InternalCertificateRestSessionLocal extends InternalCertificateSession {
-
+@Remote
+public interface CertificateDataSessionRemote extends CertificateDataSession {
+    
 }
