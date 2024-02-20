@@ -312,6 +312,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     
     @Override
     public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) {
+        log.info("KOT! getting trust entries list " );
         final List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
 
         List<TrustEntry> trustedEntries = new ArrayList<>();
@@ -371,6 +372,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
                     List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
                             Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
+                    log.info("KOT! searching for certs with subjectDn" +caInfo.getSubjectDN() +
+                            " found " + activeCaCertsBySubjectDn.size());
                     for (Certificate caCertificate : activeCaCertsBySubjectDn) {
                         if (!certificateChain.contains(caCertificate)) {
                             final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
