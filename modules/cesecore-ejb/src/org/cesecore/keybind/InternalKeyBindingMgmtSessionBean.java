@@ -338,7 +338,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                         if (!certificateChain.contains(caCertificate)) {
                             final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
                             renewedCertificateChain.add((X509Certificate) caCertificate);
-                            trustedEntries.add(new TrustedChain(x509CertificateChain));
+                            trustedEntries.add(new TrustedChain(renewedCertificateChain));
                             log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
                                     " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
                                     " added to trusted certs");
@@ -374,7 +374,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                         if (!certificateChain.contains(caCertificate)) {
                             final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
                             renewedCertificateChain.add((X509Certificate) caCertificate);
-                            trustedEntries.add(new TrustedChain(x509CertificateChain));
+                            trustedEntries.add(new TrustedChain(renewedCertificateChain));
                             log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
                                     " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
                                     " added to trusted certs");
@@ -400,9 +400,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             return null;
         }
         log.info("KOT!  trustedEntries list: ");
+        int i = 0;
         for(TrustEntry trustEntry : trustedEntries){
             X509Certificate certificate = trustEntry.getIssuer();
-            int i = 0;
             log.info("KOT! " + ++i +" subjectDn = " + certificate.getSubjectDN() +
                     " and serial = " + certificate.getSerialNumber());
         }
