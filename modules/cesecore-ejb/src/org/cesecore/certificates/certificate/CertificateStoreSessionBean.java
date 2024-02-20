@@ -1793,7 +1793,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         	} else {
         	    final CertificateData limitedCertificateData = cdw.getCertificateData();
                 if (cdw.getCertificateData().getRevocationDate() != revocationDate.getTime() || cdw.getCertificateData().getRevocationReason() != reasonCode
-                        || cdw.getCertificateData().getInvalidityDate() != invalidityDate.getTime()) {
+                        || cdw.getCertificateData().getInvalidityDateNeverNull() != invalidityDate.getTime()) {
                     // Update the limited entry
                     log.info("Updating limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
                     limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);

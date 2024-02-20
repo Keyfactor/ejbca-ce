@@ -48,6 +48,7 @@
 	<classpathentry kind="src" path="modules/ejbca-ejb/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-cli/src"/>
+    <classpathentry kind="src" path="modules/ejbca-ejb-cli/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-interface/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src-cli"/>

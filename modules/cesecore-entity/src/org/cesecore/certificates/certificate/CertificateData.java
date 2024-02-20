@@ -392,6 +392,14 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.expireDate = expireDate;
     }
 
+    /** This method is needed because the invalidityDate column was added in EJBCA 7.12 and the column value will be null
+     * for existing certificates. 
+     * @return Invalidity date if it was saved or -1 of not set. */
+    @Transient
+    public Long getInvalidityDateNeverNull() {
+        return invalidityDate == null ? -1L : invalidityDate;
+    }
+
     @Override
     public Long getInvalidityDate() {
         return invalidityDate;
@@ -800,7 +808,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         protectionStringBuilder.append(getFingerprint()).append(getIssuerDN());
         if (version >= 7 ) {
             // In version 7 (EJBCA 7.12.0) the invalidityDate column is added
-            protectionStringBuilder.append(getInvalidityDate());
+            protectionStringBuilder.append(getInvalidityDateNeverNull());
         }
         if (version > 6) {
         	// In version 6 (EJBCA 7.5.0) the accountBindingId column is added
