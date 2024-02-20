@@ -317,6 +317,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
 
         List<TrustEntry> trustedEntries = new ArrayList<>();
         if (trustedReferences.size() == 0) {
+            log.info("KOT! no references " );
             // If no trusted certificates are referenced, trust ANY certificates issued by ANY CA known to this EJBCA instance.
             // This is done by adding all CA certificate chains
             List<Integer> allCAs = caSession.getAllCaIds();
@@ -353,9 +354,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 log.debug("Trusted Certificates list is empty. Trust ANY certificates issued by ANY CA known to this EJBCA instance");
             }
         } else {
+            log.info("KOT!  References list has  "  +trustedReferences.size() + " elements");
             for (final InternalKeyBindingTrustEntry trustedReference : trustedReferences) {
                 final CAInfo caInfo = caSession.getCAInfoInternal(trustedReference.getCaId());
                 if (trustedReference.fetchCertificateSerialNumber() == null) {
+                    log.info("KOT!  References list with serial ");
                     // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
                     // CA certificate chain to be used for issuer verification
                     final List<Certificate> certificateChain = caInfo.getCertificateChain();
@@ -363,6 +366,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                             Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                     trustedEntries.add(new TrustedChain(x509CertificateChain));
                 } else {
+                    log.info("KOT!  References list without serial ");
                     // If a cert serialnumber is specified, then we trust only the certificate with the serial number specified
                     // in the trustedReference
                     final List<Certificate> certificateChain = caInfo.getCertificateChain();
