@@ -86,9 +86,9 @@ public class ClientX509TrustManager implements X509TrustManager {
             return Collections.emptyList();
         }
         log.info("KOT! getTrustedCertificateChains trustEntries list: ");
+        int i = 0;
         for (TrustEntry trustEntry : trustEntries) {
             X509Certificate certificate = trustEntry.getIssuer();
-            int i = 0;
             log.info("KOT! " + ++i + " subjectDn = " + certificate.getSubjectDN() +
                     " and serial = " + certificate.getSerialNumber());
         }
@@ -101,7 +101,6 @@ public class ClientX509TrustManager implements X509TrustManager {
         log.info("KOT! getTrustedCertificateChains trustEntries list after filtering: ");
         for (Collection<X509Certificate> trustEntry : trustedCertificateChains) {
             X509Certificate certificate = trustEntry.iterator().next();
-            int i = 0;
             log.info("KOT! " + ++i + " subjectDn = " + certificate.getSubjectDN() +
                     " and serial = " + certificate.getSerialNumber());
         }
