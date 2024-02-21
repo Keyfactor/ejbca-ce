@@ -351,10 +351,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 } else {
                     // If a cert serialnumber is specified, then we trust only the certificate with the serial number specified
                     // in the trustedReference
-                    final List<Certificate> certificateChain = caInfo.getCertificateChain();
-                    final List<X509Certificate> x509CertificateChain = new ArrayList<>(
-                            Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
-                    trustedEntries.add(new CertificatePin(x509CertificateChain, trustedReference.fetchCertificateSerialNumber()));
+                    List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnSerialNumberAndType(
+                            caInfo.getSubjectDN(), trustedReference.fetchCertificateSerialNumber().toString(),
+                            Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
+                    for (Certificate certificate : activeCaCertsBySubjectDn) {
+                        final List<X509Certificate> x509CertificateChain = new ArrayList<>();
+                        x509CertificateChain.add((X509Certificate) certificate);
+                        trustedEntries.add(new CertificatePin(x509CertificateChain, trustedReference.fetchCertificateSerialNumber()));
+                    }
                 }
             }
         }
