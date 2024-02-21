@@ -312,12 +312,10 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     
     @Override
     public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) {
-        log.info("KOT! getting trust entries list " );
         final List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
 
         List<TrustEntry> trustedEntries = new ArrayList<>();
         if (trustedReferences.size() == 0) {
-            log.info("KOT! no references " );
             // If no trusted certificates are referenced, trust ANY certificates issued by ANY CA known to this EJBCA instance.
             // This is done by adding all CA certificate chains
             List<Integer> allCAs = caSession.getAllCaIds();
@@ -331,22 +329,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     if (!x509CertificateChain.isEmpty()) {
                         trustedEntries.add(new TrustedChain(x509CertificateChain));
                     }
-                    // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
-                    List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
-                            Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
-                    for (Certificate caCertificate : activeCaCertsBySubjectDn) {
-                        if (!certificateChain.contains(caCertificate)) {
-                            final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
-                            renewedCertificateChain.add((X509Certificate) caCertificate);
-                            trustedEntries.add(new TrustedChain(renewedCertificateChain));
-                            log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
-                                    " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
-                                    " added to trusted certs");
-                        }
-                        log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
-                                " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
-                                " ignored ");
-                    }
+                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain);
 
                 }
             }
@@ -354,35 +337,17 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 log.debug("Trusted Certificates list is empty. Trust ANY certificates issued by ANY CA known to this EJBCA instance");
             }
         } else {
-            log.info("KOT!  References list has  "  +trustedReferences.size() + " elements");
             for (final InternalKeyBindingTrustEntry trustedReference : trustedReferences) {
                 final CAInfo caInfo = caSession.getCAInfoInternal(trustedReference.getCaId());
                 if (trustedReference.fetchCertificateSerialNumber() == null) {
-                    log.info("KOT!  References list without serial ");
-                    // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
+                    // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire
                     // CA certificate chain to be used for issuer verification
                     final List<Certificate> certificateChain = caInfo.getCertificateChain();
                     final List<X509Certificate> x509CertificateChain = new ArrayList<>(
                             Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                     trustedEntries.add(new TrustedChain(x509CertificateChain));
                     // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
-                    List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
-                            Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
-                    log.info("KOT! searching for certs with subjectDn" +caInfo.getSubjectDN() +
-                            " found " + activeCaCertsBySubjectDn.size());
-                    for (Certificate caCertificate : activeCaCertsBySubjectDn) {
-                        if (!certificateChain.contains(caCertificate)) {
-                            final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
-                            renewedCertificateChain.add((X509Certificate) caCertificate);
-                            trustedEntries.add(new TrustedChain(renewedCertificateChain));
-                            log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
-                                    " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
-                                    " added to trusted certs");
-                        }
-                        log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
-                                " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
-                                " ignored ");
-                    }
+                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain);
                 } else {
                     // If a cert serialnumber is specified, then we trust only the certificate with the serial number specified
                     // in the trustedReference
@@ -399,18 +364,24 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             // In this case, EJBCA should not trust anything
             return null;
         }
-        log.info("KOT!  trustedEntries list: ");
-        int i = 0;
-        for(TrustEntry trustEntry : trustedEntries){
-            X509Certificate certificate = trustEntry.getIssuer();
-            log.info("KOT! " + ++i +" subjectDn = " + certificate.getSubjectDN() +
-                    " and serial = " + certificate.getSerialNumber());
-        }
 
         return trustedEntries;
     }
 
-    
+    private void addOlderActiveCAsWithSameSubjectDN(List<TrustEntry> trustedEntries, CAInfo caInfo, List<Certificate> certificateChain) {
+        // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
+        List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
+                Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
+        for (Certificate caCertificate : activeCaCertsBySubjectDn) {
+            if (!certificateChain.contains(caCertificate)) {
+                final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
+                renewedCertificateChain.add((X509Certificate) caCertificate);
+                trustedEntries.add(new TrustedChain(renewedCertificateChain));
+            }
+        }
+    }
+
+
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
             String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
