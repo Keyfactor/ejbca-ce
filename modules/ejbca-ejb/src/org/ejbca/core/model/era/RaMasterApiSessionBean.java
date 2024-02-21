@@ -1301,7 +1301,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                                                                        final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
         final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
         final boolean countOnly = request.getPageNumber() == -1;
-        final Query query = createQuery(request, countOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
+        final Query query = createQuery(entityManager, request, countOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
         int maxResults = -1;
         int offset = -1;
         if (!countOnly) {
@@ -1371,7 +1371,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * not necessarily a Long.  Casting to long may throw an exception for some database drivers.  The best
      * way to retrieve the count is to cast to java.lang.Number and use Number::longValue.
      */
-    private Query createQuery(final RaCertificateSearchRequestV2 request,
+    static Query createQuery( final EntityManager entityManager,
+                              final RaCertificateSearchRequestV2 request,
                               final boolean countOnly,
                               final List<String> issuerDns,
                               final List<Integer> authorizedCpIds,
@@ -1391,57 +1392,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append("a.fingerprint");
         }
         sb.append(" FROM CertificateData a");
-        if (StringUtils.isNotEmpty(subjectDnSearchString) || StringUtils.isNotEmpty(subjectAnSearchString) || StringUtils.isNotEmpty(usernameSearchString) ||
-                StringUtils.isNotEmpty(serialNumberSearchStringFromDec) || StringUtils.isNotEmpty(serialNumberSearchStringFromHex)
-                || StringUtils.isNotEmpty(externalAccountIdSearchString)) {
-            sb.append(" INNER JOIN (");
-            boolean firstAppended = false;
-            if (StringUtils.isNotEmpty(subjectDnSearchString)) {
-                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(subjectDN) LIKE :subjectDN");
-                firstAppended = true;
-            }
-            if (StringUtils.isNotEmpty(subjectAnSearchString)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                } else {
-                    firstAppended = true;
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE subjectAltName LIKE :subjectAltName");
-            }
-            if (StringUtils.isNotEmpty(usernameSearchString)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                } else {
-                    firstAppended = true;
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(username) LIKE :username");
-            }
-            if (StringUtils.isNotEmpty(serialNumberSearchStringFromDec)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                } else {
-                    firstAppended = true;
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE serialNumber LIKE :serialNumberDec");
-            }
-            if (StringUtils.isNotEmpty(serialNumberSearchStringFromHex)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                } else {
-                    firstAppended = true;
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE serialNumber LIKE :serialNumberHex");
-            }
-            if (StringUtils.isNotEmpty(externalAccountIdSearchString)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(accountBindingId) LIKE :accountBindingId");
-            }
-
-            sb.append(") b ON a.fingerprint = b.fingerprint");
-        }
         sb.append(" WHERE a.issuerDN IN (:issuerDN)");
+        sb.append(buildStringSearchClause(subjectDnSearchString, subjectAnSearchString, usernameSearchString, serialNumberSearchStringFromDec,
+                serialNumberSearchStringFromHex, externalAccountIdSearchString));
         // NOTE: notBefore is not indexed.. we might want to disallow such search.
         if (request.isIssuedAfterUsed()) {
             sb.append(" AND (a.notBefore > :issuedAfter)");
@@ -1593,7 +1546,35 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return query;
     }
 
-    private final String mapOrderColumn(final String property) {
+    static String buildStringSearchClause(String subjectDnSearchString, String subjectAnSearchString, String usernameSearchString,
+            String serialNumberSearchStringFromDec, String serialNumberSearchStringFromHex, String externalAccountIdSearchString) {
+        var comparisons = new ArrayList<String>();
+        if (StringUtils.isNotEmpty(subjectDnSearchString)) {
+            comparisons.add("UPPER(subjectDN) LIKE :subjectDN");
+        }
+        if (StringUtils.isNotEmpty(subjectAnSearchString)) {
+            comparisons.add("subjectAltName LIKE :subjectAltName");
+        }
+        if (StringUtils.isNotEmpty(usernameSearchString)) {
+            comparisons.add("UPPER(username) LIKE :username");
+        }
+        if (StringUtils.isNotEmpty(serialNumberSearchStringFromDec)) {
+            comparisons.add("serialNumber LIKE :serialNumberDec");
+        }
+        if (StringUtils.isNotEmpty(serialNumberSearchStringFromHex)) {
+            comparisons.add("serialNumber LIKE :serialNumberHex");
+        }
+        if (StringUtils.isNotEmpty(externalAccountIdSearchString)) {
+            comparisons.add("UPPER(accountBindingId) LIKE :accountBindingId");
+        }
+
+        if (comparisons.size() == 0)
+            return "";
+        else
+            return " AND (" + comparisons.stream().collect(Collectors.joining(" OR ")) + ")";
+    }
+
+    private final static String mapOrderColumn(final String property) {
         if (property != null) {
             switch (property.trim()) {
                 case "USERNAME":
