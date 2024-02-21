@@ -367,7 +367,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDateString, responseInvalidityDate);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        final long databaseInvalidityDate = certificateData.getInvalidityDate();
+        final long databaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         assertEquals(invalidityDatelong, databaseInvalidityDate);
     }
 
@@ -405,7 +405,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDateString, responseInvalidityDate);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        final long databaseInvalidityDate = certificateData.getInvalidityDate();
+        final long databaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         assertEquals(invalidityDatelong, databaseInvalidityDate);
     }
 
@@ -501,7 +501,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&invalidity_date=" + invalidityDateString).request().put(null);
         // Get invalidity date value from data base
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDate = certificateData.getInvalidityDate();
+        long dataBaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         // Now change reason
         final Response actualResponse2 = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -517,7 +517,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String responseInvalidityDateUpdate = (String) actualJsonObject2.get("invalidity_date");
         // Get invalidity date value from database
         CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDateAfterRevocationReasonChange = certificateData2.getInvalidityDate();
+        long dataBaseInvalidityDateAfterRevocationReasonChange = certificateData2.getInvalidityDateNeverNull();
 
         // then
         // verify rest response
@@ -547,7 +547,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&invalidity_date=" + invalidityDateString).request().put(null);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDate = certificateData.getInvalidityDate();
+        long dataBaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         disableRevocationReasonChange();
 
         // Try to update revocation reason, it is not allowed and should fail
@@ -563,7 +563,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // Verify expected failure         
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, actualJsonObject2.toJSONString());
         CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBasenvalidityDateAfterFailedRevocationReasonChange = certificateData2.getInvalidityDate();
+        long dataBasenvalidityDateAfterFailedRevocationReasonChange = certificateData2.getInvalidityDateNeverNull();
         final String responseSerialNr = (String) actualJsonObject.get("serial_number");
         final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
         String responseReason = (String) actualJsonObject2.get("revocation_reason");

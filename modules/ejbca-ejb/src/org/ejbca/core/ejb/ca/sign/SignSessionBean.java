@@ -48,18 +48,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -123,6 +111,7 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.BaseCertificateData;
@@ -168,7 +157,8 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.ocsp.PreSigningOcspResponseSessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
+import org.ejbca.core.ejb.ocsp.PresignResponseValidity;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -198,6 +188,18 @@ import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Creates and signs certificates.
@@ -234,13 +236,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
+    @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
     private RevocationSessionLocal revocationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-    @EJB
-    private PreSigningOcspResponseSessionLocal ocspResponseSigningSession;
+
 
     // Re-factor: Remove Cyclic module dependency.
     @EJB
@@ -1487,7 +1490,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // At this point, it is safe to remove the certificate from "incomplete issuance journal". This runs in the same transaction as the certificate creation
         if (certData != null) {
             certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), new BigInteger(certData.getSerialNumber()), storePreCert);
-            ocspResponseSigningSession.preSignOcspResponse(ca, certData);
+            //If it's an X509 CA, we have the option to pre-compute the OCSP response directly upon issuance
+            if (ca.getCAType() == X509CAInfo.CATYPE_X509) {
+                final X509CA x509ca = (X509CA) ca;
+                final X509Certificate x509Certificate = (X509Certificate) certificateWrapper.getCertificate();
+                
+                if ((x509ca.isDoPreProduceOcspResponses() && x509ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
+                        && (x509Certificate != null && !x509ca.getCertificateChain().isEmpty())) {
+                    ocspResponseGeneratorSession.preSignOcspResponse((X509Certificate) x509ca.getCertificateChain().get(0),
+                            CertTools.getSerialNumber(x509Certificate), PresignResponseValidity.CONFIGURATION_BASED, true, CertificateConstants.DEFAULT_CERTID_HASH_ALGORITHM);
+                }
+            }
+
         }
     }
 

@@ -2122,21 +2122,19 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         revocationDate = new Date(certificateData.getRevocationDate());
                     }
                     if (invalidityDate != null && !(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
-                        invalidityDate = new Date(certificateData.getInvalidityDate());
                         final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
                         log.info(msg);
                         throw new AlreadyRevokedException(msg);
                     }
-                }
-                else if ((invalidityDate != null) && (reason == certificateData.getRevocationReason())) {
-                    revocationDate = new Date(certificateData.getRevocationDate());
+                } else if ((invalidityDate != null) && (reason == certificateData.getRevocationReason())) {
                     if (!cainfo.isAllowInvalidityDate()) {
                         final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
                         log.info(msg);
                         throw new AlreadyRevokedException(msg);
                     }
-                }
-                else if (!canChangeRevocationReason){
+                    // If we will update with invalidityDate, the revocationDate should be the same as the original revocation
+                    revocationDate = new Date(certificateData.getRevocationDate());
+                } else if (!canChangeRevocationReason){
                     // Revocation reason cannot be changed, find out why and throw appropriate exception
                     if (!RevokedCertInfo.isDateOk(revocationDate, certificateData.getRevocationDate())) {
                         final String msg = intres.getLocalizedMessage("ra.invalidrevocationdate");
