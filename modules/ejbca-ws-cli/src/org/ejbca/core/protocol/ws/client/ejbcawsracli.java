@@ -43,7 +43,7 @@ public class ejbcawsracli  {
                     "createcrl | cacertrequest | cacertresponse | customlog | getprofile | createcryptotoken | " + 
                     "generatectkeys | createca | importcacert | updatecacert | addadmintorole | removeadminfromrole | getexpiredcerts | " +
                     "getexpiredcertsbyissuer | getexpiredcertsbytype | stress | keyrecover | keyrecoverenroll | getremainingnumberofapprovals | " +
-                    "getClientToolBoxVersion");
+                    "getavailablecas | getClientToolBoxVersion");
             }
         } catch (ErrorAdminCommandException e) {
             final Throwable cause = e.getCause();
