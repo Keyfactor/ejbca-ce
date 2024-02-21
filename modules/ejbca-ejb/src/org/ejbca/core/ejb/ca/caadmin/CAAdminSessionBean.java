@@ -800,10 +800,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 }
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo); 
-                
-                if (ca instanceof HybridCa) {
+                final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
                     HybridCa hybridCa = (HybridCa) ca;
-                    final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
                     cacertificate = hybridCa.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
                             cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
                             cceConfig);
@@ -850,9 +849,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                 final Certificate cacertificate;
-                if (ca instanceof HybridCa) {
+                final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
                     HybridCa hybridCa = (HybridCa) signca;
-                    final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
                     cacertificate = hybridCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
                             cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
                             cceConfig);

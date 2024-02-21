@@ -226,7 +226,7 @@ public class CAToken extends UpgradeableDataHashMap {
      * 
      * @param purpose one of the constants in {@link CATokenConstants}.
      * @return the alias of a key.
-     * @throws CryptoTokenOfflineException if the key alias cannot be read.
+     * @throws CryptoTokenOfflineException if the key alias cannot be read and alias is not from alternative cert sign key.
      */
     public String getAliasFromPurpose(final int purpose) throws CryptoTokenOfflineException {
         if (keyStrings==null) {
@@ -234,9 +234,11 @@ public class CAToken extends UpgradeableDataHashMap {
             keyStrings = new PurposeMapping(getProperties());
         }
         final String alias = keyStrings.getAlias(purpose);
-        if (alias == null) {
-            throw new CryptoTokenOfflineException("No alias for key purpose " + purpose);
-        }
+        // PurposeMapping.getAlias() can return null for a non-existing alternative certificate signing key
+        // i.e. no hybrid settings are used for this CA. Any other null should throw CryptoTokenOfflineException.  
+        if (alias == null && purpose != CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN) {
+            throw new CryptoTokenOfflineException("No alias found for key purpose " + purpose);
+        }        
         return alias;
     }
 
