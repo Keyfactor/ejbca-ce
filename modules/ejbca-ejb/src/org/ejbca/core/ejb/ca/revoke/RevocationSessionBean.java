@@ -264,7 +264,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
             }
 
             wasChanged = noConflictCertificateStoreSession.setRevokeStatus(admin, cdw, getRevocationDate(admin,
-                    cdw, new Date(data.getRevocationDate()), reason), new Date(data.getInvalidityDate()), reason);
+                    cdw, new Date(data.getRevocationDate()), reason), new Date(data.getInvalidityDateNeverNull()), reason);
             
             // Only publish the revocation if it was actually performed
             if (wasChanged) {

@@ -32,8 +32,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 /** Tests DN merging
- * 
- * @version $Id$
  */
 public class EndEntityInformationFillerTest {
 	EndEntityProfile profile;
@@ -193,10 +191,92 @@ public class EndEntityInformationFillerTest {
      */
     @Test
     public void testMergeAltName() {
-        //TODO
-        // Order changed when I did the "fix"
-        // assertEquals("rfc822Name=foo@bar.com,dnsName=foo.bar.com,dnsName=foo1.bar.com", data.getSubjectAltName());
-        // ->dnsName=foo1.bar.com,dnsName=foo.bar.com,rfc822Name=foo@bar.com
+        // Test the merge operation with SANs
+        
+        // Add a SAN (dnsName) to the EE Policy
+        profile.addField(DnComponents.DNSNAME);
+        // Set default value and make it not modifiable
+        profile.setValue(DnComponents.DNSNAME, 0, "test.org");
+        profile.setModifyable(DnComponents.DNSNAME, 0, false);
+        
+        try {
+            // Test the DN type name can have any case.
+            String sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change.", "DNSNAME=test.org", sMergedAltName);
+            
+            // Test the User cannot override the policy if the field is fixed (not-modifiable).
+            try {
+                sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            } catch (EndEntityProfileValidationException e1) {
+                assertEquals( "Exception thrown with message", "User DN has too many components for DNSNAME", e1.getMessage());
+            }
+
+            // Test the User can override the policy if the field is modifiable.
+            profile.setModifyable(DnComponents.DNSNAME, 0, true);
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should be the User's value.", "DNSNAME=test1.org", sMergedAltName);
+
+            // Tests with two SANs of the same type, one fixed and the other modifiable
+            profile.setModifyable(DnComponents.DNSNAME, 0, false); // field 0 with a value already exist
+            profile.addField(DnComponents.DNSNAME);
+            profile.setValue(DnComponents.DNSNAME, 1, "changeme.org");
+            profile.setModifyable(DnComponents.DNSNAME, 1, true);
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should have two values.", "DNSNAME=test1.org,DNSNAME=test.org", sMergedAltName);
+            
+            // Remove 2nd DNSNAME
+            profile.removeField(DnComponents.DNSNAME, 1);
+            
+            // Test two types of SANs
+            profile.addField(DnComponents.DIRECTORYNAME);
+            profile.setValue(DnComponents.DIRECTORYNAME, 0, "CN=Test,O=org");
+            profile.setModifyable(DnComponents.DIRECTORYNAME, 0, true);
+            profile.setModifyable(DnComponents.DNSNAME, 0, true);
+           
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org,directoryName=cn=Test One,O=Org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should have two types, both values override defaults.", "DNSNAME=test1.org,DIRECTORYNAME=cn=Test One,O=Org", sMergedAltName);
+           
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=test1.org",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should have two types, one value overrides default.", "DNSNAME=test1.org,DIRECTORYNAME=CN=Test,O=org", sMergedAltName);
+
+            // Remove the DIRECTORYNAME
+            profile.removeField(DnComponents.DIRECTORYNAME, 0);
+            
+            // Test more fields and verify that ordering if kept
+            profile.removeField(DnComponents.DNSNAME, 0);
+            profile.addField(DnComponents.DNSNAME);
+            profile.addField(DnComponents.DNSNAME);
+            profile.addField(DnComponents.DNSNAME);
+            assertEquals("There should be 3 DNSNAME fields left", 3, profile.getNumberOfField(DnComponents.DNSNAME));
+            assertTrue("Field should be modifiable", profile.isModifyable(DnComponents.DNSNAME, 0));
+            assertTrue("Field should be modifiable", profile.isModifyable(DnComponents.DNSNAME, 1));
+            assertTrue("Field should be modifiable", profile.isModifyable(DnComponents.DNSNAME, 2));
+            profile.addField(DnComponents.RFC822NAME);
+            assertEquals("There should be 1 RFC822NAME field", 1, profile.getNumberOfField(DnComponents.RFC822NAME));
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change except case.", "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com", sMergedAltName);
+            // Add some default values
+            // The merge only handles consecutive default value for each DN component, i.e. defaultname for 0 and 1, not for 0 and 2
+            // If we have one too little of the DNS fields it will only add the last one
+            profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
+            profile.setValue(DnComponents.DNSNAME, 1, "server.superbad.com");
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change except case.", "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com", sMergedAltName);
+            // if server.bad.com is not modifyable though, it will be added instead of the modifyable server.superbad.com
+            profile.setModifyable(DnComponents.DNSNAME, 0, false);
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change except case.", "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,RFC822NAME=foo@bar.com", sMergedAltName);
+            // If adding all default values the resulting altName will have 4 dnsNames, allow this amount, then the first one will also be added...first
+            profile.addField(DnComponents.DNSNAME);
+            assertTrue("Field should be modifiable", profile.isModifyable(DnComponents.DNSNAME, 3));
+            assertEquals("There should be 4 DNSNAME fields", 4, profile.getNumberOfField(DnComponents.DNSNAME));
+            sMergedAltName = EndEntityInformationFiller.mergeDnString("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com",profile, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME, null);
+            assertEquals( "Merged DNSNAME should not change except case.", "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com", sMergedAltName);
+        } catch (EndEntityProfileValidationException e) {
+            fail("Exception not expected: "+e.getMessage());
+        }
+        // Cleanup
+        profile.removeField(DnComponents.DNSNAME, 0);
     }
     
     /**
@@ -593,17 +673,17 @@ public class EndEntityInformationFillerTest {
         user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
-                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY", user.getSubjectAltName());
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,DIRECTORYNAME=CN=XX\\,O=YY", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY\\,C=DE");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
-                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY\\,C=DE", user.getSubjectAltName());
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,DIRECTORYNAME=CN=XX\\,O=YY\\,C=DE", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",directoryName=CN=XX\\,O=YY");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
-                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,directoryName=CN=XX\\,O=YY", user.getSubjectAltName());
+                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,DIRECTORYNAME=CN=XX\\,O=YY", user.getSubjectAltName());
         
         // URI may include + and = in queryparam, this functionality ensures input=output
         // for single valued RDNs(not multi value)
@@ -612,28 +692,28 @@ public class EndEntityInformationFillerTest {
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
-                + "uniformResourceId=http://xxx.de/en?que\\=res", user.getSubjectAltName());
+                + "UNIFORMRESOURCEID=http://xxx.de/en?que\\=res", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",uniformResourceIdentifier=http://xxx.de/en?que=res");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
-                + "uniformResourceIdentifier=http://xxx.de/en?que=res", user.getSubjectAltName());
+                + "UNIFORMRESOURCEIDENTIFIER=http://xxx.de/en?que=res", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",uniformResourceId=http://xxx.de/en?que\\=res\\+q2\\=r2");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
-                + "uniformResourceId=http://xxx.de/en?que\\=res\\+q2\\=r2", user.getSubjectAltName());
+                + "UNIFORMRESOURCEID=http://xxx.de/en?que\\=res\\+q2\\=r2", user.getSubjectAltName());
         
         user.setSubjectAltName(san+",uniformResourceId=http://xxx.de/en?que=res+q2=r2,1.2.3.4=qwerty");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
         assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
                 + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,RFC822NAME=myEmail@dom.com,"
-                + "uniformResourceId=http://xxx.de/en?que=res+q2=r2,1.2.3.4=qwerty", user.getSubjectAltName());
+                + "UNIFORMRESOURCEID=http://xxx.de/en?que=res+q2=r2,1.2.3.4=qwerty", user.getSubjectAltName());
         
     }
-    
+	
     @Test
     public void testUniqueEntriesSan() throws Exception {
         EndEntityProfile p = new EndEntityProfile();
