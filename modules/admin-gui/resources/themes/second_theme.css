@@ -1122,6 +1122,11 @@ table#config tr td:first-child {
 	margin-top: 3ex;
 }
 
+/* --- Publisher Queue page */
+.publisherQueueTable input {
+	margin-right: .5em;
+}
+
 /*--------------------------------------------------------------------------*/
 /* TABLES */
 
