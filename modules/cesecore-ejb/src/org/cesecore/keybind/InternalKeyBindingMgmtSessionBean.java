@@ -312,6 +312,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     
     @Override
     public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) {
+        log.info("KOT! getting trust entries list " );
         final List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
 
         List<TrustEntry> trustedEntries = new ArrayList<>();
