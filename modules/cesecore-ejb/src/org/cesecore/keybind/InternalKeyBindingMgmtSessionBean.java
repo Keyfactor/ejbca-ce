@@ -312,7 +312,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     
     @Override
     public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) {
-        log.info("KOT! getting trust entries list " );
         final List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
 
         List<TrustEntry> trustedEntries = new ArrayList<>();
@@ -359,37 +358,21 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
                     List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
                             Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
-                    log.info("KOT! searching for certs with subjectDn" +caInfo.getSubjectDN() +
-                            " found " + activeCaCertsBySubjectDn.size());
                     for (Certificate caCertificate : activeCaCertsBySubjectDn) {
                         if (!certificateChain.contains(caCertificate)) {
                             final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
                             renewedCertificateChain.add((X509Certificate) caCertificate);
                             trustedEntries.add(new CertificatePin((renewedCertificateChain), trustedReference.fetchCertificateSerialNumber()));
-                            log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
-                                    " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
-                                    " added to trusted certs");
                         }
-                        log.info("KOT! certificate with subjectDn" + ((X509Certificate) caCertificate).getSubjectDN() +
-                                " and serial " + ((X509Certificate) caCertificate).getSerialNumber() +
-                                " ignored ");
                     }
                 }
             }
         }
 
         if (trustedEntries.size() == 0) {
-            log.info("KOT!  trustedEntries EMPTY ");
-            // If the trusted certificates list is empty it mean that the only trusted reference was to a non-existing specific certificate. 
+            // If the trusted certificates list is empty it mean that the only trusted reference was to a non-existing specific certificate.
             // In this case, EJBCA should not trust anything
             return null;
-        }
-        log.info("KOT!  trustedEntries list: ");
-        int i = 0;
-        for(TrustEntry trustEntry : trustedEntries){
-            X509Certificate certificate = trustEntry.getIssuer();
-            log.info("KOT! " + ++i +" subjectDn = " + certificate.getSubjectDN() +
-                    " and serial = " + certificate.getSerialNumber());
         }
         return trustedEntries;
     }
