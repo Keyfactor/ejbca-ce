@@ -444,8 +444,8 @@ public class RaCertificateDetails implements Serializable {
         } else {
             this.updated = ValidityDate.formatAsISO8601ServerTZ(certificateData.getUpdateTime(), TimeZone.getDefault());
         }
-        if (certificateData.getInvalidityDate() != null && certificateData.getInvalidityDate() != -1 && isCaAllowsInvalidityDate()) {
-            this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDate(), TimeZone.getDefault());
+        if (certificateData.getInvalidityDateNeverNull() != -1 && isCaAllowsInvalidityDate()) {
+            this.invalidityDate = ValidityDate.formatAsISO8601ServerTZ(certificateData.getInvalidityDateNeverNull(), TimeZone.getDefault());
         }
         final String subjectKeyIdB64 = certificateData.getSubjectKeyId();
         if (subjectKeyIdB64 != null) {
