@@ -800,10 +800,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 }
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo); 
-                
-                if (ca instanceof HybridCa) {
+                final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
                     HybridCa hybridCa = (HybridCa) ca;
-                    final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
                     cacertificate = hybridCa.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
                             cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
                             cceConfig);
@@ -850,9 +849,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                 final Certificate cacertificate;
-                if (ca instanceof HybridCa) {
+                final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
                     HybridCa hybridCa = (HybridCa) signca;
-                    final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
                     cacertificate = hybridCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
                             cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
                             cceConfig);
@@ -2401,7 +2400,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (ca.getCAType() == CAInfo.CATYPE_X509) {
                 final CrlCreationParams crlParams = new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS);
                 publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION, crlParams);
-                publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
+                if (ca.getCAInfo().getDeltaCRLPeriod() > 0) { // Only force delta crl generation if it is enabled in the CA
+                    publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
+                }
                 if (ca instanceof X509CA && ((X509CA) ca).isMsCaCompatible() && ((X509CA) ca).getCrlPartitions() != 0) {
                     for (int crlPartitionIndex = 1; crlPartitionIndex <= ((X509CA) ca).getCrlPartitions(); crlPartitionIndex++) {
                         publishingCrlSession.forceCRL(authenticationToken, caid, crlPartitionIndex, crlParams);

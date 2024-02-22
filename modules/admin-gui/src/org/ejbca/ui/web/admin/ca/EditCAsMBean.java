@@ -1534,6 +1534,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void resetSigningAlgorithmTokenParam() {
         caInfoDto.setSignatureAlgorithmParam(StringUtils.EMPTY);
+        caInfoDto.setAlternativeSignatureAlgorithmParam(StringUtils.EMPTY);
         updateAvailableSigningAlgorithmList();
 
         // Create already in use key map
@@ -2161,6 +2162,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 newCAToken.setEncryptionAlgorithm(cainfo.getCAToken().getEncryptionAlgorithm());
                 newCAToken.setKeySequence(cainfo.getCAToken().getKeySequence());
                 newCAToken.setKeySequenceFormat(cainfo.getCAToken().getKeySequenceFormat());
+                newCAToken.setAlternativeSignatureAlgorithm(caInfoDto.getAlternativeSignatureAlgorithmParam());
                 cainfo.setCAToken(newCAToken);
             }
 
@@ -2322,7 +2324,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam())) {
             caInfoDto.setSignatureAlgorithmParam(catoken.getSignatureAlgorithm());
         }
-        
+        if (StringUtils.isEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
+            caInfoDto.setAlternativeSignatureAlgorithmParam(catoken.getAlternativeSignatureAlgorithm());
+        }
         isCaRevoked = cainfo.getStatus() == CAConstants.CA_REVOKED || RevokedCertInfo.isRevoked(cainfo.getRevocationReason());
         revokable = cainfo.getStatus() != CAConstants.CA_REVOKED && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE
                 && cainfo.getStatus() != CAConstants.CA_EXTERNAL && !RevokedCertInfo.isPermanentlyRevoked(cainfo.getRevocationReason());
