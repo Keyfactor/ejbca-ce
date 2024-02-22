@@ -119,8 +119,6 @@ import static org.junit.Assert.fail;
 
 /**
  * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
- * 
- * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class EndEntityManagementSessionTest extends CaTestCase {
@@ -865,7 +863,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         + "OU=FooOrgUnit,OU=OrgUnit22,OU=OrgUnit23,O=Bar",
                         data.getDN());
                 // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
-                assertEquals("dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+                assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com", data.getSubjectAltName());
                 // Try with some altName value to merge
                 endEntityManagementSession.deleteUser(admin, username);
                 profile.setValue(DnComponents.DNSNAME, 0, "server.bad.com");
@@ -880,9 +878,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                         + "JurisdictionLocality=Stockholm,CN=foo subject,"
                         + "OU=FooOrgUnit,OU=OrgUnit22,OU=OrgUnit23,O=Bar",
                         data.getDN());
-                // This returns slightly different between JDK 7 and JDK 8, but we only support >= JDK 8 so
-                assertEquals("DNSNAME=server.bad.com,DNSNAME=server.superbad.com,"
-                        + "dnsName=foo.bar.com,dnsName=foo1.bar.com,rfc822Name=foo@bar.com", data.getSubjectAltName());
+                // The ordering here should be determined by the passed in subjectAltName first, followed by the merged in values
+                // There was a bug here, which was reflected in the test and was against the javadoc of EndEntityInformationFiller.mergeDnString
+                // this was fixed in ECA-12227 and the test corrected
+                assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,DNSNAME=server.superbad.com,"
+                        + "RFC822NAME=foo@bar.com", data.getSubjectAltName());
             } else {
                 log.debug("Skipped test related to Enterprise DN properties.");
             }
@@ -1422,14 +1422,15 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         profile.setValue(DnComponents.DNSNAME, 1, "abcd.pqrs.wxyz");
         profile.setUse(DnComponents.RFC822NAME, 0, true);
         endEntityProfileSession.changeEndEntityProfile(admin, EE_PROFILE_NAME_COPY_UPN, profile);
-        doAndVerifyUserOperation(eeProfileId, "uniformResourceId=asdf.poi", 
-                "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi", 
-                "", "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi", null, null);
+        doAndVerifyUserOperation(eeProfileId, 
+                "uniformResourceId=asdf.poi", "UNIFORMRESOURCEID=asdf.poi,UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL", 
+                "", "UNIFORMRESOURCEID=asdf.poi,UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL", 
+                null, null);
         
-        doAndVerifyUserOperation(eeProfileId, "uniformResourceId=asdf.poi", 
-                "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi", 
-                "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi",
-                "UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL,uniformResourceId=asdf.poi", null, null);
+        doAndVerifyUserOperation(eeProfileId, "UNIFORMRESOURCEID=asdf.poi", 
+                "UNIFORMRESOURCEID=asdf.poi,UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL", 
+                "UNIFORMRESOURCEID=asdf.poi,UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL",
+                "UNIFORMRESOURCEID=asdf.poi,UPN=USER_CN@abcd.com,DNSNAME=USER_CN,DNSNAME=abcd.pqrs.wxyz,RFC822NAME=USER_EMAIL", null, null);
         
     }
     
@@ -1490,7 +1491,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         } catch (Exception e) {
             fail("Failed to create user with SAN: " + requestAltName + ", expected: " + expectedAltName);
         }
-        assertEquals("Added user SAN mismatch", createdUser.getSubjectAltName(), expectedAltName);
+        assertEquals("Added user SAN mismatch", expectedAltName, createdUser.getSubjectAltName());
         return userData;
     }
     
@@ -1506,7 +1507,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         } catch (Exception e) {
             fail("Failed to update user with SAN: " + requestAltName + ", expected: " + expectedAltName);
         }
-        assertEquals("Updated user SAN mismatch", updatedUser.getSubjectAltName(), expectedAltName);
+        assertEquals("Updated user SAN mismatch", expectedAltName, updatedUser.getSubjectAltName());
         return userData;
     }
     
