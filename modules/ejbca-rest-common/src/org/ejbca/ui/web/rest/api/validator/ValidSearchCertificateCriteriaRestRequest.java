@@ -143,6 +143,9 @@ public @interface ValidSearchCertificateCriteriaRestRequest {
             switch (criteriaProperty) {
                 // Value: Any String
                 // Operation: EQUAL, LIKE
+                case SUBJECT_DN:
+                case SUBJECT_ALT_NAME:
+                case USERNAME:
                 case QUERY: {
                     if (!STRING_OPERATIONS().contains(criteriaOperation)) {
                         ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequest.invalid.operation.notString}");
