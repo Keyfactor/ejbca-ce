@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -48,6 +49,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.BigIntegers;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -329,7 +331,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     if (!x509CertificateChain.isEmpty()) {
                         trustedEntries.add(new TrustedChain(x509CertificateChain));
                     }
-                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain);
+                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain, null);
 
                 }
             }
@@ -347,7 +349,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                             Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                     trustedEntries.add(new TrustedChain(x509CertificateChain));
                     // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
-                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain);
+                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain, null);
                 } else {
                     // If a cert serialnumber is specified, then we trust only the certificate with the serial number specified
                     // in the trustedReference
@@ -356,15 +358,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                             Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                     trustedEntries.add(new CertificatePin(x509CertificateChain, trustedReference.fetchCertificateSerialNumber()));
                     // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
-                    List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
-                            Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
-                    for (Certificate caCertificate : activeCaCertsBySubjectDn) {
-                        if (!certificateChain.contains(caCertificate)) {
-                            final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
-                            renewedCertificateChain.add((X509Certificate) caCertificate);
-                            trustedEntries.add(new CertificatePin((renewedCertificateChain), trustedReference.fetchCertificateSerialNumber()));
-                        }
-                    }
+                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain, trustedReference.fetchCertificateSerialNumber());
                 }
             }
         }
@@ -377,7 +371,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         return trustedEntries;
     }
 
-    private void addOlderActiveCAsWithSameSubjectDN(List<TrustEntry> trustedEntries, CAInfo caInfo, List<Certificate> certificateChain) {
+    private void addOlderActiveCAsWithSameSubjectDN(List<TrustEntry> trustedEntries, final CAInfo caInfo, final List<Certificate> certificateChain, BigInteger serialNumber) {
         // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
         List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
                 Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
@@ -385,7 +379,11 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             if (!certificateChain.contains(caCertificate)) {
                 final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
                 renewedCertificateChain.add((X509Certificate) caCertificate);
-                trustedEntries.add(new TrustedChain(renewedCertificateChain));
+                if (serialNumber == null) {
+                    trustedEntries.add(new TrustedChain(renewedCertificateChain));
+                } else {
+                    trustedEntries.add(new CertificatePin((renewedCertificateChain), serialNumber));
+                }
             }
         }
     }
