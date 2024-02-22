@@ -80,6 +80,10 @@ public class ViewOAuthProviderCommand extends BaseOAuthConfigCommand {
                 log.info("Token URL: " + info.getTokenUrl());
                 log.info("Logout URL: " + info.getLogoutUrl());
             }
+            if (info.isFetchUserInfo()) {
+                log.info("Fetch UserInfo: " + info.isFetchUserInfo());
+                log.info("UserInfo URL: " + info.getUserInfoUrl());
+            }
             log.info("Client: " + info.getClient());
         } else {
             log.info("An OAuth Provider with the label " + label + " was not found.");

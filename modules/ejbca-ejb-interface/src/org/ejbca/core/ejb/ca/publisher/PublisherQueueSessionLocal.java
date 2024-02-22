@@ -51,6 +51,12 @@ public interface PublisherQueueSessionLocal {
     /** Removes an entry from the publisher queue. */
     void removeQueueData(String pk);
 
+	/** Removes all entries with given publisherId from the queue. */
+	void removeQueueDataByPublisherId(int publisherId);
+
+	/** Publishes an entry from the publisher queue. */
+	PublishingResult publishQueueData(AuthenticationToken authenticationToken, String pk, BasePublisher publisher);
+
     /**
      * Finds all entries with status PublisherQueueData.STATUS_PENDING for a
      * specific publisherId.

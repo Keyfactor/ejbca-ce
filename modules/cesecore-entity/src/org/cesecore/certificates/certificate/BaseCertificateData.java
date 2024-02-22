@@ -32,9 +32,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 
 /**
- * Used as base class for NoConflictCertificateData and CertificateData to group the common logic for those entites
- *
- * @version $Id: ProtectedCertificateData.java 28264 2018-04-09 15:56:54Z tarmo $
+ * Used as base class for NoConflictCertificateData and CertificateData to group the common logic for those entities
  */
 public abstract class BaseCertificateData extends ProtectedData {
 
