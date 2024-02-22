@@ -49,7 +49,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.util.BigIntegers;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -101,8 +100,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Generic Management implementation for InternalKeyBindings.
- * 
- * @version $Id$
+ *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalKeyBindingMgmtSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -299,8 +297,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             // Ok.. so it's not in the cache.. look for it the hard way..
             for (final Integer currentId : internalKeyBindingDataSession.getIds(null)) {
                 // Don't lookup CryptoTokens we already have in the id to name cache
-                if (!cachedNameToIdMap.values().contains(currentId)) {
-                    final InternalKeyBinding current = internalKeyBindingDataSession.getInternalKeyBinding(currentId.intValue());
+                if (!cachedNameToIdMap.containsValue(currentId)) {
+                    final InternalKeyBinding current = internalKeyBindingDataSession.getInternalKeyBinding(currentId);
                     final String currentName = current == null ? null : current.getName();
                     if (internalKeyBindingName.equals(currentName)) {
                         internalKeyBindingId = currentId;
