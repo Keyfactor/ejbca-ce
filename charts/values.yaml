@@ -1,0 +1,195 @@
+# Default values for ejbca-community-helm.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+ejbca:
+  useEphemeralH2Database: true
+  useH2Persistence: false
+  #existingH2PersistenceClaim: "database-data-claim"
+  importExternalCas: false
+  #externalCasSecret: managementca-secret
+  importAppserverKeystore: false
+  #appserverKeystoreSecret: keystore-secret
+  importAppserverTruststore: false
+  #appserverTruststoreSecret: truststore-secret
+  importEjbcaConfFiles: false
+  #ejbcaConfFilesSecret: ejbca-conf
+  #importConfigdumpStaged: false
+  #configdumpStagedSecret: configdump-staged-secret
+  #importConfigdumpInitialize: false
+  #configdumpInitializeSecret: configdump-initialize-secret
+  #superadminPasswordOverride: "foo123"
+  env:
+    TLS_SETUP_ENABLED: "simple"
+  #envRaw:
+  #  - name: DATABASE_PASSWORD
+  #    valueFrom:
+  #     secretKeyRef:
+  #       name: ejbcadbcredentials
+  #       key: database_password
+  # Extra init containers to be added to the deployment
+  initContainers: []
+  # Extra sidecar containers to be added to the deployment
+  sidecarContainers: []
+  # Extra volumes to be added to the deployment
+  volumes: []
+  # Extra volume mounts to be added to the deployment
+  volumeMounts: []
+
+# Only one of the following services can be enabled at a time
+services:
+  directHttp:
+    enabled: true
+    type: NodePort
+    httpPort: 30080
+    httpsPort: 30443
+  proxyAJP:
+    enabled: false
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    port: 8009
+  proxyHttp:
+    enabled: false
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    httpPort: 8081
+    httpsPort: 8082
+  # Extra sidecar ports to be added to the service, optionally used when sidecarContainers
+  # are defined and need to expose ports
+  sidecarPorts: []
+
+# Requires proxyHttp service to be enabled
+nginx:
+  enabled: false
+  host: ""
+  service:
+    type: NodePort
+    httpPort: 30080
+    httpsPort: 30443
+  conf: |
+    user  nginx;
+    worker_processes  1;
+    error_log  /var/log/nginx/error.log warn;
+    pid        /var/run/nginx.pid;
+    events {
+        worker_connections  1024;
+    }
+    http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+      log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                          '$status $body_bytes_sent "$http_referer" '
+                          '"$http_user_agent" "$http_x_forwarded_for"';
+      access_log  /var/log/nginx/access.log  main;
+      sendfile        on;
+      keepalive_timeout  65;
+
+      server {
+        listen 80;
+
+        server_name {{ .Values.nginx.host }};
+
+        location / {
+          proxy_pass http://{{ include "ejbca-community-helm.fullname" . }}:8081;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "Upgrade";
+          proxy_set_header Host $host;
+          proxy_http_version 1.1;
+        }
+      }
+
+      server {
+        listen 443 ssl;
+        ssl_verify_client optional;
+
+        server_name {{ .Values.nginx.host }};
+
+        ssl_certificate /etc/nginx/ssl/pem/{{ .Values.nginx.host }}.pem;
+        ssl_certificate_key /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-Key.pem;
+        ssl_client_certificate /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-CA.pem;
+
+        location / {
+          proxy_pass http://{{ include "ejbca-community-helm.fullname" . }}:8082;
+          proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $host;
+          proxy_http_version 1.1;
+        }
+      }
+    }
+
+# Requires proxyAJP or proxyHttp service to be enabled for adminweb access
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    ## Do not redirect HTTP to HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    ## Enable optional client certificate authentication
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional_no_ca"
+    ## Secret containing trusted CA certificates. Use with auth-tls-verify-client: "on" or "optional"
+    #nginx.ingress.kubernetes.io/auth-tls-secret: "default/managementca-secret"
+    ## Pass client certificates to upstream server
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    ## Verification depth of the client certificates chain
+    #nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+    ## Configure sticky sessions if using more than one replica
+    #nginx.ingress.kubernetes.io/affinity: "cookie"
+    #nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"
+    #nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+  hosts: []
+    #- host: ""
+    #  paths:
+    #    - path: /ejbca
+    #      pathType: Prefix
+  tls: []
+
+replicaCount: 1
+
+image:
+  repository: keyfactor/ejbca-ce
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion
+  #tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+resources: {}
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
