@@ -1,0 +1,4 @@
+.helmignore
+.git
+.github
+docs/
