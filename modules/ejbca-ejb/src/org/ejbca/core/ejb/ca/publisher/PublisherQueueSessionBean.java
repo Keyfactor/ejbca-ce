@@ -41,6 +41,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -182,9 +183,42 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
                 entityManager.remove(pqd);
             }
         } catch (Exception e) {
-            log.error(e);
+            log.error("Failed to remove publisher queue data", e);
         }
         log.trace("<removeQueueData()");
+    }
+
+    @Override
+    public void removeQueueDataByPublisherId(final int publisherId) {
+        if (log.isTraceEnabled()) {
+            log.trace(">removeQueueDataByPublisherId(publisherId: " + publisherId + ")");
+        }
+        final Query query = entityManager.createQuery("DELETE FROM PublisherQueueData pqd WHERE pqd.publisherId=:publisherId");
+        query.setParameter("publisherId", publisherId);
+        query.executeUpdate();
+        log.trace("<removeQueueDataByPublisherId()");
+
+    }
+
+    @Override
+    public PublishingResult publishQueueData(final AuthenticationToken admin, final String pk, final BasePublisher publisher) {
+        if (log.isTraceEnabled()) {
+            log.trace(">publishQueueData(pk: " + pk + ")");
+        }
+        PublishingResult result = null;
+        final org.ejbca.core.ejb.ca.publisher.PublisherQueueData entity = org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findByPk(
+                entityManager, pk);
+        if (entity == null) {
+            log.warn("Trying to publish queue data that does not exist: " + pk);
+        } else {
+            PublisherQueueData pqd = new PublisherQueueData(entity.getPk(), new Date(entity.getTimeCreated()),
+                    new Date(entity.getLastUpdate()), entity.getPublishStatus(), entity.getTryCounter(),
+                    entity.getPublishType(), entity.getFingerprint(), entity.getPublisherId(),
+                    entity.getPublisherQueueVolatileData());
+            result = doPublish(admin, publisher, pqd);
+        }
+        log.trace("<publishQueueData()");
+        return result;
     }
 
     @Override
