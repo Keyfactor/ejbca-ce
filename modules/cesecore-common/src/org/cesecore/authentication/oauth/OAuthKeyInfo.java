@@ -85,10 +85,12 @@ public final class OAuthKeyInfo implements Serializable {
     
     // PingID fields
     private String tokenUrl;
+    private String userInfoUrl;
     private String logoutUrl;
 
     private String audience;
     private boolean audienceCheckDisabled = false;
+    private boolean fetchUserInfo = false;
     
     // if null, use client secret
     private Integer keyBinding;
@@ -252,10 +254,10 @@ public final class OAuthKeyInfo implements Serializable {
 
     public String getOauthLoginUrl() {
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_KEYCLOAK)) {
-            return getTypeSpecificUrl("auth");
+            return getKeycloakSpecificUrl("auth");
         }
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_AZURE)) {
-            return getTypeSpecificUrl("authorize");
+            return getAzureSpecificUrl("authorize");
         }
         if (getType().equals(OAuthKeyInfo.OAuthProviderType.TYPE_PINGID)) {
             return url;
@@ -266,48 +268,54 @@ public final class OAuthKeyInfo implements Serializable {
     public String getTokenUrl() {
         switch (getType()){
             case TYPE_AZURE:
+                return getAzureSpecificUrl("token");
             case TYPE_KEYCLOAK:
-                return getTypeSpecificUrl("token");
+                return getKeycloakSpecificUrl("token");
             case TYPE_GENERIC:
             case TYPE_PINGID:
             default:
                 return tokenUrl;
         }
-
+    }
+    
+    public String getUserInfoUrl() {
+        switch (getType()){
+            case TYPE_AZURE:
+                return getAzureSpecificUrl("userinfo");
+            case TYPE_KEYCLOAK:
+                return getKeycloakSpecificUrl("userinfo");
+            case TYPE_GENERIC:
+            case TYPE_PINGID:
+            default:
+                return userInfoUrl;
+        }
     }
 
     public String getLogoutUrl() {
         switch (getType()){
             case TYPE_AZURE:
+                return getAzureSpecificUrl("logout");
             case TYPE_KEYCLOAK:
-                return getTypeSpecificUrl("logout");
+                return getKeycloakSpecificUrl("logout");
             case TYPE_GENERIC:
             case TYPE_PINGID:
             default:
                 return logoutUrl;
         }
     }
-
-    private String getTypeSpecificUrl(String endpoint){
-        switch (getType()) {
-            case TYPE_KEYCLOAK: {
-                String uri = getUrl();
-                uri += getUrl().endsWith("/") ? "" : "/";
-                uri += "realms/" + getRealm() + "/protocol/openid-connect/" + endpoint;
-                return uri;
-            }
-            case TYPE_AZURE: {
-                String uri = getUrl();
-                uri += getUrl().endsWith("/") ? "" : "/";
-                uri += getRealm() + "/oauth2/v2.0/" + endpoint;
-                return uri;
-            }
-            case TYPE_PINGID: 
-            case TYPE_GENERIC: {
-                return getUrl();
-            }
-        }
-        return null;
+    
+    private String getKeycloakSpecificUrl(final String endpoint){
+        String uri = getUrl();
+        uri += getUrl().endsWith("/") ? "" : "/";
+        uri += "realms/" + getRealm() + "/protocol/openid-connect/" + endpoint;
+        return uri;
+    }
+    
+    private String getAzureSpecificUrl(final String endpoint){
+        String uri = getUrl();
+        uri += getUrl().endsWith("/") ? "" : "/";
+        uri += getRealm() + "/oauth2/v2.0/" + endpoint;
+        return uri;
     }
 
 
@@ -350,6 +358,10 @@ public final class OAuthKeyInfo implements Serializable {
     public void setTokenUrl(String tokenUrl) {
         this.tokenUrl = tokenUrl;
     }
+    
+    public void setUserInfoUrl(String userInfoUrl) {
+        this.userInfoUrl = userInfoUrl;
+    }
 
     public void setLogoutUrl(String logoutUrl) {
         this.logoutUrl = logoutUrl;
@@ -364,7 +376,9 @@ public final class OAuthKeyInfo implements Serializable {
                 .append("url=").append(getUrl()).append(", ")
                 .append("audience=").append(getAudience()).append(", ")
                 .append("audienceCheckDisabled=").append(isAudienceCheckDisabled()).append(", ")
+                .append("fetchUserInfo=").append(isFetchUserInfo()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
+                .append("userInfoUrl=").append(getTokenUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
                 .append("keys=[");
@@ -412,6 +426,14 @@ public final class OAuthKeyInfo implements Serializable {
 
     public void setAudienceCheckDisabled(boolean audienceCheckDisabled) {
         this.audienceCheckDisabled = audienceCheckDisabled;
+    }
+    
+    public boolean isFetchUserInfo() {
+        return fetchUserInfo;
+    }
+
+    public void setFetchUserInfo(boolean fetchUserInfo) {
+        this.fetchUserInfo = fetchUserInfo;
     }
 
 }
