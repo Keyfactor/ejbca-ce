@@ -129,6 +129,27 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                 final String criteriaValue = searchCertificateCriteriaRestRequest.getValue();
                 final SearchCertificateCriteriaRestRequest.CriteriaOperation criteriaOperation = SearchCertificateCriteriaRestRequest.CriteriaOperation.resolveCriteriaOperation(searchCertificateCriteriaRestRequest.getOperation());
                 switch (criteriaProperty) {
+                    case SUBJECT_DN: {
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                            raCertificateSearchRequest.setSubjectDnSearchExact(true);
+                        }
+                        raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
+                        break;
+                    }
+                    case SUBJECT_ALT_NAME: {
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                            raCertificateSearchRequest.setSubjectAnSearchExact(true);
+                        }
+                        raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
+                        break;
+                    }
+                    case USERNAME: {
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                            raCertificateSearchRequest.setUsernameSearchExact(true);
+                        }
+                        raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
+                        break;
+                    }
                     case QUERY: {
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setSubjectDnSearchExact(true);
