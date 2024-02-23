@@ -1003,7 +1003,7 @@
                 <exclude name=".metadata/**" />
 		    	<exclude name="doc/xdocs/site/**" />
 		    	<exclude name="modules/statedump/**" />
-		    	<exclude name="container" />
+		    	<exclude name="container/" />
 		    	<exclude name="Dockerfile" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
                 <exclude name="modules/dist/**" />
@@ -1064,6 +1064,7 @@
 		    	<include name="**/*.sh" />
 				<exclude name="bin/backup/**" />
 				<exclude name="modules/statedump/**" />
+				<exclude name="container/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	
