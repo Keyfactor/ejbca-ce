@@ -453,6 +453,12 @@ function resetTimer(validity) {
 (function() {
     "use strict";
 
+    var loadingScreen = function() {
+        if (document.documentElement.classList) {
+            document.documentElement.classList.add("waiting");
+        }
+    };
+
     /** Scroll the element with elementId into view on AJAX requests success. */
     var onAjaxSuccessScrollTo = function(data, elementId) {
         if (data.status == "success") {
@@ -482,9 +488,7 @@ function resetTimer(validity) {
 
     var pruneUnchangedInheritRules = function() {
         // This (and the following form submission can be slow)
-        if (document.documentElement.classList) {
-            document.documentElement.classList.add("waiting");
-        }
+        loadingScreen();
         // Remove useless access rules from the form submission.
         // This is necessary because large form submissions may exceed limits in the appserver
         var initiallyInheritSelects = document.getElementsByClassName("selectStateRadio_UNDEFINED");
@@ -507,6 +511,7 @@ function resetTimer(validity) {
     window.ejbca = window.ejbca || {};
     ejbca.adminweb = ejbca.adminweb || {};
     // ...and expose API functions under this name space.
+    ejbca.adminweb.loadingScreen = loadingScreen;
     ejbca.adminweb.onAjaxSuccessScrollTo = onAjaxSuccessScrollTo;
     ejbca.adminweb.hideShowCellsByClass = hideShowCellsByClass;
     ejbca.adminweb.pruneUnchangedInheritRules = pruneUnchangedInheritRules;
