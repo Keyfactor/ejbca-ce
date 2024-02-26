@@ -2381,7 +2381,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             if (ca.getCAType() == CAInfo.CATYPE_X509) {
                 final CrlCreationParams crlParams = new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS);
                 publishingCrlSession.forceCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION, crlParams);
-                publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
+                if (ca.getCAInfo().getDeltaCRLPeriod() > 0) { // Only force delta crl generation if it is enabled in the CA
+                    publishingCrlSession.forceDeltaCRL(authenticationToken, caid, CertificateConstants.NO_CRL_PARTITION);
+                }
                 if (ca instanceof X509CA && ((X509CA) ca).isMsCaCompatible() && ((X509CA) ca).getCrlPartitions() != 0) {
                     for (int crlPartitionIndex = 1; crlPartitionIndex <= ((X509CA) ca).getCrlPartitions(); crlPartitionIndex++) {
                         publishingCrlSession.forceCRL(authenticationToken, caid, crlPartitionIndex, crlParams);

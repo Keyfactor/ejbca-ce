@@ -38,6 +38,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
     private static final String URL = "--url";
     private static final String TOKENURL = "--tokenurl";
     private static final String LOGOUTURL = "--logouturl";
+    private static final String FETCHUSERINFO = "--fetchuserinfo";
+    private static final String USERINFOURL = "--userinfourl";
     private static final String LABEL = "--label";
     private static final String CLIENT = "--client";
     private static final String CLIENT_SECRET = "--clientsecret";
@@ -66,6 +68,10 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
                 "Trusted OAuth Provider token endpoint URL."));
         registerParameter(new Parameter(LOGOUTURL, "Provider Logout URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider logout endpoint URL."));
+        registerParameter(new Parameter(FETCHUSERINFO, "Fetch UserInfo", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Specify 'true' to use the userinfo endpoint to fetch claims about the end-user."));
+        registerParameter(new Parameter(USERINFOURL, "Provider UserInfo URL", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Trusted OAuth Provider userinfo endpoint URL."));
         registerParameter(new Parameter(LABEL, "Provider name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Trusted OAuth Provider name."));
         registerParameter(new Parameter(REALM, "Realm/Tenant name", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -97,6 +103,8 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         String url = parameters.get(URL);
         String tokenUrl = parameters.get(TOKENURL);
         String logoutUrl = parameters.get(LOGOUTURL);
+        String fetchUserInfoString = parameters.get(FETCHUSERINFO);
+        String userInfoUrl = parameters.get(USERINFOURL);
         String label = parameters.get(LABEL);
         String client = parameters.get(CLIENT);
         String clientSecret = parameters.get(CLIENT_SECRET);
@@ -149,11 +157,20 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
             return CommandResult.CLI_FAILURE;
         }
         
+        // if fetch userinfo is enabled the user must specify a userinfo url
+        boolean fetchUserInfo = fetchUserInfoString != null && Boolean.valueOf(fetchUserInfoString);
+        if (userInfoUrl == null && fetchUserInfo) {
+            log.info("Fetch UserInfo is enabled, but no UserInfo endpoint URL is set.");
+            return CommandResult.CLI_FAILURE;
+        }
+        
         OAuthKeyInfo keyInfo = new OAuthKeyInfo(label,  skewLimitInt, type);
         // Since the UI already saves missing values as empty strings it's better to match that behaviour
         keyInfo.setUrl(keyInfo.fixUrl(url != null ? url : ""));
         keyInfo.setTokenUrl(keyInfo.fixUrl(url != null ? tokenUrl : ""));
         keyInfo.setLogoutUrl(keyInfo.fixUrl(url != null ? logoutUrl : ""));
+        keyInfo.setFetchUserInfo(fetchUserInfo);
+        keyInfo.setUserInfoUrl(keyInfo.fixUrl(userInfoUrl != null ? userInfoUrl : ""));
         keyInfo.setClient(client != null ? client : "");
         keyInfo.setClientSecretAndEncrypt(clientSecret != null ? clientSecret : "");
         keyInfo.setRealm(realm != null ? realm : "");
