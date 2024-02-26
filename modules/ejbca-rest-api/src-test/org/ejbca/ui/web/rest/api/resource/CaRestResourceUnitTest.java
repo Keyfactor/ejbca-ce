@@ -96,6 +96,7 @@ public class CaRestResourceUnitTest {
 
     @TestSubject
     private static CaRestResource testClass = new CaRestResourceWithoutSecurity();
+    
     @Mock
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
 
@@ -133,23 +134,11 @@ public class CaRestResourceUnitTest {
         // given
         final RaCaListRequest raCaListRequest = new RaCaListRequest();
         raCaListRequest.setIncludeExternal(false);
-        final String expectedName = CaInfoBuilder.TEST_CA_NAME;
-        final int expectedId = 11;
-        final Date expectedExpirationDate = new Date();
-        // final String expectedExternal = "false";
-        final CAInfo cAInfo = CaInfoBuilder.builder()
-                .id(expectedId)
-                .expirationDate(expectedExpirationDate)
-                .status(CAConstants.CA_EXTERNAL)
-                .build();
-        final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
-        caInfosMap.put(expectedId, expectedName, cAInfo);
-        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(caInfosMap);
-        expect(raMasterApiProxy.getRequestedAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(caInfosMap);
+        expect(raMasterApiProxy.getRequestedAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(new IdNameHashMap<CAInfo>());
         replay(raMasterApiProxy);
         // when
         final Invocation.Builder request = server
-                .newRequest("/v1/ca?includeExternal=true")
+                .newRequest("/v1/ca")
                 .request();
         final Response actualResponse = request.get();
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -171,7 +160,7 @@ public class CaRestResourceUnitTest {
         final String expectedName = CaInfoBuilder.TEST_CA_NAME;
         final int expectedId = 11;
         final Date expectedExpirationDate = new Date();
-        final String expectedExternal = "true";
+        final Boolean expectedExternal = Boolean.TRUE.booleanValue();
         final CAInfo cAInfo = CaInfoBuilder.builder()
                 .id(expectedId)
                 .expirationDate(expectedExpirationDate)
@@ -179,7 +168,6 @@ public class CaRestResourceUnitTest {
                 .build();
         final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
         caInfosMap.put(expectedId, expectedName, cAInfo);
-        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(caInfosMap);
         expect(raMasterApiProxy.getRequestedAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(caInfosMap);
         replay(raMasterApiProxy);
         // when
@@ -189,7 +177,7 @@ public class CaRestResourceUnitTest {
         final Response actualResponse = request.get();
         final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
+        final JSONArray actualCertificateAuthorities = (JSONArray) actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -215,7 +203,6 @@ public class CaRestResourceUnitTest {
                 .build();
         final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
         caInfosMap.put(expectedId, expectedName, cAInfo);
-        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(caInfosMap);
         expect(raMasterApiProxy.getRequestedAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(caInfosMap);
         replay(raMasterApiProxy);
         // when

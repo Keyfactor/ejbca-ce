@@ -116,10 +116,10 @@ public class CaRestResource extends BaseRestResource {
      */
     public Response listCas(final HttpServletRequest httpServletRequest, boolean includeExternal) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
-        RaCaListRequest raCaListRequest = new RaCaListRequest();
+        final RaCaListRequest raCaListRequest = new RaCaListRequest();
         raCaListRequest.setIncludeExternal(includeExternal);
-        IdNameHashMap<CAInfo> authorizedCAInfos = raMasterApiProxy.getRequestedAuthorizedCAInfos(adminToken, raCaListRequest);
-        List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(authorizedCAInfos);
+        final IdNameHashMap<CAInfo> authorizedCAInfos = raMasterApiProxy.getRequestedAuthorizedCAInfos(adminToken, raCaListRequest);
+        final List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(authorizedCAInfos);
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
                 .certificateAuthorities(caInfoRestResponseList)
                 .build();
