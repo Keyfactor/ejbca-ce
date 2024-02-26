@@ -1351,9 +1351,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     @Override
-    public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, String remoteAddress,
-            String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger,
-            boolean isPreSigning, boolean issueFinalResponse, boolean includeExpiredCertificates)
+    public OcspResponseInformation getOcspResponse(final byte[] request, final X509Certificate[] requestCertificates, final String remoteAddress,
+            final String xForwardedFor, StringBuffer requestUrl, final AuditLogger auditLogger, final TransactionLogger transactionLogger,
+            final boolean isPreSigning, final PresignResponseValidity preResponseValidity, final boolean includeExpiredCertificates)
             throws MalformedRequestException, OCSPException {
         //Check parameters
         if (auditLogger == null) {
@@ -1868,7 +1868,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.info(intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, "0x" + certId.getSerialNumber().toString(16), caCertificateSubjectDn));
                     }
                     // Issue a final OCSP Response (EN 319 411-2)
-                    if (issueFinalResponse && isPreSigning) {
+                    if (preResponseValidity.equals(PresignResponseValidity.UNLIMITED_VALIDITY_EIDAS) && isPreSigning) {
                         TimeZone tz = TimeZone.getTimeZone("GMT");
                         Calendar cal = Calendar.getInstance(tz);
                         cal.clear();
@@ -2304,7 +2304,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     }
     
     @Override
-    public void preSignOcspResponse(X509Certificate cacert, final BigInteger serialNr, boolean issueFinalResponse, boolean includeExpiredCertificates, String certIDHashAlgorithm) {
+    public void preSignOcspResponse(final X509Certificate cacert, final BigInteger serialNr, final PresignResponseValidity presignResponseValidity,
+            final boolean includeExpiredCertificates, final String certIDHashAlgorithm) {
         final OCSPReq req;
         final OCSPReqBuilder gen = new OCSPReqBuilder();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
@@ -2327,7 +2328,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
 
             gen.addRequest(certId);
             req = gen.build();
-            getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true, issueFinalResponse, includeExpiredCertificates);
+            getOcspResponse(req.getEncoded(), null, remoteAddress, null, null, auditLogger, transactionLogger, true, presignResponseValidity, includeExpiredCertificates);
+
         } catch (Throwable e) {
             final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", LogRedactionUtils.getRedactedMessage(e.getMessage()));
             log.info(errMsg);
@@ -2907,16 +2909,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             sb.append(errMsg).append(": ").append(errMsg);
         }
         return sb.toString();
-    }
-
-    @Override
-    public boolean isOcspExists(Integer caId, String serialNumber) {
-        return ocspDataSession.findOcspDataByCaIdSerialNumber(caId, serialNumber) != null;
-    }
-
-    @Override
-    public void deleteOcspDataByCaIdSerialNumber(final int caId, final String serialNumber) {
-        ocspDataSession.deleteOcspDataByCaIdSerialNumber(caId, serialNumber);
     }
 }
 
