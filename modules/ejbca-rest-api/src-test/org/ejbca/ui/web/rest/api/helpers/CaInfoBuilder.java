@@ -191,6 +191,7 @@ public class CaInfoBuilder {
                 CAInfo.SELFSIGNED,
                 Collections.singletonList(testCaCertificate),
                 getTestCAToken());
+        x509CaInfo.setStatus(status);
         x509CaInfo.setDescription("JUnit RSA CA");
         x509CaInfo.setCAId(id);
         x509CaInfo.setExpireTime(expirationDate);
