@@ -330,7 +330,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                         trustedEntries.add(new TrustedChain(x509CertificateChain));
                     }
                     addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain, null);
-
                 }
             }
             if(log.isDebugEnabled()) {
