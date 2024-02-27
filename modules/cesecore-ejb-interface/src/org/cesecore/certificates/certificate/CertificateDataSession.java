@@ -12,12 +12,22 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 
 /**
- * Interface for basic CRUD operations related to CertificateData (local-only interface)
+ * Interface for basic CRUD operations related to CertificateData 
  * 
- * @version $Id$
  */
 public interface CertificateDataSession {
+    
+    /**
+     * Returns the number of total or active certificates.
+     *
+     * @param adminToken an admin authentication token.
+     * @param isActive if true then returns the number of active certificates only.
+     * @return certificate quantity.
+     */
+    Long getCertificateCount(AuthenticationToken adminToken, Boolean isActive) throws AuthorizationDeniedException;
     
 }
