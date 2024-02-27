@@ -15,9 +15,11 @@ package org.ejbca.ui.web.rest.api.resource;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertEqualJsonPropertyAsLong;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -134,7 +136,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         eep.setValue(EndEntityProfile.AVAILCAS, 0, ""+x509TestCa.getCAId());
         eep.setValue(EndEntityProfile.DEFAULTCA, 0, ""+x509TestCa.getCAId());
         endEntityProfileId = endEntityProfileSessionRemote.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, TEST_EEP_NAME, eep);
-        keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        keys = generateNewKeyPair();
         DATE_FORMAT_ISO8601.setTimeZone(TIME_ZONE_UTC);
     }
 
@@ -154,6 +156,152 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
             removeCertificate(CertTools.getFingerprintAsString(certificate));
         }
         certificates.clear();
+    }
+
+    @Test
+    public void shouldFindByUsernameOnly() throws Exception {
+            // given
+        String uniqueUsername = new Object() {}.getClass().getEnclosingMethod().getName();
+        String expectedCommonName = uniqueUsername;
+        String expectedSubjectDn = "C=SE,O=KeyFactor,CN=" + expectedCommonName;
+        X509Certificate certificate = createCertificate(uniqueUsername, expectedSubjectDn, keys.getPublic());
+        String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
+        certificates.add(certificate);
+
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.USERNAME.name())
+                .value(uniqueUsername)
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(10)
+                .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
+                .build();
+       
+        // when
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+        final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
+        final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+        final Object actualSerialNumber = actualCertificate0JsonObject.get("serial_number");
+
+        byte[] certificateBytes = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
+        X509Certificate actualCertificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+        String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
+        String actualCommonName = DnComponents.getPartFromDN(actualSubjectDN, "CN");
+
+        // then
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertNotNull(actualCertificateString);
+        assertEquals("More results returned than expected", 1, actualCertificates.size());
+        assertEquals("Serial number of the returned certificate doesn't match the certificate we searched for", expectedSerialNumber, actualSerialNumber);
+        assertEquals("CommonName doesn't match the expected search result", expectedCommonName, actualCommonName);
+    }
+
+    @Test
+    public void shouldFindBySubjectOnly() throws Exception {
+        // given
+        String username = "someUsername";
+        String uniqueName = new Object() {}.getClass().getEnclosingMethod().getName();
+        String expectedSubjectDn = "C=SE,O=KeyFactor,CN=" + uniqueName;
+        String expectedSubjectDnldapOrder="CN=" + uniqueName + ",O=KeyFactor,C=SE";
+        X509Certificate certificate = createCertificate(username, expectedSubjectDn, keys.getPublic());
+        String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
+        certificates.add(certificate);
+
+        assertEquals("Order problem", expectedSubjectDn, certificate.getSubjectDN().getName());
+
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.SUBJECT_DN.name())
+                .value(expectedSubjectDnldapOrder)
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(10)
+                .criteria(Collections.singletonList(searchCertificateCriteriaRestRequest))
+                .build();
+        
+        // when
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+        final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
+        final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+        final Object actualSerialNumber = actualCertificate0JsonObject.get("serial_number");
+
+        byte[] certificateBytes = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
+        X509Certificate actualCertificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+        String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
+
+        // then
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertNotNull(actualCertificateString);
+        assertEquals("More results returned than expected", 1, actualCertificates.size());
+        assertEquals("Serial number of the returned certificate doesn't match the certificate we searched for", expectedSerialNumber, actualSerialNumber);
+        assertEquals("SubjectDN doesn't match the expected search result", expectedSubjectDnldapOrder, actualSubjectDN);
+    }
+
+    @Test
+    public void shouldFindByMultipleCriteria() throws Exception {
+        // given
+        String uniqueName = new Object() {}.getClass().getEnclosingMethod().getName();
+        
+        String uniqueUsername = "Username" + uniqueName;
+        String uniqueSubjectDn = "CN=" + uniqueName;
+
+        X509Certificate certificateByUsername = createCertificate(uniqueUsername, "CN=whatever111", generateNewKeyPair().getPublic());
+        String expectedSerialNumberForUsernameSearch = CertTools.getSerialNumberAsString(certificateByUsername);
+        certificates.add(certificateByUsername);
+
+        X509Certificate certificateBySubjectDn = createCertificate("whatever222", uniqueSubjectDn, generateNewKeyPair().getPublic());
+        String expectedSerialNumberForSubjectDnSearch = CertTools.getSerialNumberAsString(certificateBySubjectDn);
+        certificates.add(certificateBySubjectDn);
+
+        List<SearchCertificateCriteriaRestRequest> searchCriterias = new ArrayList<>();
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaUsername = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.USERNAME.name())
+                .value(uniqueUsername)
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+        final SearchCertificateCriteriaRestRequest searchCertificateCriteriaSubjectDn = SearchCertificateCriteriaRestRequest.builder()
+                .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.SUBJECT_DN.name())
+                .value(uniqueSubjectDn)
+                .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL.name())
+                .build();
+
+        searchCriterias.add(searchCertificateCriteriaUsername);
+        searchCriterias.add(searchCertificateCriteriaSubjectDn);
+        final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                .maxNumberOfResults(10)
+                .criteria(searchCriterias)
+                .build();
+        
+        // when
+        final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+        final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+        final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
+        final JSONObject actualCertificate1JsonObject = (JSONObject) actualCertificates.get(1);
+        final Object actualSerialNumber0 = actualCertificate0JsonObject.get("serial_number");
+        final Object actualSerialNumber1 = actualCertificate1JsonObject.get("serial_number");
+
+        // then
+
+        // The order is non-deterministic but let's just make sure they both match and aren't equal.
+        boolean serialNrMatch_0 = actualSerialNumber0.equals(expectedSerialNumberForSubjectDnSearch) || actualSerialNumber0.equals(expectedSerialNumberForUsernameSearch);
+        boolean serialNrMatch_1 = actualSerialNumber1.equals(expectedSerialNumberForSubjectDnSearch) || actualSerialNumber1.equals(expectedSerialNumberForUsernameSearch);
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertEquals("More results returned than expected", 2, actualCertificates.size());
+        assertNotEquals("Both certificates returned had the same serial number", actualSerialNumber0, actualSerialNumber1);
+        assertTrue("Serial number of the returned certificate doesn't match the certificate we searched for", serialNrMatch_0);
+        assertTrue("Serial number of the returned certificate doesn't match the certificate we searched for", serialNrMatch_1);
     }
 
     @Test
@@ -759,7 +907,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         //given
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
         certificates.add(certificate);
-        KeyPair keys1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        KeyPair keys1 = generateNewKeyPair();
         certificate = createCertificate("searchCerUsername2", "C=SE,O=AnaTom,CN=searchCertCn2", keys1.getPublic());
         certificates.add(certificate);
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
@@ -816,7 +964,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         //given
         X509Certificate certificate = createCertificate("searchCerUsername", "C=SE,O=AnaTom,CN=searchCertCn", keys.getPublic());
         certificates.add(certificate);
-        KeyPair keys1 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        KeyPair keys1 = generateNewKeyPair();
         certificate = createCertificate("searchCerUsername2", "C=SE,O=AnaTom,CN=searchCertCn2", keys1.getPublic());
         certificates.add(certificate);
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
@@ -908,7 +1056,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
      * Creates a test certificate with the given username and subject DN.
      */
     private X509Certificate createCertificate(String username, String subjectDn) throws Exception {
-        final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final KeyPair keyPair = generateNewKeyPair();
         return createCertificate(username, subjectDn, keyPair.getPublic());
     }
 
@@ -960,6 +1108,10 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
     private void setCertificateRevokeStatus(final Certificate certificate, final Date revokedDate, final Date invalidityDate, final int reasonCode)
             throws AuthorizationDeniedException, CertificateRevokeException {
         internalCertStoreSession.setRevokeStatus(INTERNAL_ADMIN_TOKEN, certificate, revokedDate, invalidityDate, reasonCode);
+    }
+
+    private static KeyPair generateNewKeyPair() throws InvalidAlgorithmParameterException {
+        return KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
 }
