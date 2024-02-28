@@ -102,8 +102,9 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enrollment with client generated keys, using CSR subject",
-            notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+    @ApiOperation(value = "Enrollment with client generated keys, using CSR subject.",
+            notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR. "
+                    + "\nResponse Format is 'DER' (default when excluded) or 'PKCS7' in PEM format",
             response = CertificateEnrollmentRestResponse.class,
             code = 201)
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext,
