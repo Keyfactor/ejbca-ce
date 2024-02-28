@@ -152,6 +152,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
@@ -781,6 +782,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return castatus;
     }
+    
+    private boolean isProhibitedMixedHybridChain(CA signerCa, String aliasAlternativeCertSign) {
+        String signerCaAltAlg = signerCa.getCAToken().getAlternativeSignatureAlgorithm();
+        if (((aliasAlternativeCertSign == null) && (signerCaAltAlg != null) )) {
+            return true;
+        }
+        if ((aliasAlternativeCertSign != null && signerCaAltAlg == null )) {
+            return true;
+        }
+        return false;
+    }
 
     private List<Certificate> createCertificateChain(AuthenticationToken authenticationToken, CA ca, CryptoToken cryptoToken,
                                                      CertificateProfile certprofile) throws CryptoTokenOfflineException {
@@ -850,6 +862,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                 final Certificate cacertificate;
                 final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                if (isProhibitedMixedHybridChain(signca, aliasAlternativeCertSign)) {
+                    logAuditEvent(
+                            EventTypes.CA_CREATION, EventStatus.FAILURE,
+                            authenticationToken, caid,
+                            intres.getLocalizedMessage("caadmin.cachainismixedhybrid", cainfo.getName())
+                            );
+                    throw new InvalidConfigurationException(intres.getLocalizedMessage("caadmin.cachainismixedhybrid", cainfo.getName()));
+                }
                 if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
                     HybridCa hybridCa = (HybridCa) signca;
                     cacertificate = hybridCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
