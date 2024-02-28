@@ -89,6 +89,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyPair;
@@ -1059,7 +1060,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName("ENDUSER").
                 endEntityProfileName("EMPTY").
                 username(testUsername).
-                password("foo123").email(email).
+                password("foo123").
+                email(email).
+                responseFormat("DER").
                 certificateRequest(certificateRequest).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
@@ -1090,6 +1093,45 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
         EndEntityInformation userData = endEntityAccessSession.findUser(INTERNAL_ADMIN_TOKEN, testUsername);
         assertEquals("Created user does not have expected email.", email, userData.getEmail());
+    }
+
+    @Test
+    public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
+        String responseFormat = "PKCS7";
+
+        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
+                certificateAuthorityName(testCaName).
+                certificateProfileName("ENDUSER").
+                endEntityProfileName("EMPTY").
+                username(testUsername).
+                password("foo123").includeChain(false).responseFormat(responseFormat).
+                certificateRequest(CSR_WITHOUT_HEADERS).build();
+
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+        // Send request
+        final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        // Verify response
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String responseFormatREST = (String) actualJsonObject.get("response_format");
+        assertEquals("The response format is not PKCS7", responseFormat, responseFormatREST);
+        final String responseCertificate = (String) actualJsonObject.get("certificate");
+        assertNotNull(responseCertificate);
+        //Verify certificate is a pkcs7
+        String pkcs7CertificatePem = new String(Base64.decode(responseCertificate.getBytes()), StandardCharsets.UTF_8);
+        assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
+        assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
+        //Varify certificate
+        pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("^-----BEGIN PKCS7-----","");
+        pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("-----END PKCS7-----$", "");
+        byte[] certBytes = Base64.decode(pkcs7CertificatePem.getBytes());
+        Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
+        String responseSerialNo = (String) actualJsonObject.get("serial_number");
+        assertEquals("", CertTools.getSerialNumber(cert), CertTools.getSerialNumberFromString(responseSerialNo));
     }
 
     @Test
@@ -1405,7 +1447,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName(profileName).
                 endEntityProfileName(profileName).
                 username(username).
-                password(password).
+                password(password). responseFormat("DER").
                 certificateRequest(unidFnrCsr).build();
 
         // Construct POST  request
