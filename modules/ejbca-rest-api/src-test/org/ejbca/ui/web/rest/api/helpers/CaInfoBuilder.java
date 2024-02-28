@@ -96,6 +96,8 @@ public class CaInfoBuilder {
     private String name = TEST_CA_NAME;
     private Date expirationDate;
 
+    private int status;
+
     /**
      * Returns a builder instance for this class.
      *
@@ -144,6 +146,18 @@ public class CaInfoBuilder {
     }
 
     /**
+     * Sets the status of this CAInfo.
+     *
+     * @param status status.
+     *
+     * @return instance of this builder.
+     */
+    public CaInfoBuilder status(final int status) {
+        this.status = status;
+        return this;
+    }
+
+    /**
      * Generates a dummy CAToken instance.
      *
      * @return dummy CAToken instance.
@@ -177,6 +191,7 @@ public class CaInfoBuilder {
                 CAInfo.SELFSIGNED,
                 Collections.singletonList(testCaCertificate),
                 getTestCAToken());
+        x509CaInfo.setStatus(status);
         x509CaInfo.setDescription("JUnit RSA CA");
         x509CaInfo.setCAId(id);
         x509CaInfo.setExpireTime(expirationDate);

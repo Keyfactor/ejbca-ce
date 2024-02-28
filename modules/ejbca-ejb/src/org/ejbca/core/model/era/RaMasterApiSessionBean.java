@@ -367,6 +367,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>15<td>=<td>7.11.0
      * <tr><th>16<td>=<td>8.1.0
      * <tr><th>17<td>=<td>8.2.0
+     * <tr><th>18<td>=<td>8.3.0
      * </table>
      */
     private static final int RA_MASTER_API_VERSION = 17;
@@ -2071,6 +2072,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         return authorizedCAInfos;
+    }
+
+    @Override
+    public IdNameHashMap<CAInfo> getRequestedAuthorizedCAInfos(final AuthenticationToken authenticationToken, final RaCaListRequest listRequest) {
+        if (listRequest.isIncludeExternal()) {
+            IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
+            List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedCaInfos(authenticationToken);
+            for (CAInfo caInfo : authorizedCAInfosList) {
+                if (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                    authorizedCAInfos.put(caInfo.getCAId(), caInfo.getName(), caInfo);
+                }
+            }
+            return authorizedCAInfos;
+        }
+        return getAuthorizedCAInfos(authenticationToken);
     }
 
     @Override
