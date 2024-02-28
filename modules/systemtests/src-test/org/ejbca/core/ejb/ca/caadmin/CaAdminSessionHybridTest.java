@@ -316,9 +316,9 @@ public class CaAdminSessionHybridTest {
         // Create CAToken
         Properties caTokenProperties;
         if (!hybrid) {
-        caTokenProperties = constructCaTokenPropertiesForNonHybrid();
+            caTokenProperties = constructCaTokenPropertiesForNonHybrid();
         } else {
-        caTokenProperties = constructCaTokenProperties();
+            caTokenProperties = constructCaTokenProperties();
         }
         CAToken caToken = createCaToken(cryptoTokenId, caTokenProperties /*TEST*/,hybrid);
         final String caDn = "CN=" + caName;
