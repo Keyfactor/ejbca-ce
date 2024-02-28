@@ -95,6 +95,9 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 
 /**
  * Generic Management implementation for InternalKeyBindings.
@@ -480,6 +483,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     @Override
+    //@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public int persistInternalKeyBinding(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding)
             throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
         if (!authorizationSession.isAuthorized(authenticationToken,
@@ -939,6 +943,57 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         }
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public void issueCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId,
+            EndEntityInformation endEntityInformation, String keySpec) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException {
+        // also generate the key if not present
+        final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
+        
+        final int cryptoTokenId = internalKeyBinding.getCryptoTokenId();
+        final String keyPairAlias= internalKeyBinding.getKeyPairAlias();
+        List<String> existingKeyPairs = cryptoTokenManagementSession.getKeyPairAliases(authenticationToken, cryptoTokenId);
+        if(!existingKeyPairs.contains(keyPairAlias)) {
+            try {
+                // same publicKey spec as CA - inline with OCSP RFCs
+                if (keySpec == null) {
+                    PublicKey caPublicKey = caSession.findById(
+                            endEntityInformation.getCAId()).getCA().getCACertificate().getPublicKey();
+                    keySpec = AlgorithmTools.getKeySpecification(caPublicKey);
+                }
+                final KeyPairTemplate keyUsage = KeyPairTemplate.valueOf(KeyPairTemplate.SIGN.toString());
+                KeyGenParamsBuilder paramBuilder = KeyGenParams.builder(keySpec).withKeyPairTemplate(keyUsage);
+                cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyPairAlias, paramBuilder.build());
+            } catch (InvalidKeyException | CryptoTokenOfflineException | 
+                            InvalidAlgorithmParameterException | AuthorizationDeniedException e) {
+                // TODO Auto-generated catch block
+                throw new IllegalStateException(e);
+            }
+        }
+        
+        final PublicKey publicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, cryptoTokenId, keyPairAlias).getPublicKey();
+        final RequestMessage req = new SimpleRequestMessage(publicKey, endEntityInformation.getUsername(), endEntityInformation.getPassword());
+        final CertificateResponseMessage response;
+        final long updateTime = System.currentTimeMillis();
+        try {
+            response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, new CertificateGenerationParams(), updateTime);
+        } catch (CesecoreException | CertificateExtensionException e) {
+            throw new CertificateImportException(e);
+        }
+        final String newCertificateId = updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
+        if (newCertificateId == null) {
+            throw new CertificateImportException("New certificate was never issued.");
+        }
+        // Sanity check that the certificate we issued is the one that is in use
+        final X509Certificate keyBindingCertificate = (X509Certificate) response.getCertificate();
+        if (!newCertificateId.equals(CertTools.getFingerprintAsString(keyBindingCertificate))) {
+            throw new CertificateImportException(
+                    "Issued certificate was not found in database. "
+                    + "Throw-away setting for issuing CA is not allowed for InternalKeyBindings.");
+        }
+
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public String renewInternallyIssuedCertificate(AuthenticationToken authenticationToken, int internalKeyBindingId,
