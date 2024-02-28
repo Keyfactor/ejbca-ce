@@ -20,7 +20,10 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.pinning.TrustEntry;
+
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @see InternalKeyBindingMgmtSession
@@ -71,4 +74,22 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * @return id-name map of internal key bindings
      */
     Map<Integer, String> getAllInternalKeyBindingIdNameMap(String internalKeyBindingType);
+    
+    /**
+     * Issue certificate for the internal key binding based on the enrollment information. This enrollment information
+     * can only be provided from Configdump now and enrollment is only possible for key bindings present in a CA node.
+     * 
+     * @param authenticationToken
+     * @param internalKeyBindingId
+     * @param endEntityInformation
+     * @param keySpec
+     * 
+     * @return
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenOfflineException
+     * @throws CertificateImportException
+     */
+    void issueCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId,
+            EndEntityInformation endEntityInformation, String keySpec)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException;
 }
