@@ -165,6 +165,14 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                 final String criteriaValue = searchCertificateCriteriaRestRequest.getValue();
                 final SearchCertificateCriteriaRestRequest.CriteriaOperation criteriaOperation = SearchCertificateCriteriaRestRequest.CriteriaOperation.resolveCriteriaOperation(searchCertificateCriteriaRestRequest.getOperation());
                 switch (criteriaProperty) {
+                    case SERIAL_NUMBER: {
+                        // if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                        //     raCertificateSearchRequest.setser(true);
+                        // }
+                        raRequest.setSerialNumberSearchStringFromDec(criteriaValue);
+                        raRequest.setSerialNumberSearchStringFromHex(criteriaValue);
+                        break;
+                    }
                     case SUBJECT_DN: {
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setSubjectDnSearchExact(true);
