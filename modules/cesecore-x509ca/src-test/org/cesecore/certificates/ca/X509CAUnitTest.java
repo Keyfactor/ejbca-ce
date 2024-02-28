@@ -1545,11 +1545,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         //One day ago
         Date notAfter = new Date(System.currentTimeMillis() - 1000 * 3600 * 24 * 1);
         final CryptoToken cryptoToken = getNewCryptoToken();
-        final X509CA testCa = createTestCA(cryptoToken, caDn);
+        final X509CA testCa = createTestCA(cryptoToken, caDn);//
+
         Method generateCertificate = X509CAImpl.class.getDeclaredMethod("generateCertificate", EndEntityInformation.class, RequestMessage.class,
-                PublicKey.class, int.class, Date.class, Date.class, CertificateProfile.class, Extensions.class, PublicKey.class, PrivateKey.class,
-                String.class, CertificateGenerationParams.class, AvailableCustomCertificateExtensionsConfiguration.class, boolean.class,
-                boolean.class);
+                PublicKey.class, PublicKey.class, int.class, Date.class,
+                Date.class, CertificateProfile.class, Extensions.class, SigningKeyContainer.class,
+                CertificateGenerationParams.class, AvailableCustomCertificateExtensionsConfiguration.class, boolean.class, boolean.class);
+
         generateCertificate.setAccessible(true);
         CAToken caToken = testCa.getCAToken();       
         final PublicKey previousCaPublicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
@@ -1557,8 +1559,10 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final EndEntityInformation cadata = new EndEntityInformation("nobody", testCa.getSubjectDN(), testCa.getSubjectDN().hashCode(), testCa.getSubjectAltName(), null,
                 0, new EndEntityType(EndEntityTypes.INVALID), 0, testCa.getCertificateProfileId(), null, null, 0, null);
         try {
-            generateCertificate.invoke(testCa, cadata, null, cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)), 0, notBefore, notAfter, certificateProfile,
-                    null, previousCaPublicKey, previousCaPrivateKey, BouncyCastleProvider.PROVIDER_NAME, null, cceConfig, true, false);
+            generateCertificate.invoke(testCa, cadata, null, cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)), 
+                    null, 0, notBefore, notAfter, certificateProfile,
+                    null, new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, BouncyCastleProvider.PROVIDER_NAME), null, cceConfig, true, false);
+
         } catch (InvocationTargetException e) {
             if(e.getCause() instanceof IllegalValidityException) {
             fail("Back dated revoked certificate should have been created.");
