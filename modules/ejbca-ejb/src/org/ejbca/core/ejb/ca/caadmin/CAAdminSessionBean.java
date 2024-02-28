@@ -862,6 +862,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
                 final Certificate cacertificate;
                 final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                // We make sure that the sub CA is hybrid iff root CA is hybrid
                 if (isProhibitedMixedHybridChain(signca, aliasAlternativeCertSign)) {
                     logAuditEvent(
                             EventTypes.CA_CREATION, EventStatus.FAILURE,
