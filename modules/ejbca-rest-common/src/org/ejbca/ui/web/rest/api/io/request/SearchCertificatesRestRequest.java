@@ -136,6 +136,14 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
                         break;
                     }
+                    case SERIAL_NUMBER: {
+                        // if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                        //     raCertificateSearchRequest.setser(true);
+                        // }
+                        raCertificateSearchRequest.setSerialNumberSearchStringFromDec(criteriaValue);
+                        raCertificateSearchRequest.setSerialNumberSearchStringFromHex(criteriaValue);
+                        break;
+                    }
                     case SUBJECT_ALT_NAME: {
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setSubjectAnSearchExact(true);

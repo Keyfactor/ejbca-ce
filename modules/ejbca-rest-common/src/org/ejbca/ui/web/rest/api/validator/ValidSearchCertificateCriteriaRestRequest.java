@@ -164,6 +164,15 @@ public @interface ValidSearchCertificateCriteriaRestRequest {
                 }
                 // Value: Any String
                 // Operation: EQUAL
+                case SERIAL_NUMBER: {
+                    if (criteriaOperation != EQUAL) {
+                        ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequest.invalid.operation.notEqual}");
+                        return false;
+                    }
+                    break;
+                }
+                // Value: Any String
+                // Operation: EQUAL
                 case END_ENTITY_PROFILE:
                 case CERTIFICATE_PROFILE:
                 case CA: {

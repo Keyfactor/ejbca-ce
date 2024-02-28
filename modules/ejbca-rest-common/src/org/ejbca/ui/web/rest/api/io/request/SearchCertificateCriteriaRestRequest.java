@@ -31,6 +31,7 @@ import java.util.EnumSet;
  */
 @ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
         "QUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \n" +
+        "SERIAL_NUMBER - multiplicity [0, 1] - is used to search by SerialNr; \n" +
         "SUBJECT_DN - multiplicity [0, 1] - is used to search by SubjectDn; \n" +
         "SUBJECT_ALT_NAME - multiplicity [0, 1] - is used to search by SubjectAn; \n" +
         "USERNAME - multiplicity [0, 1] - is used to search by Username; \n" +
@@ -118,6 +119,7 @@ public class SearchCertificateCriteriaRestRequest {
      */
     public enum CriteriaProperty {
         QUERY,
+        SERIAL_NUMBER,
         USERNAME,
         SUBJECT_DN,
         SUBJECT_ALT_NAME,
@@ -153,7 +155,7 @@ public class SearchCertificateCriteriaRestRequest {
          * @return subset of criteria properties.
          */
         public static EnumSet<CriteriaProperty> STRING_PROPERTIES() {
-            return EnumSet.of(QUERY, USERNAME, SUBJECT_DN, SUBJECT_ALT_NAME, STATUS, EXTERNAL_ACCOUNT_BINDING_ID);
+            return EnumSet.of(QUERY, SERIAL_NUMBER, USERNAME, SUBJECT_DN, SUBJECT_ALT_NAME, STATUS, EXTERNAL_ACCOUNT_BINDING_ID);
         }
 
         /**
