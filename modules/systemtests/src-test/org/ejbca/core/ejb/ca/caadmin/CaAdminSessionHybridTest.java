@@ -328,7 +328,7 @@ public class CaAdminSessionHybridTest {
         return x509caInfo;
     }
 
-    private CAToken createCaToken(int cryptoTokenId, Properties caTokenProperties/*TEST*/, boolean hybrid) {
+    private CAToken createCaToken(int cryptoTokenId, Properties caTokenProperties, boolean hybrid) {
         CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
         // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
         caToken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
