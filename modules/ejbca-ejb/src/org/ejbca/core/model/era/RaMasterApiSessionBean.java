@@ -2494,12 +2494,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             EjbcaException, EndEntityProfileValidationException {
 
         EndEntityInformation endEntityInformation = ejbcaRestHelperSession.convertToEndEntityInformation(authenticationToken, enrollCertificateRequest);
+
+        int responseType;
         try {
+            if (enrollCertificateRequest.getResponseFormat().equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+                    responseType = CertificateConstants.CERT_RES_TYPE_PKCS7;
+            } else {
+                responseType = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
+            }
             return certificateRequestSession.processCertReq(authenticationToken,
                     endEntityInformation,
                     enrollCertificateRequest.getCertificateRequest(),
                     CertificateHelper.CERT_REQ_TYPE_PKCS10,
-                    CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
+                    responseType);
         } catch (NotFoundException e) {
             log.debug("EJBCA REST exception", e);
             throw e; // NFE extends EjbcaException
