@@ -60,6 +60,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     // Manual upload and linking of certificate and other UI flows e.g. "Update" button is unaffected
     // useful for both key bindings in CA node
     // possibly can also be used for OCSP key bindings in VA node(restrict to always and only OCSPSIGNER EKU)
+    public static final String PROP_SUBJECT_DN = "subjectDn";
     public static final String PROP_ISSUER_DN = "issuerDn";
     public static final String PROP_EE_PROFILE_NAME = "endEntityProfileName";
     public static final String PROP_CERT_PROFILE_NAME = "certificateProfileName";
@@ -277,6 +278,16 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     public void setSignatureAlgorithm(String signatureAlgorithm) {
         this.signatureAlgorithm = signatureAlgorithm;
         putDataInternal(PROP_SIGNATURE_ALGORITHM, signatureAlgorithm);
+    }
+    
+    @Override
+    public String getSubjectDn() {
+        return getDataInternal(PROP_SUBJECT_DN, "");
+    }
+
+    @Override
+    public void setSubjectDn(String subjectDn) {
+        putDataInternal(PROP_SUBJECT_DN, subjectDn);
     }
     
     @Override
