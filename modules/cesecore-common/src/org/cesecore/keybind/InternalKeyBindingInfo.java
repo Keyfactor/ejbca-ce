@@ -51,6 +51,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     private boolean useIssuerNotBeforeAsArchiveCutoff;
     private String retentionPeriod;
     
+    private String subjectDn;
     private String issuerDn;
     private String certificateProfileName;
     private String endEntityProfileName;
@@ -70,6 +71,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.signOcspResponseOnBehalf = internalKeyBinding.getSignOcspResponseOnBehalf();
         this.ocspExtensions = internalKeyBinding.getOcspExtensions();
         this.signatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
+        this.subjectDn = internalKeyBinding.getSubjectDn();
         this.issuerDn = internalKeyBinding.getIssuerDn();
         this.certificateProfileName = internalKeyBinding.getCertificateProfileName();
         this.endEntityProfileName = internalKeyBinding.getEndEntityProfileName();
@@ -283,6 +285,16 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     @Override
     public void setCertificateProfileName(String certificateProfileName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getSubjectDn() {
+        return subjectDn;
+    }
+
+    @Override
+    public void setSubjectDn(String subjectDn) {
         throw new UnsupportedOperationException();
     }
 }
