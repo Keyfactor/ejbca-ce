@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -25,28 +25,45 @@
 </ui:remove>
 
 <body>
-<ui:composition>
-<h:panelGroup>
+	<ui:composition>
+		<h:panelGroup>
 
-<h:outputText value="#{web.text.REVOCATIONOFINCOMPLETE}" style="font-weight:bold;"/>
-	</h:panelGroup>
-	<h:panelGroup>
-		<f:verbatim>&#xA0;</f:verbatim>
-	</h:panelGroup>
+			<h:outputText value="#{web.text.REVOCATIONOFINCOMPLETE}"
+				style="font-weight:bold;" />
+		</h:panelGroup>
+		<h:panelGroup>
+			<f:verbatim>&#xA0;</f:verbatim>
+		</h:panelGroup>
 
-	<h:panelGroup>
-		<h:outputText value="#{web.text.REVOKEINCOMPLETEAFTER}"/>
-	</h:panelGroup>
-	<h:panelGroup>
-		<h:inputText id="certCheckTimeValueTextField" value="#{editService.preCertificateRevocationWorkerType.maxIssuanceTime}" size="5" pt:type="number" title="#{web.text.FORMAT_INTEGER}"
-			disabled="#{not editService.hasEditRights}">
-			<f:convertNumber type="number"/>
-		</h:inputText>
-		<h:selectOneMenu id="certCheckTimeUnitSelect" value="#{editService.preCertificateRevocationWorkerType.maxIssuanceTimeUnit}" disabled="#{not editService.hasEditRights}">
-		  <f:selectItems value="#{editService.notifyingType.availableUnits}"/>
-	    </h:selectOneMenu>
-	</h:panelGroup>
- </ui:composition>
+		<h:panelGroup>
+			<h:outputText value="#{web.text.REVOKEINCOMPLETEAFTER}" />
+		</h:panelGroup>
+		<h:panelGroup>
+			<h:inputText id="certCheckTimeValueTextField"
+				value="#{editService.preCertificateRevocationWorkerType.maxIssuanceTime}"
+				size="5" pt:type="number" title="#{web.text.FORMAT_INTEGER}"
+				disabled="#{not editService.hasEditRights}">
+				<f:convertNumber type="number" />
+			</h:inputText>
+			<h:selectOneMenu id="certCheckTimeUnitSelect"
+				value="#{editService.preCertificateRevocationWorkerType.maxIssuanceTimeUnit}"
+				disabled="#{not editService.hasEditRights}">
+				<f:selectItems value="#{editService.notifyingType.availableUnits}" />
+			</h:selectOneMenu>
+		</h:panelGroup>
+		<h:panelGroup>
+			<h:outputText value="#{web.text.REVOKEPRECERTIFICATES}"/>
+		</h:panelGroup>
+		<h:panelGroup>
+			<h:selectBooleanCheckbox id="certRevokePreCertificates"
+				value="#{editService.preCertificateRevocationWorkerType.revokePreCerts}"
+				disabled="#{not editService.hasEditRights}">
+			</h:selectBooleanCheckbox>
+			<h:outputLabel value="#{web.text.USE}" />
+			<f:verbatim>&#xA0;&#xA0;&#xA0;&#xA0;&#xA0;</f:verbatim>
+		</h:panelGroup>
+
+	</ui:composition>
 </body>
 </html>
-	
+

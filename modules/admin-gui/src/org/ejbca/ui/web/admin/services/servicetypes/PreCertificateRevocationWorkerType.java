@@ -32,6 +32,7 @@ public class PreCertificateRevocationWorkerType extends BaseWorkerType {
     
     private int maxCertAge = 60;
     private String maxIssuanceTimeUnit = IWorker.UNIT_MINUTES;
+    private boolean revokePreCerts;
 
     public PreCertificateRevocationWorkerType() {
         super(PRECERTIFICATEREVOCATIONWORKER_SUB_PAGE, NAME, true, PreCertificateRevocationWorkerConstants.WORKER_CLASS);
@@ -58,12 +59,21 @@ public class PreCertificateRevocationWorkerType extends BaseWorkerType {
     public void setMaxIssuanceTimeUnit(final String maxIssuanceTimeUnit) {
         this.maxIssuanceTimeUnit = maxIssuanceTimeUnit;
     }
+    
+    public boolean isRevokePreCerts() {
+        return revokePreCerts;
+    }
+
+    public void setRevokePreCerts(final boolean revokePreCerts) {
+        this.revokePreCerts = revokePreCerts;
+    }
 
     @Override
     public Properties getProperties(final ArrayList<String> errorMessages) throws IOException {
         Properties ret = super.getProperties(errorMessages);
         ret.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, String.valueOf(maxCertAge));
         ret.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, maxIssuanceTimeUnit);
+        ret.setProperty(PreCertificateRevocationWorkerConstants.PROP_REVOKE_PRE_CERTS, String.valueOf(revokePreCerts));
         return ret;
     }
 
@@ -72,6 +82,7 @@ public class PreCertificateRevocationWorkerType extends BaseWorkerType {
         super.setProperties(properties);
         maxCertAge = Integer.valueOf(properties.getProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, String.valueOf(maxCertAge)));
         maxIssuanceTimeUnit = properties.getProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, maxIssuanceTimeUnit);
+        revokePreCerts = Boolean.valueOf(properties.getProperty(PreCertificateRevocationWorkerConstants.PROP_REVOKE_PRE_CERTS, String.valueOf(revokePreCerts)));
     }
 
 }
