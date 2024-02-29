@@ -24,6 +24,7 @@ public class PreCertificateRevocationWorkerConstants {
 
     public static final String PROP_MAX_ISSUANCE_TIME = "worker.maxIssuanceTime";
     public static final String PROP_MAX_ISSUANCE_TIMEUNIT = "worker.maxIssuancceTimeUnit";
+    public static final String PROP_REVOKE_PRE_CERTS = "worker.revokePreCerts";
 
     public static final String DEFAULT_MAX_ISSUANCE_TIME = "30";
     public static final String DEFAULT_MAX_ISSUANCE_TIMEUNIT = IWorker.UNIT_MINUTES;
