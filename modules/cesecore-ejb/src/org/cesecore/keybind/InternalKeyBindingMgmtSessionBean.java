@@ -374,11 +374,23 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             certificateId, cryptoTokenId, keyPairAlias, false, signatureAlgorithm, dataMap,
             trustedCertificateReferences);
     }
-
+    
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
             String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair, String signatureAlgorithm, Map<String, Serializable> dataMap,
             List<InternalKeyBindingTrustEntry> trustedCertificateReferences)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, 
+                InternalKeyBindingNonceConflictException {
+        return createInternalKeyBindingWithOptionalEnrollmentInfo(authenticationToken, type, id, name, status, certificateId, cryptoTokenId, keyPairAlias, 
+                allowMissingKeyPair, signatureAlgorithm, dataMap, trustedCertificateReferences, 
+                null, null, null, null);
+    }
+
+    @Override
+    public int createInternalKeyBindingWithOptionalEnrollmentInfo(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
+            String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair, String signatureAlgorithm, Map<String, Serializable> dataMap,
+            List<InternalKeyBindingTrustEntry> trustedCertificateReferences, String subjectDn, String issuerDn, 
+            String certificateProfileName, String endEntityProfileName)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, 
                 InternalKeyBindingNonceConflictException {
         if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
@@ -984,6 +996,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         if (newCertificateId == null) {
             throw new CertificateImportException("New certificate was never issued.");
         }
+        setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         // Sanity check that the certificate we issued is the one that is in use
         final X509Certificate keyBindingCertificate = (X509Certificate) response.getCertificate();
         if (!newCertificateId.equals(CertTools.getFingerprintAsString(keyBindingCertificate))) {

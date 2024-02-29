@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +21,7 @@ import javax.ejb.Local;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.pinning.TrustEntry;
 
@@ -92,4 +94,10 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
     void issueCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId,
             EndEntityInformation endEntityInformation, String keySpec)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException;
+
+    int createInternalKeyBindingWithOptionalEnrollmentInfo(AuthenticationToken authenticationToken, String type, int id, String name,
+            InternalKeyBindingStatus status, String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair,
+            String signatureAlgorithm, Map<String, Serializable> dataMap, List<InternalKeyBindingTrustEntry> trustedCertificateReferences,
+            String subjectDn, String issuerDn, String certificateProfileName, String endEntityProfileName) throws AuthorizationDeniedException,
+            CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException;
 }
