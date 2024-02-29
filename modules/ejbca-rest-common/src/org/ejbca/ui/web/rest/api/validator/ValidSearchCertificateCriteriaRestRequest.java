@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import org.apache.commons.lang3.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
 
 import javax.validation.Constraint;
@@ -63,6 +64,12 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRest
  *             <li>The value has to contain a date in ISO8601 format, eg. 2019-04-18T07:47:26Z</li>
  *         </ul>
  *     </li>
+ *     <li>In case of SERIAL_NUMBER:
+ *         <ul>
+ *             <li>The value has to be at least 10 characters</li>
+ *             <li>The value has to hexadecimal or numeric</li>
+ *         </ul>
+ *     </li>
  * </ul>
  *
  * SearchCertificateCriteriaRestRequest's operation attribute is validated for:
@@ -85,7 +92,6 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRest
  *     <li>SearchCertificateCriteriaRestRequest.CriteriaProperty.REVOCATION_DATE supports operations SearchCertificateCriteriaRestRequest.CriteriaOperation.AFTER and SearchCertificateCriteriaRestRequest.CriteriaOperation.BEFORE;</li>
  * </ul>
  *
- * @version $Id: ValidSearchCertificateCriteriaRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 @Target({TYPE, FIELD, PARAMETER})
 @Retention(RUNTIME)
@@ -162,11 +168,16 @@ public @interface ValidSearchCertificateCriteriaRestRequest {
                     }
                     break;
                 }
-                // Value: Any String
+                // Value: Valid serial number
                 // Operation: EQUAL
                 case SERIAL_NUMBER: {
                     if (criteriaOperation != EQUAL) {
                         ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequest.invalid.operation.notEqual}");
+                        return false;
+                    }
+                    final String hexPattern = "^[0-9A-Fa-f]+$";
+                    if (value.length() < 10 || (!StringUtils.isNumeric(value) && !Pattern.matches(hexPattern, value))) {
+                        ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequest.invalid.value.notSerial}");
                         return false;
                     }
                     break;
