@@ -13,7 +13,7 @@
 
 package org.ejbca.core.model.ca.publisher;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -95,7 +95,7 @@ public class LdapSearchPublisher extends LdapPublisher {
 
 				// authenticate to the server
 				log.debug("Logging in with BIND DN " + getLoginDN());
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
 				//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
 				String searchFilter = getSearchFilter();
 				if (log.isDebugEnabled()) {
@@ -186,9 +186,6 @@ public class LdapSearchPublisher extends LdapPublisher {
 						throw new PublisherException(msg);
 					}
 				}
-	        } catch (UnsupportedEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-	            throw new PublisherException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
