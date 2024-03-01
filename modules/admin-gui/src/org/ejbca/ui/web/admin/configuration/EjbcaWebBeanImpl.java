@@ -112,7 +112,6 @@ import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.approval.profile.ApprovalProfile;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -168,7 +167,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private final GlobalConfigurationSessionLocal globalConfigurationSession;
     private final WebAuthenticationProviderSessionLocal authenticationSession;
     private final ClearCacheSessionLocal clearCacheSession;
-    private final RaMasterApiProxyBeanLocal raMasterApiProxyBean;
 
     private AdminPreference currentAdminPreference;
     private GlobalConfiguration globalconfiguration;
@@ -237,7 +235,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
         authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
         clearCacheSession = ejbLocalHelper.getClearCacheSession();
-        raMasterApiProxyBean = ejbLocalHelper.getRaMasterApiProxyBean();
     }
 
     private void commonInit() {
@@ -998,7 +995,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public void reloadAutoenrollmentConfiguration() {
-        msAutoenrollmentConfig = raMasterApiProxyBean.getGlobalConfigurationLocalFirst(MSAutoEnrollmentConfiguration.class);
+        msAutoenrollmentConfig =  (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
     }
     
     @Override
