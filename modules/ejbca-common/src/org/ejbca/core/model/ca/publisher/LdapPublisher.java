@@ -433,7 +433,7 @@ public class LdapPublisher extends BasePublisher {
 					try {
 						lc.add(entry, ldapStoreConstraints);
 						if (log.isDebugEnabled()) {
-							log.debug("Created node " + dnFragment);
+							log.debug("Created node " + LogRedactionUtils.getSubjectDnLogSafe(dnFragment));
 						}
 					} catch(LDAPException e1) {
 						String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", LogRedactionUtils.getSubjectDnLogSafe(dnFragment));
@@ -1390,7 +1390,7 @@ public class LdapPublisher extends BasePublisher {
 			LDAPAttribute oldattribute = oldEntry.getAttribute(attributes[i]);
 			if (log.isDebugEnabled()) {
 				if (oldattribute!=null) {
-					log.debug("removeme, oldattribute="+oldattribute.toString());
+					log.debug("removeme, oldattributename=" + oldattribute.getName() + ", oldattribute="+LogRedactionUtils.getContentLogSafe(oldattribute.toString()));
 				}
 				if (dn!=null) {
 					log.debug("removeme, dn=" + LogRedactionUtils.getSubjectDnLogSafe(dn));
@@ -1421,7 +1421,8 @@ public class LdapPublisher extends BasePublisher {
 	protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, String email, boolean extra, boolean person,
 			String password, ExtendedInformation extendedinformation) {
 		if (log.isTraceEnabled()) {
-			log.trace(">getAttributeSet(dn="+ LogRedactionUtils.getSubjectDnLogSafe(dn) + ", email=" + email + ")");
+			log.trace(">getAttributeSet(dn="+ LogRedactionUtils.getSubjectDnLogSafe(dn) +
+			        ", email=" + LogRedactionUtils.getContentLogSafe(email) + ")"); // email comes from SubjectDN and needs redaction
 		}
 		LDAPAttributeSet attributeSet = new LDAPAttributeSet();
 		LDAPAttribute attr = new LDAPAttribute("objectclass");
@@ -1553,7 +1554,8 @@ public class LdapPublisher extends BasePublisher {
 	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra,
 															 boolean person, String password, Certificate cert) {
 		if (log.isTraceEnabled()) {
-			log.trace(">getModificationSet(dn="+ LogRedactionUtils.getSubjectDnLogSafe(dn) + ", email=" + email + ")");
+			log.trace(">getModificationSet(dn="+ LogRedactionUtils.getSubjectDnLogSafe(dn) +
+			        ", email=" + LogRedactionUtils.getContentLogSafe(email) + ")"); // email comes from SubjectDN and needs redaction
 		}
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
@@ -1678,7 +1680,7 @@ public class LdapPublisher extends BasePublisher {
 	 */
 	protected String constructLDAPDN(String certDN, String userDataDN){
 		if (log.isDebugEnabled()) {
-			log.debug("DN in certificate '" + certDN + "'. DN in user data '" + LogRedactionUtils.getSubjectDnLogSafe(userDataDN) + "'.");
+			log.debug("DN in certificate '" + LogRedactionUtils.getSubjectDnLogSafe(certDN) + "'. DN in user data '" + LogRedactionUtils.getSubjectDnLogSafe(userDataDN) + "'.");
 		}
 		final DNFieldExtractor certExtractor = new DNFieldExtractor(certDN, DNFieldExtractor.TYPE_SUBJECTDN);
 		final DNFieldExtractor userDataExtractor = userDataDN!=null ? new DNFieldExtractor(userDataDN, DNFieldExtractor.TYPE_SUBJECTDN) : null;
