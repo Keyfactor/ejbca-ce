@@ -117,6 +117,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.core.model.util.EnterpriseEjbLocalHelper;
+import org.ejbca.core.protocol.msae.MsaeRaConfigCacheLocal;
 import org.ejbca.ui.web.StaticResourceVersioning;
 import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.AdminDoesntExistException;
@@ -167,6 +168,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private final GlobalConfigurationSessionLocal globalConfigurationSession;
     private final WebAuthenticationProviderSessionLocal authenticationSession;
     private final ClearCacheSessionLocal clearCacheSession;
+    private final MsaeRaConfigCacheLocal msaeRaConfigCache;
 
     private AdminPreference currentAdminPreference;
     private GlobalConfiguration globalconfiguration;
@@ -235,6 +237,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
         authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
         clearCacheSession = ejbLocalHelper.getClearCacheSession();
+        msaeRaConfigCache = ejbLocalHelper.getMsaeRaConfigCacheLocal();
     }
 
     private void commonInit() {
@@ -996,6 +999,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public void reloadAutoenrollmentConfiguration() {
         msAutoenrollmentConfig =  (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+        msaeRaConfigCache.flushMsaeRaConfigCache();
     }
     
     @Override
