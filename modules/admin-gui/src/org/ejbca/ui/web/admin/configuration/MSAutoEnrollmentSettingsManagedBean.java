@@ -597,7 +597,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
         autoenrollmentConfigMBean.setSelectedAlias(newAlias);
         getEjbcaWebBean().clearAutoenrollCache();
-        getEjbcaWebBean().reloadAutoenrollmentConfiguration();
+        msaeRaConfigCache.flushMsaeRaConfigCache();
         return true;
     }
 
@@ -641,6 +641,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setMsTemplateSettings(getDto().getAlias(), getDto().getMappedMsTemplates());
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
+            msaeRaConfigCache.flushMsaeRaConfigCache(); // RA config cache reload
             addInfoMessage("MSAE_AUTOENROLLMENT_SAVE_OK");
             return "done";
         } catch (AuthorizationDeniedException e) {
