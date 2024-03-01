@@ -236,7 +236,7 @@ public class CaAdminSessionHybridTest {
                 hybridSub = constructCa(subCryptoTokenId, subCaName, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, hybridRoot.getCAId(), false);
                 fail("Should throw EJBException when Root CA is a Hybrid CA but Sub CA is not a Hybrid CA");
             } catch (EJBException e) {
-                String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be hybrid CA iff Root CA is hybrid CA.";
+                String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be hybrid CA if and only if Root CA is hybrid CA.";
                 // then
                 assertTrue(e.getMessage().endsWith(msg));
             }
@@ -285,7 +285,7 @@ public class CaAdminSessionHybridTest {
                 hybridSub = constructCa(subCryptoTokenId, subCaName, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, hybridRoot.getCAId(), true);
                 fail("Should throw EJBException when Root CA is not a Hybrid CA but Sub CA is a Hybrid CA");
             } catch (EJBException e) {
-                String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be hybrid CA iff Root CA is hybrid CA.";
+                String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be hybrid CA if and only if Root CA is hybrid CA.";
                 // then
                 assertTrue(e.getMessage().endsWith(msg));
             }
@@ -320,7 +320,7 @@ public class CaAdminSessionHybridTest {
         } else {
             caTokenProperties = constructCaTokenProperties();
         }
-        CAToken caToken = createCaToken(cryptoTokenId, caTokenProperties /*TEST*/,hybrid);
+        CAToken caToken = createCaToken(cryptoTokenId, caTokenProperties, hybrid);
         final String caDn = "CN=" + caName;
         X509CAInfo x509caInfo = X509CAInfo.getDefaultX509CAInfo(caDn, caName, CAConstants.CA_ACTIVE, certificateProfileId, "3650d", signedBy, null,
                 caToken);
