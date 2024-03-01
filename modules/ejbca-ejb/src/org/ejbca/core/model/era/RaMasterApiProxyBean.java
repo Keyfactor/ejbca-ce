@@ -3869,7 +3869,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 18) {
                 try {
-                    return raMasterApi.getGlobalConfiguration(type);
+                    return raMasterApi.getGlobalConfigurationLocalFirst(type);
                 } catch (IllegalStateException e) {
                     // 7.4.x can throw NPE, which results in an IllegalStateException because the NPE is an unexpected exception.
                     // Just ignore and try next implementation.
