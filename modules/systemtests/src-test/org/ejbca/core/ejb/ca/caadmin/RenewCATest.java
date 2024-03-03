@@ -58,6 +58,9 @@ public class RenewCATest extends CaTestCase {
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
+    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+
     
     @Before
     public void setUp() throws Exception {
@@ -104,16 +107,9 @@ public class RenewCATest extends CaTestCase {
     /** Test renewal of a CA using a different key algorithm. 
      *  Note: Can run these tests alone by using: ant test:runone -Dtest.runone=RenewCATest
     **/
-    
-    // Need these extra EJBs
-    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CertificateProfileSessionRemote.class);
-
     @Test
-    public void test02renewCA_ChangeKeyAlg() throws Exception {
-        log.trace(">test02renewCA_ChangeKeyAlg()");
+    public void testrenewCA_ChangeKeyAlg() throws Exception {
+        log.trace(">testrenewCA_ChangeKeyAlg()");
         
         X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
@@ -147,16 +143,19 @@ public class RenewCATest extends CaTestCase {
         int iCP = info.getCertificateProfileId();
         org.cesecore.certificates.certificateprofile.CertificateProfile cpCA = certificateProfileSession.getCertificateProfile(iCP);
         cpCA.setSignatureAlgorithm( AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        iCP = certificateProfileSession.addCertificateProfile(internalAdmin, "TESTRENEWALWITHEC", cpCA);
-        // Update the CA
-        info.setCertificateProfileId(iCP);
-        caSession.editCA(internalAdmin, info);
 
-        // We are all set and now ready to renew the CA
-        caAdminSession.renewCA(internalAdmin, info.getCAId(), sNextKeyAlias, null, /*CreateLinkCert*/true);
+        try {
+          iCP = certificateProfileSession.addCertificateProfile(internalAdmin, "TESTRENEWALWITHEC", cpCA);
+          // Update the CA
+          info.setCertificateProfileId(iCP);
+          caSession.editCA(internalAdmin, info);
 
-        // Remove the certificate profile we just created.
-        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTRENEWALWITHEC");
+          // We are all set and now ready to renew the CA
+          caAdminSession.renewCA(internalAdmin, info.getCAId(), sNextKeyAlias, null, /*CreateLinkCert*/true);
+        } finally {
+          // Remove the certificate profile we just created.
+          certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTRENEWALWITHEC");
+        }
         
         // Let check the CA's new certificate has the ECDSA based signing algorithm
         X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
@@ -174,7 +173,7 @@ public class RenewCATest extends CaTestCase {
                 linkCertificateAfterRenewal1.getSigAlgName().equalsIgnoreCase(sPreviousSigAlg) );
 
         // Test done!
-        log.trace("<test02renewCA_ChangeKeyAlg()");
+        log.trace("<testrenewCA_ChangeKeyAlg()");
     }
 
     
