@@ -21,5 +21,5 @@ spec:
       targetPort: nginx-https
       protocol: TCP
   selector:
-    {{- include "ejbca-community-helm.selectorLabels" . | nindent 4 }}
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
 {{- end }}
