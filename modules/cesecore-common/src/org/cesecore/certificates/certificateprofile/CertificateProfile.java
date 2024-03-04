@@ -400,18 +400,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // (This used to be a plain HashMap, hence the strange ordering)
         useStandardCertificateExtensions.put(USEDOCUMENTTYPELIST, "2.23.136.1.1.6.2");
         useStandardCertificateExtensions.put(USEBASICCONSTRAINTS, Extension.basicConstraints.getId());
-        useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
-        useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, Extension.subjectKeyIdentifier.getId());
         useStandardCertificateExtensions.put(USEAUTHORITYKEYIDENTIFIER, Extension.authorityKeyIdentifier.getId());
-        useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME, Extension.subjectAlternativeName.getId());
-        useStandardCertificateExtensions.put(USEISSUERALTERNATIVENAME, Extension.issuerAlternativeName.getId());
-        useStandardCertificateExtensions.put(USECRLDISTRIBUTIONPOINT, Extension.cRLDistributionPoints.getId());
         useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS, Extension.authorityInfoAccess.getId());
         useStandardCertificateExtensions.put(USEFRESHESTCRL, Extension.freshestCRL.getId());
-        useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
-        useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, Extension.extendedKeyUsage.getId());
-        useStandardCertificateExtensions.put(USEDOCUMENTTYPELIST, "2.23.136.1.1.6.2");
-        useStandardCertificateExtensions.put(USEQCSTATEMENT, Extension.qCStatements.getId());
         useStandardCertificateExtensions.put(USEISSUERALTERNATIVENAME, Extension.issuerAlternativeName.getId());
         useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
         useStandardCertificateExtensions.put(USESUBJECTALTERNATIVENAME, Extension.subjectAlternativeName.getId());
@@ -419,12 +410,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USENAMECONSTRAINTS, Extension.nameConstraints.getId());
         useStandardCertificateExtensions.put(USECERTIFICATEPOLICIES, Extension.certificatePolicies.getId());
         useStandardCertificateExtensions.put(USESUBJECTDIRATTRIBUTES, Extension.subjectDirectoryAttributes.getId());
-        useStandardCertificateExtensions.put(USEAUTHORITYINFORMATIONACCESS, Extension.authorityInfoAccess.getId());
-        useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
         useStandardCertificateExtensions.put(USEOCSPNOCHECK, OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId());
-        useStandardCertificateExtensions.put(USEMICROSOFTTEMPLATE, CertTools.OID_MSTEMPLATE);
-        useStandardCertificateExtensions.put(USE_MS_OBJECTSID_SECURITY_EXTENSION, CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT);
-        useStandardCertificateExtensions.put(USECARDNUMBER, OID_CARDNUMBER);
         useStandardCertificateExtensions.put(USEEXTENDEDKEYUSAGE, Extension.extendedKeyUsage.getId());
         useStandardCertificateExtensions.put(USEQCSTATEMENT, Extension.qCStatements.getId());
         useStandardCertificateExtensions.put(USECABFORGANIZATIONIDENTIFIER, CabForumOrganizationIdentifier.OID);
