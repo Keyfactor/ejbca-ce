@@ -80,12 +80,12 @@ public class RenewCATest extends CaTestCase {
     @Test
     public void test01renewCA() throws Exception {
         log.trace(">test01renewCA()");
-        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         // Sleep at least for one second so we are not so fast that we create a new cert with the same time
         Thread.sleep(2000);
         caAdminSession.renewCA(internalAdmin, info.getCAId(), false, null, false);
-        X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
         byte[] orgkey = orgcert.getPublicKey().getEncoded();
@@ -95,7 +95,7 @@ public class RenewCATest extends CaTestCase {
         assertTrue("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter() + " orgcert.getNotAfter: " + orgcert.getNotAfter(),
                 newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
         caAdminSession.renewCA(internalAdmin, info.getCAId(), true, null, false);
-        X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
         X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
         byte[] newkey = newcertnewkeys.getPublicKey().getEncoded();
@@ -111,7 +111,7 @@ public class RenewCATest extends CaTestCase {
     public void testrenewCA_ChangeKeyAlg() throws Exception {
         log.trace(">testrenewCA_ChangeKeyAlg()");
         
-        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         // Sleep at least for one second so we are not so fast that we create a new cert with the same time
         Thread.sleep(2000);
@@ -158,7 +158,7 @@ public class RenewCATest extends CaTestCase {
         }
         
         // Let check the CA's new certificate has the ECDSA based signing algorithm
-        X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
         X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         String sNewSigAlg = ((X509Certificate)newcert).getSigAlgName();
         assertTrue( "Previous Signing Algorith was "+sPreviousSigAlg+" and new Signing Algorithm was "+sNewSigAlg+". Was expecting it to be ECDSA based.",
@@ -181,7 +181,7 @@ public class RenewCATest extends CaTestCase {
     @Test
     public void testRenewSubCAWithRenewCAWorker() throws Exception {
         log.trace(">testRenewSubCAWithRenewCAWorker()");
-        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
+        X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
         final int cryptoTokenIdSubCa = CryptoTokenTestUtils.createCryptoTokenForCA(null, "foo123".toCharArray(), true, false, "TestSubCaRenew", "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         final CAToken subCaToken = CaTestUtils.createCaToken(cryptoTokenIdSubCa, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         try {
