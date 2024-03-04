@@ -2360,21 +2360,24 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // We need to save all this, audit logging that the CA is changed
             int caidBeforeNameChange = -1;
-            if (subjectDNWillBeChanged) {
-                ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
-                caidBeforeNameChange = caid;
-                caid = CAData.calculateCAId(newSubjectDN); // recalculate the caid to corresponds to new CA
-                ca.setCAId(caid); // it was set to 0 above
-                caSession.addCA(authenticationToken, ca); //add new CA into database
-            } else {
-                ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
-                caSession.editCA(authenticationToken, ca, true);
-            }
-            
-            // Put the Signature Algorthm settings back if we changed them to issue the Link certificate.
-            if (bChangedSigAlg) {
-                caToken.setSignatureAlgorithm(sCurrentSigAlg);
-                certprofile.setSignatureAlgorithm(sCurrentSigAlg);
+            try {
+                if (subjectDNWillBeChanged) {
+                    ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, certprofile, cceConfig,
+                            oldCaCertificate);
+                    caidBeforeNameChange = caid;
+                    caid = CAData.calculateCAId(newSubjectDN); // recalculate the caid to corresponds to new CA
+                    ca.setCAId(caid); // it was set to 0 above
+                    caSession.addCA(authenticationToken, ca); //add new CA into database
+                } else {
+                    ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
+                    caSession.editCA(authenticationToken, ca, true);
+                } 
+            } finally {
+                // Put the Signature Algorithm settings back if we changed them to issue the Link certificate.
+                if (bChangedSigAlg) {
+                    caToken.setSignatureAlgorithm(sCurrentSigAlg);
+                    certprofile.setSignatureAlgorithm(sCurrentSigAlg);
+                }
             }
 
             // Publish the new CA certificate
