@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "ejbca-community-helm.fullname" . }}
+  name: {{ include "ejbca.fullname" . }}
   labels:
-    {{- include "ejbca-community-helm.labels" . | nindent 4 }}
+    {{- include "ejbca.labels" . | nindent 4 }}
 {{- if .Values.services.directHttp.enabled }}
 spec:
   type: {{ .Values.services.directHttp.type }}
@@ -22,11 +22,8 @@ spec:
       targetPort: https
       protocol: TCP
       name: https
-    {{- if and .Values.ejbca.sidecarContainers .Values.services.sidecarPorts }}
-      {{- toYaml .Values.services.sidecarPorts | nindent 4 }}
-    {{- end }}
   selector:
-    {{- include "ejbca-community-helm.selectorLabels" . | nindent 4 }}
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
 {{- end }}
 {{- if .Values.services.proxyAJP.enabled }}
 spec:
@@ -40,7 +37,7 @@ spec:
       protocol: TCP
       name: ajp
   selector:
-    {{- include "ejbca-community-helm.selectorLabels" . | nindent 4 }}
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
 {{- end }}
 {{- if .Values.services.proxyHttp.enabled }}
 spec:
@@ -61,5 +58,5 @@ spec:
       protocol: TCP
       name: proxy-https
   selector:
-    {{- include "ejbca-community-helm.selectorLabels" . | nindent 4 }}
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
 {{- end }}

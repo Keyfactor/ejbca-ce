@@ -1,7 +1,7 @@
 {{/*
 Define the EJBCA deployment parameters
 */}}
-{{- define "ejbca-community-helm.ejbcaDeploymentParameters" -}}
+{{- define "ejbca.ejbcaDeploymentParameters" -}}
 {{- if .Values.ejbca.useEphemeralH2Database }}
 - name: DATABASE_JDBC_URL
   value: "jdbc:h2:mem:ejbcadb;DB_CLOSE_DELAY=-1"
@@ -23,7 +23,7 @@ Define the EJBCA deployment parameters
 {{/*
 Define port that EJBCA redirects for HTTPS
 */}}
-{{- define "ejbca-community-helm.ejbcaHttpsPort" -}}
+{{- define "ejbca.ejbcaHttpsPort" -}}
 {{- if .Values.nginx.enabled }}
 {{- .Values.nginx.service.httpsPort }}
 {{- else if .Values.services.directHttp.enabled }}
@@ -36,7 +36,7 @@ Define port that EJBCA redirects for HTTPS
 {{/*
 Define port that EJBCA redirects for HTTP
 */}}
-{{- define "ejbca-community-helm.ejbcaPubhttpPort" -}}
+{{- define "ejbca.ejbcaPubhttpPort" -}}
 {{- if .Values.nginx.enabled }}
 {{- .Values.nginx.service.httpPort }}
 {{- else if .Values.services.directHttp.enabled }}
@@ -49,7 +49,7 @@ Define port that EJBCA redirects for HTTP
 {{/*
 Expand the name of the chart.
 */}}
-{{- define "ejbca-community-helm.name" -}}
+{{- define "ejbca.name" -}}
 {{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
@@ -58,7 +58,7 @@ Create a default fully qualified app name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 If release name contains chart name it will be used as a full name.
 */}}
-{{- define "ejbca-community-helm.fullname" -}}
+{{- define "ejbca.fullname" -}}
 {{- if .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
@@ -74,16 +74,16 @@ If release name contains chart name it will be used as a full name.
 {{/*
 Create chart name and version as used by the chart label.
 */}}
-{{- define "ejbca-community-helm.chart" -}}
+{{- define "ejbca.chart" -}}
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 {{/*
 Common labels
 */}}
-{{- define "ejbca-community-helm.labels" -}}
-helm.sh/chart: {{ include "ejbca-community-helm.chart" . }}
-{{ include "ejbca-community-helm.selectorLabels" . }}
+{{- define "ejbca.labels" -}}
+helm.sh/chart: {{ include "ejbca.chart" . }}
+{{ include "ejbca.selectorLabels" . }}
 {{- if .Chart.AppVersion }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
@@ -93,17 +93,17 @@ app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{/*
 Selector labels
 */}}
-{{- define "ejbca-community-helm.selectorLabels" -}}
-app.kubernetes.io/name: {{ include "ejbca-community-helm.name" . }}
+{{- define "ejbca.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "ejbca.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
 Create the name of the service account to use
 */}}
-{{- define "ejbca-community-helm.serviceAccountName" -}}
+{{- define "ejbca.serviceAccountName" -}}
 {{- if .Values.serviceAccount.create }}
-{{- default (include "ejbca-community-helm.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "ejbca.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}

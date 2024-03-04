@@ -1,10 +1,10 @@
 {{- if .Values.ingress.enabled -}}
-{{- $fullName := include "ejbca-community-helm.fullname" . -}}
+{{- $fullName := include "ejbca.fullname" . -}}
 {{- $svcPort := .Values.services.directHttp.httpPort -}}
 {{- if .Values.services.proxyAJP.enabled }}
 {{- $svcPort = .Values.services.proxyAJP.port -}}
 {{- else if .Values.services.proxyHttp.enabled }}
-{{- $svcPort = .Values.services.proxyHttp.httpsPort -}}
+{{- $svcPort = .Values.services.proxyHttp.httpPort -}}
 {{- end }}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
@@ -22,7 +22,7 @@ kind: Ingress
 metadata:
   name: {{ $fullName }}
   labels:
-    {{- include "ejbca-community-helm.labels" . | nindent 4 }}
+    {{- include "ejbca.labels" . | nindent 4 }}
   annotations:
     {{- if .Values.services.proxyAJP.enabled  }}
     nginx.ingress.kubernetes.io/backend-protocol: "AJP"

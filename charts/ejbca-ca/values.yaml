@@ -1,0 +1,119 @@
+# Default values for ejbca.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+ejbca:
+  useEphemeralH2Database: true
+  useH2Persistence: false
+  #existingH2PersistenceClaim: "database-data-claim"
+  importExternalCas: false
+  #externalCasSecret: managementca-secret
+  importAppserverKeystore: false
+  #appserverKeystoreSecret: keystore-secret
+  importAppserverTruststore: false
+  #appserverTruststoreSecret: truststore-secret
+  importEjbcaConfFiles: false
+  #ejbcaConfFilesSecret: ejbca-conf
+  #importConfigdumpStaged: false
+  #configdumpStagedSecret: configdump-staged-secret
+  #importConfigdumpInitialize: false
+  #configdumpInitializeSecret: configdump-initialize-secret
+  #superadminPasswordOverride: "foo123"
+  env:
+    TLS_SETUP_ENABLED: "simple"
+    #envRaw:
+    #  - name: DATABASE_PASSWORD
+    #    valueFrom:
+    #     secretKeyRef:
+    #       name: ejbcadbcredentials
+    #       key: database_password
+replicaCount: 1
+image:
+  registry: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images
+  name: ejbca-ca
+  pullPolicy: IfNotPresent
+  repository: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images/ejbca
+  tag: 8.2.0-Alpha1
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+podAnnotations: {}
+podSecurityContext: {}
+# fsGroup: 2000
+
+securityContext: {}
+# capabilities:
+#   drop:
+#   - ALL
+# readOnlyRootFilesystem: true
+# runAsNonRoot: true
+# runAsUser: 1000
+
+# Only one of the following services can be enabled at a time
+services:
+  directHttp:
+    enabled: false
+    type: NodePort
+    httpPort: 30080
+    httpsPort: 30443
+  proxyAJP:
+    enabled: false
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    port: 8009
+  proxyHttp:
+    enabled: true
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    httpPort: 8081
+    httpsPort: 8082
+# Requires proxyHttp service to be enabled
+nginx:
+  enabled: false
+  host: ""
+  service:
+    type: NodePort
+    httpPort: 30080
+    httpsPort: 30443
+# Requires proxyAJP or proxyHttp service to be enabled for adminweb access
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations:
+    ## Redirect HTTP to HTTPS
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    ## Enable optional client certificate authentication
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional_no_ca"
+    ## Secret containing trusted CA certificates. Use with auth-tls-verify-client: "on" or "optional"
+    #nginx.ingress.kubernetes.io/auth-tls-secret: "default/managementca-secret"
+    ## Pass client certificates to upstream server
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    ## Verification depth of the client certificates chain
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+    ## Configure sticky sessions if using more than one replica
+    #nginx.ingress.kubernetes.io/affinity: "cookie"
+    #nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"
+    #nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+  hosts: []
+  #- host: ""
+  #  paths:
+  #    - path: /ejbca
+  #      pathType: Prefix
+  tls: []
+resources: {}
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+nodeSelector: {}
+tolerations: []
+affinity: {}
