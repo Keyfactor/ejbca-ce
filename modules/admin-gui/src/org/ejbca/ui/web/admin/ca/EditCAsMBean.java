@@ -1542,6 +1542,32 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             updateKeyAliases();
         }
     }
+    
+    /**
+     * We want to make sure that a subca created under a rootca is a hybrid ca if the rootca is a hybrid ca
+     * We want to make sure that a subca created under a rootca is a non hybrid ca if the rootca is a non hybrid ca
+     * @return true if the chain is mixed and the ca cannot be created
+     */
+    public boolean isMixedHybridChain() {
+        String alternativeSignature = getAlternativeSignatureAlgorithmParam();
+        int signerCaId  = caInfoDto.getSignedBy();
+        boolean creatingSelfSignedCa = (signerCaId == CAInfo.SELFSIGNED) ? true : false;
+        CAToken signerCaToken = null;
+        String signerAlternativeSignature = null;
+        if (!creatingSelfSignedCa) {
+            signerCaToken = caSession.getCAInfoInternal(signerCaId).getCAToken();
+            signerAlternativeSignature = signerCaToken.getAlternativeSignatureAlgorithm();
+        }            
+        if (!creatingSelfSignedCa && ((alternativeSignature == null) && (signerAlternativeSignature != null) )) {
+            addErrorMessage("ERROR_NON_HYBRID_SUBCA_UNDER_HYBRID_ROOTCA");
+            return true;
+        }
+        if (!creatingSelfSignedCa && (alternativeSignature != null && signerAlternativeSignature == null )) {
+            addErrorMessage("ERROR_HYBRID_SUBCA_UNDER_NON_HYBRID_ROOTCA");
+            return true;
+        }
+        return false;
+    }
 
     // ===================================================== Create CA Actions ============================================= //
 
@@ -1550,6 +1576,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return Navigation
      */
     public String createCa() {
+        if(isMixedHybridChain())  return "";
         return createCaOrMakeRequest(true, false); // We are creating a ca!
     }
 
@@ -1571,7 +1598,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     // ======================================= Helpers ===================================================================//
     private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
         boolean illegalDnOrAltName;
-
         byte[] fileBuffer = null;
         try {
             if (makeRequest) {
@@ -1597,7 +1623,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             illegalDnOrAltName = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
             if (illegalDnOrAltName) {
                 addErrorMessage("INVALIDSUBJECTDN");
-            }
+            } 
         } catch (final Exception e) {
             addNonTranslatedErrorMessage(e);
             return "";
