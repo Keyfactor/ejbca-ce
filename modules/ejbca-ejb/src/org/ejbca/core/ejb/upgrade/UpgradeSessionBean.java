@@ -174,6 +174,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal upgrade");
+    
+    //Used to remove the configuration checker during post-upgrade to 8.3
+    private static final String CONFIGURATION_CHECKER_CONFIGURATION_ID = "ISSUE_TRACKER";
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -742,6 +745,27 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
         log.info("Post upgrade to 7.8.1 complete.");
+        return true;
+    }
+    
+    /**
+     * Remove the Configuration Checker fom database
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    private boolean postMigrateDatabase830() {
+        log.info("Starting post upgrade to 8.3.0");
+       
+        try {
+            if(globalConfigurationSession.getCachedConfiguration(CONFIGURATION_CHECKER_CONFIGURATION_ID) != null)
+            globalConfigurationSession.removeConfiguration(authenticationToken, CONFIGURATION_CHECKER_CONFIGURATION_ID);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Administrator was not authorized to perform post-upgrade, lacks access to Configuration Checker configuration");
+            return false;
+        }
+        
+        log.info("Post upgrade to 8.3.0 complete.");
         return true;
     }
     

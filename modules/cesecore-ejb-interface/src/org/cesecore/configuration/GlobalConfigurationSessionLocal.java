@@ -16,6 +16,9 @@ import java.util.Set;
 
 import javax.ejb.Local;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+
 /**
  * Local interface for GlobalConfigurationSession.
  * @version $Id$
@@ -28,4 +31,14 @@ public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSess
     
     /** @return all registered configuration IDs. */
     Set<String> getIds();
+    
+    
+    /**
+     * Removes a configuration from the database
+     *  
+     * @param authenticationToken an authentication token
+     * @param configurationId the ID of the configuration, i.e. its primary key
+     * @throws AuthorizationDeniedException if the administrator was not authorized to the configuration in question
+     */
+    void removeConfiguration(final AuthenticationToken authenticationToken, final String configurationId) throws AuthorizationDeniedException;
 }

@@ -73,4 +73,9 @@ public class GlobalConfigurationProxySessionBean implements GlobalConfigurationP
         return globalConfigurationSession.getIds();
     }
 
+    @Override
+    public void removeConfiguration(AuthenticationToken authenticationToken, String configurationId) throws AuthorizationDeniedException {
+        globalConfigurationSession.removeConfiguration(authenticationToken, configurationId);
+    }
+
 }

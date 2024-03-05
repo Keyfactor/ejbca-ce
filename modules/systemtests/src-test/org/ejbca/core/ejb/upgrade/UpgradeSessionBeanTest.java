@@ -89,6 +89,7 @@ import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.ConfigurationCheckerConfiguration;
 import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalProfileExistsException;
@@ -1477,6 +1478,28 @@ public class UpgradeSessionBeanTest {
             globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
         }
 
+    }
+    
+    @Test
+    public void testRemoveConfigurationCheckerPost830() throws AuthorizationDeniedException {
+        //First make sure that there is a Configuration Checker config
+        if(globalConfigSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID) == null) {
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, new ConfigurationCheckerConfiguration());
+        }
+        
+        if(globalConfigSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID) == null) {
+            throw new IllegalStateException("No ConfigurationCheckerConfiguration present, test cannot continue.");
+        }
+        
+        final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("8.2.0");
+        guc.setPostUpgradedToVersion("8.2.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        upgradeSession.upgrade(null, "8.2.0", false);
+        
+        assertNull("ConfigurationCheckerConfiguration was not removed.", globalConfigSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID));
+        
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {
