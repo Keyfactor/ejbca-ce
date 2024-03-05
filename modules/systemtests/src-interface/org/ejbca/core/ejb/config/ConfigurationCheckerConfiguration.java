@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.config;
+package org.ejbca.core.ejb.config;
 
 import java.util.HashSet;
 import java.util.Set;
