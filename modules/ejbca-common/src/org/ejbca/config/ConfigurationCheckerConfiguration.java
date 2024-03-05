@@ -21,8 +21,9 @@ import org.cesecore.configuration.ConfigurationBase;
 /**
  * Configuration for the EJBCA Configuration Checker.
  *
- * @version $Id$
+ * @deprecated No longer used, only remains to allow for its removal.
  */
+@Deprecated
 public class ConfigurationCheckerConfiguration extends ConfigurationBase {
     private static final long serialVersionUID = 1L;
     public static final String CONFIGURATION_ID = "ISSUE_TRACKER";
