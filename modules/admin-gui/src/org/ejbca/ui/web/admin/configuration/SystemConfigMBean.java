@@ -628,7 +628,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         serviceConf.setWorkerProperties(workerProperties);
         serviceConf.setPinToNodes(new String[0]);
         try {
-            final String serviceName = "Pre-Certificate Revocation Service";
+            final String serviceName = "Pre-Certificate Maintenance Service";
             serviceSession.addService(getAdmin(), serviceName, serviceConf);
             addInfoMessage("CTLOGCONFIGURATION_SERVICEADDED", serviceName);
         } catch (ServiceExistsException e) {

@@ -327,20 +327,63 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     }
 
     @Override
-    public int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin, final long maxIssuanceTimeMillis) throws AuthorizationDeniedException {
+    public int handleIncompletelyIssuedCertsBatched(final AuthenticationToken admin, final long maxIssuanceTimeMillis, final boolean revokePreCerts)
+            throws AuthorizationDeniedException {
         // Fetch a list of up to 100 "half-issued" certificates
-        final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession.getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
+        final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession
+                .getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
         final Date now = new Date();
-        final RevocationReasons revocationReason = RevocationReasons.UNSPECIFIED;
+
+        if (revokePreCerts) {
+            revokePreCerts(admin, incompleteIssuedCerts, now);
+        } else {
+            storePreCerts(admin, incompleteIssuedCerts, now);
+        }
+
+        return incompleteIssuedCerts.size();
+    }
+
+    private void storePreCerts(AuthenticationToken admin, List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts, Date now) {
         for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(incompleteIssuedCert.getCertificateProfileId());
+
+            try {
+                final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME,
+                        Certificate.class);
+
+                // Sets the status of the pre certs in CertificateData to INACTIVE
+                certificateStoreSession.storeCertificateNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
+                        incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_INACTIVE, certProfile.getType(),
+                        incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
+                        incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
+                        incompleteIssuedCert.getAccountBindingId());
+
+                // The certificate is now in a meaningful state, so it can be removed from IncompleteIssuanceJournalData
+                incompleteIssuanceJournalDataSession.removeFromJournal(incompleteIssuedCert.getCaId(), incompleteIssuedCert.getSerialNumber());
+            } catch (CertificateParsingException e) {
+                log.error("Failed to handle incompletely issued certificate, with CA ID " + incompleteIssuedCert.getCaId() + " and serial "
+                        + incompleteIssuedCert.getSerialNumber().toString(16));
+            }
+
+        }
+
+    }
+
+    private void revokePreCerts(final AuthenticationToken admin, final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts, final Date now)
+            throws AuthorizationDeniedException {
+        final RevocationReasons revocationReason = RevocationReasons.UNSPECIFIED;
+        for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {
+            final CertificateProfile certProfile = certificateProfileSession
+                    .getCertificateProfile(incompleteIssuedCert.getCertificateProfileId());
             final List<Integer> publishers = certProfile.getPublisherList();
             try {
                 // Add certificate in revoked state
-                final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
-                final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateRevokedNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
-                        incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED, certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(),
-                        incompleteIssuedCert.getEndEntityProfileId(), incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
+                final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME,
+                        Certificate.class);
+                final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateRevokedNoAuth(admin, cert,
+                        incompleteIssuedCert.getUsername(), incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED,
+                        certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
+                        incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
                         incompleteIssuedCert.getAccountBindingId(), revocationReason, now);
                 // Publish revocation information
                 final BaseCertificateData certificateData = cdw.getBaseCertificateData();
@@ -350,10 +393,10 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 // The certificate is now in a meaningful state, so it can be removed from IncompleteIssuanceJournalData
                 incompleteIssuanceJournalDataSession.removeFromJournal(incompleteIssuedCert.getCaId(), incompleteIssuedCert.getSerialNumber());
             } catch (CertificateParsingException e) {
-                log.error("Failed to revoke incompletely issued certificate, with CA ID " + incompleteIssuedCert.getCaId() + " and serial " + incompleteIssuedCert.getSerialNumber().toString(16));
+                log.error("Failed to revoke incompletely issued certificate, with CA ID " + incompleteIssuedCert.getCaId() + " and serial "
+                        + incompleteIssuedCert.getSerialNumber().toString(16));
             }
         }
-        return incompleteIssuedCerts.size();
     }
 
     /** @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
