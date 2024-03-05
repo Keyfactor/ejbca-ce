@@ -194,8 +194,6 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         assertAuthorization(authenticationToken, configurationId, "Could not remove configuration with ID " + configurationId + ", insufficient access rights.");
         GlobalConfigurationData configuration = entityManager.find(GlobalConfigurationData.class, configurationId);
         entityManager.remove(configuration);
-        //Remove from cache
-        GlobalConfigurationCacheHolder.INSTANCE.clearCache(configurationId);
     }
     
     @Override
