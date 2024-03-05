@@ -55,6 +55,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     private String issuerDn;
     private String certificateProfileName;
     private String endEntityProfileName;
+    private String keySpec;
     
     public InternalKeyBindingInfo(final InternalKeyBinding internalKeyBinding) {
         this.implementationAlias = internalKeyBinding.getImplementationAlias();
@@ -75,6 +76,7 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.issuerDn = internalKeyBinding.getIssuerDn();
         this.certificateProfileName = internalKeyBinding.getCertificateProfileName();
         this.endEntityProfileName = internalKeyBinding.getEndEntityProfileName();
+        this.keySpec = internalKeyBinding.getKeySpec();
         if (internalKeyBinding instanceof OcspKeyBinding) {
             final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
             this.useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff();
@@ -296,5 +298,15 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     @Override
     public void setSubjectDn(String subjectDn) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getKeySpec() {
+        return keySpec;
+    }
+
+    @Override
+    public void setKeySpec(String keySpec) {
+        throw new UnsupportedOperationException();        
     }
 }
