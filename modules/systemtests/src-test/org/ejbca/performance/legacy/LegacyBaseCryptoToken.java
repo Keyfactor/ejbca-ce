@@ -48,7 +48,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 
 import com.keyfactor.util.StringTools;
@@ -61,7 +60,6 @@ import com.keyfactor.util.string.StringConfigurationCache;
 /**
  * Base class for crypto tokens handling things that are common for all crypto tokens, hard or soft.
  *
- * @version $Id$
  */
 public abstract class LegacyBaseCryptoToken implements CryptoToken {
 
@@ -69,8 +67,6 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(LegacyBaseCryptoToken.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     /** Used for signatures */
     private String mJcaProviderName = null;
@@ -104,7 +100,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
     protected KeyStore getKeyStore() throws CryptoTokenOfflineException {
         autoActivate();
         if (this.keyStore == null) {
-            throw new CryptoTokenOfflineException(intres.getLocalizedMessage("token.offline", id));
+            throw new CryptoTokenOfflineException("The keys in the crypto token with id " + id + " could not be accessed. Is the crypto token active?");
         }
         return this.keyStore;
     }
@@ -163,7 +159,8 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             log.debug("Testing key of type " + baos.toString());
         }
         if (!permitExtractablePrivateKeyForTest() && KeyTools.isPrivateKeyExtractable(privateKey)) {
-            String msg = intres.getLocalizedMessage("token.extractablekey", CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys());
+            String msg = "HW key must not be extractable. You can set ca.doPermitExtractablePrivateKeys=true in ejbca.properties to allow extractable keys. ca.doPermitExtractablePrivateKeys="
+                    + CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys() + ".";
             if (!CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys() ) {
                 throw new InvalidKeyException(msg);
             }
@@ -203,7 +200,8 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             if (cert != null) {
                 pubk = cert.getPublicKey();
             } else if (warn) {
-                log.warn(intres.getLocalizedMessage("token.nopublic", alias));
+                log.warn("Can not read public key certificate with alias '" + alias
+                        + "' from Crypto Token, got null. If the key of the certificate was generated after the latest application server start then restart the application server.");
                 if (log.isDebugEnabled()) {
                     Enumeration<String> en = getKeyStore().aliases();
                     while (en.hasMoreElements()) {
@@ -335,7 +333,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
                     char[] encryptionKey = StringConfigurationCache.INSTANCE.getEncryptionKey();
                     authcode = StringTools.pbeEncryptStringWithSha256Aes192(pin, encryptionKey, StringConfigurationCache.INSTANCE.useLegacyEncryption());
                 } catch (Exception e) {
-                    log.error(intres.getLocalizedMessage("token.nopinencrypt"), e);
+                    log.error("Failed to encrypt auto activation pin, using non-encrypted instead:", e);
                     authcode = pin;
                 }
             }
@@ -373,7 +371,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
                 setProvider(jceProvider);
                 this.mJceProviderName = jceProvider.getName();
             } catch (Exception e) {
-                log.error(intres.getLocalizedMessage("token.jceinitfail"), e);
+                log.error("Failed to initialize JCE provider. Encryption operations may not work but we are continuing...", e);
             }
         } else {
             this.mJceProviderName = null;
@@ -481,7 +479,8 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             final PrivateKey privateK = (PrivateKey) getKeyStore().getKey(alias, (mAuthCode != null && mAuthCode.length > 0) ? mAuthCode : null);
             if (privateK == null) {
                 if (warn) {
-                    log.warn(intres.getLocalizedMessage("token.noprivate", alias));
+                    log.warn("Can not read private key with alias '" + alias
+                            + "' from Crypto Token, got null. If the key was generated after the latest application server start then restart the application server.");
                     if (log.isDebugEnabled()) {
                         final Enumeration<String> aliases;
                         aliases = getKeyStore().aliases();
@@ -490,7 +489,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
                         }
                     }
                 }
-                final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+                final String msg = "No key with alias '" +  alias + "'.";
                 throw new CryptoTokenOfflineException(msg);
             }
             return privateK;
@@ -527,7 +526,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
         try {
             PublicKey publicK = readPublicKey(alias, warn);
             if (publicK == null) {
-                final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+                final String msg = "No key with alias '" +  alias + "'.";
                 throw new CryptoTokenOfflineException(msg);
             }
             final String str = getProperties().getProperty(CryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS);
@@ -567,7 +566,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
                 key = getKeyFromProperties(alias);
                 if (key == null) {
                     if (warn) {
-                        log.warn(intres.getLocalizedMessage("token.errornosuchkey", alias));
+                        log.warn("No key with alias '" +  alias + "'.");
                         if (log.isDebugEnabled()) {
                             Enumeration<String> aliases;
                             aliases = getKeyStore().aliases();
@@ -576,7 +575,7 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
                             }
                         }
                     }
-                    final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+                    final String msg = "No key with alias '" +  alias + "'."; 
                     throw new CryptoTokenOfflineException(msg);
                 }
             }
@@ -727,12 +726,12 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
                 }
                 encryptedKey = c.doFinal(data);
             } catch (BadPaddingException e) {
-                throw new PrivateKeyNotExtractableException("Extracting key with alias '"+privateKeyAlias+"' failed.");
+                throw new PrivateKeyNotExtractableException("Extracting key with alias '" + privateKeyAlias + "' failed.");
             }
 
             return encryptedKey;
         } else {
-            final String msg = intres.getLocalizedMessage("token.errornotextractable", privateKeyAlias, encryptionKeyAlias);
+            final String msg = "Crypto Token does not allow to extract private keys. Requested private key alias " + privateKeyAlias + " and encryption key alias " + encryptionKeyAlias + ".";
             throw new PrivateKeyNotExtractableException(msg);
         }
     }

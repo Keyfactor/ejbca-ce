@@ -31,7 +31,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
@@ -56,7 +55,6 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     private static final Logger log = Logger.getLogger(CryptoTokenSessionBean.class);
-    private static final InternalResources intres = InternalResources.getInstance();
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -168,12 +166,12 @@ public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTo
         if (cryptoTokenData == null) {
             // The cryptoToken does not exist in the database, before we add it we want to check that the name is not in use
             if (isCryptoTokenNameUsed(tokenName)) {
-                throw new CryptoTokenNameInUseException(intres.getLocalizedMessage("token.nameisinuse", tokenName));
+                throw new CryptoTokenNameInUseException("The name '" + tokenName + "' is already in use by another Crypto Token.");
             }
             cryptoTokenData = new CryptoTokenData(cryptoTokenId, tokenName, tokenType, lastUpdate, tokenProperties, tokenDataAsBytes);
         } else {
             if (!isCryptoTokenNameUsedByIdOnly(tokenName, cryptoTokenId)) {
-                throw new CryptoTokenNameInUseException(intres.getLocalizedMessage("token.nameisinuse", tokenName));
+                throw new CryptoTokenNameInUseException("The name '" + tokenName + "' is already in use by another Crypto Token.");
             }
             // It might be the case that the calling transaction has already loaded a reference to this token
             // and hence we need to get the same one and perform updates on this object instead of trying to
