@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -34,7 +39,6 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.internal.InternalResources;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -43,18 +47,11 @@ import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 /**
  */
 public abstract class CryptoTokenTestBase {
 
     public static final String tokenpin = PKCS11TestUtils.getPkcs11SlotPin();
-
-    private static final InternalResources intres = InternalResources.getInstance();
 
     private static final String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
     private static String strp11 = "Failed to initialize PKCS11 provider slot "; // should be appended with real value, i.e. '1'
@@ -319,7 +316,7 @@ public abstract class CryptoTokenTestBase {
                 pub = cryptoToken.getPublicKey(PKCS11TestUtils.NON_EXISTING_KEY);
                 assertTrue("Should throw", false);
             } catch (CryptoTokenOfflineException e) {
-                assertTrue(e.getMessage(), e.getMessage().contains(intres.getLocalizedMessage("token.errornosuchkey", PKCS11TestUtils.NON_EXISTING_KEY)));
+                assertTrue(e.getMessage(), e.getMessage().contains("No key with alias '" +  PKCS11TestUtils.NON_EXISTING_KEY + "'."));
             }
             // We have not set auto activate, so the internal key storage in CryptoToken is emptied
             cryptoToken.deactivate();
@@ -328,13 +325,13 @@ public abstract class CryptoTokenTestBase {
                     priv = cryptoToken.getPrivateKey(PKCS11TestUtils.RSA_TEST_KEY_1);
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertTrue(e.getMessage(), e.getMessage().contains(intres.getLocalizedMessage("token.offline", 111)));
+                    assertTrue(e.getMessage(), e.getMessage().contains("The keys in the crypto token with id " + 111 + " could not be accessed. Is the crypto token active?"));
                 }
                 try {
                     pub = cryptoToken.getPublicKey(PKCS11TestUtils.RSA_TEST_KEY_1);
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertTrue(e.getMessage(), e.getMessage().contains(intres.getLocalizedMessage("token.offline", 111)));
+                    assertTrue(e.getMessage(), e.getMessage().contains("The keys in the crypto token with id " + 111 + " could not be accessed. Is the crypto token active?"));
                 }
             }
             // Activate with wrong PIN should not work
