@@ -172,6 +172,9 @@ public interface InternalKeyBinding extends Serializable {
     void setEndEntityProfileName(String endEntityProfileName);
     
     String getCertificateProfileName();
-    void setCertificateProfileName(String certificateProfileName);    
+    void setCertificateProfileName(String certificateProfileName);
+    
+    String getKeySpec();
+    void setKeySpec(String keySpec);
     
 }

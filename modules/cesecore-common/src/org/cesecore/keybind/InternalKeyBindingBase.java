@@ -64,6 +64,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     public static final String PROP_ISSUER_DN = "issuerDn";
     public static final String PROP_EE_PROFILE_NAME = "endEntityProfileName";
     public static final String PROP_CERT_PROFILE_NAME = "certificateProfileName";
+    public static final String PROP_KEY_SPEC = "keySpec";
     
     private final LinkedHashMap<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new LinkedHashMap<>();
     
@@ -313,6 +314,16 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     @Override
     public void setCertificateProfileName(String certificateProfileName) {
         putData(PROP_CERT_PROFILE_NAME, certificateProfileName);
+    }
+    
+    @Override
+    public String getKeySpec() {
+        return getDataInternal(PROP_KEY_SPEC, "");
+    }
+    
+    @Override
+    public void setKeySpec(String keySpec) {
+        putDataInternal(PROP_KEY_SPEC, keySpec);
     }
 
     @Override
