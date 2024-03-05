@@ -95,9 +95,39 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
             EndEntityInformation endEntityInformation, String keySpec)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException;
 
+    /**
+     * Create an internal key binding with enrollment informations i.e. issuerDn, certifcateProfileName, endEntityProfileName
+     * and optionally subjectDn. Currently used only with configdump and when the configdump is to be 'initialized' the
+     * key binding is enrolled and set to active status by @see issueCertificateForInternalKeyBinding.
+     * 
+     * @param authenticationToken
+     * @param type
+     * @param id
+     * @param name
+     * @param status
+     * @param certificateId
+     * @param cryptoTokenId
+     * @param keyPairAlias
+     * @param allowMissingKeyPair
+     * @param signatureAlgorithm
+     * @param dataMap
+     * @param trustedCertificateReferences
+     * @param subjectDn
+     * @param issuerDn
+     * @param certificateProfileName
+     * @param endEntityProfileName
+     * @param keySpec
+     * @return
+     * @throws AuthorizationDeniedException
+     * @throws CryptoTokenOfflineException
+     * @throws InternalKeyBindingNameInUseException
+     * @throws InvalidAlgorithmException
+     * @throws InternalKeyBindingNonceConflictException
+     */
     int createInternalKeyBindingWithOptionalEnrollmentInfo(AuthenticationToken authenticationToken, String type, int id, String name,
             InternalKeyBindingStatus status, String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair,
             String signatureAlgorithm, Map<String, Serializable> dataMap, List<InternalKeyBindingTrustEntry> trustedCertificateReferences,
-            String subjectDn, String issuerDn, String certificateProfileName, String endEntityProfileName) throws AuthorizationDeniedException,
-            CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException;
+            String subjectDn, String issuerDn, String certificateProfileName, String endEntityProfileName, String keySpec)
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException,
+            InternalKeyBindingNonceConflictException;
 }

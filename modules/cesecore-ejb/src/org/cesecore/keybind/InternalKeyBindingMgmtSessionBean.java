@@ -44,6 +44,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -383,14 +384,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 InternalKeyBindingNonceConflictException {
         return createInternalKeyBindingWithOptionalEnrollmentInfo(authenticationToken, type, id, name, status, certificateId, cryptoTokenId, keyPairAlias, 
                 allowMissingKeyPair, signatureAlgorithm, dataMap, trustedCertificateReferences, 
-                null, null, null, null);
+                null, null, null, null, null);
     }
 
     @Override
     public int createInternalKeyBindingWithOptionalEnrollmentInfo(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
             String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair, String signatureAlgorithm, Map<String, Serializable> dataMap,
             List<InternalKeyBindingTrustEntry> trustedCertificateReferences, String subjectDn, String issuerDn, 
-            String certificateProfileName, String endEntityProfileName)
+            String certificateProfileName, String endEntityProfileName, String keySpec)
             throws AuthorizationDeniedException, CryptoTokenOfflineException, InternalKeyBindingNameInUseException, InvalidAlgorithmException, 
                 InternalKeyBindingNonceConflictException {
         if (!authorizationSession.isAuthorized(authenticationToken, InternalKeyBindingRules.MODIFY.resource(), CryptoTokenRules.USE.resource()
@@ -462,6 +463,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         if (trustedCertificateReferences!=null) {
             internalKeyBinding.setTrustedCertificateReferences(trustedCertificateReferences);
         }
+        if (StringUtils.isNotEmpty(issuerDn)) {
+            internalKeyBinding.setSubjectDn(subjectDn);
+            internalKeyBinding.setIssuerDn(issuerDn);
+            internalKeyBinding.setCertificateProfileName(certificateProfileName);
+            internalKeyBinding.setEndEntityProfileName(endEntityProfileName);
+            internalKeyBinding.setKeySpec(keySpec);
+        }
         final int allocatedId = internalKeyBindingDataSession.mergeInternalKeyBinding(internalKeyBinding);
         // Audit log the result after persistence (since the id generated during)
         final Map<String, Object> details = new LinkedHashMap<>();
@@ -495,7 +503,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     }
 
     @Override
-    //@TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public int persistInternalKeyBinding(AuthenticationToken authenticationToken, InternalKeyBinding internalKeyBinding)
             throws AuthorizationDeniedException, InternalKeyBindingNameInUseException {
         if (!authorizationSession.isAuthorized(authenticationToken,
