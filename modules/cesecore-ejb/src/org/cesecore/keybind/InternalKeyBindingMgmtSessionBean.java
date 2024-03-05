@@ -65,6 +65,7 @@ import org.cesecore.certificates.ca.CertificateGenerationParams;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -965,7 +966,9 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public void issueCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId,
-            EndEntityInformation endEntityInformation, String keySpec) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException {
+            EndEntityInformation endEntityInformation, String keySpec) 
+                    throws AuthorizationDeniedException, CryptoTokenOfflineException, 
+                            CertificateCreateException, CertificateImportException {
         // also generate the key if not present
         final InternalKeyBinding internalKeyBinding = internalKeyBindingDataSession.getInternalKeyBinding(internalKeyBindingId);
         
@@ -985,8 +988,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyPairAlias, paramBuilder.build());
             } catch (InvalidKeyException | CryptoTokenOfflineException | 
                             InvalidAlgorithmParameterException | AuthorizationDeniedException e) {
-                // TODO Auto-generated catch block
-                throw new IllegalStateException(e);
+                log.error("Failed to create keypair fo key binding", e);
+                throw new CertificateCreateException("Failed to create keypair fo key binding");
             }
         }
         
@@ -997,17 +1000,17 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
         try {
             response = certificateCreateSession.createCertificate(authenticationToken, endEntityInformation, req, X509ResponseMessage.class, new CertificateGenerationParams(), updateTime);
         } catch (CesecoreException | CertificateExtensionException e) {
-            throw new CertificateImportException(e);
+            throw new CertificateCreateException(e);
         }
         final String newCertificateId = updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
         if (newCertificateId == null) {
-            throw new CertificateImportException("New certificate was never issued.");
+            throw new CertificateCreateException("New certificate was never issued.");
         }
         setStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
         // Sanity check that the certificate we issued is the one that is in use
         final X509Certificate keyBindingCertificate = (X509Certificate) response.getCertificate();
         if (!newCertificateId.equals(CertTools.getFingerprintAsString(keyBindingCertificate))) {
-            throw new CertificateImportException(
+            throw new CertificateCreateException(
                     "Issued certificate was not found in database. "
                     + "Throw-away setting for issuing CA is not allowed for InternalKeyBindings.");
         }
