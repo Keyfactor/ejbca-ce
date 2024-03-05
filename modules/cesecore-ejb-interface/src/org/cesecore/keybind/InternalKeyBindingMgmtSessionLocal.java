@@ -22,6 +22,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.pinning.TrustEntry;
 
@@ -93,7 +94,7 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      */
     void issueCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId,
             EndEntityInformation endEntityInformation, String keySpec)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException;
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException, CertificateImportException;
 
     /**
      * Create an internal key binding with enrollment informations i.e. issuerDn, certifcateProfileName, endEntityProfileName

@@ -12,6 +12,7 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
@@ -33,7 +34,8 @@ public class TestInternalKeyBindingMgmtSessionBean implements TestInternalKeyBin
     @Override
     public void issueCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId,
             EndEntityInformation endEntityInformation, String keySpec)
-            throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateImportException {
+            throws AuthorizationDeniedException, CryptoTokenOfflineException, 
+            CertificateImportException, CertificateCreateException {
         internalKeyBindingMgmtSession.issueCertificateForInternalKeyBinding(
                 authenticationToken, internalKeyBindingId, endEntityInformation, keySpec);
     }
