@@ -73,6 +73,7 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
@@ -149,6 +150,7 @@ public class UpgradeSessionBeanTest {
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
@@ -1483,22 +1485,22 @@ public class UpgradeSessionBeanTest {
     @Test
     public void testRemoveConfigurationCheckerPost830() throws AuthorizationDeniedException {
         //First make sure that there is a Configuration Checker config
-        if(globalConfigSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID) == null) {
-            globalConfigSession.saveConfiguration(alwaysAllowtoken, new ConfigurationCheckerConfiguration());
+        if(globalConfigurationProxySession.findByConfigurationId(ConfigurationCheckerConfiguration.CONFIGURATION_ID) == null) {
+            globalConfigurationProxySession.addConfiguration( new ConfigurationCheckerConfiguration());
         }
         
-        if(globalConfigSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID) == null) {
+        if(globalConfigurationProxySession.findByConfigurationId(ConfigurationCheckerConfiguration.CONFIGURATION_ID) == null) {
             throw new IllegalStateException("No ConfigurationCheckerConfiguration present, test cannot continue.");
         }
         
         final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
                 .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        guc.setUpgradedToVersion("8.2.0");
-        guc.setPostUpgradedToVersion("8.2.0");
+        guc.setUpgradedToVersion("8.0.0");
+        guc.setPostUpgradedToVersion("8.0.0");
         globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
-        upgradeSession.upgrade(null, "8.2.0", false);
+        upgradeSession.upgrade(null, "8.0.0", true);
         
-        assertNull("ConfigurationCheckerConfiguration was not removed.", globalConfigSession.getCachedConfiguration(ConfigurationCheckerConfiguration.CONFIGURATION_ID));
+        assertNull("ConfigurationCheckerConfiguration was not removed.", globalConfigurationProxySession.findByConfigurationId(ConfigurationCheckerConfiguration.CONFIGURATION_ID));
         
     }
 
