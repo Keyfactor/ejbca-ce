@@ -21,10 +21,12 @@ import static org.junit.Assume.assumeTrue;
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -39,18 +41,25 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.junit.util.CryptoTokenRunner;
 import org.cesecore.keybind.impl.OcspKeyBinding;
+import org.cesecore.keybinding.TestInternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -84,18 +93,34 @@ public class InternalKeyBindingMgmtTest {
     private static final InternalKeyBindingMgmtSessionRemote internalKeyBindingMgmtSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalKeyBindingMgmtSessionRemote.class);
     private static final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private static final SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+
+    private static final TestInternalKeyBindingMgmtSessionRemote testInternalKeyBindingMgmtSession = 
+                            EjbRemoteHelper.INSTANCE.getRemoteSession(TestInternalKeyBindingMgmtSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final CertificateProfileSessionRemote certProfileSession = 
+                            EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private static final EndEntityProfileSessionRemote endEntityProfileSession = 
+                            EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     
-    private static final InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private static final InternalCertificateStoreSessionRemote internalCertStoreSession = 
+                            EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static final String TESTCLASSNAME = InternalKeyBindingMgmtTest.class.getSimpleName();
     private static final String KEYBINDING_TYPE_ALIAS = OcspKeyBinding.IMPLEMENTATION_ALIAS;
     private static final String PROPERTY_ALIAS = OcspKeyBinding.PROPERTY_NON_EXISTING_GOOD;
+    
+    private static final String CERT_PROFILE_OCSP = "OcspCertProfile" + TESTCLASSNAME;
+    private static final String CERT_PROFILE_ENDUSER = "EndUserCertProfile" + TESTCLASSNAME;
+    private static final String END_ENTITY_PROFILE = "EeProfile" + TESTCLASSNAME;
 
     @Rule
     public TestRule traceLogMethodsRule = new TraceLogMethodsRule();
     
     private X509CAInfo x509ca;
     private int cryptoTokenId;
+    private int endUserCertProfileId;
+    private int ocspCertProfileId;
+    private int endEntityProfileId;
     
     private CryptoTokenRunner cryptoTokenRunner;
     
@@ -112,11 +137,41 @@ public class InternalKeyBindingMgmtTest {
         assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
         x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName()); 
         cryptoTokenId = x509ca.getCAToken().getCryptoTokenId();
+        
+        final Collection<Integer> availCas = new ArrayList<Integer>();
+        availCas.add(x509ca.getCAId());
+        
+        CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        endUserCertProfileId = certProfileSession.addCertificateProfile(alwaysAllowToken, 9991234, CERT_PROFILE_ENDUSER, profile);
+
+        profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER);
+        ocspCertProfileId = certProfileSession.addCertificateProfile(alwaysAllowToken, 9991235, CERT_PROFILE_OCSP, profile);
+        
+        final Collection<Integer> availCertProfiles = new ArrayList<Integer>();
+        availCertProfiles.add(endUserCertProfileId);
+        availCertProfiles.add(ocspCertProfileId);
+        final EndEntityProfile eeprofile = new EndEntityProfile();
+        eeprofile.setAvailableCAs(availCas);
+        eeprofile.setAvailableCertificateProfileIds(availCertProfiles);
+        endEntityProfileId = endEntityProfileSession.addEndEntityProfile(alwaysAllowToken, END_ENTITY_PROFILE, eeprofile);
+        
     }
     
     @After
     public void afterClass() {
         cryptoTokenRunner.cleanUp();
+        
+        try {
+            certProfileSession.removeCertificateProfile(alwaysAllowToken, CERT_PROFILE_ENDUSER);
+        } catch (Exception e) { }
+        
+        try {
+            certProfileSession.removeCertificateProfile(alwaysAllowToken, CERT_PROFILE_OCSP);
+        } catch (Exception e) { }
+        
+        try {
+            endEntityProfileSession.removeEndEntityProfile(alwaysAllowToken, END_ENTITY_PROFILE);
+        } catch (Exception e) { }
     }
    
         
@@ -332,6 +387,73 @@ public class InternalKeyBindingMgmtTest {
         if (oldInternalKeyBindingId != null && internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, oldInternalKeyBindingId)) {
             log.info("Removed keybinding with name " + name + ".");
         }
+    }
+    
+    private void createRemoteInternalKeybindingAndActivateTest(
+            String certProfileName, String keyAliasName, String keySpec) throws Exception {
+        final String TEST_METHOD_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + new Random().nextLong();
+        final String KEY_BINDING_NAME = TEST_METHOD_NAME;
+        String KEY_PAIR_ALIAS = TEST_METHOD_NAME;
+        if (keyAliasName!=null) {
+            KEY_PAIR_ALIAS = keyAliasName;
+        }
+        // Clean up old key binding
+        removeInternalKeyBindingByName(alwaysAllowToken, TEST_METHOD_NAME);
+        int internalKeyBindingId = 0;
+        String certFpToDelete = null;
+        String subjectDn = "CN=check" + KEY_BINDING_NAME;
+        try {
+            internalKeyBindingId = testInternalKeyBindingMgmtSession.createInternalKeyBindingWithOptionalEnrollmentInfo(
+                    alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
+                    internalKeyBindingId, KEY_BINDING_NAME, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, KEY_PAIR_ALIAS, 
+                    false, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null, 
+                    subjectDn, x509ca.getSubjectDN(), 
+                    certProfileName, END_ENTITY_PROFILE, keySpec);
+            log.error("Created InternalKeyBinding with id " + internalKeyBindingId);
+                        
+            EndEntityInformation endEntity = new EndEntityInformation(
+                    KEY_BINDING_NAME, subjectDn, x509ca.getCAId(), 
+                    null, null, new EndEntityType(EndEntityTypes.ENDUSER), 
+                    endEntityProfileId, endUserCertProfileId, EndEntityConstants.TOKEN_USERGEN, null);
+            endEntity.setPassword("dummy");
+            endEntity.setStatus(EndEntityConstants.STATUS_NEW);                
+            endEntity = endEntityManagementSession.addUser(alwaysAllowToken, endEntity, false);
+            
+            testInternalKeyBindingMgmtSession.issueCertificateForInternalKeyBinding(alwaysAllowToken, internalKeyBindingId,
+                    endEntity, keySpec);
+            
+            InternalKeyBinding fetchedKeyBinding = 
+                    internalKeyBindingMgmtSession.getInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+            
+            assertNotNull(fetchedKeyBinding.getCertificateId());
+            certFpToDelete = fetchedKeyBinding.getCertificateId();
+            assertEquals(fetchedKeyBinding.getStatus(), InternalKeyBindingStatus.ACTIVE);
+            
+        } finally {
+            internalKeyBindingMgmtSession.deleteInternalKeyBinding(alwaysAllowToken, internalKeyBindingId);
+            internalCertStoreSession.removeCertificate(certFpToDelete);
+            endEntityManagementSession.deleteUser(alwaysAllowToken, KEY_BINDING_NAME);
+            cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, KEY_PAIR_ALIAS);
+        }
+    }
+    
+    
+    @Test
+    public void createRemoteInternalKeybindingAndActivate() throws Exception {
+        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_ENDUSER, null, "RSA3072");
+    }
+    
+    @Test
+    public void createRemoteInternalKeybindingAndActivateWithExistingKeypair() throws Exception {
+        String keyPairAlias = Thread.currentThread().getStackTrace()[1].getMethodName() + new Random().nextLong();
+        cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, 
+                                                keyPairAlias, KeyGenParams.builder("RSA2048").build());
+        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_ENDUSER, keyPairAlias, "RSA2048");
+    }
+    
+    @Test
+    public void createOcspInternalKeybindingAndActivate() throws Exception {
+        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_OCSP, null, "secp256r1");
     }
 
 }

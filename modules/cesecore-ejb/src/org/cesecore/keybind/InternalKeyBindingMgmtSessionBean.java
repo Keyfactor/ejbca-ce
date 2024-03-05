@@ -979,9 +979,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             try {
                 // same publicKey spec as CA - inline with OCSP RFCs
                 if (keySpec == null) {
-                    PublicKey caPublicKey = caSession.findById(
-                            endEntityInformation.getCAId()).getCA().getCACertificate().getPublicKey();
-                    keySpec = AlgorithmTools.getKeySpecification(caPublicKey);
+                    if (StringUtils.isNotEmpty(internalKeyBinding.getKeySpec())) {
+                        keySpec = internalKeyBinding.getKeySpec();
+                    } else {
+                        PublicKey caPublicKey = caSession.findById(
+                                endEntityInformation.getCAId()).getCA().getCACertificate().getPublicKey();
+                        keySpec = AlgorithmTools.getKeySpecification(caPublicKey);
+                    }
                 }
                 final KeyPairTemplate keyUsage = KeyPairTemplate.valueOf(KeyPairTemplate.SIGN.toString());
                 KeyGenParamsBuilder paramBuilder = KeyGenParams.builder(keySpec).withKeyPairTemplate(keyUsage);
