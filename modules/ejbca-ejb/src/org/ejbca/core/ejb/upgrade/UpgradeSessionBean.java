@@ -707,6 +707,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.11.0");
         }
+        if (isLesserThan(oldVersion, "8.3.0")) {
+            if (!postMigrateDatabase830()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("8.3.0");
+        }
         
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
@@ -758,8 +764,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 8.3.0");
        
         try {
-            if(globalConfigurationSession.getCachedConfiguration(CONFIGURATION_CHECKER_CONFIGURATION_ID) != null)
-            globalConfigurationSession.removeConfiguration(authenticationToken, CONFIGURATION_CHECKER_CONFIGURATION_ID);
+            if (globalConfigurationSession.findByConfigurationId(CONFIGURATION_CHECKER_CONFIGURATION_ID) != null) {
+                globalConfigurationSession.removeConfiguration(authenticationToken, CONFIGURATION_CHECKER_CONFIGURATION_ID);
+            }
         } catch (AuthorizationDeniedException e) {
             log.error("Administrator was not authorized to perform post-upgrade, lacks access to Configuration Checker configuration");
             return false;
