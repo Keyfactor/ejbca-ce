@@ -353,7 +353,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
 
                 // Sets the status of the pre certs in CertificateData to INACTIVE
                 certificateStoreSession.storeCertificateNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
-                        incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_INACTIVE, certProfile.getType(),
+                        incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_ACTIVE, certProfile.getType(),
                         incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
                         incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
                         incompleteIssuedCert.getAccountBindingId());
