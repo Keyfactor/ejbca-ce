@@ -27,9 +27,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 
-/**
- * @version $Id$
- */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "GlobalConfigurationProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class GlobalConfigurationProxySessionBean implements GlobalConfigurationProxySessionRemote {
@@ -86,7 +83,7 @@ public class GlobalConfigurationProxySessionBean implements GlobalConfigurationP
     
     @Override
     public void addConfiguration(ConfigurationBase configurationBase) {
-        GlobalConfigurationData globalConfigurationData = new GlobalConfigurationData(configurationBase.getConfigurationId(), configurationBase);
+        final GlobalConfigurationData globalConfigurationData = new GlobalConfigurationData(configurationBase.getConfigurationId(), configurationBase);
         entityManager.persist(globalConfigurationData);
     }
 

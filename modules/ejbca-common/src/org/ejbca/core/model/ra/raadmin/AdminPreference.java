@@ -23,8 +23,6 @@ import org.ejbca.config.GlobalConfiguration;
 
 /**
  * A class representing a admins personal preferences.
- *
- * @version $Id$
  */
 public class AdminPreference extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
