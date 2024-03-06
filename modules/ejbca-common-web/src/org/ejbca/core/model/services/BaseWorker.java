@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.intervals.DummyInterval;
 
@@ -31,13 +30,8 @@ import org.ejbca.core.model.services.intervals.DummyInterval;
  *  
  */
 public abstract class BaseWorker implements IWorker {
-
-    public static final String ERROR_EXPIRE_WORKER_MISCONFIG = "services.errorexpireworker.errorconfig";
-    private static final String ERROR_ACTION_CLASSPATH_MISCONFIG = "services.erroractionclasspath";
     
 	private static final Logger log = Logger.getLogger(BaseWorker.class);
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     protected Properties properties = null;
     protected String serviceName = null;
@@ -74,7 +68,7 @@ public abstract class BaseWorker implements IWorker {
 				action = (IAction) Thread.currentThread().getContextClassLoader().loadClass(actionClassPath).getDeclaredConstructor().newInstance();
 				action.init(serviceConfiguration.getActionProperties(), serviceName);
 			} catch (Exception e) {
-				String msg = intres.getLocalizedMessage(ERROR_ACTION_CLASSPATH_MISCONFIG, serviceName);
+				String msg = "Error Monitoring Service " + serviceName + " actionClassPath is misconfigured.";
 				log.error(msg,e);
 			}       
 		}else{
@@ -87,11 +81,11 @@ public abstract class BaseWorker implements IWorker {
 				interval = (IInterval) Thread.currentThread().getContextClassLoader().loadClass(intervalClassPath).getDeclaredConstructor().newInstance();
 				interval.init(serviceConfiguration.getIntervalProperties(), serviceName);
 			} catch (Exception e) {
-				String msg = intres.getLocalizedMessage("services.errorintervalclasspath", serviceName);
+				String msg = "Error Monitoring Service " + serviceName + " intervalClassPath is misconfigured, service will not execute.";
 				log.error(msg,e);
 			}       
 		}else{
-			String msg = intres.getLocalizedMessage("services.errorintervalclasspath", serviceName);
+			String msg = "Error Monitoring Service " + serviceName + " intervalClassPath is misconfigured, service will not execute.";
 			log.error(msg);
 		}
 		
@@ -112,7 +106,7 @@ public abstract class BaseWorker implements IWorker {
 	
 	protected IAction getAction(){
 		if(action == null){
-			String msg = intres.getLocalizedMessage(ERROR_ACTION_CLASSPATH_MISCONFIG, serviceName);
+			String msg = "Error Monitoring Service " + serviceName + " actionClassPath is misconfigured.";
 			log.error(msg);
 		}
 		return action;
@@ -155,7 +149,7 @@ public abstract class BaseWorker implements IWorker {
         if (timeBeforeExpire == -1) {
             String unit = properties.getProperty(propertyTimeUnit);
             if (unit == null) {
-                String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, "UNIT");
+                String msg = "Error: Expire Notification Worker " + serviceName + " is misconfigured, check UNIT value.";
                 throw new ServiceExecutionFailedException(msg);
             }
 
@@ -163,12 +157,12 @@ public abstract class BaseWorker implements IWorker {
             try {
                 intvalue = Integer.parseInt(properties.getProperty(propertyTimeValue));
             } catch (NumberFormatException e) {
-                String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, "VALUE");
+                String msg = "Error: Expire Notification Worker " + serviceName + " is misconfigured, check VALUE value.";
                 throw new ServiceExecutionFailedException(msg);
             }
 
             if (intvalue == 0) {
-                String msg = intres.getLocalizedMessage("ERROR_EXPIRE_WORKER_MISCONFIG", serviceName, "VALUE");
+                String msg = "Error: Expire Notification Worker " + serviceName + " is misconfigured, check VALUE value.";
                 throw new ServiceExecutionFailedException(msg);
             }
             timeBeforeExpire = intvalue * timeUnitToSeconds(unit);
@@ -198,7 +192,7 @@ public abstract class BaseWorker implements IWorker {
 					try {
 						cAIdsToCheck.add(Integer.valueOf(caIdString));
 					} catch (NumberFormatException e) {
-						String msg = intres.getLocalizedMessage(ERROR_EXPIRE_WORKER_MISCONFIG, serviceName, PROP_CAIDSTOCHECK);
+						String msg = "Error: Expire Notification Worker " + serviceName + " is misconfigured, check " + PROP_CAIDSTOCHECK + " value.";
 						throw new ServiceExecutionFailedException(msg, e);						
 					}
 				}				
