@@ -152,22 +152,18 @@ public class CertificateRestResource extends BaseRestResource {
             );
             final boolean includeChain = enrollCertificateRestRequest.getIncludeChain();
             final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
-            final List<Certificate> certificateChain = fetchCaCertificateChain(
-                    authenticationToken,
-                    includeChain,
-                    enrollCertificateRestRequest.getCertificateAuthorityName());
+            final List<Certificate> certificateChain = fetchCaCertificateChain(authenticationToken, includeChain, enrollCertificateRestRequest.getCertificateAuthorityName());
             CertificateRestResponse enrollCertificateRestResponse;
             final String responseFormat = enrollCertificateRestRequest.getResponseFormat().toUpperCase();
-            if(responseFormat.equals(TokenDownloadType.PKCS7.name())) {
-               byte[] certResponseBytes = CertTools.getPemFromPkcs7(certificateBytes);
-               if (includeChain && !certificateChain.isEmpty()) {
-                   byte[] certificateChainBytes = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools
-                            .convertCertificateChainToX509Chain(certificateChain)));
-                   enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(certResponseBytes, certificateChainBytes, certificate, responseFormat);
-                }else {
-                   enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(certResponseBytes, certificate, responseFormat);
-               }
-            }else {
+            if (responseFormat.equals(TokenDownloadType.PKCS7.name())) {
+                byte[] certResponseBytes = CertTools.getPemFromPkcs7(certificateBytes);
+                if (includeChain && !certificateChain.isEmpty()) {
+                    byte[] certificateChainBytes = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(CertTools.convertCertificateChainToX509Chain(certificateChain)));
+                    enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(certResponseBytes, certificateChainBytes, certificate, responseFormat);
+                } else {
+                    enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(certResponseBytes, certificate, responseFormat);
+                }
+            } else {
                 enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(certificateChain, certificate);
             }
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
@@ -177,15 +173,8 @@ public class CertificateRestResource extends BaseRestResource {
         }
     }
 
-    private List<Certificate> fetchCaCertificateChain(AuthenticationToken authenticationToken,
-            boolean includeChain, String caName)
-            throws AuthorizationDeniedException, CADoesntExistsException {
-        return includeChain
-                ? raMasterApi.getLastCaChain(authenticationToken, caName)
-                    .stream()
-                    .map(CertificateWrapper::getCertificate)
-                    .collect(Collectors.toList())
-                : null;
+    private List<Certificate> fetchCaCertificateChain(AuthenticationToken authenticationToken, boolean includeChain, String caName) throws AuthorizationDeniedException, CADoesntExistsException {
+        return includeChain ? raMasterApi.getLastCaChain(authenticationToken, caName).stream().map(CertificateWrapper::getCertificate).collect(Collectors.toList()) : null;
     }
 
     public Response certificateRequest(final HttpServletRequest requestContext, final CertificateRequestRestRequest certificateRequestRestRequest)
