@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,16 +10,34 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.certificate;
 
+package com.keyfactor.util.test;
 
-import javax.ejb.Local;
+/** Interface for version enums used by MethodApiDescriptor */
+public interface ApiVersion {
 
-/**
- * The local bean which holds only internal functionality needed for the CA performance.
- * As an example the count of the total or active certificates etc.
- */
-@Local
-public interface InternalCertificateRestSessionLocal extends InternalCertificateSession {
+    ApiVersion INITIAL_VERSION = new ApiVersion() {
+        @Override
+        public int versionOrdinal() {
+            return -1;
+        }
+        @Override
+        public String toString() {
+            return "<Initial version>";
+        }
+    };
 
+    ApiVersion ALL_VERSIONS = new ApiVersion() {
+        @Override
+        public int versionOrdinal() {
+            return Integer.MAX_VALUE;
+        }
+        @Override
+        public String toString() {
+            return "<All versions>";
+        }
+    };
+
+    /** Converts a version number to an ordered integer, so it can be compared */
+    int versionOrdinal();
 }

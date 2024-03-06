@@ -41,12 +41,18 @@ public class MethodApiDescriptor {
     private static final String DUMMY_PARAM_TYPE = "com.example.ParamObject123";
     private static final String DUMMY_RETURN_TYPE = "com.example.ReturnObject123";
 
+    private ApiVersion apiVersion;
     private final String name;
     private final String returnType;
     private final List<String> parameterTypes;
     private final String expectedHash;
 
     public MethodApiDescriptor(final String name, final String returnType, final List<String> parameterTypes, final String expectedHash) {
+        this(ApiVersion.INITIAL_VERSION, name, returnType, parameterTypes, expectedHash);
+    }
+
+    public MethodApiDescriptor(final ApiVersion apiVersion, final String name, final String returnType, final List<String> parameterTypes, final String expectedHash) {
+        this.apiVersion = apiVersion;
         this.name = Objects.requireNonNull(name);
         this.returnType = Objects.requireNonNull(returnType);
         this.parameterTypes = Objects.requireNonNull(parameterTypes);
@@ -85,6 +91,10 @@ public class MethodApiDescriptor {
 
     public String getName() {
         return name;
+    }
+
+    public ApiVersion getApiVersion() {
+        return apiVersion;
     }
 
     public String getReturnType() {
