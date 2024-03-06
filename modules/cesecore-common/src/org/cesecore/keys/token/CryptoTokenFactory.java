@@ -18,12 +18,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+
 import com.google.common.base.Preconditions;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-
-import org.apache.log4j.Logger;
-import org.cesecore.internal.InternalResources;
 
 
 /**
@@ -126,7 +125,7 @@ public class CryptoTokenFactory {
 	            }
 			} else {
 				// Normally not an error, since these classes are provided by HSM vendor
-				log.info(InternalResources.getInstance().getLocalizedMessage("token.inforegisterclasspath", classname));
+				log.info("Can not register " + classname  + ". This is normally not an error.");
 			}
 		}			
 		if (log.isTraceEnabled()) {
@@ -145,9 +144,9 @@ public class CryptoTokenFactory {
         	Thread.currentThread().getContextClassLoader().loadClass(classname).getDeclaredConstructor().newInstance();       
             return true;
         } catch (ClassNotFoundException e) {
-            log.info(InternalResources.getInstance().getLocalizedMessage("token.classnotfound", classname)); 
+            log.info("Class not found: " + classname  + ".");
         } catch (InstantiationException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            log.info(InternalResources.getInstance().getLocalizedMessage("token.errorinstansiate", classname, e.getMessage()));
+            log.info("Can not instantiate " + classname + ". " + e.getMessage() + ".");
         } catch (IllegalAccessException e) {
             log.error("IllegalAccessException: "+classname, e);
         } catch (NoClassDefFoundError e) {
