@@ -13,7 +13,7 @@
  
 package org.ejbca.core.model.ca.publisher;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -328,7 +328,7 @@ public class LdapPublisher extends BasePublisher {
     				    lc.startTLS();
     				}
     				// authenticate to the server
-    				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);            
+                    lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
     				// Add or modify the entry
     				if (oldEntry != null && getModifyExistingUsers()) {
     					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
@@ -383,16 +383,12 @@ public class LdapPublisher extends BasePublisher {
     					log.error(msg, LogRedactionUtils.getRedactedException(e));
     					throw new PublisherException(msg);            
     				}
-    			} catch (UnsupportedEncodingException e) {
-    				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-    				log.error(msg, e);
-    				throw new PublisherException(msg);            
     			} finally {
     				// disconnect with the server
     				try {
     					lc.disconnect(ldapDisconnectConstraints);
     				} catch (LDAPException e) {
-    					String msg = intres.getLocalizedMessage("publisher.errordisconnect", getLoginPassword());
+                        String msg = intres.getLocalizedMessage("publisher.errordisconnect");
     					log.error(msg, e);
     				}
     			}
@@ -433,7 +429,7 @@ public class LdapPublisher extends BasePublisher {
 					try {
 						lc.add(entry, ldapStoreConstraints);
 						if (log.isDebugEnabled()) {
-							log.debug("Created node " + dnFragment);
+							log.debug("Created node " + LogRedactionUtils.getSubjectDnLogSafe(dnFragment));
 						}
 					} catch(LDAPException e1) {
 						String msg = intres.getLocalizedMessage("publisher.ldapaddedintermediate", LogRedactionUtils.getSubjectDnLogSafe(dnFragment));
@@ -555,7 +551,7 @@ public class LdapPublisher extends BasePublisher {
 					lc.startTLS();
 				}
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
+                lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
 				// Add or modify the entry
 				if (oldEntry != null) {
 					LDAPModification[] mods = new LDAPModification[modSet.size()]; 
@@ -579,10 +575,6 @@ public class LdapPublisher extends BasePublisher {
 					log.info("If you are trying to publish a CRL, and the LDAP server is complaining about a missing CA certificate attribute, you need first publish the CA certificates to the LDAP server.");
 					throw new PublisherException(msg);            
 				}
-			} catch (UnsupportedEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-				log.error(msg, e);
-				throw new PublisherException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
@@ -707,7 +699,7 @@ public class LdapPublisher extends BasePublisher {
 					lc.startTLS();
 				}
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);            
+                lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
 				// Add or modify the entry
 				if (modSet != null && getModifyExistingUsers()) {
 					if (removecert) {
@@ -739,10 +731,6 @@ public class LdapPublisher extends BasePublisher {
 					log.error(msg, LogRedactionUtils.getRedactedException(e));
 					throw new PublisherException(msg);            
 				}
-			} catch (UnsupportedEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-				log.error(msg, e);
-				throw new PublisherException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
@@ -787,7 +775,7 @@ public class LdapPublisher extends BasePublisher {
 					lc.startTLS();
 				}
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
+                lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
 				// try to read the old object
 				if (log.isDebugEnabled()) {
 					log.debug("Searching for old entry with DN '" + LogRedactionUtils.getSubjectDnLogSafe(ldapdn) +"'");
@@ -815,9 +803,6 @@ public class LdapPublisher extends BasePublisher {
 						throw new PublisherException(msg);                                
 					}
 				}
-			} catch (UnsupportedEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-				throw new PublisherException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
@@ -856,7 +841,7 @@ public class LdapPublisher extends BasePublisher {
 					lc.startTLS();
 				}
 				// authenticate to the server
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
+                lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
 				// try to read the base object
 				String baseDN = getBaseDN();
 				if (log.isDebugEnabled()) {
@@ -879,10 +864,6 @@ public class LdapPublisher extends BasePublisher {
 					log.error(msg, e);
 					throw new PublisherConnectionException(msg);                            
 				}
-			} catch (UnsupportedEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-				log.error(msg, e);
-				throw new PublisherConnectionException(msg);            
 			} finally {
 				// disconnect with the server
 				try {
@@ -1390,7 +1371,7 @@ public class LdapPublisher extends BasePublisher {
 			LDAPAttribute oldattribute = oldEntry.getAttribute(attributes[i]);
 			if (log.isDebugEnabled()) {
 				if (oldattribute!=null) {
-					log.debug("removeme, oldattribute="+oldattribute.toString());
+					log.debug("removeme, oldattributename=" + oldattribute.getName() + ", oldattribute="+LogRedactionUtils.getContentLogSafe(oldattribute.toString()));
 				}
 				if (dn!=null) {
 					log.debug("removeme, dn=" + LogRedactionUtils.getSubjectDnLogSafe(dn));
@@ -1421,7 +1402,8 @@ public class LdapPublisher extends BasePublisher {
 	protected LDAPAttributeSet getAttributeSet(Certificate cert, String objectclass, String dn, String email, boolean extra, boolean person,
 			String password, ExtendedInformation extendedinformation) {
 		if (log.isTraceEnabled()) {
-			log.trace(">getAttributeSet(dn="+ LogRedactionUtils.getSubjectDnLogSafe(dn) + ", email=" + email + ")");
+			log.trace(">getAttributeSet(dn="+ LogRedactionUtils.getSubjectDnLogSafe(dn) +
+			        ", email=" + LogRedactionUtils.getContentLogSafe(email) + ")"); // email comes from SubjectDN and needs redaction
 		}
 		LDAPAttributeSet attributeSet = new LDAPAttributeSet();
 		LDAPAttribute attr = new LDAPAttribute("objectclass");
@@ -1553,7 +1535,8 @@ public class LdapPublisher extends BasePublisher {
 	protected ArrayList<LDAPModification> getModificationSet(LDAPEntry oldEntry, String dn, String email, boolean extra,
 															 boolean person, String password, Certificate cert) {
 		if (log.isTraceEnabled()) {
-			log.trace(">getModificationSet(dn="+ LogRedactionUtils.getSubjectDnLogSafe(dn) + ", email=" + email + ")");
+			log.trace(">getModificationSet(dn="+ LogRedactionUtils.getSubjectDnLogSafe(dn) +
+			        ", email=" + LogRedactionUtils.getContentLogSafe(email) + ")"); // email comes from SubjectDN and needs redaction
 		}
 		boolean modifyExisting = getModifyExistingAttributes();
 		boolean addNonExisting = getAddNonExistingAttributes();
@@ -1678,7 +1661,7 @@ public class LdapPublisher extends BasePublisher {
 	 */
 	protected String constructLDAPDN(String certDN, String userDataDN){
 		if (log.isDebugEnabled()) {
-			log.debug("DN in certificate '" + certDN + "'. DN in user data '" + LogRedactionUtils.getSubjectDnLogSafe(userDataDN) + "'.");
+			log.debug("DN in certificate '" + LogRedactionUtils.getSubjectDnLogSafe(certDN) + "'. DN in user data '" + LogRedactionUtils.getSubjectDnLogSafe(userDataDN) + "'.");
 		}
 		final DNFieldExtractor certExtractor = new DNFieldExtractor(certDN, DNFieldExtractor.TYPE_SUBJECTDN);
 		final DNFieldExtractor userDataExtractor = userDataDN!=null ? new DNFieldExtractor(userDataDN, DNFieldExtractor.TYPE_SUBJECTDN) : null;
