@@ -21,7 +21,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 
 /**
  * Local interface for GlobalConfigurationSession.
- * @version $Id$
  */
 @Local
 public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSession {
@@ -31,7 +30,6 @@ public interface GlobalConfigurationSessionLocal extends GlobalConfigurationSess
     
     /** @return all registered configuration IDs. */
     Set<String> getIds();
-    
     
     /**
      * Removes a configuration from the database

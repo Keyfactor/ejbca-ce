@@ -14,8 +14,6 @@ package org.cesecore.configuration;
 
 import javax.ejb.Remote;
 
-/**
- */
 @Remote
 public interface GlobalConfigurationProxySessionRemote extends GlobalConfigurationSessionLocal {
 
