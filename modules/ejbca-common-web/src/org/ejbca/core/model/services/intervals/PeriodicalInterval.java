@@ -15,7 +15,6 @@ package org.ejbca.core.model.services.intervals;
 import javax.ejb.EJBException;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseInterval;
 
 /**
@@ -23,14 +22,10 @@ import org.ejbca.core.model.services.BaseInterval;
  * 
  * The main method is getTimeToExecution
  * 
- * @version $Id$
  */
 public class PeriodicalInterval extends BaseInterval {
 	
 	private static final Logger log = Logger.getLogger(PeriodicalInterval.class);
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-
 	public static final String PROP_UNIT  = "interval.periodical.unit";
 	public static final String PROP_VALUE = "interval.periodical.value";
 
@@ -62,7 +57,7 @@ public class PeriodicalInterval extends BaseInterval {
 		if(interval == 0){
 			String unit = properties.getProperty(PROP_UNIT);
 			if(unit == null){				
-				String msg = intres.getLocalizedMessage("services.interval.errorconfig", serviceName, "UNIT");
+				String msg = "Error: Periodical service " + serviceName + " is misconfigured, check UNIT value.";
 				throw new EJBException(msg);
 			}
 			int unitval = 0;
@@ -73,7 +68,7 @@ public class PeriodicalInterval extends BaseInterval {
 				}
 			}
 			if(unitval == 0){				
-				String msg = intres.getLocalizedMessage("services.interval.errorconfig", serviceName, "UNIT");
+				String msg = "Error: Periodical service " + serviceName + " is misconfigured, check UNIT value.";
 				throw new EJBException(msg);
 			}
 						
@@ -82,12 +77,12 @@ public class PeriodicalInterval extends BaseInterval {
 		    try{
 		      intvalue = Integer.parseInt(value);
 		    }catch(NumberFormatException e){
-				String msg = intres.getLocalizedMessage("services.interval.errorconfig", serviceName, "VALUE");
+				String msg = "Error: Periodical service " + serviceName + " is misconfigured, check VALUE value.";
 		    	throw new EJBException(msg);
 		    }
 			
 			if(intvalue == 0){
-				String msg = intres.getLocalizedMessage("services.interval.errorconfig", serviceName, "UNIT");
+				String msg = "Error: Periodical service " + serviceName + " is misconfigured, check UNIT value.";
 				throw new EJBException(msg);
 			}
 			interval = intvalue * unitval;
