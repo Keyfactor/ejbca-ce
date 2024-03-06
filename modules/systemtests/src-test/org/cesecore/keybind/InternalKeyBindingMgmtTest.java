@@ -390,7 +390,7 @@ public class InternalKeyBindingMgmtTest {
     }
     
     private void createRemoteInternalKeybindingAndActivateTest(
-            String certProfileName, String keyAliasName, String keySpec) throws Exception {
+            String certProfileName, String keyAliasName, String keySpec, String keyBindingType) throws Exception {
         final String TEST_METHOD_NAME = Thread.currentThread().getStackTrace()[1].getMethodName() + new Random().nextLong();
         final String KEY_BINDING_NAME = TEST_METHOD_NAME;
         String KEY_PAIR_ALIAS = TEST_METHOD_NAME;
@@ -404,7 +404,7 @@ public class InternalKeyBindingMgmtTest {
         String subjectDn = "CN=check" + KEY_BINDING_NAME;
         try {
             internalKeyBindingId = testInternalKeyBindingMgmtSession.createInternalKeyBindingWithOptionalEnrollmentInfo(
-                    alwaysAllowToken, KEYBINDING_TYPE_ALIAS,
+                    alwaysAllowToken, keyBindingType,
                     internalKeyBindingId, KEY_BINDING_NAME, InternalKeyBindingStatus.DISABLED, null, cryptoTokenId, KEY_PAIR_ALIAS, 
                     false, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null, 
                     subjectDn, x509ca.getSubjectDN(), 
@@ -414,7 +414,9 @@ public class InternalKeyBindingMgmtTest {
             EndEntityInformation endEntity = new EndEntityInformation(
                     KEY_BINDING_NAME, subjectDn, x509ca.getCAId(), 
                     null, null, new EndEntityType(EndEntityTypes.ENDUSER), 
-                    endEntityProfileId, endUserCertProfileId, EndEntityConstants.TOKEN_USERGEN, null);
+                    endEntityProfileId, 
+                    certProfileName.equals(CERT_PROFILE_ENDUSER) ? endUserCertProfileId : ocspCertProfileId, 
+                    EndEntityConstants.TOKEN_USERGEN, null);
             endEntity.setPassword("dummy");
             endEntity.setStatus(EndEntityConstants.STATUS_NEW);                
             endEntity = endEntityManagementSession.addUser(alwaysAllowToken, endEntity, false);
@@ -440,7 +442,7 @@ public class InternalKeyBindingMgmtTest {
     
     @Test
     public void createRemoteInternalKeybindingAndActivate() throws Exception {
-        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_ENDUSER, null, "RSA3072");
+        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_ENDUSER, null, "RSA3072", "AuthenticationKeyBinding");
     }
     
     @Test
@@ -448,12 +450,12 @@ public class InternalKeyBindingMgmtTest {
         String keyPairAlias = Thread.currentThread().getStackTrace()[1].getMethodName() + new Random().nextLong();
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, 
                                                 keyPairAlias, KeyGenParams.builder("RSA2048").build());
-        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_ENDUSER, keyPairAlias, "RSA2048");
+        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_ENDUSER, keyPairAlias, "RSA2048", "AuthenticationKeyBinding");
     }
     
     @Test
     public void createOcspInternalKeybindingAndActivate() throws Exception {
-        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_OCSP, null, "secp256r1");
+        createRemoteInternalKeybindingAndActivateTest(CERT_PROFILE_OCSP, null, "secp256r1", KEYBINDING_TYPE_ALIAS);
     }
 
 }
