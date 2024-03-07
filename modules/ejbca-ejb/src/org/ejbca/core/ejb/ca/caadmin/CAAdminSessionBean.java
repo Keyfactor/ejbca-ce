@@ -2345,19 +2345,14 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
             
-            // In the case that the CA's signature algorithm was changed in the renewal, then the link certificate will need to 
-            // be signed using the previous signature algorithm.
-            final String currentSigAlg = caToken.getSignatureAlgorithm();
+            // The signature algorithm on a link certificate shall always be from the "old" CA, i.e. the same algorithm as was 
+            // used to sign the old CA certificate
             final String previousSigAlg = CertTools.getCertSignatureAlgorithmNameAsString(oldCaCertificate);
-            final CertificateProfile linkCertProfile = certprofile.clone();
-            if (!StringUtils.equalsIgnoreCase(currentSigAlg, previousSigAlg)) {
-                log.info("CA signature algorithm change detected. Link certificate will use the signature algorithm "+previousSigAlg+".");
-                // Since caToken.getSignatureAlgorithms changed to a new algorithm, we need to clone the certificate profile and 
-                // temporarily use the cloned profile with the old signature algorithm set, only for creating the link certificate.
-                //caToken.setSignatureAlgorithm(sPreviousSigAlg);
-                // This works because certProfile.getSignatureAlgorithm takes presedence before caToken.getSignatureAlgorithm
-                linkCertProfile.setSignatureAlgorithm(previousSigAlg);
+            if (log.isDebugEnabled()) {
+                log.debug("Signature algorithm for link certificate (if issued) for CA '" + ca.getName() + "' will use the old CA certificate signature algorithm "+previousSigAlg+".");
             }
+            final CertificateProfile linkCertProfile = certprofile.clone();
+            linkCertProfile.setSignatureAlgorithm(previousSigAlg);
             // We need to save the CAID, for audit logging that the CA has changed as subjectDN change means a change of CAId
             int caidBeforeNameChange = -1;
             if (subjectDNWillBeChanged) {
