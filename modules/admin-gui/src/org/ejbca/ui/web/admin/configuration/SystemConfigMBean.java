@@ -625,6 +625,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final Properties workerProperties = new Properties();
         workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIME);
         workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIMEUNIT);
+        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_REVOKE_PRE_CERTS, PreCertificateRevocationWorkerConstants.DEFAULT_IS_REVOKE_PRE_CERTS);
         serviceConf.setWorkerProperties(workerProperties);
         serviceConf.setPinToNodes(new String[0]);
         try {
