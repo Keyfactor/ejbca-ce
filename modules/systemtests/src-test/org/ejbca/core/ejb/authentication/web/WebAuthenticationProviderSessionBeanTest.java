@@ -372,6 +372,11 @@ public class WebAuthenticationProviderSessionBeanTest {
             public GlobalConfigurationData findByConfigurationId(String configurationId) {
                 return null;
             }
+
+            @Override
+            public void removeConfiguration(AuthenticationToken authenticationToken, String configurationId) throws AuthorizationDeniedException {
+                
+            }
         };
         return config;
     }

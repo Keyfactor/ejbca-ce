@@ -19,20 +19,23 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 
-/**
- * @version $Id$
- */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "GlobalConfigurationProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class GlobalConfigurationProxySessionBean implements GlobalConfigurationProxySessionRemote {
 
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
+    
+    @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
+    private EntityManager entityManager;
     
     @Override
     public ConfigurationBase getCachedConfiguration(String configID) {
@@ -71,6 +74,17 @@ public class GlobalConfigurationProxySessionBean implements GlobalConfigurationP
     @Override
     public Set<String> getIds() {
         return globalConfigurationSession.getIds();
+    }
+
+    @Override
+    public void removeConfiguration(AuthenticationToken authenticationToken, String configurationId) throws AuthorizationDeniedException {
+        globalConfigurationSession.removeConfiguration(authenticationToken, configurationId);
+    }
+    
+    @Override
+    public void addConfiguration(ConfigurationBase configurationBase) {
+        final GlobalConfigurationData globalConfigurationData = new GlobalConfigurationData(configurationBase.getConfigurationId(), configurationBase);
+        entityManager.persist(globalConfigurationData);
     }
 
 }
