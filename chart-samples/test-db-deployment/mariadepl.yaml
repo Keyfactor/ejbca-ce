@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment # what to create?
+metadata:
+  name: test-mariadb-deployment
+  labels:
+    app: test-mariadb
+spec: # specification for deployment resource
+  replicas: 1 # how many replicas of pods we want to create
+  selector:
+    matchLabels:
+      app: test-mariadb
+  template: # blueprint for pods
+    metadata:
+      labels:
+        app: test-mariadb # service will look for this label
+    spec: # specification for pods
+      volumes:
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: test-mariadb-pvc
+      containers:
+        - name: mariadb
+          image: mariadb:latest
+          ports:
+            - containerPort: 3306 #default one
+          env:
+            - name: MARIADB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-mariadb-secret
+                  key: mariadb-root-password
+            - name: MARIADB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: test-ejbca-mariadb-secret
+                  key: ejbca-db-password
+            - name: MARIADB_DATABASE
+              value: ejbca
+            - name: MARIADB_USER
+              value: ejbca
+          volumeMounts:
+            - name: datadir
+              mountPath: /var/lib/mysql/
