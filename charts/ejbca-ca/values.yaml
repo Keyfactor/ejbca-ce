@@ -108,11 +108,11 @@ ejbca:
 
 replicaCount: 1
 image:
-  registry: artifactory.primekey.com/dev-oci-solna/devops/ejbca/images
+  registry: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images
   name: ejbca-ca
   pullPolicy: IfNotPresent
-  repository: artifactory.primekey.com/dev-oci-solna/devops/ejbca/images/ejbca-ca
-  tag: latest
+  repository: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images/ejbca-ca
+  tag: 8.2.0-Alpha1
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""

@@ -1,8 +1,8 @@
 image:
-  registry: artifactory.primekey.com/ejbca/images
+  registry: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images
   name: ejbca-ca
   pullPolicy: IfNotPresent
-  repository: artifactory.primekey.com/ejbca/images/ejbca-ca
+  repository: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images/ejbca-ca
   tag: latest
 ejbca:
   env:
