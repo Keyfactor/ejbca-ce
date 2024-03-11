@@ -1,8 +1,9 @@
+ # Configuration for NGINX meant for cluster internal communication
 {{- if .Values.nginx.enabled }}
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{ .Chart.Name }}-nginx
+  name: {{ include "ejbca.fullname" . }}-nginx
 spec:
   type: {{ .Values.nginx.service.type }}
   ports:

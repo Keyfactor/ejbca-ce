@@ -1,0 +1,22 @@
+image:
+  registry: artifactory.primekey.com/ejbca/images
+  name: ejbca-ca
+  pullPolicy: IfNotPresent
+  repository: artifactory.primekey.com/ejbca/images/ejbca-ca
+  tag: latest
+ejbca:
+  env:
+    TLS_SETUP_ENABLED: "simple"
+    useEphemeralH2Database: true
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional_no_ca"
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+  hosts:
+    - host: "ejbcaephemeral.k8s.primetest.se"
+      paths:
+        - path: /
+          pathType: Prefix

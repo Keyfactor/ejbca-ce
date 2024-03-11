@@ -1,0 +1,44 @@
+image:
+  registry: artifactory.primekey.com/ejbca/images
+  name: ejbca-ca
+  pullPolicy: IfNotPresent
+  repository: artifactory.primekey.com/ejbca/images/ejbca-ca
+  tag: latest
+ejbca:
+  env:
+    TLS_SETUP_ENABLED: "later"
+    LOG_AUDIT_TO_DB: true
+    DATABASE_JDBC_URL: "jdbc:mariadb://ejbca-ca-database-service:3306/ejbca?characterEncoding=utf8"
+  envRaw:
+    - name: DATABASE_USER
+      valueFrom:
+        secretKeyRef:
+          name: ejbcadbcredentials
+          key: database_user
+    - name: DATABASE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: ejbcadbcredentials
+          key: database_password
+nginx:
+  enabled: true
+  host: "ejbca-ca1-internal-host"
+  mountInternalNginxCert: true
+  secretInternalNginxCert: "internal-nginx-credential-secret-ca"
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional"
+    nginx.ingress.kubernetes.io/auth-tls-secret: "playground/ejbca-ingress-trust-secret"
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+  hosts:
+    - host: "ejbcaca1.k8s.primetest.se"
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - "ejbcaca1.k8s.primetest.se"
+      secretName: ingress-credential-secret-ca
