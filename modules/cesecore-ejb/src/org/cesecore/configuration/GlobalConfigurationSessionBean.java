@@ -190,6 +190,13 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
     
     @Override
+    public void removeConfiguration(final AuthenticationToken authenticationToken, final String configurationId) throws AuthorizationDeniedException {
+        assertAuthorization(authenticationToken, configurationId, "Could not remove configuration with ID " + configurationId + ", insufficient access rights.");
+        final GlobalConfigurationData configuration = entityManager.find(GlobalConfigurationData.class, configurationId);
+        entityManager.remove(configuration);
+    }
+    
+    @Override
     public void saveConfigurationWithRootAccessCheck(final AuthenticationToken authenticationToken, final ConfigurationBase conf) throws AuthorizationDeniedException {
         final String accessRule = StandardRules.ROLE_ROOT.resource();
         if (!authorizationSession.isAuthorized(authenticationToken, accessRule)) {
