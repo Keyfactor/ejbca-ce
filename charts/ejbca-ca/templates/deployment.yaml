@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "ejbca-community-helm.fullname" . }}
+  name: {{ include "ejbca.fullname" . }}
   labels:
-    {{- include "ejbca-community-helm.labels" . | nindent 4 }}
+    {{- include "ejbca.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "ejbca-community-helm.selectorLabels" . | nindent 6 }}
+      {{- include "ejbca.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,25 +18,20 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "ejbca-community-helm.selectorLabels" . | nindent 8 }}
+        {{- include "ejbca.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
-      serviceAccountName: {{ include "ejbca-community-helm.serviceAccountName" . }}
+      serviceAccountName: {{ include "ejbca.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}  
-      {{- if or .Values.nginx.enabled .Values.ejbca.initContainers }}
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.nginx.enabled }}
       initContainers:
-        {{- if .Values.nginx.enabled }}
         - name: {{ .Chart.Name }}-init
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env: {{- include "ejbca-community-helm.ejbcaDeploymentParameters" . | nindent 12 }}
-          command: 
+          env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
+          command:
             - "/bin/sh"
             - "-c"
             - |
@@ -59,10 +54,6 @@ spec:
           - name: ejbca-config-conf-files
             mountPath: /opt/keyfactor/ejbca/conf/
           {{- end }}
-        {{- end }}
-        {{- if .Values.ejbca.initContainers }}
-          {{- toYaml .Values.ejbca.initContainers | nindent 8 }}
-        {{- end }}
       {{- end }}
       containers:
         {{- if .Values.nginx.enabled }}
@@ -89,9 +80,9 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          env: {{- include "ejbca-community-helm.ejbcaDeploymentParameters" . | nindent 12 }}
+          env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
             {{- if .Values.services.proxyAJP.enabled }}
             - name: PROXY_AJP_BIND
               value: {{ .Values.services.proxyAJP.bindIP }}
@@ -100,23 +91,25 @@ spec:
             - name: PROXY_HTTP_BIND
               value: {{ .Values.services.proxyHttp.bindIP }}
             {{- end }}
+          {{- if or (not .Values.ejbca.importEjbcaConfFiles) (hasKey .Values.ejbca "superadminPasswordOverride") }}
           lifecycle:
             postStart:
               exec:
-                command: 
+                command:
                   - "/bin/sh"
                   - "-c"
                   - |
                     {{- if not .Values.ejbca.importEjbcaConfFiles }}
-                    sed -i s/https=443/https={{- include "ejbca-community-helm.ejbcaHttpsPort" . -}}/g /opt/primekey/ejbca/conf/web.properties
-                    sed -i s/pubhttp=80/pubhttp={{- include "ejbca-community-helm.ejbcaPubhttpPort" . -}}/g /opt/primekey/ejbca/conf/web.properties
+                    sed -i s/https=443/https={{- include "ejbca.ejbcaHttpsPort" . -}}/g /opt/primekey/ejbca/conf/web.properties
+                    sed -i s/pubhttp=80/pubhttp={{- include "ejbca.ejbcaPubhttpPort" . -}}/g /opt/primekey/ejbca/conf/web.properties
                     {{- end }}
-                    {{- if and (hasKey .Values.ejbca "superadminPasswordOverride") (eq .Values.ejbca.env.TLS_SETUP_ENABLED "true") }}
+                    {{- if hasKey .Values.ejbca "superadminPasswordOverride" }}
                     until [ -f /opt/keyfactor/appserver/standalone/deployments/ejbca.ear.deployed ]; do sleep 5; done
                     until [[ $(/opt/keyfactor/bin/ejbca.sh roles listadmins --role "Super Administrator Role" | grep -v 'USERNAME TYPE_EQUALCASE "ejbca"') ]]; do sleep 5; done
                     sleep 5
                     /opt/keyfactor/bin/ejbca.sh ra setpwd 'superadmin' '{{ .Values.ejbca.superadminPasswordOverride }}'
                     {{- end }}
+          {{- end }}
           ports:
             {{- if .Values.services.directHttp.enabled }}
             - name: http
@@ -150,7 +143,7 @@ spec:
               {{- end }}
             initialDelaySeconds: 15
             periodSeconds: 2
-            failureThreshold: 500
+            failureThreshold: 50
           livenessProbe:
             tcpSocket:
               {{- if .Values.services.directHttp.enabled }}
@@ -191,12 +184,6 @@ spec:
             - name: ejbca-config-configdump-initialize
               mountPath: /opt/keyfactor/configdump/initialize.d/
             {{- end }}
-            {{- if .Values.ejbca.volumeMounts }}
-              {{- toYaml .Values.ejbca.volumeMounts | nindent 12 }}
-            {{- end }}
-          {{- if .Values.ejbca.sidecarContainers }}
-            {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
-          {{- end }}
       volumes:
         {{- if .Values.ejbca.useH2Persistence }}
         - name: ejbca-h2-persistence
@@ -239,9 +226,6 @@ spec:
         - name: ejbca-config-configdump-initialize
           secret:
             secretName: {{ .Values.ejbca.configdumpInitializeSecret }}
-        {{- end }}
-        {{- if .Values.ejbca.volumes }}
-          {{- toYaml .Values.ejbca.volumes | nindent 8 }}
         {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
