@@ -20,13 +20,9 @@ spec:
       labels:
         {{- include "ejbca.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
-      imagePullSecrets:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       serviceAccountName: {{ include "ejbca.serviceAccountName" . }}
       securityContext:
-        {{- toYaml .Values.podSecurityContext | nindent 8 }}  
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- if or .Values.nginx.enabled .Values.ejbca.initContainers }}
       initContainers:
         {{- if and .Values.nginx.enabled (not .Values.nginx.mountInternalNginxCert) }}
@@ -36,7 +32,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
-          command: 
+          command:
             - "/bin/sh"
             - "-c"
             - |
@@ -109,7 +105,7 @@ spec:
           lifecycle:
             postStart:
               exec:
-                command: 
+                command:
                   - "/bin/sh"
                   - "-c"
                   - |
