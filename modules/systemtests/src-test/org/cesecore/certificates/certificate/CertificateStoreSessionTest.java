@@ -647,7 +647,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         String issuerDn = CertTools.getIssuerDN(cert);
         BigInteger serialNumber = CertTools.getSerialNumber(cert);
         assertEquals("Username was not delivered properly", USERNAME,
-                certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber));
+                certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber.toString()));
     }
 
 
