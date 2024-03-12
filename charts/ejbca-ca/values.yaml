@@ -2,36 +2,116 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 ejbca:
-  useEphemeralH2Database: true
-  useH2Persistence: false
-  #existingH2PersistenceClaim: "database-data-claim"
+  importEjbcaConfFiles: false
+  #ejbcaConfFilesSecret: ejbca-conf
+
+  ## mainly relevant for EJBCA peers(RA/VA)
   importExternalCas: false
   #externalCasSecret: managementca-secret
+  #importConfigdumpStaged: false
+  #configdumpStagedSecret: configdump-staged-secret
+
+  ## mainly relevant for EJBCA CA node
+  ## initializes internal CAs with or without staged configdumps
+  ## HSM Crypto-tokens may be imported and then internal CAs can be created using them
+  #importConfigdumpInitialize: false
+  #configdumpInitializeSecret: configdump-initialize-secret
+
+  ## not recommended: applicable only when direct HTTP access to EJBCA is enabled
   importAppserverKeystore: false
   #appserverKeystoreSecret: keystore-secret
   importAppserverTruststore: false
   #appserverTruststoreSecret: truststore-secret
-  importEjbcaConfFiles: false
-  #ejbcaConfFilesSecret: ejbca-conf
-  #importConfigdumpStaged: false
-  #configdumpStagedSecret: configdump-staged-secret
-  #importConfigdumpInitialize: false
-  #configdumpInitializeSecret: configdump-initialize-secret
+
+  ## only applicable for quick setup of ephemeral test environments
   #superadminPasswordOverride: "foo123"
+  useEphemeralH2Database: false
+  useH2Persistence: false
+  #existingH2PersistenceClaim: "database-data-claim"
   env:
-    TLS_SETUP_ENABLED: "simple"
-    #envRaw:
-    #  - name: DATABASE_PASSWORD
-    #    valueFrom:
-    #     secretKeyRef:
-    #       name: ejbcadbcredentials
-    #       key: database_password
+    TLS_SETUP_ENABLED: "later"
+    # for ephemeral test environments and only applicable to CA node
+    # TLS_SETUP_ENABLED: "simple"
+
+    # database username and password are recommended to be input as secret
+    # DATABASE_JDBC_URL: ""
+
+    # Audit logging should only be enabled in CA node
+    LOG_AUDIT_TO_DB: false
+    # INFO, DEBUG, TRACE, ERROR
+    LOG_LEVEL_APP: "INFO"
+    LOG_LEVEL_SERVER: "INFO"
+
+    ## Observability
+    # The IP address where port 8090 will listen for requests to /health, /health/ready,
+    # /health/live and /metrics . Set this to 0.0.0.0 to bind to all container interfaces.
+    OBSERVABLE_BIND: "127.0.0.1"
+    # Set this to "true" to collect metrics and expose them at the /metrics endpoint for scraping.
+    METRICS_ENABLED: false
+
+    ## Global OCSP configurations
+    OCSP_CHECK_SIGN_CERT_VALIDITY: true
+    OCSP_NON_EXISTING_IS_GOOD: false
+
+    ## SMTP configuration
+    # Specify the FQDN or IP Address of the SMTP host for EJBCA to send email notifications.
+    SMTP_DESTINATION: "localhost"
+    SMTP_DESTINATION_PORT: "25"
+    SMTP_FROM: no-reply@localhost
+    SMTP_TLS_ENABLED: true
+    # Used for Wildfly to connect using TLS to the SMTP server. This only supports public CA certificates.
+    SMTP_SSL_ENABLED: true
+    # The username used when authentication is required for SMTP server.
+    SMTP_USERNAME: ejbca-mail
+    # SMTP password should be given as secrets, see SMTP_PASSWORD secret in envRaw
+    #SMTP_PASSWORD: ejbca
+
+  #envRaw:
+  #  - name: DATABASE_USER
+  #    valueFrom:
+  #     secretKeyRef:
+  #       name: ejbcadbcredentials
+  #       key: database_user
+  #  - name: DATABASE_PASSWORD
+  #    valueFrom:
+  #     secretKeyRef:
+  #       name: ejbcadbcredentials
+  #       key: database_password
+  #  - name: PASSWORD_ENCRYPTION_KEY
+  #    valueFrom:
+  #     secretKeyRef:
+  #       name: ejbca-confidentiality-secrets
+  #       key: password_encrpytion_key
+  #  - name: CA_KEYSTOREPASS
+  #    valueFrom:
+  #     secretKeyRef:
+  #       name: ejbca-confidentiality-secrets
+  #       key: ca_keystore_pass
+  #  - name: EJBCA_CLI_DEFAULTPASSWORD
+  #    valueFrom:
+  #     secretKeyRef:
+  #       name: ejbca-confidentiality-secrets
+  #       key: cli_default_password
+  #  - name: SMTP_PASSWORD
+  #    valueFrom:
+  #     secretKeyRef:
+  #       name: ejbca-smtp-secrets
+  #       key: smtp_password
+  # Extra init containers to be added to the deployment
+  initContainers: []
+  # Extra sidecar containers to be added to the deployment
+  sidecarContainers: []
+  # Extra volumes to be added to the deployment
+  volumes: []
+  # Extra volume mounts to be added to the deployment
+  volumeMounts: []
+
 replicaCount: 1
 image:
   registry: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images
   name: ejbca-ca
   pullPolicy: IfNotPresent
-  repository: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images/ejbca
+  repository: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images/ejbca-ca
   tag: 8.2.0-Alpha1
 imagePullSecrets: []
 nameOverride: ""
@@ -58,37 +138,50 @@ securityContext: {}
 
 # Only one of the following services can be enabled at a time
 services:
-  directHttp:
-    enabled: false
-    type: NodePort
-    httpPort: 30080
-    httpsPort: 30443
-  proxyAJP:
-    enabled: false
-    type: ClusterIP
-    bindIP: 0.0.0.0
-    port: 8009
+  # recommended
   proxyHttp:
     enabled: true
     type: ClusterIP
     bindIP: 0.0.0.0
     httpPort: 8081
     httpsPort: 8082
+  proxyAJP:
+    enabled: false
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    port: 8009
+  # not recommended, should only be used for debugging purpose
+  directHttp:
+    enabled: false
+    type: NodePort
+    httpPort: 30080
+    httpsPort: 30443
+  # Extra sidecar ports to be added to the service, optionally used when sidecarContainers
+  # are defined and need to expose ports
+  sidecarPorts: []
+
+# Recommended for cluster internal communications
 # Requires proxyHttp service to be enabled
 nginx:
   enabled: false
   host: ""
+  # Server TLS credential for cluster internal communication
+  mountInternalNginxCert: false
+  #secretInternalNginxCert: "internal-nginx-credential-secret-ca"
   service:
-    type: NodePort
-    httpPort: 30080
-    httpsPort: 30443
+    type: ClusterIP
+    bindIP: 0.0.0.0
+    httpPort: 80
+    httpsPort: 443
+
+# External communication from cluster
 # Requires proxyAJP or proxyHttp service to be enabled for adminweb access
 ingress:
   enabled: false
   className: "nginx"
   annotations:
-    ## Redirect HTTP to HTTPS
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    ## Do not redirect HTTP to HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
     ## Enable optional client certificate authentication
     nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional_no_ca"
     ## Secret containing trusted CA certificates. Use with auth-tls-verify-client: "on" or "optional"
