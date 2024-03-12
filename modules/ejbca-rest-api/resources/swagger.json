@@ -982,6 +982,14 @@
             ]
           },
           {
+            "name": "expand",
+            "in": "query",
+            "description": "Expand variables by replacing references in form ${VARIABLE_NAME} with values of matching environment variables, e.g. VARIABLE_NAME.",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          },
+          {
             "in": "body",
             "name": "body",
             "description": "JSON data in configdump format",
@@ -1258,6 +1266,14 @@
               "skip",
               "useDefault"
             ]
+          },
+          {
+            "name": "expand",
+            "in": "query",
+            "description": "Expand variables by replacing references in form ${VARIABLE_NAME} with values of matching environment variables, e.g. VARIABLE_NAME.",
+            "required": false,
+            "type": "boolean",
+            "default": false
           }
         ],
         "responses": {
