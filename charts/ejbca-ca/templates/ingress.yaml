@@ -4,7 +4,7 @@
 {{- if .Values.services.proxyAJP.enabled }}
 {{- $svcPort = .Values.services.proxyAJP.port -}}
 {{- else if .Values.services.proxyHttp.enabled }}
-{{- $svcPort = .Values.services.proxyHttp.httpPort -}}
+{{- $svcPort = .Values.services.proxyHttp.httpsPort -}}
 {{- end }}
 {{- if and .Values.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.ingress.annotations "kubernetes.io/ingress.class") }}
