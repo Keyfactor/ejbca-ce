@@ -1729,4 +1729,13 @@ public interface RaMasterApi {
      */
     byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException;
 
+    /**
+     * Return the username of a certificate data object matching the given issuer DN and serial
+     * number (there may be only one).
+     *
+     * @param issuerDn The DN of the issuing CA
+     * @param serialNumber the serial number of the sought certificate.
+     * @return the matching username,
+     */
+    String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber);
 }

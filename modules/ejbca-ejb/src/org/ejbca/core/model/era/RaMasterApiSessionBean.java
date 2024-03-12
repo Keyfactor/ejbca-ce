@@ -370,7 +370,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>18<td>=<td>8.3.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 17;
+    private static final int RA_MASTER_API_VERSION = 18;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -3787,5 +3787,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } else {
             throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to view certificate profile " + profileName);
         }
+    }
+
+    @Override
+    public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber) {
+        return certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber);
     }
 }
