@@ -1,0 +1,77 @@
+# Override values
+ejbca:
+  env:
+    TLS_SETUP_ENABLED: "simple"
+    LOG_AUDIT_TO_DB: true
+    DATABASE_JDBC_URL: "jdbc:mariadb://ejbca-softdb-service:3306/ejbca?characterEncoding=utf8"
+    DATABASE_USER: "ejbca"
+    DEBUG: FALSE
+  envRaw:
+    - name: DATABASE_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: ejbca-softdb-secret
+          key: ejbca-db-password
+  # Extra init containers to be added to the deployment
+  initContainers:
+    - name: hsm-driver-init
+      image: artifactory.primekey.com/primekey/hsm-driver-softhsm:2.6.1
+      command:
+        [
+          "sh",
+          "-c",
+          "cp --preserve --recursive /opt/keyfactor/p11proxy-client/* /mnt/",
+        ]
+      volumeMounts:
+        - name: p11proxy-client
+          mountPath: /mnt
+  # Extra sidecar containers to be added to the deployment
+  sidecarContainers:
+    - name: hsm
+      image: artifactory.primekey.com/primekey/hsm-driver-softhsm:2.6.1
+      imagePullPolicy: IfNotPresent
+      env:
+        - name: SOFTHSM2_LOG_LEVEL
+          value: INFO
+      volumeMounts:
+        - name: tokens
+          mountPath: /var/lib/softhsm/tokens
+  # Extra volumes to be added to the deployment
+  volumes:
+    - name: p11proxy-client
+      emptyDir: {}
+    - name: tokens
+      persistentVolumeClaim:
+        claimName: softhsm-pvc
+  # Extra volume mounts to be added to the deployment
+  volumeMounts:
+    - name: p11proxy-client
+      mountPath: /opt/keyfactor/p11proxy-client
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    ## Do not redirect HTTP to HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    ## Enable optional client certificate authentication
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "optional_no_ca"
+    ## Secret containing trusted CA certificates. Use with auth-tls-verify-client: "on" or "optional"
+    #nginx.ingress.kubernetes.io/auth-tls-secret: "default/managementca-secret"
+    ## Pass client certificates to upstream server
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+    ## Verification depth of the client certificates chain
+    #nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+    ## Configure sticky sessions if using more than one replica
+    #nginx.ingress.kubernetes.io/affinity: "cookie"
+    #nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"
+    #nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+  hosts:
+    - host: "ejbcasofthsm.k8s.primetest.se"
+      paths:
+        - path: /
+          pathType: Prefix
+
+# needed to make softhsm volume mount to work
+podSecurityContext:
+  fsGroup: 10001
