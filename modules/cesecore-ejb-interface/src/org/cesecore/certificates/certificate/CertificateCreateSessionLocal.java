@@ -215,4 +215,11 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      */
     void assertSubjectKeyIdRenewalEnforcement(CAInfo caInfo, EndEntityInformation endEntityInformation, PublicKey publicKey) throws CertificateCreateException;
 
+    CertificateDataWrapper createCertificate(AuthenticationToken admin, EndEntityInformation endEntityInformation, CA ca, RequestMessage request, PublicKey pk,
+            PublicKey altPK, int keyusage, Date notBefore, Date notAfter, Extensions extensions, String sequence,
+            CertificateGenerationParams certGenParams, long updateTime)
+            throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
+            CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CTLogException;
+
 }
