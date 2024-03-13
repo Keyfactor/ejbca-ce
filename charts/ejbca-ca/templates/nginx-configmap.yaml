@@ -1,8 +1,9 @@
+# Configuration for NGINX meant for cluster internal communication
 {{- if .Values.nginx.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nginx-config
+  name: {{ include "ejbca.fullname" . }}-nginx-config
 data:
   nginx.conf: |
     user  nginx;

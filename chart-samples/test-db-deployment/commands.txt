@@ -1,0 +1,11 @@
+# Only meant for quick but persistent test environment setup. Please use an externally developed Helm chart for specific database.
+
+# Deploy MariaDB in a namespace named playground with persistent volume. The service is used to connect from EJBCA.
+# So the service name should be adjusted to match ejbca.env.DATABASE_JDBC_URL.
+
+kubectl create secret generic -n playground test-mariadb-secret --from-literal=mariadb-root-password=ejbca
+kubectl create secret generic -n playground test-ejbca-mariadb-secret --from-literal=ejbca-db-password=ejbca
+
+kubectl apply -f mariapvc.yaml -n playground
+kubectl apply -f mariasvc.yaml -n playground
+kubectl apply -f mariadepl.yaml -n playground
