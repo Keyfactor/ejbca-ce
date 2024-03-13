@@ -118,6 +118,12 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification, final String keyAlgorithm)
             throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
+        return generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm, null);
+    }
+
+    @Override
+    public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification, final String keyAlgorithm, final String alternativeKeyAlgorithm)
+            throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException { 
         // Check if user exists.
         final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
         if(endEntity == null) {
@@ -152,6 +158,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         if (log.isDebugEnabled()) {
             log.debug("loadkeys: " + loadKeys);
         }
+        // TO DO Keyrecovery for hybrid certificates
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
         final boolean reuseCertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
@@ -159,7 +166,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             log.debug("reusecertificate: " + reuseCertificate);
         }
         try {
-            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm, null,
+            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm, alternativeKeyAlgorithm, null,
                     null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
             return KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (AuthLoginException | AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
@@ -173,6 +180,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
         }
     }
 
+    
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
             String keyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
@@ -181,7 +189,18 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, null, keystoreType, loadkeys,
+        return generateOrKeyRecoverTokenAsByteArray(administrator, username, password, caid, keyspec, keyalg, null, keystoreType, loadkeys, savekeys, reusecertificate, endEntityProfileId) ;
+    }
+    
+    @Override
+    public byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
+            String keyalg, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
+            throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
+            CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
+            CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, alternativeKeyalg, null, null, keystoreType, loadkeys,
                 savekeys,
                 reusecertificate, endEntityProfileId);
         return KeyStoreTools.getAsByteArray(keyStore, password);
@@ -197,20 +216,35 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        return generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, notBefore, notAfter, keystoreType, loadkeys,
+                savekeys, reusecertificate, endEntityProfileId);
+    }
+    
+    @Override
+    public KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid,
+            String keyspec, String keyalg, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
+            boolean reusecertificate,
+            int endEntityProfileId)
+            throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
+            CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
+            CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">generateOrKeyRecoverToken");
         }
         boolean isNewToken = false;
-    	KeyRecoveryInformation keyData = null;
-    	KeyPair rsaKeys = null;
-    	EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
+       KeyRecoveryInformation keyData = null;
+       KeyPair rsaKeys = null;
+       KeyPair altKeys = null;
+       EndEntityInformation userdata = endEntityAccessSession.findUser(administrator, username);
         if (userdata == null) {
             throw new NoSuchEndEntityException("User '" + username + "' does not exist");
         }
-    	if (userdata.getStatus() == EndEntityConstants.STATUS_NEW) {
-    	    isNewToken = true;
-    	}
-    	if (loadkeys) {
+       if (userdata.getStatus() == EndEntityConstants.STATUS_NEW) {
+           isNewToken = true;
+       }
+       if (loadkeys) {
             try {
                 Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
                 if (log.isDebugEnabled()) {
@@ -224,19 +258,22 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                             + "'.");
                 }
                 rsaKeys = keyData.getKeyPair();
+                if (altKeyalg != null) {
+                    altKeys = KeyTools.genKeys(keyspec, altKeyalg);
+                }
             } finally {
                 Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
             }
-    		if (reusecertificate) {
-    			// This is only done if reusecertificate == true because if you don't re-use certificate
-    		    // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
+               if (reusecertificate) {
+                       // This is only done if reusecertificate == true because if you don't re-use certificate
+                   // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
                 if (log.isDebugEnabled()) {
                     log.debug("Re-using old certificate for user: "+ username);
                 }
-    			keyRecoverySession.unmarkUser(administrator,username);
-    		}
-    		caid = keyData.getIssuerDN().hashCode(); // always use the CA of the certificate
-    	} else {
+                       keyRecoverySession.unmarkUser(administrator,username);
+               }
+               caid = keyData.getIssuerDN().hashCode(); // always use the CA of the certificate
+       } else {
             if (log.isDebugEnabled()) {
                 log.debug("Generating new keys for user: "+ username);
             }
@@ -257,25 +294,34 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             }
             // generate new keys.
             rsaKeys = KeyTools.genKeys(keyspec, keyalg);
-    	}
-    	X509Certificate cert = null;
-    	if ((reusecertificate) && (keyData != null)) {
+            if (altKeyalg != null) {
+                altKeys = KeyTools.genKeys(keyspec, altKeyalg);
+            }
+        }
+        X509Certificate cert = null;
+        if ((reusecertificate) && (keyData != null)) {
             cert = (X509Certificate) keyData.getCertificate();
-    		boolean finishUser = true;
-			finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
-    		if (finishUser) {
-				endEntityManagementSession.finishUser(userdata);
-    		}
-    	} else {
+            boolean finishUser = true;
+            finishUser = caSession.getCAInfo(administrator,caid).getFinishUser();
+            if (finishUser) {
+                endEntityManagementSession.finishUser(userdata);
+            }
+        } else {
             if (log.isDebugEnabled()) {
                 log.debug("Generating new certificate for user: "+ username);
             }
-            cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()), -1,
-                    notBefore, notAfter);
-    	}
-    	// Clear password from database
-    	userdata = endEntityAccessSession.findUser(administrator, username); //Get GENERATED end entity information
-        return finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys, userdata,
+            if(altKeys != null) {
+                cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
+                        new PublicKeyWrapper(altKeys.getPublic()), -1, notBefore, notAfter);
+            }
+            else {
+                cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
+                        -1, notBefore, notAfter);
+            }
+        }
+        // Clear password from database
+        userdata = endEntityAccessSession.findUser(administrator, username); //Get GENERATED end entity information
+        return finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys, altKeys, userdata,
                 cert);
     }
     
@@ -289,12 +335,27 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        return generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(administrator, username, password, caid, keyspec, keyalg, null, notBefore,
+                notAfter, keystoreType, loadkeys, savekeys, reusecertificate, endEntityProfileId);
+    }
+    
+    @Override
+    public KeyStore generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(AuthenticationToken administrator, String username, String password, int caid,
+            String keyspec, String keyalg, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
+            boolean reusecertificate,
+            int endEntityProfileId)
+            throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
+            CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
+            CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (log.isTraceEnabled()) {
             log.trace(">generateOrKeyRecoverToken");
         }
         boolean isNewToken = false;
         KeyRecoveryInformation keyData = null;
         KeyPair rsaKeys = null;
+        KeyPair altKeys = null;
         EndEntityInformation userdata = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(administrator, username);
         if (userdata == null) {
             throw new NoSuchEndEntityException("User '" + username + "' does not exist");
@@ -316,6 +377,9 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                             + "'.");
                 }
                 rsaKeys = keyData.getKeyPair();
+                if (altKeyalg != null) {
+                    altKeys = KeyTools.genKeys(keyspec, altKeyalg);
+                }
                 if (reusecertificate) {
                     // This is only done if reusecertificate == true because if you don't re-use certificate
                     // signSession.createCertificate is called, which set status to generated, unless finishUser == false in CA config
@@ -349,6 +413,9 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             }
             // generate new keys.
             rsaKeys = KeyTools.genKeys(keyspec, keyalg);
+            if (altKeyalg != null) {
+                altKeys = KeyTools.genKeys(keyspec, altKeyalg);
+            }
         }
         X509Certificate cert = null;
         if ((reusecertificate) && (keyData != null)) {
@@ -362,17 +429,23 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             if (log.isDebugEnabled()) {
                 log.debug("Generating new certificate for user: "+ username);
             }
-            cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()), -1,
-                    notBefore, notAfter);
+            if(altKeys!=null) {
+                cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
+                        new PublicKeyWrapper(altKeys.getPublic()), -1, notBefore, notAfter);
+            }
+            else {
+                cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
+                        -1, notBefore, notAfter);
+            }
         }
         // Clear password from database
         userdata = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(administrator, username); //Get GENERATED end entity information
-        return finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys,
+        return finishProcessingAndStoreKeys(administrator, username, password, caid, keystoreType, loadkeys, savekeys, isNewToken, rsaKeys, altKeys,
                 userdata, cert);
     }
 
     private KeyStore finishProcessingAndStoreKeys(AuthenticationToken administrator, String username, String password, int caid, int keystoreType,
-            boolean loadkeys, boolean savekeys, boolean isNewToken, KeyPair rsaKeys, EndEntityInformation userdata, X509Certificate cert)
+            boolean loadkeys, boolean savekeys, boolean isNewToken, KeyPair rsaKeys, KeyPair altKeys, EndEntityInformation userdata, X509Certificate cert)
             throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException, CertificateSignatureException,
             KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
         if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
@@ -447,7 +520,11 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 if (log.isDebugEnabled()) {
                     log.debug("Generating PKCS12 for user: " + username);
                 }
-                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
+                if (altKeys != null) {
+                    ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), altKeys.getPrivate(), cert, cachain);
+                } else {
+                    ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), null,  cert, cachain);
+                }
             }
 
         } finally {

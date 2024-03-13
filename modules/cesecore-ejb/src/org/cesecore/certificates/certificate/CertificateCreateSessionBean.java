@@ -70,6 +70,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
+import org.cesecore.certificates.ca.HybridCa;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -426,6 +427,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         details.put("notafter", notAfter);
         details.put("sequence", sequence);
         details.put("publickey", new String(Base64.encode(pk.getEncoded(), false)));
+        if (altPK != null) {
+            details.put("altpublickey", new String(Base64.encode(altPK.getEncoded(), false)));
+        }
         logSession.log(EventTypes.CERT_REQUEST, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(),
                 String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
         
@@ -438,9 +442,12 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Validate ValidatorPhase.DATA_VALIDATION
         try {
             // Which public key to validate follows the criteria established in RequestAndPublicKeySelector, which is the same as used in the CA.
-            final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, null, ei);
+            final RequestAndPublicKeySelector pkSelector;
+            pkSelector = new RequestAndPublicKeySelector(request, pk, altPK, ei);     
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     pkSelector.getPublicKey());
+            keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
+                    pkSelector.getAlternativePublicKey() );
         } catch(ValidationException e) {
             throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e);
         }
@@ -566,8 +573,18 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 
                 // Validate ValidatorPhase.PRE_CERTIFICATE_VALIDATION (X.509 CA only)
                 try {
-                    cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
-                            extensions, sequence, certGenParams, cceConfig);
+                    if (ca instanceof HybridCa) {
+                        cert = ((HybridCa) ca).generateCertificate(cryptoToken, endEntityInformation, request, pk, altPK, keyusage, notBefore, notAfter, certProfile,
+                                extensions, sequence, certGenParams, cceConfig);
+                    } else {
+                        if (altPK != null) {
+                            // Error
+                            throw new CertificateCreateException(ErrorCode.BAD_REQUEST, "Can't use alternative public key with this CA type");
+                        } else {
+                            cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
+                                    extensions, sequence, certGenParams, cceConfig);
+                        }
+                    }
                 } catch (CertificateCreateException e) {
                     if (e.getCause() instanceof CTLogException) {
                         // Issuance will eventually be aborted but we have to store the pre-certificate.
