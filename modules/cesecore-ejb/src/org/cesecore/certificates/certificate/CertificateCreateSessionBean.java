@@ -457,8 +457,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             pkSelector = new RequestAndPublicKeySelector(request, pk, altPK, ei);     
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     pkSelector.getPublicKey());
-            keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
-                    pkSelector.getAlternativePublicKey() );
+            if (pkSelector.getAlternativePublicKey() != null) {
+                keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
+                        pkSelector.getAlternativePublicKey());
+            }
         } catch(ValidationException e) {
             throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e);
         }
