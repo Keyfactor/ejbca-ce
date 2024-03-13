@@ -131,6 +131,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     /** Keystore specifications used for enrolling end entity user with key-pair generated on a server side (KickAssRA).*/
     private static final String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
     private static final String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
+    private static final String KEYSTORE_ALTERNATIVE_KEY_ALGORITHM  = "KEYSTORE_ALTERNATIVE_KEY_ALGORITHM";
 
     /** The ID of the approval request that was submitted to create the end entity */
     private static final String ADD_EE_APPROVAL_REQUEST_ID = "ADD_EE_APPROVAL_REQUEST_ID";
@@ -193,7 +194,15 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public void setKeyStoreAlgorithmType(String keyStoreAlgorithmType){
         data.put(KEYSTORE_ALGORITHM_TYPE, keyStoreAlgorithmType);
     }
+    
+    public String getKeyStoreAlternativeKeyAlgorithm(){
+        return (String) data.get(KEYSTORE_ALTERNATIVE_KEY_ALGORITHM);
+    }
 
+    public void setKeyStoreAlternateKeyAlgorithm(String keyStoreAlternateKeyAlgorithm){
+        data.put(KEYSTORE_ALTERNATIVE_KEY_ALGORITHM, keyStoreAlternateKeyAlgorithm);
+    }
+    
     /** @return The certificate request in binary asn.1 form if it was provided during user enrollment request, null otherwise.*/
     public byte[] getCertificateRequest() {
         // For legacy reasons (<EJBCA 6.7.0) the data in the database may be stored in binary format.
