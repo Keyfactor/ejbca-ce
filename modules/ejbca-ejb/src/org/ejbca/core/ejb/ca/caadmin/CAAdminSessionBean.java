@@ -2344,16 +2344,26 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setStatus(CAConstants.CA_ACTIVE);
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
-            // We need to save all this, audit logging that the CA is changed
+            
+            // The signature algorithm on a link certificate shall always be from the "old" CA, i.e. the same algorithm as was 
+            // used to sign the old CA certificate
+            final String previousSigAlg = CertTools.getCertSignatureAlgorithmNameAsString(oldCaCertificate);
+            if (log.isDebugEnabled()) {
+                log.debug("Signature algorithm for link certificate (if issued) for CA '" + ca.getName() + "' will use the old CA certificate signature algorithm "+previousSigAlg+".");
+            }
+            final CertificateProfile linkCertProfile = certprofile.clone();
+            linkCertProfile.setSignatureAlgorithm(previousSigAlg);
+            // We need to save the CAID, for audit logging that the CA has changed as subjectDN change means a change of CAId
             int caidBeforeNameChange = -1;
             if (subjectDNWillBeChanged) {
-                ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
                 caidBeforeNameChange = caid;
-                caid = CAData.calculateCAId(newSubjectDN); // recalculate the caid to corresponds to new CA
+                ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, linkCertProfile, cceConfig,
+                        oldCaCertificate);
+                caid = CAData.calculateCAId(newSubjectDN); // recalculate the CAID to corresponds to new CA
                 ca.setCAId(caid); // it was set to 0 above
                 caSession.addCA(authenticationToken, ca); //add new CA into database
             } else {
-                ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
+                ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, linkCertProfile, cceConfig, oldCaCertificate);
                 caSession.editCA(authenticationToken, ca, true);
             }
 
