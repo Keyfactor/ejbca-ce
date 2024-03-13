@@ -222,7 +222,8 @@ public class RaMasterApiTest {
             new MethodApiDescriptor("editApprovalRequest", "org.ejbca.core.model.era.RaApprovalRequestInfo", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.RaApprovalEditRequest"), "288dfc8aafee"),
             new MethodApiDescriptor("selfRenewCertificate", "[B", Arrays.asList("org.ejbca.core.model.era.RaSelfRenewCertificateData"), "5488eee381e8"),
             new MethodApiDescriptor("getAllAuthorizedCertificateProfiles", "org.ejbca.core.model.era.IdNameHashMap", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken"), "0e0b93165b7d"),
-            new MethodApiDescriptor("getKeyExchangeCertificate", "java.security.cert.Certificate", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int", "int"), "a6aef899bc21")
+            new MethodApiDescriptor("getKeyExchangeCertificate", "java.security.cert.Certificate", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int", "int"), "a6aef899bc21"),
+            new MethodApiDescriptor("findUsernameByIssuerDnAndSerialNumber", "java.lang.String", Arrays.asList("java.lang.String", "java.lang.String"), "980858d82ee7")
     // @formatter:on
     );
 
