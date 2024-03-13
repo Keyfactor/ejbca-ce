@@ -140,7 +140,7 @@ public class GenerateTokenTest extends CaTestCase {
 
             EndEntityInformation eeinfo = new EndEntityInformation(GENERATETOKENTEST_USERNAME, "CN=GENERATETOKENTEST" + new Random().nextLong(), caId, "", null,
                     EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(), eeProfileId,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
+                    certProfileId, new Date(), new Date(), SecConst.TOKEN_SOFT_P12, null);
             eeinfo.setPassword("foo123");
             if (eeinfo.getExtendedInformation() == null) {
                 eeinfo.setExtendedInformation(new ExtendedInformation());
