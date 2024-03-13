@@ -3952,7 +3952,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] generateOrKeyRecoverToken(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN,
+    public byte[] generateOrKeyRecoverTokenHybridCertificate(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN,
             String keySpecification, String keyAlgorithm, String altKeyAlgorithm)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
@@ -3961,7 +3961,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.generateOrKeyRecoverToken(authenticationToken, username, password, hardTokenSN, keySpecification, keyAlgorithm, altKeyAlgorithm);
+                    return raMasterApi.generateOrKeyRecoverTokenHybridCertificate(authenticationToken, username, password, hardTokenSN, keySpecification, keyAlgorithm, altKeyAlgorithm);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 } catch (AuthorizationDeniedException e) {
