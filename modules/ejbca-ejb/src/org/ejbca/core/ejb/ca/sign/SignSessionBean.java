@@ -415,7 +415,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException {
-        log.error("RSAKeysPublicKeyfromKeystore "+ pk.getPublicKey() + "RSAKeysAltKeyfromKeystore "+ altPK.getPublicKey() );
         return createCertificate(admin, username, password, pk.getPublicKey(), altPK.getPublicKey(),keyusage, notBefore, notAfter,
                 CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
@@ -703,7 +702,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, ku, date)");
+            log.trace(">createCertificate(pk, altPK, ku, date)");
         }
         // Authorize user and get DN
         final EndEntityInformation data = authUser(admin, username, password);
@@ -736,7 +735,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final Certificate cert;
         try {
             // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-            log.error("RSAKeysPublicKeyfromSignSessionBean "+ pk + "RSAKeysAltKeyfromSignSessionBean "+ altPK);
             cert = createCertificate(admin, data, ca, pk, altPK, keyusage, notBefore, notAfter, null, null);
             // Call authentication session and tell that we are finished with this user
             finishUser(ca, data);
@@ -747,7 +745,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("CertificateExtensionException was thrown, even though no extensions were supplied.", e);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, date)");
+            log.trace("<createCertificate(pk, altPK, ku, date)");
         }
         return cert;
     }
@@ -1490,7 +1488,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CustomCertificateSerialNumberException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, ku, notAfter)");
+            log.trace(">createCertificate(pk, altPK, ku, notAfter)");
         }
         final long updateTime = System.currentTimeMillis();
         //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
@@ -1513,7 +1511,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, notAfter)");
+            log.trace("<createCertificate(pk, altPK, ku, notAfter)");
         }
         return certWrapper.getCertificate();
     }

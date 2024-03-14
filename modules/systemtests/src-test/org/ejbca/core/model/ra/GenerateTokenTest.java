@@ -221,7 +221,6 @@ public class GenerateTokenTest extends CaTestCase {
                 }
             }
             PublicKey publicKey = cert.getPublicKey();
-            System.out.println(cert);
             final ASN1Primitive altPublicKeyAsn1 = CertTools.getExtensionValue((X509Certificate)cert, Extension.subjectAltPublicKeyInfo.getId());
             byte[] altASN1PrimitiveByte =  altPublicKeyAsn1.toASN1Primitive().getEncoded();
             PublicKey altPublicKey = KeyTools.getPublicKeyFromBytes(altASN1PrimitiveByte);
