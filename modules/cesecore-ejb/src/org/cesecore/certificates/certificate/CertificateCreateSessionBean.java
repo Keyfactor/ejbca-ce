@@ -453,8 +453,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Validate ValidatorPhase.DATA_VALIDATION
         try {
             // Which public key to validate follows the criteria established in RequestAndPublicKeySelector, which is the same as used in the CA.
-            final RequestAndPublicKeySelector pkSelector;
-            pkSelector = new RequestAndPublicKeySelector(request, pk, altPK, ei);     
+            final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, altPK, ei);     
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     pkSelector.getPublicKey());
             if (pkSelector.getAlternativePublicKey() != null) {
