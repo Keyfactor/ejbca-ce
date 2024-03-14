@@ -84,15 +84,15 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * This enrollment information can only be provided from Configdump now and 
      * enrollment is only possible for key bindings present in a CA node.
      * 
-     * @param authenticationToken
-     * @param internalKeyBindingId
-     * @param endEntityInformation
-     * @param keySpec
+     * @param authenticationToken is the authentication token
+     * @param internalKeyBindingId of the key binding
+     * @param endEntityInformation created to which the certificate will be used
+     * @param keySpec for the optionally generated key pair in cryptotoken
      * 
      * @return
-     * @throws AuthorizationDeniedException
-     * @throws CryptoTokenOfflineException
-     * @throws CertificateImportException
+     * @throws CryptoTokenOfflineException if the requested key pair was not accessible
+     * @throws AuthorizationDeniedException if the authentication token was not authorized to create the InternalKeyBinding
+     * @throws CertificateImportException if the certificate could not be created
      */
     void issueCertificateForInternalKeyBinding(AuthenticationToken authenticationToken, int internalKeyBindingId,
             EndEntityInformation endEntityInformation, String keySpec)
@@ -105,29 +105,30 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * and optionally subjectDn. When the configdump is to be 'initialized' the
      * key binding is enrolled and set to active status by @see issueCertificateForInternalKeyBinding.
      * 
-     * @param authenticationToken
-     * @param type
-     * @param id
-     * @param name
-     * @param status
-     * @param certificateId
-     * @param cryptoTokenId
-     * @param keyPairAlias
-     * @param allowMissingKeyPair
-     * @param signatureAlgorithm
-     * @param dataMap
-     * @param trustedCertificateReferences
-     * @param subjectDn
-     * @param issuerDn
-     * @param certificateProfileName
-     * @param endEntityProfileName
-     * @param keySpec
-     * @return
-     * @throws AuthorizationDeniedException
-     * @throws CryptoTokenOfflineException
-     * @throws InternalKeyBindingNameInUseException
-     * @throws InvalidAlgorithmException
-     * @throws InternalKeyBindingNonceConflictException
+     * @param authenticationToken is the authentication token
+     * @param type type of the key binding
+     * @param id of the key binding
+     * @param name name of the key binding
+     * @param status the initial status to give the InternalKeyBinding
+     * @param certificateId is the certificate fingerprint matching the mapped key pair or null
+     * @param cryptoTokenId is the CryptoToken id of the container where the mapped key pair is stored
+     * @param keyPairAlias is the alias of the mapped key pair in the specified CryptoToken (may not be null)
+     * @param allowMissingKeyPair if a missing key pair or crypto token should be allowed
+     * @param signatureAlgorithm is the signature algorithm that this InternalKeyBinding will use for signatures (if applicable)
+     * @param dataMap is a Map of implementation specific properties for this type of IntenalKeyBinding
+     * @param trustedCertificateReferences OCSP response to issue on behalf of CAs
+     * @param subjectDn of the key binding certificate
+     * @param issuerDn of he issuing CA
+     * @param certificateProfileName of the profile in CA node
+     * @param endEntityProfileName of the profile in CA node
+     * @param keySpec for the optionally generated key pair in cryptotoken
+     * 
+     * @return the created InternalKeyBinding's unique identifier
+     * @throws CryptoTokenOfflineException if the requested key pair was not accessible
+     * @throws AuthorizationDeniedException if the authentication token was not authorized to create the InternalKeyBinding
+     * @throws InternalKeyBindingNameInUseException if the requested name was already in use by another InternalKeyBinding
+     * @throws InvalidAlgorithmException if the requested signature algorithm is not available
+     * @throws InternalKeyBindingNonceConflictException if there was a conflict between the nonce setting and CA OCSP response pre-production setting
      */
     int createInternalKeyBindingWithOptionalEnrollmentInfo(AuthenticationToken authenticationToken, String type, int id, String name,
             InternalKeyBindingStatus status, String certificateId, int cryptoTokenId, String keyPairAlias, boolean allowMissingKeyPair,
