@@ -51,11 +51,11 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     private boolean useIssuerNotBeforeAsArchiveCutoff;
     private String retentionPeriod;
     
-    private String subjectDn;
-    private String issuerDn;
-    private String certificateProfileName;
-    private String endEntityProfileName;
-    private String keySpec;
+    private final String subjectDn;
+    private final String issuerDn;
+    private final String certificateProfileName;
+    private final String endEntityProfileName;
+    private final String keySpec;
     
     public InternalKeyBindingInfo(final InternalKeyBinding internalKeyBinding) {
         this.implementationAlias = internalKeyBinding.getImplementationAlias();

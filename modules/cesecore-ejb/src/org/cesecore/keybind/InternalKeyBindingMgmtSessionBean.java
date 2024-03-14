@@ -982,13 +982,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     if (StringUtils.isNotEmpty(internalKeyBinding.getKeySpec())) {
                         keySpec = internalKeyBinding.getKeySpec();
                     } else {
-                        PublicKey caPublicKey = caSession.findById(
+                        final PublicKey caPublicKey = caSession.findById(
                                 endEntityInformation.getCAId()).getCA().getCACertificate().getPublicKey();
                         keySpec = AlgorithmTools.getKeySpecification(caPublicKey);
                     }
                 }
                 final KeyPairTemplate keyUsage = KeyPairTemplate.valueOf(KeyPairTemplate.SIGN.toString());
-                KeyGenParamsBuilder paramBuilder = KeyGenParams.builder(keySpec).withKeyPairTemplate(keyUsage);
+                final KeyGenParamsBuilder paramBuilder = KeyGenParams.builder(keySpec).withKeyPairTemplate(keyUsage);
                 cryptoTokenManagementSession.createKeyPair(authenticationToken, cryptoTokenId, keyPairAlias, paramBuilder.build());
             } catch (InvalidKeyException | CryptoTokenOfflineException | 
                             InvalidAlgorithmParameterException | AuthorizationDeniedException e) {

@@ -79,8 +79,10 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
     Map<Integer, String> getAllInternalKeyBindingIdNameMap(String internalKeyBindingType);
     
     /**
-     * Issue certificate for the internal key binding based on the enrollment information. This enrollment information
-     * can only be provided from Configdump now and enrollment is only possible for key bindings present in a CA node.
+     * Issue certificate for the internal key binding based on the enrollment information. 
+     * 
+     * This enrollment information can only be provided from Configdump now and 
+     * enrollment is only possible for key bindings present in a CA node.
      * 
      * @param authenticationToken
      * @param internalKeyBindingId
@@ -97,8 +99,10 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException, CertificateImportException;
 
     /**
-     * Create an internal key binding with enrollment informations i.e. issuerDn, certifcateProfileName, endEntityProfileName
-     * and optionally subjectDn. Currently used only with configdump and when the configdump is to be 'initialized' the
+     * Create an internal key binding with enrollment informations and currently used only with configdump.
+     * 
+     * Enrollment informations consists of issuerDn, certifcateProfileName, endEntityProfileName
+     * and optionally subjectDn. When the configdump is to be 'initialized' the
      * key binding is enrolled and set to active status by @see issueCertificateForInternalKeyBinding.
      * 
      * @param authenticationToken

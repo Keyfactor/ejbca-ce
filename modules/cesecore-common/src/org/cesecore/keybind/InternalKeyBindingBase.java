@@ -55,7 +55,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private List<String> ocspExtensions;
     private String signatureAlgorithm;
     
-    // currently only for configdump(with initialze flag) for automated enrollment of the first certificate, 
+    // currently only for configdump(with initialize flag) for automated enrollment of the first certificate, 
     // no use after that
     // Manual upload and linking of certificate and other UI flows e.g. "Update" button is unaffected
     // useful for both key bindings in CA node
