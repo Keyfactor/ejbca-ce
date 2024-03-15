@@ -17,10 +17,8 @@ import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.protocol.msae.MsaeRaConfigCacheLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 import java.io.Serializable;
@@ -34,9 +32,6 @@ import java.util.List;
 public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    @EJB
-    private MsaeRaConfigCacheLocal msaeRaConfigCache;
-
     private String selectedAlias;
     private String newAlias;
     private boolean viewOnly = true;
@@ -78,9 +73,6 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
         getEjbcaWebBean().removeAutoenrollAlias(selectedAlias);
         if (getEjbcaWebBean().getAutoenrollConfiguration().aliasExists(selectedAlias)) {
             addErrorMessage("MSAE_COULD_NOT_DELETE_ALIAS");
-        } else {
-            // Removing alias from MSAE config local cache after it gets delete to invalidate the cache!
-            msaeRaConfigCache.removeMsaeAlias(selectedAlias);
         }
         selectedAlias = null;
         return "done";

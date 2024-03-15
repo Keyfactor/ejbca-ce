@@ -53,7 +53,6 @@ import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
-import org.ejbca.core.protocol.msae.MsaeRaConfigCacheLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -101,8 +100,6 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
-    @EJB
-    private MsaeRaConfigCacheLocal msaeRaConfigCache;
 
     private AutoEnrollmentDTO dto;
 
@@ -119,13 +116,13 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             if (StringUtils.isEmpty(aliasName)) {
                 this.dto = new AutoEnrollmentDTO();
             } else {
-                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = msaeRaConfigCache.getMsaeRaConfigCached(aliasName);
+                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = fetchMSAEConfig(aliasName);
                 this.dto = new AutoEnrollmentDTO(aliasName, autoEnrollmentConfiguration);
             }
         }
         return dto;
     }
-
+    
     public void setDto(AutoEnrollmentDTO dto) {
         this.dto = dto;
     }
@@ -479,7 +476,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         if (adLoginPass.equals(HIDDEN_PWD)) {
             // If password field has been reset in GUI, test connection with persisted password
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = msaeRaConfigCache.getMsaeRaConfigCached(getDto().getAlias());
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = fetchMSAEConfig(getDto().getAlias());
             adLoginPass = autoEnrollmentConfiguration.getAdLoginPassword(getDto().getAlias());
             if (StringUtils.isEmpty(adLoginPass)) {
                 addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", "Invalid Credentials");
@@ -503,7 +500,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      */
     public void saveKeyTabFile() {
         try {
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = msaeRaConfigCache.getMsaeRaConfigCached(getDto().getAlias());
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = fetchMSAEConfig(getDto().getAlias());
 
             autoEnrollmentConfiguration.setMsaeKeyTabFilename(getDto().getAlias(), getDto().getKeyTabFilename());
             autoEnrollmentConfiguration.setMsaeKeyTabBytes(getDto().getAlias(), getDto().getKeyTabFileBytes());
@@ -523,7 +520,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      */
     public void saveKrb5ConfFile() {
         try {
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = msaeRaConfigCache.getMsaeRaConfigCached(getDto().getAlias());
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = fetchMSAEConfig(getDto().getAlias());
 
             autoEnrollmentConfiguration.setMsaeKrb5ConfFilename(getDto().getAlias(), getDto().getKrb5ConfFilename());
             autoEnrollmentConfiguration.setMsaeKrb5ConfBytes(getDto().getAlias(), getDto().getKrb5ConfFileBytes());
@@ -597,7 +594,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
         autoenrollmentConfigMBean.setSelectedAlias(newAlias);
         getEjbcaWebBean().clearAutoenrollCache();
-        msaeRaConfigCache.flushMsaeRaConfigCache();
+        getEjbcaWebBean().reloadAutoenrollmentConfiguration();
         return true;
     }
 
@@ -608,7 +605,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 return null;
             }
 
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = msaeRaConfigCache.getMsaeRaConfigCached(getDto().getAlias());
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = fetchMSAEConfig(getDto().getAlias());
             
             // MSAE Kerberos Settings
             autoEnrollmentConfiguration.setMsaeForestRoot(getDto().getAlias(), getDto().getMsaeForestRoot());
@@ -641,7 +638,8 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setMsTemplateSettings(getDto().getAlias(), getDto().getMappedMsTemplates());
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
-            msaeRaConfigCache.flushMsaeRaConfigCache(); // RA config cache reload
+            getEjbcaErrorWebBean().clearAutoenrollCache();
+            getEjbcaWebBean().reloadAutoenrollmentConfiguration();
             addInfoMessage("MSAE_AUTOENROLLMENT_SAVE_OK");
             return "done";
         } catch (AuthorizationDeniedException e) {
@@ -678,5 +676,17 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
 
     public boolean isKeyArchivalEnabledInMappedTemplates() {
         return getDto().getMappedMsTemplates().stream().anyMatch(MSAutoEnrollmentSettingsTemplate::isArchivePrivateKey);
+    }
+    
+    private MSAutoEnrollmentConfiguration fetchMSAEConfig(final String alias) {
+        // First try local
+        MSAutoEnrollmentConfiguration msaeConfig = (MSAutoEnrollmentConfiguration) globalConfigurationSession
+                .getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+
+        if (Objects.isNull(msaeConfig) || msaeConfig.getAliasList().isEmpty() || !msaeConfig.getAliasList().contains(alias)) {
+            // Now we go for peers
+            msaeConfig = raMasterApiProxyBean.getGlobalConfigurationLocalFirst(MSAutoEnrollmentConfiguration.class);
+        }
+        return msaeConfig;
     }
 }
