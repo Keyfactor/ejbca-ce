@@ -69,7 +69,6 @@ import org.ejbca.core.ejb.upgrade.UpgradeSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
-import org.ejbca.core.protocol.msae.MsaeRaConfigCacheLocal;
 
 /**
  * Due to the lack of standardization in JEE5 there is no way to lookup local interfaces.
@@ -137,7 +136,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB SctDataSessionLocal sctDataSession;
 	@EJB OcspDataSessionLocal ocspDataSession;
 	@EJB OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
-	@EJB MsaeRaConfigCacheLocal msaeRaConfigCache;
 
     @Override public AdminPreferenceSessionLocal getAdminPreferenceSession() { return adminPreferenceSession; }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
@@ -190,5 +188,4 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public OcspResponseCleanupSessionLocal getOcspResponseCleanupSession() { return ocspResponseCleanupSession; }
     @Override public SctDataSessionLocal getSctDataSession() { return sctDataSession; }
     @Override public OcspDataSessionLocal getOcspDataSession() { return ocspDataSession; }
-    @Override public MsaeRaConfigCacheLocal getMsaeRaConfigCacheLocal() { return msaeRaConfigCache; }
 }
