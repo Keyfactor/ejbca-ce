@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -66,6 +67,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateData;
+import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -98,8 +100,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Generic Management implementation for InternalKeyBindings.
- * 
- * @version $Id$
+ *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalKeyBindingMgmtSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -116,6 +117,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CertificateDataSessionLocal certificateDataSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
@@ -294,8 +297,8 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             // Ok.. so it's not in the cache.. look for it the hard way..
             for (final Integer currentId : internalKeyBindingDataSession.getIds(null)) {
                 // Don't lookup CryptoTokens we already have in the id to name cache
-                if (!cachedNameToIdMap.values().contains(currentId)) {
-                    final InternalKeyBinding current = internalKeyBindingDataSession.getInternalKeyBinding(currentId.intValue());
+                if (!cachedNameToIdMap.containsValue(currentId)) {
+                    final InternalKeyBinding current = internalKeyBindingDataSession.getInternalKeyBinding(currentId);
                     final String currentName = current == null ? null : current.getName();
                     if (internalKeyBindingName.equals(currentName)) {
                         internalKeyBindingId = currentId;
@@ -310,7 +313,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
     @Override
     public List<TrustEntry> getTrustEntries(InternalKeyBinding internalKeyBinding) {
         final List<InternalKeyBindingTrustEntry> trustedReferences = internalKeyBinding.getTrustedCertificateReferences();
-        
+
         List<TrustEntry> trustedEntries = new ArrayList<>();
         if (trustedReferences.size() == 0) {
             // If no trusted certificates are referenced, trust ANY certificates issued by ANY CA known to this EJBCA instance.
@@ -326,6 +329,7 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     if (!x509CertificateChain.isEmpty()) {
                         trustedEntries.add(new TrustedChain(x509CertificateChain));
                     }
+                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain, null);
                 }
             }
             if(log.isDebugEnabled()) {
@@ -335,12 +339,14 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             for (final InternalKeyBindingTrustEntry trustedReference : trustedReferences) {
                 final CAInfo caInfo = caSession.getCAInfoInternal(trustedReference.getCaId());
                 if (trustedReference.fetchCertificateSerialNumber() == null) {
-                    // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire 
+                    // If no cert serialnumber is specified, then we trust all certificates issued by this CA. We add the entire
                     // CA certificate chain to be used for issuer verification
                     final List<Certificate> certificateChain = caInfo.getCertificateChain();
                     final List<X509Certificate> x509CertificateChain = new ArrayList<>(
                             Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                     trustedEntries.add(new TrustedChain(x509CertificateChain));
+                    // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
+                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain, null);
                 } else {
                     // If a cert serialnumber is specified, then we trust only the certificate with the serial number specified
                     // in the trustedReference
@@ -348,19 +354,38 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
                     final List<X509Certificate> x509CertificateChain = new ArrayList<>(
                             Arrays.asList(certificateChain.toArray(new X509Certificate[certificateChain.size()])));
                     trustedEntries.add(new CertificatePin(x509CertificateChain, trustedReference.fetchCertificateSerialNumber()));
+                    // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
+                    addOlderActiveCAsWithSameSubjectDN(trustedEntries, caInfo, certificateChain, trustedReference.fetchCertificateSerialNumber());
                 }
             }
         }
-        
-        if(trustedEntries.size() == 0) {
-            // If the trusted certificates list is empty it mean that the only trusted reference was to a non-existing specific certificate. 
+
+        if (trustedEntries.size() == 0) {
+            // If the trusted certificates list is empty it mean that the only trusted reference was to a non-existing specific certificate.
             // In this case, EJBCA should not trust anything
             return null;
         }
         return trustedEntries;
     }
 
-    
+    private void addOlderActiveCAsWithSameSubjectDN(List<TrustEntry> trustedEntries, final CAInfo caInfo, final List<Certificate> certificateChain, BigInteger serialNumber) {
+        // check for existing active certificates with same DN, but not in chain (certificate renewed with same SubjectDn)
+        List<Certificate> activeCaCertsBySubjectDn = certificateDataSession.findActiveBySubjectDnAndType(caInfo.getSubjectDN(),
+                Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
+        for (Certificate caCertificate : activeCaCertsBySubjectDn) {
+            if (!certificateChain.contains(caCertificate)) {
+                final List<X509Certificate> renewedCertificateChain = new ArrayList<>();
+                renewedCertificateChain.add((X509Certificate) caCertificate);
+                if (serialNumber == null) {
+                    trustedEntries.add(new TrustedChain(renewedCertificateChain));
+                } else {
+                    trustedEntries.add(new CertificatePin((renewedCertificateChain), serialNumber));
+                }
+            }
+        }
+    }
+
+
     @Override
     public int createInternalKeyBinding(AuthenticationToken authenticationToken, String type, int id, String name, InternalKeyBindingStatus status,
             String certificateId, int cryptoTokenId, String keyPairAlias, String signatureAlgorithm, Map<String, Serializable> dataMap,
