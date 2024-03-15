@@ -1,5 +1,5 @@
 apiVersion: v2
-name: ejbca-ca
+name: ejbca
 description: EJBCA® - Open-source public key infrastructure (PKI) and certificate authority (CA) software.
 # A chart can be either an 'application' or a 'library' chart.
 #
