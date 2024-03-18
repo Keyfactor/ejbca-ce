@@ -99,9 +99,9 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
             throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException, CertificateImportException;
 
     /**
-     * Create an internal key binding with enrollment informations and currently used only with configdump.
+     * Create an internal key binding with enrollment information and currently used only with configdump.
      * 
-     * Enrollment informations consists of issuerDn, certifcateProfileName, endEntityProfileName
+     * Enrollment information consists of issuerDn, certificateProfileName, endEntityProfileName
      * and optionally subjectDn. When the configdump is to be 'initialized' the
      * key binding is enrolled and set to active status by @see issueCertificateForInternalKeyBinding.
      * 
@@ -115,10 +115,10 @@ public interface InternalKeyBindingMgmtSessionLocal extends InternalKeyBindingMg
      * @param keyPairAlias is the alias of the mapped key pair in the specified CryptoToken (may not be null)
      * @param allowMissingKeyPair if a missing key pair or crypto token should be allowed
      * @param signatureAlgorithm is the signature algorithm that this InternalKeyBinding will use for signatures (if applicable)
-     * @param dataMap is a Map of implementation specific properties for this type of IntenalKeyBinding
+     * @param dataMap is a Map of implementation specific properties for this type of InternalKeyBinding
      * @param trustedCertificateReferences OCSP response to issue on behalf of CAs
      * @param subjectDn of the key binding certificate
-     * @param issuerDn of he issuing CA
+     * @param issuerDn of the issuing CA
      * @param certificateProfileName of the profile in CA node
      * @param endEntityProfileName of the profile in CA node
      * @param keySpec for the optionally generated key pair in cryptotoken
