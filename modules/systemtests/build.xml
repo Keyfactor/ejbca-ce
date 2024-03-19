@@ -95,6 +95,7 @@
 		<pathelement location="${mod.ejbca-ejb-interface.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
 		<path refid="lib.x509-common-util.classpath" />
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
 	<path id="interfaces.classpath">
