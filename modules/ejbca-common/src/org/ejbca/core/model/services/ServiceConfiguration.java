@@ -23,7 +23,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
-import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
+import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
 
 /**
  * Value class used for persist the worker, interval and action configurations
@@ -321,10 +321,10 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
                 log.debug("Upgrading to version 7");
                 Properties prop = getWorkerProperties();
                 if (prop != null) {
-                    final String revokePreCerts = prop.getProperty(PreCertificateRevocationWorkerConstants.PROP_REVOKE_PRE_CERTS);
+                    final String revokePreCerts = prop.getProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS);
                     if (StringUtils.isBlank(revokePreCerts)) {
-                        prop.setProperty(PreCertificateRevocationWorkerConstants.PROP_REVOKE_PRE_CERTS,
-                                PreCertificateRevocationWorkerConstants.DEFAULT_IS_REVOKE_PRE_CERTS);
+                        prop.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS,
+                                PreCertificateMaintenanceWorkerConstants.DEFAULT_IS_REVOKE_PRE_CERTS);
                     }
                     setWorkerProperties(prop);
                 }

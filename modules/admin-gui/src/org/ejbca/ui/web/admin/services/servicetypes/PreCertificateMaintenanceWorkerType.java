@@ -17,25 +17,25 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.ejbca.core.model.services.IWorker;
-import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
+import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
 
 /**
- * See PreCertificateRevocationWorker (available in Enterprise Edition only)
+ * See PreCertificateMaintenanceWorker (available in Enterprise Edition only)
  */
-public class PreCertificateRevocationWorkerType extends BaseWorkerType {
+public class PreCertificateMaintenanceWorkerType extends BaseWorkerType {
 
-    public static final String NAME = "PRECERTIFICATEREVOCATIONWORKER";
+    public static final String NAME = "PRECERTIFICATEMAINTENANCEWORKER";
 
     private static final long serialVersionUID = 1;
 
-    private static final String PRECERTIFICATEREVOCATIONWORKER_SUB_PAGE = "precertificaterevocationworker.xhtml";
+    private static final String PRECERTIFICATEMAINTENANCEWORKER_SUB_PAGE = "precertificatemaintenanceworker.xhtml";
     
     private int maxCertAge = 60;
     private String maxIssuanceTimeUnit = IWorker.UNIT_MINUTES;
     private boolean revokePreCerts;
 
-    public PreCertificateRevocationWorkerType() {
-        super(PRECERTIFICATEREVOCATIONWORKER_SUB_PAGE, NAME, true, PreCertificateRevocationWorkerConstants.WORKER_CLASS);
+    public PreCertificateMaintenanceWorkerType() {
+        super(PRECERTIFICATEMAINTENANCEWORKER_SUB_PAGE, NAME, true, PreCertificateMaintenanceWorkerConstants.WORKER_CLASS);
         // No action available for this worker
         deleteAllCompatibleActionTypes();
         addCompatibleActionTypeName(NoActionType.NAME);
@@ -71,18 +71,18 @@ public class PreCertificateRevocationWorkerType extends BaseWorkerType {
     @Override
     public Properties getProperties(final ArrayList<String> errorMessages) throws IOException {
         Properties ret = super.getProperties(errorMessages);
-        ret.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, String.valueOf(maxCertAge));
-        ret.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, maxIssuanceTimeUnit);
-        ret.setProperty(PreCertificateRevocationWorkerConstants.PROP_REVOKE_PRE_CERTS, String.valueOf(revokePreCerts));
+        ret.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_MAX_ISSUANCE_TIME, String.valueOf(maxCertAge));
+        ret.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, maxIssuanceTimeUnit);
+        ret.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS, String.valueOf(revokePreCerts));
         return ret;
     }
 
     @Override
     public void setProperties(Properties properties) throws IOException {
         super.setProperties(properties);
-        maxCertAge = Integer.valueOf(properties.getProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, String.valueOf(maxCertAge)));
-        maxIssuanceTimeUnit = properties.getProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, maxIssuanceTimeUnit);
-        revokePreCerts = Boolean.valueOf(properties.getProperty(PreCertificateRevocationWorkerConstants.PROP_REVOKE_PRE_CERTS, String.valueOf(revokePreCerts)));
+        maxCertAge = Integer.valueOf(properties.getProperty(PreCertificateMaintenanceWorkerConstants.PROP_MAX_ISSUANCE_TIME, String.valueOf(maxCertAge)));
+        maxIssuanceTimeUnit = properties.getProperty(PreCertificateMaintenanceWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, maxIssuanceTimeUnit);
+        revokePreCerts = Boolean.valueOf(properties.getProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS, String.valueOf(revokePreCerts)));
     }
 
 }
