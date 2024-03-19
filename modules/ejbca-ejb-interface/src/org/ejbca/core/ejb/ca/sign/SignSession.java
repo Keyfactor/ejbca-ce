@@ -186,12 +186,6 @@ public interface SignSession {
             AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, NoSuchEndEntityException;
-    
-    Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKeyWrapper pk, PublicKeyWrapper altPK, int keyusage, Date notBefore,
-            Date notAfter) throws CADoesntExistsException, AuthorizationDeniedException, AuthStatusException,
-            AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
-            CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException, NoSuchEndEntityException;
 
     /**
      * Requests for a certificate to be created for the passed public key with default key usage

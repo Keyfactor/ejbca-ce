@@ -229,7 +229,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
-            CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, UnsupportedOperationException {
         if (log.isTraceEnabled()) {
             log.trace(">generateOrKeyRecoverToken");
         }
@@ -259,7 +259,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 }
                 rsaKeys = keyData.getKeyPair();
                 if (altKeyalg != null) {
-                    altKeys = KeyTools.genKeys(keyspec, altKeyalg);
+                    throw new UnsupportedOperationException("Hybrid keyrecovery is not implemented yet");
                 }
             } finally {
                 Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
@@ -310,14 +310,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             if (log.isDebugEnabled()) {
                 log.debug("Generating new certificate for user: "+ username);
             }
-            if(altKeys != null) {
-                cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
-                        new PublicKeyWrapper(altKeys.getPublic()), -1, notBefore, notAfter);
-            }
-            else {
-                cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
-                        -1, notBefore, notAfter);
-            }
+            cert = (X509Certificate) signSession.createCertificate(administrator, username, password,
+                    new PublicKeyWrapper(rsaKeys.getPublic(), altKeys != null ? altKeys.getPublic() : null), -1, notBefore, notAfter);
         }
         // Clear password from database
         userdata = endEntityAccessSession.findUser(administrator, username); //Get GENERATED end entity information
@@ -348,7 +342,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
-            CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+            CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, UnsupportedOperationException{
         if (log.isTraceEnabled()) {
             log.trace(">generateOrKeyRecoverToken");
         }
@@ -378,7 +372,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 }
                 rsaKeys = keyData.getKeyPair();
                 if (altKeyalg != null) {
-                    altKeys = KeyTools.genKeys(keyspec, altKeyalg);
+                    throw new UnsupportedOperationException("Hybrid keyrecovery is not implemented yet");
                 }
                 if (reusecertificate) {
                     // This is only done if reusecertificate == true because if you don't re-use certificate
@@ -430,8 +424,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 log.debug("Generating new certificate for user: "+ username);
             }
             if(altKeys!=null) {
-                cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
-                        new PublicKeyWrapper(altKeys.getPublic()), -1, notBefore, notAfter);
+                cert = (X509Certificate) signSession.createCertificate(administrator, username, password,
+                        new PublicKeyWrapper(rsaKeys.getPublic(), altKeys.getPublic()), -1, notBefore, notAfter);
             }
             else {
                 cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
@@ -520,11 +514,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 if (log.isDebugEnabled()) {
                     log.debug("Generating PKCS12 for user: " + username);
                 }
-                if (altKeys != null) {
-                    ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), altKeys.getPrivate(), cert, cachain);
-                } else {
-                    ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), null,  cert, cachain);
-                }
+                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), altKeys != null ? altKeys.getPrivate() : null, cert, cachain);
             }
 
         } finally {

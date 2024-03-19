@@ -45,12 +45,17 @@ public class PublicKeyWrapper implements Serializable {
         this.altEncodedKey = null;
         this.altAlgorithm = null;
     }
-    
+
     public PublicKeyWrapper(final PublicKey publicKey, final PublicKey altPublicKey) {
         this.encodedKey = publicKey.getEncoded();
         this.algorithm = publicKey.getAlgorithm();
-        this.altEncodedKey = altPublicKey.getEncoded();
-        this.altAlgorithm = altPublicKey.getAlgorithm();
+        if (altPublicKey != null) {
+            this.altEncodedKey = altPublicKey.getEncoded();
+            this.altAlgorithm = altPublicKey.getAlgorithm();
+        } else {
+            this.altEncodedKey = null;
+            this.altAlgorithm = null;
+        }
     }
 
     /**
@@ -76,7 +81,7 @@ public class PublicKeyWrapper implements Serializable {
     }
 
     public PublicKey getAltPublicKey() {
-        if (altPublicKey == null) {
+        if (altPublicKey == null && altAlgorithm != null && altEncodedKey != null) {
             try {
                 KeyFactory keyFactory = KeyFactory.getInstance(altAlgorithm, CryptoProviderTools.getProviderNameFromAlg(altAlgorithm));
                 X509EncodedKeySpec keySpec = new X509EncodedKeySpec(altEncodedKey);
@@ -84,11 +89,11 @@ public class PublicKeyWrapper implements Serializable {
             } catch (NoSuchProviderException e) {
                 throw new IllegalStateException("BouncyCastle was not a known provider.", e);
             } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException("Algorithm " + algorithm + " was not known at deserialisation", e);
+                throw new IllegalStateException("altAlgorithm " + algorithm + " was not known at deserialisation", e);
             } catch (InvalidKeySpecException e) {
                 throw new IllegalStateException("The incorrect key specification was implemented.", e);
             }
-            
+
         }
         return altPublicKey;
     }
