@@ -646,7 +646,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, (altPK != null ? \", altPK\" : \"\"), ku, date)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, date)");
         }
         // Authorize user and get DN
         final EndEntityInformation data = authUser(admin, username, password);
@@ -689,7 +689,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("CertificateExtensionException was thrown, even though no extensions were supplied.", e);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, (altPK != null ? \", altPK\" : \"\"), ku, date)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, date)");
         }
         return cert;
     }
@@ -1399,7 +1399,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CustomCertificateSerialNumberException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, (altPK != null ? \", altPK\" : \"\"), ku, notAfter)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");
         }
         final long updateTime = System.currentTimeMillis();
         //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
@@ -1422,7 +1422,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, (altPK != null ? \", altPK\" : \"\"), ku, notAfter)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");          
         }
         return certWrapper.getCertificate();
     }
