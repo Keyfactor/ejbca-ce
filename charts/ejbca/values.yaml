@@ -8,14 +8,13 @@ ejbca:
   ## mainly relevant for EJBCA peers(RA/VA)
   importExternalCas: false
   #externalCasSecret: managementca-secret
-  #importConfigdumpStaged: false
-  #configdumpStagedSecret: configdump-staged-secret
 
-  ## mainly relevant for EJBCA CA node
-  ## initializes internal CAs with or without staged configdumps
-  ## HSM Crypto-tokens may be imported and then internal CAs can be created using them
-  #importConfigdumpInitialize: false
-  #configdumpInitializeSecret: configdump-initialize-secret
+  configdumpImport:
+    enabled: false
+    initialize: false # Generate initial certificate for CAs on import (default: false)
+    configMapName: # Option 1: Specify a ConfigMap containing your EJBCA ConfigDump JSON data
+    configMapKey: # (Optional) The key in the ConfigMap where the EJBCA ConfigDump data is found (default: "configdump.json")
+    inlineConfigdump: # Option 2: Directly insert your EJBCA ConfigDump JSON data here
 
   ## not recommended: applicable only when direct HTTP access to EJBCA is enabled
   importAppserverKeystore: false
