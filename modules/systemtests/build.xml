@@ -67,7 +67,7 @@
 	</path>
 
 	<path id="systemtests.classpath">
-	        <path refid="lib.json-simple.classpath"/>
+	    <path refid="lib.json-simple.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
 		<path refid="lib.javax.activaton.classpath"/>
@@ -82,6 +82,7 @@
 		<path refid="lib.jackson2.classpath"/>
 		<pathelement location="${mod.ejbca-rest-common.lib}"/>
 		<path refid="lib.resteasy-jaxrs.classpath"/>
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
 	<path id="common.classpath">
@@ -114,7 +115,7 @@
 	</path>
 
 	<path id="compile-ejb.classpath">
-	<path refid="lib.json-simple.classpath"/>
+		<path refid="lib.json-simple.classpath"/>
 		<path refid="lib.cert-cvc.classpath" />
 		<path refid="lib.bouncycastle.classpath" />
 		<path refid="lib.log4j.classpath" />
