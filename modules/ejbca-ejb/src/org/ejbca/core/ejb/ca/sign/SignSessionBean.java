@@ -404,21 +404,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CADoesntExistsException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException {
-        return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter,
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey(), keyusage, notBefore, notAfter,
                 CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
     
-    @Override
-    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKeyWrapper pk,
-            final PublicKeyWrapper altPK, final int keyusage, final Date notBefore, final Date notAfter)
-            throws NoSuchEndEntityException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
-            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
-            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException {
-        return createCertificate(admin, username, password, pk.getPublicKey(), altPK.getPublicKey(),keyusage, notBefore, notAfter,
-                CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
-    }
-
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert)
             throws NoSuchEndEntityException, AuthorizationDeniedException, SignRequestSignatureException, CADoesntExistsException,
@@ -645,53 +634,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, NoSuchEndEntityException {
-        if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, ku, date)");
-        }
-        // Authorize user and get DN
-        final EndEntityInformation data = authUser(admin, username, password);
-        if (log.isDebugEnabled()) {
-            log.debug("Authorized user " + username + " with DN='" + LogRedactionUtils.getSubjectDnLogSafe(data.getDN()) + "'." + " with CA=" + data.getCAId());
-        }
-        if (certificateprofileid != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-            if (log.isDebugEnabled()) {
-                log.debug("Overriding user certificate profile with :" + certificateprofileid);
-            }
-            data.setCertificateProfileId(certificateprofileid);
-        }
-        // Check if we should override the CAId
-        if (caid != SecConst.CAID_USEUSERDEFINED) {
-            if (log.isDebugEnabled()) {
-                log.debug("Overriding user caid with :" + caid);
-            }
-            data.setCAId(caid);
-        }
-        if (log.isDebugEnabled()) {
-            log.debug("User type (EndEntityType) = " + data.getType().getHexValue());
-        }
-        // Get CA object and make sure it is active
-        // Do not log access control to the CA here, that is logged later on when we use the CA to issue a certificate (if we get that far).
-        final CA ca = (CA) caSession.getCANoLog(admin, data.getCAId(), null);
-        if (ca.getStatus() != CAConstants.CA_ACTIVE) {
-            final String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
-            throw new EJBException(msg);
-        }
-        final Certificate cert;
-        try {
-            // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-            cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null, null);
-            // Call authentication session and tell that we are finished with this user
-            finishUser(ca, data);
-        } catch (CustomCertificateSerialNumberException e) {
-            cleanUserCertDataSN(data);
-            throw e;
-        } catch (CertificateExtensionException e) {
-            throw new IllegalStateException("CertificateExtensionException was thrown, even though no extensions were supplied.", e);
-        }
-        if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, date)");
-        }
-        return cert;
+        return createCertificate(admin, username, password, pk, null, keyusage, notBefore, notAfter, certificateprofileid, caid);
     }
 
     @Override
@@ -702,7 +645,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, altPK, ku, date)");
+            log.trace(">createCertificate(pk, (altPK != null ? \", altPK\" : \"\"), ku, date)");
         }
         // Authorize user and get DN
         final EndEntityInformation data = authUser(admin, username, password);
@@ -745,7 +688,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("CertificateExtensionException was thrown, even though no extensions were supplied.", e);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, altPK, ku, date)");
+            log.trace("<createCertificate(pk, (altPK != null ? \", altPK\" : \"\"), ku, date)");
         }
         return cert;
     }
@@ -1450,45 +1393,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws IllegalNameException                   if the certificate request contained an illegal name
      */
     private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
-                                          final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
-            throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CertificateExtensionException, IllegalNameException,
-            CustomCertificateSerialNumberException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
-            IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
-        if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, ku, notAfter)");
-        }
-        final long updateTime = System.currentTimeMillis();
-        //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
-        //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
-        singleActiveCertificateConstraint(admin, endEntityInformation);
-        // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
-        CertificateDataWrapper certWrapper;
-        final CertificateGenerationParams certGenParams = fetchCertGenParams();
-        try {
-            certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage,
-                    notBefore, notAfter, extensions, sequence, certGenParams, updateTime);
-        } catch (CTLogException e) {
-            if (e.getPreCertificate() != null) {
-                certWrapper = (CertificateDataWrapper) e.getPreCertificate();
-                // Publish pre-certificate and abort issuance
-                postCreateCertificate(admin, endEntityInformation, ca, certWrapper, true, certGenParams);
-            }
-            throw new CertificateCreateException(LogRedactionUtils.getRedactedException(e));
-        }
-        postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
-        if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, notAfter)");
-        }
-        return certWrapper.getCertificate();
-    }
-    
-    private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
             final PublicKey pk, final PublicKey altPK, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
             throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CertificateExtensionException, IllegalNameException,
             CustomCertificateSerialNumberException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, altPK, ku, notAfter)");
+            log.trace(">createCertificate(pk, (altPK != null ? \", altPK\" : \"\"), ku, notAfter)");
         }
         final long updateTime = System.currentTimeMillis();
         //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
@@ -1511,7 +1421,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, altPK, ku, notAfter)");
+            log.trace("<createCertificate(pk, (altPK != null ? \", altPK\" : \"\"), ku, notAfter)");
         }
         return certWrapper.getCertificate();
     }
