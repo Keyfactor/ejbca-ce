@@ -95,7 +95,7 @@ import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
-import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
+import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.statedump.ejb.StatedumpImportOptions;
 import org.ejbca.statedump.ejb.StatedumpImportResult;
@@ -344,8 +344,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private SystemConfigurationCtLogManager ctLogManager;
     private EABConfigManager eabConfigManager;
     private GoogleCtPolicy googleCtPolicy;
-    private boolean incompleteIssuanceServiceCheckDone = false;
-    private boolean incompleteIssuanceServiceAvailable;
+    private boolean preCertificateMaintenanceServiceCheckDone = false;
+    private boolean preCertificateMaintenanceServiceAvailable;
     private int lastActiveTab = 0;
 
     private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
@@ -596,36 +596,36 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         return googleCtPolicy;
     }
 
-    public boolean isIncompleteIssuanceServiceAvailable() {
-        if (!incompleteIssuanceServiceCheckDone) {
-            incompleteIssuanceServiceCheckDone = true;
+    public boolean isPreCertificateMaintenanceServiceAvailable() {
+        if (!preCertificateMaintenanceServiceCheckDone) {
+            preCertificateMaintenanceServiceCheckDone = true;
             final HashMap<Integer,String> services = serviceSession.getServiceIdToNameMap();
-            incompleteIssuanceServiceAvailable = false;
+            preCertificateMaintenanceServiceAvailable = false;
             for (final int serviceId : services.keySet()) {
                 final ServiceConfiguration service = serviceSession.getServiceConfiguration(serviceId);
-                if (PreCertificateRevocationWorkerConstants.WORKER_CLASS.equals(service.getWorkerClassPath())) {
-                    incompleteIssuanceServiceAvailable = true;
+                if (PreCertificateMaintenanceWorkerConstants.WORKER_CLASS.equals(service.getWorkerClassPath())) {
+                    preCertificateMaintenanceServiceAvailable = true;
                 }
             }
         }
-        return incompleteIssuanceServiceAvailable;
+        return preCertificateMaintenanceServiceAvailable;
     }
 
-    public void addIncompleteIssuanceService() {
+    public void addPreCertificateMaintenanceService() {
         final ServiceConfiguration serviceConf = new ServiceConfiguration();
         serviceConf.setActive(true);
-        serviceConf.setDescription("This service revokes certificates where issuance has failed, but pre-certificates have been submitted to CT logs.");
+        serviceConf.setDescription("This service maintains certificates where issuance has failed, but pre-certificates have been submitted to CT logs.");
         serviceConf.setActionClassPath(NoAction.class.getName());
         serviceConf.setIntervalClassPath(PeriodicalInterval.class.getName());
         final Properties intervalProperties = new Properties();
         intervalProperties.setProperty(PeriodicalInterval.PROP_VALUE, "5");
         intervalProperties.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_MINUTES);
         serviceConf.setIntervalProperties(intervalProperties);
-        serviceConf.setWorkerClassPath(PreCertificateRevocationWorkerConstants.WORKER_CLASS);
+        serviceConf.setWorkerClassPath(PreCertificateMaintenanceWorkerConstants.WORKER_CLASS);
         final Properties workerProperties = new Properties();
-        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIME, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIME);
-        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, PreCertificateRevocationWorkerConstants.DEFAULT_MAX_ISSUANCE_TIMEUNIT);
-        workerProperties.setProperty(PreCertificateRevocationWorkerConstants.PROP_REVOKE_PRE_CERTS, PreCertificateRevocationWorkerConstants.DEFAULT_IS_REVOKE_PRE_CERTS);
+        workerProperties.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_MAX_ISSUANCE_TIME, PreCertificateMaintenanceWorkerConstants.DEFAULT_MAX_ISSUANCE_TIME);
+        workerProperties.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_MAX_ISSUANCE_TIMEUNIT, PreCertificateMaintenanceWorkerConstants.DEFAULT_MAX_ISSUANCE_TIMEUNIT);
+        workerProperties.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS, PreCertificateMaintenanceWorkerConstants.DEFAULT_IS_REVOKE_PRE_CERTS);
         serviceConf.setWorkerProperties(workerProperties);
         serviceConf.setPinToNodes(new String[0]);
         try {
@@ -637,7 +637,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             log.info(msg + e.getLocalizedMessage());
             addNonTranslatedErrorMessage(msg);
         }
-        incompleteIssuanceServiceCheckDone = false; // trigger a new check
+        preCertificateMaintenanceServiceCheckDone = false; // trigger a new check
     }
 
     public GlobalCesecoreConfiguration getGlobalCesecoreConfiguration() {
@@ -1127,7 +1127,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         selectedCustomCertExtensionID = 0;
         googleCtPolicy = null;
         validatorSettings = null;
-        incompleteIssuanceServiceCheckDone = false;
+        preCertificateMaintenanceServiceCheckDone = false;
         enableCustomHeaderRest = getAvailableProtocolsConfiguration().isCustomHeaderForRestEnabled();
         customHeaderRestName = getAvailableProtocolsConfiguration().getCustomHeaderForRest();
     }

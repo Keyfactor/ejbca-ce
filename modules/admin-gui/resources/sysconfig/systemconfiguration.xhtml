@@ -601,12 +601,12 @@
             <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Transparency.html')}" escape="false"/></h4>
         </div>
 
-        <h:panelGroup id="ctRevocationService" styleClass="block hintBlock" layout="block" rendered="#{not systemConfigMBean.incompleteIssuanceServiceAvailable}">
+        <h:panelGroup id="ctRevocationService" styleClass="block hintBlock" layout="block" rendered="#{not systemConfigMBean.preCertificateMaintenanceServiceAvailable}">
                <h3><h:outputText value="#{web.text.CTLOGCONFIGURATION_ADDSERVICEHEADER}"/></h3>
                <p><h:outputText value="#{web.text.CTLOGCONFIGURATION_ADDSERVICETEXT}"/></p>
-               <div><h:commandButton action="#{systemConfigMBean.addIncompleteIssuanceService}"
+               <div><h:commandButton action="#{systemConfigMBean.addPreCertificateMaintenanceService}"
                             value="#{web.text.CTLOGCONFIGURATION_ADDSERVICEBUTTON}"
-                            id="addIncompleteIssuanceServiceButton"/></div>
+                            id="addPreCertificateMaintenanceServiceButton"/></div>
         </h:panelGroup>
 
 		<h:dataTable value="#{systemConfigMBean.ctLogManager.labels}" var="label">
