@@ -716,7 +716,7 @@ public abstract class CATokenTestBase {
 						cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
 				fail("Keystore instansiation should have failed.");
 			} catch (CryptoTokenOfflineException e) {
-                assertEquals("The keys in the crypto token with id " + 111 + " could not be accessed. Is the crypto token active?", e.getMessage());
+                assertEquals("The keys in the crypto token with id " + 111 + " could not be accessed. Is the crypto token active?", e.getMessage().stripTrailing());
 			}
 			// Activate with wrong PIN should not work
 			try {
