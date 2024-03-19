@@ -379,13 +379,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
+    
+    @Override
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk, final PublicKey altPK)
+            throws NoSuchEndEntityException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException {
+        // Default key usage is defined in certificate profiles
+        return createCertificate(admin, username, password, pk, altPK, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
+                SecConst.CAID_USEUSERDEFINED);
+    }
 
     @Override
     public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKeyWrapper pk)
             throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException, IllegalKeyException, CertificateCreateException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException,
             CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException {
-        return createCertificate(admin, username, password, pk.getPublicKey());
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey());
     }
 
     @Override
@@ -614,17 +625,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException {
-        return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
-    }
-    
-    @Override
-    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKeyWrapper pk, final PublicKeyWrapper altPK,
-                                         final int keyusage, final Date notBefore, final Date notAfter, final int certificateprofileid, final int caid)
-            throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException,
-            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
-            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException {
-        return createCertificate(admin, username, password, pk.getPublicKey(), altPK.getPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
     }
 
     @Override

@@ -476,12 +476,6 @@ public interface SignSession {
      */
     CertificateGenerationParams fetchCertGenParams();
 
-    Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKeyWrapper pk, PublicKeyWrapper altPK,
-            int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws NoSuchEndEntityException, CADoesntExistsException,
-            AuthorizationDeniedException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException,
-            IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException,
-            CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException;
-
     Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, PublicKey altPK, int keyusage,
             Date notBefore, Date notAfter, int certificateprofileid, int caid) throws CADoesntExistsException, AuthorizationDeniedException,
             AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
