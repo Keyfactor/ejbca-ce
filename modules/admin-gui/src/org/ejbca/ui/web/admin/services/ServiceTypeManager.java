@@ -26,7 +26,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.CustomIntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.CustomWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.DatabaseMaintenanceWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
-import org.ejbca.ui.web.admin.services.servicetypes.PreCertificateRevocationWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.PreCertificateMaintenanceWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.NoActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
@@ -74,7 +74,7 @@ public class ServiceTypeManager implements Serializable {
         registerServiceType(new PublishQueueWorkerType());
         registerServiceType(new HsmKeepAliveWorkerType());
         // Enterprise Edition workers that don't use the custom worker framework
-        final ServiceType[] eeWorkerTypes = { new PreCertificateRevocationWorkerType(), new DatabaseMaintenanceWorkerType() };
+        final ServiceType[] eeWorkerTypes = { new PreCertificateMaintenanceWorkerType(), new DatabaseMaintenanceWorkerType() };
         for (final ServiceType eeWorkerType : eeWorkerTypes) {
             final String classpath = eeWorkerType.getClassPath();
             try {
