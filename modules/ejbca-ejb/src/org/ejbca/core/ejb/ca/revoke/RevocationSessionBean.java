@@ -351,7 +351,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME,
                         Certificate.class);
 
-                // Sets the status of the pre certs in CertificateData to INACTIVE
+                // Sets the status of the pre certs in CertificateData to ACTIVE
                 certificateStoreSession.storeCertificateNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
                         incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_ACTIVE, certProfile.getType(),
                         incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),

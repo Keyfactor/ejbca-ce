@@ -40,13 +40,13 @@
 		</h:panelGroup>
 		<h:panelGroup>
 			<h:inputText id="certCheckTimeValueTextField"
-				value="#{editService.preCertificateRevocationWorkerType.maxIssuanceTime}"
+				value="#{editService.preCertificateMaintenanceWorkerType.maxIssuanceTime}"
 				size="5" pt:type="number" title="#{web.text.FORMAT_INTEGER}"
 				disabled="#{not editService.hasEditRights}">
 				<f:convertNumber type="number" />
 			</h:inputText>
 			<h:selectOneMenu id="certCheckTimeUnitSelect"
-				value="#{editService.preCertificateRevocationWorkerType.maxIssuanceTimeUnit}"
+				value="#{editService.preCertificateMaintenanceWorkerType.maxIssuanceTimeUnit}"
 				disabled="#{not editService.hasEditRights}">
 				<f:selectItems value="#{editService.notifyingType.availableUnits}" />
 			</h:selectOneMenu>
@@ -56,7 +56,7 @@
 		</h:panelGroup>
 		<h:panelGroup>
 			<h:selectBooleanCheckbox id="certRevokePreCertificates"
-				value="#{editService.preCertificateRevocationWorkerType.revokePreCerts}"
+				value="#{editService.preCertificateMaintenanceWorkerType.revokePreCerts}"
 				disabled="#{not editService.hasEditRights}">
 			</h:selectBooleanCheckbox>
 			<h:outputLabel value="#{web.text.USE}" />

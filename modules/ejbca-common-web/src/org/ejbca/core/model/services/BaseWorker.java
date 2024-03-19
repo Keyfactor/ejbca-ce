@@ -235,7 +235,7 @@ public abstract class BaseWorker implements IWorker {
         return result.substring(0, result.length() - 2);
 	}
 	
-	protected boolean isRevokePreCertificates(final String PropertyRevokePreCertificas) {
-	    return Boolean.parseBoolean((properties.getProperty(PropertyRevokePreCertificas)));
+	protected boolean isRevokePreCertificates(final String PropertyRevokePreCertificates) {
+	    return Boolean.parseBoolean((properties.getProperty(PropertyRevokePreCertificates)));
 	}
 }
