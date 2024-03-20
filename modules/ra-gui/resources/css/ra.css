@@ -44,7 +44,7 @@
 
 .content-body h2 {
 	margin: 0.2em 0;
-	font-size: 1.3em;
+	font-size: 1.4em;
 	font-weight: 300;
 	color: #1f589f;
 }
@@ -98,24 +98,6 @@
 
 .internal-frame fieldset {
 	padding: 0;
-}
-
-.internal-frame fieldset > .pure-control-group > label,
-#requestInfoForm\:selectKeyAlgorithmOuterPanel > .internal-frame > .pure-control-group > label {
-    min-width: 22.0em;
-}
-.internal-frame fieldset > .pure-control-group > input[type="text"],
-.internal-frame fieldset > .pure-control-group > input[type="password"],
-.internal-frame fieldset > .pure-control-group > input[type="email"],
-.internal-frame fieldset > .pure-control-group > input[type="url"],
-.internal-frame fieldset > .pure-control-group > input[type="number"],
-.internal-frame fieldset > .pure-control-group > input[type="search"],
-.internal-frame fieldset > .pure-control-group > textarea {
-    min-width: 27.8em;
-}
-.internal-frame fieldset > .pure-control-group > select,
-#requestInfoForm\:selectKeyAlgorithmOuterPanel > .internal-frame > .pure-control-group > select {
-    min-width: 36.7%;
 }
 
 .internal-frame-with-left-margin {
@@ -176,6 +158,11 @@
 }
 .pure-form-aligned .pure-control-group select {
     /* min-width: 27.8em;	/* Too wide for Email address domain list! */
+}
+.pure-form-aligned #requestTemplateForm\:selectRequestTemplateOuterPanel .pure-control-group select,
+.pure-form-aligned #requestInfoForm\:selectKeyAlgorithmOuterPanel .pure-control-group select,
+.pure-form-aligned #requestInfoForm\:selectTokenOuterPanel .pure-control-group select {
+    min-width: 27.8em;
 }
 
 .bigStatus {
