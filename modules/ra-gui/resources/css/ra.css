@@ -405,17 +405,6 @@ input[type="file"]:focus {
 
 @media (max-width: 47.99em) {
 
-    .internal-frame fieldset > .pure-control-group > input[type="text"],
-    .internal-frame fieldset > .pure-control-group > input[type="password"],
-    .internal-frame fieldset > .pure-control-group > input[type="email"],
-    .internal-frame fieldset > .pure-control-group > input[type="url"],
-    .internal-frame fieldset > .pure-control-group > input[type="number"],
-    .internal-frame fieldset > .pure-control-group > input[type="search"],
-    .internal-frame fieldset > .pure-control-group > select,
-    .internal-frame fieldset > .pure-control-group > textarea {
-        min-width: 100%;
-    }
-
     .pure-form-aligned .pure-control-group input[type="text"],
     .pure-form-aligned .pure-control-group input[type="password"],
     .pure-form-aligned .pure-control-group input[type="email"],
@@ -424,6 +413,11 @@ input[type="file"]:focus {
     .pure-form-aligned .pure-control-group input[type="search"],
     .pure-form-aligned .pure-control-group select,
     .pure-form-aligned .pure-control-group textarea {
+        min-width: 100%;
+    }
+    .pure-form-aligned #requestTemplateForm\:selectRequestTemplateOuterPanel .pure-control-group select,
+    .pure-form-aligned #requestInfoForm\:selectKeyAlgorithmOuterPanel .pure-control-group select,
+    .pure-form-aligned #requestInfoForm\:selectTokenOuterPanel .pure-control-group select {
         min-width: 100%;
     }
 
