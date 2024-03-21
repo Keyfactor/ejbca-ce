@@ -64,33 +64,6 @@
         }
       }
     },
-    "/v1/ca_management/{ca_name}/deactivate": {
-      "put": {
-        "tags": [
-          "v1/ca_management"
-        ],
-        "summary": "Deactivate a CA",
-        "description": "Deactivates CA with given name",
-        "operationId": "deactivate",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "ca_name",
-            "in": "path",
-            "description": "Name of the CA to deactivate",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "CA deactivated"
-          }
-        }
-      }
-    },
     "/v1/ca_management/{ca_name}/activate": {
       "put": {
         "tags": [
@@ -114,6 +87,33 @@
         "responses": {
           "200": {
             "description": "CA activated"
+          }
+        }
+      }
+    },
+    "/v1/ca_management/{ca_name}/deactivate": {
+      "put": {
+        "tags": [
+          "v1/ca_management"
+        ],
+        "summary": "Deactivate a CA",
+        "description": "Deactivates CA with given name",
+        "operationId": "deactivate",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ca_name",
+            "in": "path",
+            "description": "Name of the CA to deactivate",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CA deactivated"
           }
         }
       }
@@ -214,69 +214,6 @@
         }
       }
     },
-    "/v1/ca": {
-      "get": {
-        "tags": [
-          "v1/ca"
-        ],
-        "summary": "Returns the Response containing the list of CAs with general information per CA as Json",
-        "description": "Returns the Response containing the list of CAs with general information per CA as Json",
-        "operationId": "listCas",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/CaInfosRestResponse"
-            }
-          }
-        }
-      }
-    },
-    "/v1/ca/{issuer_dn}/createcrl": {
-      "post": {
-        "tags": [
-          "v1/ca"
-        ],
-        "summary": "Create CRL(main, partition and delta) issued by this CA",
-        "description": "",
-        "operationId": "createCrl",
-        "produces": [
-          "application/json"
-        ],
-        "consumes": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "issuer_dn",
-            "in": "path",
-            "description": "the CRL issuers DN (CAs subject DN)",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "deltacrl",
-            "in": "query",
-            "description": "true to create the deltaCRL, false to create the base CRL",
-            "required": false,
-            "type": "boolean",
-            "default": false
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/CreateCrlRestResponse"
-            }
-          }
-        }
-      }
-    },
     "/v1/ca/{issuer_dn}/importcrl": {
       "post": {
         "tags": [
@@ -326,6 +263,78 @@
         }
       }
     },
+    "/v1/ca": {
+      "get": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Returns the Response containing the list of CAs with general information per CA as Json",
+        "description": "Returns the Response containing the list of CAs with general information per CA as Json",
+        "operationId": "listCas",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "includeExternal",
+            "in": "query",
+            "description": "true to get external (i.e. imported) cartificates, false to not get external (i.e. imported) certificates",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CaInfosRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/ca/{issuer_dn}/createcrl": {
+      "post": {
+        "tags": [
+          "v1/ca"
+        ],
+        "summary": "Create CRL(main, partition and delta) issued by this CA",
+        "description": "",
+        "operationId": "createCrl",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "deltacrl",
+            "in": "query",
+            "description": "true to create the deltaCRL, false to create the base CRL",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CreateCrlRestResponse"
+            }
+          }
+        }
+      }
+    },
     "/v1/certificate/status": {
       "get": {
         "tags": [
@@ -343,6 +352,98 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/RestResourceStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revoke": {
+      "put": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Revokes the specified certificate",
+        "description": "Revokes the specified certificate, changes revocation reason for an already revoked certificate, sets invalidity or revocation date",
+        "operationId": "revokeCertificate",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "issuer_dn",
+            "in": "path",
+            "description": "Subject DN of the issuing CA",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "certificate_serial_number",
+            "in": "path",
+            "description": "Hex serial number (without prefix, e.g. '00')",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "description": "Valid RFC5280 reason. One of\n NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE \n\n Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "invalidity_date",
+            "in": "query",
+            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/RevokeStatusRestResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/certificate/certificaterequest": {
+      "post": {
+        "tags": [
+          "v1/certificate"
+        ],
+        "summary": "Enrollment with client generated keys for an existing End Entity",
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+        "operationId": "certificateRequest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/CertificateRequestRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
             }
           }
         }
@@ -383,141 +484,27 @@
         }
       }
     },
-    "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revoke": {
-      "put": {
-        "tags": [
-          "v1/certificate"
-        ],
-        "summary": "Revokes the specified certificate",
-        "description": "Revokes the specified certificate or changes revocation reason for an already revoked certificate",
-        "operationId": "revokeCertificate",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "issuer_dn",
-            "in": "path",
-            "description": "Subject DN of the issuing CA",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "certificate_serial_number",
-            "in": "path",
-            "description": "hex serial number (without prefix, e.g. '00')",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "reason",
-            "in": "query",
-            "description": "Must be valid RFC5280 reason. One of\n NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE \n\n Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "date",
-            "in": "query",
-            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "invalidity_date",
-            "in": "query",
-            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/RevokeStatusRestResponse"
-            }
-          }
-        }
-      }
-    },
-    "/v1/certificate/expire": {
-      "get": {
-        "tags": [
-          "v1/certificate"
-        ],
-        "summary": "Get a list of certificates that are about to expire",
-        "description": "List of certificates expiring within specified number of days",
-        "operationId": "getCertificatesAboutToExpire",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "days",
-            "in": "query",
-            "description": "Request certificates expiring within this number of days",
-            "required": false,
-            "type": "integer",
-            "format": "int64"
-          },
-          {
-            "name": "offset",
-            "in": "query",
-            "description": "Next offset to display results of, if maxNumberOfResults is exceeded. Starts from 0.",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "maxNumberOfResults",
-            "in": "query",
-            "description": "Maximum number of certificates to display. If result exceeds this value. Modify 'offset' to retrieve more results",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/ExpiringCertificatesRestResponse"
-            }
-          }
-        }
-      }
-    },
-    "/v1/certificate/{request_id}/finalize": {
+    "/v1/certificate/pkcs10enroll": {
       "post": {
         "tags": [
           "v1/certificate"
         ],
-        "summary": "Finalize enrollment",
-        "description": "Finalizes enrollment after administrator approval using request Id",
-        "operationId": "finalizeEnrollment",
-        "produces": [
+        "summary": "Enrollment with client generated keys, using CSR subject",
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+        "operationId": "enrollPkcs10Certificate",
+        "consumes": [
           "application/json"
         ],
-        "consumes": [
+        "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "name": "request_id",
-            "in": "path",
-            "description": "Approval request id",
-            "required": true,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
             "in": "body",
             "name": "body",
-            "description": "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'",
             "required": false,
             "schema": {
-              "$ref": "#/definitions/FinalizeRestRequest"
+              "$ref": "#/definitions/EnrollCertificateRestRequest"
             }
           }
         ],
@@ -525,7 +512,7 @@
           "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateRestResponse"
+              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
             }
           }
         }
@@ -602,14 +589,14 @@
         }
       }
     },
-    "/v1/certificate/pkcs10enroll": {
+    "/v1/certificate/{request_id}/finalize": {
       "post": {
         "tags": [
           "v1/certificate"
         ],
-        "summary": "Enrollment with client generated keys, using CSR subject",
-        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-        "operationId": "enrollPkcs10Certificate",
+        "summary": "Finalize enrollment",
+        "description": "Finalizes enrollment after administrator approval using request Id",
+        "operationId": "finalizeEnrollment",
         "consumes": [
           "application/json"
         ],
@@ -618,11 +605,20 @@
         ],
         "parameters": [
           {
+            "name": "request_id",
+            "in": "path",
+            "description": "Approval request id",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
             "in": "body",
             "name": "body",
+            "description": "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'",
             "required": false,
             "schema": {
-              "$ref": "#/definitions/EnrollCertificateRestRequest"
+              "$ref": "#/definitions/FinalizeRestRequest"
             }
           }
         ],
@@ -630,41 +626,54 @@
           "201": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
+              "$ref": "#/definitions/CertificateRestResponse"
             }
           }
         }
       }
     },
-    "/v1/certificate/certificaterequest": {
-      "post": {
+    "/v1/certificate/expire": {
+      "get": {
         "tags": [
           "v1/certificate"
         ],
-        "summary": "Enrollment with client generated keys for an existing End Entity",
-        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-        "operationId": "certificateRequest",
-        "consumes": [
-          "application/json"
-        ],
+        "summary": "Get a list of certificates that are about to expire",
+        "description": "List of certificates expiring within specified number of days",
+        "operationId": "getCertificatesAboutToExpire",
         "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "in": "body",
-            "name": "body",
+            "name": "days",
+            "in": "query",
+            "description": "Request certificates expiring within this number of days",
             "required": false,
-            "schema": {
-              "$ref": "#/definitions/CertificateRequestRestRequest"
-            }
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Next offset to display results of, if maxNumberOfResults is exceeded. Starts from 0.",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "maxNumberOfResults",
+            "in": "query",
+            "description": "Maximum number of certificates to display. If result exceeds this value. Modify 'offset' to retrieve more results",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "responses": {
-          "201": {
+          "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateEnrollmentRestResponse"
+              "$ref": "#/definitions/ExpiringCertificatesRestResponse"
             }
           }
         }
@@ -692,31 +701,30 @@
         }
       }
     },
-    "/v2/certificate/count": {
+    "/v2/certificate/profile/{profile_name}": {
       "get": {
         "tags": [
           "v2/certificate"
         ],
-        "summary": "Get the quantity of rather total issued or active certificates",
+        "summary": "Get Certificate Profile Info.",
         "description": "",
-        "operationId": "getCertificateCount",
+        "operationId": "getCertificateProfileInfo",
         "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "name": "isActive",
-            "in": "query",
-            "description": "true if an active certificates should be counted only",
-            "required": false,
-            "type": "boolean"
+            "name": "profile_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateCountResponse"
+              "$ref": "#/definitions/CertificateProfileInfoRestResponseV2"
             }
           }
         }
@@ -757,30 +765,31 @@
         }
       }
     },
-    "/v2/certificate/profile/{profile_name}": {
+    "/v2/certificate/count": {
       "get": {
         "tags": [
           "v2/certificate"
         ],
-        "summary": "Get Certificate Profile Info.",
+        "summary": "Get the quantity of rather total issued or active certificates",
         "description": "",
-        "operationId": "getCertificateProfileInfo",
+        "operationId": "getCertificateCount",
         "produces": [
           "application/json"
         ],
         "parameters": [
           {
-            "name": "profile_name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "name": "isActive",
+            "in": "query",
+            "description": "true if an active certificates should be counted only",
+            "required": false,
+            "type": "boolean"
           }
         ],
         "responses": {
           "200": {
             "description": "successful operation",
             "schema": {
-              "$ref": "#/definitions/CertificateProfileInfoRestResponseV2"
+              "$ref": "#/definitions/CertificateCountResponse"
             }
           }
         }
@@ -1067,63 +1076,6 @@
         }
       }
     },
-    "/v1/configdump/{type}/{setting}": {
-      "get": {
-        "tags": [
-          "v1/configdump"
-        ],
-        "summary": "Get the configuration for a type and setting in JSON.",
-        "description": "Returns the configdump data in JSON.",
-        "operationId": "getJsonConfigdumpForTypeAndSetting",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "type",
-            "in": "path",
-            "description": "Configuration type to export.\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "setting",
-            "in": "path",
-            "description": "Individual configuration name to export",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "ignoreerrors",
-            "in": "query",
-            "description": "Print a warning instead of aborting and throwing an exception on errors.",
-            "required": false,
-            "type": "boolean",
-            "default": false
-          },
-          {
-            "name": "defaults",
-            "in": "query",
-            "description": "Also include fields having the default value.",
-            "required": false,
-            "type": "boolean",
-            "default": false
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "type": "array",
-              "items": {
-                "type": "string",
-                "format": "byte"
-              }
-            }
-          }
-        }
-      }
-    },
     "/v1/configdump/configdump.zip": {
       "get": {
         "tags": [
@@ -1286,6 +1238,63 @@
         }
       }
     },
+    "/v1/configdump/{type}/{setting}": {
+      "get": {
+        "tags": [
+          "v1/configdump"
+        ],
+        "summary": "Get the configuration for a type and setting in JSON.",
+        "description": "Returns the configdump data in JSON.",
+        "operationId": "getJsonConfigdumpForTypeAndSetting",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "path",
+            "description": "Configuration type to export.\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "setting",
+            "in": "path",
+            "description": "Individual configuration name to export",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "ignoreerrors",
+            "in": "query",
+            "description": "Print a warning instead of aborting and throwing an exception on errors.",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "defaults",
+            "in": "query",
+            "description": "Also include fields having the default value.",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "byte"
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/cryptotoken/status": {
       "get": {
         "tags": [
@@ -1304,33 +1313,6 @@
             "schema": {
               "$ref": "#/definitions/RestResourceStatusRestResponse"
             }
-          }
-        }
-      }
-    },
-    "/v1/cryptotoken/{cryptotoken_name}/deactivate": {
-      "put": {
-        "tags": [
-          "v1/cryptotoken"
-        ],
-        "summary": "Deactivate a Crypto Token",
-        "description": "Deactivates Crypto Token given name",
-        "operationId": "deactivate_1",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "cryptotoken_name",
-            "in": "path",
-            "description": "Name of the token to deactivate",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "successful operation"
           }
         }
       }
@@ -1371,32 +1353,22 @@
         }
       }
     },
-    "/v1/cryptotoken/{cryptotoken_name}/{key_pair_alias}/removekeys": {
-      "post": {
+    "/v1/cryptotoken/{cryptotoken_name}/deactivate": {
+      "put": {
         "tags": [
           "v1/cryptotoken"
         ],
-        "summary": "Remove keys",
-        "description": "Remove a key pair given crypto token name and key pair alias to be removed.",
-        "operationId": "removeKeys",
+        "summary": "Deactivate a Crypto Token",
+        "description": "Deactivates Crypto Token given name",
+        "operationId": "deactivate_1",
         "produces": [
-          "application/json"
-        ],
-        "consumes": [
           "application/json"
         ],
         "parameters": [
           {
             "name": "cryptotoken_name",
             "in": "path",
-            "description": "Name of the token to remove keys for.",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "key_pair_alias",
-            "in": "path",
-            "description": "Alias for the key to be removed from the crypto token.",
+            "description": "Name of the token to deactivate",
             "required": true,
             "type": "string"
           }
@@ -1434,6 +1406,43 @@
             "schema": {
               "$ref": "#/definitions/CryptoTokenKeyGenerationRestRequest"
             }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/v1/cryptotoken/{cryptotoken_name}/{key_pair_alias}/removekeys": {
+      "post": {
+        "tags": [
+          "v1/cryptotoken"
+        ],
+        "summary": "Remove keys",
+        "description": "Remove a key pair given crypto token name and key pair alias to be removed.",
+        "operationId": "removeKeys",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "cryptotoken_name",
+            "in": "path",
+            "description": "Name of the token to remove keys for.",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "key_pair_alias",
+            "in": "path",
+            "description": "Alias for the key to be removed from the crypto token.",
+            "required": true,
+            "type": "string"
           }
         ],
         "responses": {
@@ -1562,45 +1571,6 @@
         }
       }
     },
-    "/v1/endentity/{endentity_name}/setstatus": {
-      "post": {
-        "tags": [
-          "v1/endentity"
-        ],
-        "summary": "Edits end entity setting new status",
-        "description": "Edit status, password and token type of related end entity",
-        "operationId": "setstatus",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "endentity_name",
-            "in": "path",
-            "description": "Name of the end entity to edit status for",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "in": "body",
-            "name": "body",
-            "description": "request",
-            "required": false,
-            "schema": {
-              "$ref": "#/definitions/SetEndEntityStatusRestRequest"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": "successful operation"
-          }
-        }
-      }
-    },
     "/v1/endentity/{endentity_name}/revoke": {
       "put": {
         "tags": [
@@ -1630,6 +1600,45 @@
             "required": false,
             "schema": {
               "$ref": "#/definitions/EndEntityRevocationRestRequest"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "successful operation"
+          }
+        }
+      }
+    },
+    "/v1/endentity/{endentity_name}/setstatus": {
+      "post": {
+        "tags": [
+          "v1/endentity"
+        ],
+        "summary": "Edits end entity setting new status",
+        "description": "Edit status, password and token type of related end entity",
+        "operationId": "setstatus",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "endentity_name",
+            "in": "path",
+            "description": "Name of the end entity to edit status for",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "request",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/SetEndEntityStatusRestRequest"
             }
           }
         ],
@@ -1694,28 +1703,6 @@
         }
       }
     },
-    "/v2/endentity/profiles/authorized": {
-      "get": {
-        "tags": [
-          "v2/endentity"
-        ],
-        "summary": "List of authorized end entity profiles for the current admin.",
-        "description": "Returns list of all authorized end entity profiles for the current admin token",
-        "operationId": "getAuthorizedEndEntityProfiles",
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/AuthorizedEEPsRestResponse"
-            }
-          }
-        }
-      }
-    },
     "/v2/endentity/search": {
       "post": {
         "tags": [
@@ -1751,6 +1738,28 @@
         }
       }
     },
+    "/v2/endentity/profiles/authorized": {
+      "get": {
+        "tags": [
+          "v2/endentity"
+        ],
+        "summary": "List of authorized end entity profiles for the current admin.",
+        "description": "Returns list of all authorized end entity profiles for the current admin token",
+        "operationId": "getAuthorizedEndEntityProfiles",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/AuthorizedEEPsRestResponse"
+            }
+          }
+        }
+      }
+    },
     "/v1/ssh/status": {
       "get": {
         "tags": [
@@ -1768,38 +1777,6 @@
             "description": "successful operation",
             "schema": {
               "$ref": "#/definitions/RestResourceStatusRestResponse"
-            }
-          }
-        }
-      }
-    },
-    "/v1/ssh/{ca_name}/pubkey": {
-      "get": {
-        "tags": [
-          "v1/ssh"
-        ],
-        "summary": "Retrieves a CA's public key in SSH format.",
-        "description": "Retrieves a CA's public key in SSH format.",
-        "operationId": "pubkey",
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "parameters": [
-          {
-            "name": "ca_name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful operation",
-            "schema": {
-              "$ref": "#/definitions/SshPublicKeyRestResponse"
             }
           }
         }
@@ -1839,18 +1816,50 @@
         }
       }
     },
+    "/v1/ssh/{ca_name}/pubkey": {
+      "get": {
+        "tags": [
+          "v1/ssh"
+        ],
+        "summary": "Retrieves a CA's public key in SSH format.",
+        "description": "Retrieves a CA's public key in SSH format.",
+        "operationId": "pubkey",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "ca_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "schema": {
+              "$ref": "#/definitions/SshPublicKeyRestResponse"
+            }
+          }
+        }
+      }
+    },
     "/v1/system/service/{service_name}/run": {
       "put": {
         "tags": [
           "v1/system"
-          ],
+        ],
         "summary": "Runs a specified service",
         "description": "Run service with the provided name",
         "operationId": "runServiceNoTimer",
-        "produces": [
+        "consumes": [
           "application/json"
         ],
-        "consumes": [
+        "produces": [
           "application/json"
         ],
         "parameters": [
@@ -1939,17 +1948,11 @@
           "format": "date-time",
           "example": "2038-01-19T03:14:07Z",
           "description": "Expiration date"
-        }
-      }
-    },
-    "CertificateCountResponse": {
-      "type": "object",
-      "properties": {
-        "count": {
-          "type": "integer",
-          "format": "int64",
-          "example": 1054,
-          "description": "The quantity of issued or active certificates"
+        },
+        "external": {
+          "type": "boolean",
+          "example": true,
+          "description": "Is external (whether CA certificate was imported)"
         }
       }
     },
@@ -2003,6 +2006,110 @@
         }
       }
     },
+    "RevokeStatusRestResponse": {
+      "type": "object",
+      "properties": {
+        "issuer_dn": {
+          "type": "string",
+          "example": "CN=ExampleCA",
+          "description": "Issuer Distinguished Name"
+        },
+        "serial_number": {
+          "type": "string",
+          "example": "1234567890ABCDEF",
+          "description": "Hex Serial Number"
+        },
+        "revocation_reason": {
+          "type": "string",
+          "example": "KEY_COMPROMISE",
+          "description": "RFC5280 revokation reason"
+        },
+        "revocation_date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "1970-01-01T00:00:00Z",
+          "description": "Revokation date"
+        },
+        "invalidity_date": {
+          "type": "string",
+          "format": "date-time",
+          "example": "1970-01-01T00:00:00Z",
+          "description": "Invalidity date"
+        },
+        "message": {
+          "type": "string",
+          "example": "Successfully revoked",
+          "description": "Message"
+        },
+        "revoked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "CertificateEnrollmentRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "array",
+          "example": "MIIDXzCCA...eW1Zro0=",
+          "description": "Certificate",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "serial_number": {
+          "type": "string",
+          "example": "1234567890ABCDEF",
+          "description": "Hex Serial Number"
+        },
+        "response_format": {
+          "type": "string",
+          "example": "DER",
+          "description": "Response format"
+        },
+        "certificate_chain": {
+          "type": "array",
+          "example": "[\"MII123efg...345xyz0=\"]",
+          "description": "CA Certificate chain",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "byte"
+            }
+          }
+        }
+      }
+    },
+    "CertificateRequestRestRequest": {
+      "type": "object",
+      "properties": {
+        "certificate_request": {
+          "type": "string",
+          "example": "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+          "description": "Certificate request"
+        },
+        "username": {
+          "type": "string",
+          "example": "JohnDoe",
+          "description": "Username"
+        },
+        "password": {
+          "type": "string",
+          "example": "foo123",
+          "description": "Password"
+        },
+        "include_chain": {
+          "type": "boolean"
+        },
+        "certificate_authority_name": {
+          "type": "string",
+          "example": "ExampleCA",
+          "description": "Certificate Authority (CA) name"
+        }
+      }
+    },
     "CertificateRestResponse": {
       "type": "object",
       "properties": {
@@ -2046,42 +2153,6 @@
           "type": "string",
           "example": "ExampleEEP",
           "description": "End Entity profile name"
-        }
-      }
-    },
-    "CertificateEnrollmentRestResponse": {
-      "type": "object",
-      "properties": {
-        "certificate": {
-          "type": "array",
-          "example": "MIIDXzCCA...eW1Zro0=",
-          "description": "Certificate",
-          "items": {
-            "type": "string",
-            "format": "byte"
-          }
-        },
-        "serial_number": {
-          "type": "string",
-          "example": "1234567890ABCDEF",
-          "description": "Hex Serial Number"
-        },
-        "response_format": {
-          "type": "string",
-          "example": "DER",
-          "description": "Response format"
-        },
-        "certificate_chain": {
-          "type": "array",
-          "example": "[\"MII123efg...345xyz0=\"]",
-          "description": "CA Certificate chain",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "byte"
-            }
-          }
         }
       }
     },
@@ -2155,140 +2226,6 @@
         }
       }
     },
-    "RevokeStatusRestResponse": {
-      "type": "object",
-      "properties": {
-        "issuer_dn": {
-          "type": "string",
-          "example": "CN=ExampleCA",
-          "description": "Issuer Distinguished Name"
-        },
-        "serial_number": {
-          "type": "string",
-          "example": "1234567890ABCDEF",
-          "description": "Hex Serial Number"
-        },
-        "revocation_reason": {
-          "type": "string",
-          "example": "KEY_COMPROMISE",
-          "description": "RFC5280 revokation reason"
-        },
-        "revocation_date": {
-          "type": "string",
-          "format": "date-time",
-          "example": "1970-01-01T00:00:00Z",
-          "description": "Revokation date"
-        },
-        "invalidity_date": {
-          "type": "string",
-          "format": "date-time",
-          "example": "1970-01-01T00:00:00Z",
-          "description": "Invalidity date"
-        },
-        "message": {
-          "type": "string",
-          "example": "Successfully revoked",
-          "description": "Message"
-        },
-        "revoked": {
-          "type": "boolean"
-        }
-      }
-    },
-    "CertificatesRestResponse": {
-      "type": "object",
-      "properties": {
-        "certificates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/CertificateRestResponse"
-          }
-        }
-      }
-    },
-    "ExpiringCertificatesRestResponse": {
-      "type": "object",
-      "properties": {
-        "pagination_rest_response_component": {
-          "$ref": "#/definitions/PaginationRestResponseComponent"
-        },
-        "certificates_rest_response": {
-          "$ref": "#/definitions/CertificatesRestResponse"
-        }
-      }
-    },
-    "PaginationRestResponseComponent": {
-      "type": "object",
-      "properties": {
-        "more_results": {
-          "type": "boolean"
-        },
-        "next_offset": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "number_of_results": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
-    "FinalizeRestRequest": {
-      "type": "object",
-      "properties": {
-        "response_format": {
-          "type": "string",
-          "example": "P12",
-          "description": "Response format",
-          "enum": [
-            "P12",
-            "BCFKS",
-            "JKS",
-            "DER"
-          ]
-        },
-        "password": {
-          "type": "string",
-          "example": "foo123",
-          "description": "Password"
-        },
-        "key_alg": {
-          "type": "string",
-          "example": "RSA",
-          "description": "Key algorithm"
-        },
-        "key_spec": {
-          "type": "string",
-          "example": "4096",
-          "description": "Key specification"
-        }
-      }
-    },
-    "KeyStoreRestRequest": {
-      "type": "object",
-      "properties": {
-        "username": {
-          "type": "string",
-          "example": "JohnDoe",
-          "description": "Username"
-        },
-        "password": {
-          "type": "string",
-          "example": "foo123",
-          "description": "Password"
-        },
-        "key_alg": {
-          "type": "string",
-          "example": "RSA",
-          "description": "Key algorithm used for enrollment"
-        },
-        "key_spec": {
-          "type": "string",
-          "example": "4096",
-          "description": "Key specification to use"
-        }
-      }
-    },
     "EnrollCertificateRestRequest": {
       "type": "object",
       "properties": {
@@ -2337,14 +2274,9 @@
         }
       }
     },
-    "CertificateRequestRestRequest": {
+    "KeyStoreRestRequest": {
       "type": "object",
       "properties": {
-        "certificate_request": {
-          "type": "string",
-          "example": "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
-          "description": "Certificate request"
-        },
         "username": {
           "type": "string",
           "example": "JohnDoe",
@@ -2355,13 +2287,125 @@
           "example": "foo123",
           "description": "Password"
         },
-        "include_chain": {
+        "key_alg": {
+          "type": "string",
+          "example": "RSA",
+          "description": "Key algorithm used for enrollment"
+        },
+        "key_spec": {
+          "type": "string",
+          "example": "4096",
+          "description": "Key specification to use"
+        }
+      }
+    },
+    "FinalizeRestRequest": {
+      "type": "object",
+      "properties": {
+        "response_format": {
+          "type": "string",
+          "example": "P12",
+          "description": "Response format",
+          "enum": [
+            "P12",
+            "BCFKS",
+            "JKS",
+            "DER"
+          ]
+        },
+        "password": {
+          "type": "string",
+          "example": "foo123",
+          "description": "Password"
+        },
+        "key_alg": {
+          "type": "string",
+          "example": "RSA",
+          "description": "Key algorithm"
+        },
+        "key_spec": {
+          "type": "string",
+          "example": "4096",
+          "description": "Key specification"
+        }
+      }
+    },
+    "CertificatesRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/CertificateRestResponse"
+          }
+        }
+      }
+    },
+    "ExpiringCertificatesRestResponse": {
+      "type": "object",
+      "properties": {
+        "pagination_rest_response_component": {
+          "$ref": "#/definitions/PaginationRestResponseComponent"
+        },
+        "certificates_rest_response": {
+          "$ref": "#/definitions/CertificatesRestResponse"
+        }
+      }
+    },
+    "PaginationRestResponseComponent": {
+      "type": "object",
+      "properties": {
+        "more_results": {
           "type": "boolean"
         },
-        "certificate_authority_name": {
-          "type": "string",
-          "example": "ExampleCA",
-          "description": "Certificate Authority (CA) name"
+        "next_offset": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "number_of_results": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "CertificateProfileInfoRestResponseV2": {
+      "type": "object",
+      "properties": {
+        "certificate_profile_id": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "available_key_algs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "available_bit_lenghts": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "available_security_levels": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "available_ecdsa_curves": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "available_cas": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -2638,44 +2682,14 @@
         }
       }
     },
-    "CertificateProfileInfoRestResponseV2": {
+    "CertificateCountResponse": {
       "type": "object",
       "properties": {
-        "certificate_profile_id": {
+        "count": {
           "type": "integer",
-          "format": "int32"
-        },
-        "available_key_algs": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "available_bit_lenghts": {
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "available_ecdsa_curves": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "available_cas": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "available_security_levels": {
-          "items": {
-            "format": "int32",
-            "type": "integer"
-          },
-          "type": "array"
+          "format": "int64",
+          "example": 1054,
+          "description": "The quantity of issued or active certificates"
         }
       }
     },
@@ -2728,9 +2742,9 @@
           "description": "Key specification, key size, curve or name, must be supported by the underlying crypto token, like 4096 for RSA or secp256r1 for EC"
         },
         "key_usage": {
-          "description": "Optional key usage, affects some crypto tokens (PKCS#11 NG) but not most others. Values SIGN, ENCRYPT, SIGN_ENCRYPT",
+          "type": "string",
           "example": "SIGN",
-          "type": "string"
+          "description": "Optional key usage, affects some crypto tokens (PKCS#11 NG) but not most others. Values SIGN, ENCRYPT, SIGN_ENCRYPT"
         }
       }
     },
@@ -2768,6 +2782,12 @@
             "$ref": "#/definitions/ExtendedInformationRestRequestComponent"
           }
         },
+        "custom_data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ExtendedInformationRestRequestComponent"
+          }
+        },
         "ca_name": {
           "type": "string",
           "example": "ExampleCA",
@@ -2799,16 +2819,10 @@
           "example": "1234567890",
           "description": "Account Binding ID"
         },
-	"key_recoverable": {
-          "description": "Key recoverable or not",
+        "key_recoverable": {
+          "type": "boolean",
           "example": false,
-          "type": "boolean"
-        },
-        "custom_data": {
-          "items": {
-            "$ref": "#/definitions/ExtendedInformationRestRequestComponent"
-          },
-          "type": "array"
+          "description": "Key recoverable or not"
         }
       }
     },
@@ -2972,6 +2986,39 @@
       },
       "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username; \nAvailable STATUS - multiplicity [0, 9] - values are: NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \n"
     },
+    "EndEntityRevocationRestRequest": {
+      "type": "object",
+      "properties": {
+        "reason_code": {
+          "type": "integer",
+          "format": "int32",
+          "example": 2,
+          "description": "Reason code",
+          "enum": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10
+          ]
+        },
+        "delete": {
+          "type": "boolean",
+          "example": true,
+          "description": "Delete",
+          "enum": [
+            true,
+            false
+          ]
+        }
+      },
+      "description": "End Entity revocation request. Available reason codes: \n 0 - Unspecified,\n 1 - Key Compromise,\n 2 - CA Compromise,\n 3 - Affiliation Changed,\n 4 - Superseded,\n 5 - Cessation of Operation,\n 6 - Certificate Hold,\n 8 - Remove from CRL,\n 9 - Privileges Withdrawn,\n 10 - AA Compromise"
+    },
     "SetEndEntityStatusRestRequest": {
       "type": "object",
       "properties": {
@@ -3011,39 +3058,6 @@
       },
       "description": "Use one of allowed values as property(see enum values below).\nAvailable TOKEN - USERGENERATED, P12, BCFKS, JKS, PEM; \nAvailable STATUS - NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n"
     },
-    "EndEntityRevocationRestRequest": {
-      "type": "object",
-      "properties": {
-        "reason_code": {
-          "type": "integer",
-          "format": "int32",
-          "example": 2,
-          "description": "Reason code",
-          "enum": [
-            0,
-            1,
-            2,
-            3,
-            4,
-            5,
-            6,
-            8,
-            9,
-            10
-          ]
-        },
-        "delete": {
-          "type": "boolean",
-          "example": true,
-          "description": "Delete",
-          "enum": [
-            true,
-            false
-          ]
-        }
-      },
-      "description": "End Entity revocation request. Available reason codes: \n 0 - Unspecified,\n 1 - Key Compromise,\n 2 - CA Compromise,\n 3 - Affiliation Changed,\n 4 - Superseded,\n 5 - Cessation of Operation,\n 6 - Certificate Hold,\n 8 - Remove from CRL,\n 9 - Privileges Withdrawn,\n 10 - AA Compromise"
-    },
     "EndEntityProfileResponse": {
       "type": "object",
       "properties": {
@@ -3051,6 +3065,22 @@
           "type": "string",
           "example": "ExampleEEP",
           "description": "End Entity profile name"
+        },
+        "available_cas": {
+          "type": "array",
+          "example": "[\"ExampleCA\"]",
+          "description": "List of available Certificate Authorities (CAs)",
+          "items": {
+            "type": "string"
+          }
+        },
+        "available_certificate_profiles": {
+          "type": "array",
+          "example": "[\"ENDUSER\"]",
+          "description": "List of available Certificate Profiles",
+          "items": {
+            "type": "string"
+          }
         },
         "subject_distinguished_name_fields": {
           "type": "array",
@@ -3067,54 +3097,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "available_certificate_profiles": {
-          "type": "array",
-          "example": "[\"ENDUSER\"]",
-          "description": "List of available Certificate Profiles",
-          "items": {
-            "type": "string"
-          }
-        },
-        "available_cas": {
-          "type": "array",
-          "example": "[\"ExampleCA\"]",
-          "description": "List of available Certificate Authorities (CAs)",
-          "items": {
-            "type": "string"
-          }
-        }
-      }
-    },
-    "AuthorizedEEPsRestResponse": {
-      "type": "object",
-      "properties": {
-        "end_entitie_profiles": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/EndEntityProfileRestResponse"
-          }
-        }
-      }
-    },
-    "EndEntityProfileRestResponse": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "example": "ExampleEEP",
-          "description": "End Entity profile name"
-        },
-        "id": {
-          "type": "integer",
-          "format": "int64",
-          "example": 1234567890,
-          "description": "End Entity profile ID"
-        },
-        "description": {
-          "type": "string",
-          "example": "Example End Entity profile",
-          "description": "Description"
         }
       }
     },
@@ -3174,18 +3156,54 @@
       },
       "description": "Use one of allowed values as property and operation.\nAvailable propertiesUSERNAME \nSUBJECT_DN \nSUBJECT_ALT_NAME \nEND_ENTITY_PROFILE(by databse identifier, not user-given name) \nCERTIFICATE_PROFILE(by identifier) \nCA(by identifier) \nSTATUS \nUPDATE_TIME \nCREATED_DATE \n\nAvailable operationsASC \nDESC \n"
     },
-    "SshPublicKeyRestResponse": {
+    "AuthorizedEEPsRestResponse": {
       "type": "object",
       "properties": {
-        "ca_name": {
+        "end_entitie_profiles": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/EndEntityProfileRestResponse"
+          }
+        }
+      }
+    },
+    "EndEntityProfileRestResponse": {
+      "type": "object",
+      "properties": {
+        "name": {
           "type": "string",
-          "example": "ExampleCA",
-          "description": "Certificate Authority (CA) name"
+          "example": "ExampleEEP",
+          "description": "End Entity profile name"
         },
-        "response": {
+        "id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 1234567890,
+          "description": "End Entity profile ID"
+        },
+        "description": {
           "type": "string",
-          "example": "ssh-rsa AAAAB...QxLwx SshCA",
-          "description": "CA\u2019s public key"
+          "example": "Example End Entity profile",
+          "description": "Description"
+        }
+      }
+    },
+    "SshCertificateRestResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "array",
+          "example": "c3N...T09",
+          "description": "Certificate",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          }
+        },
+        "response_format": {
+          "type": "string",
+          "example": "BYTE",
+          "description": "Response format"
         }
       }
     },
@@ -3244,15 +3262,15 @@
           "example": "foo123",
           "description": "Password"
         },
-        "not_after": {
-          "description": "Valid notAfter date",
-          "example": "ISO 8601 Date string, eg. '2024-06-15T14:07:09Z'",
-          "type": "string"
-        },
         "not_before": {
-          "description": "Valid notBefore date",
+          "type": "string",
           "example": "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'",
-          "type": "string"
+          "description": "Valid notBefore date"
+        },
+        "not_after": {
+          "type": "string",
+          "example": "ISO 8601 Date string, eg. '2024-06-15T14:07:09Z'",
+          "description": "Valid notAfter date"
         }
       }
     },
@@ -3271,22 +3289,18 @@
         }
       }
     },
-    "SshCertificateRestResponse": {
+    "SshPublicKeyRestResponse": {
       "type": "object",
       "properties": {
-        "certificate": {
-          "type": "array",
-          "example": "c3N...T09",
-          "description": "Certificate",
-          "items": {
-            "type": "string",
-            "format": "byte"
-          }
-        },
-        "response_format": {
+        "ca_name": {
           "type": "string",
-          "example": "BYTE",
-          "description": "Response format"
+          "example": "ExampleCA",
+          "description": "Certificate Authority (CA) name"
+        },
+        "response": {
+          "type": "string",
+          "example": "ssh-rsa AAAAB...QxLwx SshCA",
+          "description": "CA’s public key"
         }
       }
     }
