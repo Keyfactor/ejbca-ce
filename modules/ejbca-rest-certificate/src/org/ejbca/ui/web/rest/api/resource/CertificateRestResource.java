@@ -300,7 +300,7 @@ public class CertificateRestResource extends BaseRestResource {
      * @param requestContext HttpServletRequest
      * @param issuerDN       of the certificate to revoke
      * @param serialNumber   HEX encoded SN with or without 0x prefix
-     * @param reason         revocation reason. Must be valid RFC5280 reason:
+     * @param reason         revocation reason (optional). Must be valid RFC5280 reason:
      *                       NOT_REVOKED, UNSPECIFIED , KEY_COMPROMISE,
      *                       CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,
      *                       CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE

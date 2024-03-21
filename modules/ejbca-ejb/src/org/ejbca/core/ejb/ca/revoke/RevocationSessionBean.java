@@ -356,7 +356,9 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         return incompleteIssuedCerts.size();
     }
 
-    /** @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
+    /**
+     * Returns a new revocation date of certificate based on user provided date, revocation reason and Crl
+     * @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
     private Date getRevocationDate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revocationDate, final int reason) throws AuthorizationDeniedException {
         if (revocationDate == null
                 || (reason != RevokedCertInfo.NOT_REVOKED && reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ||
@@ -365,7 +367,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         }
         final String issuerDN = cdw.getBaseCertificateData().getIssuerDN();
         CAInfo caInfo = caSession.getCAInfo(admin, issuerDN.hashCode());
-        boolean isDeltaCrlEnabled = caInfo.getDeltaCRLPeriod() > 0;
+        boolean isDeltaCrlEnabled = caInfo != null && caInfo.getDeltaCRLPeriod() > 0;
         if (!isDeltaCrlEnabled) {
             return revocationDate;
         }
