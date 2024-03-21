@@ -286,9 +286,27 @@
                 <h:outputLabel for="keytype" value="#{msg.component_eedetails_field_keyalgorithm}"
                                rendered="#{cc.attrs.raEndEntityDetails.keyType != null}"
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:panelGroup styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}">
                 <h:outputText id="keytype" value="#{cc.attrs.raEndEntityDetails.keyType}"
                               rendered="#{cc.attrs.raEndEntityDetails.keyType != null}"
-                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                              />
+
+                <h:panelGroup
+                        rendered="#{cc.attrs.editMode and (not cc.attrs.approvalRequestMode) and cc.attrs.raEndEntityDetails.renderUpdateKeyTypeButton}"
+                        styleClass="edit-ee-update-keytype"
+                        >
+                    <h:commandButton action="#{cc.attrs.raEndEntityDetails.enabledKeyUpdateSelectionMenu}"
+                                 value="#{msg.component_eedetails_update_keytype}"
+                                 styleClass="pure-button ra-button ra-endEntityEditSaveCancel"
+                                 rendered="#{!cc.attrs.raEndEntityDetails.enabledKeyUpdateSelectionMenu}"/>
+                
+                    <h:selectOneMenu id="keytypeSelect" value="#{cc.attrs.raEndEntityDetails.keyType}"
+                                     styleClass="pure-input-1-4" rendered="#{cc.attrs.raEndEntityDetails.enabledKeyUpdateSelectionMenu}">
+			 <f:selectItems value="#{raEndEntityBean.availableAlgorithmSelectItems}" />
+                        <f:ajax event="change"/>
+                    </h:selectOneMenu>
+                </h:panelGroup>
+                </h:panelGroup>
 
                 <h:outputLabel for="csrdn" value="#{msg.component_eedetails_field_csrdn}"
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
