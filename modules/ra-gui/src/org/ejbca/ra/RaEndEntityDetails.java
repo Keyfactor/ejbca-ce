@@ -88,6 +88,9 @@ public class RaEndEntityDetails implements Serializable {
     private final String created;
     private final String modified;
     private final int status;
+    private Boolean renderUpdatekeyType;
+    private boolean enabledKeyUpdateSelectionMenu;
+    private boolean updatedKeyAlgorithm;
 
     private boolean clearPasswordDirty;
     private boolean useClearPassword;
@@ -377,6 +380,35 @@ public class RaEndEntityDetails implements Serializable {
             return getKeysFromCsr();
         }
         return null; // null = hidden in UI
+    }
+    
+    public void setKeyType(String keyType) {
+        log.info("setting key type: " + keyType);
+        final String[] tokenKeySpecSplit = keyType.split("_");
+        endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmType(tokenKeySpecSplit[0]);
+        if (tokenKeySpecSplit.length > 1) {
+            endEntityInformation.getExtendedInformation().setKeyStoreAlgorithmSubType(tokenKeySpecSplit[1]);
+        }
+        updatedKeyAlgorithm = true;
+    }
+    
+    public boolean isUpdatedKeyAlgorithm() {
+        return updatedKeyAlgorithm;
+    }
+    
+    public boolean isRenderUpdateKeyTypeButton() {
+        if (renderUpdatekeyType==null) {
+            renderUpdatekeyType = getKeyType()!=null && getKeysFromCsr()==null;
+        } 
+        return renderUpdatekeyType;
+    }
+    
+    public boolean isEnabledKeyUpdateSelectionMenu() {
+        return enabledKeyUpdateSelectionMenu;
+    }
+    
+    public void enabledKeyUpdateSelectionMenu() {
+        enabledKeyUpdateSelectionMenu = true;
     }
 
     private String getKeysFromCsr() {
