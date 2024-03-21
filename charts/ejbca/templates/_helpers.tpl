@@ -108,3 +108,48 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+{{/*
+Compose the container image path in format: registry/repository/imageName:tag
+*/}}
+{{- define "ejbca.imagePath" -}}
+{{- $registry := .Values.image.registry }}
+{{- $repository := .Values.image.repository }}
+{{- $imageName := .Values.image.name | default "" }}
+{{- $tag := .Values.image.tag | default .Chart.AppVersion }}
+{{- $edition := .Values.ejbca.edition | default "ee" }}
+{{- $variant := .Values.ejbca.variant | default "" }}
+{{- $registryDict := dict "ee" "keyfactor.jfrog.io" "ce" "docker.io" }}
+{{- $repositoryDict := dict "ee" "dev-oci/ejbca/ejbca/images" "ce" "keyfactor" }}
+{{- /* registry */ -}}
+{{- if eq $registry nil }}
+  {{- $registry = get $registryDict $edition }}
+{{- else }}
+  {{- $registry =  trimAll "/" $registry }}
+{{- end }}
+{{- /* repository */ -}}
+{{- if eq $repository nil }}
+  {{- $repository = get $repositoryDict $edition }}
+{{- else }}
+  {{- $repository = trimAll "/" $repository }}
+{{- end }}
+{{- /* imageName */ -}}
+{{- if not $imageName }}
+  {{- if eq $edition "ce" }}
+    {{- $imageName = "ejbca-ce" }}
+  {{- else if or (eq $variant "ra") (eq $variant "va") (eq $variant "proxy-ca") }}
+    {{- $imageName = printf "ejbca-ee-%s" $variant }}
+  {{- else }}
+    {{- $imageName = "ejbca-ee" }}
+  {{- end }}
+{{- end }}
+{{- /* add path seperator slashes depending on which comonents are used */ -}}
+{{- if $registry }}
+  {{- $registry = printf "%s/" $registry }}
+{{- end }}
+{{- if $repository }}
+  {{- $repository = printf "%s/" $repository }}
+{{- end }}
+{{- printf "%s%s%s:%s" $registry $repository $imageName $tag }}
+{{- end }}

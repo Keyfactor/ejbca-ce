@@ -2,6 +2,12 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 ejbca:
+  # Application edition: "ee" or "ce" (default: ee)
+  #edition: ce
+
+  # Application variant: not set for full EJBCA, "ra" or "va" (default: not set)
+  #variant: ra
+
   importEjbcaConfFiles: false
   #ejbcaConfFilesSecret: ejbca-conf
 
@@ -107,11 +113,13 @@ ejbca:
 
 replicaCount: 1
 image:
-  registry: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images
-  name: ejbca-ca
-  pullPolicy: IfNotPresent
-  repository: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images/ejbca-ca
+  # Components of the image pull path can be overridden in case the image is retrieved from a private registry.
+  # Path format: registry/repository/imageName:tag
+  #registry: example.com
+  #repository: keyfactor
+  #name: ejbca-ee
   tag: 8.2.0-Alpha1
+  pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
