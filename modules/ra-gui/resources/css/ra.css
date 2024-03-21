@@ -115,7 +115,7 @@
 }
 .internal-frame fieldset > .pure-control-group > select,
 #requestInfoForm\:selectKeyAlgorithmOuterPanel > .internal-frame > .pure-control-group > select {
-    min-width: 36.7%;
+    min-width: 36.7%; max-width: 30%;
 }
 
 .internal-frame-with-left-margin {
