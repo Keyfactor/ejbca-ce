@@ -205,6 +205,7 @@ public class ConfigdumpSetting implements Serializable {
     private List<ConfigdumpPattern> excludedAnyType = new ArrayList<>();
     private boolean ignoreErrors;
     private boolean ignoreWarnings;
+    private boolean expandVariables;
     private NonInteractiveMode nonInteractiveMode = NonInteractiveMode.NONE;
     private ProcessingMode processingMode;
     private OverwriteMode overwriteMode = OverwriteMode.NONE;
@@ -283,7 +284,15 @@ public class ConfigdumpSetting implements Serializable {
     public void setIgnoreWarnings(final boolean ignoreWarnings) {
         this.ignoreWarnings = ignoreWarnings;
     }
-    
+
+    public boolean getExpandVariables() {
+        return expandVariables;
+    }
+
+    public void setExpandVariables(final boolean expandVariables) {
+        this.expandVariables = expandVariables;
+    }
+
     public NonInteractiveMode getNonInteractiveMode() {
         return nonInteractiveMode;
     }
