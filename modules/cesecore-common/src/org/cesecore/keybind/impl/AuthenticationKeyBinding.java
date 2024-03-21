@@ -24,6 +24,7 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.operator.OperatorCreationException;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.CertificateImportException;
@@ -87,6 +88,10 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
         if (!isClientSSLCertificate(certificate, ekuConfig)) {
             throw new CertificateImportException("Not a valid Client SSL authentication certificate.");
         }
+    }
+    
+    public String getCertificateProfileName() {
+        return getData(PROP_CERT_PROFILE_NAME, CertificateProfile.ENDUSERPROFILENAME);
     }
 
     @Override
