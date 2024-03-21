@@ -1822,7 +1822,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
     #requestInfoForm\:generateP12,
     #requestInfoForm\:generateBcfks,
     #requestInfoForm\:generateJks {
-        width: auto;
+        width: auto !important;
     }
 
     .infoMessage {
