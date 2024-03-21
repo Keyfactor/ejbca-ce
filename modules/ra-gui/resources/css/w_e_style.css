@@ -628,6 +628,7 @@ textarea#enrollWithRequestIdForm\:certificateRequest {
     font-weight: bold;
 }
 
+#detailsForm > span.pure-u-1:nth-of-type(2) > .subjects > span > label,
 #detailsForm > span.pure-u-1:nth-of-type(2) > .subjects > label {
     margin-left: 2.5% !important;
     font-weight: bold;
@@ -1756,6 +1757,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
         margin: 0;
     }
 
+    #detailsForm .subjects > span > label:not(.pure-u-lg-1),
     #detailsForm > span.pure-u-1:nth-of-type(2) > label:not(.pure-u-lg-1), #detailsForm .subjects > label:not(.pure-u-lg-1) {
         width: 30.8%;
     }

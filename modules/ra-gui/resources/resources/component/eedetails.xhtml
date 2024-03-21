@@ -738,7 +738,8 @@
                                styleClass="pure-u-lg-1-3 row-even"
                                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity and cc.attrs.raEndEntityDetails.sshForceCommandRequired}"
                                value="#{msg.component_eedetails_header_ssh_forcecommand} *" />
-                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity"
+                              rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                     <h:inputText id="forcecommandinput"
                                  value="#{cc.attrs.raEndEntityBean.sshForceCommand}"
                                  rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity and cc.attrs.raEndEntityDetails.sshForceCommandModifiable}"
@@ -757,7 +758,8 @@
                                styleClass="pure-u-lg-1-3 row-even"
                                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity and cc.attrs.raEndEntityDetails.sshSourceAddressRequired}"
                                value="#{msg.component_eedetails_header_ssh_sourceaddress} *" />
-                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity"
+                              rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                     <h:inputText id="sourceaddressinput"
                                  value="#{cc.attrs.raEndEntityBean.sshSourceAddress}"
                                  rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity and cc.attrs.raEndEntityDetails.sshSourceAddressModifiable}"
@@ -775,7 +777,8 @@
                                styleClass="pure-u-lg-1-3 row-even"
                                rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity and cc.attrs.raEndEntityDetails.sshVerifyRequiredRequired}"
                                value="#{msg.component_eedetails_header_ssh_verifyrequired} *" />
-                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity">
+                <h:panelGroup styleClass="pure-u-lg-2-3 ra-outputText row-even ra-editEndEntity"
+                              rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity}">
                     <h:selectOneMenu id="verifyrequiredinput"
                                      value="#{cc.attrs.raEndEntityBean.sshVerifyRequired}"
                                      rendered="#{cc.attrs.editMode and not cc.attrs.approvalRequestMode and cc.attrs.raEndEntityDetails.sshTypeEndEntity and cc.attrs.raEndEntityDetails.sshVerifyRequiredModifiable}"
