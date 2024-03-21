@@ -60,6 +60,7 @@ import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -172,6 +173,7 @@ public class RaEndEntityBean implements Serializable {
     private String cardNumber;
     private String selectedAllowedRequests;
     private String customSerialNumber;
+    private List<SelectItem> availableAlgorithmSelectItems;
 
     // SSH fields
     private String sshKeyId;
@@ -235,6 +237,7 @@ public class RaEndEntityBean implements Serializable {
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
                 caId = raEndEntityDetails.getEndEntityInformation().getCAId();
+                reloadAvailableAlgorithmSelectItems();
              
                 ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
                 if (extendedInformation == null) {
@@ -632,6 +635,10 @@ public class RaEndEntityBean implements Serializable {
             }
         } else {
             extendedInformation.removeCustomSerialNumber();
+        }
+        
+        if (raEndEntityDetails.isUpdatedKeyAlgorithm()) {
+            changed = true;
         }
 
         endEntityInformation.setExtendedInformation(extendedInformation);
@@ -1252,6 +1259,7 @@ public class RaEndEntityBean implements Serializable {
         } else {
             caId = cAs.containsKey(defaultCA) ? defaultCA : cAs.keySet().iterator().next();
         }
+        reloadAvailableAlgorithmSelectItems();
     }
 
     /**
@@ -1261,6 +1269,40 @@ public class RaEndEntityBean implements Serializable {
         List<Integer> availableCpIds = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCertificateProfileIds();
         return availableCpIds.stream()
                 .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName()));
+    }
+    
+    /**
+     * SelectItem comparator, compares items by label, with the exception that an item with null value ends up first.
+     */
+    static Comparator<SelectItem> selectItemComparator = (item1, item2) -> {
+        if (item1.getValue() == null || (item1.getValue() instanceof String && ((String) item1.getValue()).isEmpty())) {
+            return Integer.MIN_VALUE;
+        } else if (item2.getValue() == null || (item2.getValue() instanceof String && ((String) item2.getValue()).isEmpty())) {
+            return Integer.MAX_VALUE;
+        }
+        if (item1.getLabel() == null) {
+            return Integer.MIN_VALUE;
+        }
+        return item1.getLabel().compareToIgnoreCase(item2.getLabel());
+    };
+    
+    private void reloadAvailableAlgorithmSelectItems() {
+        KeyToValueHolder<CertificateProfile> temp = authorizedCertificateProfiles.get(getCpId());
+        if (temp == null) {
+            return;
+        }
+        CertificateProfile certificateProfile = temp.getValue();
+        final List<SelectItem> availableAlgorithmSelectItems =
+                RaAvailableAlgorithmsTool.getAvailableAlgorithmSelectItems(certificateProfile, raLocaleBean.getMessage("ENROLL_SELECT_KA_NOCHOICE"));
+        availableAlgorithmSelectItems.sort(selectItemComparator);
+        this.availableAlgorithmSelectItems = availableAlgorithmSelectItems;
+    }
+    
+    public List<SelectItem> getAvailableAlgorithmSelectItems() {
+        if (availableAlgorithmSelectItems==null) {
+            this.availableAlgorithmSelectItems = new ArrayList<>();
+        }
+        return availableAlgorithmSelectItems;
     }
 
     /**

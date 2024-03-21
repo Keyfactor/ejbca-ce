@@ -337,6 +337,10 @@ textarea.row-odd,
 	margin-right: 15px;
 }
 
+.edit-ee-update-keytype {
+	margin-left: 30px;
+}
+
 #detailsForm .ra-editEndEntity table+.next-to-radio {
 	position: relative;
 	top: -10px;
