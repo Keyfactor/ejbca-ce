@@ -34,7 +34,7 @@
         <h3>
             <h:outputText value="#{web.text.CMPLISTOFALIASES}"/>
         </h3>
-        <h:form id="cmpaliasesform" rendered="#{web.ejbcaWebBean.runningEnterprise}">
+        <h:form id="cmpaliasesform">
             <h:dataTable value="#{cmpConfigMBean.cmpConfig.sortedAliasList}" var="alias" styleClass="grid"
                          rendered="#{!cmpConfigMBean.aliasListEmpty}">
                 <h:column>
