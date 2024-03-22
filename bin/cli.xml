@@ -110,12 +110,12 @@ appserver.home         : ${appserver.home}
     	<isset property="ca.tokenproperties" />
     </condition>
 
-    <condition property="httpsserver.tokentype" value="P12" else="JKS">
-        <equals arg1="${httpsserver.tokentype}" arg2="P12" />
+    <condition property="httpsserver.tokentype" value="JKS" else="P12">
+        <equals arg1="${httpsserver.tokentype}" arg2="JKS" />
     </condition>
 
-    <condition property="tokenfile.extension" value=".p12" else=".jks">
-        <equals arg1="${httpsserver.tokentype}" arg2="P12" />
+    <condition property="tokenfile.extension" value=".jks" else=".p12">
+        <equals arg1="${httpsserver.tokentype}" arg2="JKS" />
     </condition>
 
     <property name="httpsserver.filename" value="tomcat${tokenfile.extension}"/>
@@ -136,7 +136,7 @@ appserver.home         : ${appserver.home}
 		<ejbca:cli arg="batch superadmin"/>
 	</target>
 
-	<!-- Only try to batch generate superadmin if if keystoretype is P12 -->
+	<!-- Only try to batch generate superadmin if keystoretype is P12 -->
     <target name="ejbca:adminweb">
         <!-- Add an altname of 127.0.0.1 if the httpsservers hostname is localhost, otherwise add and altname with the same dnsName as hostname. -->
         <condition property="httpsserver.an" value="dnsName=localhost,IPAddress=127.0.0.1" else="dnsName=${httpsserver.hostname}">

@@ -34,7 +34,7 @@
                           rendered="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
             <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/SCEP.html')}" escape="false"/>
         </h1>
-        <h:form id="aliases" rendered="#{web.ejbcaWebBean.runningEnterprise}">
+        <h:form id="aliases">
             <h:panelGroup rendered="#{scepConfigMBean.allowedToEdit}">
                     <h3>
                         <h:outputText value="#{web.text.DELETE}"/>
