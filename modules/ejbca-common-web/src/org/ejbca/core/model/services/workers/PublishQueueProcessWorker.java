@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.model.services.workers;
 
+import java.util.Map;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.KeyedLock;
@@ -19,15 +21,12 @@ import org.cesecore.util.PropertyTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublishingResult;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.FatalPublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExecutionResult.Result;
-
-import java.util.Map;
 
 /**
  * Class processing the publisher queue. Can only run on instance in one VM on
@@ -130,7 +129,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                 }
             }
         } else {
-            final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.alreadyrunninginvm", PublishQueueProcessWorker.class.getName());
+            final String msg = "Service " + PublishQueueProcessWorker.class.getName() + " is already running in this VM! Not starting work.";
             log.info(msg);
             ret = new ServiceExecutionResult(Result.NO_ACTION, msg);
         }
