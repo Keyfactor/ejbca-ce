@@ -514,7 +514,10 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 if (log.isDebugEnabled()) {
                     log.debug("Generating PKCS12 for user: " + username);
                 }
-                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), altKeys != null ? altKeys.getPrivate() : null, cert, cachain);
+                if (altKeys != null) { // TODO EJBCAINTER-789
+                    throw new UnsupportedOperationException("Hybrid keystore support is not implemented yet");
+                }
+                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), /*altKeys != null ? altKeys.getPrivate() : null, TODO EJBCAINTER-789 */ cert, cachain);
             }
 
         } finally {
