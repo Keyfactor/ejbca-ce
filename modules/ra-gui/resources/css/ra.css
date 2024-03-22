@@ -100,6 +100,24 @@
 	padding: 0;
 }
 
+.internal-frame fieldset > .pure-control-group > label,
+#requestInfoForm\:selectKeyAlgorithmOuterPanel > .internal-frame > .pure-control-group > label {
+    min-width: 22.0em;
+}
+.internal-frame fieldset > .pure-control-group > input[type="text"],
+.internal-frame fieldset > .pure-control-group > input[type="password"],
+.internal-frame fieldset > .pure-control-group > input[type="email"],
+.internal-frame fieldset > .pure-control-group > input[type="url"],
+.internal-frame fieldset > .pure-control-group > input[type="number"],
+.internal-frame fieldset > .pure-control-group > input[type="search"],
+.internal-frame fieldset > .pure-control-group > textarea {
+    min-width: 27.8em;
+}
+.internal-frame fieldset > .pure-control-group > select,
+#requestInfoForm\:selectKeyAlgorithmOuterPanel > .internal-frame > .pure-control-group > select {
+    min-width: 36.7%; max-width: 30%;
+}
+
 .internal-frame-with-left-margin {
 	margin-left: 5em;
 }
@@ -135,9 +153,29 @@
 	margin: 0.5em 0 0.2em;
 }
 
+.ra-MakeRequest {
+	color: #fff;
+}
+
 .pure-control-group {
 	padding: 0 0.5em;
 	margin: 0 0.25em;
+}
+
+.pure-form-aligned .pure-control-group label {
+    min-width: 17em;
+}
+.pure-form-aligned .pure-control-group input[type="text"],
+.pure-form-aligned .pure-control-group input[type="password"],
+.pure-form-aligned .pure-control-group input[type="email"],
+.pure-form-aligned .pure-control-group input[type="url"],
+.pure-form-aligned .pure-control-group input[type="number"],
+.pure-form-aligned .pure-control-group input[type="search"],
+.pure-form-aligned .pure-control-group textarea {
+    min-width: 25em;
+}
+.pure-form-aligned .pure-control-group select {
+    /* min-width: 27.8em;	/* Too wide for Email address domain list! */
 }
 
 .bigStatus {
@@ -376,4 +414,39 @@ input[type="file"] {
 
 input[type="file"]:focus {
 	outline: none !important;
+}
+
+@media (max-width: 47.99em) {
+
+    .internal-frame fieldset > .pure-control-group > input[type="text"],
+    .internal-frame fieldset > .pure-control-group > input[type="password"],
+    .internal-frame fieldset > .pure-control-group > input[type="email"],
+    .internal-frame fieldset > .pure-control-group > input[type="url"],
+    .internal-frame fieldset > .pure-control-group > input[type="number"],
+    .internal-frame fieldset > .pure-control-group > input[type="search"],
+    .internal-frame fieldset > .pure-control-group > select,
+    .internal-frame fieldset > .pure-control-group > textarea {
+        min-width: 100%;
+    }
+
+    .pure-form-aligned .pure-control-group input[type="text"],
+    .pure-form-aligned .pure-control-group input[type="password"],
+    .pure-form-aligned .pure-control-group input[type="email"],
+    .pure-form-aligned .pure-control-group input[type="url"],
+    .pure-form-aligned .pure-control-group input[type="number"],
+    .pure-form-aligned .pure-control-group input[type="search"],
+    .pure-form-aligned .pure-control-group select,
+    .pure-form-aligned .pure-control-group textarea {
+        min-width: 100%;
+    }
+
+}
+
+@media (min-width: 64.0104em) {
+
+    #requestTemplateForm\:selectRequestTemplateOuterPanel .internal-frame fieldset > .pure-control-group:nth-child(1),
+    #requestTemplateForm\:selectRequestTemplateOuterPanel .internal-frame fieldset > .pure-control-group:nth-child(2) {
+        margin-bottom: -1.7em;
+    }
+
 }
