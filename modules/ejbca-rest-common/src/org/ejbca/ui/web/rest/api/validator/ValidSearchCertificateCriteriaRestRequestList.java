@@ -107,6 +107,7 @@ public @interface ValidSearchCertificateCriteriaRestRequestList {
                         case SERIAL_NUMBER:
                         case EXTERNAL_ACCOUNT_BINDING_ID:
                             stringPropertyCount++;
+                            break;
                         case STATUS:
                             statusCount++;
                             break;
