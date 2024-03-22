@@ -58,6 +58,7 @@ import org.cesecore.keybind.impl.ClientX509KeyManager;
 import org.cesecore.keybind.impl.ClientX509TrustManager;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
+import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 import org.ejbca.core.model.ca.publisher.CustomPublisherUiBase;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
@@ -430,6 +431,7 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
             final String issuerDn = CertTools.getIssuerDN(currentLevelCertificate);
             currentLevelCertificate = certificateStoreSession.findLatestX509CertificateBySubject(issuerDn);
             if (currentLevelCertificate == null) {
+                // This method is used for the TLS server certificate, so log redaction is not needed
                 log.warn("Unable to build certificate chain for SSL authentication certificate with Subject DN '" +
                         CertTools.getSubjectDN(leafCertificate) + "'. CA with Subject DN '" + issuerDn + "' is missing in the database.");
                 return null;
@@ -494,7 +496,7 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
         json.put(JSON_CERTIFICATE, certStr);
         String ret = json.toString();
         if(log.isDebugEnabled()) {
-            log.debug("Sending the JSON String: " + ret);
+            log.debug("Sending the JSON String: " + LogRedactionUtils.getContentLogSafe(ret)); // contains the SubjectDN in encoded form
         }
 
         return ret;
