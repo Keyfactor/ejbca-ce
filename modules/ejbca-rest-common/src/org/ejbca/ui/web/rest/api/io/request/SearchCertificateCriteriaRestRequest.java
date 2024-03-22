@@ -35,6 +35,7 @@ import java.util.EnumSet;
         "SUBJECT_DN - multiplicity [0, 1] - is used to search by SubjectDn; \n" +
         "SUBJECT_ALT_NAME - multiplicity [0, 1] - is used to search by SubjectAn; \n" +
         "USERNAME - multiplicity [0, 1] - is used to search by Username; \n" +
+        "EXTERNAL_ACCOUNT_BINDING_ID - multiplicity [0, 1] - is used to search by Account Binding Id; \n" +
         "Available STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, " +
         "REVOCATION_REASON_UNSPECIFIED, " +
         "REVOCATION_REASON_KEYCOMPROMISE, " +
