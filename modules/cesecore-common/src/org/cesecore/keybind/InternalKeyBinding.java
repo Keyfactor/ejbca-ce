@@ -161,4 +161,20 @@ public interface InternalKeyBinding extends Serializable {
      */
     byte[] generateCsrForNextKeyPair(String providerName, KeyPair keyPair, String signatureAlgorithm, X500Name subjectDn)
             throws IOException, OperatorCreationException, NoSuchAlgorithmException;
+
+    String getSubjectDn();
+    void setSubjectDn(String subjectDn);
+    
+    String getIssuerDn();
+    void setIssuerDn(String issuerDn);
+
+    String getEndEntityProfileName();
+    void setEndEntityProfileName(String endEntityProfileName);
+    
+    String getCertificateProfileName();
+    void setCertificateProfileName(String certificateProfileName);
+    
+    String getKeySpec();
+    void setKeySpec(String keySpec);
+    
 }
