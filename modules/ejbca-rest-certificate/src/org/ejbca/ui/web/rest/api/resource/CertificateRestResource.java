@@ -163,8 +163,10 @@ public class CertificateRestResource extends BaseRestResource {
                 } else {
                     enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(certResponseBytes, certificate, responseFormat);
                 }
-            } else {
+            } else if (responseFormat.equals(TokenDownloadType.DER.name())) {
                 enrollCertificateRestResponse = CertificateRestResponse.converter().toRestResponse(certificateChain, certificate);
+            } else {
+                throw new RestException(400, "Invalid input. Incorrect response format");
             }
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
         } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException | CMSException e) {
