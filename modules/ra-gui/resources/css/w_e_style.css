@@ -2173,27 +2173,25 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
         width: 83%;
     }
 
+    #contentForm\:modifiedAfter,
+    #contentForm\:modifiedBefore,
     #contentForm\:issuedAfter,
     #contentForm\:issuedBefore,
     #contentForm\:expiresAfter,
     #contentForm\:expiresBefore,
     #contentForm\:revokedAfter,
     #contentForm\:revokedBefore {
-        width: 119%;
+        width: 116%;
+        min-width: 116%;
         font-size: 95%;
     }
 
     #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) {
-        width: 24%;
-    }
-
-    #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group #contentForm\:modifiedAfter,
-    #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group #contentForm\:modifiedBefore {
-        width: 152%;
+        width: 25%;
     }
 
     #contentForm\:endEntititesMoreInputs {
-        width: 20% !important;
+        width: 25% !important;
     }
 
     #detailsForm > span.pure-u-1:nth-of-type(2) > label {
@@ -2438,6 +2436,13 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
     .parentCriteriaDropdown,
     .parentCriteriaCheckbox {
         width: 22%;
+    }
+
+    #contentForm\:parentCriteriaEepId select,
+    #contentForm\:parentCriteriaCpId select,
+    #contentForm\:parentCriteriaCaId select,
+    #contentForm\:parentCriteriaStatus select {
+        width: 100% !important;
     }
 
     /*
