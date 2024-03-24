@@ -423,14 +423,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             if (log.isDebugEnabled()) {
                 log.debug("Generating new certificate for user: "+ username);
             }
-            if(altKeys!=null) {
-                cert = (X509Certificate) signSession.createCertificate(administrator, username, password,
-                        new PublicKeyWrapper(rsaKeys.getPublic(), altKeys.getPublic()), -1, notBefore, notAfter);
-            }
-            else {
-                cert = (X509Certificate) signSession.createCertificate(administrator, username, password, new PublicKeyWrapper(rsaKeys.getPublic()),
-                        -1, notBefore, notAfter);
-            }
+            cert = (X509Certificate) signSession.createCertificate(administrator, username, password,
+                    new PublicKeyWrapper(rsaKeys.getPublic(), altKeys != null ? altKeys.getPublic() : null), -1, notBefore, notAfter);
         }
         // Clear password from database
         userdata = endEntityAccessSession.findUserWithoutViewEndEntityAccessRule(administrator, username); //Get GENERATED end entity information
