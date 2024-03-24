@@ -89,7 +89,7 @@ public class PublicKeyWrapper implements Serializable {
             } catch (NoSuchProviderException e) {
                 throw new IllegalStateException("BouncyCastle was not a known provider.", e);
             } catch (NoSuchAlgorithmException e) {
-                throw new IllegalStateException("altAlgorithm " + algorithm + " was not known at deserialisation", e);
+                throw new IllegalStateException("Alternative algorithm " + altAlgorithm + " was not known at deserialisation", e);
             } catch (InvalidKeySpecException e) {
                 throw new IllegalStateException("The incorrect key specification was implemented.", e);
             }
