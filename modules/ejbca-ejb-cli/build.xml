@@ -45,6 +45,7 @@
         <path location="${mod.plugins-ee.lib}"/>
 		<path refid="lib.xstream.classpath"/>
         <path refid="lib.p11ng.classpath" />
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
     <path id="compile-test.classpath">

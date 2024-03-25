@@ -25,6 +25,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.jaxws-api.classpath"/>
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 	
 	<target name="build" depends="">
