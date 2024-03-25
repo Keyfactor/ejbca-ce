@@ -177,7 +177,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             @QueryParam("reason") String reason,
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date,
-            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
+            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'. Will be ignored with revocation reason REMOVE_FROM_CRL")
             @QueryParam("invalidity_date") String invalidityDate)
 
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
