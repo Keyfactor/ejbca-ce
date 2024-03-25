@@ -400,7 +400,7 @@
           {
             "name": "invalidity_date",
             "in": "query",
-            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
+            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'. Will be ignored with revocation reason REMOVE_FROM_CRL",
             "required": false,
             "type": "string"
           }

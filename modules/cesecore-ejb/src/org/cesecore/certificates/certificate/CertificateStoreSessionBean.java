@@ -1258,7 +1258,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final CAInfo caInfo = caData.getCA().getCAInfo();
             // external CA for CRLReader in VA
             allowedOnCa = caInfo.isAllowChangingRevocationReason() || caInfo.getStatus() == CAConstants.CA_EXTERNAL;
-            allowInvalidityDate = caData.getCA().getCAInfo().isAllowInvalidityDate();
+            allowInvalidityDate = caInfo.isAllowInvalidityDate();
         } 
         
         boolean returnVal = false;
