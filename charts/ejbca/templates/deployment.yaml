@@ -1,0 +1,287 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ejbca.fullname" . }}
+  labels:
+    {{- include "ejbca.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ejbca.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ejbca.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "ejbca.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if or .Values.nginx.enabled .Values.ejbca.initContainers }}
+      initContainers:
+        {{- if and .Values.nginx.enabled (not .Values.nginx.mountInternalNginxCert) }}
+        - name: {{ .Chart.Name }}-init
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
+          command:
+            - "/bin/sh"
+            - "-c"
+            - |
+              /opt/keyfactor/bin/start.sh &
+              until [ -f /opt/keyfactor/appserver/standalone/deployments/ejbca.ear.deployed ]; do sleep 5; done
+              until [[ $(/opt/keyfactor/bin/ejbca.sh roles listadmins --role "Super Administrator Role" | grep -v 'USERNAME TYPE_EQUALCASE "ejbca"') ]]; do sleep 5; done
+              sleep 5
+              /opt/keyfactor/bin/ejbca.sh ra addendentity --username '{{ .Values.nginx.host }}' --dn 'CN={{ .Values.nginx.host }}' --caname 'ManagementCA' --type 1 --token PEM --altname 'dNSName={{ .Values.nginx.host }}' --certprofile SERVER --password NOTUSED
+              /opt/keyfactor/bin/ejbca.sh ra setendentitystatus --username '{{ .Values.nginx.host }}' -S 10
+              /opt/keyfactor/bin/ejbca.sh ra setclearpwd '{{ .Values.nginx.host }}' NOTUSED
+              /opt/keyfactor/bin/ejbca.sh batch '{{ .Values.nginx.host }}' -dir /tmp/nginx/ssl/
+          volumeMounts:
+          - name: nginx-cert
+            mountPath: /tmp/nginx/ssl
+          {{- if .Values.ejbca.useH2Persistence }}
+          - name: ejbca-h2-persistence
+            mountPath: /mnt/persistent/
+          {{- end }}
+          {{- if .Values.ejbca.importEjbcaConfFiles }}
+          - name: ejbca-config-conf-files
+            mountPath: /opt/keyfactor/ejbca/conf/
+          {{- end }}
+        {{- end }}
+        {{- if .Values.ejbca.initContainers }}
+          {{- toYaml .Values.ejbca.initContainers | nindent 8 }}
+        {{- end }}
+      {{- end }}
+      containers:
+        {{- if .Values.nginx.enabled }}
+        - name: {{ .Chart.Name }}-nginx
+          image: nginx:alpine
+          ports:
+          - name: nginx-http
+            containerPort: 80
+          - name: nginx-https
+            containerPort: 443
+          startupProbe:
+            tcpSocket:
+              port: 443
+          livenessProbe:
+            tcpSocket:
+              port: 443
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            {{- if .Values.nginx.mountInternalNginxCert }}
+            - name: nginx-cert-provided
+              mountPath: /etc/nginx/ssl/pem/
+            {{- else }}
+            - name: nginx-cert
+              mountPath: /etc/nginx/ssl/
+            {{- end }}
+        {{- end }}
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
+            {{- if .Values.services.proxyAJP.enabled }}
+            - name: PROXY_AJP_BIND
+              value: {{ .Values.services.proxyAJP.bindIP }}
+            {{- end }}
+            {{- if .Values.services.proxyHttp.enabled }}
+            - name: PROXY_HTTP_BIND
+              value: {{ .Values.services.proxyHttp.bindIP }}
+            {{- end }}
+          {{- if or (not .Values.ejbca.importEjbcaConfFiles) (hasKey .Values.ejbca "superadminPasswordOverride") }}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "/bin/sh"
+                  - "-c"
+                  - |
+                    {{- if not .Values.ejbca.importEjbcaConfFiles }}
+                    sed -i s/https=443/https={{- include "ejbca.ejbcaHttpsPort" . -}}/g /opt/primekey/ejbca/conf/web.properties
+                    sed -i s/pubhttp=80/pubhttp={{- include "ejbca.ejbcaPubhttpPort" . -}}/g /opt/primekey/ejbca/conf/web.properties
+                    {{- end }}
+                    {{- if and (hasKey .Values.ejbca "superadminPasswordOverride") (eq .Values.ejbca.env.TLS_SETUP_ENABLED "true") }}
+                    until [ -f /opt/keyfactor/appserver/standalone/deployments/ejbca.ear.deployed ]; do sleep 5; done
+                    until [[ $(/opt/keyfactor/bin/ejbca.sh roles listadmins --role "Super Administrator Role" | grep -v 'USERNAME TYPE_EQUALCASE "ejbca"') ]]; do sleep 5; done
+                    sleep 5
+                    /opt/keyfactor/bin/ejbca.sh ra setpwd 'superadmin' '{{ .Values.ejbca.superadminPasswordOverride }}'
+                    {{- end }}
+          {{- end }}
+          ports:
+            {{- if .Values.services.directHttp.enabled }}
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+            - name: https
+              containerPort: 8443
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.services.proxyAJP.enabled }}
+            - name: ajp
+              containerPort: 8009
+              protocol: TCP
+            {{- end }}
+            {{- if .Values.services.proxyHttp.enabled }}
+            - name: proxy-http
+              containerPort: 8081
+              protocol: TCP
+            - name: proxy-https
+              containerPort: 8082
+              protocol: TCP
+            {{- end }}
+          startupProbe:
+            tcpSocket:
+              {{- if .Values.services.directHttp.enabled }}
+              port: 8443
+              {{- else if .Values.services.proxyAJP.enabled }}
+              port: 8009
+              {{- else if .Values.services.proxyHttp.enabled }}
+              port: 8082
+              {{- end }}
+            initialDelaySeconds: 15
+            periodSeconds: 2
+            failureThreshold: 500
+          livenessProbe:
+            tcpSocket:
+              {{- if .Values.services.directHttp.enabled }}
+              port: 8443
+              {{- else if .Values.services.proxyAJP.enabled }}
+              port: 8009
+              {{- else if .Values.services.proxyHttp.enabled }}
+              port: 8082
+              {{- end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.ejbca.useH2Persistence }}
+            - name: ejbca-h2-persistence
+              mountPath: /mnt/persistent/
+            {{- end }}
+            {{- if .Values.ejbca.importExternalCas }}
+            - name: ejbca-config-external-cas
+              mountPath: /mnt/external/secrets/tls/cas/
+            {{- end }}
+            {{- if .Values.ejbca.importAppserverKeystore }}
+            - name: ejbca-config-appserver-keystore
+              mountPath: /mnt/external/secrets/tls/ks/
+            {{- end }}
+            {{- if .Values.ejbca.importAppserverTruststore }}
+            - name: ejbca-config-appserver-truststore
+              mountPath: /mnt/external/secrets/tls/ts/
+            {{- end }}
+            {{- if .Values.ejbca.importEjbcaConfFiles }}
+            - name: ejbca-config-conf-files
+              mountPath: /opt/keyfactor/ejbca/conf/
+            {{- end }}
+            {{- if and .Values.ejbca.configdumpImport.enabled (not .Values.ejbca.configdumpImport.initialize) }}
+            - name: ejbca-config-configdump-staged
+              mountPath: /opt/keyfactor/configdump/stage.d/
+            {{- end }}
+            {{- if and .Values.ejbca.configdumpImport.enabled .Values.ejbca.configdumpImport.initialize }}
+            - name: ejbca-config-configdump-initialize
+              mountPath: /opt/keyfactor/configdump/initialize.d/
+            {{- end }}
+            {{- if .Values.ejbca.volumeMounts }}
+              {{- toYaml .Values.ejbca.volumeMounts | nindent 12 }}
+            {{- end }}
+          {{- if .Values.ejbca.sidecarContainers }}
+            {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
+          {{- end }}
+      volumes:
+        {{- if .Values.ejbca.useH2Persistence }}
+        - name: ejbca-h2-persistence
+          persistentVolumeClaim:
+            claimName: {{ .Values.ejbca.existingH2PersistenceClaim }}
+        {{- end }}
+        {{- if .Values.nginx.enabled }}
+        - name: nginx-config
+          configMap:
+            name: {{ include "ejbca.fullname" . }}-nginx-config
+        - name: nginx-cert
+          emptyDir: {}
+        {{- if .Values.nginx.mountInternalNginxCert }}
+        - name: nginx-cert-provided
+          secret:
+            secretName: {{ .Values.nginx.secretInternalNginxCert }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.ejbca.importExternalCas }}
+        - name: ejbca-config-external-cas
+          secret:
+            secretName: {{ .Values.ejbca.externalCasSecret }}
+        {{- end }}
+        {{- if .Values.ejbca.importAppserverKeystore }}
+        - name: ejbca-config-appserver-keystore
+          secret:
+            secretName: {{ .Values.ejbca.appserverKeystoreSecret }}
+        {{- end }}
+        {{- if .Values.ejbca.importAppserverTruststore }}
+        - name: ejbca-config-appserver-truststore
+          secret:
+            secretName: {{ .Values.ejbca.appserverTruststoreSecret }}
+        {{- end }}
+        {{- if .Values.ejbca.importEjbcaConfFiles }}
+        - name: ejbca-config-conf-files
+          secret:
+            secretName: {{ .Values.ejbca.ejbcaConfFilesSecret }}
+        {{- end }}
+        {{- if and .Values.ejbca.configdumpImport.enabled (not .Values.ejbca.configdumpImport.initialize) }}
+        - name: ejbca-config-configdump-staged
+          configMap:
+            {{- if .Values.ejbca.configdumpImport.configMapName }}
+            name: {{ .Values.ejbca.configdumpImport.configMapName }}
+            {{- else if .Values.ejbca.configdumpImport.inlineConfigdump }}
+            name: {{ include "ejbca.fullname" . }}-configdump
+            {{- end }}
+            items:
+              {{- if .Values.ejbca.configdumpImport.configMapKey }}
+              - key: {{ .Values.ejbca.configdumpImport.configMapKey }}
+              {{- else }}
+              - key: "configdump.json"
+              {{- end }}
+                path: "configdump.json"
+        {{- end }}
+        {{- if and .Values.ejbca.configdumpImport.enabled .Values.ejbca.configdumpImport.initialize }}
+        - name: ejbca-config-configdump-initialize
+          configMap:
+            {{- if .Values.ejbca.configdumpImport.configMapName }}
+            name: {{ .Values.ejbca.configdumpImport.configMapName }}
+            {{- else if .Values.ejbca.configdumpImport.inlineConfigdump }}
+            name: {{ include "ejbca.fullname" . }}-configdump
+            {{- end }}
+            items:
+              {{- if .Values.ejbca.configdumpImport.configMapKey }}
+              - key: {{ .Values.ejbca.configdumpImport.configMapKey }}
+              {{- else }}
+              - key: "configdump.json"
+              {{- end }}
+                path: "configdump.json"
+        {{- end }}
+        {{- if .Values.ejbca.volumes }}
+          {{- toYaml .Values.ejbca.volumes | nindent 8 }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
