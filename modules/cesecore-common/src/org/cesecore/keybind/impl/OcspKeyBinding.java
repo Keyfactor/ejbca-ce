@@ -31,6 +31,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingBase;
@@ -298,6 +299,10 @@ public class OcspKeyBinding extends InternalKeyBindingBase {
             return false;
         }
         return true;
+    }
+    
+    public String getCertificateProfileName() {
+        return getData(PROP_CERT_PROFILE_NAME, CertificateProfile.OCSPSIGNERPROFILENAME);
     }
 
     private static void assertCertificateCompatabilityInternal(final Certificate certificate, AvailableExtendedKeyUsagesConfiguration ekuConfig) throws CertificateImportException {

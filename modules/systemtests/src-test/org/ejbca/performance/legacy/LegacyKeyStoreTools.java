@@ -56,7 +56,6 @@ import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.cesecore.internal.InternalResources;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
@@ -66,12 +65,10 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyCreationException;
 
 /**
- * @version $Id$
+ *
  */
 public class LegacyKeyStoreTools {
     private static final Logger log = Logger.getLogger(LegacyKeyStoreTools.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     protected final KeyStore keyStore;
     private final String providerName;
@@ -401,7 +398,7 @@ public class LegacyKeyStoreTools {
                                             this.keyStore.getProvider().getName() );
         ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(publicKey);
         if ( !certReq.isSignatureValid(verifier) ) {
-            String msg = intres.getLocalizedMessage("token.errorcertreqverify", alias);
+            String msg = "Certificate request is not verifying. " + alias;
             throw new Exception(msg);
         }
         String filename = alias+".pem";
@@ -439,7 +436,7 @@ public class LegacyKeyStoreTools {
             }
         }
         if ( notFound ) {
-            final String msg = intres.getLocalizedMessage("token.errorkeynottoken", importKeyHash);
+            final String msg = "Key with public key hash " + importKeyHash + " not on token.";
             throw new Exception(msg);
         }
     }
@@ -460,7 +457,7 @@ public class LegacyKeyStoreTools {
     private PrivateKey getPrivateKey(String alias) throws Exception {
         final PrivateKey key = (PrivateKey)getKey(alias);
         if ( key==null ) {
-            String msg = intres.getLocalizedMessage("token.errornokeyalias", alias);
+            String msg = "Key alias '" + alias + "' not found in keystore.";
             log.info(msg);
         }
         return key;
@@ -471,7 +468,7 @@ public class LegacyKeyStoreTools {
     private X509Certificate getCertificate( String alias ) throws KeyStoreException {
         final X509Certificate cert = (X509Certificate)this.keyStore.getCertificate(alias);
         if ( cert==null ) {
-            String msg = intres.getLocalizedMessage("token.errornocertalias", alias);
+            String msg = "Certificate alias '" + alias + "' not found in keystore.";
             log.info(msg);
         }
         return cert;
