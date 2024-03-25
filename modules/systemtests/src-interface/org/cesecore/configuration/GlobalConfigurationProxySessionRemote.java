@@ -14,10 +14,13 @@ package org.cesecore.configuration;
 
 import javax.ejb.Remote;
 
-/**
- * @version $Id$
- */
 @Remote
 public interface GlobalConfigurationProxySessionRemote extends GlobalConfigurationSessionLocal {
 
+    /**
+     * Adds a configuration to the database without going through the caches in GlobalConfigurationSession
+     * 
+     * @param configurationBase a configuration
+     */
+    void addConfiguration(ConfigurationBase configurationBase);
 }

@@ -54,6 +54,8 @@ import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaCaListRequest;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -111,11 +113,15 @@ public class CaRestResource extends BaseRestResource {
      * Returns the Response containing the list of CAs with general information per CA as Json.
      *
      * @param httpServletRequest HttpServletRequest of a request.
+     * @param includeExternal boolean true to get external cartificates, false to not include external certificates
      * @return The response containing the list of CAs and its general information.
      */
-    public Response listCas(final HttpServletRequest httpServletRequest) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
+    public Response listCas(final HttpServletRequest httpServletRequest, boolean includeExternal) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
-        List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken));
+        final RaCaListRequest raCaListRequest = new RaCaListRequest();
+        raCaListRequest.setIncludeExternal(includeExternal);
+        final IdNameHashMap<CAInfo> authorizedCAInfos = raMasterApiProxy.getRequestedAuthorizedCAInfos(adminToken, raCaListRequest);
+        final List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(authorizedCAInfos);
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
                 .certificateAuthorities(caInfoRestResponseList)
                 .build();

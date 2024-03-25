@@ -1,0 +1,11 @@
+{{- if and .Values.ejbca.configdumpImport.enabled (not .Values.ejbca.configdumpImport.configMapName) .Values.ejbca.configdumpImport.inlineConfigdump}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ejbca.fullname" . }}-configdump
+  labels:
+    {{- include "ejbca.labels" . | nindent 4 }}
+data:
+  configdump.json: |-
+{{ .Values.ejbca.configdumpImport.inlineConfigdump | indent 4 }}
+{{- end }}

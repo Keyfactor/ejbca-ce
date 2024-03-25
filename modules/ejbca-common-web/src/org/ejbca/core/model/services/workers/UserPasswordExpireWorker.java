@@ -26,7 +26,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.CustomFieldException;
@@ -85,7 +84,7 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
             	endEntityManagementSession.changeUser(getAdmin(), endEntityInformation, false);
                 if (isSendToEndUsers()) {
                 	if (endEntityInformation.getEmail() == null || endEntityInformation.getEmail().trim().equals("")) {
-                		log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoemail", endEntityInformation.getUsername()));
+                		log.info("Sending email notification to user " + endEntityInformation.getUsername() + " failed, no email address configured.");
                 	} else {
                 		// Populate end user message
                 		String message = new UserNotificationParamGen(endEntityInformation).interpolate(getEndUserMessage());
