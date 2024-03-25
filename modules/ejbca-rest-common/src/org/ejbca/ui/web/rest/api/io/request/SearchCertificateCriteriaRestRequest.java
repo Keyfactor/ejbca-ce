@@ -70,7 +70,7 @@ public class SearchCertificateCriteriaRestRequest {
             example = "ENDUSER")
     private String value;
 
-    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEGINS_WITH' for string value (trailing wildcard search), "
+    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEGINS_WITH' for string value (case sensitive trailing wildcard search.), "
         + "'BEFORE' or 'AFTER' for date values",
             example = "EQUAL",
             allowableValues = "EQUAL, LIKE, BEGINS_WITH, BEFORE, AFTER",
