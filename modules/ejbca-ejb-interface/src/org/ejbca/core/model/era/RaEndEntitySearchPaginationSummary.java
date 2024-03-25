@@ -12,10 +12,13 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class RaEndEntitySearchPaginationSummary {
+public class RaEndEntitySearchPaginationSummary implements Serializable {
     
+    private static final long serialVersionUID = 1L;
+
     private String sortingProperty; // same as SearchEndEntitiesSortRestRequest.SortProperty
 
     private List<Integer> sortPropertyIdentifiers; // ordered e.g. end entity profile id

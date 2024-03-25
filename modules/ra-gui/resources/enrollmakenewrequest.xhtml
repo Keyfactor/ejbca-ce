@@ -45,7 +45,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectEndEntityProfileRendered}">
 								<h:outputLabel for="selectEEPOneMenu" value="#{msg.enroll_certificate_type}"/>
-								<h:selectOneMenu id="selectEEPOneMenu" styleClass="jsAutoFocusLast" style="width: 30%; margin-right: 5%;"
+								<h:selectOneMenu id="selectEEPOneMenu" styleClass="jsAutoFocusLast" style="margin-right: 5%;"
 									value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"/>
@@ -62,7 +62,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectCertificateProfileRendered}">
 								<h:outputLabel for="selectCPOneMenu" value="#{msg.enroll_certificate_subtype}"/>
-								<h:selectOneMenu id="selectCPOneMenu" styleClass="jsAutoFocusLast" style="width: 30%; margin-right: 5%;"
+								<h:selectOneMenu id="selectCPOneMenu" styleClass="jsAutoFocusLast" style="margin-right: 5%;"
 									value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"/>
@@ -489,7 +489,7 @@
                                         <h:message for="upnRfcEmail2" id="upnRfcEmailMessage2" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
 									<h:panelGroup rendered="#{instance.copyDns || instance.copyUpn}">
-										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText" />
+										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText ra-MakeRequest" />
 									</h:panelGroup>
 								</h:panelGroup>
 							</ui:repeat>
@@ -566,7 +566,7 @@
                                         <h:message for="upnRfcEmail2" id="upnRfcEmailMessage2" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
 									<h:panelGroup rendered="#{instance.copyDns || instance.copyUpn}">
-										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText"/>
+										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText ra-MakeRequest"/>
 									</h:panelGroup>
                             	</h:panelGroup>
                             	</ui:fragment>

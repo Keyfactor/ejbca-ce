@@ -17,7 +17,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -49,6 +52,17 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
     private static final String PROPERTY_DEFAULT_PVALUE = "default" + PROPERTYSUFFIX_PVALUE;
     
     private Properties config;
+    
+    private static final Set<String> CUSTOM_PROPERTIES;
+
+    static {
+        final Set<String> set = new TreeSet<>();
+        set.add("outputfolder");
+        set.add("default.samplingmethod");
+        set.add("profileid.*.samplingmethod");
+        set.add("profileid.*.pvalue");
+        CUSTOM_PROPERTIES = Collections.unmodifiableSet(set);
+    }
     
     @Override
     public void init(Properties config) {
@@ -367,5 +381,9 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
     public void setExternalScriptsAllowlist(ExternalScriptsAllowlist allowList) {
         // Method not applicable for this publisher type!        
     }
-
+    
+    @Override
+    public Set<String> getDeclaredPropertyNames() {
+        return CUSTOM_PROPERTIES;
+    }
 }
