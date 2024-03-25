@@ -166,9 +166,6 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                 final SearchCertificateCriteriaRestRequest.CriteriaOperation criteriaOperation = SearchCertificateCriteriaRestRequest.CriteriaOperation.resolveCriteriaOperation(searchCertificateCriteriaRestRequest.getOperation());
                 switch (criteriaProperty) {
                     case SERIAL_NUMBER: {
-                        // if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
-                        //     raCertificateSearchRequest.setser(true);
-                        // }
                         raRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raRequest.setSerialNumberSearchStringFromHex(criteriaValue);
                         break;
@@ -177,6 +174,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setSubjectDnSearchExact(true);
                         }
+                        raRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raRequest.setSubjectDnSearchString(criteriaValue);
                         break;
                     }
@@ -184,6 +182,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setSubjectAnSearchExact(true);
                         }
+                        raRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raRequest.setSubjectAnSearchString(criteriaValue);
                         break;
                     }
@@ -191,6 +190,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setUsernameSearchExact(true);
                         }
+                        raRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raRequest.setUsernameSearchString(criteriaValue);
                         break;
                     }
@@ -202,11 +202,15 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                             raRequest.setExternalAccountIdSearchExact(true);
                         }
                         raRequest.setSubjectDnSearchString(criteriaValue);
+                        raRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raRequest.setSubjectAnSearchString(criteriaValue);
+                        raRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raRequest.setUsernameSearchString(criteriaValue);
+                        raRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raRequest.setSerialNumberSearchStringFromHex(criteriaValue);
                         raRequest.setExternalAccountIdSearchString(criteriaValue);
+                        raRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         break;
                     }
                     case END_ENTITY_PROFILE: {
@@ -217,6 +221,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setExternalAccountIdSearchExact(true);
                         }
+                        raRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         raRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }
