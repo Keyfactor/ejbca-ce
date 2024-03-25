@@ -1399,8 +1399,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
         sb.append(" FROM CertificateData a");
         sb.append(" WHERE a.issuerDN IN (:issuerDN)");
-        sb.append(buildStringSearchClause(subjectDnSearchString, subjectAnSearchString, usernameSearchString, serialNumberSearchStringFromDec,
-                serialNumberSearchStringFromHex, externalAccountIdSearchString));
+        sb.append(buildStringSearchClause(request));
         // NOTE: notBefore is not indexed.. we might want to disallow such search.
         if (request.isIssuedAfterUsed()) {
             sb.append(" AND (a.notBefore > :issuedAfter)");
@@ -1497,7 +1496,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     log.warn("subjectDN LIKE"); // TODO REMOVE
                     break;
                 case "BEGINS_WITH":
-                    query.setParameter("subjectDN", subjectDnSearchString.toUpperCase() + "%");
+                    query.setParameter("subjectDN", subjectDnSearchString + "%");
                     log.warn("subjectDN BEGINS_WITH"); // TODO REMOVE
                     break;
                 default:
@@ -1514,19 +1513,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         if (StringUtils.isNotEmpty(subjectAnSearchString)) {
             switch (request.getSubjectAnSearchOperation()) {
                 case "EQUAL":
-                    query.setParameter("subjectAltName", subjectAnSearchString.toUpperCase());
+                    query.setParameter("subjectAltName", subjectAnSearchString);
                     log.warn("subjectAltName EQUAL"); // TODO REMOVE
                     break;
                 case "LIKE":
-                    query.setParameter("subjectAltName", "%" + subjectAnSearchString.toUpperCase() + "%");
+                    query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
                     log.warn("subjectAltName LIKE"); // TODO REMOVE
                     break;
                 case "BEGINS_WITH":
-                    query.setParameter("subjectAltName", subjectAnSearchString.toUpperCase() + "%");
+                    query.setParameter("subjectAltName", subjectAnSearchString + "%");
                     log.warn("subjectAltName BEGINS_WITH"); // TODO REMOVE
                     break;
                 default:
-                    query.setParameter("subjectAltName", "%" + subjectAnSearchString.toUpperCase() + "%");
+                    query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
                     log.warn("subjectAltName defaulted"); // TODO REMOVE
                     break;
             }
@@ -1547,7 +1546,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     log.warn("username LIKE"); // TODO REMOVE
                     break;
                 case "BEGINS_WITH":
-                    query.setParameter("username", usernameSearchString.toUpperCase() + "%");
+                    query.setParameter("username", usernameSearchString + "%");
                     log.warn("username BEGINS_WITH"); // TODO REMOVE
                     break;
                 default:
@@ -1584,7 +1583,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     log.warn("accountBindingId LIKE"); // TODO REMOVE
                     break;
                 case "BEGINS_WITH":
-                    query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase() + "%");
+                    query.setParameter("accountBindingId", externalAccountIdSearchString + "%");
                     log.warn("accountBindingId BEGINS_WITH"); // TODO REMOVE
                     break;
                 default:
@@ -1632,26 +1631,26 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return query;
     }
 
-    static String buildStringSearchClause(String subjectDnSearchString, String subjectAnSearchString, String usernameSearchString,
-            String serialNumberSearchStringFromDec, String serialNumberSearchStringFromHex, String externalAccountIdSearchString) {
+    static String buildStringSearchClause(RaCertificateSearchRequestV2 raRequest) {
         ArrayList<String> comparisons = new ArrayList<String>();
-        if (StringUtils.isNotEmpty(subjectDnSearchString)) {
-            comparisons.add("UPPER(subjectDN) LIKE :subjectDN");
+        // Add requested search criteria. Operation 'BEGINS_WITH' must be case sensitive to leverage indexes. 
+        if (StringUtils.isNotEmpty(raRequest.getSubjectDnSearchString())) {
+            comparisons.add(raRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ? "subjectDN LIKE :subjectDN" : "UPPER(subjectDN) LIKE :subjectDN");
         }
-        if (StringUtils.isNotEmpty(subjectAnSearchString)) {
+        if (StringUtils.isNotEmpty(raRequest.getSubjectAnSearchString())) {
             comparisons.add("subjectAltName LIKE :subjectAltName");
         }
-        if (StringUtils.isNotEmpty(usernameSearchString)) {
-            comparisons.add("UPPER(username) LIKE :username");
+        if (StringUtils.isNotEmpty(raRequest.getUsernameSearchString())) {
+            comparisons.add(raRequest.getUsernameSearchOperation().equals("BEGINS_WITH") ? "username LIKE :username" : "UPPER(username) LIKE :username");
         }
-        if (StringUtils.isNotEmpty(serialNumberSearchStringFromDec)) {
+        if (StringUtils.isNotEmpty(raRequest.getSerialNumberSearchStringFromDec())) {
             comparisons.add("serialNumber LIKE :serialNumberDec");
         }
-        if (StringUtils.isNotEmpty(serialNumberSearchStringFromHex)) {
+        if (StringUtils.isNotEmpty(raRequest.getSerialNumberSearchStringFromHex())) {
             comparisons.add("serialNumber LIKE :serialNumberHex");
         }
-        if (StringUtils.isNotEmpty(externalAccountIdSearchString)) {
-            comparisons.add("UPPER(accountBindingId) LIKE :accountBindingId");
+        if (StringUtils.isNotEmpty(raRequest.getExternalAccountIdSearchString())) {
+            comparisons.add(raRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH") ? "accountBindingId LIKE :accountBindingId" : "UPPER(accountBindingId) LIKE :accountBindingId");
         }
 
         if (comparisons.size() == 0)
