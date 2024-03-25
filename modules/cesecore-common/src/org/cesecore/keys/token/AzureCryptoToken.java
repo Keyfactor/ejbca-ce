@@ -46,21 +46,6 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import com.nimbusds.jose.JOSEException;
-import com.nimbusds.jose.JWSAlgorithm;
-import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.JWSHeader.Builder;
-import com.nimbusds.jose.crypto.RSASSASigner;
-import com.nimbusds.jose.util.Base64URL;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.SignedJWT;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -86,11 +71,25 @@ import org.bouncycastle.jcajce.provider.asymmetric.util.EC5Util;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
-import org.cesecore.internal.InternalResources;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSHeader.Builder;
+import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.util.Base64URL;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 
 /**
  * Class implementing a keystore on Azure Key Vault, using their REST API.
@@ -108,10 +107,6 @@ public class AzureCryptoToken extends BaseCryptoToken {
     private static final long serialVersionUID = 7719014139640717867L;
 
     private static final Logger log = Logger.getLogger(AzureCryptoToken.class);
-    /**
-     * Internal localization of logs and errors
-     */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     /** Authorization header, for a Key Vault 
      * It is possible to have multiple crypto tokens configured to multiple key vaults (with different names), because this is
@@ -554,7 +549,7 @@ public class AzureCryptoToken extends BaseCryptoToken {
             } catch (CryptoTokenAuthenticationFailedException e) {
                 throw new CryptoTokenOfflineException(e);
             }
-            final String msg = intres.getLocalizedMessage("token.deleteentry", alias, getId());
+            final String msg = "Deleted entry with alias '" + alias + "' from Crypto Token with ID " + getId() + ".";
             log.info(msg);
         } else {
             log.info("Trying to delete keystore entry with empty alias.");
@@ -703,8 +698,9 @@ public class AzureCryptoToken extends BaseCryptoToken {
         // Does the alias exist?
         final PublicKey pubK = getPublicKey(alias);
         if (pubK == null) {
-            log.warn(intres.getLocalizedMessage("token.noprivate", alias));
-            final String msg = intres.getLocalizedMessage("token.errornosuchkey", alias);
+            log.warn("Can not read private key with alias '" + alias
+                    + "' from Crypto Token, got null. If the key was generated after the latest application server start then restart the application server.");
+            final String msg = "No key with alias '" +  alias + "'.";
             throw new CryptoTokenOfflineException(msg);
         }
         final String keyurl = createFullKeyURL(alias, getKeyVaultName());

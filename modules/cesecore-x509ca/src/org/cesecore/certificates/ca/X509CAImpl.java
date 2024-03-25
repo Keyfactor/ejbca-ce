@@ -779,7 +779,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
      */
     @Override
     public boolean isDoPreProduceOcspResponses() {
-        return containsOcspKey(DO_PRE_PRODUCE_OCSP_RESPONSES);
+        if (data.containsKey(DO_PRE_PRODUCE_OCSP_RESPONSES)) {
+            return (Boolean) data.get(DO_PRE_PRODUCE_OCSP_RESPONSES);
+        }
+        return false;        
     }
     
     /* (non-Javadoc)
@@ -791,8 +794,11 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     @Override
-    public boolean isDoStoreOcspResponsesOnDemand() {
-        return containsOcspKey(DO_STORE_OCSP_ON_DEMAND);
+    public boolean isDoStoreOcspResponsesOnDemand() {        
+        if (data.containsKey(DO_STORE_OCSP_ON_DEMAND)) {
+            return (Boolean) data.get(DO_STORE_OCSP_ON_DEMAND);
+        }
+        return false;
     }
     
     @Override
@@ -802,19 +808,15 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
     @Override
     public boolean isDoPreProduceOcspResponseUponIssuanceAndRevocation() {
-        return containsOcspKey(DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES);
-    }
+        if (data.containsKey(DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES)) {
+            return (Boolean) data.get(DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES);
+        }
+        return false;
+     }
 
     @Override
     public void setDoPreProduceOcspResponseUponIssuanceAndRevocation(boolean doPreProduceIndividualOcspResponses) {
         data.put(DO_PRE_PRODUCE_INDIVIDUAL_OCSP_RESPONSES, doPreProduceIndividualOcspResponses);
-    }
-
-    private boolean containsOcspKey(String key) {
-        if (data.containsKey(key)) {
-            return (Boolean) data.get(key);
-        }
-        return false;
     }
 
     @SuppressWarnings("unchecked")

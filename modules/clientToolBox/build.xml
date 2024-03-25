@@ -40,7 +40,7 @@
 		<path refid="lib.json-simple.classpath"/> <!-- for REST API calls -->
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- needed by KeyTools -->
 		<path refid="lib.x509-common-util.classpath" />
-
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">

@@ -40,7 +40,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.internal.InternalResources;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
@@ -60,8 +59,6 @@ public class SoftCryptoToken extends BaseCryptoToken {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(SoftCryptoToken.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
 
     /**
      * When upgrading this version, you must up the version of the CA as well, otherwise the upgraded CA token will not be stored in the database.
@@ -132,22 +129,22 @@ public class SoftCryptoToken extends BaseCryptoToken {
                 // If everything was OK we cache the load/save password so we can store the keystore
                 keyStorePass = authCode;
             } catch (IOException e) {
-                String msg = intres.getLocalizedMessage("token.erroractivate", getId(), e.getMessage());
+                String msg = "Error activating Crypto Token with ID " + getId() + ". " + e.getMessage();
                 log.info(msg, e);
                 CryptoTokenAuthenticationFailedException oe = new CryptoTokenAuthenticationFailedException(e.getMessage());
                 oe.initCause(e);
                 throw oe;
             } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("token.erroractivate", getId(), e.getMessage());
+                String msg = "Error activating Crypto Token with ID " + getId() + ". " + e.getMessage();
                 log.info(msg, e);
                 CryptoTokenOfflineException oe = new CryptoTokenOfflineException(e.getMessage());
                 oe.initCause(e);
                 throw oe;
             }
-            String msg = intres.getLocalizedMessage("token.activated", getId());
+            String msg = "Activated Crypto Token with ID " + getId() + ".";
             log.info(msg);
         } else {
-            String msg = intres.getLocalizedMessage("token.erroractivate", getId(), "No keystore data available yet, creating new PKCS#12 keystore.");
+            String msg = "Error activating Crypto Token with ID " + getId() + ". " + "No keystore data available yet, creating new PKCS#12 keystore.";
             log.info(msg);
             try {
                 KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
@@ -186,7 +183,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
      */
     public void checkPasswordBeforeExport(char[] authCode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, PrivateKeyNotExtractableException {
         if (!doPermitExtractablePrivateKey()) {
-            final String msg = intres.getLocalizedMessage("token.errornotextractable_allkeys", getId());
+            final String msg = "Crypto Token " + getId() + " does not allow to extract private keys.";
             throw new PrivateKeyNotExtractableException(msg);
         }
         try {
@@ -197,13 +194,13 @@ public class SoftCryptoToken extends BaseCryptoToken {
                 loadKeyStore(keystoreData, authCode);
             }
         } catch (IOException e) {
-            String msg = intres.getLocalizedMessage("token.wrongauthcode", getId(), e.getMessage());
+            String msg = "Invalid authentication code for Crypto Token with ID " + getId() + ". " + e.getMessage();
             log.info(msg, e);
             CryptoTokenAuthenticationFailedException oe = new CryptoTokenAuthenticationFailedException(e.getMessage());
             oe.initCause(e);
             throw oe;
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("token.erroractivate", getId(), e.getMessage());
+            String msg = "Error activating Crypto Token with ID " + getId() + ". " + e.getMessage();
             log.info(msg, e);
             CryptoTokenOfflineException oe = new CryptoTokenOfflineException(e.getMessage());
             oe.initCause(e);
@@ -234,7 +231,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
         	// Exception should only be thrown if loading a non-null KeyStore fails
             throw new IllegalStateException("This should never happen.");
         }
-        String msg = intres.getLocalizedMessage("token.deactivate", getId());
+        String msg = "De-activated Crypto Token with ID " + getId() + ".";
         log.info(msg);
     }
 
@@ -284,7 +281,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             // If it was not the wrong password we need to see what went wrong
             log.debug("Error: ", e);
             // Invalid password
-            log.info(intres.getLocalizedMessage("token.wrongauthcode", cryptoTokenId));
+            log.info("Invalid authentication code for Crypto Token with ID " + cryptoTokenId + ".");
         }
         return false;
     }
@@ -296,7 +293,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());
             try {
                 cont.deleteEntry(alias);
-                String msg = intres.getLocalizedMessage("token.deleteentry", alias, getId());
+                String msg = "Deleted entry with alias '" + alias + "' from Crypto Token with ID " + getId() + ".";
                 log.info(msg);
             } catch (KeyStoreException e) { // NOPMD
                 // P12 keystore throws when the alias can not be found, in contrary to PKCS#11 keystores

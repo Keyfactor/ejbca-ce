@@ -48,7 +48,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Local interface for CertificateCreateSession.
  * 
- * @version $Id$
  */
 @Local
 public interface CertificateCreateSessionLocal extends CertificateCreateSession {
