@@ -70,9 +70,10 @@ public class SearchCertificateCriteriaRestRequest {
             example = "ENDUSER")
     private String value;
 
-    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
+    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEGINS_WITH' for string value (trailing wildcard search), "
+        + "'BEFORE' or 'AFTER' for date values",
             example = "EQUAL",
-            allowableValues = "EQUAL, LIKE, BEFORE, AFTER",
+            allowableValues = "EQUAL, LIKE, BEGINS_WITH, BEFORE, AFTER",
             dataType = "java.lang.String")
     private String operation;
 
@@ -175,6 +176,7 @@ public class SearchCertificateCriteriaRestRequest {
     public enum CriteriaOperation {
         EQUAL,
         LIKE,
+        BEGINS_WITH,
         AFTER,
         BEFORE;
 
@@ -200,7 +202,7 @@ public class SearchCertificateCriteriaRestRequest {
          * @return subset of criteria operations.
          */
         public static EnumSet<CriteriaOperation> STRING_OPERATIONS() {
-            return EnumSet.of(EQUAL, LIKE);
+            return EnumSet.of(EQUAL, LIKE, BEGINS_WITH);
         }
 
         /**

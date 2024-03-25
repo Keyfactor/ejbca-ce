@@ -933,6 +933,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         final RaCertificateSearchResponse ret = new RaCertificateSearchResponse();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
+                if (raMasterApi.getApiVersion() < 18 && (
+                    raCertificateSearchRequest.getUsernameSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectAnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH"))) {
+                        throw new UnsupportedOperationException("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                }
                 try {
                     ret.merge(raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest));
                 } catch (UnsupportedOperationException e) {
@@ -958,6 +965,13 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         final RaCertificateSearchResponseV2 ret = new RaCertificateSearchResponseV2();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
+                if (raMasterApi.getApiVersion() < 18 && (
+                    raCertificateSearchRequest.getUsernameSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectAnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH"))) {
+                        throw new UnsupportedOperationException("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                }
                 try {
                     ret.merge(raMasterApi.searchForCertificatesV2(authenticationToken, raCertificateSearchRequest));
                 } catch (UnsupportedOperationException e) {

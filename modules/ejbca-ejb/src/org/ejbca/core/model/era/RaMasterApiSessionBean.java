@@ -370,7 +370,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>18<td>=<td>8.3.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 17;
+    private static final int RA_MASTER_API_VERSION = 18;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -1317,6 +1317,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
          * - A QueryTimeoutException is thrown
          * - A PersistenceException is thrown (and the transaction which don't have here is marked for roll-back)
          */
+        long timeStartBuildResponse = System.currentTimeMillis(); //TODO REMOVE
         final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
         if (queryTimeout > 0L) {
             query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
@@ -1332,7 +1333,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     log.debug("Certificate search count: " + count + ". queryTimeout=" + queryTimeout + "ms");
                 }
             } else {
+                long timeStart = System.currentTimeMillis(); //TODO REMOVE
                 final List<?> resultList = query.getResultList();
+                long timeStop = System.currentTimeMillis();
+                log.warn("Querty execution: " + (timeStop-timeStart) + "ms"); //TODO REMOVE
                 for (final Object fingerprintRecord : resultList) {
                     final String fingerprint = ValueExtractor.extractStringValue(fingerprintRecord);
                     response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
@@ -1363,6 +1367,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setStatus(RaCertificateSearchResponseV2.Status.ERROR);
             log.info("Requested search query by " + authenticationToken + " failed, possibly due to timeout. " + e.getMessage());
         }
+        log.warn("Total Response build time: " + (System.currentTimeMillis() - timeStartBuildResponse) + "ms"); //TODO REMOVE
         return response;
     }
 
@@ -1451,6 +1456,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.warn("Invalid order JPQL order operation '" + orderOperation + "'.");
             }
         }
+        //TODO REMOVE
+        log.warn("\nQuery: " + sb.toString() + "\n");
 
         final Query query = entityManager.createNativeQuery(sb.toString());
         query.setParameter("issuerDN", issuerDns);
@@ -1473,26 +1480,86 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 log.debug(" endEntityProfileId: Any (even deleted) profile(s) due to root access.");
             }
         }
+        // TODO REMOVE
+        log.warn("\nOperations:" + 
+            "\ngetSubjectDnSearchOperation: " + request.getSubjectDnSearchOperation() +
+            "\ngetSubjectAnSearchOperation: " + request.getSubjectAnSearchOperation() + 
+            "\ngetUsernameSearchOperation " + request.getUsernameSearchOperation() + 
+            "\ngetExternalAccountIdSearchOperation: "  + request.getExternalAccountIdSearchOperation() + "\n");
         if (StringUtils.isNotEmpty(subjectDnSearchString)) {
-            if (request.isSubjectDnSearchExact()) {
-                query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
-            } else {
-                query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
+            switch (request.getSubjectDnSearchOperation()) {
+                case "EQUAL":
+                    query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+                    log.warn("subjectDN EQUAL"); // TODO REMOVE
+                    break;
+                case "LIKE":
+                    query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
+                    log.warn("subjectDN LIKE"); // TODO REMOVE
+                    break;
+                case "BEGINS_WITH":
+                    query.setParameter("subjectDN", subjectDnSearchString.toUpperCase() + "%");
+                    log.warn("subjectDN BEGINS_WITH"); // TODO REMOVE
+                    break;
+                default:
+                    query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
+                    log.warn("subjectDN defaulted"); // TODO REMOVE
+                    break;
             }
+            // if (request.isSubjectDnSearchExact()) {
+            //     query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+            // } else {
+            //     query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
+            // }
         }
         if (StringUtils.isNotEmpty(subjectAnSearchString)) {
-            if (request.isSubjectAnSearchExact()) {
-                query.setParameter("subjectAltName", subjectAnSearchString);
-            } else {
-                query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
+            switch (request.getSubjectAnSearchOperation()) {
+                case "EQUAL":
+                    query.setParameter("subjectAltName", subjectAnSearchString.toUpperCase());
+                    log.warn("subjectAltName EQUAL"); // TODO REMOVE
+                    break;
+                case "LIKE":
+                    query.setParameter("subjectAltName", "%" + subjectAnSearchString.toUpperCase() + "%");
+                    log.warn("subjectAltName LIKE"); // TODO REMOVE
+                    break;
+                case "BEGINS_WITH":
+                    query.setParameter("subjectAltName", subjectAnSearchString.toUpperCase() + "%");
+                    log.warn("subjectAltName BEGINS_WITH"); // TODO REMOVE
+                    break;
+                default:
+                    query.setParameter("subjectAltName", "%" + subjectAnSearchString.toUpperCase() + "%");
+                    log.warn("subjectAltName defaulted"); // TODO REMOVE
+                    break;
             }
+            // if (request.isSubjectAnSearchExact()) {
+            //     query.setParameter("subjectAltName", subjectAnSearchString);
+            // } else {
+            //     query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
+            // }
         }
         if (StringUtils.isNotEmpty(usernameSearchString)) {
-            if (request.isUsernameSearchExact()) {
-                query.setParameter("username", usernameSearchString.toUpperCase());
-            } else {
-                query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
+            switch (request.getUsernameSearchOperation()) {
+                case "EQUAL":
+                    query.setParameter("username", usernameSearchString.toUpperCase());
+                    log.warn("username EQUAL"); // TODO REMOVE
+                    break;
+                case "LIKE":
+                    query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
+                    log.warn("username LIKE"); // TODO REMOVE
+                    break;
+                case "BEGINS_WITH":
+                    query.setParameter("username", usernameSearchString.toUpperCase() + "%");
+                    log.warn("username BEGINS_WITH"); // TODO REMOVE
+                    break;
+                default:
+                    query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
+                    log.warn("username defaulted"); // TODO REMOVE
+                    break;
             }
+            // if (request.isUsernameSearchExact()) {
+            //     query.setParameter("username", usernameSearchString.toUpperCase());
+            // } else {
+            //     query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
+            // }
         }
         if (StringUtils.isNotEmpty(serialNumberSearchStringFromDec)) {
             query.setParameter("serialNumberDec", serialNumberSearchStringFromDec);
@@ -1507,11 +1574,29 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         if (StringUtils.isNotEmpty(externalAccountIdSearchString)) {
-            if (request.isExternalAccountIdSearchExact()) {
-                query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
-            } else {
-                query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
+            switch (request.getExternalAccountIdSearchOperation()) {
+                case "EQUAL":
+                    query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
+                    log.warn("accountBindingId EQUAL"); // TODO REMOVE
+                    break;
+                case "LIKE":
+                    query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
+                    log.warn("accountBindingId LIKE"); // TODO REMOVE
+                    break;
+                case "BEGINS_WITH":
+                    query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase() + "%");
+                    log.warn("accountBindingId BEGINS_WITH"); // TODO REMOVE
+                    break;
+                default:
+                    query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
+                    log.warn("accountBindingId defaulted"); // TODO REMOVE
+                    break;
             }
+            // if (request.isExternalAccountIdSearchExact()) {
+            //     query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
+            // } else {
+            //     query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
+            // }
         }
         if (request.isIssuedAfterUsed()) {
             query.setParameter("issuedAfter", request.getIssuedAfter());
