@@ -25,8 +25,8 @@ import com.keyfactor.util.CertTools;
  *
  */
 @XmlType(name = "certificateResponse", propOrder = {
-         "responseType",
-         "data"
+        "data",
+        "responseType"
  })
 public class CertificateResponse  {
 	
