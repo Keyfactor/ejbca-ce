@@ -20,9 +20,9 @@ import javax.xml.bind.annotation.XmlType;
  * @deprecated Deprecated class, kept for web service compatibility.
  */
 @XmlType(name = "pinDataWS", propOrder = {
-        "type",
         "initialPIN",
-        "PUK"
+        "PUK",
+        "type"
 })
 @Deprecated
 public class PinDataWS {
