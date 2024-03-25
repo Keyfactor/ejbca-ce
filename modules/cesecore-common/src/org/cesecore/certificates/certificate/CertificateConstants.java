@@ -13,7 +13,7 @@
 
 package org.cesecore.certificates.certificate;
 
-import org.bouncycastle.tls.HashAlgorithm;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
  * Constants for users and certificates. Constants for Type of user: Type is constructed as a mask
@@ -127,12 +127,10 @@ public final class CertificateConstants {
     /**
      * Default Certificate ID hash algorithm.
      */
-    public static final String SHA1 = HashAlgorithm.getName(HashAlgorithm.sha1).toUpperCase();
-    public static final String SHA256 = HashAlgorithm.getName(HashAlgorithm.sha256).toUpperCase();
-    public static final String SHA384 = HashAlgorithm.getName(HashAlgorithm.sha384).toUpperCase();
-    public static final String SHA512 = HashAlgorithm.getName(HashAlgorithm.sha512).toUpperCase();
-    public static final String[] AVAILABLE_CERTID_HASH_ALGORITHMS = {SHA1, SHA256, SHA384, SHA512};
-    public static final String DEFAULT_CERTID_HASH_ALGORITHM = AVAILABLE_CERTID_HASH_ALGORITHMS[0];
+    public static final String[] AVAILABLE_CERTID_HASH_ALGORITHMS = { AlgorithmConstants.HASHALGORITHM_SHA1, AlgorithmConstants.HASHALGORITHM_SHA256,
+            AlgorithmConstants.HASHALGORITHM_SHA384, AlgorithmConstants.HASHALGORITHM_SHA512 };
+    public static final String DEFAULT_CERTID_HASH_ALGORITHM = AlgorithmConstants.HASHALGORITHM_SHA1;
+
     
     public static final String ENABLE_UNSAFE_RSA_KEYS = "org.bouncycastle.rsa.allow_unsafe_mod";
 }
