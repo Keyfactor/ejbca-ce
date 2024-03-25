@@ -39,12 +39,16 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
     private List<Integer> caIds = new ArrayList<>();
     private String subjectDnSearchString = "";
     private boolean subjectDnSearchExact = false;
+    private String subjectDnSearchOperation = "";
     private String subjectAnSearchString = "";
     private boolean subjectAnSearchExact = false;
+    private String subjectAnSearchOperation = "";
     private String usernameSearchString = "";
     private boolean usernameSearchExact = false;
+    private String usernameSearchOperation = "";
     private String externalAccountIdSearchString = "";
     private boolean externalAccountIdSearchExact = false;
+    private String externalAccountIdSearchOperation = "";
     private String serialNumberSearchStringFromDec = "";
     private String serialNumberSearchStringFromHex = "";
     private long issuedAfter = 0L;
@@ -77,12 +81,16 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         caIds.addAll(request.caIds);
         subjectDnSearchString = request.subjectDnSearchString;
         subjectDnSearchExact = request.subjectDnSearchExact;
+        subjectDnSearchOperation = request.subjectDnSearchOperation;
         subjectAnSearchString = request.subjectAnSearchString;
         subjectAnSearchExact = request.subjectAnSearchExact;
+        subjectAnSearchOperation = request.subjectAnSearchOperation;
         usernameSearchString = request.usernameSearchString;
         usernameSearchExact = request.usernameSearchExact;
+        usernameSearchOperation = request.usernameSearchOperation;
         externalAccountIdSearchString = request.externalAccountIdSearchString;
         externalAccountIdSearchExact = request.externalAccountIdSearchExact;
+        externalAccountIdSearchOperation = request.externalAccountIdSearchOperation;
         serialNumberSearchStringFromDec = request.serialNumberSearchStringFromDec;
         serialNumberSearchStringFromHex = request.serialNumberSearchStringFromHex;
         issuedAfter = request.issuedAfter;
@@ -108,12 +116,16 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         caIds.addAll(request.getCaIds());
         subjectDnSearchString = request.getSubjectDnSearchString();
         subjectDnSearchExact = request.isSubjectDnSearchExact();
+        subjectDnSearchOperation = request.getSubjectDnSearchOperation();
         subjectAnSearchString = request.getSubjectAnSearchString();
         subjectAnSearchExact = request.isSubjectAnSearchExact();
+        subjectAnSearchOperation = request.getSubjectAnSearchOperation();
         usernameSearchString = request.getUsernameSearchString();
         usernameSearchExact = request.isUsernameSearchExact();
+        usernameSearchOperation = request.getUsernameSearchOperation();
         externalAccountIdSearchString = request.getExternalAccountIdSearchString();
         externalAccountIdSearchExact = request.isExternalAccountIdSearchExact();
+        externalAccountIdSearchOperation = request.getExternalAccountIdSearchOperation();
         serialNumberSearchStringFromDec = request.getSerialNumberSearchStringFromDec();
         serialNumberSearchStringFromHex = request.getSerialNumberSearchStringFromHex();
         issuedAfter = request.getIssuedAfter();
@@ -200,8 +212,21 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         return subjectDnSearchExact;
     }
 
+    /**
+     * @deprecated
+     * Use {@link RaCertificateSearchRequestV2.setSubjectDnSearchOperation("EQUAL")} instead.
+     */
+    @Deprecated(since = "8.2.1")
     public void setSubjectDnSearchExact(final boolean subjectDnSearchExact) {
         this.subjectDnSearchExact = subjectDnSearchExact;
+    }
+
+    public String getSubjectDnSearchOperation() {
+        return this.subjectDnSearchOperation;
+    }
+
+    public void setSubjectDnSearchOperation(final String subjectDnSearchOperation) {
+        this.subjectDnSearchOperation = subjectDnSearchOperation;
     }
 
     public String getSubjectAnSearchString() {
@@ -220,6 +245,19 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         this.subjectAnSearchExact = subjectAnSearchExact;
     }
 
+    public String getSubjectAnSearchOperation() {
+        return this.subjectAnSearchOperation;
+    }
+
+    /**
+     * @deprecated
+     * Use {@link RaCertificateSearchRequestV2.setSubjectAnSearchOperation("EQUAL")} instead.
+     */
+    @Deprecated(since = "8.2.1")
+    public void setSubjectAnSearchOperation(final String subjectAnSearchOperation) {
+        this.subjectAnSearchOperation = subjectAnSearchOperation;
+    }
+
     public String getUsernameSearchString() {
         return usernameSearchString;
     }
@@ -232,8 +270,21 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         return usernameSearchExact;
     }
 
+    /**
+     * @deprecated
+     * Use {@link RaCertificateSearchRequestV2.setUsernameSearchOperation("EQUAL")} instead.
+     */
+    @Deprecated(since = "8.2.1")
     public void setUsernameSearchExact(final boolean usernameSearchExact) {
         this.usernameSearchExact = usernameSearchExact;
+    }
+
+    public String getUsernameSearchOperation() {
+        return this.usernameSearchOperation;
+    }
+
+    public void setUsernameSearchOperation(final String usernameSearchOperation) {
+        this.usernameSearchOperation = usernameSearchOperation;
     }
 
     public String getExternalAccountIdSearchString() {
@@ -248,8 +299,21 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
         return externalAccountIdSearchExact;
     }
 
+    /**
+     * @deprecated
+     * Use {@link RaCertificateSearchRequestV2.setExternalAccountIdSearchOperation("EQUAL")} instead.
+     */
+    @Deprecated(since = "8.2.1")
     public void setExternalAccountIdSearchExact(boolean externalAccountIdSearchExact) {
         this.externalAccountIdSearchExact = externalAccountIdSearchExact;
+    }
+
+    public String getExternalAccountIdSearchOperation() {
+        return this.externalAccountIdSearchOperation;
+    }
+
+    public void setExternalAccountIdSearchOperation(final String externalAccountIdSearchOperation) {
+        this.externalAccountIdSearchOperation = externalAccountIdSearchOperation;
     }
 
     public String getSerialNumberSearchStringFromDec() {
@@ -466,12 +530,16 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
                 updatedAfter < other.updatedAfter || updatedBefore > other.updatedBefore ||
                 isWider(subjectDnSearchString, other.subjectDnSearchString) ||
                 isWider(subjectDnSearchExact, other.subjectDnSearchExact) ||
+                isWider(subjectDnSearchOperation, other.subjectDnSearchOperation) ||
                 isWider(subjectAnSearchString, other.subjectAnSearchString) ||
                 isWider(subjectAnSearchExact, other.subjectAnSearchExact) ||
+                isWider(subjectAnSearchOperation, other.subjectAnSearchOperation) ||
                 isWider(usernameSearchString, other.usernameSearchString) ||
                 isWider(usernameSearchExact, other.usernameSearchExact) ||
+                isWider(usernameSearchOperation, other.usernameSearchOperation) ||
                 isWider(externalAccountIdSearchString, other.externalAccountIdSearchString) ||
                 isWider(externalAccountIdSearchExact, other.externalAccountIdSearchExact) ||
+                isWider(externalAccountIdSearchOperation, other.externalAccountIdSearchOperation) ||
                 isWider(serialNumberSearchStringFromDec, other.serialNumberSearchStringFromDec) ||
                 isWider(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
                 isWider(statuses, other.statuses) || isWider(revocationReasons, other.revocationReasons)) {
@@ -487,12 +555,16 @@ public class RaCertificateSearchRequestV2 implements Serializable, Comparable<Ra
                 updatedAfter > other.updatedAfter || updatedBefore < other.updatedBefore ||
                 isMoreNarrow(subjectDnSearchString, other.subjectDnSearchString) ||
                 isMoreNarrow(subjectDnSearchExact, other.subjectDnSearchExact) ||
+                isMoreNarrow(subjectDnSearchOperation, other.subjectDnSearchOperation) ||
                 isMoreNarrow(subjectAnSearchString, other.subjectAnSearchString) ||
                 isMoreNarrow(subjectAnSearchExact, other.subjectAnSearchExact) ||
+                isMoreNarrow(subjectAnSearchOperation, other.subjectAnSearchOperation) ||
                 isMoreNarrow(usernameSearchString, other.usernameSearchString) ||
                 isMoreNarrow(usernameSearchExact, other.usernameSearchExact) ||
+                isMoreNarrow(usernameSearchOperation, other.usernameSearchOperation) ||
                 isMoreNarrow(externalAccountIdSearchString, other.externalAccountIdSearchString) ||
                 isMoreNarrow(externalAccountIdSearchExact, other.externalAccountIdSearchExact) ||
+                isMoreNarrow(externalAccountIdSearchOperation, other.externalAccountIdSearchOperation) ||
                 isMoreNarrow(serialNumberSearchStringFromDec, other.serialNumberSearchStringFromDec) ||
                 isMoreNarrow(serialNumberSearchStringFromHex, other.serialNumberSearchStringFromHex) ||
                 isMoreNarrow(statuses, other.statuses) || isMoreNarrow(revocationReasons, other.revocationReasons)) {

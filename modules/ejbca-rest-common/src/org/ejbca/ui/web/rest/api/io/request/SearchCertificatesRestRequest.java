@@ -133,6 +133,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setSubjectDnSearchExact(true);
                         }
+                        raCertificateSearchRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
                         break;
                     }
@@ -148,6 +149,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setSubjectAnSearchExact(true);
                         }
+                        raCertificateSearchRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
                         break;
                     }
@@ -155,6 +157,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setUsernameSearchExact(true);
                         }
+                        raCertificateSearchRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
                         break;
                     }
@@ -166,11 +169,15 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                             raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
                         }
                         raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
+                        raCertificateSearchRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
+                        raCertificateSearchRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
+                        raCertificateSearchRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raCertificateSearchRequest.setSerialNumberSearchStringFromHex(criteriaValue);
                         raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
+                        raCertificateSearchRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         break;
                     }
                     case END_ENTITY_PROFILE: {
@@ -181,6 +188,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
                         }
+                        raCertificateSearchRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }
