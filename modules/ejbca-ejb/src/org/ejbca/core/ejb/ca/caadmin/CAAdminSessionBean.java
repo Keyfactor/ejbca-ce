@@ -2888,7 +2888,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             throws CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException, OperatorCreationException, AuthorizationDeniedException {
         // If we don't give an authentication code, perhaps we have autoactivation enabled
         if (StringUtils.isEmpty(authenticationCode)) {
-            String msg = intres.getLocalizedMessage("token.authcodemissing", caId);
+            String msg = "An authentication code must be provided. Generating or activating new keys requires either password as argument or autoActivation enabled. CA with ID " + caId + ".";
             log.info(msg);
             throw new CryptoTokenAuthenticationFailedException(msg);
         }

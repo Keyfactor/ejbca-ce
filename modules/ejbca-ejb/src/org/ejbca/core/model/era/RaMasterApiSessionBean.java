@@ -1549,7 +1549,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     static String buildStringSearchClause(String subjectDnSearchString, String subjectAnSearchString, String usernameSearchString,
             String serialNumberSearchStringFromDec, String serialNumberSearchStringFromHex, String externalAccountIdSearchString) {
-        var comparisons = new ArrayList<String>();
+        ArrayList<String> comparisons = new ArrayList<String>();
         if (StringUtils.isNotEmpty(subjectDnSearchString)) {
             comparisons.add("UPPER(subjectDN) LIKE :subjectDN");
         }

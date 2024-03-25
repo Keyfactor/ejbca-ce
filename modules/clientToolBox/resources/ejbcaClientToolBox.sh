@@ -17,4 +17,4 @@ fi
 
 # Finally run java
 #set -x
-${javaCmd} ${JAVA_OPT} -Dlog4j1.compatibility=true -cp "$TOOLBOX_HOME/clientToolBox.jar:${TOOLBOX_HOME}/ext/*" org.ejbca.ui.cli.ClientToolBox "${@}"
+${javaCmd} ${JAVA_OPT} --add-exports=jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED -Dlog4j1.compatibility=true -cp "$TOOLBOX_HOME/clientToolBox.jar:${TOOLBOX_HOME}/ext/*" org.ejbca.ui.cli.ClientToolBox "${@}"

@@ -24,7 +24,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 import com.keyfactor.util.StringTools;
@@ -44,7 +43,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * 
  * The CA token stores a reference (an integer) to the CryptoToken where the CA keys are stored.
  * 
- * @version $Id$
  */
 public class CAToken extends UpgradeableDataHashMap {
 
@@ -52,8 +50,7 @@ public class CAToken extends UpgradeableDataHashMap {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(CAToken.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+
 
     /** Latest version of the UpgradeableHashMap, this determines if we need to auto-upgrade any data. */
     public static final float LATEST_VERSION = 8;
@@ -193,7 +190,7 @@ public class CAToken extends UpgradeableDataHashMap {
                                 // If we can test the testkey, we are finally active!
                                 ret = CryptoToken.STATUS_ACTIVE;
                             } catch (Throwable th) { // NOPMD: we need to catch _everything_ when dealing with HSMs
-                                log.error(intres.getLocalizedMessage("token.activationtestfail", cryptoToken.getId()), th);
+                                log.error("Error testing activation for Crypto Token with ID " + cryptoToken.getId() + ".", th);
                             }
                         }
                     }
@@ -387,7 +384,7 @@ public class CAToken extends UpgradeableDataHashMap {
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-            String msg = intres.getLocalizedMessage("token.upgrade", getVersion());
+            String msg = "Upgrading Crypto Token with version " + getVersion() + ".";
             log.info(msg);
             // Put upgrade stuff here
             if (data.get(CAToken.SEQUENCE_FORMAT) == null) { // v7
