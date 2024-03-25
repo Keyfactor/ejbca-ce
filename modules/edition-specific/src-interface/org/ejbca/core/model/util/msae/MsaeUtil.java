@@ -14,6 +14,7 @@ package org.ejbca.core.model.util.msae;
 
 import java.util.Objects;
 
+import org.apache.log4j.Logger;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -21,6 +22,9 @@ import org.ejbca.core.model.util.EjbLocalHelper;
  * Class to hold MSAE related utility methods
  */
 public final class MsaeUtil {
+    
+    private static final Logger log = Logger.getLogger(MsaeUtil.class);
+
 
     private MsaeUtil() {
         //To avoid instantiation of utility class!
@@ -35,6 +39,10 @@ public final class MsaeUtil {
     public static MSAutoEnrollmentConfiguration fetchMSAEConfig(String alias) {
         // First try local
 
+        if (log.isDebugEnabled()) {
+            log.debug("Trying to fetch MSAE configs for the alias " + alias);
+        }
+        
         final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
 
         MSAutoEnrollmentConfiguration msaeConfig = (MSAutoEnrollmentConfiguration) ejbLocalHelper.getGlobalConfigurationSession()
@@ -44,6 +52,11 @@ public final class MsaeUtil {
             // Now we go for peers
             msaeConfig = ejbLocalHelper.getRaMasterApiProxyBean().getGlobalConfigurationLocalFirst(MSAutoEnrollmentConfiguration.class);
         }
+
+        if (Objects.isNull(msaeConfig) && log.isDebugEnabled()) {
+            log.debug("Could not obtain MSAE config for the alias " + alias + " neither locally nor over the peers!");
+        }
+        
         return msaeConfig;
     }
 
