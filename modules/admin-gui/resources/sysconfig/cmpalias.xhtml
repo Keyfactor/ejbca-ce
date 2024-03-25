@@ -149,7 +149,7 @@
                         	<f:selectItems value="#{editCmpConfigMBean.extUsernameComponentSelectItems}"/>
                 	</h:selectOneMenu>
                 	</h:panelGroup>
-                	<h:panelGroup>
+                	<h:panelGroup rendered="#{web.ejbcaWebBean.runningEnterprise}">
     	        		<h:outputText value="#{web.text.CMPVENDORCERT}" styleClass="titles"/>
      			       	<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
     	        		<br/>
@@ -157,19 +157,19 @@
     	      			<br/>
     	      			<h:outputText value="#{web.text.CMPVENDORCERT_USE_HELP1}" styleClass="help"/>
     	        	</h:panelGroup>
-    	        	<h:panelGroup>
+    	        	<h:panelGroup rendered="#{web.ejbcaWebBean.runningEnterprise}">
     		        	<h:selectBooleanCheckbox id="vendormodecheckbox" value="#{editCmpConfigMBean.cmpDto.vendorMode}" disabled="#{editCmpConfigMBean.viewOnly}">
     		            		<f:ajax render=":editcmpaliasform:vendorcas"/>
     	            	</h:selectBooleanCheckbox>
             		    <h:outputText value="#{web.text.USE}"/>
                 	</h:panelGroup>
-    	        	<h:panelGroup>
+    	        	<h:panelGroup rendered="#{web.ejbcaWebBean.runningEnterprise}">
     	        		<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" styleClass="titles"/>
     			       	<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
     	        		<br/>
     	      			<h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS_HELP}" styleClass="help"/>
     	        	</h:panelGroup>
-    	        	<h:panelGroup id="vendorcas">
+    	        	<h:panelGroup id="vendorcas" rendered="#{web.ejbcaWebBean.runningEnterprise}">
     	        		<h:selectOneMenu id="selectvendorca" value="#{editCmpConfigMBean.selectedVendorCa}"  disabled="#{!editCmpConfigMBean.cmpDto.vendorMode or editCmpConfigMBean.viewOnly}">
                         	<f:selectItems value="#{editCmpConfigMBean.vendorCaSelectItems}"/>
                		      	<f:ajax event="change" update="editcmpaliasform:vendorcas"/>

@@ -477,6 +477,14 @@ public interface RaMasterApi {
     IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken);
 
     /**
+     * @param authenticationToken administrator
+     * @param listRequest Object specifying the search criteria.
+     * @return map of authorized and enabled CAInfos for the provided authentication token
+     * @since RA Master API version 18 (EJBCA 8.3.0)
+     */
+    IdNameHashMap<CAInfo> getRequestedAuthorizedCAInfos(AuthenticationToken authenticationToken, RaCaListRequest listRequest);
+
+    /**
      * @return map of authorized certificate profiles for the provided authentication token
      * @since RA Master API version 11 (EJBCA 7.5.0)
      */

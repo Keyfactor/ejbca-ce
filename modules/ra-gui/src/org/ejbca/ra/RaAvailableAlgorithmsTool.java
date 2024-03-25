@@ -76,8 +76,19 @@ public class RaAvailableAlgorithmsTool {
                         log.warn("Ignoring unknown curve " + ecNamedCurve + " from being displayed in the RA web.");
                         continue;
                     }
-                    availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "
-                            + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
+                    
+                    // Filter for duplicate item labels (links to one of the key algorithm aliases).
+                    final String label = AlgorithmConstants.KEYALGORITHM_ECDSA + " " + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve));
+                    boolean add = true;
+                    for (SelectItem selectItem : availableAlgorithmSelectItems) {
+                        if (label.equals(selectItem.getLabel())) {
+                            add = false;
+                            break;
+                        }
+                    }
+                    if (add) {
+                        availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ECDSA + "_" + ecNamedCurve, label));
+                    }
                 }
             }
             if (WebConfiguration.isPQCEnabled()) {
