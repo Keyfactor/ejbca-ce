@@ -25,6 +25,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -2261,7 +2262,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             final long startReindex = System.currentTimeMillis();
             // Unfortunately, "IF EXISTS" and "IF NOT EXISTS" are not supported in index
             // operations in mariadb-connector (tested with version 2.7.3)
-            final Query dropCrlDataIndex = entityManager.createNativeQuery("DROP INDEX " + oldIndexName + " ON " + tableName);
+            final DatabaseMetaData databaseMetaData = JDBCUtil.getDBConnection().getMetaData();
+            String dropIndexString = "DROP INDEX " + oldIndexName;
+            // SQL to drop index on PostgreSQL is simply "drop index index_name", but on other DBs you specify the table name
+            if (!JDBCUtil.isPostgres(databaseMetaData)) {
+                dropIndexString += " ON " + tableName;
+            }
+            final Query dropCrlDataIndex = entityManager.createNativeQuery(dropIndexString);
             final Query createCrlDataIndex = entityManager.createNativeQuery(createIndexQuery);
             try {
                 log.debug("Executing SQL query: " + dropCrlDataIndex);
@@ -2276,7 +2283,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             createCrlDataIndex.executeUpdate();
             log.info("Successfully updated index '" + oldIndexName + "' for database table '" + tableName + "'. Completed in " + (System.currentTimeMillis() - startReindex) + " ms.");
             return IndexUpgradeResult.OK_UPDATED;
-        } catch (RuntimeException e) {
+        } catch (RuntimeException | SQLException | ServiceLocatorException e) {
             log.error("An error occurred when adjusting index '" + oldIndexName + "' for database table '" + tableName + "': " + e);
             if (log.isDebugEnabled()) {
                 log.debug("Error stack trace for index creation", e);
