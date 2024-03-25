@@ -27,7 +27,6 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.PropertyTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
@@ -106,7 +105,7 @@ public class RenewCAWorker extends BaseWorker {
 					    }
 					}
 				} else {
-					log.error(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoca", caid, caname));
+					log.error("CA with id " + caid + " and name '" + caname + "' does not exist. Has it been removed?");
 				}
 			} catch (CADoesntExistsException e) {
 				log.error("Error renewing CA: ", e);
