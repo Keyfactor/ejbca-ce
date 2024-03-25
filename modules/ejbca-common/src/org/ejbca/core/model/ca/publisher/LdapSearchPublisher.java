@@ -13,7 +13,7 @@
 
 package org.ejbca.core.model.ca.publisher;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.regex.Pattern;
@@ -95,11 +95,11 @@ public class LdapSearchPublisher extends LdapPublisher {
 
 				// authenticate to the server
 				log.debug("Logging in with BIND DN " + getLoginDN());
-				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes("UTF8"), ldapBindConstraints);
+				lc.bind(ldapVersion, getLoginDN(), getLoginPassword().getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
 				//searchFilter = "(&(objectclass=person)(uid=" + username + "))";
 				String searchFilter = getSearchFilter();
 				if (log.isDebugEnabled()) {
-					log.debug("Compiling search filter: " +searchFilter+", from certDN '"+certDN+"' and userDN '"+ LogRedactionUtils.getSubjectDnLogSafe(userDN) +"'.");
+					log.debug("Compiling search filter: " +searchFilter+", from certDN '"+LogRedactionUtils.getSubjectDnLogSafe(certDN)+"' and userDN '"+ LogRedactionUtils.getSubjectDnLogSafe(userDN) +"'.");
 				}
 				if (username != null) {
 					Pattern USER = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
@@ -129,8 +129,9 @@ public class LdapSearchPublisher extends LdapPublisher {
 					Pattern C = Pattern.compile("\\$UID", Pattern.CASE_INSENSITIVE);
 					searchFilter = C.matcher(searchFilter).replaceAll(getPartFromDN(certDN, userDN, "UID"));
 				}
-				log.debug("Resulting search filter '" + searchFilter+"'.");
-				log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + searchFilter+"'.");
+				// searchFilter contains parts from the SubjectDN now
+				log.debug("Resulting search filter '" + LogRedactionUtils.getContentLogSafe(searchFilter)+"'.");
+				log.debug("Making SRCH with BaseDN '" + getSearchBaseDN() + "' and filter '" + LogRedactionUtils.getContentLogSafe(searchFilter)+"'.");
 				String searchbasedn = getSearchBaseDN();
 				int searchScope = LDAPConnection.SCOPE_SUB;
 		        String attrs[] = { LDAPConnection.NO_ATTRS };
@@ -150,14 +151,14 @@ public class LdapSearchPublisher extends LdapPublisher {
 					oldEntry = searchResults.next();
 					ldapDN = oldEntry.getDN();
 					if (searchResults.hasMore()) {
-						log.debug("Found more than one matches with filter '" + searchFilter +
+						log.debug("Found more than one matches with filter '" + LogRedactionUtils.getContentLogSafe(searchFilter) +
 								"'. Using the first match with LDAP entry with DN: " + LogRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
 					} else {
-						log.debug("Found one match with filter: '"+searchFilter+"', match with DN: " + LogRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
+						log.debug("Found one match with filter: '"+LogRedactionUtils.getContentLogSafe(searchFilter)+"', match with DN: " + LogRedactionUtils.getSubjectDnLogSafe(oldEntry.getDN()));
 					}
 				} else {
 					ldapDN = constructLDAPDN(certDN, userDN);
-					log.debug("No matches found using filter: '" +searchFilter + "'. Using DN: " + LogRedactionUtils.getSubjectDnLogSafe(ldapDN));
+					log.debug("No matches found using filter: '" +LogRedactionUtils.getContentLogSafe(searchFilter) + "'. Using DN: " + LogRedactionUtils.getSubjectDnLogSafe(ldapDN));
 				}
 				// try to read the old object
 				try {
@@ -185,9 +186,6 @@ public class LdapSearchPublisher extends LdapPublisher {
 						throw new PublisherException(msg);
 					}
 				}
-	        } catch (UnsupportedEncodingException e) {
-				String msg = intres.getLocalizedMessage("publisher.errorpassword", getLoginPassword());
-	            throw new PublisherException(msg);            
 			} finally {
 				// disconnect with the server
 				try {

@@ -44,6 +44,7 @@ import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseInformation;
+import org.ejbca.core.ejb.ocsp.PresignResponseValidity;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.HTMLTools;
@@ -212,7 +213,7 @@ public class OCSPServlet extends HttpServlet {
                 byte[] requestBytes = checkAndGetRequestBytes(request, httpMethod);
                 X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
                 ocspResponseInformation = integratedOcspResponseGeneratorSession.getOcspResponse(
-                        requestBytes, requestCertificates, remoteAddress, xForwardedFor, requestUrl, auditLogger, transactionLogger, false, false, false);
+                        requestBytes, requestCertificates, remoteAddress, xForwardedFor, requestUrl, auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false);
             } catch (MalformedRequestException e) {
                 if (transactionLogger.isEnabled()) {
                     transactionLogger.paramPut(PatternLogger.PROCESS_TIME, PatternLogger.PROCESS_TIME);

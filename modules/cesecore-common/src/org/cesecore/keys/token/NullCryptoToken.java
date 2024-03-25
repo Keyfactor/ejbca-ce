@@ -34,7 +34,6 @@ import com.keyfactor.util.keys.token.KeyGenParams;
 
 /** This class is used as crypto Token for virtual CAs that does not have a keystore, such as external SubCAs.
  * 
- * @version $Id$
  */
 public class NullCryptoToken extends BaseCryptoToken {
 

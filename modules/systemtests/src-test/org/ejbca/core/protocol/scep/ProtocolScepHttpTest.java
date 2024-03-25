@@ -786,8 +786,12 @@ public class ProtocolScepHttpTest extends ScepTestBase {
 
     @Test
     public void test10ScepGetCACaps() throws Exception {
+        // When the CA is known, and does not have a roolover cert, leave out GetNextCACert compliant with SCEP draft23
+        // (which was the only specification for so many years that many client implementations still use that)
         checkCACaps(x509ca.getName(), "POSTPKIOperation\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard");
-        sendGetCACapsRequest("NonExistent", 404);
+        // If there is no CA in the request, or the CA is unknown, include everything, which is compliant with RFC 8894 instead
+        checkCACaps(null, "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard");
+        checkCACaps("NonExistent", "POSTPKIOperation\nGetNextCACert\nRenewal\nSHA-512\nSHA-256\nSHA-1\nDES3\nAES\nSCEPStandard");
     }
 
     @Test
