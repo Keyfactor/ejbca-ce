@@ -23,14 +23,12 @@ import org.ejbca.config.GlobalConfiguration;
 
 /**
  * A class representing a admins personal preferences.
- *
- * @version $Id$
  */
 public class AdminPreference extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
     private static final long serialVersionUID = -3408759285870979620L;
 
-    public static final float LATEST_VERSION = 2;
+    public static final float LATEST_VERSION = 3;
 
     public static final int FILTERMODE_BASIC = 0;
     public static final int FILTERMODE_ADVANCED = 1;
@@ -47,7 +45,6 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
     private static final String FRONTPAGEPUBQSTATUS = "frontpagepubqstatus";
     private static final String PREFEREDRALANGUAGE = "preferedRaLanguage";
     private static final String PREFEREDRASTYLEID = "preferedRaStyleId";
-    private static final String CONFIGURATION_CHECKER_ON_FRONT_PAGE = "configurationCheckerOnFrontPage";
 
     public static final boolean DEFAULT_FRONTPAGECASTATUS = true;
     public static final boolean DEFAULT_FRONTPAGEPUBQSTATUS = true;
@@ -67,7 +64,6 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
         data.put(LASTLOGFILTERMODE, Integer.valueOf(FILTERMODE_BASIC));
         data.put(FRONTPAGECASTATUS, DEFAULT_FRONTPAGECASTATUS);
         data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
-        data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, true);
     }
 
     public int getPreferedLanguage() {
@@ -208,13 +204,6 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
         data.put(FRONTPAGEPUBQSTATUS, Boolean.valueOf(frontpagepubqstatus));
     }
 
-    public boolean isConfigurationCheckerOnFrontPage() {
-        return Boolean.TRUE.equals(data.get(CONFIGURATION_CHECKER_ON_FRONT_PAGE));
-    }
-
-    public void setConfigurationCheckerOnFrontPage(final boolean isConfigurationCheckerOnFrontPage) {
-        data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, Boolean.valueOf(isConfigurationCheckerOnFrontPage));
-    }
 
     @Override
     public Object clone() throws CloneNotSupportedException {
@@ -249,8 +238,8 @@ public class AdminPreference extends UpgradeableDataHashMap implements Serializa
             if (data.get(FRONTPAGEPUBQSTATUS) == null) {
                 data.put(FRONTPAGEPUBQSTATUS, DEFAULT_FRONTPAGEPUBQSTATUS);
             }
-            if (data.get(CONFIGURATION_CHECKER_ON_FRONT_PAGE) == null) {
-                data.put(CONFIGURATION_CHECKER_ON_FRONT_PAGE, true);
+            if (data.get("configurationCheckerOnFrontPage") != null) {
+                data.remove("configurationCheckerOnFrontPage");
             }
             data.put(VERSION, Float.valueOf(LATEST_VERSION));
         }

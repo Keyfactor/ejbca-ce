@@ -47,6 +47,7 @@
         <path location="${mod.cesecore-x509ca.lib}"/>
         <path refid="lib.x509-common-util.classpath"/>
         <path refid="lib.jee-client.classpath"/>
+    	<path refid="lib.cryptotokens.classpath"/>
     </path>
 
     <target name="clean" description="Clean up this module">

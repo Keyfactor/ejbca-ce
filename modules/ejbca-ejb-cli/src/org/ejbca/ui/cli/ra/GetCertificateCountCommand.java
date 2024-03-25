@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.ra;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.InternalCertificateSessionRemote;
+import org.cesecore.certificates.certificate.CertificateDataSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -43,7 +43,7 @@ public class GetCertificateCountCommand extends BaseRaCommand {
         final String isActiveParam = parameterContainer.get(ACTIVE_ONLY);
         final boolean isActive = !StringUtils.isEmpty(isActiveParam) && Boolean.parseBoolean(isActiveParam);
         try {
-            final Long result = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateSessionRemote.class).getCertificateCount(
+            final Long result = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateDataSessionRemote.class).getCertificateCount(
                     getAuthenticationToken(), isActive);
             getLogger().info("Total " + (isActive ? " active " : "") + "certificate count is:  " + result + ".");
             return CommandResult.SUCCESS;
