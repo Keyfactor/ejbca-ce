@@ -20,11 +20,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -48,10 +48,11 @@ import com.keyfactor.util.string.StringConfigurationCache;
  * 
  */
 public class CustomPublisherContainer extends BasePublisher {
+    
 	private static final long serialVersionUID = -7060678968358301488L;
 
     private static final Logger log = Logger.getLogger(CustomPublisherContainer.class);
-
+    
     private ICustomPublisher custompublisher = null; 
 	
 	public static final float LATEST_VERSION = 1;
@@ -134,12 +135,9 @@ public class CustomPublisherContainer extends BasePublisher {
             final Properties properties = buildProperties(propertyData, "Properties could not be loaded.");
             final Set<String> propertyNames = properties.keySet().stream().map(Object::toString).collect(Collectors.toSet());
 
-            final Set<String> declaredPropertyNames = publisher.getDeclaredPropertyNames();
-            if (!declaredPropertyNames.containsAll(propertyNames)) {
-                final Set<String> extraPropertyNames = new HashSet<>(propertyNames);
-                extraPropertyNames.removeAll(declaredPropertyNames);
-
-                throw new PublisherException("Unsupported properties: " + String.join(", ", extraPropertyNames));
+            final Set<String> unsupportedProperties = filterUnsupportedProperties(publisher.getDeclaredPropertyNames(), propertyNames);
+            if (!unsupportedProperties.isEmpty()) {
+                throw new PublisherException("Unsupported properties: " + String.join(", ", unsupportedProperties));
             }
 
             if (isCustomUiRenderingSupported()) {
@@ -416,5 +414,48 @@ public class CustomPublisherContainer extends BasePublisher {
         // Must be overridden, or we may get a loop
         getCustomPublisher().setExternalScriptsAllowlist(allowList);
     }
+    
+    /**
+     * Filters for unsupported properties (not declared in #getDeclaredPropertyNames()).
+     *  
+     * @param declaredPropertyNames the declared property names.
+     * @param properties the property names to be validated.
+     * @return a set of all unsupported properties or an empty set.
+     */
+    // Static deterministic method made public for unit test.
+    public static Set<String> filterUnsupportedProperties(final Set<String> declaredPropertyNames, final Set<String> properties) {
+        final Set<String> result = new TreeSet<>();
+        for (String property : properties) {
+            boolean found = false;
+            for (String dproperty : declaredPropertyNames) {
+                if (dproperty.contains("*")) {
+                    String tmp = property.replace(dproperty.substring(0, dproperty.indexOf("*")), "");
+                    if (tmp.length() == property.length()) {
+                        continue;
+                    }
+                    Long id = null;
+                    try {
+                        id = Long.valueOf(tmp.replace(dproperty.substring(dproperty.indexOf("*") + 1, dproperty.length()), ""));
+                    } catch(NumberFormatException e) {
+                        log.warn("Failed to parse ID by publisher properties: " + e.getMessage());
+                        continue;
+                    }
+                    if (id != null) {
+                        found = true;
+                        break;
+                    }
+                } else {
+                    if (property.equals(dproperty)) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                result.add(property);
+            }
+        }
+        return result;
+    } 
 
 }

@@ -27,6 +27,7 @@
 		<path location="${cesecore-ejb.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
 		<path location="${cesecore-ejb.dir}/../cesecore-ejb-interface/dist/cesecore-ejb-interface.jar"/>
 		<path refid="lib.x509-common-util.classpath" />
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
 	<path id="test.classpath">
@@ -92,6 +93,11 @@
 
 	<target name="runone" depends="compile-tests">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=FooTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<condition property="remoteDebugJvmArgs"
+				   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+				   else="-ea">
+			<istrue value="${remoteDebug}"/>
+		</condition>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
@@ -103,6 +109,7 @@
 				</fileset>
 			</batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
+			<jvmarg value="${remoteDebugJvmArgs}"/>
 		</junit>
 	</target>
 
