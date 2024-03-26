@@ -1020,9 +1020,10 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         @Test
         public void shouldFindCertificatesBeginsWith() throws Exception {
             //given
-            createCertificate("a_thisUsernameBeginWithA", "C=SE,O=AnaTom,CN=negativeMatch");
-            createCertificate("thisUsernameDoesntBeginWithA", "C=SE,O=AnaTom,CN=positiveMatch");
-
+            final X509Certificate certificateNegative = createCertificate("a_thisUsernameBeginWithA", "C=SE,O=AnaTom,CN=negativeMatch");
+            final X509Certificate certificatePositive = createCertificate("thisUsernameDoesntBeginWithA", "C=SE,O=AnaTom,CN=positiveMatch");
+            certificates.add(certificateNegative);
+            certificates.add(certificatePositive);
             final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
                     .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.USERNAME.name())
                     .value("thisUsername")
