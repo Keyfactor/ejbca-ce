@@ -938,7 +938,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     raCertificateSearchRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ||
                     raCertificateSearchRequest.getSubjectAnSearchOperation().equals("BEGINS_WITH") ||
                     raCertificateSearchRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH"))) {
-                        throw new UnsupportedOperationException("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                        log.warn("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                        throw new UnsupportedOperationException("Operation 'BEGINS_WITH' not supported by instance");
                 }
                 try {
                     ret.merge(raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest));
@@ -970,7 +971,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     raCertificateSearchRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ||
                     raCertificateSearchRequest.getSubjectAnSearchOperation().equals("BEGINS_WITH") ||
                     raCertificateSearchRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH"))) {
-                        throw new UnsupportedOperationException("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                        log.warn("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                        throw new UnsupportedOperationException("Operation 'BEGINS_WITH' not supported by instance");
                 }
                 try {
                     ret.merge(raMasterApi.searchForCertificatesV2(authenticationToken, raCertificateSearchRequest));
