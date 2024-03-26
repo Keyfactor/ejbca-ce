@@ -70,7 +70,7 @@
       </h:panelGroup>
     </ui:insert>
     
-     <p:menubar id="navigation" autoDisplay="false">
+     <p:menubar id="mainNavigation" autoDisplay="false">
     	<p:menuitem url="#{adminMenuBean.adminWebUrl}" value="#{web.text.NAV_HOME}" icon="pi pi-fw pi-home"/>  
     
         <p:submenu id="mainCaFunctions" label="#{web.text.NAV_CAFUNCTIONS}" icon="pi pi-fw pi-server" rendered="#{adminMenuBean.authorizedToViewCAHeader}">
