@@ -152,7 +152,8 @@ public class CertificateRestResource extends BaseRestResource {
             } else {
                 responseFormat = enrollCertificateRestRequest.getResponseFormat().toUpperCase();
             }
-            if (TokenDownloadType.PKCS7.name().equals(responseFormat) || TokenDownloadType.DER.name().equals(responseFormat)) {
+            if (TokenDownloadType.PKCS7.name().equals(responseFormat) || TokenDownloadType.DER.name()
+                    .equals(responseFormat)) {
                 final byte[] certificateBytes = raMasterApi.createCertificateRest(authenticationToken,
                         EnrollCertificateRestRequest.converter()
                                 .toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest));
@@ -183,15 +184,15 @@ public class CertificateRestResource extends BaseRestResource {
                     throw new RestException(400, "Invalid input. Incorrect response format");
                 }
                 return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
-                } else {
+            } else {
                 throw new RestException(400, "Invalid input. Response format can only be DER or PKCS7");
             }
-            } catch(EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException
-                    | CMSException e){
-                log.info("Exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
-                throw new RestException(Status.BAD_REQUEST.getStatusCode(),
-                        e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
-            }
+        } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException |
+                CMSException e) {
+            log.info("Exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(),
+                    e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+        }
     }
 
 
