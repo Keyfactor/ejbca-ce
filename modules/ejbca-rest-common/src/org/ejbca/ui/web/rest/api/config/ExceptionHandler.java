@@ -289,6 +289,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             // 403
             case AuthenticationFailedException:
             case AuthorizationDeniedException:
+            case UnsupportedOperationException:
             case SelfApprovalException:
                 return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.FORBIDDEN.getStatusCode())
