@@ -289,7 +289,6 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             // 403
             case AuthenticationFailedException:
             case AuthorizationDeniedException:
-            case UnsupportedOperationException:
             case SelfApprovalException:
                 return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.FORBIDDEN.getStatusCode())
@@ -316,6 +315,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                         .build();
             // 422
             case EndEntityProfileValidationException:
+            case UnsupportedOperationException:
             case UserDoesntFullfillEndEntityProfile:
             case CertificateExtensionException:
                 return ExceptionErrorRestResponse.builder()
