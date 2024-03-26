@@ -66,6 +66,7 @@ public class AuthenticationFilter implements Filter {
                 final EjbcaWebBean ejbcaWebBean = SessionBeans.getEjbcaWebBean(httpServletRequest);
                 final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
                 try {
+                    // creates admin token and does access rules check
                     ejbcaWebBean.initialize(httpServletRequest, accessResourcesByRequestURI);
                 } catch (AuthenticationFailedException e) {
                     if (oauthBearerToken != null) {
@@ -81,21 +82,21 @@ public class AuthenticationFilter implements Filter {
                     authenticationErrorPublicMessage = "You are not authorized to view this page.";
                 }
                 final X509Certificate x509Certificate = ejbcaWebBean.getClientX509Certificate(httpServletRequest);
-                if ((x509Certificate != null || oauthBearerToken != null) && !hasAuthenticationError) {
-                    final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
-                    if (admin != null) {
-                        httpServletRequest.setAttribute("authenticationtoken", admin);
-                        filterChain.doFilter(servletRequest, servletResponse);
-                    } else {
-                        hasAuthenticationError = true;
+                final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
+                if (admin != null && !hasAuthenticationError) {
+                    // let through only if admin token exists AND no auth error
+                    httpServletRequest.setAttribute("authenticationtoken", admin);
+                    filterChain.doFilter(servletRequest, servletResponse);
+                } else {
+                    hasAuthenticationError = true;
+                    if (x509Certificate != null || oauthBearerToken != null) {
                         authenticationErrorMessage = oauthBearerToken != null ? "Authentication failed using OAuth Bearer Token"
                                 : "Authorization denied for certificate: " + CertTools.getSubjectDN(x509Certificate);
                         authenticationErrorPublicMessage = authenticationErrorMessage;
+                    } else {
+                        authenticationErrorMessage = "No client certificate sent.";
+                        authenticationErrorPublicMessage = "This operation requires certificate authentication!";
                     }
-                } else if (!hasAuthenticationError) {
-                    hasAuthenticationError = true;
-                    authenticationErrorMessage = "No client certificate sent.";
-                    authenticationErrorPublicMessage = "This operation requires certificate authentication!";
                 }
             }
             // No binding defined, pass the request along the filter chain

@@ -84,6 +84,7 @@ public @interface ValidSearchCertificateCriteriaRestRequestList {
             }
             // Count criteria properties
             int queryCount = 0;
+            int stringPropertyCount = 0;
             int statusCount = 0;
             int issuedDateBeforeCount = 0;
             int issuedDateAfterCount = 0;
@@ -99,6 +100,13 @@ public @interface ValidSearchCertificateCriteriaRestRequestList {
                     switch (criteriaProperty) {
                         case QUERY:
                             queryCount++;
+                            break;
+                        case USERNAME:
+                        case SUBJECT_DN:
+                        case SUBJECT_ALT_NAME:
+                        case SERIAL_NUMBER:
+                        case EXTERNAL_ACCOUNT_BINDING_ID:
+                            stringPropertyCount++;
                             break;
                         case STATUS:
                             statusCount++;
@@ -122,6 +130,12 @@ public @interface ValidSearchCertificateCriteriaRestRequestList {
             }
             if(queryCount > 1) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequestList.invalid.multipleQueries}");
+                return false;
+            }
+            // Introdued in 8.2.1. Same rule as for QUERY but creating a new since we need a new error message and can't change 
+            // ValidSearchCertificateCriteriaRestRequestList.invalid.multipleQueries. This would be an API breakage.
+            if(stringPropertyCount + queryCount > 1) {
+                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateCriteriaRestRequestList.invalid.multipleStringCriteria}");
                 return false;
             }
             if(statusCount > CertificateStatus.values().length) {

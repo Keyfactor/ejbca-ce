@@ -382,7 +382,7 @@ echo "    }"
         if (ocspResponseCleanupSession == null) { ocspResponseCleanupSession = EasyMock.createStrictMock(OcspResponseCleanupSessionLocal.class); }
         return ocspResponseCleanupSession;
     }
-
+    
     public List<Object> getAllMockObjects() {
         final List<Object> list = new ArrayList<>();
         list.add(adminPreferenceSession);
@@ -438,5 +438,4 @@ echo "    }"
         list.add(ocspResponseCleanupSession);
         return list.stream().filter(x -> x != null).collect(Collectors.toList());
     }
-    
 }
