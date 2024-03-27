@@ -52,9 +52,9 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 @XmlType(name = "userDataVOWS", propOrder = {
         "caName",
         "cardNumber",
-        "clearPwd",
         "certificateProfileName",
         "certificateSerialNumber",
+        "clearPwd",
         "email",
         "endEntityProfileName",
         "endTime",
