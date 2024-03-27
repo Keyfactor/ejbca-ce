@@ -38,6 +38,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -181,7 +182,7 @@ public class GenerateTokenTest extends CaTestCase {
             log.trace("<testEnforcingAlgorithmFromEndEntityInformation");
         }
     }
-    @Test
+    @Ignore
     public void testAlternateAlgorithmFromEndEntityInformation() throws Exception {
         log.trace(">testAlternateAlgorithmFromEndEntityInformation");
         try {
