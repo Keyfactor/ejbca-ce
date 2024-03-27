@@ -131,6 +131,22 @@ public class ValidSearchCertificateCriteriaRestRequestListUnitTest {
     }
 
     @Test
+    public void validationShouldFailOn2StringValueCriteria() {
+        // given
+        final String expectedMessage = "Invalid criteria value, combining 'QUERY', 'SERIAL_NUMBER' 'USERNAME', SUBJECT_DN, SUBJECT_ALT_NAME, EXTERNAL_ACCOUNT_BINDING_ID properties is not allowed.";
+        final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest0 = SearchCertificateCriteriaRestRequest.builder().property("USERNAME").value("TEST").operation("EQUAL").build();
+        final SearchCertificateCriteriaRestRequest querySearchCertificateCriteriaRestRequest1 = SearchCertificateCriteriaRestRequest.builder().property("SUBJECT_DN").value("TEST").operation("EQUAL").build();
+        final SearchCertificatesRestRequest testClass = SearchCertificatesRestRequestTestBuilder.withDefaults()
+                .criteria(Arrays.asList(querySearchCertificateCriteriaRestRequest0, querySearchCertificateCriteriaRestRequest1))
+                .build();
+        // when
+        final Set<ConstraintViolation<SearchCertificatesRestRequest>> constraintViolations = validator.validate(testClass);
+        // then
+        assertEquals("Only one query allowed at a time.", 1, constraintViolations.size());
+        assertEquals("Validation message should match.", expectedMessage, constraintViolations.iterator().next().getMessage());
+    }
+
+    @Test
     public void validationShouldFailOn13StatusCriteria() {
         // given
         final String expectedMessage = "Invalid criteria value, 'STATUS' property repetition.";

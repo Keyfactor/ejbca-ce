@@ -2108,6 +2108,11 @@
           "description": "A search property",
           "enum": [
             "QUERY",
+            "SERIAL_NUMBER",
+            "USERNAME",
+            "SUBJECT_DN",
+            "SUBJECT_ALT_NAME",
+            "EXTERNAL_ACCOUNT_BINDING_ID",
             "END_ENTITY_PROFILE",
             "CERTIFICATE_PROFILE",
             "EXTERNAL_ACCOUNT_BINDING_ID",
@@ -2126,16 +2131,17 @@
         "operation": {
           "type": "string",
           "example": "EQUAL",
-          "description": "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
+          "description": "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEGINS_WITH' for string value (case sensitive trailing wildcard search.), 'BEFORE' or 'AFTER' for date values",
           "enum": [
             "EQUAL",
             "LIKE",
+            "BEGINS_WITH",
             "BEFORE",
             "AFTER"
           ]
         }
       },
-      "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \nUPDATE_TIME 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nUPDATE_TIME 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n"
+      "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nSERIAL_NUMBER - multiplicity [0, 1] - is used to search by SerialNr; \nSUBJECT_DN - multiplicity [0, 1] - is used to search by SubjectDn; \nSUBJECT_ALT_NAME - multiplicity [0, 1] - is used to search by SubjectAn; \nUSERNAME - multiplicity [0, 1] - is used to search by Username; \nEXTERNAL_ACCOUNT_BINDING_ID - multiplicity [0, 1] - is used to search by Account Binding Id; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \nUPDATE_TIME 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nUPDATE_TIME 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n"
     },
     "SearchCertificatesRestRequest": {
       "type": "object",
