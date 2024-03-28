@@ -52,14 +52,9 @@ public class KeyStore extends TokenCertificateResponseWS {
 	 * @param rawKeystoreData the raw keystore data.
 	 * @param password the password.
 	 */
-    public KeyStore(byte[] rawKeystoreData, String password) {
-        try {
-            Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
-            keystoreData = Base64.encode(rawKeystoreData);
-        } finally {
-            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
-        }
-    }
+	public KeyStore(byte[] rawKeystoreData, String password) {
+	    keystoreData = Base64.encode(rawKeystoreData);
+	}
 	
 	public KeyStore(java.security.KeyStore keystore, String password) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
 	    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
