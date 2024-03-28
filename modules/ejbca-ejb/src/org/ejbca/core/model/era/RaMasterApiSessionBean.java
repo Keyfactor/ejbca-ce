@@ -168,6 +168,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryNotAvailableException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
@@ -2973,7 +2974,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             final boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
             if (!useKeyRecovery) {
-                throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE, "Keyrecovery must be enabled in the system configuration in order to execute this command.");
+                throw new KeyRecoveryNotAvailableException( "Key recovery must be enabled in the system configuration in order to execute this command.");
 
             }
             final EndEntityInformation userData = endEntityAccessSession.findUser(authenticationToken, username);
@@ -3005,7 +3006,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (!endEntityManagementSession.prepareForKeyRecovery(authenticationToken, userData.getUsername(), userData.getEndEntityProfileId(), cert)) {
                 // Reset user status and throw exception
                 endEntityManagementSession.setUserStatus(authenticationToken, username, userData.getStatus());
-                throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE, "Key recovery data not found for user '" + username + "'");
+                throw new KeyRecoveryNotAvailableException( "Key recovery data not found for user '" + username + "'");
             }
         } catch (NotFoundException e) {
             log.debug("EJBCA WebService error", e);
