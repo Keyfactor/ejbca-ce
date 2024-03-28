@@ -24,7 +24,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private String name;
     private String certificateProfile;
     private String endEntityProfile;
-    private String subjectNameFormat; // TODO: Enum?
+    private String subjectNameFormat;
     private boolean includeEmailInSubjectDN;
     private boolean includeEmailInSubjectSAN;
     private boolean includeUPNInSubjectSAN;
@@ -34,11 +34,13 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
     private boolean includeObjectGuidInSubjectSAN;
     private String additionalSubjectDNAttributes;
     private boolean publishToActiveDirectory;
-    
     private boolean excludeObjectSidInNtdsSecurityExtension;
     
     // Private key archival flag
     private boolean archivePrivateKey;
+
+    // Based on CT_FLAG_ENROLLEE_SUPPLIES_SUBJECT flag
+    private boolean supplySubjectInformationInRequest;
 
     public MSAutoEnrollmentSettingsTemplate() {
         init();
@@ -64,6 +66,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         setPublishToActiveDirectory(false);
         setExcludeObjectSidInNtdsSecurityExtension(false);
         setArchivePrivateKey(false);
+        setSupplySubjectInformationInRequest(false);
     }
 
 
@@ -220,6 +223,14 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         this.archivePrivateKey = archivePrivateKey;
     }
 
+    public boolean isSupplySubjectInformationInRequest() {
+        return supplySubjectInformationInRequest;
+    }
+
+    public void setSupplySubjectInformationInRequest(final boolean supplySubjectInformationInRequest) {
+        this.supplySubjectInformationInRequest = supplySubjectInformationInRequest;
+    }
+
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -261,8 +272,7 @@ public class MSAutoEnrollmentSettingsTemplate implements Serializable {
         "\nAdditionalSubjectDNAttributes: " + getAdditionalSubjectDNAttributes() + 
         "\nPublishToActiveDirectory: " + isPublishToActiveDirectory() +
         "\nExcludeObjectSidInNtdsSecurityExtension: " + isExcludeObjectSidInNtdsSecurityExtension() +
-        "\nArchivePrivateKey: " + isArchivePrivateKey();
+        "\nArchivePrivateKey: " + isArchivePrivateKey() +
+        "\nSupplySubjectInformationInRequest: " + isSupplySubjectInformationInRequest();
     }
-
-
 }
