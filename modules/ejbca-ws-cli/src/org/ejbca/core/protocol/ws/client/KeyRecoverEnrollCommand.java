@@ -98,7 +98,6 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                         final byte[] keyStoreBytes = Base64.decode(result.getKeystoreData());
                         final String type;
                         // Keystore type is stored in the end entity, but we don't want an extra roundtrip to read that
-                        getPrintStream().println("Magic: " + keyStoreBytes[0]);
                         if (keyStoreBytes[0] == KeyStoreHelper.PKCS12_MAGIC) {
                             extension = ".p12";
                             type = "PKCS12";
