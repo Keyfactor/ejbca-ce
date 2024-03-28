@@ -1744,7 +1744,8 @@ public interface RaMasterApi {
      *
      * @param issuerDn The DN of the issuing CA
      * @param serialNumber the serial number of the sought certificate.
-     * @return the matching username,
+     * @return the matching username
+     * @since RA Master API version 18 (EJBCA 8.3.0)
      */
     String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber);
 }
