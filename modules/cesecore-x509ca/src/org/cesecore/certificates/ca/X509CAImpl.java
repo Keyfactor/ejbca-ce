@@ -1096,6 +1096,10 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
     }
 
     /**
+     * @param cryptoToken the CAs crypto token for old and new signature keys
+     * @param createLinkCertificate if a new link certificate should be created, if false any existing old link certificate will be removed
+     * @param certProfile the certificate profile used to create the link certificate
+     * @param cceConfig custom extension configuration for the link certificate (if configured to be used in certProfile)
      * @param caNameChange if set to false, regular X509 link certificate will be created. Otherwise, created link certificates
      * will be modified as explained in the ICAO 9303 7th edition part 12. In addition to regular X509 link certificate format
      * this link certificate will have:
