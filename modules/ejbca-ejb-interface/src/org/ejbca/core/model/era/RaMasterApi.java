@@ -1729,4 +1729,8 @@ public interface RaMasterApi {
      */
     byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException;
 
+    byte[] generateOrKeyRecoverTokenHybridCertificate(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN,
+            String keySpecification, String keyAlgorithm, String altKeyAlgorithm)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+
 }
