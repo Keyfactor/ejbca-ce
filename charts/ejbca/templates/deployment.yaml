@@ -186,11 +186,11 @@ spec:
             - name: ejbca-config-conf-files
               mountPath: /opt/keyfactor/ejbca/conf/
             {{- end }}
-            {{- if .Values.ejbca.importConfigdumpStaged }}
+            {{- if and .Values.ejbca.configdumpImport.enabled (not .Values.ejbca.configdumpImport.initialize) }}
             - name: ejbca-config-configdump-staged
-              mountPath: /opt/keyfactor/configdump/staged.d/
+              mountPath: /opt/keyfactor/configdump/stage.d/
             {{- end }}
-            {{- if .Values.ejbca.importConfigdumpInitialize }}
+            {{- if and .Values.ejbca.configdumpImport.enabled .Values.ejbca.configdumpImport.initialize }}
             - name: ejbca-config-configdump-initialize
               mountPath: /opt/keyfactor/configdump/initialize.d/
             {{- end }}
@@ -238,15 +238,37 @@ spec:
           secret:
             secretName: {{ .Values.ejbca.ejbcaConfFilesSecret }}
         {{- end }}
-        {{- if .Values.ejbca.importConfigdumpStaged }}
+        {{- if and .Values.ejbca.configdumpImport.enabled (not .Values.ejbca.configdumpImport.initialize) }}
         - name: ejbca-config-configdump-staged
-          secret:
-            secretName: {{ .Values.ejbca.configdumpStagedSecret }}
+          configMap:
+            {{- if .Values.ejbca.configdumpImport.configMapName }}
+            name: {{ .Values.ejbca.configdumpImport.configMapName }}
+            {{- else if .Values.ejbca.configdumpImport.inlineConfigdump }}
+            name: {{ include "ejbca.fullname" . }}-configdump
+            {{- end }}
+            items:
+              {{- if .Values.ejbca.configdumpImport.configMapKey }}
+              - key: {{ .Values.ejbca.configdumpImport.configMapKey }}
+              {{- else }}
+              - key: "configdump.json"
+              {{- end }}
+                path: "configdump.json"
         {{- end }}
-        {{- if .Values.ejbca.importConfigdumpInitialize }}
+        {{- if and .Values.ejbca.configdumpImport.enabled .Values.ejbca.configdumpImport.initialize }}
         - name: ejbca-config-configdump-initialize
-          secret:
-            secretName: {{ .Values.ejbca.configdumpInitializeSecret }}
+          configMap:
+            {{- if .Values.ejbca.configdumpImport.configMapName }}
+            name: {{ .Values.ejbca.configdumpImport.configMapName }}
+            {{- else if .Values.ejbca.configdumpImport.inlineConfigdump }}
+            name: {{ include "ejbca.fullname" . }}-configdump
+            {{- end }}
+            items:
+              {{- if .Values.ejbca.configdumpImport.configMapKey }}
+              - key: {{ .Values.ejbca.configdumpImport.configMapKey }}
+              {{- else }}
+              - key: "configdump.json"
+              {{- end }}
+                path: "configdump.json"
         {{- end }}
         {{- if .Values.ejbca.volumes }}
           {{- toYaml .Values.ejbca.volumes | nindent 8 }}
