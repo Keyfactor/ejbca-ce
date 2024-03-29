@@ -292,9 +292,11 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
                     approvalProfileSession.renameApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
                             approvalProfileName);
                     setApprovalProfileName("");
-                } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException e) {
+                } catch (ApprovalProfileExistsException e) {
+                    addErrorMessage("APPROVAL_PROFILE_ALREADY_EXISTS");
+                } catch (ApprovalProfileDoesNotExistException e) {
                     addNonTranslatedErrorMessage(e);
-                } catch (AuthorizationDeniedException e) {
+				} catch (AuthorizationDeniedException e) {
                     addNonTranslatedErrorMessage("Not authorized to rename certificate profile.");
                 }
                 actionCancel();
