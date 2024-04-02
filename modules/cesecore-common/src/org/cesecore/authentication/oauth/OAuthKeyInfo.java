@@ -378,7 +378,7 @@ public final class OAuthKeyInfo implements Serializable {
                 .append("audienceCheckDisabled=").append(isAudienceCheckDisabled()).append(", ")
                 .append("fetchUserInfo=").append(isFetchUserInfo()).append(", ")
                 .append("tokenUrl=").append(getTokenUrl()).append(", ")
-                .append("userInfoUrl=").append(getTokenUrl()).append(", ")
+                .append("userInfoUrl=").append(getUserInfoUrl()).append(", ")
                 .append("logoutUrl=").append(getLogoutUrl()).append(", ")
                 .append("skewLimit=").append(getSkewLimit()).append(", ")
                 .append("keys=[");
