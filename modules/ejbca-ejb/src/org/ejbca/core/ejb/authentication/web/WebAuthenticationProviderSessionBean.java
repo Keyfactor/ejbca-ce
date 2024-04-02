@@ -214,10 +214,10 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     }
                 }
             }
-            
+
             JWTClaimsSet claims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("JWT Claims:" + claims);
+                LOG.debug("Access token Claims:" + claims);
             }
 
             if (!verifyOauth2Audience(keyInfo, claims)) {
@@ -259,7 +259,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             final String keyId, final String oauthIdToken) throws ParseException, JOSEException {
         OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
                 internalKeyBindings, certificateStoreSession, cryptoToken));
-        OAuthUserInfoResponse userInfoResponse = new OAuthUserInfoResponse();
+        OAuthUserInfoResponse userInfoResponse;
         try {
             userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfoFromToken, encodedOauthBearerToken);
         } catch (IOException e) {
@@ -283,6 +283,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 claimsSetBuilder.claim(entry.getKey(), entry.getValue());
             }
             userInfoClaims = JWTClaimsSet.parse(userInfoResponse.getClaims());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("User Info Claims:" + userInfoClaims);
+            }
             for (Map.Entry<String, Object> entry : userInfoClaims.getClaims().entrySet()) {
                 claimsSetBuilder.claim(entry.getKey(), entry.getValue());
             }
@@ -300,6 +303,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             }
             
             userInfoClaims = jwt.getJWTClaimsSet();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("User Info Claims:" + userInfoClaims);
+            }
             // Verify the userinfo response subject against the id token subject
             if (userInfoClaims != null && userInfoClaims.getSubject() != null && userInfoClaims.getSubject().equals(idTokenClaims.getSubject())) {
                 for (Map.Entry<String, Object> entry : tokenClaims.getClaims().entrySet()) {
