@@ -118,7 +118,7 @@ image:
   #registry: example.com
   #repository: keyfactor
   #name: ejbca-ee
-  tag: 8.2.0-Alpha1
+  tag: latest
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""
