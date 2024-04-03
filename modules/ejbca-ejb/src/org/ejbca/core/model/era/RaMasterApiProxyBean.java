@@ -3975,8 +3975,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public byte[] generateOrKeyRecoverTokenHybridCertificate(AuthenticationToken authenticationToken, String username, String password, String hardTokenSN,
-            String keySpecification, String keyAlgorithm, String altKeyAlgorithm)
+    public byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
         CADoesntExistsException caDoesntExistException = null;
@@ -3984,7 +3983,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
                 try {
-                    return raMasterApi.generateOrKeyRecoverTokenHybridCertificate(authenticationToken, username, password, hardTokenSN, keySpecification, keyAlgorithm, altKeyAlgorithm);
+                    return raMasterApi.generateOrKeyRecoverTokenV2(authenticationToken, request);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 } catch (AuthorizationDeniedException e) {
@@ -4000,7 +3999,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     }
                     // Just try next implementation
                 } catch (NotFoundException e) {
-                    log.debug("End entity with name " + username + " for proxied request could not be found: " + e.getMessage());
+                    log.debug("End entity with name " + request.getUsername() + " for proxied request could not be found: " + e.getMessage());
                     if (notFoundException == null) {
                         notFoundException = e;
                     }
