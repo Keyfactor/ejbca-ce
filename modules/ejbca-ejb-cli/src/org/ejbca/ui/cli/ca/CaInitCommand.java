@@ -476,7 +476,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             final char[] authenticationCode = catokenpassword.toCharArray();
             
             final String className;
-            if (!StringUtils.equalsIgnoreCase(catokentype, "soft")) {
+            if (StringUtils.equalsIgnoreCase(catokentype, "soft")) {
                 className = SoftCryptoToken.class.getName();
             } else {
                 // if no catokentype was specified className will be null, and we will use an existing crypto token.
