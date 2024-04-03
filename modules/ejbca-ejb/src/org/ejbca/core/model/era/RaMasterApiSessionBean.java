@@ -370,7 +370,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>18<td>=<td>8.3.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 17;
+    private static final int RA_MASTER_API_VERSION = 18;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -3370,14 +3370,17 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
-                                            final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm);
+                                            final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {      
+        GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification,
+                keyAlgorithm, null);
+        return generateOrKeyRecoverTokenV2(authenticationToken, request);
     }
     
     @Override
-    public byte[] generateOrKeyRecoverTokenHybridCertificate(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
-                                            final String keyAlgorithm,  final String altKeyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm, altKeyAlgorithm);
+    public byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, request.getUsername(), request.getPassword(),
+                request.getKeySpecification(), request.getKeyAlgorithm(), request.getAltKeyAlgorithm());
     }
 
     @Override

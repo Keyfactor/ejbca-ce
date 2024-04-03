@@ -223,7 +223,7 @@ public class RaMasterApiTest {
             new MethodApiDescriptor("selfRenewCertificate", "[B", Arrays.asList("org.ejbca.core.model.era.RaSelfRenewCertificateData"), "5488eee381e8"),
             new MethodApiDescriptor("getAllAuthorizedCertificateProfiles", "org.ejbca.core.model.era.IdNameHashMap", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken"), "0e0b93165b7d"),
             new MethodApiDescriptor("getKeyExchangeCertificate", "java.security.cert.Certificate", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int", "int"), "a6aef899bc21"),
-            new MethodApiDescriptor("generateOrKeyRecoverTokenHybridCertificate", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String", "java.lang.String"), "767d8230a561")
+            new MethodApiDescriptor("generateOrKeyRecoverTokenV2", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.GenerateOrKeyRecoverTokenRequest"), "c3c6329c0edc")
     // @formatter:on
     );
 
@@ -374,7 +374,7 @@ public class RaMasterApiTest {
          * 
          * Note: This does not include nested classes, but it works without them, at least currently.
          */
-        doCheckExistenceOfClasses("classes_in_7_12_0.txt", ApiVersion.INITIAL_VERSION);
+        doCheckExistenceOfClasses("classes_in_8_3_0.txt", ApiVersion.INITIAL_VERSION);
         for (final EjbcaVersion ejbcaVersion : EjbcaVersion.values()) {
             doCheckExistenceOfClasses(ejbcaVersion.getClassListFilename(), ejbcaVersion);
         }
