@@ -175,7 +175,6 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             className = SoftCryptoToken.class.getName();
             cryptoTokenPropertes.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY,
                     Boolean.toString(Boolean.valueOf(parameters.get(PRIVATE_KEY_EXPORT_KEY))));
-            cryptoTokenPropertes.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
         } else if (CryptoTokenFactory.AWSKMS_SIMPLE_NAME.equals(type)) {
             className = CryptoTokenFactory.AWSKMS_NAME;
             if (!setAwsKmsProperties(parameters, cryptoTokenPropertes)) {
