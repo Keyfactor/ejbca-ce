@@ -151,7 +151,6 @@ public class CryptoTokenTestUtils {
                     SystemTestsConfiguration.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey()).getKey());
         }
 
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         if (pin == null) {
             cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
         } else {

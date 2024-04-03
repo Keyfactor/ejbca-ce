@@ -129,16 +129,13 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 		return BouncyCastleProvider.PROVIDER_NAME;
 	}
 
-	public static CryptoToken createSoftToken(boolean nodefaultpwd) {
-        return createSoftToken(nodefaultpwd, true);
+	public static CryptoToken createSoftToken() {
+        return createSoftToken(true);
 	}
 
 
-    public static CryptoToken createSoftToken(boolean nodefaultpwd, boolean extractable) {
+    public static CryptoToken createSoftToken(boolean extractable) {
 		Properties prop = new Properties();
-		if (nodefaultpwd) {
-			prop.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.toString(nodefaultpwd));
-		}
         if(extractable){
             prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(true));
         } else {

@@ -2502,10 +2502,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
             allowExtract.setValue(Boolean.toString(false));
             cryptotokenProperties.add(allowExtract);
-            KeyValuePair nodefaultPwd = new KeyValuePair();
-            nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
-            nodefaultPwd.setValue(Boolean.TRUE.toString());
-            cryptotokenProperties.add(nodefaultPwd);
 
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
@@ -2514,9 +2510,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
 
             Properties ctproperties = token.getCryptoTokenProperties();
             assertEquals(3, ctproperties.keySet().size());
-            assertTrue(ctproperties.containsKey(SoftCryptoToken.NODEFAULTPWD));
-            assertEquals(ctproperties.getProperty(SoftCryptoToken.NODEFAULTPWD), Boolean.TRUE.toString());
-
             assertEquals("SoftCryptoToken", token.getType());
             assertFalse(Boolean.getBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
             assertTrue(token.isActive());
@@ -2553,10 +2546,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
             allowExtract.setValue(Boolean.toString(false));
             cryptotokenProperties.add(allowExtract);
-            KeyValuePair nodefaultPwd = new KeyValuePair();
-            nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
-            nodefaultPwd.setValue(Boolean.TRUE.toString());
-            cryptotokenProperties.add(nodefaultPwd);
 
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
@@ -2596,7 +2585,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             // Create CryptoToken
             final List<KeyValuePair> cryptoTokenProperties = new ArrayList<>();
             cryptoTokenProperties.add(getKeyValuePair(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.FALSE.toString()));
-            cryptoTokenProperties.add(getKeyValuePair(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString()));
             ejbcaraws.createCryptoToken(cryptoTokenName, "SoftCryptoToken", "1234", true, cryptoTokenProperties);
             cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
             // Generate CA key pairs

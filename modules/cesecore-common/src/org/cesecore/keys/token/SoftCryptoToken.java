@@ -62,13 +62,6 @@ public class SoftCryptoToken extends BaseCryptoToken {
      * When upgrading this version, you must up the version of the CA as well, otherwise the upgraded CA token will not be stored in the database.
      */
     public static final float LATEST_VERSION = 3;
-    
-    /**
-     * This property value denotes whether the default soft token password is usable on this token (as defined by ca.keystorepass, defaults to 'foo123',
-     * which allows it to be activated/deactivated/edited without providing a password. Setting this property (it does not matter what it's value is set to as long as it is present) 
-     * means that the default password is not available for use. 
-     */
-    public static final String NODEFAULTPWD = "NODEFAULTPWD";
 
     private byte[] keystoreData;
     private char[] keyStorePass;
@@ -93,10 +86,8 @@ public class SoftCryptoToken extends BaseCryptoToken {
         String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
         if (autoPwd != null) {
             log.debug("Soft Crypto Token has autoactivation property set.");
-        } else if (properties.getProperty(NODEFAULTPWD) != null) {
-            log.debug("No default pwd allowed for this soft crypto token.");
-        }
-        boolean autoActivate = autoPwd != null || properties.getProperty(NODEFAULTPWD) == null;
+        } 
+        boolean autoActivate = autoPwd != null;
         init(properties, autoActivate, cryptoTokenId);
     }
 
