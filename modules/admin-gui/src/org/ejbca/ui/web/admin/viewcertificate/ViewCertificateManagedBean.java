@@ -101,6 +101,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private List<String> subjectAltName;
     private String subjectDirAttributes;
     private String publicKey;
+    private String alternativePublicKey;
     private String basicConstraints;
     private String keyUsage;
     private String extendedKeyUsage;
@@ -174,6 +175,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().replace("\\,", ",").split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
             subjectDirAttributes = (certificateData.getSubjectDirAttr() == null) ? ejbcaBean.getText("SDA_NONE") : certificateData.getSubjectDirAttr();
             publicKey = composePublicKeyValue();
+            alternativePublicKey = composeAlternativeSigningKeyValue();
             accountBindingId = certificateData.getAccountBindingId();
             
             basicConstraints = certificateData.getBasicConstraints(ejbcaBean.getText("EXT_UNUSED"), 
@@ -341,6 +343,14 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         }
         return publicKeyValue;
     }
+    
+    private String composeAlternativeSigningKeyValue() {
+        String alternativePublicKey = certificateData.getPublicAlternativeKeyAlgorithm() + " (" + certificateData.getAlternateKeySpec(ejbcaBean.getText("BITS")) + ")";
+        if (certificateData.getPublicAlternativeKeyModulus() != null) {
+            alternativePublicKey += ": " + certificateData.getPublicAlternativeKeyModulus();  
+        }
+        return alternativePublicKey;
+    }
 
     private void parseRequest(final HttpServletRequest request) throws AuthorizationDeniedException, UnsupportedEncodingException {
 
@@ -477,6 +487,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     public String getPublicKey() {
         return publicKey;
+    }
+    
+    public String getPublicKeyAlternative() {
+        return alternativePublicKey;
     }
     
     public String getAccountBindingId() {
@@ -627,7 +641,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     public void actionRevoke() throws AuthorizationDeniedException {
         final int reason = Integer.valueOf(revokeReason);
         if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
-                && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY)
+                && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_REVOKEENDENTITY)
                 && (!certificateData.isRevoked() || certificateData.isRevokedAndOnHold())) {
             try {
                 raBean.revokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(), certificateData.getUsername(), reason);
@@ -652,7 +666,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     public void actionUnrevoke() throws AuthorizationDeniedException {
         if (!cacerts && raBean.authorizedToRevokeCert(certificateData.getUsername())
-                && ejbcaBean.isAuthorizedNoLog(AccessRulesConstants.REGULAR_REVOKEENDENTITY) && certificateData.isRevokedAndOnHold()) {
+                && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_REVOKEENDENTITY) && certificateData.isRevokedAndOnHold()) {
             //-- call to unrevoke method
             try {
                 raBean.unrevokeCert(certificateData.getSerialNumberBigInt(), certificateData.getIssuerDNUnEscaped(),
