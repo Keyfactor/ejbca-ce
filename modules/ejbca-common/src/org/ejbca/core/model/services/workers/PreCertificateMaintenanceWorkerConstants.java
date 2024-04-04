@@ -29,5 +29,6 @@ public class PreCertificateMaintenanceWorkerConstants {
     public static final String DEFAULT_MAX_ISSUANCE_TIME = "30";
     public static final String DEFAULT_MAX_ISSUANCE_TIMEUNIT = IWorker.UNIT_MINUTES;
     public static final String DEFAULT_IS_REVOKE_PRE_CERTS = "false";
+    public static final String DEFAULT_IS_REVOKE_PRE_CERTS_LEGACY = "true";
 
 }
