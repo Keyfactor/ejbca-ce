@@ -324,7 +324,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
                     final String revokePreCerts = prop.getProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS);
                     if (StringUtils.isBlank(revokePreCerts)) {
                         prop.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS,
-                                PreCertificateMaintenanceWorkerConstants.DEFAULT_IS_REVOKE_PRE_CERTS);
+                                PreCertificateMaintenanceWorkerConstants.DEFAULT_IS_REVOKE_PRE_CERTS_LEGACY);
                     }
                     setWorkerProperties(prop);
                 }
