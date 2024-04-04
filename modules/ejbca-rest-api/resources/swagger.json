@@ -225,7 +225,16 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "includeExternal",
+            "in": "query",
+            "description": "true to get external (i.e. imported) cartificates, false to not get external (i.e. imported) certificates",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -607,8 +616,8 @@
         "tags": [
           "v1/certificate"
         ],
-        "summary": "Enrollment with client generated keys, using CSR subject",
-        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+        "summary": "Enrollment with client generated keys, using CSR subject.",
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR. \nResponse Format is 'DER' (default when excluded) or 'PKCS7' in base64 encoded PEM format",
         "operationId": "enrollPkcs10Certificate",
         "consumes": [
           "application/json"
@@ -1939,6 +1948,11 @@
           "format": "date-time",
           "example": "2038-01-19T03:14:07Z",
           "description": "Expiration date"
+        },
+        "external": {
+           "description": "Is external (whether CA certificate was imported)",
+           "example": true,
+           "type": "boolean"
         }
       }
     },
@@ -2340,6 +2354,11 @@
           "type": "string",
           "example": "john.doe@example.com",
           "description": "Email"
+        },
+        "response_format": {
+          "type": "string",
+          "example": "DER",
+          "description": "Response Format (DER format is default)"
         }
       }
     },
