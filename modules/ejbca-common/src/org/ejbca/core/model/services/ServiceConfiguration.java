@@ -328,6 +328,15 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
                     }
                     setWorkerProperties(prop);
                 }
+                
+                String updatedWorkerCurrentClassPath = getWorkerClassPath();
+                
+                // Class path for the worker should also be upgraded
+                if (StringUtils.isNotBlank(updatedWorkerCurrentClassPath) && updatedWorkerCurrentClassPath.endsWith("PreCertificateRevocationWorker")) {
+                    updatedWorkerCurrentClassPath = "org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorker";
+                    setWorkerClassPath(updatedWorkerCurrentClassPath);
+                }
+                
             }
             
 			data.put(VERSION, Float.valueOf(LATEST_VERSION));
