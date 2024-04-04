@@ -12,8 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cainterface;
 
-import com.keyfactor.util.StringTools;
-import org.apache.commons.lang.StringUtils;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.cesecore.certificates.ca.CAInfo;
@@ -21,11 +26,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.kfenroll.ProxyCaInfo;
 import org.cesecore.util.SimpleTime;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.keyfactor.util.StringTools;
 
 /**
  * Wrapper class for holding CaInfo properties.
@@ -36,6 +37,7 @@ public class CaInfoDto implements Serializable {
 
     private String caName;
     private String signatureAlgorithmParam = StringUtils.EMPTY;
+    private String alternativeSignatureAlgorithmParam = StringUtils.EMPTY;
     private int keySequenceFormat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
     private String keySequence = CAToken.DEFAULT_KEYSEQUENCE;
     private int caType = CAInfo.CATYPE_X509;
@@ -83,6 +85,7 @@ public class CaInfoDto implements Serializable {
     private int suspendedCrlPartitions;
     private String cryptoTokenIdParam = StringUtils.EMPTY;
     private String cryptoTokenCertSignKey = StringUtils.EMPTY; // Initialize to empty
+    private String cryptoTokenAlternativeCertSignKey = StringUtils.EMPTY; // Initialize to empty
     private String cryptoTokenDefaultKey = StringUtils.EMPTY; // Initialize to empty
     private String selectedKeyEncryptKey = StringUtils.EMPTY; // Initialize to empty
     private String testKey = StringUtils.EMPTY; // Initialize to empty;
@@ -150,7 +153,7 @@ public class CaInfoDto implements Serializable {
     }
 
 
-    String getKeySequenceFormatAsString() {
+    public String getKeySequenceFormatAsString() {
         return String.valueOf(this.keySequenceFormat);
     }
 
@@ -176,6 +179,14 @@ public class CaInfoDto implements Serializable {
 
     public void setSignatureAlgorithmParam(String signatureAlgorithmParam) {
         this.signatureAlgorithmParam = signatureAlgorithmParam;
+    }
+    
+    public String getAlternativeSignatureAlgorithmParam() {
+        return alternativeSignatureAlgorithmParam;
+    }
+
+    public void setAlternativeSignatureAlgorithmParam(final String alternativeSignatureAlgorithmParam) {
+        this.alternativeSignatureAlgorithmParam = alternativeSignatureAlgorithmParam;
     }
 
     public int getKeySequenceFormat() {
@@ -558,7 +569,14 @@ public class CaInfoDto implements Serializable {
     public void setCryptoTokenCertSignKey(String cryptoTokenCertSignKey) {
         this.cryptoTokenCertSignKey = cryptoTokenCertSignKey;
     }
+    
+    public String getCryptoTokenAlternativeCertSignKey() {
+        return cryptoTokenAlternativeCertSignKey;
+    }
 
+    public void setCryptoTokenAlternativeCertSignKey(String cryptoTokenAlternativeCertSignKey) {
+        this.cryptoTokenAlternativeCertSignKey = cryptoTokenAlternativeCertSignKey;
+    }
     public String getCryptoTokenDefaultKey() {
         return cryptoTokenDefaultKey;
     }

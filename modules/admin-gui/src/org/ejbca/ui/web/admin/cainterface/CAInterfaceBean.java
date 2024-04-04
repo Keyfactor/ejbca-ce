@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
 import javax.ejb.EJBException;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
@@ -50,12 +50,14 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CvcCABase;
 import org.cesecore.certificates.ca.CvcPlugin;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -326,9 +328,7 @@ public class CAInterfaceBean implements Serializable {
 		return history;
 	}
 
-	//
-	// Methods from editcas.jsp refactoring
-	//
+
     public boolean actionCreateCaMakeRequest(CaInfoDto caInfoDto, Map<ApprovalRequestType, Integer> approvals,
             String availablePublisherValues, String availableKeyValidatorValues,
             boolean buttonCreateCa, boolean buttonMakeRequest,
@@ -349,11 +349,20 @@ public class CAInterfaceBean implements Serializable {
                 buttonCreateCa, buttonMakeRequest, cryptoTokenId, fileBuffer);
     }
 
+    /**
+     * 
+     * @throws ParameterException if any of the input from the web was invalid
+     * @throws AuthorizationDeniedException if the current admin did not have access to the selected resources
+     * @throws CryptoTokenOfflineException if the crypto token was unavailable
+     * @throws InvalidAlgorithmException no signing algorithm was defined for this CA
+     * @throws CAExistsException if a CA of this name/subjectDN already exists
+     * @throws CADoesntExistsException if the CA was not created
+     */
 	private boolean actionCreateCaMakeRequestInternal(CaInfoDto caInfoDto, Map<ApprovalRequestType, Integer> approvals,
             String availablePublisherValues, String availableKeyValidatorValues,
             boolean buttonCreateCa, boolean buttonMakeRequest,
             int cryptoTokenId,
-            byte[] fileBuffer) throws Exception {
+            byte[] fileBuffer) throws ParameterException, CryptoTokenOfflineException, AuthorizationDeniedException, InvalidAlgorithmException, CAExistsException, CADoesntExistsException {
 
         if (caInfoDto.isCaTypeProxy()) {
             ProxyCaInfo.ProxyCaInfoBuilder proxyCaInfoBuilder = createProxyCaInfoBuilder(caInfoDto);
@@ -367,9 +376,10 @@ public class CAInterfaceBean implements Serializable {
 
                 try {
                     caadminsession.createCA(authenticationToken, proxyCaInfo);
-                } catch (EJBException e) {
-                        throw e;
+                } catch (CAExistsException | CryptoTokenOfflineException | InvalidAlgorithmException | AuthorizationDeniedException e) {
+                    throw e;
                 }
+
             }
             return false;
         }
@@ -379,13 +389,13 @@ public class CAInterfaceBean implements Serializable {
 	    final List<String> keyPairAliases = cryptoTokenManagementSession.getKeyPairAliases(authenticationToken, cryptoTokenId);
 	    if (!keyPairAliases.contains(caInfoDto.getCryptoTokenDefaultKey())) {
             log.info(authenticationToken.toString() + " attempted to createa a CA with a non-existing defaultKey alias: " + caInfoDto.getCryptoTokenDefaultKey());
-            throw new Exception("Invalid default key alias!");
+            throw new CryptoTokenOfflineException("Invalid default key alias!");
 	    }
-        final String[] suppliedAliases = {caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getSelectedKeyEncryptKey(), caInfoDto.getTestKey()};
+        final String[] suppliedAliases = {caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getCryptoTokenAlternativeCertSignKey(), caInfoDto.getCryptoTokenCertSignKey(), caInfoDto.getSelectedKeyEncryptKey(), caInfoDto.getTestKey()};
         for (final String currentSuppliedAlias : suppliedAliases) {
             if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)) {
                 log.info(authenticationToken.toString() + " attempted to create a CA with a non-existing key alias: "+currentSuppliedAlias);
-                throw new Exception("Invalid key alias!");
+                throw new IllegalStateException("Invalid key alias!");
             }
         }
         final Properties caTokenProperties = new Properties();
@@ -402,9 +412,25 @@ public class CAInterfaceBean implements Serializable {
         if (caInfoDto.getTestKey().length() > 0) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, caInfoDto.getTestKey());
         }
+        //Hybrid certs only implemented for X509
+        if (caInfoDto.isCaTypeX509()) {
+            if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING,
+                        caInfoDto.getCryptoTokenAlternativeCertSignKey());
+            } 
+            
+        }
         final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
+        //Hybrid certs only implemented for X509
+        if (caInfoDto.isCaTypeX509()) {
+            if (!StringUtils.isEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
+                caToken.setAlternativeSignatureAlgorithm(caInfoDto.getAlternativeSignatureAlgorithmParam());
+                //Future proofing to allow the alternative key to potentially be on a different crypto token
+            }      
+        }
+       
         if (caInfoDto.getSignatureAlgorithmParam() == null) {
-            throw new Exception("No signature algorithm supplied!");
+            throw new InvalidAlgorithmException("No signature algorithm supplied!");
         }
         caToken.setSignatureAlgorithm(caInfoDto.getSignatureAlgorithmParam());
         PublicKey encryptionKey = cryptoTokenManagementSession.getCryptoToken(cryptoTokenId).getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
@@ -447,6 +473,7 @@ public class CAInterfaceBean implements Serializable {
         }
 
 	    if (caInfoDto.getCaType() != 0 && caInfoDto.getCaSubjectDN() != null && caInfoDto.getCaName() != null && signedBy != 0) {
+
 	        // Approvals is generic for all types of CAs
 
 	        if (caInfoDto.getCaType() == CAInfo.CATYPE_X509) {
@@ -1195,10 +1222,10 @@ public class CAInterfaceBean implements Serializable {
     }
 
     /** @return a list of key pair aliases that can be used for signing using the supplied CA signing algorithm */
-	public List<String> getAvailableCryptoTokenAliases(final List<KeyPairInfo> keyPairInfos, final String caSigingAlgorithm) {
+	public List<String> getAvailableCryptoTokenAliases(final List<KeyPairInfo> keyPairInfos, final String caSigningAlgorithm) {
 	    final List<String> aliases = new ArrayList<>();
         for (final KeyPairInfo cryptoTokenKeyPairInfo : keyPairInfos) {
-            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigningAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
         }
@@ -1215,10 +1242,11 @@ public class CAInterfaceBean implements Serializable {
                 if (AlgorithmConstants.ECCDH_PERMITTED_CURVES.contains(cryptoTokenKeyPairInfo.getKeySpecification())) {
                     aliases.add(cryptoTokenKeyPairInfo.getAlias());
                 }
-            } else {
+            } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
                 //Or in case of RSA
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
+            // Dilithium and Falcon can only sign, so skip the PQ algorithms
         }
         
         return aliases;
