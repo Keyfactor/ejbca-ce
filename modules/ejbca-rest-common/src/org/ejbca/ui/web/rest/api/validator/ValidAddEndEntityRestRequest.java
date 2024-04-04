@@ -111,7 +111,7 @@ public @interface ValidAddEndEntityRestRequest {
             try{
                 DnComponents.stringToBCDNString(subjectDn);
             }catch (Exception e){
-                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.nullOrEmpty}");
+                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.malformed}");
                 return false;
             }
             final String caName = addEndEntityRestRequest.getCaName();
