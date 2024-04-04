@@ -225,7 +225,16 @@
         "produces": [
           "application/json"
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "includeExternal",
+            "in": "query",
+            "description": "true to get external (i.e. imported) cartificates, false to not get external (i.e. imported) certificates",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
         "responses": {
           "200": {
             "description": "successful operation",
@@ -1939,6 +1948,11 @@
           "format": "date-time",
           "example": "2038-01-19T03:14:07Z",
           "description": "Expiration date"
+        },
+        "external": {
+           "description": "Is external (whether CA certificate was imported)",
+           "example": true,
+           "type": "boolean"
         }
       }
     },
@@ -2108,11 +2122,6 @@
           "description": "A search property",
           "enum": [
             "QUERY",
-            "SERIAL_NUMBER",
-            "USERNAME",
-            "SUBJECT_DN",
-            "SUBJECT_ALT_NAME",
-            "EXTERNAL_ACCOUNT_BINDING_ID",
             "END_ENTITY_PROFILE",
             "CERTIFICATE_PROFILE",
             "EXTERNAL_ACCOUNT_BINDING_ID",
