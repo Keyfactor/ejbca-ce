@@ -616,8 +616,8 @@
         "tags": [
           "v1/certificate"
         ],
-        "summary": "Enrollment with client generated keys, using CSR subject",
-        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+        "summary": "Enrollment with client generated keys, using CSR subject.",
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR. \nResponse Format is 'DER' (default when excluded) or 'PKCS7' in base64 encoded PEM format",
         "operationId": "enrollPkcs10Certificate",
         "consumes": [
           "application/json"
@@ -2349,6 +2349,11 @@
           "type": "string",
           "example": "john.doe@example.com",
           "description": "Email"
+        },
+        "response_format": {
+          "type": "string",
+          "example": "DER",
+          "description": "Response Format (DER format is default)"
         }
       }
     },
