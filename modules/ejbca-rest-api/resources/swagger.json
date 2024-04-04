@@ -2122,6 +2122,11 @@
           "description": "A search property",
           "enum": [
             "QUERY",
+            "SERIAL_NUMBER",
+            "USERNAME",
+            "SUBJECT_DN",
+            "SUBJECT_ALT_NAME",
+            "EXTERNAL_ACCOUNT_BINDING_ID",
             "END_ENTITY_PROFILE",
             "CERTIFICATE_PROFILE",
             "EXTERNAL_ACCOUNT_BINDING_ID",
