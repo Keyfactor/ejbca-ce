@@ -14,18 +14,20 @@ package org.ejbca.ui.web.admin.endentityprofiles;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -33,7 +35,10 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
 *
@@ -62,7 +67,10 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     private boolean useClearTextPasswordStorage;
     private String[] emailDomains;
     private String selectedEmailDomain;
+    private String emailUserName;
     private String profileEmail;
+    private String selectedSubjectDn;
+    private boolean useSdnEmail;
     
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
@@ -78,7 +86,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
     }
     
-    public boolean isOnlyOneDomainEmail() {
+    public boolean isOnlyOneEmailDomain() {
         if (emailDomains != null) {
             return emailDomains.length == 1;
         } else {
@@ -257,6 +265,83 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
 
     public void setProfileEmail(String profileEmail) {
         this.profileEmail = profileEmail;
+    }
+    
+                                         //<Label, modifiable, required>,      
+    public List<MutableTriple<MutableTriple<String, Boolean, Boolean>, Object, Object>> getSubjectDnFieldsNameAndData() {
+
+        List<MutableTriple<MutableTriple<String, Boolean, Boolean>, Object, Object>> subjectDnFieldNameAndData = new ArrayList<>();
+
+        int numberOfSubjectDnFields = selectedEeProfile.getSubjectDNFieldOrderLength();
+
+        for (int i = 0; i < numberOfSubjectDnFields; i++) {
+            
+            
+            int[] subjectDnFieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i);
+            
+            final String fieldLabel = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(subjectDnFieldData[EndEntityProfile.FIELDTYPE]));
+            final boolean fieldRequired = selectedEeProfile.isRequired(subjectDnFieldData[EndEntityProfile.FIELDTYPE], subjectDnFieldData[EndEntityProfile.NUMBER]);
+            
+            final boolean fieldModifiable = selectedEeProfile.isModifyable(subjectDnFieldData[EndEntityProfile.FIELDTYPE],
+                    subjectDnFieldData[EndEntityProfile.NUMBER]);
+            final boolean fieldEmailAddress = EndEntityProfile.isFieldOfType(subjectDnFieldData[EndEntityProfile.FIELDTYPE],
+                    DnComponents.DNEMAILADDRESS);
+
+            if (!fieldEmailAddress) {
+                if (!fieldModifiable) {
+
+                    String[] options = selectedEeProfile
+                            .getValue(subjectDnFieldData[EndEntityProfile.FIELDTYPE], subjectDnFieldData[EndEntityProfile.NUMBER])
+                            .split(EndEntityProfile.SPLITCHAR);
+
+                    if (options == null) {
+                        subjectDnFieldNameAndData.add(new MutableTriple<>(new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), "noOption",
+                                StringUtils.EMPTY));
+                    } else if (options.length == 1) {
+                        subjectDnFieldNameAndData.add(new MutableTriple<>(new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), "oneOption",
+                                options[0].trim()));
+                    } else {
+                        subjectDnFieldNameAndData
+                                .add(new MutableTriple<>(new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), "multiOption", options));
+                    }
+                } else {
+                    final Map<String, Serializable> validation = selectedEeProfile.getValidation(subjectDnFieldData[EndEntityProfile.FIELDTYPE],
+                            subjectDnFieldData[EndEntityProfile.NUMBER]);
+                    final String regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
+                    subjectDnFieldNameAndData
+                            .add(new MutableTriple<>(
+                                    new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), selectedEeProfile
+                                            .getValue(subjectDnFieldData[EndEntityProfile.FIELDTYPE], subjectDnFieldData[EndEntityProfile.NUMBER]), regex));
+                }
+            } else {
+                subjectDnFieldNameAndData.add(new MutableTriple<>(new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), "emailAddress", null));
+            }
+        }
+        return subjectDnFieldNameAndData;
+    }
+    
+    public String getEmailUserName() {
+        return emailUserName;
+    }
+
+    public void setEmailUserName(String emailUserName) {
+        this.emailUserName = emailUserName;
+    }
+
+    public String getSelectedSubjectDn() {
+        return selectedSubjectDn;
+    }
+
+    public void setSelectedSubjectDn(String selectedSubjectDn) {
+        this.selectedSubjectDn = selectedSubjectDn;
+    }
+
+    public boolean isUseSdnEmail() {
+        return useSdnEmail;
+    }
+
+    public void setUseSdnEmail(boolean useSdnEmail) {
+        this.useSdnEmail = useSdnEmail;
     }
     
 }
