@@ -62,8 +62,7 @@ import java.util.EnumSet;
 public class SearchCertificateCriteriaRestRequest {
 
     @ApiModelProperty(value = "A search property", example = "CERTIFICATE_PROFILE",
-            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE"
-    )
+            allowableValues = "QUERY, SERIAL_NUMBER, USERNAME, SUBJECT_DN, SUBJECT_ALT_NAME, EXTERNAL_ACCOUNT_BINDING_ID, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE")
     private String property;
 
     @ApiModelProperty(value = "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA",
