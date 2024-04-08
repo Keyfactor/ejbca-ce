@@ -64,7 +64,7 @@ import javax.persistence.PersistenceContext;
 import javax.xml.bind.DatatypeConverter;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
 import org.bouncycastle.its.ITSCertificate;
@@ -110,6 +110,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CitsCaInfo;
 import org.cesecore.certificates.ca.CmsCertificatePathMissingException;
 import org.cesecore.certificates.ca.CvcCABase;
+import org.cesecore.certificates.ca.HybridCa;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -151,6 +152,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
@@ -780,6 +782,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         return castatus;
     }
+    
+    private boolean isProhibitedMixedHybridChain(CA signerCa, String aliasAlternativeCertSign) {
+        String signerCaAltAlg = signerCa.getCAToken().getAlternativeSignatureAlgorithm();
+        if (((aliasAlternativeCertSign == null) && (signerCaAltAlg != null) )) {
+            return true;
+        }
+        if ((aliasAlternativeCertSign != null && signerCaAltAlg == null )) {
+            return true;
+        }
+        return false;
+    }
 
     private List<Certificate> createCertificateChain(AuthenticationToken authenticationToken, CA ca, CryptoToken cryptoToken,
                                                      CertificateProfile certprofile) throws CryptoTokenOfflineException {
@@ -798,9 +811,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 }
-                EndEntityInformation cadata = makeEndEntityInformation(cainfo);
-                cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
-                        cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
+                EndEntityInformation cadata = makeEndEntityInformation(cainfo); 
+                final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
+                    HybridCa hybridCa = (HybridCa) ca;
+                    cacertificate = hybridCa.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
+                            cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
+                            cceConfig);
+                } else {
+                    cacertificate = ca.generateCertificate(cryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1, null,
+                            cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
+                }
                 if (log.isDebugEnabled()) {
                     log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
                 }
@@ -839,8 +860,27 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // Create CA certificate
                 EndEntityInformation cadata = makeEndEntityInformation(cainfo);
                 CryptoToken signCryptoToken = cryptoTokenSession.getCryptoToken(signca.getCAToken().getCryptoTokenId());
-                final Certificate cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
-                        null, cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
+                final Certificate cacertificate;
+                final String aliasAlternativeCertSign = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                // We make sure that the sub CA is hybrid iff root CA is hybrid
+                if (isProhibitedMixedHybridChain(signca, aliasAlternativeCertSign)) {
+                    logAuditEvent(
+                            EventTypes.CA_CREATION, EventStatus.FAILURE,
+                            authenticationToken, caid,
+                            intres.getLocalizedMessage("caadmin.cachainismixedhybrid", cainfo.getName())
+                            );
+                    throw new InvalidConfigurationException(intres.getLocalizedMessage("caadmin.cachainismixedhybrid", cainfo.getName()));
+                }
+                if (ca instanceof HybridCa && aliasAlternativeCertSign != null) {
+                    HybridCa hybridCa = (HybridCa) signca;
+                    cacertificate = hybridCa.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign),
+                            cryptoToken.getPublicKey(aliasAlternativeCertSign), -1, null, cainfo.getEncodedValidity(), certprofile, sequence,
+                            cceConfig);
+                } else {
+                    cacertificate = signca.generateCertificate(signCryptoToken, cadata, cryptoToken.getPublicKey(aliasCertSign), -1,
+                            null, cainfo.getEncodedValidity(), certprofile, sequence, cceConfig);
+                }
+                
                 // Build Certificate Chain
                 List<Certificate> rootcachain = signca.getCertificateChain();
                 certificatechain = new ArrayList<>();
@@ -2361,16 +2401,26 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             ca.setStatus(CAConstants.CA_ACTIVE);
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
-            // We need to save all this, audit logging that the CA is changed
+
+            // The signature algorithm on a link certificate shall always be from the "old" CA, i.e. the same algorithm as was 
+            // used to sign the old CA certificate
+            final String previousSigAlg = CertTools.getCertSignatureAlgorithmNameAsString(oldCaCertificate);
+            if (log.isDebugEnabled()) {
+                log.debug("Signature algorithm for link certificate (if issued) for CA '" + ca.getName() + "' will use the old CA certificate signature algorithm "+previousSigAlg+".");
+            }
+            final CertificateProfile linkCertProfile = certprofile.clone();
+            linkCertProfile.setSignatureAlgorithm(previousSigAlg);
+            // We need to save the CAID, for audit logging that the CA has changed as subjectDN change means a change of CAId
             int caidBeforeNameChange = -1;
             if (subjectDNWillBeChanged) {
-                ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
                 caidBeforeNameChange = caid;
-                caid = CAData.calculateCAId(newSubjectDN); // recalculate the caid to corresponds to new CA
+                ((X509CA) ca).createOrRemoveLinkCertificateDuringCANameChange(cryptoToken, createLinkCertificate, linkCertProfile, cceConfig,
+                        oldCaCertificate);
+                caid = CAData.calculateCAId(newSubjectDN); // recalculate the CAID to corresponds to new CA
                 ca.setCAId(caid); // it was set to 0 above
                 caSession.addCA(authenticationToken, ca); //add new CA into database
             } else {
-                ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, certprofile, cceConfig, oldCaCertificate);
+                ca.createOrRemoveLinkCertificate(cryptoToken, createLinkCertificate, linkCertProfile, cceConfig, oldCaCertificate);
                 caSession.editCA(authenticationToken, ca, true);
             }
 
