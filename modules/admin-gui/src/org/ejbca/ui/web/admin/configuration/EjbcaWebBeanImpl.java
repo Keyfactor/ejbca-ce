@@ -995,7 +995,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public void reloadAutoenrollmentConfiguration() {
-        msAutoenrollmentConfig = (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+        msAutoenrollmentConfig =  (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
     }
     
     @Override
