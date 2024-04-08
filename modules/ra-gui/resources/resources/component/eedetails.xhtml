@@ -200,7 +200,7 @@
                              disabled="true" />
                 <h:selectBooleanCheckbox id="resetremaininglogin"
                                          value="#{cc.attrs.raEndEntityBean.resetRemainingLoginAttempts}" />
-                <h:outputText value="Reset login attempts" />
+                <h:outputLabel for="resetremaininglogin" value="#{msg.component_eedetails_field_logins_reset}" />
             </h:panelGroup>
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" " />
