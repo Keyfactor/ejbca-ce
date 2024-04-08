@@ -21,19 +21,25 @@ public class RaMasterApiSessionBeanTest {
 
     @Test
     public void testStringSearchQueryClause() throws Exception {
+        RaCertificateSearchRequestV2 raRequest = new RaCertificateSearchRequestV2();
 
         // no values is empty string
-        assertEquals("", RaMasterApiSessionBean.buildStringSearchClause(null, null, null, null, null, null));
-        assertEquals("", RaMasterApiSessionBean.buildStringSearchClause(null, "", null, null, null, null));
+        assertEquals("", RaMasterApiSessionBean.buildStringSearchClause(raRequest));
         
         // one value is a simple and clause
+        raRequest.setSubjectDnSearchString("value");
         assertEquals(" AND (UPPER(subjectDN) LIKE :subjectDN)", 
-                RaMasterApiSessionBean.buildStringSearchClause("value", null, null, null, null, null));
+                RaMasterApiSessionBean.buildStringSearchClause(raRequest));
         
         // more than one value is and (x OR y)
+        raRequest.setSubjectAnSearchString("value");
         assertEquals(" AND (UPPER(subjectDN) LIKE :subjectDN OR subjectAltName LIKE :subjectAltName)", 
-                RaMasterApiSessionBean.buildStringSearchClause("value", "value", null, null, null, null));
-
+                RaMasterApiSessionBean.buildStringSearchClause(raRequest));
+        
+        // search critera BEGINS_WITH is case sensitive
+        raRequest.setSubjectDnSearchOperation("BEGINS_WITH");
+        assertEquals(" AND (subjectDN LIKE :subjectDN OR subjectAltName LIKE :subjectAltName)", 
+        RaMasterApiSessionBean.buildStringSearchClause(raRequest));
     }
     
     @Before
