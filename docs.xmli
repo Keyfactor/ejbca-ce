@@ -34,6 +34,7 @@
            <include name="bcpkix*.jar"/>
            <include name="bctls*.jar"/>
            <include name="x509-common-util*.jar"/> 
+           <include name="cryptotokens-*.jar"/> 
         </fileset>
        <fileset dir="${ejbca.home}/lib/jee">
            <include name="javaee-api*.jar"/>
