@@ -183,12 +183,9 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     @Override public ImportCrlSessionLocal getImportCrlSession() { return getEjbLocal().getImportCrlSession(); }
     @Override public RaMasterApiSessionLocal getRaMasterApiSession() { return getEjbLocal().getRaMasterApiSession(); }
     @Override public OcspResponseCleanupSessionLocal getOcspResponseCleanupSession() {return getEjbLocal().getOcspResponseCleanupSession(); }
-
-	@Override
-	public SctDataSessionLocal getSctDataSession() {
-		return getEjbLocal().getSctDataSession();
-	}
-
+    @Override public SctDataSessionLocal getSctDataSession() { return getEjbLocal().getSctDataSession(); }
+    @Override public OcspDataSessionLocal getOcspDataSession() { return getEjbLocal().getOcspDataSession(); }
+   
 	/**
      * Dynamically loads the StatedumpSession with JNDI. It's usually not available in the EJBCA source tree,
      * and in this case this is properly handled  by returning null.
@@ -234,10 +231,5 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
         } catch (NamingException e) {
             return null; // this is the common case, since unidfnr is an special module and is not included with EJBCA
         }
-    }
-
-    @Override
-    public OcspDataSessionLocal getOcspDataSession() {
-        return getEjbLocal().getOcspDataSession();
     }
 }
