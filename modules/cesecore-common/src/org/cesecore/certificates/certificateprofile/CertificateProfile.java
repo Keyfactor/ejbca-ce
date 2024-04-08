@@ -32,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
@@ -176,12 +177,17 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String ALLOWDNOVERRIDE = "allowdnoverride";
     protected static final String ALLOWDNOVERRIDEBYEEI = "allowdnoverridebyeei";
     protected static final String ALLOWCERTSNOVERIDE = "allowcertsnoverride";
+   
+    //Standard key settings 
     protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
     protected static final String AVAILABLEECCURVES = "availableeccurves";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
-    protected static final String AVAILABLESECURITYLEVEL = "availablesecuritylevel";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
+    
+    //Alternative key settings, with a focus on hybrid certificates
+    private static final String ALTERNATIVE_AVAILABLEKEYALGORITHMS = "alternativeAvailableKeyAlgorithms";
+
     public static final String TYPE = "type";
     protected static final String AVAILABLECAS = "availablecas";
     protected static final String USEDPUBLISHERS = "usedpublishers";
@@ -211,7 +217,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @Deprecated
     protected static final String APPROVALPROFILE = "approvalProfile";
     protected static final String APPROVALS = "approvals";
+    
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
+    private static final String ALTERNATIVE_SIGNATUREALGORITHM = "alternativeSignatureAlgorithm";
+    private static final String USE_ALTERNATIVE_SIGNATURE = "useAlternativeSignature";
+    
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String STORECERTIFICATEDATA = "storecertificatedata";
     protected static final String STORESUBJECTALTNAME = "storesubjectaltname";
@@ -383,7 +393,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public static final String OID_CARDNUMBER = "1.2.752.34.2.1";
 
-    /** Constants holding the use properties for certificate extensions */
     protected static final Map<String, String> useStandardCertificateExtensions = new LinkedHashMap<>();
     {
         // Please keep the cert extensions ordered in this order
@@ -412,6 +421,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
         useStandardCertificateExtensions.put(USE_VALIDITY_ASSURED_SHORT_TERM, CertTools.OID_VALIDITY_ASSURED_SHORT_TERM);
     }
+
 
     // Old values used to upgrade from v22 to v23
     protected static final String CERTIFICATEPOLICYID = "certificatepolicyid";
@@ -502,6 +512,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
         setSignatureAlgorithm(null);
+        setUseAlternativeSignature(false);
+        setAlternativeAvailableKeyAlgorithmsAsList(
+                AlgorithmTools.getAvailableKeyAlgorithms().stream().filter(alg -> AlgorithmTools.isPQC(alg)).collect(Collectors.toList()));
+        setAlternativeSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
         setKeyUsage(new boolean[9]);
@@ -1370,10 +1384,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
-    public boolean isKeyAlgorithmsRequireSecurityLevel() {
-        return false;
-    }
-
     public String[] getAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
@@ -1390,6 +1400,27 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setAvailableKeyAlgorithmsAsList(final List<String> availableKeyAlgorithms) {
         data.put(AVAILABLEKEYALGORITHMS, new ArrayList<>(availableKeyAlgorithms));
+    }
+
+    public String[] getAlternativeAvailableKeyAlgorithms() {
+        final List<String> availableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
+        if (availableKeyAlgorithms == null) {
+            return ArrayUtils.EMPTY_STRING_ARRAY;
+        }
+        return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getAlternativeAvailableKeyAlgorithmsAsList() {
+        return (ArrayList<String>) data.get(ALTERNATIVE_AVAILABLEKEYALGORITHMS);
+    }
+
+    public void setAlternativeAvailableKeyAlgorithms(final String[] alternativeAvailableKeyAlgorithms) {
+        setAlternativeAvailableKeyAlgorithmsAsList(Arrays.asList(alternativeAvailableKeyAlgorithms));
+    }
+
+    public void setAlternativeAvailableKeyAlgorithmsAsList(final List<String> alternativeAvailableKeyAlgorithms) {
+        data.put(ALTERNATIVE_AVAILABLEKEYALGORITHMS, new ArrayList<>(alternativeAvailableKeyAlgorithms));
     }
 
     public String[] getAvailableEcCurves() {
@@ -1410,19 +1441,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
     }
 
-
-    public int[] getAvailableSecurityLevels(){
-        final List<Integer> availableSecurityLevels = getAvailableSecurityLevelsAsList();
-        if (availableSecurityLevels != null) {
-            final int[] returnval = new int[availableSecurityLevels.size()];
-            for (int i = 0; i < availableSecurityLevels.size(); i++) {
-                returnval[i] = availableSecurityLevels.get(i);
-            }
-            return returnval;
-        }
-        return new int[]{};
-    }
-
     public int[] getAvailableBitLengths() {
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
         final int[] returnval = new int[availablebitlengths.size()];
@@ -1430,19 +1448,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             returnval[i] = availablebitlengths.get(i);
         }
         return returnval;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Integer> getAvailableSecurityLevelsAsList() {
-        return (ArrayList<Integer>) data.get(AVAILABLESECURITYLEVEL);
-    }
-
-    public void setAvailableSecurityLevelsAsList(final List<Integer> availableSecurityLevels) {
-        data.put(AVAILABLESECURITYLEVEL, availableSecurityLevels);
-    }
-
-    public void setAvailableSecurityLevels(int[] availableSecurityLevelsArray) {
-        setAvailableSecurityLevelsAsList(Arrays.stream(availableSecurityLevelsArray).boxed().collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")
@@ -1470,7 +1475,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(MINIMUMAVAILABLEBITLENGTH, minimumavailablebitlength);
         data.put(MAXIMUMAVAILABLEBITLENGTH, maximumavailablebitlength);
     }
-
+    
     public void setAvailableBitLengths(int[] availablebitlengths) {
         List<Integer> availbitlengths = new ArrayList<>(availablebitlengths.length);
         for (int availablebitlength : availablebitlengths) {
@@ -1522,6 +1527,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // If it's null, it is inherited from issuing CA.
         return (String) data.get(SIGNATUREALGORITHM);
     }
+    
+    
+    /**
+     * Returns the alternative chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
+     * algorithm used to sign the CA certificate).
+     *
+     * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
+     *
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @return JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used to
+     *         sign the CA certificate).
+     */
+    public String getAlternativeSignatureAlgorithm() {
+        // If it's null, it is inherited from issuing CA.
+        return (String) data.get(ALTERNATIVE_SIGNATUREALGORITHM);
+    }
 
     /**
      * Sets the algorithm to be used for signing the certificates. A null value means that the signature algorithm is to be inherited from the CA
@@ -1534,6 +1555,28 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setSignatureAlgorithm(String signAlg) {
         data.put(SIGNATUREALGORITHM, signAlg);
+    }
+    
+    /**
+     * Sets the alternate algorithm to be used for signing the certificates. A null value means that the signature algorithm is to be inherited from the CA
+     * (i.e., it is the same as the algorithm used to sign the CA certificate).
+     * 
+     * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
+     *
+     * @param alternativeSignatureAlgorithm JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
+     *            to sign the CA certificate).
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     */
+    public void setAlternativeSignatureAlgorithm(String alternativeSignatureAlgorithm) {
+        data.put(ALTERNATIVE_SIGNATUREALGORITHM, alternativeSignatureAlgorithm);
+    }
+
+    public boolean getUseAlternativeSignature() {
+        return BooleanUtils.isTrue((Boolean) data.get(USE_ALTERNATIVE_SIGNATURE));
+    }
+
+    public void setUseAlternativeSignature(boolean enabled) {
+        data.put(USE_ALTERNATIVE_SIGNATURE, enabled);
     }
 
     public boolean[] getKeyUsage() {
