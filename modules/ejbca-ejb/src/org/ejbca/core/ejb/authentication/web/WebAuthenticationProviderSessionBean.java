@@ -141,7 +141,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         GlobalUpgradeConfiguration upgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.8.0");
-        if (isAllowBlankAudience()) {
+        if (isAllowBlankAudience() && LOG.isDebugEnabled()) {
             LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
     }
@@ -225,6 +225,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             }
                        
             if (keyInfo.isFetchUserInfo()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Sending userInfo request");
+                }
                 JWTClaimsSet tokenAndUserInfoClaims = fetchUserInfoAndAddToClaims(encodedOauthBearerToken, keyInfo, claims, keyId, oauthIdToken);
                 if (tokenAndUserInfoClaims != null && !tokenAndUserInfoClaims.getClaims().isEmpty()) {
                     claims = tokenAndUserInfoClaims;
@@ -356,17 +359,23 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         try {
             accessJwt = JWTParser.parse(encodedOauthBearerToken);
             if (accessJwt instanceof SignedJWT) {
-                LOG.debug("Using access_token");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Using access_token");
+                }
                 return (SignedJWT) accessJwt;
             }
         } catch (ParseException | NullPointerException e) {
-            LOG.debug("Parse exception of access_token", e);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Parse exception of access_token", e);
+            }
         }
         JWT idJwt = null;
         if (StringUtils.isNotEmpty(oauthIdToken)) {
             idJwt = JWTParser.parse(oauthIdToken);
             if (idJwt instanceof SignedJWT) {
-                LOG.debug("Using id_token");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Using id_token");
+                }
                 return (SignedJWT) idJwt;
             }
         }
@@ -449,7 +458,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 });
             }
             else {
-                LOG.debug("unexpected type of 'roles' claim: " + rolesClaimObject.getClass());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("unexpected type of 'roles' claim: " + rolesClaimObject.getClass());
+                }
             }
         }
         
@@ -512,12 +523,16 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (keyId != null) {
                 for (final OAuthKeyInfo oAuthKeyInfo : availableKeys.values()) {
                     if (oAuthKeyInfo.getAllKeyIdentifiers() != null && oAuthKeyInfo.getAllKeyIdentifiers().contains(keyId)) {
-                        LOG.debug("Using trusted oauth provider with name: " + oAuthKeyInfo.getLabel());
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Using trusted oauth provider with name: " + oAuthKeyInfo.getLabel());
+                        }
                         return oAuthKeyInfo;
                     }
                 }
             }
-            LOG.debug("Using default trusted oauth provider : " + oauthConfiguration.getDefaultOauthKey());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Using default trusted oauth provider : " + oauthConfiguration.getDefaultOauthKey());
+            }
             return oauthConfiguration.getDefaultOauthKey();
         }
         return null;
