@@ -374,7 +374,7 @@ public class RaMasterApiTest {
          * 
          * Note: This does not include nested classes, but it works without them, at least currently.
          */
-        doCheckExistenceOfClasses("classes_in_8_3_0.txt", ApiVersion.INITIAL_VERSION);
+        doCheckExistenceOfClasses("classes_in_7_12_0.txt", ApiVersion.INITIAL_VERSION);
         for (final EjbcaVersion ejbcaVersion : EjbcaVersion.values()) {
             doCheckExistenceOfClasses(ejbcaVersion.getClassListFilename(), ejbcaVersion);
         }
