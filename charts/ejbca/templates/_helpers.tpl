@@ -116,7 +116,7 @@ Compose the container image path in format: registry/repository/imageName:tag
 {{- define "ejbca.imagePath" -}}
 {{- $registry := .Values.image.registry }}
 {{- $repository := .Values.image.repository }}
-{{- $imageName := .Values.image.name | default "" }}
+{{- $imageName := .Values.image.name }}
 {{- $tag := .Values.image.tag | default .Chart.AppVersion }}
 {{- $edition := .Values.ejbca.edition | default "ee" }}
 {{- $variant := .Values.ejbca.variant | default "" }}
@@ -135,7 +135,7 @@ Compose the container image path in format: registry/repository/imageName:tag
   {{- $repository = trimAll "/" $repository }}
 {{- end }}
 {{- /* imageName */ -}}
-{{- if not $imageName }}
+{{- if eq $imageName nil }}
   {{- if eq $edition "ce" }}
     {{- $imageName = "ejbca-ce" }}
   {{- else if or (eq $variant "ra") (eq $variant "va") (eq $variant "proxy-ca") }}
@@ -148,7 +148,7 @@ Compose the container image path in format: registry/repository/imageName:tag
 {{- if $registry }}
   {{- $registry = printf "%s/" $registry }}
 {{- end }}
-{{- if $repository }}
+{{- if and $repository $imageName}}
   {{- $repository = printf "%s/" $repository }}
 {{- end }}
 {{- printf "%s%s%s:%s" $registry $repository $imageName $tag }}
