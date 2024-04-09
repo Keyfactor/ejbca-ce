@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.PKCS11TestUtils;
 
 import com.keyfactor.util.CertTools;
@@ -50,9 +49,7 @@ public abstract class CATokenTestBase {
 	public static final String TOKEN_PIN = PKCS11TestUtils.getPkcs11SlotPin();
 	private static final String DEFAULT_KEY = "defaultKey ÅaÄÖbåäöc«»©“”nµA";
 	protected static final String ENCRYPTION_KEY = "encryptionKey ÅaÄbbÖcccäâãêëẽć©A";
-    private static final InternalResources intres = InternalResources.getInstance();
-	
-	
+		
 	protected void doCaTokenRSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
 	        CertificateException, IOException,CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException,
 	        InvalidAlgorithmParameterException {
@@ -719,7 +716,7 @@ public abstract class CATokenTestBase {
 						cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
 				fail("Keystore instansiation should have failed.");
 			} catch (CryptoTokenOfflineException e) {
-                assertEquals(intres.getLocalizedMessage("token.offline", 111), e.getMessage());
+                assertEquals("The keys in the crypto token with id " + 111 + " could not be accessed. Is the crypto token active?", e.getMessage().stripTrailing());
 			}
 			// Activate with wrong PIN should not work
 			try {

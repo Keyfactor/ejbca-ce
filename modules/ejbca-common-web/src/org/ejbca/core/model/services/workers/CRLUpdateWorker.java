@@ -22,7 +22,6 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
@@ -144,7 +143,7 @@ public class CRLUpdateWorker extends BaseWorker {
 
             }
         }else {
-            String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("services.caconflict", serviceName);
+            String msg = "Service with name " + serviceName + " has at least one CA, that is included in an already running service in this VM! Not starting work.";
             log.info(msg);
             return new ServiceExecutionResult(Result.NO_ACTION, msg);
         }

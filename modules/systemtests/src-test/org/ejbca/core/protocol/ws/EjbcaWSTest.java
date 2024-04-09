@@ -2168,22 +2168,31 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void test47CertificateRequestWithSpecialChars07() throws Exception {
         long rnd = secureRandom.nextLong();
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
-        // We now handle + signs "correctly, it's a multi-value RDN now an 'b' should be an OID, which it's not
-        // = signs must be escaped, or it's truncated
+        // We now handle + signs "correctly", that's a multi-value RDN.
+        // = signs must be escaped, or you get an error.
         testCertificateRequestWithSpecialChars(
-                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C=SE\\\"",
-                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C");
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"",
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
         testCertificateRequestWithSpecialChars(
                 "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"",
                 "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
         try {
+            // 'b' after the + should be an OID, which it's not
             testCertificateRequestWithSpecialChars(
                     "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"",
                     "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
             fail("Test should fail as unknown oid (b) passed as multi-value RDN");
         } catch (EjbcaException_Exception e) {
             assertTrue("Exception must be about Unknown object id", e.getMessage().contains("Unknown object id"));
-
+        }
+        try {
+            // The , but not the = is not escaped, so this is an error
+            testCertificateRequestWithSpecialChars(
+                    "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C=SE\\\"",
+                    "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
+            fail("Test should fail as unknown oid (b) passed as multi-value RDN");
+        } catch (EjbcaException_Exception e) {
+            assertTrue("Exception message must contain \"badly formatted directory string\"", e.getMessage().contains("badly formatted directory string"));
         }
     }
 
@@ -2421,9 +2430,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
         // empty DN component is allowed (CN=) in the core API, but when using AllowDNOverrideByEndEntityInformation empties are remove in X509CA with DNFieldsUtil.removeAllEmpties
-        // equal signs must be escaped in order to work so ';C=SE' gets an escaped ; and the =SE part is truncated
+        // Special characters such as = + , (equals, plus, comma) must be escaped.
         testCertificateRequestWithEeiDnOverride(true, true,
-                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C=SE,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
+                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
                 "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C,ST=Sthlm/,OU=OU2,O=PrimeKey,SN=12345+JurisdictionCountry=SE,BusinessCategory=Private Organization");
     }
 
@@ -2434,9 +2443,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
         // empty DN component is allowed (CN=) in the core API, but when using AllowDNOverrideByEndEntityInformation empties are remove in X509CA with DNFieldsUtil.removeAllEmpties
-        // equal signs must be escaped in order to work so ';C=SE' gets an escaped ; and the =SE part is truncated
+        // Special characters such as = + , (equals, plus, comma) must be escaped.
         testCertificateRequestWithEeiDnOverride(true, false,
-                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C=SE,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
+                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
                 "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C,ST=Sthlm/,OU=OU2,O=PrimeKey,SN=12345+JurisdictionCountry=SE,BusinessCategory=Private Organization");
     }
 
