@@ -62,17 +62,17 @@ import java.util.EnumSet;
 public class SearchCertificateCriteriaRestRequest {
 
     @ApiModelProperty(value = "A search property", example = "CERTIFICATE_PROFILE",
-            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE"
-    )
+            allowableValues = "QUERY, SERIAL_NUMBER, USERNAME, SUBJECT_DN, SUBJECT_ALT_NAME, EXTERNAL_ACCOUNT_BINDING_ID, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE")
     private String property;
 
     @ApiModelProperty(value = "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA",
             example = "ENDUSER")
     private String value;
 
-    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEFORE' or 'AFTER' for date values",
+    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEGINS_WITH' for string value (case sensitive trailing wildcard search.), "
+        + "'BEFORE' or 'AFTER' for date values",
             example = "EQUAL",
-            allowableValues = "EQUAL, LIKE, BEFORE, AFTER",
+            allowableValues = "EQUAL, LIKE, BEGINS_WITH, BEFORE, AFTER",
             dataType = "java.lang.String")
     private String operation;
 
@@ -175,6 +175,7 @@ public class SearchCertificateCriteriaRestRequest {
     public enum CriteriaOperation {
         EQUAL,
         LIKE,
+        BEGINS_WITH,
         AFTER,
         BEFORE;
 
@@ -200,7 +201,7 @@ public class SearchCertificateCriteriaRestRequest {
          * @return subset of criteria operations.
          */
         public static EnumSet<CriteriaOperation> STRING_OPERATIONS() {
-            return EnumSet.of(EQUAL, LIKE);
+            return EnumSet.of(EQUAL, LIKE, BEGINS_WITH);
         }
 
         /**
