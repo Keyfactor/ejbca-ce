@@ -223,6 +223,7 @@ public class RaMasterApiTest {
             new MethodApiDescriptor("selfRenewCertificate", "[B", Arrays.asList("org.ejbca.core.model.era.RaSelfRenewCertificateData"), "5488eee381e8"),
             new MethodApiDescriptor("getAllAuthorizedCertificateProfiles", "org.ejbca.core.model.era.IdNameHashMap", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken"), "0e0b93165b7d"),
             new MethodApiDescriptor("getKeyExchangeCertificate", "java.security.cert.Certificate", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int", "int"), "a6aef899bc21"),
+            new MethodApiDescriptor("getGlobalConfigurationLocalFirst", "org.cesecore.configuration.ConfigurationBase", Arrays.asList("java.lang.Class"), "d48ed5d749db"),
             new MethodApiDescriptor("generateOrKeyRecoverTokenV2", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.model.era.GenerateOrKeyRecoverTokenRequest"), "c3c6329c0edc")
     // @formatter:on
     );
