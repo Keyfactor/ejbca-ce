@@ -20,6 +20,10 @@ spec:
       labels:
         {{- include "ejbca.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "ejbca.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -197,9 +201,9 @@ spec:
             {{- if .Values.ejbca.volumeMounts }}
               {{- toYaml .Values.ejbca.volumeMounts | nindent 12 }}
             {{- end }}
-          {{- if .Values.ejbca.sidecarContainers }}
-            {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
-          {{- end }}
+        {{- if .Values.ejbca.sidecarContainers }}
+          {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
+        {{- end }}
       volumes:
         {{- if .Values.ejbca.useH2Persistence }}
         - name: ejbca-h2-persistence
