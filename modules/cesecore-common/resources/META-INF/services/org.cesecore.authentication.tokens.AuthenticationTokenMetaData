@@ -1,0 +1,4 @@
+org.cesecore.authentication.tokens.PublicAccessAuthenticationTokenMetaData
+org.cesecore.authentication.tokens.OAuth2AuthenticationTokenMetaData
+org.cesecore.authentication.tokens.X509CertificateAuthenticationTokenMetaData
+org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationTokenMetaData
