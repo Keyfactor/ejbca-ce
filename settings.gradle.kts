@@ -6,10 +6,10 @@ val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("bcprov", ":bcprov:jdk18on-175")
-            library("bcpkix", ":bcpkix:jdk18on-175")
-            library("bctls", ":bctls:jdk18on-175")
-            library("bcutil", ":bcutil:jdk18on-175")
+            library("bcprov", ":bcprov:jdk18on-177")
+            library("bcpkix", ":bcpkix:jdk18on-177")
+            library("bctls", ":bctls:jdk18on-177")
+            library("bcutil", ":bcutil:jdk18on-177")
             library("ejbca-ws-client-gen", ":ejbca-ws-client-gen:1")
             library("caffeine", ":caffeine:3.1.6")
             library("java-ee-api", ":javaee-api:8.0.1")
