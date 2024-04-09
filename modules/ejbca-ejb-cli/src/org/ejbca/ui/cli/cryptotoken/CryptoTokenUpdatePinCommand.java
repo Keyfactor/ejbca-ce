@@ -70,7 +70,7 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
         boolean softtoken = parameters.get(TOKEN_TYPE ).equals(TOKEN_TYPE_SOFT);
         if (softtoken) {
             if (parameters.get(OLD_PIN_KEY) == null) {
-            getLogger().info("For soft tokens, both the old pin and the new pin must be provided:");
+            getLogger().info("For soft tokens, the old pin must always be provided and unless the \"--remove\" flag is used the new pin must be provided:");
             }
             currentAuthenticationCode = getAuthenticationCode(parameters.get(OLD_PIN_KEY));
         } else {
