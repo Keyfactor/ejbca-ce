@@ -36,7 +36,8 @@
 		<path refid="lib.jaxws-api.classpath"/>
 		<path refid="lib.javax.ejb-api.classpath"/>
         <path location="${mod.cesecore-x509ca.lib}"/>
-		<path refid="lib.x509-common-util.classpath" />
+		<path refid="lib.x509-common-util.classpath"/>
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
 	<!-- The buildservicemanifest needs additional classes in order to run.
