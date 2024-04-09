@@ -248,6 +248,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         final String certProfileName = getCertProfileName();
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
+        } else if (StringUtils.isBlank(certProfileName)) {
+            addNonTranslatedErrorMessage("Error: Certificate profile name cannot be empty.");
         } else if (certProfileName.length() > 0) {
             if (!StringTools.checkFieldForLegalChars(certProfileName)) {
                 addErrorMessage("ONLYCHARACTERS");
@@ -282,6 +284,8 @@ public class CertProfilesBean extends BaseManagedBean implements Serializable {
         final String certProfileName = getCertProfileName();
         if (certProfileName.endsWith(LEGACY_FIXED_MARKER)) {
             addErrorMessage("YOUCANTEDITFIXEDCERTPROFS");
+        } else if (StringUtils.isBlank(certProfileName)) {
+            addNonTranslatedErrorMessage("Error: Certificate profile name cannot be empty.");
         } else if (certProfileName.length() > 0) {
             if (!StringTools.checkFieldForLegalChars(certProfileName)) {
                 addErrorMessage("ONLYCHARACTERS");
