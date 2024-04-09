@@ -48,6 +48,7 @@ public enum ExceptionClasses {
     AuthenticationFailedException(AuthenticationFailedException.class),
     AuthorizationDeniedException(AuthorizationDeniedException.class),
     SelfApprovalException(SelfApprovalException.class),
+    UnsupportedOperationException(UnsupportedOperationException.class),
     // 404
     EndEntityProfileNotFoundException(EndEntityProfileNotFoundException.class),
     RoleNotFoundException(RoleNotFoundException.class),
