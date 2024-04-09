@@ -22,6 +22,7 @@
 		<path location="${cesecore-ejb-interface.dir}/../cesecore-common/dist/cesecore-common.jar"/>
 		<path location="${cesecore-ejb-interface.dir}/../cesecore-entity/dist/cesecore-entity.jar"/>
 		<path refid="lib.x509-common-util.classpath" />
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
 	<path id="test.classpath">
