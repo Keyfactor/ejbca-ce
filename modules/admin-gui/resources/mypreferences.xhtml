@@ -102,15 +102,6 @@
                     <h:outputLabel value="#{web.text.SHOW}"/>
                 </h:panelGroup>
                 
-                <h:panelGroup rendered="#{configurationCheckerSettings.configurationCheckerEnabled}">
-                    <h3><h:outputLabel value="#{web.text.CONFIGURATION_CHECKER_ON_FRONT_PAGE}"/></h3>
-                    <h:outputLabel styleClass="help" value="#{web.text.CONFIGURATION_CHECKER_ON_FRONT_PAGE_HELP}"/>
-                </h:panelGroup>
-                <h:panelGroup rendered="#{configurationCheckerSettings.configurationCheckerEnabled}">
-                    <h:selectBooleanCheckbox id="configurationCheckerOnFrontPage" value="#{myPreferencesMBean.adminPreference.configurationCheckerOnFrontPage}"/>
-                    <h:outputLabel value="#{web.text.SHOW}"/>
-                </h:panelGroup>
-                                
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>
                     <h:commandButton value="#{web.text.SAVE}" action="#{myPreferencesMBean.save}"/>

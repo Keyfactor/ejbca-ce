@@ -129,6 +129,38 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                 final String criteriaValue = searchCertificateCriteriaRestRequest.getValue();
                 final SearchCertificateCriteriaRestRequest.CriteriaOperation criteriaOperation = SearchCertificateCriteriaRestRequest.CriteriaOperation.resolveCriteriaOperation(searchCertificateCriteriaRestRequest.getOperation());
                 switch (criteriaProperty) {
+                    case SUBJECT_DN: {
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                            raCertificateSearchRequest.setSubjectDnSearchExact(true);
+                        }
+                        raCertificateSearchRequest.setSubjectDnSearchOperation(criteriaOperation.name());
+                        raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
+                        break;
+                    }
+                    case SERIAL_NUMBER: {
+                        // if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                        //     raCertificateSearchRequest.setser(true);
+                        // }
+                        raCertificateSearchRequest.setSerialNumberSearchStringFromDec(criteriaValue);
+                        raCertificateSearchRequest.setSerialNumberSearchStringFromHex(criteriaValue);
+                        break;
+                    }
+                    case SUBJECT_ALT_NAME: {
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                            raCertificateSearchRequest.setSubjectAnSearchExact(true);
+                        }
+                        raCertificateSearchRequest.setSubjectAnSearchOperation(criteriaOperation.name());
+                        raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
+                        break;
+                    }
+                    case USERNAME: {
+                        if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
+                            raCertificateSearchRequest.setUsernameSearchExact(true);
+                        }
+                        raCertificateSearchRequest.setUsernameSearchOperation(criteriaOperation.name());
+                        raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
+                        break;
+                    }
                     case QUERY: {
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setSubjectDnSearchExact(true);
@@ -137,11 +169,15 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                             raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
                         }
                         raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
+                        raCertificateSearchRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
+                        raCertificateSearchRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
+                        raCertificateSearchRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raCertificateSearchRequest.setSerialNumberSearchStringFromHex(criteriaValue);
                         raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
+                        raCertificateSearchRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         break;
                     }
                     case END_ENTITY_PROFILE: {
@@ -152,6 +188,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
                         }
+                        raCertificateSearchRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }

@@ -1064,9 +1064,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         try {
             final String name = getCurrentCryptoToken().getName();
             if (StringUtils.isBlank(name)) {
-                FacesContext ctx = FacesContext.getCurrentInstance();
-                ctx.addMessage("error", new FacesMessage(FacesMessage.SEVERITY_INFO, "Error: Crypto Token name may not be blank.",
-                        "Error: Crypto Token name may not be blank."));
+                addNonTranslatedErrorMessage("Error: Crypto Token name may not be blank.");
                 return;
             }
             

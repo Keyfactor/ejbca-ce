@@ -579,6 +579,7 @@
 				<include name="kerby-asn1-*.jar"/>
             	<include name="kerb-crypto-*.jar"/>
         		<include name="x509-common-util*.jar" />
+            	<include name="cryptotokens-*.jar" />
         		<include name="p11ng-*.jar" />
             	<!-- Internally generated WS server and client files. -->
             	<include name="ejbca-ws-client-gen.jar"/>
@@ -1005,6 +1006,13 @@
 		    	<exclude name="modules/statedump/**" />
 		    	<exclude name="container/" />
 		    	<exclude name="Dockerfile" />
+				<exclude name="preview/" />
+				<exclude name="charts/" />
+				<exclude name=".lighthouse/" />
+				<exclude name=".jx/" />
+				<exclude name=".github/" />
+				<exclude name="OWNERS" />
+				<exclude name="OWNERS_ALIASES" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />
@@ -1065,6 +1073,7 @@
 				<exclude name="bin/backup/**" />
 				<exclude name="modules/statedump/**" />
 				<exclude name="container/**" />
+				<exclude name=".jx/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="${basezipfile}" filemode="600" dirmode="700">
 		    	<include name="conf/extendedkeyusage.properties" />		    	

@@ -21,7 +21,6 @@ import java.util.Properties;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
 
@@ -35,8 +34,6 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 
     private static final long serialVersionUID = -3094484762673017432L;
     private static final Logger log = Logger.getLogger(ServiceConfiguration.class);
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
 	private static final float LATEST_VERSION = 7;
 	
@@ -234,7 +231,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	public void upgrade() {
 		if (Float.compare(LATEST_VERSION, getVersion()) > 0) {
             // New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("services.upgrade", Float.valueOf(getVersion()));
+			String msg = "Upgrading service configuration with version " + getVersion() + ".";
             log.info(msg);
 
             log.debug(LATEST_VERSION);
