@@ -33,7 +33,7 @@ import org.cesecore.config.CesecoreConfiguration;
  * @see org.cesecore.certificates.ca.IncompleteIssuanceJournalCallbacks IncompleteIssuanceJournalCallbacks
  */
 @Stateless
-public class IncompleteIssuanceJournalDataSessionBean implements IncompleteIssuanceJournalDataSessionLocal {
+public class IncompleteIssuanceJournalDataSessionBean implements IncompleteIssuanceJournalDataSessionLocal, IncompleteIssuanceJournalDataSessionRemote {
 
     private static final Logger log = Logger.getLogger(IncompleteIssuanceJournalDataSessionBean.class);
 
