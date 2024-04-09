@@ -933,6 +933,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         final RaCertificateSearchResponse ret = new RaCertificateSearchResponse();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
+                if (raMasterApi.getApiVersion() < 18 && (
+                    raCertificateSearchRequest.getUsernameSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectAnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH"))) {
+                        log.warn("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                        throw new UnsupportedOperationException("Operation 'BEGINS_WITH' not supported by instance");
+                }
                 try {
                     ret.merge(raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest));
                 } catch (UnsupportedOperationException e) {
@@ -958,6 +966,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         final RaCertificateSearchResponseV2 ret = new RaCertificateSearchResponseV2();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
+                if (raMasterApi.getApiVersion() < 18 && (
+                    raCertificateSearchRequest.getUsernameSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectAnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH"))) {
+                        log.warn("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                        throw new UnsupportedOperationException("Operation 'BEGINS_WITH' not supported by instance");
+                }
                 try {
                     ret.merge(raMasterApi.searchForCertificatesV2(authenticationToken, raCertificateSearchRequest));
                 } catch (UnsupportedOperationException e) {
@@ -3849,6 +3865,27 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         return null;
     }
 
+    
+    @Override
+    public <T extends ConfigurationBase> T getGlobalConfigurationLocalFirst(final Class<T> type) {
+        for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 18) {
+                try {
+                    return raMasterApi.getGlobalConfigurationLocalFirst(type);
+                } catch (IllegalStateException e) {
+                    // 7.4.x can throw NPE, which results in an IllegalStateException because the NPE is an unexpected exception.
+                    // Just ignore and try next implementation.
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed to get configuration of type " + type.getName() + ". This can happen if the peer runs 7.4.x or older and does not support the requested configuration type.");
+                    }
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+    
 
     /**
      * Try dispatching a SCEP request to an Intune capable backend.
