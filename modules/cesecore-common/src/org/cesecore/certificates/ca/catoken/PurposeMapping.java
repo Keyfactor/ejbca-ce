@@ -12,13 +12,14 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-
+import org.apache.commons.lang3.ArrayUtils;
 
 /** Class wraps keystring properties. The properties passed in to it can contain fields as the constants:
  * 
@@ -60,6 +61,7 @@ public final class PurposeMapping {
      * 
      * @param properties key string properties
      */
+    @SuppressWarnings("deprecation")
     public PurposeMapping(final Properties properties) {
     	/** Map of keypurpose integer (CATokenConstants.CAKEYPURPOSE_CERTSIGN) and alias string as defined in Properties */
     	map = new HashMap<>();
@@ -96,6 +98,9 @@ public final class PurposeMapping {
             addKey(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING_NEXT,
                     CATokenConstants.CAKEYPURPOSE_DEFAULT_NEXT,
                     properties); 
+            addKey(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING,
+                    CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN,
+                    properties); 
     	}
     	defaultKeyAlias = defaultKeyAliasTmp!=null ? defaultKeyAliasTmp.trim() : null;
     } 
@@ -123,10 +128,16 @@ public final class PurposeMapping {
         if (alias!=null && !alias.isEmpty()) {
             return alias;
         }
-        // Special handling of these two key purposes, because if they do not exist, very strange things can happen 
-        // if we claim that our "defaultKey" is the previous or next signing key, when it in fact is not.
-        if (purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS && purpose != CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT) {
-        	return defaultKeyAlias;
+        // Special handling of these key purposes, because if they do not exist, very strange things can happen 
+        // if we claim that our "defaultKey" is the previous or next signing key, or an alternative cert signing key, when it in fact is not.
+        int [] purposesThatShouldSetKeyAliasToNull = {
+                CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS,
+                CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT,
+                CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN_NEXT,
+                CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN
+        };
+        if (!ArrayUtils.contains(purposesThatShouldSetKeyAliasToNull, purpose)){
+            return defaultKeyAlias;
         }
         return null;
     }
