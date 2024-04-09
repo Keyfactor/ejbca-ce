@@ -72,6 +72,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -478,6 +479,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             final String className;
             if (StringUtils.equalsIgnoreCase(catokentype, "soft")) {
                 className = SoftCryptoToken.class.getName();
+                BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(authenticationCode), true);
             } else {
                 // if no catokentype was specified className will be null, and we will use an existing crypto token.
                 className = catokentype;
