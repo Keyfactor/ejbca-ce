@@ -41,7 +41,9 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 public class CryptoTokenUpdatePinCommandTest {
 
     private static final String TOKEN_NAME = CryptoTokenUpdatePinCommandTest.class.getSimpleName();
+    private static final String TOKEN_TYPE = "SOFT";
     private static final String TOKEN_PIN = "foo123";
+    
 
     private final CryptoTokenUpdatePinCommand command = new CryptoTokenUpdatePinCommand();
 
@@ -80,7 +82,7 @@ public class CryptoTokenUpdatePinCommandTest {
     public void testCommand() throws AuthorizationDeniedException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
         final String newPin = "bar123";
-        String[] args = new String[] { TOKEN_NAME, TOKEN_PIN, newPin };
+        String[] args = new String[] { TOKEN_NAME, TOKEN_TYPE, TOKEN_PIN, newPin };
         command.execute(args);
         cryptoTokenManagementSession.activate(authenticationToken, cryptoTokenId, newPin.toCharArray());
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
@@ -90,11 +92,10 @@ public class CryptoTokenUpdatePinCommandTest {
     @Test
     public void testRemovePin() throws AuthorizationDeniedException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
-        String[] args = new String[] { "--token", TOKEN_NAME, "--oldpin", TOKEN_PIN, "--remove" };
+        String[] args = new String[] { "--token", TOKEN_NAME, "--tokentype", TOKEN_TYPE, "--oldpin", TOKEN_PIN, "--remove" };
         command.execute(args);
         cryptoTokenProxySession.flushCache();
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
         assertFalse("Autoactivation was not removed.", cryptoTokenInfo.isAutoActivation());
     }
-
 }
