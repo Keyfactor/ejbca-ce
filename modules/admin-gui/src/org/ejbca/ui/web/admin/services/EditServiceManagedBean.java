@@ -47,7 +47,7 @@ import org.ejbca.core.model.services.workers.CRLUpdateWorker;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 import org.ejbca.core.model.services.workers.DatabaseMaintenanceWorkerConstants;
 import org.ejbca.core.model.services.workers.HsmKeepAliveWorker;
-import org.ejbca.core.model.services.workers.PreCertificateRevocationWorkerConstants;
+import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.core.model.services.workers.RenewCAWorker;
 import org.ejbca.core.model.services.workers.RolloverWorker;
@@ -69,7 +69,7 @@ import org.ejbca.ui.web.admin.services.servicetypes.HsmKeepAliveWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.IntervalType;
 import org.ejbca.ui.web.admin.services.servicetypes.MailActionType;
 import org.ejbca.ui.web.admin.services.servicetypes.PeriodicalIntervalType;
-import org.ejbca.ui.web.admin.services.servicetypes.PreCertificateRevocationWorkerType;
+import org.ejbca.ui.web.admin.services.servicetypes.PreCertificateMaintenanceWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.PublishQueueWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RenewCAWorkerType;
 import org.ejbca.ui.web.admin.services.servicetypes.RolloverWorkerType;
@@ -285,8 +285,8 @@ public class EditServiceManagedBean extends BaseManagedBean {
         if ((cp != null) && cp.equals(HsmKeepAliveWorker.class.getName())) {
             ret = HsmKeepAliveWorkerType.NAME;
         }
-        if ((cp != null) && cp.equals(PreCertificateRevocationWorkerConstants.WORKER_CLASS)) {
-            ret = PreCertificateRevocationWorkerType.NAME;
+        if ((cp != null) && cp.equals(PreCertificateMaintenanceWorkerConstants.WORKER_CLASS)) {
+            ret = PreCertificateMaintenanceWorkerType.NAME;
         }
         if ((cp != null) && cp.equals(DatabaseMaintenanceWorkerConstants.WORKER_CLASS)) {
             ret = DatabaseMaintenanceWorkerType.NAME;
@@ -314,10 +314,10 @@ public class EditServiceManagedBean extends BaseManagedBean {
         return (CRLDownloadWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
     }
 
-    /** Help method used to edit data in the PreCertificateRevocationWorkerType. */
-    public PreCertificateRevocationWorkerType getPreCertificateRevocationWorkerType() {
-        String name = PreCertificateRevocationWorkerType.NAME;
-        return (PreCertificateRevocationWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
+    /** Help method used to edit data in the PreCertificateMaintenanceWorkerType. */
+    public PreCertificateMaintenanceWorkerType getPreCertificateMaintenanceWorkerType() {
+        String name = PreCertificateMaintenanceWorkerType.NAME;
+        return (PreCertificateMaintenanceWorkerType) serviceConfigurationView.getServiceTypeManager().getServiceTypeByName(name);
     }
 
     /** Helper method used to edit data in the DatabaseMaintenanceWorkerType. */

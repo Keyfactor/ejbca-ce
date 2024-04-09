@@ -12,29 +12,15 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.util.List;
-
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 import org.cesecore.certificates.ca.IncompleteIssuanceJournalCallbacks;
 
 /**
- * Data session for IncompleteIssuanceJournalData
- *
- * All methods are declared in IncompleteIssuanceJournalCallbacks
- *
- * @see org.cesecore.certificates.ca.IncompleteIssuanceJournalCallbacks IncompleteIssuanceJournalCallbacks
- */
-@Local
-public interface IncompleteIssuanceJournalDataSessionLocal extends IncompleteIssuanceJournalCallbacks {
-
-    /**
-     * Gets up to 100 incompletely issued certificates, that are older than 1 hour.
-     * Those can safely be assumed to be failed issuances.
-     *
-     * @param maxIssuanceTimeMillis  Time until a certificate issuance is considered to have failed.
-     * @return List with one entry per certificate, or an empty list if there are no more incompletely issued certificates.
-     */
-    List<IncompletelyIssuedCertificateInfo> getIncompleteIssuedCertsBatch(long maxIssuanceTimeMillis);
+ * Used only for test
+ * 
+ **/
+@Remote
+public interface IncompleteIssuanceJournalDataSessionRemote extends IncompleteIssuanceJournalCallbacks {
 
 }
