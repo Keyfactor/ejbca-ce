@@ -200,7 +200,7 @@ public class CAImportExportTest  {
             boolean ret = false;
             try {
                 CaTestUtils.removeCa(internalAdmin, cainfo);
-                caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias", true);
                 ret = true;
             } finally {
                 final CAInfo caInfo = caSession.getCAInfo(internalAdmin, caname);
@@ -346,7 +346,7 @@ public class CAImportExportTest  {
 	        }
 	        int crlNumberBefore = crlStore.getLastCRLNumber(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
 	        try {
-	            caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+	            caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias", true);
 	        } catch (Exception e) { 
 	            log.info("Error: ", e);
 	            fail("Could not import CA. " + e);
@@ -428,13 +428,13 @@ public class CAImportExportTest  {
                 fail("Could not remove CA." + e);
             }
             try {
-                caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias", true);
                 fail("Could import CA.");
             } catch (Exception e) {
                 // NOPMD expected
             }
             try {
-                caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias", true);
             } catch (Exception e) { 
                 log.info("Error: ", e);
                 fail("Could not import CA. " + e);
