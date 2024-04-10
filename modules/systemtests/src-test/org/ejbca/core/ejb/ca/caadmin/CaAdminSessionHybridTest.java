@@ -358,7 +358,6 @@ public class CaAdminSessionHybridTest {
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, AuthorizationDeniedException,
             NoSuchSlotException, InvalidKeyException, InvalidAlgorithmParameterException {
         final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
@@ -373,7 +372,6 @@ public class CaAdminSessionHybridTest {
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, AuthorizationDeniedException,
             NoSuchSlotException, InvalidKeyException, InvalidAlgorithmParameterException {
         final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
