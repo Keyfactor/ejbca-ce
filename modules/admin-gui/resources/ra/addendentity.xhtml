@@ -5,7 +5,8 @@
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
 	xmlns:p="http://primefaces.org/ui"
-	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+	xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -152,32 +153,180 @@
 					<h:panelGroup>
 						<h:outputLabel value="#{subjectDnFieldNameAndData.left.left}" />
 					</h:panelGroup>
-					<h:panelGroup rendered="#{subjectDnFieldNameAndData.middle eq 'oneOption'}">
-						<h:outputLabel value="#{subjectDnFieldNameAndData.right}" style="font-weight:bold" />
+					<h:panelGroup rendered="#{subjectDnFieldNameAndData.left.middle  ne 'emailAddress' 
+										      and subjectDnFieldNameAndData.left.middle  ne 'modifiable' 
+										      and subjectDnFieldNameAndData.right ne '' and 
+										      fn:length(subjectDnFieldNameAndData.right) == 1}">
+						<h:outputLabel value="#{subjectDnFieldNameAndData.right[0].trim()}" style="font-weight:bold" />
 					</h:panelGroup>
-					<h:panelGroup rendered="#{subjectDnFieldNameAndData.middle eq 'multiOption'}">
+					<h:panelGroup rendered="#{subjectDnFieldNameAndData.left.middle  ne 'emailAddress' 
+										      and subjectDnFieldNameAndData.left.middle  ne 'modifiable' 
+										      and fn:length(subjectDnFieldNameAndData.right) > 1 }">
 						<h:selectOneMenu value="#{resourceBean.selectedSubjectDn}"
 							disabled="#{!resourceBean.allowedToAddEndEntityProfile}">
 							<f:selectItems value="#{subjectDnFieldNameAndData.right}" />
 						</h:selectOneMenu>
 					</h:panelGroup>
 					<h:panelGroup
-						rendered="#{subjectDnFieldNameAndData.left.middle and subjectDnFieldNameAndData.middle ne 'emailAddress'}">
-						<h:inputText value="#{subjectDnFieldNameAndData.middle}" size="40"
+						rendered="#{subjectDnFieldNameAndData.left.middle eq 'modifiable'}">
+						<h:inputText value="#{subjectDnFieldNameAndData.right[0]}" size="40"
 							maxlength="255"
-							title="Must match format specified in profile. / Technical detail - the regex is #{subjectDnFieldNameAndData.right}"
+							title="Must match format specified in profile. / Technical detail - the regex is #{subjectDnFieldNameAndData.right[1]}"
 							readonly="#{!resourceBean.allowedToAddEndEntityProfile}">
-							<f:validateRegex pattern="#{subjectDnFieldNameAndData.right}" />
+							<f:validateRegex pattern="#{subjectDnFieldNameAndData.right[1]}" />
 						</h:inputText>
 					</h:panelGroup>
-					<h:panelGroup rendered="#{subjectDnFieldNameAndData.middle eq 'emailAddress'}">
+					<h:panelGroup rendered="#{subjectDnFieldNameAndData.left.middle eq 'emailAddress'}">
 						<h:selectBooleanCheckbox id="sdnEmail"
 						value="#{resourceBean.useSdnEmail}"
-						disabled="#{subjectDnFieldNameAndData.right}" />
+						disabled="#{subjectDnFieldNameAndData.left.right}" />
 						<h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
 					</h:panelGroup>
 				</c:forEach>
 			</h:panelGrid>
+			
+			
+			<!-- Subject Alternative Names Section -->
+			
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1"
+				columnClasses="editColumnSystem1,editColumn2" rendered="#{resourceBean.profileHasSubjectAltNameFields}">
+				<h:outputLabel 
+					value="#{web.text.SUBJECTALTNAMES}"
+					style="font-weight:bold; font-size:1.2em;" />
+			
+				<h:panelGroup/>
+			
+				<c:forEach items="#{resourceBean.subjectAltNameFieldsNameAndData}"
+					var="subjectAltNameFieldNameAndData">
+
+
+					<h:panelGroup>
+						<h:outputLabel value="#{subjectAltNameFieldNameAndData.left}" />
+					</h:panelGroup>
+					
+					
+					<h:panelGroup rendered="#{subjectAltNameFieldNameAndData.right.left eq 'isRFC822NameAndIsUse'}">
+						<h:selectBooleanCheckbox id="altNameEmail"
+							value="#{resourceBean.useAltNameEmail}" />
+						<h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
+					</h:panelGroup>
+					
+
+					<h:panelGroup rendered="#{subjectAltNameFieldNameAndData.right.left eq 'isRFC822NameAndIsUseAndRequired'}">
+						<h:selectBooleanCheckbox id="altNameEmailDisabled"
+							value="true"  disabled="true"/>
+						<h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{subjectAltNameFieldNameAndData.right.left eq 'isRFC822NameAndIsModifiableOrNotHaveAtSign'}">
+						<h:inputText value="#{subjectAltNameFieldNameAndData.right.right.left[0].trim()}" size="20"
+							maxlength="255"
+							readonly="#{!resourceBean.allowedToAddEndEntityProfile}"> @
+						</h:inputText>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{subjectAltNameFieldNameAndData.right.left  eq 'isRFC822NameAndIsModifiable'}">
+					
+						<h:inputText value="#{subjectAltNameFieldNameAndData.right.right.left[1].trim()}" size="15"
+							maxlength="255"
+							title="#{web.text.FORMAT_DOMAINNAME}"
+							readonly="#{!resourceBean.allowedToAddEndEntityProfile}"> 
+						</h:inputText>
+					
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{subjectAltNameFieldNameAndData.right.left eq 'isRFC822NameAndIsModifiable'}">
+						<h:outputLabel value="#{subjectAltNameFieldNameAndData.right.right.left[0].trim()}" style="font-weight:bold" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{subjectAltNameFieldNameAndData.right.left eq 'isRFC822NameAndHasOptions' and fn:length(subjectAltNameFieldNameAndData.right.right.right) == 1}}">
+						<h:outputLabel
+							value="#{subjectAltNameFieldNameAndData.right.right.right[0].trim()}"
+							style="font-weight:bold" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{subjectAltNameFieldNameAndData.right.left eq 'isRFC822NameAndHasOptions' and fn:length(subjectAltNameFieldNameAndData.right.right.right) > 1}}">
+
+						<h:selectOneMenu value="#{resourceBean.selectedSubjectAltName}"
+							disabled="#{!resourceBean.allowedToAddEndEntityProfile}">
+							<f:selectItems
+								value="#{subjectAltNameFieldNameAndData.right.right.right}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{(subjectAltNameFieldNameAndData.right.left eq 'notRFC822NameAndNotModifiableAndIsUPNOneOption') or (subjectAltNameFieldNameAndData.right.left eq 'notRFC822NameAndNotModifiableAndIsUPNMultipleOptions')}">
+						<h:inputText size="20" maxlength="255"
+							readonly="#{!resourceBean.allowedToAddEndEntityProfile}">
+						</h:inputText> @
+					
+						<h:outputLabel rendered="#{subjectAltNameFieldNameAndData.right.left eq 'notRFC822NameAndNotModifiableAndIsUPNOneOption'}"
+							value="#{subjectAltNameFieldNameAndData.right.right.right.trim()}"
+							style="font-weight:bold" />
+					
+						<h:selectOneMenu rendered="#{subjectAltNameFieldNameAndData.right.left eq 'notRFC822NameAndNotModifiableAndIsUPNMultipleOptions'}"
+						    value="#{resourceBean.selectedSubjectAltNameMultipleOptionsNoRFC822}"
+							disabled="#{!resourceBean.allowedToAddEndEntityProfile}">
+							<f:selectItems value="#{subjectAltNameFieldNameAndData.right.right.right}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{subjectAltNameFieldNameAndData.right.left eq 'notRFC822NameAndModifiableAndIsUPN'}">
+					
+						<h:inputText 
+							size="20"
+							maxlength="255"
+							readonly="#{!resourceBean.allowedToAddEndEntityProfile}"> 
+						</h:inputText> @
+						<h:inputText 
+							size="20"
+							maxlength="255"
+							value="#{subjectAltNameFieldNameAndData.right.right.left}"
+							readonly="#{!resourceBean.allowedToAddEndEntityProfile}"> 
+						</h:inputText>
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{subjectAltNameFieldNameAndData.right.left eq 'notRFC822NameAndModifiableIsCopyAndDNS'}">
+					
+						<h:selectBooleanCheckbox id="altNameEmail"
+							value="#{resourceBean.useAltNameEmail}" /> <!-- Add ajax here -->
+						<h:outputLabel value="#{web.text.USESCNFIELDDATA}" />
+					
+					</h:panelGroup>
+					
+					<h:panelGroup rendered="#{subjectAltNameFieldNameAndData.right.left eq 'notRFC822NameAndModifiableAndIsNotCopyAndDNS'}">
+						<h:inputText 
+							size="40"
+							maxlength="355"
+							value="#{subjectAltNameFieldNameAndData.right.right.left}"
+							readonly="#{!resourceBean.allowedToAddEndEntityProfile}"> 
+						</h:inputText>
+					</h:panelGroup>
+					
+				</c:forEach>			
+			
+			</h:panelGrid>			
+
+
+			<!-- Subject Directory Attributes Section -->
+
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1"
+				columnClasses="editColumnSystem1,editColumn2" rendered="#{resourceBean.profileHasSubjectDirAttrFields}">
+				<h:outputLabel 
+					value="#{web.text.SUBJECTDIRATTRIBUTES}"
+					style="font-weight:bold; font-size:1.2em;" />
+			
+			<h:panelGroup/>
+			
+			
+			
+			</h:panelGrid>			
+			
 		</h:form>
 	</ui:define>
 </ui:composition>
