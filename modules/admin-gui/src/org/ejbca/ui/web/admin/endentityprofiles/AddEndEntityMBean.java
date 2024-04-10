@@ -14,7 +14,6 @@ package org.ejbca.ui.web.admin.endentityprofiles;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,7 +26,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.MutableTriple;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -71,6 +71,8 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     private String profileEmail;
     private String selectedSubjectDn;
     private boolean useSdnEmail;
+    private boolean useAltNameEmail;
+    private String selectedSubjectAltNameMultipleOptionsNoRFC822;
     
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
@@ -267,10 +269,10 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.profileEmail = profileEmail;
     }
     
-                                         //<Label, modifiable, required>,      
-    public List<MutableTriple<MutableTriple<String, Boolean, Boolean>, Object, Object>> getSubjectDnFieldsNameAndData() {
+                                         //<Label, modifiable, required>, options      
+    public List<ImmutablePair<ImmutableTriple<String, String, Boolean>, Object>> getSubjectDnFieldsNameAndData() {
 
-        List<MutableTriple<MutableTriple<String, Boolean, Boolean>, Object, Object>> subjectDnFieldNameAndData = new ArrayList<>();
+        final List<ImmutablePair<ImmutableTriple<String, String, Boolean>, Object>> subjectDnFieldLabelAndData = new ArrayList<>();
 
         int numberOfSubjectDnFields = selectedEeProfile.getSubjectDNFieldOrderLength();
 
@@ -295,29 +297,128 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                             .split(EndEntityProfile.SPLITCHAR);
 
                     if (options == null) {
-                        subjectDnFieldNameAndData.add(new MutableTriple<>(new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), "noOption",
+                        subjectDnFieldLabelAndData.add(new ImmutablePair<>(new ImmutableTriple<>(fieldLabel, "nonModifiable", fieldRequired),
                                 StringUtils.EMPTY));
-                    } else if (options.length == 1) {
-                        subjectDnFieldNameAndData.add(new MutableTriple<>(new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), "oneOption",
-                                options[0].trim()));
                     } else {
-                        subjectDnFieldNameAndData
-                                .add(new MutableTriple<>(new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), "multiOption", options));
+                        subjectDnFieldLabelAndData
+                                .add(new ImmutablePair<>(new ImmutableTriple<>(fieldLabel, "nonModifiable", fieldRequired), options));
                     }
                 } else {
                     final Map<String, Serializable> validation = selectedEeProfile.getValidation(subjectDnFieldData[EndEntityProfile.FIELDTYPE],
                             subjectDnFieldData[EndEntityProfile.NUMBER]);
                     final String regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
-                    subjectDnFieldNameAndData
-                            .add(new MutableTriple<>(
-                                    new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), selectedEeProfile
-                                            .getValue(subjectDnFieldData[EndEntityProfile.FIELDTYPE], subjectDnFieldData[EndEntityProfile.NUMBER]), regex));
+                    
+                    final String[] valueAndRegEx = {selectedEeProfile
+                            .getValue(subjectDnFieldData[EndEntityProfile.FIELDTYPE], subjectDnFieldData[EndEntityProfile.NUMBER]), regex};
+                    
+                    subjectDnFieldLabelAndData
+                            .add(new ImmutablePair<>(
+                                    new ImmutableTriple<>(fieldLabel, "modifiable", fieldRequired), valueAndRegEx));
                 }
             } else {
-                subjectDnFieldNameAndData.add(new MutableTriple<>(new MutableTriple<>(fieldLabel, fieldModifiable, fieldRequired), "emailAddress", null));
+                subjectDnFieldLabelAndData.add(new ImmutablePair<>(new ImmutableTriple<>(fieldLabel, "emailAddress", fieldRequired), null));
             }
         }
-        return subjectDnFieldNameAndData;
+        return subjectDnFieldLabelAndData;
+    }
+    
+    // Label, Properties (modifiable, required, isRfc822name, rfc822nameString, use), <Values, Options>, regex, implemented
+    public List<ImmutablePair<String, ImmutablePair<String, ImmutablePair<Object, Object>>>> getSubjectAltNameFieldsNameAndData() {
+
+        final int numberOfSubjectAltNameFields = selectedEeProfile.getSubjectAltNameFieldOrderLength();
+
+        final List<ImmutablePair<String, ImmutablePair<String, ImmutablePair<Object, Object>>>> subjectAltNameFieldLabelAndData = new ArrayList<>();
+
+        for (int i = 0; i < numberOfSubjectAltNameFields; i++) {
+            final int[] fieldData = selectedEeProfile.getSubjectAltNameFieldsInOrder(i);
+            int fieldType = fieldData[EndEntityProfile.FIELDTYPE];
+
+            ImmutablePair<Object, Object> fieldValuesAndOptions = null;
+            String properties = null;
+
+            // Handle RFC822NAME separately
+            if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)) {
+                if (selectedEeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])) {
+                    properties = "isRFC822NameAndIsUse";
+
+                    if (selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])) {
+                        properties = "isRFC822NameAndIsUseAndRequired";
+                    }
+                } else {
+
+                    String rfc822NameString = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+                    String[] rfc822NameArray = new String[2];
+                    if (rfc822NameString.indexOf("@") != -1) {
+                        rfc822NameArray = rfc822NameString.split("@");
+                    } else {
+                        rfc822NameArray[0] = "";
+                        rfc822NameArray[1] = rfc822NameString;
+                    }
+                    final String[] rfc822NameOptions = rfc822NameString.split(EndEntityProfile.SPLITCHAR);
+
+                    boolean modifiable = selectedEeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+
+                    if (!(!modifiable && rfc822NameString.contains("@"))) {
+                        properties = "isRFC822NameAndIsModifiableOrNotHaveAtSign";
+                        fieldValuesAndOptions = new ImmutablePair<>(rfc822NameArray[0], null);
+                    }
+
+                    if (modifiable) {
+                        properties = "isRFC822NameAndIsModifiable";
+                        fieldValuesAndOptions = new ImmutablePair<>(rfc822NameArray[1], null);
+                    } else {
+                        properties = "isRFC822NameAndHasOptions";
+                        fieldValuesAndOptions = new ImmutablePair<>(rfc822NameArray, rfc822NameOptions);
+                    }
+                }
+            } else {
+
+                boolean modifiable = selectedEeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+
+                if (!modifiable) {
+                    String[] options = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                            .split(EndEntityProfile.SPLITCHAR);
+
+                    if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
+                        if (options.length == 1) {
+                            properties = "notRFC822NameAndNotModifiableAndIsUPNOneOption";
+                            fieldValuesAndOptions = new ImmutablePair<>(null, options[0].trim());
+                        } else {
+                            properties = "notRFC822NameAndNotModifiableAndIsUPNMultipleOptions";
+                            fieldValuesAndOptions = new ImmutablePair<>(null, options);
+                        }
+                    }
+                } else {
+                    if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
+                        properties = "notRFC822NameAndModifiableAndIsUPN";
+                        final String fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE],
+                                fieldData[EndEntityProfile.NUMBER]);
+                        fieldValuesAndOptions = new ImmutablePair<>(fieldValue, null);
+                    } else {
+                        if (selectedEeProfile.getCopy(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                                && EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME)) {
+                            properties = "notRFC822NameAndModifiableIsCopyAndDNS";
+                        } else {
+                            properties = "notRFC822NameAndModifiableAndIsNotCopyAndDNS";
+                        }
+
+                        final String fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE],
+                                fieldData[EndEntityProfile.NUMBER]);
+                        final Map<String, Serializable> validation = selectedEeProfile.getValidation(fieldData[EndEntityProfile.FIELDTYPE],
+                                fieldData[EndEntityProfile.NUMBER]);
+                        final String regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
+
+                        fieldValuesAndOptions = new ImmutablePair<>(fieldValue, regex);
+                    }
+                }
+            }
+
+            if (EndEntityProfile.isFieldImplemented(fieldType)) {
+                final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
+                subjectAltNameFieldLabelAndData.add(new ImmutablePair<>(label, new ImmutablePair<>(properties, fieldValuesAndOptions)));
+            }
+        }
+        return subjectAltNameFieldLabelAndData;
     }
     
     public String getEmailUserName() {
@@ -343,5 +444,30 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     public void setUseSdnEmail(boolean useSdnEmail) {
         this.useSdnEmail = useSdnEmail;
     }
+    
+    public boolean isProfileHasSubjectAltNameFields() {
+        return selectedEeProfile.getSubjectAltNameFieldOrderLength() > 0;
+    }
+
+    public boolean isProfileHasSubjectDirAttrFields() {
+        return selectedEeProfile.getSubjectDirAttrFieldOrderLength() > 0;
+    }
+
+    public boolean isUseAltNameEmail() {
+        return useAltNameEmail;
+    }
+
+    public void setUseAltNameEmail(boolean useAltNameEmail) {
+        this.useAltNameEmail = useAltNameEmail;
+    }
+
+    public String getSelectedSubjectAltNameMultipleOptionsNoRFC822() {
+        return selectedSubjectAltNameMultipleOptionsNoRFC822;
+    }
+
+    public void setSelectedSubjectAltNameMultipleOptionsNoRFC822(String selectedSubjectAltNameMultipleOptionsNoRFC822) {
+        this.selectedSubjectAltNameMultipleOptionsNoRFC822 = selectedSubjectAltNameMultipleOptionsNoRFC822;
+    }
+    
     
 }
