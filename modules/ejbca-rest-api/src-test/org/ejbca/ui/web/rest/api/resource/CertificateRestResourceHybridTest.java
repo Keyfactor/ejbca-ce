@@ -168,7 +168,6 @@ public class CertificateRestResourceHybridTest extends RestResourceSystemTestBas
         final String cryptoTokenPin = "foo123";
         final String cryptoTokenName = testName.getMethodName() + "CryptoToken";
         final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
         cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
