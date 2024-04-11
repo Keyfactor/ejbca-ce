@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
-import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;

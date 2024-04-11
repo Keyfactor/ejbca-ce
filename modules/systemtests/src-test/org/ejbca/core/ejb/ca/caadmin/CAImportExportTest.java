@@ -56,6 +56,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.KeyGenParams;
 
@@ -267,6 +268,7 @@ public class CAImportExportTest  {
         // Create a crypto token with no password (i.e. a default one is used)
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+        BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String("foo123"), true);
         final int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(internalAdmin, caname, SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
         cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("RSA1024").build());
         cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
