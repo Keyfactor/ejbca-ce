@@ -166,7 +166,7 @@ public class CaInitCommandTest {
         } finally {
             f.deleteOnExit();
         }        
-        final String[] HAPPY_PATH_WITH_TOKENNAME = {  "--caname", CA_NAME_2, "--dn", CA_DN_2, "--tokenName", CA_NAME, "--tokenprop", f.getAbsolutePath(), "--keyspec", "2048", "--keytype", "RSA", "-v", "30", "--policy", "null", "-s", "SHA256withRSA" };
+        final String[] HAPPY_PATH_WITH_TOKENNAME = {  "--caname", CA_NAME_2, "--dn", CA_DN_2, "--tokenName", CA_NAME, "--tokenPass", "foo123", "--tokenprop", f.getAbsolutePath(), "--keyspec", "2048", "--keytype", "RSA", "-v", "30", "--policy", "null", "-s", "SHA256withRSA" };
         result = caInitCommand.execute(HAPPY_PATH_WITH_TOKENNAME);
         assertNotNull("Happy path CA 2 was not created.", caSession.getCAInfo(admin, CA_NAME_2));
         assertEquals("Result should be success", CommandResult.SUCCESS.getReturnCode(), result.getReturnCode());
