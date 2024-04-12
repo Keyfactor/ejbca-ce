@@ -30,12 +30,12 @@ import org.ejbca.core.model.token.TokenConstants;
 @XmlType(name = "tokenCertificateRequestWS", propOrder = {
     "cAName",
     "certificateProfileName",
-    "validityIdDays",
-    "type",
+    "keyalg",
+    "keyspec",
     "pkcs10Data",
     "tokenType",
-    "keyspec",
-    "keyalg"
+    "type",
+    "validityIdDays"
 })
 @Deprecated
 public class TokenCertificateRequestWS {

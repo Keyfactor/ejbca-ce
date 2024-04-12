@@ -28,8 +28,8 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "userDataSourceVOWS", propOrder = {
-    "userDataVOWS",
-    "isModifyable"
+        "isModifyable",
+        "userDataVOWS"
 })
 public class UserDataSourceVOWS implements Serializable{
 

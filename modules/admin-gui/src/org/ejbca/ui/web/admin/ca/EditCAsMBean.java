@@ -58,7 +58,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutableTriple;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -176,6 +176,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     private List<String> availableCryptoTokenKeyAliases;
     private List<String> availableCryptoTokenMixedAliases;
     private List<String> availableCryptoTokenEncryptionAliases;
+    private List<String> availableCryptoTokenAlternativeKeyAliases;
     private boolean createLinkCertificate;
 
     private CAInfo cainfo = null;
@@ -505,6 +506,17 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         }
         return StringUtils.EMPTY;
     }
+    
+    public String getCurrentCaAlternativeSigningAlgorithm() {
+        if (this.cainfo != null) {
+            final String signAlgorithm = cainfo.getCAToken().getAlternativeSignatureAlgorithm();
+            if (signAlgorithm != null) {
+                return signAlgorithm;
+            }
+            return getEjbcaWebBean().getText("NOTUSED");
+        }
+        return StringUtils.EMPTY;
+    }
 
     public String getEditCAPageTitle() {
         if (this.isEditCA && caBean.hasEditRight()) {
@@ -541,7 +553,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return StringUtils.EMPTY;
@@ -552,7 +564,22 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
+            }
+        }
+        return StringUtils.EMPTY;
+    }
+    
+    public String getCurrentCaCryptoTokenAlternativeCertSignKey() {
+        if(catoken != null) {
+            try {
+                if (StringUtils.isNotEmpty(catoken.getAlternativeSignatureAlgorithm())) {
+                    return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN);
+                } else {
+                    return getEjbcaWebBean().getText("NOTUSED");
+                }
+            } catch (final CryptoTokenOfflineException e) {
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return StringUtils.EMPTY;
@@ -563,7 +590,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return StringUtils.EMPTY;
@@ -574,7 +601,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return this.caCryptoTokenKeyEncryptKey;
@@ -585,7 +612,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 return catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYTEST);
             } catch (final CryptoTokenOfflineException e) {
-                log.error("CA token offile exception!", e);
+                log.error("Crypto token with id " + catoken.getCryptoTokenId() + " is offline.", e);
             }
         }
         return this.caCryptoTokenTestKey;
@@ -1065,13 +1092,19 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             try {
                 final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), Integer.parseInt(cryptoTokenIdParam));
                 return resultList.stream()
-                                 .filter(sa -> signingAlgorithmApplicableForCT(sa.getLabel(), cryptoTokenKeyPairInfos))
+                                 .filter(sa -> getSigningAlgorithmsApplicableForCryptoToken(sa.getLabel(), cryptoTokenKeyPairInfos))
                                  .collect(Collectors.toList());
             } catch (CryptoTokenOfflineException | AuthorizationDeniedException e) {
                 log.error("Crypto token key pair infos could not be fetched.", e);
             }
         }
 
+        return resultList;
+    }
+    
+    public List<SelectItem> getAvailableSigningAlgListNoneOption() {
+        final List<SelectItem> resultList = getAvailableSigningAlgList();
+        resultList.add(0, new SelectItem(null, "Select an algorithm to activate hybrid certificates."));
         return resultList;
     }
 
@@ -1082,7 +1115,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @param cryptoTokenKeyPairInfos Key pairs in a crypto token
      * @return true if found
      */
-    private boolean signingAlgorithmApplicableForCT(String signingAlgorithm, List<KeyPairInfo> cryptoTokenKeyPairInfos) {
+    private boolean getSigningAlgorithmsApplicableForCryptoToken(String signingAlgorithm, List<KeyPairInfo> cryptoTokenKeyPairInfos) {
         String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(signingAlgorithm);
         for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
             if (requiredKeyAlgorithm.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
@@ -1170,6 +1203,28 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             updateKeyAliases();
         }
     }
+    
+    public String getAlternativeSignatureAlgorithmParam() {
+        return caInfoDto.getAlternativeSignatureAlgorithmParam();
+    }
+    
+
+    public void setAlternativeSignatureAlgorithmParam(final String alternativeSignatureAlgorithmParam) {
+        caInfoDto.setAlternativeSignatureAlgorithmParam(alternativeSignatureAlgorithmParam);
+
+        if(StringUtils.isEmpty(alternativeSignatureAlgorithmParam)) {
+            caInfoDto.setCryptoTokenAlternativeCertSignKey(StringUtils.EMPTY);
+        }
+        
+        // Create already in use key map
+        if (!isEditCA || isCaUninitialized) {
+            updateKeyAliases();
+        }
+    }
+    
+    public boolean isAlternativeSignatureAlgorithmSelected() {
+        return StringUtils.isNotBlank(caInfoDto.getAlternativeSignatureAlgorithmParam());
+    }
 
     private void setDefaultKeyAliases() {
         // Make up defaults based on key alias names
@@ -1211,18 +1266,23 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
     public List<SelectItem> getKeyAliasesList(final String keyType) {
         final List<SelectItem> resultList = new ArrayList<>();
         switch (keyType) {
-        case "defaultKey":
+        case CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING:
             for (final String alias : availableCryptoTokenMixedAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
             return resultList;
-        case "certSignKey":
-        case "testKey":
+        case CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING:
+        case CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING:    
             for (final String alias : availableCryptoTokenKeyAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
             return resultList;
-        case "keyEncryptKey":
+        case CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING:
+            for (final String alias : availableCryptoTokenAlternativeKeyAliases) {
+                resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
+            }
+            return resultList;     
+        case CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING:
             for (final String alias : availableCryptoTokenEncryptionAliases) {
                 resultList.add(new SelectItem(alias, alias + aliasUsedMap.get(alias), ""));
             }
@@ -1260,6 +1320,18 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void setSelectedCryptoTokenCertSignKey(final String selectedCryptoTokenCertSignKey) {
         caInfoDto.setCryptoTokenCertSignKey(StringUtils.defaultString(selectedCryptoTokenCertSignKey));
+    }
+    
+    public String getSelectedCryptoTokenAlternativeCertSignKey() {
+        if (StringUtils.isNotEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
+            return caInfoDto.getCryptoTokenAlternativeCertSignKey();
+        } else {
+            return getEjbcaWebBean().getText("NOTUSED");
+        }
+    }
+
+    public void setSelectedCryptoTokenAlternativeCertSignKey(final String selectedCryptoTokenAlternativeCertSignKey) {
+        caInfoDto.setCryptoTokenAlternativeCertSignKey(StringUtils.defaultString(selectedCryptoTokenAlternativeCertSignKey));
     }
 
     public String getSelectedKeyEncryptKey() {
@@ -1462,12 +1534,39 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
 
     public void resetSigningAlgorithmTokenParam() {
         caInfoDto.setSignatureAlgorithmParam(StringUtils.EMPTY);
+        caInfoDto.setAlternativeSignatureAlgorithmParam(StringUtils.EMPTY);
         updateAvailableSigningAlgorithmList();
 
         // Create already in use key map
         if (!isEditCA || isCaUninitialized) {
             updateKeyAliases();
         }
+    }
+    
+    /**
+     * We want to make sure that a subca created under a rootca is a hybrid ca if the rootca is a hybrid ca
+     * We want to make sure that a subca created under a rootca is a non hybrid ca if the rootca is a non hybrid ca
+     * @return true if the chain is mixed and the ca cannot be created
+     */
+    public boolean isMixedHybridChain() {
+        String alternativeSignature = getAlternativeSignatureAlgorithmParam();
+        int signerCaId  = caInfoDto.getSignedBy();
+        boolean creatingSelfSignedCa = (signerCaId == CAInfo.SELFSIGNED) ? true : false;
+        CAToken signerCaToken = null;
+        String signerAlternativeSignature = null;
+        if (!creatingSelfSignedCa) {
+            signerCaToken = caSession.getCAInfoInternal(signerCaId).getCAToken();
+            signerAlternativeSignature = signerCaToken.getAlternativeSignatureAlgorithm();
+        }            
+        if (!creatingSelfSignedCa && ((alternativeSignature == null) && (signerAlternativeSignature != null) )) {
+            addErrorMessage("ERROR_NON_HYBRID_SUBCA_UNDER_HYBRID_ROOTCA");
+            return true;
+        }
+        if (!creatingSelfSignedCa && (alternativeSignature != null && signerAlternativeSignature == null )) {
+            addErrorMessage("ERROR_HYBRID_SUBCA_UNDER_NON_HYBRID_ROOTCA");
+            return true;
+        }
+        return false;
     }
 
     // ===================================================== Create CA Actions ============================================= //
@@ -1477,6 +1576,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
      * @return Navigation
      */
     public String createCa() {
+        if(isMixedHybridChain())  return "";
         return createCaOrMakeRequest(true, false); // We are creating a ca!
     }
 
@@ -1495,51 +1595,15 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         return EditCaUtil.MANAGE_CA_NAV;
     }
     
-    private void validateCitsFields() throws Exception {
-        
-        // external ca
-        
-        // max validity 5 years + pattern
-        
-        // certificate id regex
-        
-        // signkey and default key are different and both ECC or both null(create then)
-        if(catoken!=null) {
-            final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(getAdmin(), catoken.getCryptoTokenId());
-            String certSignKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-            String encryptionKey = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_DEFAULT);
-            
-            if(certSignKey.equals(encryptionKey)) {
-                addErrorMessage("CITS_KEYS_SAME");
-            }
-            
-            String signKeySpec = "";
-            String encKeySpec = "";
-            
-            for(KeyPairInfo keyPairInfo: cryptoTokenKeyPairInfos) {
-                if(keyPairInfo.getAlias().equals(certSignKey)) {
-                    signKeySpec = keyPairInfo.getKeySpecification();
-                }
-                if(keyPairInfo.getAlias().equals(encryptionKey)) {
-                    encKeySpec = keyPairInfo.getKeySpecification();
-                }
-            }
-
-        }
-        
-    }
-
     // ======================================= Helpers ===================================================================//
     private String createCaOrMakeRequest(final boolean createCa, final boolean makeRequest) {
         boolean illegalDnOrAltName;
-
         byte[] fileBuffer = null;
         try {
             if (makeRequest) {
                 if (isCaTypeCits()) {
                     // only applicable to externally signed ca
                     try {
-                        validateCitsFields();
                         caInfoDto.setCaSubjectDN(CAInfo.CITS_SUBJECTDN_PREFIX + caInfoDto.getCertificateId());
                         ItsGeographicElement geoElement = EditCaUtil.getGeographicRegion(currentGeographicRegionType, geographicElementsInGui);
                         if (geoElement != null) {
@@ -1559,7 +1623,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             illegalDnOrAltName = saveOrCreateCaInternal(createCa, makeRequest, fileBuffer);
             if (illegalDnOrAltName) {
                 addErrorMessage("INVALIDSUBJECTDN");
-            }
+            } 
         } catch (final Exception e) {
             addNonTranslatedErrorMessage(e);
             return "";
@@ -2094,6 +2158,10 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
                 }
+                if(StringUtils.isNotEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
+                    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING, caInfoDto.getCryptoTokenAlternativeCertSignKey());
+                }
+                
                 if (caInfoDto.getSelectedKeyEncryptKey().length() > 0) {
                     caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, caInfoDto.getSelectedKeyEncryptKey());
                 }
@@ -2106,6 +2174,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
                 newCAToken.setEncryptionAlgorithm(cainfo.getCAToken().getEncryptionAlgorithm());
                 newCAToken.setKeySequence(cainfo.getCAToken().getKeySequence());
                 newCAToken.setKeySequenceFormat(cainfo.getCAToken().getKeySequenceFormat());
+                newCAToken.setAlternativeSignatureAlgorithm(caInfoDto.getAlternativeSignatureAlgorithmParam());
                 cainfo.setCAToken(newCAToken);
             }
 
@@ -2267,7 +2336,9 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isEmpty(caInfoDto.getSignatureAlgorithmParam())) {
             caInfoDto.setSignatureAlgorithmParam(catoken.getSignatureAlgorithm());
         }
-        
+        if (StringUtils.isEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
+            caInfoDto.setAlternativeSignatureAlgorithmParam(catoken.getAlternativeSignatureAlgorithm());
+        }
         isCaRevoked = cainfo.getStatus() == CAConstants.CA_REVOKED || RevokedCertInfo.isRevoked(cainfo.getRevocationReason());
         revokable = cainfo.getStatus() != CAConstants.CA_REVOKED && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE
                 && cainfo.getStatus() != CAConstants.CA_EXTERNAL && !RevokedCertInfo.isPermanentlyRevoked(cainfo.getRevocationReason());
@@ -2569,6 +2640,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         availableCryptoTokenKeyAliases = new ArrayList<>(); // Avoids NPE in getters if the code below fails.
         availableCryptoTokenMixedAliases = new ArrayList<>();
         availableCryptoTokenEncryptionAliases = new ArrayList<>();
+        availableCryptoTokenAlternativeKeyAliases = new ArrayList<>();
         if (!isCaexternal) {
             updateCryptoTokenInfo();
             if (currentCryptoTokenId != 0) {
@@ -2593,11 +2665,20 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         availableCryptoTokenKeyAliases = caBean.getAvailableCryptoTokenAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
         availableCryptoTokenMixedAliases = caBean.getAvailableCryptoTokenMixedAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
         availableCryptoTokenEncryptionAliases = caBean.getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        if (StringUtils.isNotEmpty(caInfoDto.getAlternativeSignatureAlgorithmParam())) {
+            availableCryptoTokenAlternativeKeyAliases = caBean.getAvailableCryptoTokenAliases(keyPairInfos,
+                    caInfoDto.getAlternativeSignatureAlgorithmParam());
+        }
     }
 
     private void generateKeyAlreadyInUseMap() {
         // Create already in use key map
         for (final String alias : availableCryptoTokenMixedAliases) {
+            final String alreadyInUse = isKeyInUse(caSession.getAuthorizedCaIds(getAdmin()), alias, currentCryptoTokenId) ? " (Already in use)"
+                    : StringUtils.EMPTY;
+            aliasUsedMap.put(alias, alreadyInUse);
+        }
+        for(final String alias : availableCryptoTokenAlternativeKeyAliases) {
             final String alreadyInUse = isKeyInUse(caSession.getAuthorizedCaIds(getAdmin()), alias, currentCryptoTokenId) ? " (Already in use)"
                     : StringUtils.EMPTY;
             aliasUsedMap.put(alias, alreadyInUse);
