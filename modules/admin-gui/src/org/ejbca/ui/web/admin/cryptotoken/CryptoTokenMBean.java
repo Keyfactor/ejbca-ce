@@ -1166,7 +1166,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
             } else if (SoftCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = SoftCryptoToken.class.getName();
-                properties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
             } else if (AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = AzureCryptoToken.class.getName();
                 final String vaultType = getCurrentCryptoToken().getKeyVaultType().trim();

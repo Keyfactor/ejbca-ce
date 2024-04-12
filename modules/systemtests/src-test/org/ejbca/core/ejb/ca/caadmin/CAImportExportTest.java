@@ -56,6 +56,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.KeyGenParams;
 
@@ -200,7 +201,7 @@ public class CAImportExportTest  {
             boolean ret = false;
             try {
                 CaTestUtils.removeCa(internalAdmin, cainfo);
-                caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias", true);
                 ret = true;
             } finally {
                 final CAInfo caInfo = caSession.getCAInfo(internalAdmin, caname);
@@ -267,6 +268,7 @@ public class CAImportExportTest  {
         // Create a crypto token with no password (i.e. a default one is used)
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+        BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String("foo123"), true);
         final int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(internalAdmin, caname, SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
         cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, KeyGenParams.builder("RSA1024").build());
         cryptoTokenManagementSession.createKeyPair(internalAdmin, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, KeyGenParams.builder("RSA1024").build());
@@ -346,7 +348,7 @@ public class CAImportExportTest  {
 	        }
 	        int crlNumberBefore = crlStore.getLastCRLNumber(cainfo.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
 	        try {
-	            caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+	            caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias", true);
 	        } catch (Exception e) { 
 	            log.info("Error: ", e);
 	            fail("Could not import CA. " + e);
@@ -428,13 +430,13 @@ public class CAImportExportTest  {
                 fail("Could not remove CA." + e);
             }
             try {
-                caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.importCAFromKeyStore(admin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias", true);
                 fail("Could import CA.");
             } catch (Exception e) {
                 // NOPMD expected
             }
             try {
-                caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, TEST_PASSWORD, TEST_PASSWORD, "SignatureKeyAlias", "EncryptionKeyAlias", true);
             } catch (Exception e) { 
                 log.info("Error: ", e);
                 fail("Could not import CA. " + e);
