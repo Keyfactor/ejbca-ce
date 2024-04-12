@@ -31,7 +31,7 @@ import java.util.List;
 @SessionScoped
 public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
-
+    
     private String selectedAlias;
     private String newAlias;
     private boolean viewOnly = true;
@@ -77,7 +77,7 @@ public class AutoenrollmentConfigMBean extends BaseManagedBean implements Serial
         selectedAlias = null;
         return "done";
     }
-    
+
     public String actionDelete(final String alias) {
         selectedAlias = alias;
         return "delete";
