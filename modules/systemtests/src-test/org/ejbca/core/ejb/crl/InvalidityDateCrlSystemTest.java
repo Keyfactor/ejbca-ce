@@ -169,9 +169,9 @@ public class InvalidityDateCrlSystemTest {
         final Certificate cert = issueCertificate(); // should appear on CRL
         final Certificate deltaCert = issueCertificate(); // should appear on Delta CRL
         // When
-        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), null); // backdate revocation by 5 minutes
+        revokeCertificateWithSupersededReason(cert, new Date(new Date().getTime() - 5*60*1000), null); // backdate revocation by 5 minutes
         assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
-        revokeCertificate(deltaCert, new Date(), null);
+        revokeCertificateWithSupersededReason(deltaCert, new Date(), null);
         assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, caId));
         // Then
         final X509CRL crl = getLatestCrl(false);
@@ -201,10 +201,10 @@ public class InvalidityDateCrlSystemTest {
         final Certificate deltaCert = issueCertificate(); // should appear on Delta CRL
         // When
         Date invalidityDate = new Date(new Date().getTime() - 8 * 60 * 1000);
-        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate); // backdate revocation by 5 minutes
+        revokeCertificateWithSupersededReason(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate); // backdate revocation by 5 minutes
         assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
         Date invalidityDate2 = new Date(new Date().getTime() - 5 * 60 * 1000);
-        revokeCertificate(deltaCert, new Date(), invalidityDate2);
+        revokeCertificateWithSupersededReason(deltaCert, new Date(), invalidityDate2);
         assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, caId));
         // Then
         final X509CRL crl = getLatestCrl(false);
@@ -238,10 +238,10 @@ public class InvalidityDateCrlSystemTest {
         // Given
         final Certificate cert = issueCertificate(); // should appear on CRL
         // When
-        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), null); // backdate revocation by 5 minutes
+        revokeCertificateWithSupersededReason(cert, new Date(new Date().getTime() - 5*60*1000), null); // backdate revocation by 5 minutes
         assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
         Date invalidityDate = new Date(new Date().getTime() - 8 * 60 * 1000);
-        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate); // backdate revocation by 5 minutes
+        revokeCertificateWithSupersededReason(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate); // backdate revocation by 5 minutes
         assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, caId));
         // Then
         final X509CRL crl = getLatestCrl(false);
@@ -276,11 +276,11 @@ public class InvalidityDateCrlSystemTest {
         final Certificate secondCert = issueCertificate(); // should appear on Delta CRL
         // When
         Date invalidityDate = new Date(new Date().getTime() - 8 * 60 * 1000);
-        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate); // backdate revocation by 5 minutes
+        revokeCertificateWithSupersededReason(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate); // backdate revocation by 5 minutes
         assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
         Date changedInvalidityDate = new Date(new Date().getTime() - 16 * 60 * 1000);
-        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), changedInvalidityDate); // backdate revocation by 5 minutes
-        revokeCertificate(secondCert, new Date(), null);
+        revokeCertificateWithSupersededReason(cert, new Date(new Date().getTime() - 5*60*1000), changedInvalidityDate); // backdate revocation by 5 minutes
+        revokeCertificateWithSupersededReason(secondCert, new Date(), null);
         assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, caId));
         // Then
         final X509CRL crl = getLatestCrl(false);
@@ -319,11 +319,11 @@ public class InvalidityDateCrlSystemTest {
         final Certificate cert = issueCertificate(); // should appear on CRL
         final Certificate secondCert = issueCertificate(); // should appear on Delta CRL
         // When
-        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), null); // backdate revocation by 5 minutes
+        revokeCertificateWithSupersededReason(cert, new Date(new Date().getTime() - 5*60*1000), null); // backdate revocation by 5 minutes
         assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
         Date invalidityDate = new Date(new Date().getTime() - 16 * 60 * 1000);
-        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate); // backdate revocation by 5 minutes
-        revokeCertificate(secondCert, new Date(), null);
+        revokeCertificateWithSupersededReason(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate); // backdate revocation by 5 minutes
+        revokeCertificateWithSupersededReason(secondCert, new Date(), null);
         assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, caId));
         // Then
         final X509CRL crl = getLatestCrl(false);
@@ -340,6 +340,40 @@ public class InvalidityDateCrlSystemTest {
 
         Assert.assertNull("Unexpected invalidity date in crl", crlDeltaSecondCertificate.getExtensionValue(Extension.invalidityDate.getId()));
         log.trace("<generateAndPublishCrlWithInvalidityDateSetAfterRevocation");
+    }
+
+    /**
+     * Test CRL generation and publisher queuing with unrevoked certificate and invalidity date set:
+     * <ol>
+     * <li>Issue certificate, set on hold with invalidity date, create Base CRL, unrevoke with invalidity date set. Create Delta Crl and create base crl
+     * </ol>
+     * We expect a CRL with the correct contents, after revocation certificate should be present in crl,
+     *  after unrevocationcertificate should be present in delta crl with status RemoveFromCrl and in next baseCrl certificate should not be present".
+     */
+    @Test
+    public void generateAndPublishCrlAfterUnrevocationRevocationDateAfterBaseCrl() throws Exception {
+        log.trace(">generateAndPublishCrlWithInvalidityDateSetAfterRevocation");
+        // Given
+        final Certificate cert = issueCertificate(); // should appear on CRL
+        // When
+        Date invalidityDate = new Date(new Date().getTime() - 16 * 60 * 1000);
+        revokeCertificate(cert, new Date(new Date().getTime() - 5*60*1000), invalidityDate, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD ); // backdate revocation by 5 minutes
+        assertTrue("CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
+        revokeCertificate(cert, null, invalidityDate, RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL );
+        assertTrue("Delta CRL generation failed", publishingCrlSession.forceDeltaCRL(admin, caId));
+        final X509CRL crl = getLatestCrl(false);
+        assertTrue("Second CRL generation failed", publishingCrlSession.forceCRL(admin, caId));
+        // Then
+        final X509CRL secondCrl = getLatestCrl(false);
+        final X509CRL deltaCrl = getLatestCrl(true);
+        X509CRLEntry crlRevokedCertificate = crl.getRevokedCertificate((X509Certificate) cert);
+        Assert.assertNotNull("Base crl should contain revoked certificate", crlRevokedCertificate);
+        Assert.assertEquals("", RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CrlExtensions.extractReasonCode(crlRevokedCertificate) );
+        X509CRLEntry crlDeltaCertificate = deltaCrl.getRevokedCertificate((X509Certificate) cert);
+        Assert.assertNotNull("Delta crl should contain unrevoked certificate", crlDeltaCertificate);
+        Assert.assertEquals("", RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, CrlExtensions.extractReasonCode(crlDeltaCertificate) );
+        X509CRLEntry secondCrlCertificate = secondCrl.getRevokedCertificate((X509Certificate) cert);
+        Assert.assertNull("New base crl should not contain unrevoked certificate", secondCrlCertificate);
     }
 
 
@@ -380,8 +414,13 @@ public class InvalidityDateCrlSystemTest {
     }
 
     /** Revokes a certificate. Supports backdated revocation. */
-    private void revokeCertificate(final Certificate cert, final Date revocationDate, final Date invalidityDate) throws CertificateRevokeException, AuthorizationDeniedException {
-        internalCertificateSessionSession.setRevokeStatus(admin, cert, revocationDate, invalidityDate, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+    private void revokeCertificateWithSupersededReason(final Certificate cert, final Date revocationDate, final Date invalidityDate) throws CertificateRevokeException, AuthorizationDeniedException {
+        revokeCertificate(cert, revocationDate, invalidityDate, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
+    }
+
+    /** Revokes a certificate. Supports backdated revocation. */
+    private void revokeCertificate(final Certificate cert, final Date revocationDate, final Date invalidityDate, final int status) throws CertificateRevokeException, AuthorizationDeniedException {
+        internalCertificateSessionSession.setRevokeStatus(admin, cert, revocationDate, invalidityDate, status);
         log.debug("Revoked certificate with fingerprint " + CertTools.getFingerprintAsString(cert));
     }
 
