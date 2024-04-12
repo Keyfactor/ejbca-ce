@@ -162,15 +162,15 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/{issuer_dn}/{certificate_serial_number}/revoke")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Revokes the specified certificate",
-                  notes = "Revokes the specified certificate or changes revocation reason for an already revoked certificate",
+                  notes = "Revokes the specified certificate, changes revocation reason for an already revoked certificate, sets invalidity or revocation date",
                   response = RevokeStatusRestResponse.class)
     public Response revokeCertificate(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Subject DN of the issuing CA")
             @PathParam("issuer_dn") String issuerDN,
-            @ApiParam(value = "hex serial number (without prefix, e.g. '00')")
+            @ApiParam(value = "Hex serial number (without prefix, e.g. '00')")
             @PathParam("certificate_serial_number") String serialNumber,
-            @ApiParam(value = "Must be valid RFC5280 reason. One of\n" +
+            @ApiParam(value = "Valid RFC5280 reason. One of\n" +
                     " NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n" +
                     " CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n" +
                     " CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE \n\n" +
@@ -178,7 +178,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             @QueryParam("reason") String reason,
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date,
-            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
+            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'. Will be ignored with revocation reason REMOVE_FROM_CRL")
             @QueryParam("invalidity_date") String invalidityDate)
 
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
