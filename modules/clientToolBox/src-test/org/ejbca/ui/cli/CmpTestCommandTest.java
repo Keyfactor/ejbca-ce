@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.security.cert.Certificate;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Run stress tests with ClientToolBax command CMPTest
@@ -58,7 +59,7 @@ public class CmpTestCommandTest {
     private final CMPTest command = new CMPTest();
 
     @Rule
-    public Timeout testTimeout = new Timeout(90_000); // per test case
+    public Timeout testTimeout = new Timeout(90_000, TimeUnit.MILLISECONDS); // per test case
 
     private static final String CERTIFICATE_PROFILE_NAME = "CmpTestCommandTestCP";
     private static final String END_ENTITY_PROFILE_NAME = "CmpTestCommandTestEEP";

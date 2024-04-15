@@ -77,6 +77,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -96,7 +97,7 @@ public class PKCS11HSMKeyToolCommandTest {
 
     /** 15 second timeout per test case, in case some test case freezes */
     @Rule
-    public Timeout testTimeout = new Timeout(15_000);
+    public Timeout testTimeout = new Timeout(15_000, TimeUnit.MILLISECONDS);
 
     private final HSMKeyTool command = new HSMKeyTool();
 
