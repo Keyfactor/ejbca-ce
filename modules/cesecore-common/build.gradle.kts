@@ -37,7 +37,6 @@ dependencies {
     compileOnly(libs.antlr)
     compileOnly(libs.byte.buddy)
     compileOnly(libs.classmate)
-    compileOnly(libs.dom4j)
     compileOnly(libs.fastInfoset)
     compileOnly(libs.hibernate.commons.annotations)
     compileOnly(libs.hibernate.core)
