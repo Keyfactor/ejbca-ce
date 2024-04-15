@@ -87,11 +87,6 @@ ejbca:
   #     secretKeyRef:
   #       name: ejbca-confidentiality-secrets
   #       key: password_encrpytion_key
-  #  - name: CA_KEYSTOREPASS
-  #    valueFrom:
-  #     secretKeyRef:
-  #       name: ejbca-confidentiality-secrets
-  #       key: ca_keystore_pass
   #  - name: EJBCA_CLI_DEFAULTPASSWORD
   #    valueFrom:
   #     secretKeyRef:

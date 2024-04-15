@@ -226,6 +226,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -2638,7 +2639,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void importCAFromKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
-                                     String privateSignatureKeyAlias, String privateEncryptionKeyAlias) {
+                                     String privateSignatureKeyAlias, String privateEncryptionKeyAlias, final boolean autoActivate) {
         try {
             // check authorization
             if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
@@ -2686,7 +2687,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 p12PublicEncryptionKey = caEncryptionCertificate.getPublicKey();
             }
             importCAFromKeys(admin, caname, keystorepass, signatureCertChain, p12PublicSignatureKey, p12PrivateSignatureKey, p12PrivateEncryptionKey,
-                    p12PublicEncryptionKey);
+                    p12PublicEncryptionKey, autoActivate);
         } catch (Exception e) {
             logAuditEvent(
                     EjbcaEventTypes.CA_IMPORT, EventStatus.FAILURE,
@@ -2753,7 +2754,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void restoreCAKeyStore(AuthenticationToken authenticationToken, String caname, byte[] p12file, String keystorepass, String privkeypass,
-                                  String privateSignatureKeyAlias, String privateEncryptionKeyAlias) {
+                                  String privateSignatureKeyAlias, String privateEncryptionKeyAlias, final boolean autoActivate) {
         if (log.isTraceEnabled()) {
             log.trace(">restoreCAKeyStore");
         }
@@ -2829,7 +2830,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             // Import the keys and save to database
             CAToken catoken = importKeysToCAToken(authenticationToken, keystorepass, thisCAToken.getProperties(), p12PrivateSignatureKey,
-                    p12PublicSignatureKey, p12PrivateEncryptionKey, p12PublicEncryptionKey, signatureCertChain, thisCa.getCAId());
+                    p12PublicSignatureKey, p12PrivateEncryptionKey, p12PublicEncryptionKey, signatureCertChain, thisCa.getCAId(), autoActivate);
             thisCa.setCAToken(catoken);
             // Finally save the CA
             caSession.editCA(authenticationToken, thisCa, true);
@@ -2854,7 +2855,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void importCAFromKeys(AuthenticationToken authenticationToken, String caname, String keystorepass, Certificate[] signatureCertChain,
-                                 PublicKey p12PublicSignatureKey, PrivateKey p12PrivateSignatureKey, PrivateKey p12PrivateEncryptionKey, PublicKey p12PublicEncryptionKey)
+                                 PublicKey p12PublicSignatureKey, PrivateKey p12PrivateSignatureKey, PrivateKey p12PrivateEncryptionKey, PublicKey p12PublicEncryptionKey, final boolean autoActivate)
             throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException, AuthorizationDeniedException,
             CAExistsException, CAOfflineException {
         // Transform into token
@@ -2862,7 +2863,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         CAToken catoken;
         try {
             catoken = importKeysToCAToken(authenticationToken, keystorepass, null, p12PrivateSignatureKey, p12PublicSignatureKey,
-                    p12PrivateEncryptionKey, p12PublicEncryptionKey, signatureCertChain, caId);
+                    p12PrivateEncryptionKey, p12PublicEncryptionKey, signatureCertChain, caId, autoActivate);
         } catch (OperatorCreationException e) {
             log.error(e.getLocalizedMessage(), e);
             throw new EJBException(e);
@@ -2892,9 +2893,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws OperatorCreationException bouncycastle Operator Creation Exception
      * @throws AuthorizationDeniedException An exception thrown when admin is not authorized to a resource.
      */
-    private CAToken importKeysToCAToken(AuthenticationToken authenticationToken, String authenticationCode, Properties caTokenProperties,
-                                        PrivateKey privatekey, PublicKey publickey, PrivateKey privateEncryptionKey, PublicKey publicEncryptionKey,
-                                        Certificate[] caSignatureCertChain, int caId)
+    private CAToken importKeysToCAToken(final AuthenticationToken authenticationToken, final String authenticationCode, Properties caTokenProperties,
+            final PrivateKey privatekey, final PublicKey publickey, final PrivateKey privateEncryptionKey, final PublicKey publicEncryptionKey,
+                                        Certificate[] caSignatureCertChain, final int caId, final boolean autoActivate)
             throws CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException, OperatorCreationException, AuthorizationDeniedException {
         // If we don't give an authentication code, perhaps we have autoactivation enabled
         if (StringUtils.isEmpty(authenticationCode)) {
@@ -2950,6 +2951,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Now we have the PKCS12 keystore, from this we can create the CAToken
             final Properties cryptoTokenProperties = new Properties();
+            if (autoActivate) {
+                BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(authenticationCode), true);
+            }
             int cryptoTokenId;
             try {
                 cryptoTokenId = createCryptoTokenWithUniqueName(authenticationToken, "ImportedCryptoToken" + caId, SoftCryptoToken.class.getName(),
