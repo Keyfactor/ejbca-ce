@@ -22,8 +22,6 @@ public class CryptoTokenConstantsWS {
     // -----------------
     // Soft Crypto Token
     //------------------
-    /** If set, no default password allowed for this soft cryptotoken */
-    public static final String NODEFAULTPWD = org.cesecore.keys.token.SoftCryptoToken.NODEFAULTPWD;
     /** Boolean indicating if it should be allowed to extract private keys */
     public static final String ALLOW_EXTRACTABLE_PRIVATE_KEY = com.keyfactor.util.keys.token.CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY;
     //public static final String ALLOW_NONEXISTING_SLOT_PROPERTY = om.keyfactor.util.keys.token.CryptoToken.ALLOW_NONEXISTING_SLOT_PROPERTY;
