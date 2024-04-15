@@ -15,6 +15,7 @@ dependencies {
     implementation(libs.ejbca.ws.client.gen)
     implementation(libs.commons.lang)
     implementation(libs.x509.common.util)
+    implementation(libs.cryptotokens.api)
     implementation(libs.cryptotokens.impl)
     implementation(libs.istack.commons.runtime)
     implementation(libs.jakarta.xml.bind.api)
