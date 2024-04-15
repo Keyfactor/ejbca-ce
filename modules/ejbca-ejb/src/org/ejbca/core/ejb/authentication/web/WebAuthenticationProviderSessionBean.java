@@ -141,7 +141,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         GlobalUpgradeConfiguration upgradeConfiguration = (GlobalUpgradeConfiguration) globalConfigurationSession
                 .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
         allowBlankAudience = StringTools.isLesserThan(upgradeConfiguration.getPostUpgradedToVersion(), "7.8.0");
-        if (isAllowBlankAudience()) {
+        if (isAllowBlankAudience() && LOG.isDebugEnabled()) {
             LOG.debug("Database not post-upgraded to 7.8.0 yet.  Allowing OAuth logins without checking 'aud' claim.");
         }
     }
@@ -214,10 +214,10 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     }
                 }
             }
-            
+
             JWTClaimsSet claims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("JWT Claims:" + claims);
+                LOG.debug("Access token Claims:" + claims);
             }
 
             if (!verifyOauth2Audience(keyInfo, claims)) {
@@ -225,6 +225,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             }
                        
             if (keyInfo.isFetchUserInfo()) {
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Sending userInfo request");
+                }
                 JWTClaimsSet tokenAndUserInfoClaims = fetchUserInfoAndAddToClaims(encodedOauthBearerToken, keyInfo, claims, keyId, oauthIdToken);
                 if (tokenAndUserInfoClaims != null && !tokenAndUserInfoClaims.getClaims().isEmpty()) {
                     claims = tokenAndUserInfoClaims;
@@ -259,7 +262,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             final String keyId, final String oauthIdToken) throws ParseException, JOSEException {
         OauthRequestHelper oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(
                 internalKeyBindings, certificateStoreSession, cryptoToken));
-        OAuthUserInfoResponse userInfoResponse = new OAuthUserInfoResponse();
+        OAuthUserInfoResponse userInfoResponse;
         try {
             userInfoResponse = oauthRequestHelper.sendUserInfoRequest(keyInfoFromToken, encodedOauthBearerToken);
         } catch (IOException e) {
@@ -283,6 +286,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 claimsSetBuilder.claim(entry.getKey(), entry.getValue());
             }
             userInfoClaims = JWTClaimsSet.parse(userInfoResponse.getClaims());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("User Info Claims:" + userInfoClaims);
+            }
             for (Map.Entry<String, Object> entry : userInfoClaims.getClaims().entrySet()) {
                 claimsSetBuilder.claim(entry.getKey(), entry.getValue());
             }
@@ -300,6 +306,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             }
             
             userInfoClaims = jwt.getJWTClaimsSet();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("User Info Claims:" + userInfoClaims);
+            }
             // Verify the userinfo response subject against the id token subject
             if (userInfoClaims != null && userInfoClaims.getSubject() != null && userInfoClaims.getSubject().equals(idTokenClaims.getSubject())) {
                 for (Map.Entry<String, Object> entry : tokenClaims.getClaims().entrySet()) {
@@ -350,17 +359,23 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
         try {
             accessJwt = JWTParser.parse(encodedOauthBearerToken);
             if (accessJwt instanceof SignedJWT) {
-                LOG.debug("Using access_token");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Using access_token");
+                }
                 return (SignedJWT) accessJwt;
             }
         } catch (ParseException | NullPointerException e) {
-            LOG.debug("Parse exception of access_token", e);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Parse exception of access_token", e);
+            }
         }
         JWT idJwt = null;
         if (StringUtils.isNotEmpty(oauthIdToken)) {
             idJwt = JWTParser.parse(oauthIdToken);
             if (idJwt instanceof SignedJWT) {
-                LOG.debug("Using id_token");
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Using id_token");
+                }
                 return (SignedJWT) idJwt;
             }
         }
@@ -443,7 +458,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 });
             }
             else {
-                LOG.debug("unexpected type of 'roles' claim: " + rolesClaimObject.getClass());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("unexpected type of 'roles' claim: " + rolesClaimObject.getClass());
+                }
             }
         }
         
@@ -506,12 +523,16 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             if (keyId != null) {
                 for (final OAuthKeyInfo oAuthKeyInfo : availableKeys.values()) {
                     if (oAuthKeyInfo.getAllKeyIdentifiers() != null && oAuthKeyInfo.getAllKeyIdentifiers().contains(keyId)) {
-                        LOG.debug("Using trusted oauth provider with name: " + oAuthKeyInfo.getLabel());
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("Using trusted oauth provider with name: " + oAuthKeyInfo.getLabel());
+                        }
                         return oAuthKeyInfo;
                     }
                 }
             }
-            LOG.debug("Using default trusted oauth provider : " + oauthConfiguration.getDefaultOauthKey());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Using default trusted oauth provider : " + oauthConfiguration.getDefaultOauthKey());
+            }
             return oauthConfiguration.getDefaultOauthKey();
         }
         return null;

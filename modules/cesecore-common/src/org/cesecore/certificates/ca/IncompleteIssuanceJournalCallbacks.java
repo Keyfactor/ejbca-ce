@@ -52,5 +52,10 @@ public interface IncompleteIssuanceJournalCallbacks {
      * @see #removeFromJournal
      */
     void removeFromJournalNewTransaction(int caId, BigInteger serialNumber);
+    
+    /**
+     * Checks if the given certificate is present in IncompleteIssuanceJournalData
+     */
+    boolean presentInJournal(int caId, BigInteger serialNumber);
 
 }
