@@ -1043,6 +1043,7 @@ modules/ejbca-ejb-interface/src/org/ejbca/core/ejb/ws/EjbcaWSHelperSession.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/ejb/ws/EjbcaWSHelperSessionLocal.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/ejb/ws/EjbcaWSHelperSessionRemote.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/ca/publisher/MultiGroupPublisher.java
+modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/GenerateOrKeyRecoverTokenRequest.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/IdNameHashMap.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/KeyToValueHolder.java
 modules/ejbca-ejb-interface/src/org/ejbca/core/model/era/RaAcmeRequest.java

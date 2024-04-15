@@ -71,12 +71,6 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
     }
 
 	@Test
-    public void testActivateDeactivate() throws Exception {
-    	CryptoToken catoken = createSoftToken(true);
-        doActivateDeactivate(catoken);
-    }
-
-	@Test
     public void testAutoActivate() throws Exception {
     	CryptoToken catoken = createSoftToken(true);
     	doAutoActivate(catoken);
@@ -95,7 +89,7 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 	}
 
 	@Test
-	public void testDefaultPwdOrNot() throws Exception {
+	public void testWontWorkUnactivated() throws Exception {
     	final CryptoToken cryptoToken1 = createSoftToken(true);
     	// Should not work, we need to activate
     	try {
@@ -107,21 +101,6 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 		cryptoToken1.activate("bar123".toCharArray());
 		cryptoToken1.generateKeyPair("1024", "foo");
 		KeyTools.testKey(cryptoToken1.getPrivateKey("foo"), cryptoToken1.getPublicKey("foo"), null);
-
-		// Use default password
-		final CryptoToken cryptoToken2 = createSoftToken(false);
-    	// Should work, auto-password
-    	cryptoToken2.generateKeyPair("1024", "foo");
-		KeyTools.testKey(cryptoToken2.getPrivateKey("foo"), cryptoToken2.getPublicKey("foo"), null);
-    	cryptoToken2.deactivate();
-    	// Should still work, auto-password
-    	cryptoToken2.generateKeyPair("1024", "foo");
-		KeyTools.testKey(cryptoToken2.getPrivateKey("foo"), cryptoToken2.getPublicKey("foo"), null);
-        // Should work token is already (auto) active
-        cryptoToken2.activate("bar123".toCharArray());
-		cryptoToken2.activate("foo123".toCharArray());
-		cryptoToken2.generateKeyPair("1024", "foo");
-		KeyTools.testKey(cryptoToken2.getPrivateKey("foo"), cryptoToken2.getPublicKey("foo"), null);
 	}
 
 	@Override
@@ -129,16 +108,13 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 		return BouncyCastleProvider.PROVIDER_NAME;
 	}
 
-	public static CryptoToken createSoftToken(boolean nodefaultpwd) {
-        return createSoftToken(nodefaultpwd, true);
+	public static CryptoToken createSoftToken() {
+        return createSoftToken(true);
 	}
 
 
-    public static CryptoToken createSoftToken(boolean nodefaultpwd, boolean extractable) {
+    public static CryptoToken createSoftToken(boolean extractable) {
 		Properties prop = new Properties();
-		if (nodefaultpwd) {
-			prop.setProperty(SoftCryptoToken.NODEFAULTPWD, Boolean.toString(nodefaultpwd));
-		}
         if(extractable){
             prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(true));
         } else {

@@ -375,6 +375,10 @@ textarea.row-odd,
 	margin-right: 15px;
 }
 
+.edit-ee-update-keytype {
+	margin-left: 30px;
+}
+
 #detailsForm .ra-editEndEntity table+.next-to-radio {
 	position: relative;
 	top: -10px;
@@ -402,7 +406,7 @@ textarea.row-odd,
 	word-wrap: break-word;
 	table-layout: fixed;
 	display: inline-table;
-	width: 70%; "
+	width: 70%;
 	font-family: monospace;
 	color: #fff;
 	margin-bottom: 15px;
