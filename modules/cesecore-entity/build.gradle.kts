@@ -14,7 +14,8 @@ dependencies {
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.configuration2)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.impl)
+    compileOnly(libs.cryptotokens.api)
+    compileOnly(libs.cryptotokens.impl) 
     compileOnly(libs.javax.persistence.api)
 }
 
