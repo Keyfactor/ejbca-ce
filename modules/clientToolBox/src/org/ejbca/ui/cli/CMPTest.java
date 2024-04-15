@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -43,6 +42,9 @@ import java.util.Date;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 import org.bouncycastle.asn1.ASN1BitString;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -96,7 +98,6 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.util.encoders.Hex;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.client.CMPSendHTTP;
@@ -105,12 +106,9 @@ import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-
 /**
  * Used to stress test the CMP interface.
- * 
+ *
  * @version $Id$
  *
  */
@@ -127,17 +125,14 @@ class CMPTest extends ClientToolBox {
         final private Provider bcProvider = new BouncyCastleProvider();
         final private String hostName;
         final private int port;
-        final private boolean isHttp;
         final String urlPath;
         final String resultCertFilePrefix;
         boolean isSign;
         boolean firstTime = true;
         //private int lastNextInt = 0;
 
-        @SuppressWarnings("synthetic-access")
         StressTest( final String _hostName,
                     final int _port,
-                    final boolean _isHttp,
                     final InputStream certInputStream,
                     final int numberOfThreads,
                     final int numberOfTests,
@@ -149,7 +144,6 @@ class CMPTest extends ClientToolBox {
             this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
             this.cacert = (X509Certificate)this.certificateFactory.generateCertificate(certInputStream);
             this.port = _port;
-            this.isHttp = _isHttp;
             this.urlPath = _urlPath + (alias!=null?"/"+alias:"");
             this.resultCertFilePrefix = _resultCertFilePrefix;
 
@@ -220,10 +214,10 @@ class CMPTest extends ClientToolBox {
                     new POPOSigningKey(null,
                             new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption),
                             bs);
-                myProofOfPossession = new ProofOfPossession(myPOPOSigningKey);           
+                myProofOfPossession = new ProofOfPossession(myPOPOSigningKey);
             }
 
-            final AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.id_regCtrl_regToken, new DERUTF8String("foo123")); 
+            final AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.id_regCtrl_regToken, new DERUTF8String("foo123"));
             AttributeTypeAndValue[] avs = {av};
 
             final CertReqMsg myCertReqMsg = new CertReqMsg(certRequest, myProofOfPossession, avs);
@@ -238,19 +232,19 @@ class CMPTest extends ClientToolBox {
             myPKIHeader.setTransactionID(new DEROctetString(sessionData.getTransId()));
 
             final PKIBody myPKIBody = new PKIBody(0, myCertReqMessages); // initialization request
-            return new PKIMessage(myPKIHeader.build(), myPKIBody);   
+            return new PKIMessage(myPKIHeader.build(), myPKIBody);
         }
-        
+
         private PKIMessage protectPKIMessage(final PKIMessage msg,
                                              final boolean badObjectId,
-                                             final String password) throws NoSuchAlgorithmException, InvalidKeyException {
+                                             final String password,
+                                             final byte[] salt) throws NoSuchAlgorithmException, InvalidKeyException {
             // SHA1
             final AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.3.14.3.2.26"));
             // 567 iterations
             final int iterationCount = 567;
             // HMAC/SHA1
             final AlgorithmIdentifier macAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.2.840.113549.2.7"));
-            final byte[] salt = "foo123".getBytes();
             final DEROctetString derSalt = new DEROctetString(salt);
             final PKIMessage ret;
             final PKIHeaderBuilder headbuilder;
@@ -298,11 +292,11 @@ class CMPTest extends ClientToolBox {
             }
             return ret;
         }
-        
+
         private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws Exception {
                 return sendCmpHttp(message);
            }
-        
+
         @SuppressWarnings("synthetic-access")
         private byte[] sendCmpHttp(final byte[] message) throws Exception {
             final CMPSendHTTP send = CMPSendHTTP.sendMessage(message, StressTest.this.hostName, StressTest.this.port, StressTest.this.urlPath, false);
@@ -430,7 +424,7 @@ class CMPTest extends ClientToolBox {
                     final byte[] salt = pp.getSalt().getOctets();
                     //log.info("Salt is: "+new String(salt));
                     final byte[] raSecret = new String("password").getBytes();
-                    // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7 
+                    // HMAC/SHA1 is normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7
                     final String macOid = macAlg.getAlgorithm().getId();
                     final SecretKey key;
                     {
@@ -614,7 +608,7 @@ class CMPTest extends ClientToolBox {
             }
         }
         private PKIMessage genCertConfirm(final SessionData sessionData, final String hash) {
-            
+
             PKIHeaderBuilder myPKIHeader =
                 new PKIHeaderBuilder(
                         2,
@@ -625,13 +619,13 @@ class CMPTest extends ClientToolBox {
             myPKIHeader.setSenderNonce(new DEROctetString(sessionData.getNonce()));
             // TransactionId
             myPKIHeader.setTransactionID(new DEROctetString(sessionData.getTransId()));
-            
+
             CertStatus cs = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(sessionData.getReqId())));
-            
+
             ASN1EncodableVector v = new ASN1EncodableVector();
             v.add(cs);
             CertConfirmContent cc = CertConfirmContent.getInstance(new DERSequence(v));
-            
+
             PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
             return new PKIMessage(myPKIHeader.build(), myPKIBody);
         }
@@ -650,12 +644,12 @@ class CMPTest extends ClientToolBox {
                     return false;
                 }
                 //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
-                final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD);
+                final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, this.sessionData.getSalt());
                 if (req == null) {
                     StressTest.this.performanceTest.getLog().error("No protected message.");
                     return false;
                 }
-                
+
                 CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
                 this.sessionData.setReqId(ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue());
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
@@ -705,7 +699,7 @@ class CMPTest extends ClientToolBox {
                     return false;
                 }
                 //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
-                final PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD);
+                final PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD, this.sessionData.getSalt());
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
                 final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
                 out.writeObject(confirm);
@@ -750,25 +744,14 @@ class CMPTest extends ClientToolBox {
         class SessionData {
             final private byte[] nonce = new byte[16];
             final private byte[] transid = new byte[16];
+            final private byte[] salt = new byte[16];
             private int lastNextInt = 0;
             private X500Name userDN;
             private int reqId;
             Socket socket;
-            final private static int howOftenToGenerateSameUsername = 3;	// 0 = never, 1 = 100% chance, 2=50% chance etc.. 
+            final private static int howOftenToGenerateSameUsername = 3;	// 0 = never, 1 = 100% chance, 2=50% chance etc..
             SessionData() {
                 super();
-            }
-            @SuppressWarnings("synthetic-access")
-            Socket getSocket() throws UnknownHostException, IOException {
-                if ( StressTest.this.isHttp ) {
-                    return null;
-                }
-                if ( this.socket==null || this.socket.isClosed() || !this.socket.isBound() || !this.socket.isConnected() || this.socket.isInputShutdown() || this.socket.isOutputShutdown() ) {
-                    StressTest.this.performanceTest.getLog().info("New socket created for thread with '" + Hex.toHexString(this.transid) + "'.");
-                    this.socket = new Socket(StressTest.this.hostName, StressTest.this.port);
-                    this.socket.setKeepAlive(true);
-                }
-                return this.socket;
             }
             /** @return a positive integer as a zero-padded String (max length that is pseudo-random is 9 chars). */
             private String getRandomAllDigitString(int length) {
@@ -776,7 +759,7 @@ class CMPTest extends ClientToolBox {
                 format.setMinimumIntegerDigits(length);
                 format.setMaximumIntegerDigits(length);
                 format.setGroupingUsed(false);
-                return format.format((long)StressTest.this.performanceTest.getRandom().nextInt(Integer.MAX_VALUE));
+                return format.format(StressTest.this.performanceTest.getRandom().nextInt(Integer.MAX_VALUE));
             }
             private String getFnrLra() {
             	return getRandomAllDigitString(6)+getRandomAllDigitString(5)+'-'+getRandomAllDigitString(5);
@@ -808,6 +791,7 @@ class CMPTest extends ClientToolBox {
                 this.userDN=x500nb.build();
                 StressTest.this.performanceTest.getRandom().nextBytes(this.nonce);
                 StressTest.this.performanceTest.getRandom().nextBytes(this.transid);
+                StressTest.this.performanceTest.getRandom().nextBytes(this.salt);
             }
             int getReqId() {
                 return this.reqId;
@@ -823,6 +807,9 @@ class CMPTest extends ClientToolBox {
             }
             byte[] getNonce() {
                 return this.nonce;
+            }
+            byte[] getSalt() {
+                return this.salt;
             }
         }
         private class MyCommandFactory implements CommandFactory {
@@ -846,7 +833,6 @@ class CMPTest extends ClientToolBox {
         final File certFile;
         final String alias;
         final int port;
-        final boolean isHttp;
         final String urlPath;
         final String resultFilePrefix;
         if ( args.length < 3 ) {
@@ -858,7 +844,7 @@ class CMPTest extends ClientToolBox {
             System.out.println("\t'Authentication Module' must have 'password' as 'Specify Secret'.");
             System.out.println("\t'RA End Entity Profile' and 'RA Certificate Profile' must be set to user defined values in order to 'Allow subject DN override by CSR' (see below).");
             System.out.println("EJBCA CA configuration requires 'Enforce unique public keys' to be unchecked, i.e. to not enforce unique public keys. The same key pair is used for all users in order to gain maximum speed in the test client.");
-            System.out.println("EJBCA Certificate Profile configuration requires 'Allow subject DN override by CSR' to be checked, i.e. to not use the DN from the CRMF request message. This because the CMP test sends a non-normalized DN and compares the result.");
+            System.out.println("EJBCA Certificate Profile configuration requires 'Allow subject DN override by CSR' to be checked, i.e. to use the DN from the CRMF request message. This because the CMP test sends a non-normalized DN and compares the result.");
             return;
         }
         hostName = args[1];
@@ -868,7 +854,6 @@ class CMPTest extends ClientToolBox {
         waitTime = args.length>4 ? Integer.parseInt(args[4].trim()):0;
         alias = args.length>5 ? args[5].trim():null;
         port = args.length>6 ? Integer.parseInt(args[6].trim()):8080;
-        isHttp = true;
         urlPath = args.length>7 && args[7].toLowerCase().indexOf("null")<0 ? args[7].trim():"/ejbca/publicweb/cmp";
         resultFilePrefix = args.length>8 ? args[8].trim() : null;
 
@@ -878,7 +863,7 @@ class CMPTest extends ClientToolBox {
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, port, isHttp, new FileInputStream(certFile), notanot.getThreads(), notanot.getTests(), waitTime, alias, urlPath, resultFilePrefix);
+            new StressTest(hostName, port, new FileInputStream(certFile), notanot.getThreads(), notanot.getTests(), waitTime, alias, urlPath, resultFilePrefix);
         } catch (SecurityException e) {
             throw e; // System.exit() called. Not thrown in normal operation but thrown by the custom SecurityManager when clientToolBoxTest is executed. Must not be caught.
         } catch (Exception e) {
