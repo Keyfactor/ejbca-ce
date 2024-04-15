@@ -40,17 +40,18 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
     private static final String NEW_PIN_KEY = "--newpin";
     private static final String TOKEN_TYPE = "--tokentype";
     private static final String TOKEN_TYPE_SOFT = "SOFT";
-    private static final String TOKEN_TYPE_PKCS11 = "PKCS#11";
+    private static final String TOKEN_TYPE_PKCS11 = "PKCS11";
     {
         registerParameter(new Parameter(OLD_PIN_KEY, "Pin", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The old pin. Argument is mandatory if tokentype is " + TOKEN_TYPE_SOFT + ". Set as \"null\" to prompt"));
         registerParameter(new Parameter(NEW_PIN_KEY, "Pin", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The new pin. Set as \"null\" to prompt"));
+        registerParameter(new Parameter(TOKEN_TYPE, "Token Type", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT, 
+                "Token type, can be one of the following: " + TOKEN_TYPE_SOFT + ", " + TOKEN_TYPE_PKCS11));
         registerParameter(Parameter.createFlag(SWITCH_UPDATE_ONLY_KEY,
                 "Set the auto-activation pin and make the token auto-activated if it was so previously."));
         registerParameter(Parameter.createFlag(SWITCH_REMOVE_AUTO_KEY,
                 "Will remove any auto-activation pin if present (new pin is not required when this is used)."));
-        registerParameter(new Parameter(TOKEN_TYPE, "Token Type", MandatoryMode.MANDATORY, StandaloneMode.FORBID, ParameterMode.ARGUMENT, "Type of crypto token."));
     }
 
     @Override
@@ -60,21 +61,22 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
 
     @Override
     public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        final String tokenType = parameters.get(TOKEN_TYPE) != null? parameters.get(TOKEN_TYPE) : TOKEN_TYPE_SOFT;        
         final boolean updateOnly = parameters.containsKey(SWITCH_UPDATE_ONLY_KEY);
-        final boolean removeAuto = parameters.containsKey(SWITCH_REMOVE_AUTO_KEY);
-        if (!parameters.get(TOKEN_TYPE ).equals(TOKEN_TYPE_SOFT) && !parameters.get(TOKEN_TYPE ).equals(TOKEN_TYPE_PKCS11)){
+        final boolean removeAuto = parameters.containsKey(SWITCH_REMOVE_AUTO_KEY);        
+        final boolean isPkcs11Token = tokenType.equals(TOKEN_TYPE_PKCS11);
+        final char[] currentAuthenticationCode;
+        if (!tokenType.equals(TOKEN_TYPE_SOFT) && !tokenType.equals(TOKEN_TYPE_PKCS11)){
             getLogger().info("Token type can only be one of the following: " + TOKEN_TYPE_SOFT + ", " + TOKEN_TYPE_PKCS11);
             return CommandResult.FUNCTIONAL_FAILURE;            
-        }        
-        final char[] currentAuthenticationCode;
-        boolean softtoken = parameters.get(TOKEN_TYPE ).equals(TOKEN_TYPE_SOFT);
-        if (softtoken) {
+        }       
+        if (isPkcs11Token) {
+            currentAuthenticationCode = null;
+        } else {
             if (parameters.get(OLD_PIN_KEY) == null) {
-            getLogger().info("For soft tokens, the old pin must always be provided and unless the \"--remove\" flag is used the new pin must be provided:");
+                getLogger().info("For soft tokens, the old pin must always be provided and if the \"--remove\" flag is not used the new pin must also be provided:");
             }
             currentAuthenticationCode = getAuthenticationCode(parameters.get(OLD_PIN_KEY));
-        } else {
-            currentAuthenticationCode = null;
         }
         final char[] newAuthenticationCode = removeAuto ? null : getAuthenticationCode(parameters.get(NEW_PIN_KEY));
         try {
