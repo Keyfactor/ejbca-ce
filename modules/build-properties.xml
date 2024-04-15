@@ -486,7 +486,6 @@
             <include name="antlr-*.jar"/>
         	<include name="byte-buddy*.jar"/>
             <include name="classmate*.jar"/>
-            <include name="dom4j-*.jar"/>
         	<include name="FastInfoset*.jar"/>
             <include name="hibernate-commons-annotations-*.jar"/>
             <include name="hibernate-core-*.jar"/>
