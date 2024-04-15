@@ -25,6 +25,7 @@ import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -41,7 +42,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 public class CryptoTokenUpdatePinCommandTest {
 
     private static final String TOKEN_NAME = CryptoTokenUpdatePinCommandTest.class.getSimpleName();
-    private static final String TOKEN_TYPE = "SOFT";
     private static final String TOKEN_PIN = "foo123";
     
 
@@ -81,18 +81,25 @@ public class CryptoTokenUpdatePinCommandTest {
     @Test
     public void testCommand() throws AuthorizationDeniedException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
-        final String newPin = "bar123";
-        String[] args = new String[] { TOKEN_NAME, TOKEN_TYPE, TOKEN_PIN, newPin };
-        command.execute(args);
-        cryptoTokenManagementSession.activate(authenticationToken, cryptoTokenId, newPin.toCharArray());
+        final String updatedPin = "bar123";
+        String[] args_using_original_pin = new String[] { TOKEN_NAME, TOKEN_PIN, updatedPin };
+        String[] args_reset_pin = new String[] { TOKEN_NAME, updatedPin, TOKEN_PIN };
+        CommandResult commandResult = command.execute(args_using_original_pin);
+        assertTrue("Should not fail. setpin command failed using existing pin." , commandResult.equals(CommandResult.SUCCESS));
+        CommandResult commandResultShouldFail = command.execute(args_using_original_pin);
+        assertTrue("Should fail. setpin command did not fail as it should using old pin after setpin command with new pin.", commandResultShouldFail.equals(CommandResult.FUNCTIONAL_FAILURE));
+        CommandResult resetCommandResult = command.execute(args_reset_pin);
+        assertTrue("Should not fail. setpin command failed authenticating with new pin and reset back to old pin.", resetCommandResult.equals(CommandResult.SUCCESS));
+        //Given the check "if (oldAutoActivationPin != null || !updateOnly)" and successful authentication, a new auto-activation pin will be set and
+        //the cryptotoken in question should be active:
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
-        assertTrue("Pin was apparently not replaced.", cryptoTokenInfo.isActive());
+        assertTrue("Token with auto-activation should be active after update.", cryptoTokenInfo.isActive());
     }
     
     @Test
     public void testRemovePin() throws AuthorizationDeniedException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
-        String[] args = new String[] { "--token", TOKEN_NAME, "--tokentype", TOKEN_TYPE, "--oldpin", TOKEN_PIN, "--remove" };
+        String[] args = new String[] { "--token", TOKEN_NAME, "--oldpin", TOKEN_PIN, "--remove" };
         command.execute(args);
         cryptoTokenProxySession.flushCache();
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
