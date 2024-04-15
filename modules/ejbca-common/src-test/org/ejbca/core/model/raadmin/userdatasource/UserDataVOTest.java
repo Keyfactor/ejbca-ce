@@ -34,6 +34,7 @@ import java.util.Date;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
+@SuppressWarnings("deprecation")
 public class UserDataVOTest {
     private final static Logger log = Logger.getLogger(UserDataVOTest.class);
 
