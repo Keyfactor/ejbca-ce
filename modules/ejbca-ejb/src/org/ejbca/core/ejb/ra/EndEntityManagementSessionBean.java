@@ -71,7 +71,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CABase;
-import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -2091,7 +2090,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         //Check if revocation includes invalidityDate and is allowed
         final CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
-        if (invalidityDate != null && !(cainfo.isAllowInvalidityDate())) {
+        boolean allowInvalidityDate = cainfo != null && cainfo.isAllowInvalidityDate();
+        if (invalidityDate != null && !allowInvalidityDate) {
             final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed", issuerDn, certSerNo.toString(16));
             log.info(msg);
             throw new AlreadyRevokedException(msg);
@@ -2110,8 +2110,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     // a valid certificate could have reason "REVOCATION_REASON_REMOVEFROMCRL" if it has been revoked in the past.
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
 
-                final CAData cadata = caSession.findById(certificateData.getIssuerDN().hashCode());
-                final boolean allowedOnCa = cadata != null ? cadata.getCA().getCAInfo().isAllowChangingRevocationReason() : false;
+                final boolean allowedOnCa = cainfo != null && cainfo.isAllowChangingRevocationReason();
 
                 final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
                 
@@ -2121,17 +2120,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     if (revocationDate == null){
                         revocationDate = new Date(certificateData.getRevocationDate());
                     }
-                    if (invalidityDate != null && !(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
-                        final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
-                        log.info(msg);
-                        throw new AlreadyRevokedException(msg);
-                    }
                 } else if ((invalidityDate != null) && (reason == certificateData.getRevocationReason())) {
-                    if (!cainfo.isAllowInvalidityDate()) {
-                        final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
-                        log.info(msg);
-                        throw new AlreadyRevokedException(msg);
-                    }
                     // If we will update with invalidityDate, the revocationDate should be the same as the original revocation
                     revocationDate = new Date(certificateData.getRevocationDate());
                 } else if (!canChangeRevocationReason){
