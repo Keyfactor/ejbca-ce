@@ -748,7 +748,7 @@ public class IntegratedOcspResponseTest {
             assertNotNull("OCSP responder replied null", responseBytes);
 
             response = new OCSPResp(responseBytes);
-            assertEquals("Response status not zero.", response.getStatus(), 0);
+            assertEquals("Response status not zero.", 0, response.getStatus());
             basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
             assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(
                     new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caCertificate.getPublicKey())));
