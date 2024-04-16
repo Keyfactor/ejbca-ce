@@ -148,7 +148,8 @@ public class CertificateData extends BaseCertificateData implements Serializable
      *
      * @param certificate the (X509)Certificate to be stored in the database. If the property "database.useSeparateCertificateTable" is true then it should be null.
      * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have
-     *            parameters. Can be null if RSA or certificate public key contains all parameters.
+     *            parameters. Can be null if RSA or PQC or certificate public key contains all parameters. Only used for generating Subject Key ID,
+     *            so the alternative public key is not needed here.
      * @param username the username in UserData to map the certificate to
      * @param cafp CA certificate fingerprint, can be null
      * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)

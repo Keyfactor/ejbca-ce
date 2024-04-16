@@ -39,11 +39,9 @@ import javax.crypto.NoSuchPaddingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.PrivateKeyNotExtractableException;
 
 import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -90,15 +88,7 @@ public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
         }
         // If we don't have an auto activation password set, we try to use the default one if it works to load the keystore with it
         String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
-        if ((autoPwd == null) && (properties.getProperty(NODEFAULTPWD) == null)) {
-            final String keystorepass = StringTools.passwordDecryption(CesecoreConfiguration.getCaKeyStorePass(), "ca.keystorepass");
-            // Test it first, don't set an incorrect password as autoa-ctivate password
-            boolean okPwd = checkSoftKeystorePassword(keystorepass.toCharArray(), cryptoTokenId);
-            if (okPwd) {
-                log.debug("Succeded to load keystore with password");
-                BaseCryptoToken.setAutoActivatePin(properties, keystorepass, true);
-            }
-        } else if (autoPwd != null) {
+        if (autoPwd != null) {
             log.debug("Soft Crypto Token has autoactivation property set.");
         } else if (properties.getProperty(NODEFAULTPWD) != null) {
             log.debug("No default pwd allowed for this soft crypto token.");
@@ -183,12 +173,7 @@ public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
             throw new PrivateKeyNotExtractableException(msg);
         }
         try {
-            if (authCode == null || authCode.length == 0) {
-                final String defaultpass = StringTools.passwordDecryption(CesecoreConfiguration.getCaKeyStorePass(), "ca.keystorepass");
-                loadKeyStore(keystoreData, defaultpass.toCharArray());
-            } else {
-                loadKeyStore(keystoreData, authCode);
-            }
+            loadKeyStore(keystoreData, authCode);
         } catch (IOException e) {
             String msg = "Invalid authentication code for Crypto Token with ID " + getId() + "." + e.getMessage();
             log.info(msg, e);
@@ -249,29 +234,6 @@ public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
     public byte[] getTokenData() {
         storeKeyStore();
         return keystoreData;
-    }
-
-    /**
-     * Verifies the password for soft keystore by trying to load the keystore
-     * 
-     * @param authenticationCode
-     *            authentication code for the keystore
-     * @return true if verification was ok
-     */
-    private boolean checkSoftKeystorePassword(final char[] authenticationCode, int cryptoTokenId) {
-        try {
-            if (keystoreData != null) {
-                KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
-                keystore.load(new java.io.ByteArrayInputStream(keystoreData), authenticationCode);
-            }
-            return true;
-        } catch (Exception e) {
-            // If it was not the wrong password we need to see what went wrong
-            log.debug("Error: ", e);
-            // Invalid password
-            log.info("Invalid authentication code for Crypto Token with ID " + cryptoTokenId + ".");
-        }
-        return false;
     }
 
     @Override

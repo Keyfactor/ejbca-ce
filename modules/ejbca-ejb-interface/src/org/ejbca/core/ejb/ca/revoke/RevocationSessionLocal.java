@@ -25,7 +25,7 @@ import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 
 /**
- * @version $Id$
+ * 
  */
 @Local
 public interface RevocationSessionLocal extends RevocationSession {
@@ -98,9 +98,10 @@ public interface RevocationSessionLocal extends RevocationSession {
      *
      * @param admin  Administrator performing the operation
      * @param maxIssuanceTimeMillis  Time until a certificate issuance is considered to have failed.
-     * @return  Number of revoked certificates, or 0 when there is nothing left to revoke.
+     * @param revokePreCerts decides if the pre certificates should be revoked or not
+     * @return  Number of maintained certificates, or 0 when there is nothing left to handle.
      * @throws AuthorizationDeniedException (rollback)
      */
-    int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin, long maxIssuanceTimeMillis) throws AuthorizationDeniedException;
+    int handleIncompletelyIssuedCertsBatched(final AuthenticationToken admin, final long maxIssuanceTimeMillis, final boolean revokePreCerts) throws AuthorizationDeniedException;
 
 }

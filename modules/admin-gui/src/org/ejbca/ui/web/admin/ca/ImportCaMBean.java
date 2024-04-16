@@ -116,7 +116,8 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
         try {
             final byte[] fileBuffer =  IOUtils.toByteArray(uploadedFile.getInputStream(), uploadedFile.getSize());
             detectAliases(fileBuffer);
-            caAdminSession.importCAFromKeyStore(getAdmin(), importCaName, fileBuffer, importPassword, importPassword, importSigAlias, importEncAlias);
+            //Auto-activate set to false as this is the default behavior for this bean
+            caAdminSession.importCAFromKeyStore(getAdmin(), importCaName, fileBuffer, importPassword, importPassword, importSigAlias, importEncAlias, false);
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (ParameterException e) {
             addNonTranslatedErrorMessage(e.getMessage());

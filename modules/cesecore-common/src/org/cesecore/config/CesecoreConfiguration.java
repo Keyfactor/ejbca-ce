@@ -52,13 +52,6 @@ public final class CesecoreConfiguration {
     }
 
     /**
-     * Password used to protect CA keystores in the database.
-     */
-    public static String getCaKeyStorePass() {
-        return ConfigurationHolder.getExpandedString("ca.keystorepass");
-    }
-
-    /**
      * The length in octets of certificate serial numbers generated for legacy CAs. (8 octets is a 64 bit serial number.)
      */
     public static int getSerialNumberOctetSizeForExistingCa() {

@@ -508,6 +508,9 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenCertSignKey())) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
         }
+        if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenAlternativeCertSignKey())) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_ALTERNATIVE_CERTSIGN_STRING, caInfoDto.getCryptoTokenAlternativeCertSignKey());
+        }
         if (!StringUtils.isEmpty(caInfoDto.getCryptoTokenCertSignKey())) {
             caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, caInfoDto.getCryptoTokenCertSignKey());
         }
