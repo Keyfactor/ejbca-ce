@@ -18,3 +18,4 @@ modules/ra-gui/resources/js/jquery.min.js
 /.idea
 /.metadata
 /.project
+.gradle
