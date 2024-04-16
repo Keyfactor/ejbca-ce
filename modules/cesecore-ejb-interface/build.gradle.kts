@@ -16,6 +16,7 @@ dependencies {
     compileOnly(libs.commons.io)
     compileOnly(libs.commons.configuration2)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl)
 }
 
