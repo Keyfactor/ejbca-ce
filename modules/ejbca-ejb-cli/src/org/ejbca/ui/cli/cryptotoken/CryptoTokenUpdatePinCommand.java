@@ -65,7 +65,11 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
         final boolean updateOnly = parameters.containsKey(SWITCH_UPDATE_ONLY_KEY);
         final boolean removeAuto = parameters.containsKey(SWITCH_REMOVE_AUTO_KEY);        
         final boolean isPkcs11Token = tokenType.equals(TOKEN_TYPE_PKCS11);
+        // The newPinIsFalse and newPinIsTrue is only used in order to provide correct and useful info to the user when interacting with the CLI 
+        final boolean newPinIsFalse = false;
+        final boolean newPinIsTrue = true; 
         final char[] currentAuthenticationCode;
+
         if (!tokenType.equals(TOKEN_TYPE_SOFT) && !tokenType.equals(TOKEN_TYPE_PKCS11)){
             getLogger().info("Token type can only be one of the following: " + TOKEN_TYPE_SOFT + ", " + TOKEN_TYPE_PKCS11);
             return CommandResult.FUNCTIONAL_FAILURE;            
@@ -76,9 +80,9 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
             if (parameters.get(OLD_PIN_KEY) == null) {
                 getLogger().info("For soft tokens, the old pin must always be provided and if the \"--remove\" flag is not used the new pin must also be provided:");
             }
-            currentAuthenticationCode = getAuthenticationCode(parameters.get(OLD_PIN_KEY));
+            currentAuthenticationCode = getAuthenticationCode(parameters.get(OLD_PIN_KEY), newPinIsFalse);
         }
-        final char[] newAuthenticationCode = removeAuto ? null : getAuthenticationCode(parameters.get(NEW_PIN_KEY));
+        final char[] newAuthenticationCode = removeAuto ? null : getAuthenticationCode(parameters.get(NEW_PIN_KEY), newPinIsTrue);
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
