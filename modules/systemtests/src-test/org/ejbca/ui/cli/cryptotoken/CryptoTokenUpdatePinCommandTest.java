@@ -83,15 +83,15 @@ public class CryptoTokenUpdatePinCommandTest {
             CryptoTokenAuthenticationFailedException {
         final String updatedPin = "bar123";
         String[] args_using_original_pin = new String[] { TOKEN_NAME, TOKEN_PIN, updatedPin };
-        String[] args_reset_pin = new String[] { TOKEN_NAME, updatedPin, TOKEN_PIN };
+        String[] args_updated_pin = new String[] { TOKEN_NAME, updatedPin, TOKEN_PIN };
         CommandResult commandResult = command.execute(args_using_original_pin);
-        assertTrue("Should not fail. setpin command failed using existing pin." , commandResult.equals(CommandResult.SUCCESS));
-        CommandResult commandResultShouldFail = command.execute(args_using_original_pin);
-        assertTrue("Should fail. setpin command did not fail as it should using old pin after setpin command with new pin.", commandResultShouldFail.equals(CommandResult.FUNCTIONAL_FAILURE));
-        CommandResult resetCommandResult = command.execute(args_reset_pin);
-        assertTrue("Should not fail. setpin command failed authenticating with new pin and reset back to old pin.", resetCommandResult.equals(CommandResult.SUCCESS));
-        //Given the check "if (oldAutoActivationPin != null || !updateOnly)" and successful authentication, a new auto-activation pin will be set and
-        //the cryptotoken in question should be active:
+        assertTrue("Should not fail. setpin command failed using existing pin." , commandResult.equals(CommandResult.SUCCESS));        
+        CommandResult commandResultShouldFailWithOldPin = command.execute(args_using_original_pin);        
+        assertTrue("Should fail. setpin command did not fail as it should using old pin after setpin command with new pin.", commandResultShouldFailWithOldPin.equals(CommandResult.FUNCTIONAL_FAILURE));        
+        CommandResult commandResultShouldNotFailWithNewPin = command.execute(args_updated_pin);
+        assertTrue("Should not fail. setpin command failed authenticating with new pin and reset back to old pin.", commandResultShouldNotFailWithNewPin.equals(CommandResult.SUCCESS));
+        // Given the check "if (oldAutoActivationPin != null || !updateOnly)" and a successful authentication, a new auto-activation pin will be set and
+        // the cryptotoken in question should be active:
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
         assertTrue("Token with auto-activation should be active after update.", cryptoTokenInfo.isActive());
     }
@@ -99,10 +99,13 @@ public class CryptoTokenUpdatePinCommandTest {
     @Test
     public void testRemovePin() throws AuthorizationDeniedException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
+        // Given
         String[] args = new String[] { "--token", TOKEN_NAME, "--oldpin", TOKEN_PIN, "--remove" };
+        // When
         command.execute(args);
         cryptoTokenProxySession.flushCache();
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
+        // Then
         assertFalse("Autoactivation was not removed.", cryptoTokenInfo.isAutoActivation());
     }
 }
