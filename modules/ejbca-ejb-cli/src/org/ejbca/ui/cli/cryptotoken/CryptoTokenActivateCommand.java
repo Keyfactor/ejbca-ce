@@ -49,10 +49,8 @@ public class CryptoTokenActivateCommand extends BaseCryptoTokenCommand {
 
     @Override
     public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException, CryptoTokenOfflineException {
-        
-        //When using the CryptoTokenUpdatePinCommand, a new pin is also sometimes read from user CLI input, but we don't use this option here, hence newPinUpdateIsFalse == false.
-        final boolean newPinUpdateIsFalse = false;
-        final char[] authenticationCode = getAuthenticationCode(parameters.get(PIN_KEY), newPinUpdateIsFalse);
+        final String cliMessageEnterPassword = "Enter CryptoToken password: ";  
+        final char[] authenticationCode = getAuthenticationCode(parameters.get(PIN_KEY), cliMessageEnterPassword);
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);
