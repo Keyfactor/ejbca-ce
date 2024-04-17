@@ -80,10 +80,16 @@ public abstract class BaseCryptoTokenCommand extends EjbcaCliUserCommandBase {
     }
 
     /** @return a decrypted version of the parameter or use input if the parameter equals "null" */
-    protected char[] getAuthenticationCode(final String commandLineArgument) {
+    protected char[] getAuthenticationCode(final String commandLineArgument, final boolean isNewPin) {
         final char[] authenticationCode;
-        if (commandLineArgument == null || "null".equalsIgnoreCase(commandLineArgument)) {         
-            getLogger().info("Enter CryptoToken password: ");
+        if (commandLineArgument == null || "null".equalsIgnoreCase(commandLineArgument)) {
+            // isNewPin is only used to provide correct and useful info to the user when entering the passwords since, 
+            // different token types (softtokens or pkcs11tokens) require different input.
+            if (isNewPin) {
+                getLogger().info("Enter new CryptoToken password: ");
+            } else {
+                getLogger().info("Enter old CryptoToken password: ");
+            }
             getLogger().info("");
             authenticationCode = StringTools.passwordDecryption(String.valueOf(System.console().readPassword()), "CryptoToken pin").toCharArray();
         } else {
