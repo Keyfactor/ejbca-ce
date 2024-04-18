@@ -81,14 +81,17 @@ public class CryptoTokenUpdatePinCommandTest {
     @Test
     public void testCommand() throws AuthorizationDeniedException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException {
-        final String updatedPin = "bar123";
-        String[] args_using_original_pin = new String[] { TOKEN_NAME, TOKEN_PIN, updatedPin };
-        String[] args_updated_pin = new String[] { TOKEN_NAME, updatedPin, TOKEN_PIN };
-        CommandResult commandResult = command.execute(args_using_original_pin);
-        assertTrue("Should not fail. setpin command failed using existing pin." , commandResult.equals(CommandResult.SUCCESS));        
-        CommandResult commandResultShouldFailWithOldPin = command.execute(args_using_original_pin);        
+        final String updatePin = "bar123";
+        String[] argsUsingOriginalOldPin = new String[] { TOKEN_NAME, TOKEN_PIN, updatePin };
+        String[] argsUsingUpdatedPin = new String[] { TOKEN_NAME, updatePin, TOKEN_PIN };
+        // Try to update pin using correct original pin as old pin. Should succeed.
+        CommandResult commandResult = command.execute(argsUsingOriginalOldPin);
+        assertTrue("Should not fail. setpin command failed using existing pin." , commandResult.equals(CommandResult.SUCCESS));
+        // Try to update pin using original pin as old pin. Should fail since pin has been successfully updated with a new pin.
+        CommandResult commandResultShouldFailWithOldPin = command.execute(argsUsingOriginalOldPin);        
         assertTrue("Should fail. setpin command did not fail as it should using old pin after setpin command with new pin.", commandResultShouldFailWithOldPin.equals(CommandResult.FUNCTIONAL_FAILURE));        
-        CommandResult commandResultShouldNotFailWithNewPin = command.execute(args_updated_pin);
+        // Try to update pin again using the correct recently updated pin as old pin. Should succeed.
+        CommandResult commandResultShouldNotFailWithNewPin = command.execute(argsUsingUpdatedPin);
         assertTrue("Should not fail. setpin command failed authenticating with new pin and reset back to old pin.", commandResultShouldNotFailWithNewPin.equals(CommandResult.SUCCESS));
         // Given the check "if (oldAutoActivationPin != null || !updateOnly)" and a successful authentication, a new auto-activation pin will be set and
         // the cryptotoken in question should be active:
