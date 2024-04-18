@@ -97,6 +97,11 @@ ejbca:
   #     secretKeyRef:
   #       name: ejbca-smtp-secrets
   #       key: smtp_password
+
+  #envFrom:
+  #  - secretRef:
+  #      name: configdump-secrets
+
   # Extra init containers to be added to the deployment
   initContainers: []
   # Extra sidecar containers to be added to the deployment
