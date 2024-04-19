@@ -115,6 +115,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     private String requestUsername;
     private String selectedAlgorithm;
     private String selectedAlgorithmUiRepresentation;
+    private String alternativeAlgorithmFromCsrUiRepresentation = "";
     private String certificateRequest;
     private int requestStatus;
     private EndEntityInformation endEntityInformation;
@@ -668,6 +669,9 @@ public class EnrollWithRequestIdBean implements Serializable {
         selectedAlgorithmUiRepresentation = alg.equals(spec)? alg : alg + " " + spec;
     }
 
+    protected void setAlternativeAlgorithmUiRepresentation(String alg, String spec) {
+        alternativeAlgorithmFromCsrUiRepresentation = alg.equals(spec) ? alg : alg + " " + spec;
+    }
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         RaCsrTools.validateCsr(value, this, raLocaleBean, getCertificateProfile(), requestId, false);
@@ -777,6 +781,17 @@ public class EnrollWithRequestIdBean implements Serializable {
     
     public String getSelectedAlgorithmUiRepresentation() {
         return selectedAlgorithmUiRepresentation;
+    }
+    
+    /**
+     * @return the current alternative key algorithm as UI representation
+     */
+    public String getAlternativeAlgorithmUiRepresentation() {
+        return alternativeAlgorithmFromCsrUiRepresentation;
+    }
+    
+    public boolean isHybrid() {
+        return StringUtils.isNotEmpty(alternativeAlgorithmFromCsrUiRepresentation);
     }
 
     /** @param selectedAlgorithm sets the algorithm and key size to be used for keystore / certificate enrollment. Format: 'algorithm keysize'*/
