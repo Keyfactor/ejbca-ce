@@ -1823,13 +1823,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void testKeyPair() {
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
-        final String keyUsage = keyPairGuiInfo.getKeyUsage();
-        final String messageString;
-        if (keyUsage == null) {
-            messageString = "Keypair with alias " + alias + " tested successfully.";
-        } else {
-            messageString = "Keypair with alias " + alias + getKeyUsageInfoMessage(keyUsage);
-        }
+        final String messageString = getKeyUsageInfoMessage(keyPairGuiInfo.getKeyUsage(), alias);
         try {
             cryptoTokenManagementSession.testKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
             super.addNonTranslatedInfoMessage(messageString);
@@ -1841,14 +1835,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     /**
      * Provides additional GUI message info for testKeyPair() 
      * @param keyUsage the key usage fetched from KeyPairGuiInfo
+     * @param keyAlias the name/alias of the key (pair)
      * @return user friendly String with key usage for a key pair.
      */
-    private String getKeyUsageInfoMessage(String keyUsage) {
-        String keyUsageInfoMessageString = "";
-        if (keyUsage.equals("SIGN") || (keyUsage.equals("SIGN_ENCRYPT"))){
-            keyUsageInfoMessageString = " tested successfully using signing and verification operations.";
-        } else if (keyUsage.equals("ENCRYPT")){
-            keyUsageInfoMessageString = " tested successfully using encryption and decryption operations.";
+    private String getKeyUsageInfoMessage(final String keyUsage, final String keyAlias) {
+        String keyUsageInfoMessageString = "Keypair";
+        if (keyAlias != null) {
+            keyUsageInfoMessageString += " with alias " + keyAlias;
+        }
+        if (keyUsage != null && keyUsage.equals("ENCRYPT")) {
+            keyUsageInfoMessageString += " tested successfully using encryption and decryption operations.";
+        } else {
+            keyUsageInfoMessageString += " tested successfully using signing and verification operations.";
         }
         return keyUsageInfoMessageString;
     }
