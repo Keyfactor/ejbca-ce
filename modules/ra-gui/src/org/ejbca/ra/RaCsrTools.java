@@ -3,6 +3,7 @@ package org.ejbca.ra;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -17,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.util.List;
 
 public class RaCsrTools {
@@ -56,6 +58,15 @@ public class RaCsrTools {
             bean.setSelectedAlgorithm(keyAlgorithm + " " + keySpecification);
             bean.setCertificateRequest(valueStr);
             bean.setAlgorithmUiRepresentationString(keyAlgorithm, keySpecification);
+            if (certRequest instanceof PKCS10RequestMessage) {
+                PKCS10RequestMessage pkcs10RequestMessage = (PKCS10RequestMessage) certRequest;
+                PublicKey alternativePublicKey = pkcs10RequestMessage.getAlternativePublicKey();
+                if (alternativePublicKey != null) {
+                    final String alternativeKeyAlgorithm = AlgorithmTools.getKeySpecification(alternativePublicKey);
+                    final String alternativeKeySpecification = AlgorithmTools.getKeyAlgorithm(alternativePublicKey);
+                    bean.setAlternativeAlgorithmUiRepresentation(alternativeKeyAlgorithm, alternativeKeySpecification);
+                }
+            }
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             final String msg = raLocaleBean.getMessage("enroll_unknown_key_algorithm");
             if (log.isDebugEnabled()) {
