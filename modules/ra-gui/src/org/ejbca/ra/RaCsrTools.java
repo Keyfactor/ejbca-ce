@@ -62,8 +62,8 @@ public class RaCsrTools {
                 PKCS10RequestMessage pkcs10RequestMessage = (PKCS10RequestMessage) certRequest;
                 PublicKey alternativePublicKey = pkcs10RequestMessage.getAlternativePublicKey();
                 if (alternativePublicKey != null) {
-                    final String alternativeKeyAlgorithm = AlgorithmTools.getKeySpecification(alternativePublicKey);
-                    final String alternativeKeySpecification = AlgorithmTools.getKeyAlgorithm(alternativePublicKey);
+                    final String alternativeKeyAlgorithm = AlgorithmTools.getKeyAlgorithm(alternativePublicKey);
+                    final String alternativeKeySpecification = AlgorithmTools.getKeySpecification(alternativePublicKey);
                     bean.setAlternativeAlgorithmUiRepresentation(alternativeKeyAlgorithm, alternativeKeySpecification);
                 }
             }
