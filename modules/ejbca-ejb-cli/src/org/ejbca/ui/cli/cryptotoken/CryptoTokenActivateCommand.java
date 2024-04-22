@@ -49,8 +49,8 @@ public class CryptoTokenActivateCommand extends BaseCryptoTokenCommand {
 
     @Override
     public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException, CryptoTokenOfflineException {
-
-        final char[] authenticationCode = getAuthenticationCode(parameters.get(PIN_KEY));
+        final String cliMessageEnterPassword = "Enter CryptoToken password: ";  
+        final char[] authenticationCode = getAuthenticationCode(parameters.get(PIN_KEY), cliMessageEnterPassword);
         try {
             final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
                     .getRemoteSession(CryptoTokenManagementSessionRemote.class);

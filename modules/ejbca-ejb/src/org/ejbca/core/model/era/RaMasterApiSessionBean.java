@@ -2309,11 +2309,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
+            String altKeyAlgo = null;
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
                 // Make it easy for ourselves and create a default one if there is none in the end entity
                 ei = new ExtendedInformation();
             }
+            if(ei.getKeyStoreAlternativeKeyAlgorithm()!= null) {
+                altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();
+             }
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
                     ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
@@ -2322,7 +2326,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
                     ei.getKeyStoreAlgorithmSubType(), // Keylength
-                    ei.getKeyStoreAlgorithmType(), // Signature algorithm
+                    ei.getKeyStoreAlgorithmType(),
+                    altKeyAlgo,// Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
                     endEntity.getTokenType(), // Type of token
@@ -2377,11 +2382,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
+            String altKeyAlgo = null; 
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
                 // Make it easy for ourselves and create a default one if there is none in the end entity
                 ei = new ExtendedInformation();
             }
+            if(ei.getKeyStoreAlternativeKeyAlgorithm()!= null) {
+                altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();    
+             }
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
                     ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
@@ -2390,7 +2399,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
                     ei.getKeyStoreAlgorithmSubType(), // Keylength
-                    ei.getKeyStoreAlgorithmType(), // Signature algorithm
+                    ei.getKeyStoreAlgorithmType(), 
+                    altKeyAlgo, // Signature algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
                     endEntity.getTokenType(), // Type of token
@@ -2527,12 +2537,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             EjbcaException, EndEntityProfileValidationException {
 
         EndEntityInformation endEntityInformation = ejbcaRestHelperSession.convertToEndEntityInformation(authenticationToken, enrollCertificateRequest);
+
+        int responseType;
         try {
+            if (enrollCertificateRequest.getResponseFormat().equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+                    responseType = CertificateConstants.CERT_RES_TYPE_PKCS7;
+            } else {
+                responseType = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
+            }
             return certificateRequestSession.processCertReq(authenticationToken,
                     endEntityInformation,
                     enrollCertificateRequest.getCertificateRequest(),
                     CertificateHelper.CERT_REQ_TYPE_PKCS10,
-                    CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
+                    responseType);
         } catch (NotFoundException e) {
             log.debug("EJBCA REST exception", e);
             throw e; // NFE extends EjbcaException
@@ -3397,7 +3414,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
                                             final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm);
+        GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification,
+                keyAlgorithm, null);
+        return generateOrKeyRecoverTokenV2(authenticationToken, request);
+    }
+    
+    @Override
+    public byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, request.getUsername(), request.getPassword(),
+                request.getKeySpecification(), request.getKeyAlgorithm(), request.getAltKeyAlgorithm());
     }
 
     @Override

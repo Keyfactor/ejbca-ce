@@ -181,21 +181,21 @@ public class CAKeystoreExportRemoveRestoreTest {
                 }
                 // Try to restore with wrong keystore
                 try {
-                    caAdminSession.restoreCAKeyStore(internalAdmin, CANAME1, keystorebytes3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+                    caAdminSession.restoreCAKeyStore(internalAdmin, CANAME1, keystorebytes3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias", true);
                     fail("Should not be possible to restore with a keystore with different parameters");
                 } catch (Exception e) {
                     // OK. EJBException -> InvalidKeyException (DSA keystore to RSA CA)
                     log.debug("", e);
                 }
                 try {
-                    caAdminSession.restoreCAKeyStore(internalAdmin, CANAME1, keystorebytes3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+                    caAdminSession.restoreCAKeyStore(internalAdmin, CANAME1, keystorebytes3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias", true);
                     fail("Should not be possible to restore with a keystore with different parameters");
                 } catch (Exception e) {
                     // OK. EJBException -> Exception "Could not use private key for verification. Wrong p12-file for this CA"
                     log.debug("", e);
                 }
                 // Finally try with the right keystore to see that it works
-                caAdminSession.restoreCAKeyStore(internalAdmin, CANAME1, keystorebytes1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caAdminSession.restoreCAKeyStore(internalAdmin, CANAME1, keystorebytes1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias", true);
                 final CAInfo caInfo = caSession.getCAInfo(internalAdmin, CANAME1);
                 CryptoTokenTestUtils.removeCryptoToken(internalAdmin, caInfo.getCAToken().getCryptoTokenId());
             } finally {
@@ -241,7 +241,7 @@ public class CAKeystoreExportRemoveRestoreTest {
             assertTrue("An active CA CryptoToken was expected", isCryptoTokenStatusActive);
             // Try to restore the first CA even do it has not been removed
             try {
-                caAdminSession.restoreCAKeyStore(internalAdmin, CANAME, keystorebytes1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+                caAdminSession.restoreCAKeyStore(internalAdmin, CANAME, keystorebytes1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias", true);
                 fail("Should fail when trying to restore an online CA");
             } catch (Exception e) {
                 // OK. EJBException -> Exception: "CA already has an existing CryptoToken reference: nnn..."
@@ -309,7 +309,7 @@ public class CAKeystoreExportRemoveRestoreTest {
                 }
             }
             // Restore keystore
-            caAdminSession.restoreCAKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            caAdminSession.restoreCAKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias", true);
             cainfo = caSession.getCAInfo(internalAdmin, caname); // Get new CA info with imported CA token
             // Compare fingerprints
             try {
