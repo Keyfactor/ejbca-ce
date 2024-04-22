@@ -132,7 +132,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
     private static final String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
     private static final String KEYSTORE_ALTERNATIVE_KEY_ALGORITHM  = "KEYSTORE_ALTERNATIVE_KEY_ALGORITHM";
-    private static final String KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION  = "KEYSTORE_ALTERNATIVE_KEY_SPECOIFICATION";
+    private static final String KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION  = "KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION";
     
 
     /** The ID of the approval request that was submitted to create the end entity */
@@ -209,8 +209,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return (String) data.get(KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION);
     }
 
-    public void setKeyStoreAlternateKeySpecification(String keyStoreAlternateKeySpecification){
-        data.put(KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION, keyStoreAlternateKeySpecification);
+    public void setKeyStoreAlternateKeySpecification(String keyStoreAlternativeKeySpecification){
+        data.put(KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION, keyStoreAlternativeKeySpecification);
     }
     
     /** @return The certificate request in binary asn.1 form if it was provided during user enrollment request, null otherwise.*/

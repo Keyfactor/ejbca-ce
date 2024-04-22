@@ -194,7 +194,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
-            /**/ String alternativeKeySpec, String keyalg, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
+            String alternativeKeySpec, String keyalg, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
@@ -335,7 +335,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     
     @Override
     public KeyStore generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(AuthenticationToken administrator, String username, String password, int caid,
-            String keyspec, String altKeyspec,String keyalg, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
+            String keyspec, String altKeyspec, String keyalg, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
             boolean reusecertificate,
             int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
