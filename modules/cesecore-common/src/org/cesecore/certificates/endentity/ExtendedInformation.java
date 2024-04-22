@@ -209,7 +209,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return (String) data.get(KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION);
     }
 
-    public void setKeyStoreAlternateKeySpecification(String keyStoreAlternativeKeySpecification){
+    public void setKeyStoreAlternativeKeySpecification(String keyStoreAlternativeKeySpecification){
         data.put(KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION, keyStoreAlternativeKeySpecification);
     }
     
