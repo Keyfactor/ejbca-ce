@@ -17,12 +17,14 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.Properties;
 
-import org.cesecore.keys.token.SoftCryptoTokenTest;
+import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 /**
  * Tests soft keystore CA tokens.
@@ -147,16 +149,23 @@ public class SoftCATokenTest extends CATokenTestBase {
 	 * @param useAutoActivationPin
 	 * @return
 	 */
-	private CryptoToken createSoftToken(boolean useAutoActivationPin) {
-		CryptoToken cryptoToken = SoftCryptoTokenTest.createSoftToken(true);
-		Properties cryptoTokenProperties = cryptoToken.getProperties();
+    private CryptoToken createSoftToken(boolean useAutoActivationPin) {
+        Properties prop = new Properties();
+        prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(true));
+        CryptoToken cryptoToken;
+        try {
+            cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), prop, null, 111, "Soft CryptoToken");
+        } catch (NoSuchSlotException e) {
+            throw new RuntimeException("Attempted to find a slot for a soft crypto token. This should not happen.");
+        }
+        Properties cryptoTokenProperties = cryptoToken.getProperties();
         // Use autoactivation for easy testing
         if (useAutoActivationPin) {
-        	cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, TOKEN_PIN);
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, TOKEN_PIN);
         }
         cryptoToken.setProperties(cryptoTokenProperties);
-		return cryptoToken;
-	}
+        return cryptoToken;
+    }
 	
 	private Properties getCaTokenProperties(final String signAlias) {
         Properties caTokenProperties = new Properties();
@@ -170,4 +179,5 @@ public class SoftCATokenTest extends CATokenTestBase {
     String getProvider() {
     	return "BC";
     }
+    
 }
