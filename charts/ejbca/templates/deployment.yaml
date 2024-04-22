@@ -36,6 +36,10 @@ spec:
           image: {{- include "ejbca.imagePath" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
+          {{- if hasKey .Values.ejbca "envFrom" }}
+          envFrom:
+            {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
+          {{- end }}
           command:
             - "/bin/sh"
             - "-c"
@@ -105,6 +109,10 @@ spec:
             - name: PROXY_HTTP_BIND
               value: {{ .Values.services.proxyHttp.bindIP }}
             {{- end }}
+          {{- if hasKey .Values.ejbca "envFrom" }}
+          envFrom:
+            {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
+          {{- end }}
           {{- if or (not .Values.ejbca.importEjbcaConfFiles) (hasKey .Values.ejbca "superadminPasswordOverride") }}
           lifecycle:
             postStart:
