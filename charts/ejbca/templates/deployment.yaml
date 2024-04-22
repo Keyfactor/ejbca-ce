@@ -20,6 +20,10 @@ spec:
       labels:
         {{- include "ejbca.selectorLabels" . | nindent 8 }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "ejbca.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
@@ -29,9 +33,13 @@ spec:
         - name: {{ .Chart.Name }}-init
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: {{- include "ejbca.imagePath" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
+          {{- if hasKey .Values.ejbca "envFrom" }}
+          envFrom:
+            {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
+          {{- end }}
           command:
             - "/bin/sh"
             - "-c"
@@ -90,7 +98,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "ejbca.imagePath" . }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
             {{- if .Values.services.proxyAJP.enabled }}
@@ -101,6 +109,10 @@ spec:
             - name: PROXY_HTTP_BIND
               value: {{ .Values.services.proxyHttp.bindIP }}
             {{- end }}
+          {{- if hasKey .Values.ejbca "envFrom" }}
+          envFrom:
+            {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
+          {{- end }}
           {{- if or (not .Values.ejbca.importEjbcaConfFiles) (hasKey .Values.ejbca "superadminPasswordOverride") }}
           lifecycle:
             postStart:
@@ -197,9 +209,9 @@ spec:
             {{- if .Values.ejbca.volumeMounts }}
               {{- toYaml .Values.ejbca.volumeMounts | nindent 12 }}
             {{- end }}
-          {{- if .Values.ejbca.sidecarContainers }}
-            {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
-          {{- end }}
+        {{- if .Values.ejbca.sidecarContainers }}
+          {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
+        {{- end }}
       volumes:
         {{- if .Values.ejbca.useH2Persistence }}
         - name: ejbca-h2-persistence
