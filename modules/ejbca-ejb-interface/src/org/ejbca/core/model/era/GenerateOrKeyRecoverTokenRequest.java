@@ -10,15 +10,17 @@ public class GenerateOrKeyRecoverTokenRequest implements Serializable {
     private String password;
     private String hardTokenSN;
     private String keySpecification;
+    private String altKeySpecification;
     private String keyAlgorithm;
     private String altKeyAlgorithm;
 
-    public GenerateOrKeyRecoverTokenRequest(String username, String password, String hardTokenSN, String keySpecification, String keyAlgorithm,
-            String altKeyAlgorithm) {
+    public GenerateOrKeyRecoverTokenRequest(String username, String password, String hardTokenSN, String keySpecification, String altKeySpecification,
+            String keyAlgorithm, String altKeyAlgorithm) {
         this.username = username;
         this.password = password;
         this.hardTokenSN = hardTokenSN;
         this.keySpecification = keySpecification;
+        this.altKeySpecification = altKeySpecification;
         this.keyAlgorithm = keyAlgorithm;
         this.altKeyAlgorithm = altKeyAlgorithm;
     }
@@ -37,6 +39,10 @@ public class GenerateOrKeyRecoverTokenRequest implements Serializable {
 
     public void setKeySpecification(String keySpecification) {
         this.keySpecification = keySpecification;
+    }
+
+    public void setAltKeySpecification(String altKeySpecification) {
+        this.altKeySpecification = altKeySpecification;
     }
 
     public void setKeyAlgorithm(String keyAlgorithm) {
@@ -61,6 +67,10 @@ public class GenerateOrKeyRecoverTokenRequest implements Serializable {
 
     public String getKeySpecification() {
         return keySpecification;
+    }
+
+    public String getAltKeySpecification() {
+        return altKeySpecification;
     }
 
     public String getKeyAlgorithm() {

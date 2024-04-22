@@ -2310,6 +2310,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
             String altKeyAlgo = null;
+            String altKeySpec = null;
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
                 // Make it easy for ourselves and create a default one if there is none in the end entity
@@ -2317,6 +2318,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             if(ei.getKeyStoreAlternativeKeyAlgorithm()!= null) {
                 altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();
+             }
+            if(ei.getKeyStoreAlternativeKeySpecification()!= null) {
+                altKeySpec = ei.getKeyStoreAlternativeKeySpecification();
              }
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
@@ -2326,6 +2330,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
                     ei.getKeyStoreAlgorithmSubType(), // Keylength
+                    altKeySpec,
                     ei.getKeyStoreAlgorithmType(),
                     altKeyAlgo,// Signature algorithm
                     null, // Not valid before
@@ -2382,7 +2387,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
-            String altKeyAlgo = null; 
+            String altKeyAlgo = null;
+            String altKeySpec = null;
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
                 // Make it easy for ourselves and create a default one if there is none in the end entity
@@ -2390,6 +2396,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             if(ei.getKeyStoreAlternativeKeyAlgorithm()!= null) {
                 altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();    
+             }
+            if(ei.getKeyStoreAlternativeKeySpecification()!= null) {
+                altKeySpec = ei.getKeyStoreAlternativeKeySpecification();    
              }
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
@@ -2399,6 +2408,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
                     ei.getKeyStoreAlgorithmSubType(), // Keylength
+                    altKeySpec,
                     ei.getKeyStoreAlgorithmType(), 
                     altKeyAlgo, // Signature algorithm
                     null, // Not valid before
@@ -3414,7 +3424,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
                                             final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification,
+        GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification, null,
                 keyAlgorithm, null);
         return generateOrKeyRecoverTokenV2(authenticationToken, request);
     }
@@ -3423,7 +3433,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     public byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, request.getUsername(), request.getPassword(),
-                request.getKeySpecification(), request.getKeyAlgorithm(), request.getAltKeyAlgorithm());
+                request.getKeySpecification(), request.getAltKeySpecification(), request.getKeyAlgorithm(), request.getAltKeyAlgorithm());
     }
 
     @Override
