@@ -172,18 +172,17 @@ public class CaImportProfilesCommandSystemTest {
 
     @Test
     public void test_03_shouldFailOnAuthorizationDeniedExceptionOnCAInput() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, AuthorizationDeniedException, CAExistsException, CADoesntExistsException, EndEntityExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
-        
-        if (!endEntityManagementSession.existsUser(username)) {
-            final int caId = caSession.getAllCaIds().get(0);
-            final EndEntityInformation endEntity = new EndEntityInformation(username, "C=SE,O=primekey,CN=" + username, caId, null, null, new EndEntityType(EndEntityTypes.ENDUSER), 1, 1, EndEntityConstants.TOKEN_SOFT_P12, null);
-            endEntity.setPassword("foo123");            
-            endEntityManagementSession.addUser(admin, endEntity, false);
-        }
-        
         // given
         final String[] params = new String[] { "-u", username, "--clipassword", "serverpwd", "-d", "some", "--caname", caName };
         
         createCa(caName);
+        
+        if (!endEntityManagementSession.existsUser(username)) {
+            final int caId = caSession.getAuthorizedCaIds(admin).get(0);
+            final EndEntityInformation endEntity = new EndEntityInformation(username, "C=SE,O=primekey,CN=" + username, caId, null, null, new EndEntityType(EndEntityTypes.ENDUSER), 1, 1, EndEntityConstants.TOKEN_SOFT_P12, null);
+            endEntity.setPassword("foo123");            
+            endEntityManagementSession.addUser(admin, endEntity, false);
+        }
         
         // when
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
