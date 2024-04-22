@@ -198,10 +198,10 @@ public interface KeyStoreCreateSession {
             InvalidKeySpecException;
 
     byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken authenticationToken, String username, String password, String keySpecification,
-            String keyAlgorithm, String alternativeKeyAlgorithm) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
+            String alternativeKeySpecification, String keyAlgorithm, String alternativeKeyAlgorithm) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
 
     KeyStore generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(AuthenticationToken administrator, String username, String password, int caid,
-            String keyspec, String keyalg, String alternativeKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys,
+            String keyspec, String alternativeKeySpec, String keyalg, String alternativeKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys,
             boolean savekeys, boolean reusecertificate, int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
@@ -209,7 +209,7 @@ public interface KeyStoreCreateSession {
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException,
             NoSuchEndEntityException, CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException;
 
-    KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid, String keyspec, String keyalg,
+    KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid, String keyspec, String altKeyspec, String keyalg,
             String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate,
             int endEntityProfileId) throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException,
             CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
@@ -219,7 +219,7 @@ public interface KeyStoreCreateSession {
             InvalidKeySpecException;
 
     byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
-            String keyalg, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate,
+            /**/ String alternativeKeySpec, String keyalg, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate,
             int endEntityProfileId) throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException,
             CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
