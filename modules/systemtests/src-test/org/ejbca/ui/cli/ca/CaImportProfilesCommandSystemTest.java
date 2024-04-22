@@ -89,12 +89,13 @@ public class CaImportProfilesCommandSystemTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     
+    private static final String profileName = CaImportProfilesCommandSystemTest.class.getSimpleName() + "ExistingProfile";
+    
     private static final String eepName = "TestEndEntityProfile";
     private static final int cpId = 345999;
     private static final String cpName = "TestCertificateProfile";
     private static final int caId = -71969407;
     private static final String caName = "MyDefaultCA";
-    
     private static final String username = "tomcat-for-testing";
 
     private static CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class, "cesecore-ejb");
@@ -121,14 +122,14 @@ public class CaImportProfilesCommandSystemTest {
         if (endEntityProfileSession.getEndEntityProfile(eepName) != null) {
             endEntityProfileSession.removeEndEntityProfile(admin, eepName);
         }
-        if (endEntityProfileSession.getEndEntityProfile("EP") != null) {
-            endEntityProfileSession.removeEndEntityProfile(admin, "EP");
+        if (endEntityProfileSession.getEndEntityProfile(profileName + "_EP") != null) {
+            endEntityProfileSession.removeEndEntityProfile(admin, profileName + "_EP");
         }
-        if (endEntityProfileSession.getEndEntityProfile("CaImportProfilesCommandUnitTest") != null) {
-            endEntityProfileSession.removeEndEntityProfile(admin, "CaImportProfilesCommandUnitTest");
+        if (endEntityProfileSession.getEndEntityProfile(profileName) != null) {
+            endEntityProfileSession.removeEndEntityProfile(admin, profileName);
         }
-        if (certificateProfileSession.getCertificateProfile("CaImportProfilesCommandUnitTest") != null) {
-            certificateProfileSession.removeCertificateProfile(admin, "CaImportProfilesCommandUnitTest");
+        if (certificateProfileSession.getCertificateProfile(profileName) != null) {
+            certificateProfileSession.removeCertificateProfile(admin, profileName);
         }
         if (certificateProfileSession.getCertificateProfile(cpName) != null) {
             certificateProfileSession.removeCertificateProfile(admin, cpName);
@@ -331,10 +332,9 @@ public class CaImportProfilesCommandSystemTest {
     public void test_13_shouldRemapCertProfileWithExistingId() throws IOException, CertificateProfileExistsException, AuthorizationDeniedException {
         // given
         final int profileId = 609758752;
-        final String profileName = "CaImportProfilesCommandUnitTest";
         final String fileName = "certprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
-        final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_CaImportProfilesCommandUnitTest-609758752.xml");
+        final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_" + profileName + "-609758752.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         if (certificateProfileSession.getCertificateProfile(profileId) == null) {
@@ -349,14 +349,14 @@ public class CaImportProfilesCommandSystemTest {
         assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - Certificate profile id '" + profileId + "' already exist in database. Adding with a new profile id instead.");
-        assertLog("INFO - Added certificate profile 'CaImportProfilesCommandUnitTest', '-1' to database.");
+        assertLog("INFO - Added certificate profile '" + profileName + "', '-1' to database.");
     }
 
     @Test
     public void test_14_shouldSkipEntityProfileWithExistingName() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException {
         // given
         final int profileId = 112;
-        final String profileName = "EP";
+        final String profileName = CaImportProfilesCommandSystemTest.profileName + "_EP";
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
         temporaryFolder.newFile(fileName);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
@@ -379,10 +379,9 @@ public class CaImportProfilesCommandSystemTest {
     public void test_15_shouldRemapEntityProfileWithExistingId() throws IOException, EndEntityProfileExistsException, EndEntityProfileNotFoundException, AuthorizationDeniedException {
         // given
         final int profileId = 198381618;
-        final String profileName = "CaImportProfilesCommandUnitTest";
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
-        final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_CaImportProfilesCommandUnitTest-198381618.xml");
+        final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_" + profileName + "-198381618.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         
@@ -405,11 +404,10 @@ public class CaImportProfilesCommandSystemTest {
     public void test_16_shouldRemoveNonExistingCAsFromCertProfileWithoutCAInput() throws IOException, CertificateProfileExistsException, AuthorizationDeniedException {
         // given
         final int profileId = 609758752;
-        final String profileName = "CaImportProfilesCommandUnitTest";
         final int caToRemove = 1020;
         final String fileName = "certprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
-        final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_CaImportProfilesCommandUnitTest-609758752-CA.xml");
+        final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_" + profileName + "-609758752-CA.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         
@@ -443,11 +441,10 @@ public class CaImportProfilesCommandSystemTest {
     public void test_17_shouldRemoveNonExistingCAsFromCertProfileWithCAInput() throws IOException, CertificateProfileExistsException, AuthorizationDeniedException, CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException {
         // given
         final int profileId = 609758752;
-        final String profileName = "CaImportProfilesCommandUnitTest";
         final int caToRemove = 1020;
         final String fileName = "certprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
-        final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_CaImportProfilesCommandUnitTest-609758752-CA.xml");
+        final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_" + profileName + "-609758752-CA.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath(), "--caname", caName };
         
@@ -484,11 +481,10 @@ public class CaImportProfilesCommandSystemTest {
     public void test_18_shouldRemoveUnknownPublishersFromCertProfile() throws IOException, CertificateProfileExistsException, AuthorizationDeniedException {
         // given
         final int profileId = 609758752;
-        final String profileName = "CaImportProfilesCommandUnitTest";
         final int publisherToRemove = 1120;
         final String fileName = "certprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
-        final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_CaImportProfilesCommandUnitTest-609758752-Publisher.xml");
+        final TestFileResource testFile = new TestFileResource("certprofiles/certprofile_" + profileName + "-609758752-Publisher.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         assertNull("Certificate profile " + profileName + " is not null.", certificateProfileSession.getCertificateProfile(profileName));
@@ -508,10 +504,9 @@ public class CaImportProfilesCommandSystemTest {
     public void test_19_shouldRemoveUnknownCertificateProfileForEntityProfile() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException {
         // given
         final int profileId = 198381618;
-        final String profileName = "CaImportProfilesCommandUnitTest";
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
-        final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_CaImportProfilesCommandUnitTest-198381618-CertProfile.xml");
+        final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_" + profileName + "-198381618-CertProfile.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         assertNull("End entity profile " + profileName + " is not null.", endEntityProfileSession.getEndEntityProfile(profileName));
@@ -525,17 +520,16 @@ public class CaImportProfilesCommandSystemTest {
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - End Entity Profile '" + profileName + "' references certificate profile 609758752 that does not exist.");
         assertLog("WARN - End Entity Profile '" + profileName + "' only references certificate profile(s) that does not exist. Using ENDUSER profile.");
-        assertLog("INFO - Added entity profile 'CaImportProfilesCommandUnitTest' to database.");
+        assertLog("INFO - Added entity profile '" + profileName + "' to database.");
     }
 
     @Test
     public void test_20_shouldRemoveNonExistingCAsFromEntityProfileWithoutCAInput() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException, CertificateProfileExistsException {
         // given
         final int profileId = 198381618;
-        final String profileName = "CaImportProfilesCommandUnitTest";
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
-        final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_CaImportProfilesCommandUnitTest-198381618-CA.xml");
+        final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_" + profileName + "-198381618-CA.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath() };
         assertFalse("CA with ID " + -1027462528 + " is not null.", caSession.existsCa(-1027462528));
@@ -553,18 +547,17 @@ public class CaImportProfilesCommandSystemTest {
         assertLog("WARN - CA with id -1027462528 was not found and will not be used in end entity profile '" + profileName + "'.");
         assertLog("ERROR - No CAs left in end entity profile '" + profileName + "' and no CA specified on command line. Using ALLCAs.");
         assertLog("WARN - Changing default CA in end entity profile '" + profileName + "' to 1.");
-        assertLog("INFO - Added entity profile 'CaImportProfilesCommandUnitTest' to database.");
+        assertLog("INFO - Added entity profile '" + profileName + "' to database.");
     }
 
     @Test
     public void test_21_shouldRemoveNonExistingCAsFromEntityProfileWithCAInput() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException, CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, CertificateProfileExistsException {
         // given
         final int profileId = 198381618;
-        final String profileName = "CaImportProfilesCommandUnitTest";
         final int caToRemove = -1027462528;
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
-        final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_CaImportProfilesCommandUnitTest-198381618-CA.xml");
+        final TestFileResource testFile = new TestFileResource("entityprofiles/entityprofile_" + profileName + "-198381618-CA.xml");
         FileUtils.copyFile(testFile.getFile(), inputFile);
         final String[] params = new String[] { "-d", temporaryFolder.getRoot().getAbsolutePath(), "--caname", caName };
         
@@ -583,9 +576,9 @@ public class CaImportProfilesCommandSystemTest {
         assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in end entity profile '" + profileName + "'.");
-        assertLog("WARN - No CAs left in end entity profile 'CaImportProfilesCommandUnitTest'. Using CA supplied on command line with id '" + caId + "'.");
+        assertLog("WARN - No CAs left in end entity profile '" + profileName + "'. Using CA supplied on command line with id '" + caId + "'.");
         assertLog("WARN - Changing default CA in end entity profile '" + profileName + "' to " + caId + ".");
-        assertLog("INFO - Added entity profile 'CaImportProfilesCommandUnitTest' to database.");
+        assertLog("INFO - Added entity profile '" + profileName + "' to database.");
     }
     
     private void createCa(final String name) throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, AuthorizationDeniedException {
