@@ -47,6 +47,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -103,7 +104,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         if (Objects.isNull(p10msg)) {
             return;
         }
-        this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+        this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg).setProvider(BouncyCastleProvider.PROVIDER_NAME);
         try {
             this.alternativePublicKey = extractAlternativePublicKey(pkcs10);
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
@@ -130,7 +131,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     	}
         this.p10msg = msg;
         if (!Objects.isNull(p10msg)) {
-            this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg);
+            this.pkcs10 = new JcaPKCS10CertificationRequest(p10msg).setProvider(BouncyCastleProvider.PROVIDER_NAME);
             try {
                 this.alternativePublicKey = extractAlternativePublicKey(pkcs10);
             } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
@@ -154,6 +155,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     	}
         p10msg = p10.getEncoded();
         pkcs10 = p10;
+        pkcs10.setProvider(BouncyCastleProvider.PROVIDER_NAME);
         try {
             this.alternativePublicKey = extractAlternativePublicKey(pkcs10);
         } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
