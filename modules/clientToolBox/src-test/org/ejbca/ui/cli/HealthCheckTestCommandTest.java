@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -42,7 +43,7 @@ public class HealthCheckTestCommandTest {
     private static final int HEAD_ERROR_LOG_LINES = 20;
 
     @Rule
-    public Timeout testTimeout = new Timeout(600_000); // per test case
+    public Timeout testTimeout = new Timeout(600_000, TimeUnit.MILLISECONDS); // per test case
 
     private HealthCheckTest command = new HealthCheckTest();
     private String httpReqPath;

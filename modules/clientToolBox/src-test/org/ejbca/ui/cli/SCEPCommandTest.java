@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.SystemTestsConfiguration;
@@ -53,7 +54,7 @@ import com.keyfactor.util.certificate.DnComponents;
 public class SCEPCommandTest {
 
     @Rule
-    public Timeout testTimeout = new Timeout(15_000); // per test case
+    public Timeout testTimeout = new Timeout(15_000, TimeUnit.MILLISECONDS); // per test case
 
     private final SCEPTest command  = new SCEPTest();
     private static String httpReqPath;

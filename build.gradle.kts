@@ -117,6 +117,7 @@ dependencies {
     earlib(libs.kerby.asn1)
     earlib(libs.kerb.crypto)
     earlib(libs.x509.common.util)
+    earlib(libs.cryptotokens.api)
     earlib(libs.cryptotokens.impl)
     earlib(libs.jacknji11)
     earlib(libs.log4j.v12.api)

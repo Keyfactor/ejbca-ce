@@ -36,6 +36,7 @@ dependencies {
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.xmlpull)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl)
     // hibernate
     compileOnly(libs.antlr)
