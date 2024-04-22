@@ -41,6 +41,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
@@ -63,8 +64,13 @@ public class CaImportProfilesCommandSystemTest {
 
     private static final Logger log = LogManager.getLogger(CaImportProfilesCommandSystemTest.class);
     
+    /* Must be initialized somehow, otherwise the other test logger fails. */
     @Rule
     public TestLogAppenderResource testLog = new TestLogAppenderResource(log);
+    
+    @Rule
+    public TestLogAppenderResource testLogCmd;
+    
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
     
@@ -86,6 +92,7 @@ public class CaImportProfilesCommandSystemTest {
     @Before
     public void setUp() throws AuthorizationDeniedException {
         caImportProfilesCommand = new CaImportProfilesCommand();
+        testLogCmd = new TestLogAppenderResource(caImportProfilesCommand.getLogger());
     }
 
     @After
@@ -118,7 +125,15 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.CLI_FAILURE, commandResult);
-        assertLog("ERROR - Directory parameter is mandatory.");
+        
+        // No more logging.
+        // Missing parameters now are handled in org.ejbca.ui.cli.infrastructure.parameter.ParameterHandler in keyfactor-commons-cli
+        // 
+        // ERROR: Incorrect parameter usage.
+        // The following mandatory arguments are missing or poorly formed, use --help for more information:
+        //      -d      Directory containing profiles.
+        // 
+        // assertLog("ERROR: Incorrect parameter usage.");
     }
 
     @Test
@@ -145,6 +160,10 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.AUTHORIZATION_FAILURE, commandResult);
+        // If the CA exists:
+        // else
+        // CA 'fantasy' does not exist. is logged.
+        // TODO: Should be solved in a separate ticket. I would expect not to leak information about CA database to unauthorized users.
         assertLog("ERROR - CLI user not authorized to CA '" + caName  + "'.");
     }
 
@@ -193,6 +212,7 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("INFO - Skipped: '" + fileName + "'");
     }
@@ -207,6 +227,7 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("ERROR - Filename not as expected (cert/entityprofile_<name>-<id>.xml).");
         assertLog("INFO - Skipped: '" + fileName + "'");
@@ -222,6 +243,7 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("ERROR - Filename not as expected (cert/entityprofile_<name>-<id>.xml).");
         assertLog("INFO - Skipped: '" + fileName + "'");
@@ -238,6 +260,7 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("ERROR - Not adding fixed certificate profile '" + profileName + "'.");
     }
@@ -270,8 +293,10 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
-        assertLog("ERROR - Certificate profile '" + profileName + "' already exist in database.");
+        assertLog("WARN - Certificate profile id '" + profileId + "' already exist in database. Adding with a new profile id instead.");
+        assertLog("ERROR - Failed to parse profile XML in '" + temporaryFolder.getRoot().getAbsolutePath() + "/certprofile_CP-111.xml': input contained no data");
     }
 
     @Test
@@ -293,8 +318,10 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - Certificate profile id '" + profileId + "' already exist in database. Adding with a new profile id instead.");
+        assertLog("INFO - Added certificate profile 'CaImportProfilesCommandUnitTest', '-1' to database.");
     }
 
     @Test
@@ -315,15 +342,15 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.FUNCTIONAL_FAILURE, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("ERROR - Entity profile '" + profileName + "' already exist in database.");
     }
 
     @Test
-    public void test_15_shouldRemapEntityProfileWithExistingId() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException {
+    public void test_15_shouldRemapEntityProfileWithExistingId() throws IOException, EndEntityProfileExistsException, EndEntityProfileNotFoundException, AuthorizationDeniedException {
         // given
         final int profileId = 198381618;
-        final int freeEndEntityProfileId = 113;
         final String profileName = "CaImportProfilesCommandUnitTest";
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
         final File inputFile = temporaryFolder.newFile(fileName);
@@ -341,8 +368,9 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
-        assertLog("WARN - Entity profileid '" + profileId + "' already exist in database. Using '" + freeEndEntityProfileId + "' instead.");
+        assertLog("WARN - Entity profileid '" + profileId + "' already exist in database. Using '" + endEntityProfileSession.getEndEntityProfileId(profileName) + "' instead.");
     }
 
     @Test
@@ -376,6 +404,8 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
+        assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
         assertLog("ERROR - No CAs left in certificate profile '" + profileName + "' and no CA specified on command line. Using ANYCA.");
         assertLog("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database.");
@@ -415,6 +445,8 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
+        assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
         assertLog("WARN - No CAs left in certificate profile '" + profileName + "'. Using CA supplied on command line with id '" + caId + "'.");
         assertLog("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database.");
@@ -438,6 +470,8 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
+        assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - Publisher with id " + publisherToRemove + " was not found and will not be used in certificate profile '" + profileName + "'.");
         assertLog("INFO - Added certificate profile '" + profileName + "', '" + profileId + "' to database.");
     }
@@ -459,9 +493,11 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - End Entity Profile '" + profileName + "' references certificate profile 609758752 that does not exist.");
         assertLog("WARN - End Entity Profile '" + profileName + "' only references certificate profile(s) that does not exist. Using ENDUSER profile.");
+        assertLog("INFO - Added entity profile 'CaImportProfilesCommandUnitTest' to database.");
     }
 
     @Test
@@ -484,10 +520,12 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - CA with id -1027462528 was not found and will not be used in end entity profile '" + profileName + "'.");
         assertLog("ERROR - No CAs left in end entity profile '" + profileName + "' and no CA specified on command line. Using ALLCAs.");
         assertLog("WARN - Changing default CA in end entity profile '" + profileName + "' to 1.");
+        assertLog("INFO - Added entity profile 'CaImportProfilesCommandUnitTest' to database.");
     }
 
     @Test
@@ -514,10 +552,12 @@ public class CaImportProfilesCommandSystemTest {
         final CommandResult commandResult = caImportProfilesCommand.execute(params);
         // then
         assertEquals("CLI return code mismatch.", CommandResult.SUCCESS, commandResult);
+        assertLog("INFO - Importing certificate and end entity profiles: ");
         assertLog("INFO - Filename: '" + fileName + "'");
         assertLog("WARN - CA with id " + caToRemove + " was not found and will not be used in end entity profile '" + profileName + "'.");
         assertLog("WARN - No CAs left in end entity profile 'CaImportProfilesCommandUnitTest'. Using CA supplied on command line with id '" + caId + "'.");
         assertLog("WARN - Changing default CA in end entity profile '" + profileName + "' to " + caId + ".");
+        assertLog("INFO - Added entity profile 'CaImportProfilesCommandUnitTest' to database.");
     }
     
     private void createCa(final String name) throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, AuthorizationDeniedException {
@@ -528,12 +568,12 @@ public class CaImportProfilesCommandSystemTest {
     }
     
     private void assertLog(final String logString) {
-        final List<String> logMessages = testLog.getAppender().getMessages();
+        final List<String> logMessages = testLogCmd.getAppender().getMessages();
         if (!logMessages.contains(logString)) {
             final String errorMessage = "Event log is missing: " + logString;
             log.error(errorMessage);
             for (final String logMessage : logMessages) {
-                log.error("log: " + logMessage);
+                log.error("log(n): " + logMessage);
             }
             fail(errorMessage);
         }
