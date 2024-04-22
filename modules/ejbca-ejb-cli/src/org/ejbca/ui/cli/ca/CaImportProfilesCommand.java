@@ -83,6 +83,8 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
     public CommandResult execute(ParameterContainer parameters) {
         final String inputDir = parameters.get(DIRECTORY_KEY);
         if(inputDir == null) {
+            // Never called. Error is handled in ParameterHandler.
+            // Prints 'ERROR: Incorrect parameter usage.'
             getLogger().error("Directory parameter is mandatory.");
             return CommandResult.CLI_FAILURE;
         }
