@@ -1013,6 +1013,7 @@
 				<exclude name=".github/" />
 				<exclude name="OWNERS" />
 				<exclude name="OWNERS_ALIASES" />
+                <exclude name="src/package/" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />

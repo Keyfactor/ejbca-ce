@@ -690,8 +690,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
             if (newAuthenticationCode == null) {
                 // When no new pin is supplied, we will not modify the key-store and just remove the current auto-activation pin
                 cryptoTokenProperties.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
-                // We'll also remove the default password option
-                cryptoTokenProperties.put(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString());
                 cryptoToken.setProperties(cryptoTokenProperties);
             } else {
                 try {
@@ -711,26 +709,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 }
             }
         } else {
-            if (oldAutoActivationPin != null) {
-                // If we have an old auto-activation pin we will compare the "current" with this value to avoid deactivating the token
-                if (!oldAutoActivationPin.equals(new String(currentAuthenticationCode))) {
-                    final String msg = "Supplied PIN did not match auto-activation PIN.";
-                    log.info(msg);
-                    throw new CryptoTokenAuthenticationFailedException(msg);
-                } else {
-                    log.debug("Successfully verified the PIN for non-soft CryptoToken by comparing supplied PIN to auto-activation PIN.");
-                }
-            } else {
-                // If we don't have an auto-activation pin to compare the supplied PIN to, we need to verify the supplied
-                // PIN can be used in a de-activation/activation cycle.
-                final boolean wasInactive = !isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
-                cryptoToken.deactivate();
-                cryptoToken.activate(currentAuthenticationCode);
-                if (wasInactive) {
-                    // Note that there is a small glitch here where the token was active, but we have no other options to verify the pin
-                    cryptoToken.deactivate();
-                }
-            }
             if (newAuthenticationCode == null) {
                 cryptoTokenProperties.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
             } else {

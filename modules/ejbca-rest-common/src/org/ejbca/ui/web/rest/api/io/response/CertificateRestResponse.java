@@ -21,6 +21,7 @@ import org.ejbca.core.model.SecConst;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -102,7 +103,6 @@ public class CertificateRestResponse {
         private List<byte[]> certificateChain;
         private String certificateProfile;
         private String endEntityProfile;
-
         
         private CertificateRestResponseBuilder() {
         }
@@ -184,7 +184,24 @@ public class CertificateRestResponse {
                     .setResponseFormat("DER")
                     .build();
         }
-        
+
+        public CertificateRestResponse toRestResponse(final byte[] certificateBytes, final byte[] certificateChainBytes,
+                Certificate certificate, String responseFormat){
+            return CertificateRestResponse.builder()
+                    .setCertificate(certificateBytes)
+                    .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
+                    .setCertificateChain(Collections.singletonList(certificateChainBytes))
+                    .setResponseFormat(responseFormat)
+                    .build();
+        }
+
+        public CertificateRestResponse toRestResponse(final byte[] certificateBytes, Certificate certificate, String responseFormat){
+            return CertificateRestResponse.builder()
+                    .setCertificate(certificateBytes)
+                    .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
+                    .setResponseFormat(responseFormat)
+                    .build();
+        }
         public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType)  {
             return CertificateRestResponse.builder()
                     .setCertificate(keyStoreBytes)
