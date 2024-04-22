@@ -28,20 +28,35 @@ import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
@@ -79,12 +94,15 @@ public class CaImportProfilesCommandSystemTest {
     private static final String cpName = "TestCertificateProfile";
     private static final int caId = -71969407;
     private static final String caName = "MyDefaultCA";
+    
+    private static final String username = "tomcat-for-testing";
 
     private static CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class, "cesecore-ejb");
     private static CertificateProfileSessionRemote certificateProfileSession = JndiHelper.getRemoteSession(CertificateProfileSessionRemote.class, "cesecore-ejb");
     private static EndEntityProfileSessionRemote endEntityProfileSession = JndiHelper.getRemoteSession(EndEntityProfileSessionRemote.class, "ejbca-ejb");
     private static PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class, "ejbca-ejb");
-
+    private static EndEntityManagementSessionRemote endEntityManagementSession = JndiHelper.getRemoteSession(EndEntityManagementSessionRemote.class, "ejbca-ejb");
+    
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaImportProfilesCommandSystemTest"));
 
     private CaImportProfilesCommand caImportProfilesCommand;
@@ -96,7 +114,10 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @After
-    public void tearDown() throws AuthorizationDeniedException {
+    public void tearDown() throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+        if (endEntityManagementSession.existsUser(username)) {
+            endEntityManagementSession.deleteUser(admin, username);
+        }
         if (endEntityProfileSession.getEndEntityProfile(eepName) != null) {
             endEntityProfileSession.removeEndEntityProfile(admin, eepName);
         }
@@ -150,9 +171,17 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_03_shouldFailOnAuthorizationDeniedExceptionOnCAInput() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, AuthorizationDeniedException, CAExistsException {
+    public void test_03_shouldFailOnAuthorizationDeniedExceptionOnCAInput() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, AuthorizationDeniedException, CAExistsException, CADoesntExistsException, EndEntityExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
+        
+        if (!endEntityManagementSession.existsUser(username)) {
+            final int caId = caSession.getAllCaIds().get(0);
+            final EndEntityInformation endEntity = new EndEntityInformation(username, "C=SE,O=primekey,CN=" + username, caId, null, null, new EndEntityType(EndEntityTypes.ENDUSER), 1, 1, EndEntityConstants.TOKEN_SOFT_P12, null);
+            endEntity.setPassword("foo123");            
+            endEntityManagementSession.addUser(admin, endEntity, false);
+        }
+        
         // given
-        final String[] params = new String[] { "-u", "tomcat", "--clipassword", "serverpwd", "-d", "some", "--caname", caName };
+        final String[] params = new String[] { "-u", username, "--clipassword", "serverpwd", "-d", "some", "--caname", caName };
         
         createCa(caName);
         
@@ -163,13 +192,8 @@ public class CaImportProfilesCommandSystemTest {
         // If the CA exists:
         // else
         // CA 'fantasy' does not exist. is logged.
-        // TODO 1: Should be solved in a separate ticket. I would expect not to leak information about CA database to unauthorized users.
-        
-        // TODO 2: Fails on Jenkins, logs:
-        // ERROR - ERROR: Authentication failed. User tomcat not exist.
-        // ERROR - Use the syntax -u <username> --clipassword=<password> to specify password explicitly or -u <username> -p to prompt
-        
-        // assertLog("ERROR - CLI user not authorized to CA '" + caName  + "'.");
+        // TODO: Could be solved in a separate ticket. I would expect not to leak information about CA database to unauthorized users.
+        assertLog("ERROR - CLI user not authorized to CA '" + caName  + "'.");
     }
 
     @Test
