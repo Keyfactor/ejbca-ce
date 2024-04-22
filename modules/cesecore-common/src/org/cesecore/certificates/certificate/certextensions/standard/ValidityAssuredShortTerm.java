@@ -59,7 +59,9 @@ import java.security.PublicKey;
  */
 public class ValidityAssuredShortTerm extends StandardCertificateExtension {
 
-	@Override
+	private static final long serialVersionUID = 1L;
+
+    @Override
 	public void init(final CertificateProfile certProf) {
 		super.setOID(CertTools.OID_VALIDITY_ASSURED_SHORT_TERM);
 		super.setCriticalFlag(certProf.getValidityAssuredShortTermCritical());
