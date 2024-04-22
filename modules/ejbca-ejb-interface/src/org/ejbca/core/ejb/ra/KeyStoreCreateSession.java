@@ -219,7 +219,7 @@ public interface KeyStoreCreateSession {
             InvalidKeySpecException;
 
     byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
-            /**/ String alternativeKeySpec, String keyalg, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate,
+            String alternativeKeySpec, String keyalg, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate,
             int endEntityProfileId) throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException,
             CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
