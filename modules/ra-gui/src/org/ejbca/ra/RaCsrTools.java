@@ -66,6 +66,9 @@ public class RaCsrTools {
                     final String alternativeKeySpecification = AlgorithmTools.getKeySpecification(alternativePublicKey);
                     bean.setAlternativeAlgorithmUiRepresentation(alternativeKeyAlgorithm, alternativeKeySpecification);
                 }
+                else {
+                    bean.setAlternativeAlgorithmUiRepresentation(null, null);
+                }
             }
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             final String msg = raLocaleBean.getMessage("enroll_unknown_key_algorithm");

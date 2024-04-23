@@ -1805,6 +1805,9 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     alternativeAlgorithmFromCsrUiRepresentation = getAlgorithmUiRepresentationString(alternativeKeyAlgorithm,
                             alternativeKeySpecification);
                 }
+                else {
+                    alternativeAlgorithmFromCsrUiRepresentation = null;
+                }
             }
             publicKeyModulus = KeyTools.getKeyModulus(publicKey);
             publicKeyExponent = KeyTools.getKeyPublicExponent(publicKey);
