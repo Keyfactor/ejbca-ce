@@ -670,7 +670,11 @@ public class EnrollWithRequestIdBean implements Serializable {
     }
 
     protected void setAlternativeAlgorithmUiRepresentation(String alg, String spec) {
-        alternativeAlgorithmFromCsrUiRepresentation = alg.equals(spec) ? alg : alg + " " + spec;
+        if (alg == null && spec == null) {
+            alternativeAlgorithmFromCsrUiRepresentation = null;
+        } else {
+            alternativeAlgorithmFromCsrUiRepresentation = alg.equals(spec) ? alg : alg + " " + spec;
+        }
     }
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
