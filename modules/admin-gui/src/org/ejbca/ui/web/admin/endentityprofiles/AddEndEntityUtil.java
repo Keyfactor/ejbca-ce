@@ -1,0 +1,77 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.ejbca.ui.web.admin.endentityprofiles;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+/**
+ * Utility class holding methods used by {@link AddEndEntityMBean}
+ */
+public final class AddEndEntityUtil {
+    
+    private static final String LEGAL_CHARS_REGEX = "([A-Za-z0-9\\-\\_]+)";
+    
+    private static final String IPV4_REGEX =
+            "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
+    
+    private static final String IPV6_REGEX =
+            "^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$";
+    
+    private static final String GENDER_REGEX = "([MFmf])$";
+    
+    private static final String DATE_OF_BIRTH_REGEX = "yyyyMMdd";
+    
+    private AddEndEntityUtil() {
+    }
+
+    protected static boolean validateIPv6(final String ipv6) {
+        Pattern pattern = Pattern.compile(IPV6_REGEX);
+        Matcher matcher = pattern.matcher(ipv6);
+        return matcher.matches();
+    }
+
+    protected static boolean validateIPv4(final String ipv4) {
+        Pattern pattern = Pattern.compile(IPV4_REGEX);
+        Matcher matcher = pattern.matcher(ipv4);
+        return matcher.matches();
+    }
+    
+    protected static boolean validateDNField(final String value) {
+        Pattern pattern = Pattern.compile(LEGAL_CHARS_REGEX);
+        Matcher matcher = pattern.matcher(value);
+        return matcher.matches();
+        
+    }
+    
+    protected static boolean validateGender(final String gender) {
+        Pattern pattern = Pattern.compile(GENDER_REGEX);
+        Matcher matcher = pattern.matcher(gender);
+        return matcher.matches();
+    }
+    
+    protected static boolean validateDateOfBirth(final String birthDate) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_OF_BIRTH_REGEX);
+
+        try {
+            formatter.parse(birthDate, LocalDate::from);
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+        return true;
+    }
+
+}
