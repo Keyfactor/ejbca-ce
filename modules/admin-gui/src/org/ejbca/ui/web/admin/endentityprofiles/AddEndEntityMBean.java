@@ -12,32 +12,73 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentityprofiles;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.faces.context.ExternalContext;
+import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
+import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
+import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
+import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
+import org.cesecore.certificates.certificate.certextensions.standard.QcStatement;
+import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.ra.EndEntityExistsException;
+import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
+import org.ejbca.ui.web.ParameterException;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.bean.SessionBeans;
+import org.ejbca.ui.web.admin.rainterface.EditEndEntityBean;
+import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
+import org.ejbca.ui.web.admin.rainterface.UserView;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.ietf.ldap.LDAPDN;
 
+import com.keyfactor.ErrorCode;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
@@ -57,10 +98,18 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     private RaMasterApiProxyBeanLocal raMasterApiProxyBean;
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    @EJB
+    private CertificateProfileSessionLocal cerProfileSession;
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     
     private String selectedEeProfileName = "EMPTY";
     private int selectedEeProfileId = 1;
-    private String defaultUsername;
+    private String userName;
+    private String passwordFieldValue;
+    private String confirmPasswordFieldValue;
     private EndEntityProfile selectedEeProfile = null;
     private int maxLoginAttempts = -1;
     private String maxLoginAttemptsStatus;
@@ -70,22 +119,271 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     private String emailUserName;
     private String profileEmail;
     private String selectedSubjectDn;
-    private boolean useSdnEmail;
     private boolean useAltNameEmail;
     private String selectedSubjectAltNameMultipleOptionsNoRFC822;
+    private String selectedSubjectDirNameMultipleOptions;
+    private String selectedSubjectAltName;
+
+    /* Main Certificate Data */
+    private int selectedCertProfileId = -1;
+    private int selectedTokenId = -1;
+    private int selectedCaId = -1;
     
-    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
-    private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
+    private String validityStartTimeValue = StringUtils.EMPTY;
+    private String validityEndTimeValue = StringUtils.EMPTY;
+    private String cardNumber;
+    private String nameConstraintsPermitted;
+    private String nameConstraintsExcluded;
+    
+    private String extensionData;
+    private String psd2NcaName;
+    private String psd2NcaId;
+    private List<String> psd2PspRoles;
+    private String cabfOrganizationIdentifier;
+    private int numberOfRequests = 1;
+    private int revocationStatus = RevokedCertInfo.NOT_REVOKED;
+    private boolean sendNotification;
+    private boolean usePrinting;
+    private boolean useKeyRecovery = false;
+    private GlobalConfiguration globalConfiguration;
+    private String customSerialNumber;
+    private List<SubjectDnFieldData> subjectDnFieldDatas;
+    private List<SubjectAltNameFieldData> subjectAltNameFieldDatas;
+    private List<SubjectDirAttrFieldData> subjectDirAttrFieldDatas;
+    private MutablePair<Boolean, Boolean> keyRecoveryCheckboxStatus = new MutablePair<>();
 
     
-    @PostConstruct
-    public void loadConfiguration() {
+    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
+    private EditEndEntityBean eeBean;
+    
+    private EjbcaWebBean ejbcaBean;
+    private RAInterfaceBean raBean;
+    
+    // Authentication check and audit log page access request
+    @PostConstruct    
+    public void initialize() throws Exception {
+        
+        if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+        }
+        
+        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
+        
+        ejbcaBean = getEjbcaWebBean();
+        
+        globalConfiguration = ejbcaBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
+                AccessRulesConstants.REGULAR_CREATEENDENTITY);
+        
+
+        raBean = SessionBeans.getRaBean(request);
+        raBean.initialize(ejbcaBean);
+        
+        RequestHelper.setDefaultCharacterEncoding(request);
+        initUserData();
+    }
+    
+    private void initUserData() {
         this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
-        this.authorizedCertificateProfiles = raMasterApiProxyBean.getAuthorizedCertificateProfiles(getAdmin());
         this.selectedEeProfile = authorizedEndEntityProfiles.get(1).getValue(); // Initially EMPTY (id 1) is selected
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
         this.emailDomains = selectedEeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
+        this.eeBean = new EditEndEntityBean();
+        this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
+
+        this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery()
+                && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
+                && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
+
+        final String issuacneRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+        if ((issuacneRevocationReason != null) && ((issuacneRevocationReason).length() > 0)) {
+            setRevocationStatus((Integer.parseInt(issuacneRevocationReason)));
+        }
+
+        /* Main Certificate Data */
+        this.selectedCertProfileId = selectedEeProfile.getDefaultCertificateProfile();
+        this.selectedCaId = selectedEeProfile.getDefaultCA();
+        this.selectedTokenId = Integer.parseInt(selectedEeProfile.getValue(EndEntityProfile.DEFKEYSTORE,0));
+        
+        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != SecConst.TOKEN_SOFT_BROWSERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
+        this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
+        
+        this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));
+        this.setUsePrinting(selectedEeProfile.getPrintingDefault());
+
+        composeSubjectDnFieldsAndData();
+        composeSubjectAltNameFieldAndData();
+        composeSubjectDirAttrFieldsAndData();
+    }
+    
+    private void composeSubjectAltNameFieldAndData() {
+
+        this.subjectAltNameFieldDatas = new ArrayList<>();
+
+        final int numberOfSubjectAltNameFields = selectedEeProfile.getSubjectAltNameFieldOrderLength();
+
+        for (int i = 0; i < numberOfSubjectAltNameFields; i++) {
+            
+            final int[] fieldData = selectedEeProfile.getSubjectAltNameFieldsInOrder(i);
+            int fieldType = fieldData[EndEntityProfile.FIELDTYPE];
+
+            final boolean modifiable = selectedEeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean required = selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean isRFC822Name = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
+            final boolean useDataFromRFC822NameField = selectedEeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean isUpn = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN);
+            final boolean copyDataFromCN = selectedEeProfile.getCopy(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean isDnsName = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
+            String[] options = null;
+            String fieldValue = null;
+            String regex = null;
+            String rfcName = null;
+            String rfcDomain = null;
+            String upnName = null;
+            String upnDomain = null;
+            String rfc822NameString = null;
+
+            // Handle RFC822NAME separately
+            if (isRFC822Name) {
+
+                rfc822NameString = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+                String[] rfc822NameArray = new String[2];
+                rfc822NameArray = extractRfc822NameArray(rfc822NameString, rfc822NameArray);
+
+                if (modifiable) {
+                    rfcName = rfc822NameArray[0].trim();
+                    rfcDomain = rfc822NameArray[1].trim();
+                } else {
+                    options = rfc822NameString.split(EndEntityProfile.SPLITCHAR);
+                }
+                
+            } else {
+
+                options = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                        .split(EndEntityProfile.SPLITCHAR);
+
+                if (isUpn && (options.length == 1)) {
+                    upnDomain = options[0].trim();
+                }
+                if (isUpn && options.length == 0 && copyDataFromCN) {
+                    fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+                } else {
+
+                    fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+                    final Map<String, Serializable> validation = selectedEeProfile.getValidation(fieldData[EndEntityProfile.FIELDTYPE],
+                            fieldData[EndEntityProfile.NUMBER]);
+                    regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
+                }
+            }
+
+            if (EndEntityProfile.isFieldImplemented(fieldType)) {
+                final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
+                
+                SubjectAltNameFieldData subjectAltNameFieldData = new SubjectAltNameFieldData.Builder(label, modifiable, required, fieldValue)
+                        .withRFC822Name(isRFC822Name)
+                        .withUseDataFromRFC822NameField(useDataFromRFC822NameField)
+                        .withRenderUseDataFromRFC822NameField(useDataFromRFC822NameField)
+                        .withUpn(isUpn)
+                        .withCopyDataFromCN(copyDataFromCN)
+                        .withDNSName(isDnsName)
+                        .withRfcName(rfcName)
+                        .withRfcDomain(rfcDomain)
+                        .withOptions(options)
+                        .withUpnName(upnName)
+                        .withUpnDomain(upnDomain)
+                        .withRegex(regex)
+                        .withRfc822NameString(rfc822NameString)
+                        .build();
+                subjectAltNameFieldDatas.add(subjectAltNameFieldData);
+            }
+        }
+    }
+
+
+    private String[] extractRfc822NameArray(String rfc822NameString, String[] rfc822NameArray) {
+        if (rfc822NameString.indexOf("@") != -1) {
+            rfc822NameArray = rfc822NameString.split("@");
+        } else {
+            rfc822NameArray[0] = StringUtils.EMPTY;
+            rfc822NameArray[1] = rfc822NameString;
+        }
+        return rfc822NameArray;
+    }
+
+    private void composeSubjectDnFieldsAndData() {
+
+        this.subjectDnFieldDatas = new ArrayList<>();
+
+        int numberOfSubjectDnFields = selectedEeProfile.getSubjectDNFieldOrderLength();
+
+        for (int i = 0; i < numberOfSubjectDnFields; i++) {
+
+            int[] fieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i);
+
+            final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
+            final boolean required = selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean modifiable = selectedEeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean isEmailAddress = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS);
+
+            String[] options = null;
+            String regex = null;
+            String fieldValue = null;
+
+            options = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                    .split(EndEntityProfile.SPLITCHAR);
+            final Map<String, Serializable> validation = selectedEeProfile.getValidation(fieldData[EndEntityProfile.FIELDTYPE],
+                    fieldData[EndEntityProfile.NUMBER]);
+            regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
+
+            fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            
+            SubjectDnFieldData subjectDnFieldData = new SubjectDnFieldData.Builder(label, modifiable, required)
+                    .withIsEmail(isEmailAddress)
+                    .withOptions(options)
+                    .withValue(fieldValue)
+                    .withRegex(regex)
+                    .build();
+
+            this.subjectDnFieldDatas.add(subjectDnFieldData);
+        }
+    }
+    
+    private void composeSubjectDirAttrFieldsAndData() {
+
+        this.subjectDirAttrFieldDatas = new ArrayList<>();
+
+        int numberOfSubjectDirAttrFields = selectedEeProfile.getSubjectDirAttrFieldOrderLength();
+
+        for (int i = 0; i < numberOfSubjectDirAttrFields; i++) {
+            int[] fieldData = selectedEeProfile.getSubjectDirAttrFieldsInOrder(i);
+
+            final boolean modifiable = selectedEeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean required = selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
+            final String fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final String[] options = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                    .split(EndEntityProfile.SPLITCHAR);
+
+            SubjectDirAttrFieldData subjectDirAttrFieldData = new SubjectDirAttrFieldData.Builder(label, modifiable, required)
+                    .withFieldValue(fieldValue).withOptions(options).build();
+            this.subjectDirAttrFieldDatas.add(subjectDirAttrFieldData);
+        }
+    }
+
+    public String getSelectedSubjectAltName() {
+        return selectedSubjectAltName;
+    }
+
+    public void setSelectedSubjectAltName(String selectedSubjectAltName) {
+        this.selectedSubjectAltName = selectedSubjectAltName;
+    }
+    
+    public String getUserName() {
+        return this.userName;
+    }
+    
+    public void setUserName(final String userName) {
+        this.userName = userName;
     }
     
     public boolean isOnlyOneEmailDomain() {
@@ -105,15 +403,15 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getMaxLoginAttempts() {
-        return maxLoginAttempts != -1 ? String.valueOf(maxLoginAttempts) : StringUtils.EMPTY ;
+        return maxLoginAttempts != -1 ? String.valueOf(maxLoginAttempts) : "-1" ;
     }
+
+    public void setMaxLoginAttempts(String maxLoginAttempts) {
+        this.maxLoginAttempts = Integer.parseInt(maxLoginAttempts);
+    }    
     
     public boolean isMaxLoginAttemptsDisabled() {
         return maxLoginAttempts == -1; 
-    }
-    
-    public void setMaxLoginAttempts(String maxLoginAttempts) {
-        this.maxLoginAttempts = Integer.parseInt(maxLoginAttempts);
     }
     
     public void actionUpdateMaxLoginAttempts() {
@@ -180,14 +478,16 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     }
     
     public String getPasswordFieldValue() {
-        return selectedEeProfile.isPasswordPreDefined() ? getEjbcaWebBean().getText("PASSWORD_DEFINED_IN_PROFILE") : "";
+        return selectedEeProfile.isPasswordPreDefined() ? getEjbcaWebBean().getText("PASSWORD_DEFINED_IN_PROFILE") : this.passwordFieldValue;
+    }
+    
+    public void setPasswordFieldValue(final String passwordFieldValue) {
+        this.passwordFieldValue = passwordFieldValue;
     }
     
     public boolean isUseMaxFailedLoginAttempts() {
         return selectedEeProfile.getUse(EndEntityProfile.MAXFAILEDLOGINS, 0);
     }
-    
-
     
     public boolean isMaxFailedLoginAttemptsModifiable() {
        return selectedEeProfile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0);
@@ -207,6 +507,30 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
         this.emailDomains = selectedEeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
+        this.eeBean = new EditEndEntityBean();
+        this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
+        this.numberOfRequests = selectedEeProfile.getAllowedRequests();
+        this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));
+        this.setUsePrinting(selectedEeProfile.getPrintingDefault());
+        this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery()
+                && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
+                && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
+
+        /* Main Certificate Data */
+        this.selectedCertProfileId = selectedEeProfile.getDefaultCertificateProfile();
+        this.selectedCaId = selectedEeProfile.getDefaultCA();
+        this.selectedTokenId = Integer.parseInt(selectedEeProfile.getValue(EndEntityProfile.DEFKEYSTORE,0));
+        
+        this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != SecConst.TOKEN_SOFT_BROWSERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
+        this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
+        
+        final String issuacneRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+        if ((issuacneRevocationReason != null) && ((issuacneRevocationReason).length() > 0)) {
+            setRevocationStatus((Integer.parseInt(issuacneRevocationReason)));
+        }
+        composeSubjectDnFieldsAndData();
+        composeSubjectAltNameFieldAndData();
+        composeSubjectDirAttrFieldsAndData();
         
         return "addendentity";
     }
@@ -223,7 +547,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     public String getMaxLoginAttemptsStatus() {
         return maxLoginAttemptsStatus;
     }
-
 
     public void setMaxLoginAttemptsStatus(String maxLoginAttemptsStatus) {
         this.maxLoginAttemptsStatus = maxLoginAttemptsStatus;
@@ -269,156 +592,17 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.profileEmail = profileEmail;
     }
     
-                                         //<Label, modifiable, required>, options      
-    public List<ImmutablePair<ImmutableTriple<String, String, Boolean>, Object>> getSubjectDnFieldsNameAndData() {
-
-        final List<ImmutablePair<ImmutableTriple<String, String, Boolean>, Object>> subjectDnFieldLabelAndData = new ArrayList<>();
-
-        int numberOfSubjectDnFields = selectedEeProfile.getSubjectDNFieldOrderLength();
-
-        for (int i = 0; i < numberOfSubjectDnFields; i++) {
-            
-            
-            int[] subjectDnFieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i);
-            
-            final String fieldLabel = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(subjectDnFieldData[EndEntityProfile.FIELDTYPE]));
-            final boolean fieldRequired = selectedEeProfile.isRequired(subjectDnFieldData[EndEntityProfile.FIELDTYPE], subjectDnFieldData[EndEntityProfile.NUMBER]);
-            
-            final boolean fieldModifiable = selectedEeProfile.isModifyable(subjectDnFieldData[EndEntityProfile.FIELDTYPE],
-                    subjectDnFieldData[EndEntityProfile.NUMBER]);
-            final boolean fieldEmailAddress = EndEntityProfile.isFieldOfType(subjectDnFieldData[EndEntityProfile.FIELDTYPE],
-                    DnComponents.DNEMAILADDRESS);
-
-            if (!fieldEmailAddress) {
-                if (!fieldModifiable) {
-
-                    String[] options = selectedEeProfile
-                            .getValue(subjectDnFieldData[EndEntityProfile.FIELDTYPE], subjectDnFieldData[EndEntityProfile.NUMBER])
-                            .split(EndEntityProfile.SPLITCHAR);
-
-                    if (options == null) {
-                        subjectDnFieldLabelAndData.add(new ImmutablePair<>(new ImmutableTriple<>(fieldLabel, "nonModifiable", fieldRequired),
-                                StringUtils.EMPTY));
-                    } else {
-                        subjectDnFieldLabelAndData
-                                .add(new ImmutablePair<>(new ImmutableTriple<>(fieldLabel, "nonModifiable", fieldRequired), options));
-                    }
-                } else {
-                    final Map<String, Serializable> validation = selectedEeProfile.getValidation(subjectDnFieldData[EndEntityProfile.FIELDTYPE],
-                            subjectDnFieldData[EndEntityProfile.NUMBER]);
-                    final String regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
-                    
-                    final String[] valueAndRegEx = {selectedEeProfile
-                            .getValue(subjectDnFieldData[EndEntityProfile.FIELDTYPE], subjectDnFieldData[EndEntityProfile.NUMBER]), regex};
-                    
-                    subjectDnFieldLabelAndData
-                            .add(new ImmutablePair<>(
-                                    new ImmutableTriple<>(fieldLabel, "modifiable", fieldRequired), valueAndRegEx));
-                }
-            } else {
-                subjectDnFieldLabelAndData.add(new ImmutablePair<>(new ImmutableTriple<>(fieldLabel, "emailAddress", fieldRequired), null));
-            }
-        }
-        return subjectDnFieldLabelAndData;
+    
+    public List<SubjectDnFieldData> getSubjectDnFieldsAndDatas() {
+        return this.subjectDnFieldDatas;
     }
     
-    // Label, Properties (modifiable, required, isRfc822name, rfc822nameString, use), <Values, Options>, regex, implemented
-    public List<ImmutablePair<String, ImmutablePair<String, ImmutablePair<Object, Object>>>> getSubjectAltNameFieldsNameAndData() {
-
-        final int numberOfSubjectAltNameFields = selectedEeProfile.getSubjectAltNameFieldOrderLength();
-
-        final List<ImmutablePair<String, ImmutablePair<String, ImmutablePair<Object, Object>>>> subjectAltNameFieldLabelAndData = new ArrayList<>();
-
-        for (int i = 0; i < numberOfSubjectAltNameFields; i++) {
-            final int[] fieldData = selectedEeProfile.getSubjectAltNameFieldsInOrder(i);
-            int fieldType = fieldData[EndEntityProfile.FIELDTYPE];
-
-            ImmutablePair<Object, Object> fieldValuesAndOptions = null;
-            String properties = null;
-
-            // Handle RFC822NAME separately
-            if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME)) {
-                if (selectedEeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])) {
-                    properties = "isRFC822NameAndIsUse";
-
-                    if (selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])) {
-                        properties = "isRFC822NameAndIsUseAndRequired";
-                    }
-                } else {
-
-                    String rfc822NameString = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
-                    String[] rfc822NameArray = new String[2];
-                    if (rfc822NameString.indexOf("@") != -1) {
-                        rfc822NameArray = rfc822NameString.split("@");
-                    } else {
-                        rfc822NameArray[0] = "";
-                        rfc822NameArray[1] = rfc822NameString;
-                    }
-                    final String[] rfc822NameOptions = rfc822NameString.split(EndEntityProfile.SPLITCHAR);
-
-                    boolean modifiable = selectedEeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
-
-                    if (!(!modifiable && rfc822NameString.contains("@"))) {
-                        properties = "isRFC822NameAndIsModifiableOrNotHaveAtSign";
-                        fieldValuesAndOptions = new ImmutablePair<>(rfc822NameArray[0], null);
-                    }
-
-                    if (modifiable) {
-                        properties = "isRFC822NameAndIsModifiable";
-                        fieldValuesAndOptions = new ImmutablePair<>(rfc822NameArray[1], null);
-                    } else {
-                        properties = "isRFC822NameAndHasOptions";
-                        fieldValuesAndOptions = new ImmutablePair<>(rfc822NameArray, rfc822NameOptions);
-                    }
-                }
-            } else {
-
-                boolean modifiable = selectedEeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
-
-                if (!modifiable) {
-                    String[] options = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
-                            .split(EndEntityProfile.SPLITCHAR);
-
-                    if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
-                        if (options.length == 1) {
-                            properties = "notRFC822NameAndNotModifiableAndIsUPNOneOption";
-                            fieldValuesAndOptions = new ImmutablePair<>(null, options[0].trim());
-                        } else {
-                            properties = "notRFC822NameAndNotModifiableAndIsUPNMultipleOptions";
-                            fieldValuesAndOptions = new ImmutablePair<>(null, options);
-                        }
-                    }
-                } else {
-                    if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
-                        properties = "notRFC822NameAndModifiableAndIsUPN";
-                        final String fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE],
-                                fieldData[EndEntityProfile.NUMBER]);
-                        fieldValuesAndOptions = new ImmutablePair<>(fieldValue, null);
-                    } else {
-                        if (selectedEeProfile.getCopy(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
-                                && EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME)) {
-                            properties = "notRFC822NameAndModifiableIsCopyAndDNS";
-                        } else {
-                            properties = "notRFC822NameAndModifiableAndIsNotCopyAndDNS";
-                        }
-
-                        final String fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE],
-                                fieldData[EndEntityProfile.NUMBER]);
-                        final Map<String, Serializable> validation = selectedEeProfile.getValidation(fieldData[EndEntityProfile.FIELDTYPE],
-                                fieldData[EndEntityProfile.NUMBER]);
-                        final String regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
-
-                        fieldValuesAndOptions = new ImmutablePair<>(fieldValue, regex);
-                    }
-                }
-            }
-
-            if (EndEntityProfile.isFieldImplemented(fieldType)) {
-                final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
-                subjectAltNameFieldLabelAndData.add(new ImmutablePair<>(label, new ImmutablePair<>(properties, fieldValuesAndOptions)));
-            }
-        }
-        return subjectAltNameFieldLabelAndData;
+    public List<SubjectAltNameFieldData> getSubjectAltNameFieldDatas() {
+        return this.subjectAltNameFieldDatas;
+    }
+    
+    public List<SubjectDirAttrFieldData> getSubjectDirAttrFieldDatas() {
+        return this.subjectDirAttrFieldDatas;
     }
     
     public String getEmailUserName() {
@@ -435,14 +619,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
 
     public void setSelectedSubjectDn(String selectedSubjectDn) {
         this.selectedSubjectDn = selectedSubjectDn;
-    }
-
-    public boolean isUseSdnEmail() {
-        return useSdnEmail;
-    }
-
-    public void setUseSdnEmail(boolean useSdnEmail) {
-        this.useSdnEmail = useSdnEmail;
     }
     
     public boolean isProfileHasSubjectAltNameFields() {
@@ -468,6 +644,1096 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     public void setSelectedSubjectAltNameMultipleOptionsNoRFC822(String selectedSubjectAltNameMultipleOptionsNoRFC822) {
         this.selectedSubjectAltNameMultipleOptionsNoRFC822 = selectedSubjectAltNameMultipleOptionsNoRFC822;
     }
+
+    public String getSelectedSubjectDirNameMultipleOptions() {
+        return selectedSubjectDirNameMultipleOptions;
+    }
+
+    public void setSelectedSubjectDirNameMultipleOptions(String selectedSubjectDirNameMultipleOptions) {
+        this.selectedSubjectDirNameMultipleOptions = selectedSubjectDirNameMultipleOptions;
+    }
     
+    public List<SelectItem> getAvailableCertProfiles() {
+        List<SelectItem> profiles = new ArrayList<>();
+        String[] availableCertProfileIds = selectedEeProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
+        
+        for (String profileId : availableCertProfileIds) {
+            profiles.add(new SelectItem(profileId, cerProfileSession.getCertificateProfileName(Integer.parseInt(profileId))));
+        }
+        return profiles;
+    }
+
+    public int getSelectedCertProfileId() {
+        return selectedCertProfileId;
+    }
+
+    public void setSelectedCertProfileId(int selectedCertProfileId) {
+        this.selectedCertProfileId = selectedCertProfileId;
+    }
+    
+    
+    public List<SelectItem> getAvailableTokens() {
+
+        List<SelectItem> listOfTokens = new ArrayList<>();
+
+        final String[] tokenTexts = SecConst.TOKENTEXTS;
+        final int[] tokenIds = SecConst.TOKENIDS;
+
+        String[] availableTokens = selectedEeProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
+
+        if (availableTokens != null) {
+            for (int i = 0; i < availableTokens.length; i++) {
+                for (int j = 0; j < tokenTexts.length; j++) {
+                    if (tokenIds[j] == Integer.parseInt(availableTokens[i])) {
+                        if (tokenIds[j] > SecConst.TOKEN_SOFT) {
+                            listOfTokens.add(new SelectItem(tokenIds[j], tokenTexts[j]));
+                        } else {
+                            listOfTokens.add(new SelectItem(tokenIds[j], getEjbcaWebBean().getText(tokenTexts[j])));
+                        }
+                    }
+                }
+            }
+        }
+        return listOfTokens;
+    }
+
+    public int getSelectedTokenId() {
+        return selectedTokenId;
+    }
+
+    public void setSelectedTokenId(int selectedTokenId) {
+        this.selectedTokenId = selectedTokenId;
+    }
+    
+    public boolean isRenderOtherCertDataSection() {
+        return (selectedEeProfile.isCustomSerialNumberUsed()
+        || selectedEeProfile.isValidityStartTimeUsed()
+        || selectedEeProfile.isValidityEndTimeUsed()
+        || selectedEeProfile.isCardNumberUsed()
+        || selectedEeProfile.isNameConstraintsPermittedUsed()
+        || selectedEeProfile.isNameConstraintsExcludedUsed()
+        || selectedEeProfile.isPsd2QcStatementUsed()
+        || selectedEeProfile.isCabfOrganizationIdentifierUsed());
+    }
+    
+    public boolean isCustomSerialNumberUsed()  {
+        return selectedEeProfile.isCustomSerialNumberUsed();
+    }
+    
+    public boolean isValidityStartTimeUsed() {
+        return selectedEeProfile.isValidityStartTimeUsed();
+    }
+    
+    public String getValidityTimeHelpText() {
+        return getEjbcaWebBean().getText("DATE_HELP") + getEjbcaWebBean().getDateExample() + " " + getEjbcaWebBean().getText("OR").toLowerCase() + " "
+                + getEjbcaWebBean().getText("DAYS").toLowerCase() + ":" + getEjbcaWebBean().getText("HOURS").toLowerCase() + ":"
+                + getEjbcaWebBean().getText("MINUTES").toLowerCase();
+    }
+    
+    public String getValidityTimeTitle() {
+        return getEjbcaWebBean().getText("FORMAT_ISO8601") + " " + getEjbcaWebBean().getText("OR") + "("
+                + getEjbcaWebBean().getText("DAYS").toLowerCase() + ":" + getEjbcaWebBean().getText("HOURS").toLowerCase() + ":"
+                + getEjbcaWebBean().getText("MINUTES").toLowerCase();
+    }
+    
+    public String getValidityStartTimeValue() {
+        final String validityStartTime = selectedEeProfile.getValidityStartTime();
+        String startTime = StringUtils.EMPTY;
+        if (validityStartTime != null && validityStartTime.trim().length() > 0) {
+            startTime = getEjbcaWebBean().getISO8601FromImpliedUTCOrRelative(validityStartTime);
+        }
+        return startTime;
+    }    
+    
+    public void setValidityStartTimeValue(final String validityStartTimeValue) {
+        this.validityStartTimeValue = validityStartTimeValue;
+    }
+    
+    public boolean isValidityStartTimeReadOnly() {
+        return !selectedEeProfile.isValidityStartTimeModifiable();
+    }
+    
+    public boolean isValidityStartTimeRequired() {
+        return selectedEeProfile.isRequired(EndEntityProfile.STARTTIME, 0);
+    }
+
+    public boolean isValidityEndTimeUsed() {
+        return selectedEeProfile.isValidityEndTimeUsed();
+    }
+
+    public String getValidityEndTimeValue() {
+        final String validityEndTime = selectedEeProfile.getValidityEndTime();
+        String endTime = StringUtils.EMPTY;
+        if (validityEndTime != null && validityEndTime.trim().length() > 0) {
+            endTime = getEjbcaWebBean().getISO8601FromImpliedUTCOrRelative(validityEndTime);
+        }
+        return endTime;
+    }    
+
+    public void setValidityEndTimeValue(final String validityEndTimeValue) {
+        this.validityEndTimeValue = validityEndTimeValue;
+    }
+    
+    public boolean isValidityEndTimeReadOnly() {
+        return !selectedEeProfile.isValidityEndTimeModifiable();
+    }
+    
+    public boolean isValidityEndTimeRequired() {
+        return selectedEeProfile.isRequired(EndEntityProfile.ENDTIME, 0);
+    }
+
+    public boolean isCardNumberUsed() {
+        return selectedEeProfile.isCardNumberUsed();
+    }
+
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
+    
+    public boolean isCardNumberRequired() {
+        return selectedEeProfile.isCardNumberRequired();
+    }
+    
+    public boolean isNameConstraintsPermittedUsed() {
+        return selectedEeProfile.isNameConstraintsPermittedUsed();
+    }
+    
+    public String getNameConstraintsPermittedHelpText() {
+        return getEjbcaWebBean().getText("EXT_PKIX_NC_PERMITTED_HELP1") + 
+               getEjbcaWebBean().getText("EXT_PKIX_NC_PERMITTED_HELP2") +
+               getEjbcaWebBean().getText("EXT_PKIX_NC_PERMITTED_HELP3");
+    }
+    
+    public boolean isNameConstraintsPermittedRequired() {
+        return selectedEeProfile.isNameConstraintsPermittedRequired();
+    }
+    
+    public boolean isNameConstraintsExcludedUsed() {
+        return selectedEeProfile.isNameConstraintsPermittedUsed();
+    }
+    
+    public String getNameConstraintsExcludedHelpText() {
+        return getEjbcaWebBean().getText("EXT_PKIX_NC_EXCLUDED_HELP1") + getEjbcaWebBean().getText("EXT_PKIX_NC_EXCLUDED_HELP2");
+    }
+    
+    public boolean isNameConstraintsExcludedRequired() {
+        return selectedEeProfile.isNameConstraintsPermittedRequired();
+    }
+
+    public String getNameConstraintsPermitted() {
+        return nameConstraintsPermitted;
+    }
+
+    public void setNameConstraintsPermitted(String nameConstraintsPermitted) {
+        this.nameConstraintsPermitted = nameConstraintsPermitted;
+    }
+
+    public String getNameConstraintsExcluded() {
+        return nameConstraintsExcluded;
+    }
+
+    public void setNameConstraintsExcluded(String nameConstraintsExcluded) {
+        this.nameConstraintsExcluded = nameConstraintsExcluded;
+    }
+    
+    public boolean isUseExtensionData() {
+        return selectedEeProfile.getUseExtensiondata();
+    }
+    
+    public String getExtensionData() {
+        return this.extensionData;
+    }
+    
+    public void setExtensionData(final String extData) {
+        this.extensionData = extData;
+    }
+    
+    public boolean isPsd2QcStatementUsed() {
+        return selectedEeProfile.isPsd2QcStatementUsed();
+    }
+
+    public String getPsd2NcaName() {
+        return psd2NcaName;
+    }
+
+    public void setPsd2NcaName(String psd2NcaName) {
+        this.psd2NcaName = psd2NcaName;
+    }
+
+    public String getPsd2NcaId() {
+        return psd2NcaId;
+    }
+
+    public void setPsd2NcaId(String psd2NcaId) {
+        this.psd2NcaId = psd2NcaId;
+    }
+
+    public List<String> getPsd2PspRoles() {
+        return psd2PspRoles;
+    }
+
+    public void setPsd2PspRoles(List<String> psd2PspRoles) {
+        this.psd2PspRoles = psd2PspRoles;
+    }
+    
+    public List<SelectItem> getAvailablePsd2PspRoles() {
+
+        final List<SelectItem> availablePsdPspRoles = new ArrayList<>();
+
+        availablePsdPspRoles.add(new SelectItem("PSP_AS", getEjbcaWebBean().getText("PSD2_PSP_AS")));
+        availablePsdPspRoles.add(new SelectItem("PSP_PI", getEjbcaWebBean().getText("PSD2_PSP_PI")));
+        availablePsdPspRoles.add(new SelectItem("PSP_AI", getEjbcaWebBean().getText("PSD2_PSP_AI")));
+        availablePsdPspRoles.add(new SelectItem("PSP_IC", getEjbcaWebBean().getText("PSD2_PSP_IC")));
+
+        return availablePsdPspRoles;
+    }
+
+    public boolean isCabfOrganizationIdentifierUsed() {
+        return selectedEeProfile.isCabfOrganizationIdentifierUsed();
+    }
+
+    public String getCabfOrganizationIdentifier() {
+        return cabfOrganizationIdentifier;
+    }
+
+    public void setCabfOrganizationIdentifier(String cabfOrganizationIdentifier) {
+        this.cabfOrganizationIdentifier = cabfOrganizationIdentifier;
+    }
+    
+    public boolean isCabfOrganizationIdentifierReadOnly() {
+        return !selectedEeProfile.isCabfOrganizationIdentifierModifiable();
+    }
+    
+    public boolean isCabfOrganizationIdentifierRequired() {
+        return selectedEeProfile.isCabfOrganizationIdentifierRequired();
+    }
+    
+    public boolean isRenderOtherDataSection() {
+        return selectedEeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0) 
+                || useKeyRecovery
+                || selectedEeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0)
+                || selectedEeProfile.getUse(EndEntityProfile.SENDNOTIFICATION, 0) 
+                || selectedEeProfile.getUsePrinting();
+    }    
+    
+    
+    public boolean isAllowedRequestsUsed() {
+        return selectedEeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS,0);
+    }
+    
+    public List<SelectItem> getAllowedRequests() {
+
+        List<SelectItem> allowedRequestsList = new ArrayList<>();
+
+        for (int j = 0; j < 6; j++) {
+            allowedRequestsList.add(new SelectItem(String.valueOf(j), String.valueOf(j)));
+        }
+
+        return allowedRequestsList;
+    }    
+    
+    public int getNumberOfRequests() {
+        return this.numberOfRequests;
+    }
+    
+    public void setNumberOfRequests(final int numberOfRequests) {
+        this.numberOfRequests = numberOfRequests;
+    }
+    
+    public boolean isUseKeyRecovery() {
+        return useKeyRecovery;
+    }
+    
+    public boolean isKeyRecoveryRequired() {
+        return selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0);
+    }
+    
+    public boolean isUseIssuanceRevocationReason() {
+        return selectedEeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+    }
+    
+    public boolean isIssuanceRevocationReasonDisabled() {
+        return !selectedEeProfile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+    }
+
+    public int getRevocationStatus() {
+        return revocationStatus;
+    }
+
+    public void setRevocationStatus(int revocationStatus) {
+        this.revocationStatus = revocationStatus;
+    }
+    
+    public List<SelectItem> getIssuanceRevocationReasons() {
+
+        final List<SelectItem> issuanceRevocationReasons = new ArrayList<>();
+        
+
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.NOT_REVOKED, getEjbcaWebBean().getText("ACTIVE")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD,
+                getEjbcaWebBean().getText("SUSPENDED") + ": " + getEjbcaWebBean().getText("REV_CERTIFICATEHOLD")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED,
+                getEjbcaWebBean().getText("REVOKED") + ": " + getEjbcaWebBean().getText("REV_UNSPECIFIED")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE,
+                getEjbcaWebBean().getText("REVOKED") + ": " + getEjbcaWebBean().getText("REV_KEYCOMPROMISE")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE,
+                getEjbcaWebBean().getText("REVOKED") + ": " + getEjbcaWebBean().getText("REV_CACOMPROMISE")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_AFFILIATIONCHANGED,
+                getEjbcaWebBean().getText("REVOKED") + ": " + getEjbcaWebBean().getText("REV_AFFILIATIONCHANGED")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_SUPERSEDED,
+                getEjbcaWebBean().getText("REVOKED") + ": " + getEjbcaWebBean().getText("REV_SUPERSEDED")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION,
+                getEjbcaWebBean().getText("REVOKED") + ": " + getEjbcaWebBean().getText("REV_CESSATIONOFOPERATION")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_PRIVILEGESWITHDRAWN,
+                getEjbcaWebBean().getText("REVOKED") + ": " + getEjbcaWebBean().getText("REV_PRIVILEGEWITHDRAWN")));
+        issuanceRevocationReasons.add(new SelectItem(RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE,
+                getEjbcaWebBean().getText("REVOKED") + ": " + getEjbcaWebBean().getText("REV_AACOMPROMISE")));
+
+        return issuanceRevocationReasons;
+
+    }
+    
+    public boolean isUseSendNotification() {
+        return selectedEeProfile.getUse(EndEntityProfile.SENDNOTIFICATION,0);
+    }
+    
+    public boolean isSendNotificationRequired() {
+        return selectedEeProfile.isRequired(EndEntityProfile.SENDNOTIFICATION,0);
+    }
+
+    public boolean isSendNotification() {
+        return sendNotification;
+    }
+
+    public void setSendNotification(boolean sendNotification) {
+        this.sendNotification = sendNotification;
+    }
+
+    public boolean isUsePrintingEnabled() {
+        return selectedEeProfile.getUsePrinting();
+    }
+    
+    public boolean isPrintingRequired() {
+        return selectedEeProfile.getPrintingRequired();
+    }
+
+    public boolean isUsePrinting() {
+        return usePrinting;
+    }
+
+    public void setUsePrinting(boolean usePrinting) {
+        this.usePrinting = usePrinting;
+    }
+    
+    /**
+     * Adds endentity using the parameters set in the GUI and if all the checks pass.
+     * 
+     * @throws ParseException
+     * @throws ParameterException
+     * @throws EndEntityExistsException
+     * @throws CADoesntExistsException
+     * @throws CertificateSerialNumberException
+     * @throws AuthorizationDeniedException
+     * @throws EndEntityProfileValidationException
+     * @throws IllegalNameException
+     * @throws CertificateExtensionException 
+     */
+    public void addUser()
+            throws ParseException, ParameterException, EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
+            AuthorizationDeniedException, EndEntityProfileValidationException, IllegalNameException, CertificateExtensionException {
+        
+        if (!doesPasswordAndConfirmationMatch()) {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("PASSWORDSDOESNTMATCH"));
+            return;
+        }
+        
+        // User view initialization
+        UserView newUserView = new UserView();
+        newUserView.setEndEntityProfileId(selectedEeProfileId);
+        
+        newUserView = checkAndSetExtednedInformation(newUserView);
+
+        try {
+            newUserView = checkAndSetUserNameAndPassword(newUserView);
+        } catch (AddEndEntityException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            return;
+        }
+        newUserView = checkAndSetLoginAttempts(newUserView);
+
+        try {
+            if (checkAndSetUserEmail(newUserView).isPresent()) {
+                newUserView = checkAndSetUserEmail(newUserView).get();
+            } else {
+                return;
+            }
+        } catch (AddEndEntityException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            return;
+        }
+        
+        newUserView = checkAndSetCardNumber(newUserView);
+
+        try {
+            newUserView = checkAndSetSubjectDN(newUserView);
+        } catch (AddEndEntityException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            return;
+        }
+
+        try {
+            newUserView = checkAndSetSubjectAltName(newUserView);
+        } catch (AddEndEntityException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            return;
+        }
+        
+        try {
+            newUserView = checkAndSetSubjectDirName(newUserView);
+        } catch (AddEndEntityException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            return;
+        }
+
+        newUserView = checkAndSetMaxNumberOfRequests(newUserView);
+
+        newUserView.setKeyRecoverable(keyRecoveryCheckboxStatus.left);
+        newUserView.setSendNotification(sendNotification);
+        newUserView.setPrintUserData(usePrinting);
+
+        newUserView = checkAndSetRevokationReason(newUserView);
+
+        try {
+            newUserView = checkAndSetMainCertificateData(newUserView);
+        } catch (AddEndEntityException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            return;
+        }
+
+        newUserView = checkAndSetValidityTimes(newUserView);
+        try {
+            newUserView = checkAndSetCustomSerialNumber(newUserView);
+        } catch (AddEndEntityException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            return;
+        }
+
+        newUserView = checkAndSetPsd2QcStatement(newUserView);
+
+        newUserView = checkAndSetCabfOrgId(newUserView);
+
+        newUserView = checkAndSetNameConstraints(newUserView);
+
+        finallyCreateUser(newUserView);
+    }
+
+    private UserView checkAndSetExtednedInformation(UserView newUserView) {
+        if (getExtensionData() != null) {
+            ExtendedInformation ei = newUserView.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+                newUserView.setExtendedInformation(ei);
+            }
+            eeBean.setExtendedInformation(ei);
+
+            // Save the new value if the profile allows it
+            if (selectedEeProfile.getUseExtensiondata()) {
+                eeBean.setExtensionData(getExtensionData());
+            }
+        }
+        return newUserView;
+    }
+
+    private boolean doesPasswordAndConfirmationMatch() {
+        return confirmPasswordFieldValue.equals(passwordFieldValue);
+    }
+
+    private UserView checkAndSetNameConstraints(UserView newUserView) throws CertificateExtensionException {
+        try {
+            ExtendedInformation ei;
+            if (selectedEeProfile.isNameConstraintsPermittedUsed()) {
+                ei = newUserView.getExtendedInformation();
+                if (ei == null) {
+                    ei = new ExtendedInformation();
+                }
+                if (nameConstraintsPermitted != null && !nameConstraintsPermitted.trim().isEmpty()) {
+                    ei.setNameConstraintsPermitted(NameConstraint.parseNameConstraintsList(nameConstraintsPermitted));
+                } else {
+                    ei.setNameConstraintsPermitted(null);
+                }
+                newUserView.setExtendedInformation(ei);
+            }
+            if (selectedEeProfile.isNameConstraintsExcludedUsed()) {
+                ei = newUserView.getExtendedInformation();
+                if (ei == null) {
+                    ei = new ExtendedInformation();
+                }
+                if (nameConstraintsExcluded != null && !nameConstraintsExcluded.trim().isEmpty()) {
+                    ei.setNameConstraintsExcluded(NameConstraint.parseNameConstraintsList(nameConstraintsExcluded));
+                } else {
+                    ei.setNameConstraintsExcluded(null);
+                }
+                newUserView.setExtendedInformation(ei);
+            }
+        } catch (CertificateExtensionException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            throw e;
+        }
+        return newUserView;
+    }
+
+    private void finallyCreateUser(UserView newUserView) throws EndEntityExistsException, CADoesntExistsException, CertificateSerialNumberException,
+            AuthorizationDeniedException, EndEntityProfileValidationException, IllegalNameException {
+        // See if user already exists
+        if (raBean.userExist(newUserView.getUsername())) {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ENDENTITYALREADYEXISTS"));
+        } else {
+            // No validation error. Go ahead an try to add user
+            try {
+                EndEntityInformation endEntityInformation = raBean.addUser(newUserView);
+                newUserView.setUsername(endEntityInformation.getUsername());
+                selectedEeProfile.setUsernameDefault(endEntityInformation.getUsername());
+                final String addedUsername = endEntityInformation.getUsername();
+                addNonTranslatedInfoMessage(
+                        getEjbcaWebBean().getText("ENDENTITY") + " " + addedUsername + " " + getEjbcaWebBean().getText("ADDEDSUCCESSFULLY"));
+            } catch (ApprovalException e) {
+                handleApprovalException(e);
+            } catch (WaitingForApprovalException e) {
+                handleWaitingForApprovalException(e);
+            } catch (EjbcaException e) {
+                handleEjbcaException(e);
+            } catch (IllegalNameException e) {
+                handleIllegalNameException(e);
+            } catch (EndEntityProfileValidationException e) {
+                addNonTranslatedErrorMessage(e.getMessage());
+            }
+        }
+    }
+
+    private void handleIllegalNameException(IllegalNameException e) throws IllegalNameException {
+        if (e.getErrorCode().equals(ErrorCode.NAMECONSTRAINT_VIOLATION)) {
+            addNonTranslatedErrorMessage(e.getMessage());
+        } else {
+            throw e;
+        }
+    }
+
+    private void handleEjbcaException(EjbcaException e) {
+        if (e.getErrorCode().equals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS)) {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("SERIALNUMBERALREADYEXISTS"));
+        }
+        if (e.getErrorCode().equals(ErrorCode.CA_NOT_EXISTS)) {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("CADOESNTEXIST"));
+        }
+        if (e.getErrorCode().equals(ErrorCode.FIELD_VALUE_NOT_VALID)) {
+            addNonTranslatedErrorMessage(e.getMessage());
+        }
+        if (e.getErrorCode().equals(ErrorCode.NAMECONSTRAINT_VIOLATION)) {
+            addNonTranslatedErrorMessage(e.getMessage());
+        }        
+    }
+
+    private void handleWaitingForApprovalException(WaitingForApprovalException e) {
+        addNonTranslatedErrorMessage(getEjbcaWebBean().getText("REQHAVEBEENADDEDFORAPPR"));
+    }
+
+    private void handleApprovalException(ApprovalException e) {
+        if (e.getErrorCode().equals(ErrorCode.VALIDATION_FAILED)) {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("DOMAINBLACKLISTVALIDATOR_VALIDATION_FAILED"));
+        } else {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("THEREALREADYEXISTSAPPROVAL"));
+        }        
+    }
+
+    private UserView checkAndSetCabfOrgId(UserView newUserView) throws ParameterException {
+        if (selectedEeProfile.isCabfOrganizationIdentifierUsed()) {
+            ExtendedInformation ei = newUserView.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+            }
+            String fieldValue = StringUtils.trim(cabfOrganizationIdentifier);
+            if (selectedEeProfile.isCabfOrganizationIdentifierRequired() && StringUtils.isEmpty(fieldValue)) {
+                throw new ParameterException(getEjbcaWebBean().getText("EXT_CABF_ORGANIZATION_IDENTIFIER_REQUIRED"));
+            } else if (fieldValue != null && !fieldValue.matches(CabForumOrganizationIdentifier.VALIDATION_REGEX)) {
+                throw new ParameterException(getEjbcaWebBean().getText("EXT_CABF_ORGANIZATION_IDENTIFIER_BADFORMAT"));
+            }
+            ei.setCabfOrganizationIdentifier(fieldValue);
+            newUserView.setExtendedInformation(ei);
+        }
+        return newUserView;
+    }
+
+    private UserView checkAndSetPsd2QcStatement(UserView newUserView) {
+        if (selectedEeProfile.isPsd2QcStatementUsed()) {
+            ExtendedInformation ei = newUserView.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+            }
+            if (psd2NcaName != null && psd2NcaName.length() > 0) {
+                ei.setQCEtsiPSD2NcaName(psd2NcaName.trim());
+            }
+            if (psd2NcaId != null && psd2NcaId.length() > 0) {
+                ei.setQCEtsiPSD2NcaId(psd2NcaId.trim());
+            }
+            if (psd2PspRoles != null && !psd2PspRoles.isEmpty()) {
+                final List<PSD2RoleOfPSPStatement> pspRoles = new ArrayList<>();
+                for (String role : psd2PspRoles) {
+                    pspRoles.add(new PSD2RoleOfPSPStatement(QcStatement.getPsd2Oid(role), role));
+                }
+                ei.setQCEtsiPSD2RolesOfPSP(pspRoles);
+            }
+            newUserView.setExtendedInformation(ei);
+        }
+        return newUserView;
+    }
+
+    private UserView checkAndSetCustomSerialNumber(UserView newUserView) throws AddEndEntityException {
+        if (selectedEeProfile.isCustomSerialNumberUsed()) {
+            ExtendedInformation ei = newUserView.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+            }
+            if (customSerialNumber != null && customSerialNumber.length() > 0) {
+                try {
+                    ei.setCertificateSerialNumber(new BigInteger(customSerialNumber.trim(), 16));
+                } catch (NumberFormatException e) {
+                    throw new AddEndEntityException("Number format exception " + e.getMessage());
+                }
+            } else {
+                ei.setCertificateSerialNumber(null);
+            }
+            newUserView.setExtendedInformation(ei);
+        }
+        return newUserView;
+    }
+
+    private UserView checkAndSetValidityTimes(UserView newUserView) throws ParseException {
+        ExtendedInformation ei;
+        if (selectedEeProfile.isValidityStartTimeUsed() && (validityStartTimeValue != null && (validityStartTimeValue.trim().length() > 0))) {
+            String storeValue = getEjbcaWebBean().getImpliedUTCFromISO8601OrRelative(validityStartTimeValue.trim());
+            ei = newUserView.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+            }
+            ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, storeValue);
+            newUserView.setExtendedInformation(ei);
+            selectedEeProfile.setValidityStartTime(validityStartTimeValue.trim());
+        }
+
+        if (selectedEeProfile.isValidityEndTimeUsed() && (validityEndTimeValue != null && (validityEndTimeValue.trim().length() > 0))) {
+            String storeValue = getEjbcaWebBean().getImpliedUTCFromISO8601OrRelative(validityEndTimeValue.trim());
+            ei = newUserView.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+            }
+            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, storeValue);
+            newUserView.setExtendedInformation(ei);
+            selectedEeProfile.setValidityEndTime(validityEndTimeValue.trim());
+        }
+        return newUserView;
+    }
+
+    private UserView checkAndSetMainCertificateData(UserView newUserView) throws AddEndEntityException {
+        /*  Main Certificate Data   */
+        
+        if (selectedCertProfileId == -1) {
+            throw new AddEndEntityException(getEjbcaWebBean().getText("CERTIFICATEPROFILEMUST"));
+        }
+        
+        if (selectedCaId == -1) {
+            throw new AddEndEntityException(getEjbcaWebBean().getText("CAMUST"));
+        }
+        
+        if (selectedTokenId == -1) {
+            throw new AddEndEntityException(getEjbcaWebBean().getText("TOKENMUST"));
+        }
+        
+        newUserView.setCertificateProfileId(selectedCertProfileId);
+        newUserView.setCAId(selectedCaId);
+        newUserView.setTokenType(selectedTokenId);
+        return newUserView;
+    }
+
+    private UserView checkAndSetRevokationReason(UserView newUserView) {
+        // Issuance revocation reason, what state a newly issued certificate will have
+        if (selectedEeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0)) {
+            String fieldValue = String.valueOf(revocationStatus);
+            // If it's not modifyable don't even try to modify it
+            if (!selectedEeProfile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0)) {
+                fieldValue = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+            }
+            if (fieldValue != null) {
+                ExtendedInformation ei = newUserView.getExtendedInformation();
+                if (ei == null) {
+                    ei = new ExtendedInformation();
+                }
+                ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, fieldValue);
+                newUserView.setExtendedInformation(ei);
+                selectedEeProfile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, fieldValue);
+            } else {
+                selectedEeProfile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.NOT_REVOKED);
+            }
+        }
+        return newUserView;
+    }
+
+    private UserView checkAndSetMaxNumberOfRequests(UserView newUserView) {
+        if (selectedEeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+            ExtendedInformation ei = newUserView.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+            }
+            ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(numberOfRequests));
+            newUserView.setExtendedInformation(ei);
+        }
+        return newUserView;
+    }
+
+    private UserView checkAndSetSubjectDirName(UserView newUserView) throws AddEndEntityException {
+
+        StringBuilder subjectDirAttr = new StringBuilder();
+        
+        int i = 0;
+        for (SubjectDirAttrFieldData subjectDirAttrFieldAndData : getSubjectDirAttrFieldDatas()) {
+            int[] fieldData = selectedEeProfile.getSubjectDirAttrFieldsInOrder(i++);
+            String fieldValue = subjectDirAttrFieldAndData.getFieldValueToSave(newUserView, fieldData);
+            
+            if (StringUtils.isNotBlank(fieldValue)) {
+                if(!cerProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectDirAttributes()) {
+                    throw new AddEndEntityException("Usage of subject dir attributes is not allowed in the selected certificate profile.");
+                }
+                fieldValue = fieldValue.trim();
+                fieldValue = LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),
+                        DNFieldExtractor.TYPE_SUBJECTDIRATTR) + fieldValue);
+                if (subjectDirAttr.length() == 0) {
+                    subjectDirAttr.append(fieldValue);
+                } else {
+                    subjectDirAttr.append(", " + fieldValue);
+                }
+            }
+        }
+        
+        newUserView.setSubjectDirAttributes(subjectDirAttr.toString());
+        return newUserView;
+    }
+
+    private UserView checkAndSetSubjectAltName(UserView newUserView) throws AddEndEntityException {
+
+        StringBuilder subjectAltName = new StringBuilder();
+        int i = 0;
+        for (final SubjectAltNameFieldData subjectAltNameFieldAndData : getSubjectAltNameFieldDatas()) {
+            int[] fieldData = selectedEeProfile.getSubjectAltNameFieldsInOrder(i++);
+            String fieldValue = subjectAltNameFieldAndData.getFieldValueToSave(newUserView, fieldData);
+
+            if (StringUtils.isNotBlank(fieldValue)) {
+                if(!cerProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectAlternativeName()) {
+                    throw new AddEndEntityException("Usage of subject alternative name is not allowed in the selected certificate profile.");
+                }
+                if (subjectAltName.length() == 0) {
+                    subjectAltName.append(fieldValue);
+                } else {
+                    subjectAltName.append(", " + fieldValue);
+                }
+            }
+        }
+
+        newUserView.setSubjectAltName(subjectAltName.toString());
+        return newUserView;
+    }
+    
+    private UserView checkAndSetSubjectDN(UserView newUserView) throws AddEndEntityException {
+        StringBuilder subjectDn = new StringBuilder();
+        int i = 0;
+        for (SubjectDnFieldData subjectDnFieldAndData : getSubjectDnFieldsAndDatas()) {
+            String value = null;
+            int[] fieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
+
+            if (subjectDnFieldAndData.isEmail()) {
+                value = handleEmailCase(fieldData, newUserView);
+            } else {
+                value = subjectDnFieldAndData.getFieldValue();
+                subjectDnFieldAndData.validateFieldValue(value, fieldData);
+            }
+            
+            if (StringUtils.isNotBlank(value)) {
+                value = value.trim();
+
+                final String fieldComp = DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),
+                        DNFieldExtractor.TYPE_SUBJECTDN) + value;
+                final String dnPart;
+                if (fieldComp.charAt(fieldComp.length() - 1) != '=') {
+                    dnPart = LDAPDN.escapeRDN(fieldComp);
+                } else {
+                    dnPart = fieldComp;
+                }
+                if (subjectDn.length() == 0) {
+                    subjectDn.append(dnPart);
+                } else {
+                    subjectDn.append(", " + dnPart);
+                }
+                continue;
+            }
+            
+            if (subjectDnFieldAndData.getOptions().length >=1 && StringUtils.isNotBlank(subjectDnFieldAndData.getFieldValue())) {
+                value = subjectDnFieldAndData.getFieldValueToSave(newUserView, fieldData);
+                if (StringUtils.isNotEmpty(value)) {
+
+                    if (subjectDn.length() == 0) {
+                        subjectDn.append(value);
+                    }
+                    else {
+                        subjectDn.append(", " + value);
+                    }
+                }
+            }
+        }
+
+        newUserView.setSubjectDN(subjectDn.toString());
+        return newUserView;
+    }
+
+    private String handleEmailCase(final int[] fieldData, final UserView newUserView) throws AddEndEntityException {
+
+        final String emailSetInUserView = newUserView.getEmail();
+        if (selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                && StringUtils.isBlank(emailSetInUserView)) {
+            final String msg = "Email address required in SDN but not set in profile.";
+            if(log.isDebugEnabled()) {
+                log.debug(msg);
+            }
+            throw new AddEndEntityException(msg);
+        }
+        return emailSetInUserView;
+    }
+
+    private UserView checkAndSetCardNumber(UserView newUserView) {
+        if (getCardNumber() != null) {
+            final String cardNum = getCardNumber().trim();
+            if (StringUtils.isNotBlank(cardNum)) {
+                newUserView.setCardNumber(cardNum);
+            }
+        }
+        return newUserView;
+    }
+
+    private Optional<UserView> checkAndSetUserEmail(UserView newUserView) throws AddEndEntityException {
+        if (emailUserName != null) {
+            if (StringUtils.isNotEmpty(emailUserName)) {
+                if (handleEmailUserNameNotEmptyCase(newUserView).isPresent()) {
+                    return Optional.of(handleEmailUserNameNotEmptyCase(newUserView).get());
+                } else {
+                    return Optional.empty();
+                }
+            } else {
+                handleEmailUserNameEmptyCase();
+            }
+        }
+        return Optional.of(newUserView);
+    }
+
+    private void handleEmailUserNameEmptyCase() throws AddEndEntityException {
+        String emailDomain = getSelectedEmailDomain();
+        if (emailDomain != null) {
+            emailDomain = emailDomain.trim();
+            if (!emailDomain.equals("")) { // We have a domain but no username, so email incomplete!
+                addNonTranslatedErrorMessage(ejbcaBean.getText("EMAILINCOMPLETE"));
+                throw new AddEndEntityException(ejbcaBean.getText("EMAILINCOMPLETE"));
+            }
+        }
+    }
+
+    private Optional<UserView> handleEmailUserNameNotEmptyCase(UserView newUserView) {
+        String emailDomain = getSelectedEmailDomain();
+
+        if (emailDomain != null) {
+            emailDomain = emailDomain.trim();
+            if (!emailDomain.equals("")) {
+                newUserView.setEmail(emailUserName + "@" + emailDomain);
+            } else {
+                addNonTranslatedErrorMessage(ejbcaBean.getText("EMAILINCOMPLETE"));
+                return Optional.empty();
+            }
+        }
+        emailDomain = getEmailDomain();
+        if (emailDomain != null && (!emailDomain.equals(""))) {
+            newUserView.setEmail(emailUserName + "@" + emailDomain);
+        }
+        return Optional.of(newUserView);
+    }
+
+    private UserView checkAndSetLoginAttempts(UserView newUserView) {
+        ExtendedInformation ei = newUserView.getExtendedInformation();
+        if (ei == null) {
+            ei = new ExtendedInformation();
+        }
+        ei.setMaxLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
+        ei.setRemainingLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
+        newUserView.setExtendedInformation(ei);
+        
+        return newUserView;
+    }
+
+    private UserView checkAndSetUserNameAndPassword(final UserView newUserView) throws AddEndEntityException {
+        if (getExtensionData() != null) {
+            ExtendedInformation ei = newUserView.getExtendedInformation();
+            if (ei == null) {
+                ei = new ExtendedInformation();
+                newUserView.setExtendedInformation(ei);
+            }
+            eeBean.setExtendedInformation(ei);
+        }
+
+        if (StringUtils.isNotBlank(getUserName())) {
+            if(!selectedEeProfile.isAutoGeneratedUsername() && !AddEndEntityUtil.validateDNField(getUserName())) {
+                throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getEjbcaWebBean().getText("USERNAME"));
+            }
+            
+            newUserView.setUsername(getUserName().trim());
+        }
+        
+        if (StringUtils.isNotBlank(getPasswordFieldValue())) {
+            newUserView.setPassword(getPasswordFieldValue().trim());
+        }
+
+        if (!isClearTextPasswordRequired()) {
+            newUserView.setClearTextPassword(isUseClearTextPasswordStorage());
+        } else {
+            //We end up here if the checkbox was non-modifiable. 
+            newUserView.setClearTextPassword(selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD, 0).equals(EndEntityProfile.TRUE));
+        }        
+        
+        return newUserView;
+    }
+
+    public String getCustomSerialNumber() {
+        return customSerialNumber;
+    }
+
+    public void setCustomSerialNumber(String customSerialNumber) {
+        this.customSerialNumber = customSerialNumber;
+    }
+    
+    public List<SelectItem> getAvailableCas() {
+        
+        Map<Integer, List<Integer>> currentAvailableCas = raBean.getCasAvailableToEndEntity(selectedEeProfileId);
+        List<SelectItem> availableCasList = new ArrayList<>();
+        List<Integer> availableCasToSelectedEeProfile = currentAvailableCas.get(selectedCertProfileId);
+        Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
+
+        if (Objects.nonNull(availableCasToSelectedEeProfile)) {
+            for (final int caId : availableCasToSelectedEeProfile) {
+                availableCasList.add(new SelectItem(caId, caIdToNameMap.get(caId)));
+            }
+        }
+
+        return availableCasList;
+    }
+
+    public int getSelectedCaId() {
+        return selectedCaId;
+    }
+
+    public void setSelectedCaId(int selectedCaId) {
+        this.selectedCaId = selectedCaId;
+    }
+    
+    public void redirectToAdminweb() throws IOException {
+        final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
+        ec.redirect(ec.getRequestContextPath());
+    }
+    
+    public String reloadAddEndEntityPage() {
+        return StringUtils.EMPTY;
+    }
+    
+    public ImmutablePair<List<UserView>, Boolean> getAddedUsers() {
+        List<UserView> addedUsersList = new ArrayList<>();
+        final int numberOfRows = getEjbcaWebBean().getEntriesPerPage();
+        final UserView[] addedUsers = raBean.getAddedUsers(numberOfRows);
+
+        for (int i = 0; i < addedUsers.length; i++) {
+            if (addedUsers[i] != null) {
+                addedUsersList.add(addedUsers[i]);
+            }
+        }
+        return new ImmutablePair<>(addedUsersList, (addedUsers != null && addedUsers.length > 0));
+    }
+    
+    public String encodeUserName(final String userName) throws UnsupportedEncodingException {
+        return java.net.URLEncoder.encode(userName, "UTF-8");
+    }
+    
+    public String getAddedUserCN(final UserView addedUser) {
+        return addedUser.getSubjectDNField(DNFieldExtractor.CN,0);
+    }
+
+    public String getAddedUserOU(final UserView addedUser) {
+        return addedUser.getSubjectDNField(DNFieldExtractor.OU,0);
+    }
+
+    public String getAddedUserO(final UserView addedUser) {
+        return addedUser.getSubjectDNField(DNFieldExtractor.O,0);
+    }
+
+    public String getViewEndEntityPopupLink(final String username) {
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.jsp?username=" + username;
+    }
+
+    public String getEditEndEntityPopupLink(final String username) {
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/editendentity.jsp?username=" + username;
+    }
+
+    public void setConfirmPasswordFieldValue(String confirmPasswordFieldValue) {
+        this.confirmPasswordFieldValue = confirmPasswordFieldValue;
+    }
+    
+    public String getConfirmPasswordFieldValue() {
+        return this.confirmPasswordFieldValue;
+    }
+    
+    public boolean isRenderReloadButton() {
+        return getAddedUsers().left.size() > 0;
+    }
+    
+    public void keyRecoveryCheckboxStatusUpdate() {
+
+        boolean keyRecoveryCheckBoxDisabled = false;
+        boolean keyRecoveryCheckBoxChecked = false;
+
+        if (getSelectedTokenId() == SecConst.TOKEN_SOFT_BROWSERGEN) {
+            keyRecoveryCheckBoxChecked = false;
+            keyRecoveryCheckBoxDisabled = true;
+        } else {
+            if (selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE, 0)) {
+                keyRecoveryCheckBoxDisabled = true;
+            } else {
+                keyRecoveryCheckBoxDisabled = false;
+            }
+
+            if (selectedEeProfile.getValue(EndEntityProfile.KEYRECOVERABLE, 0).equals(EndEntityProfile.TRUE)
+                    || selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE, 0)) {
+                keyRecoveryCheckBoxChecked = true;
+
+            } else {
+                keyRecoveryCheckBoxChecked = false;
+            }
+        }
+        
+        this.keyRecoveryCheckboxStatus.setLeft(keyRecoveryCheckBoxChecked);
+        this.keyRecoveryCheckboxStatus.setRight(keyRecoveryCheckBoxDisabled);
+
+    }
+
+    public MutablePair<Boolean, Boolean> getKeyRecoveryCheckboxStatus() {
+        return keyRecoveryCheckboxStatus;
+    }
+
+    public void setKeyRecoveryCheckboxStatus(MutablePair<Boolean, Boolean> keyRecoveryCheckboxStatus) {
+        this.keyRecoveryCheckboxStatus = keyRecoveryCheckboxStatus;
+    }
     
 }
