@@ -171,11 +171,11 @@
 								    <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithUsernameBean.uploadCsrDoneRendered}">
 									<h:panelGroup layout="block" styleClass="pure-control-group">
 									    <h:outputLabel id="uploadedKeyAlgorithm" for="certificateRequestNode" value="&nbsp;&nbsp;#{msg.enroll_upload_csr_keyalgo_label}"/>
-									    <h:outputText id="certificateRequestNode" value="#{enrollWithUsernameBean.selectedAlgorithmUiRepresentation}"/>
+									    <h:outputText id="certificateRequestNode" style="color:white;" value="#{enrollWithUsernameBean.selectedAlgorithmUiRepresentation}"/>
 									</h:panelGroup>
 									<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollWithUsernameBean.hybrid}">
 									    <h:outputLabel for="alternativeKeyAlgorithm" value="#{msg.enroll_upload_csr_keyalgo_alternative_label}"/>
-									    <h:outputText id="alternativeKeyAlgorithm" value="#{enrollWithUsernameBean.alternativeAlgorithmUiRepresentation}"/>
+									    <h:outputText id="alternativeKeyAlgorithm" style="color:white;" value="#{enrollWithUsernameBean.alternativeAlgorithmUiRepresentation}"/>
 									</h:panelGroup>
 									<br/>
 									<h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
