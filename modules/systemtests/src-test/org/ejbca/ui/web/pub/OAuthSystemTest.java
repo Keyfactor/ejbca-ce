@@ -366,25 +366,6 @@ public class OAuthSystemTest {
     }
 
     @Test
-    public void testJspPage() throws IOException {
-        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/addendentity.jsp");
-        final HttpURLConnection connection = doGetRequest(url, token);
-        assertEquals("Response code was not 200", 200, connection.getResponseCode());
-        String response = getResponse(connection.getInputStream());
-        assertTrue("Search End Entities page should be accessible. Actual response was: " + response, response.contains("<h1>Add End Entity</h1>"));
-    }
-
-    @Test
-    public void testJspPageWithExpiredToken() throws IOException {
-        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/addendentity.jsp");
-        final HttpURLConnection connection = doGetRequest(url, expiredToken);
-        assertEquals("Response code was not 200", 200, connection.getResponseCode());
-        String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authorization Denied"));
-
-    }
-
-    @Test
     public void testServlet() throws IOException {
         final URL url = new URL(HTTP_REQ_PATH + "/adminweb//profilesexport?profileType=eep");
         final HttpURLConnection connection = doGetRequest(url, token);
