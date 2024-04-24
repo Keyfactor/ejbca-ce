@@ -201,7 +201,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return (String) data.get(KEYSTORE_ALTERNATIVE_KEY_ALGORITHM);
     }
 
-    public void setKeyStoreAlternateKeyAlgorithm(String keyStoreAlternateKeyAlgorithm){
+    public void setKeyStoreAlternativeKeyAlgorithm(String keyStoreAlternateKeyAlgorithm){
         data.put(KEYSTORE_ALTERNATIVE_KEY_ALGORITHM, keyStoreAlternateKeyAlgorithm);
     }
 

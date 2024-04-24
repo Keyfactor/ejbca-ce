@@ -200,7 +200,7 @@ public class GenerateTokenTest extends CaTestCase {
             //Setting up algorithm specification ECDSA_secp256r1 that is going to be enforced
             eeinfo.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_ECDSA);
             eeinfo.getExtendedInformation().setKeyStoreAlgorithmSubType("prime256v1");
-            eeinfo.getExtendedInformation().setKeyStoreAlternateKeyAlgorithm(AlgorithmConstants.SIGALG_FALCON1024);
+            eeinfo.getExtendedInformation().setKeyStoreAlternativeKeyAlgorithm(AlgorithmConstants.SIGALG_FALCON1024);
             eeinfo.getExtendedInformation().setKeyStoreAlternativeKeySpecification(AlgorithmConstants.KEYALGORITHM_FALCON1024);
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123");
@@ -229,6 +229,7 @@ public class GenerateTokenTest extends CaTestCase {
             assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(publicKey));
             assertEquals("prime256v1", AlgorithmTools.getKeySpecification(publicKey));
             assertEquals(AlgorithmConstants.SIGALG_FALCON1024, AlgorithmTools.getKeyAlgorithm(altPublicKey));
+            assertEquals(AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmTools.getKeySpecification(altPublicKey));
             
         } finally {
             if (endEntityManagementSession.existsUser(GENERATETOKENTEST_USERNAME)) {
