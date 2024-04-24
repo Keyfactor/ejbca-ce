@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -62,10 +61,10 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.ParameterException;
@@ -106,12 +105,12 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     
     private String selectedEeProfileName = "EMPTY";
-    private int selectedEeProfileId = 1;
+    private int selectedEeProfileId = 0;
     private String userName;
     private String passwordFieldValue;
     private String confirmPasswordFieldValue;
     private EndEntityProfile selectedEeProfile = null;
-    private int maxLoginAttempts = -1;
+    private String maxLoginAttempts;
     private String maxLoginAttemptsStatus;
     private boolean useClearTextPasswordStorage;
     private String[] emailDomains;
@@ -152,11 +151,11 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     private List<SubjectDirAttrFieldData> subjectDirAttrFieldDatas;
     private MutablePair<Boolean, Boolean> keyRecoveryCheckboxStatus = new MutablePair<>();
 
-    
-    private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
+    private String[] profileNames = null; 
+
     private EditEndEntityBean eeBean;
     
-    private EjbcaWebBean ejbcaBean;
+    private EjbcaWebBean ejbcaWebBean;
     private RAInterfaceBean raBean;
     
     // Authentication check and audit log page access request
@@ -169,35 +168,45 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         
         final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
         
-        ejbcaBean = getEjbcaWebBean();
+        ejbcaWebBean = getEjbcaWebBean();
         
-        globalConfiguration = ejbcaBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
+        globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
                 AccessRulesConstants.REGULAR_CREATEENDENTITY);
         
 
         raBean = SessionBeans.getRaBean(request);
-        raBean.initialize(ejbcaBean);
+        raBean.initialize(ejbcaWebBean);
         
         RequestHelper.setDefaultCharacterEncoding(request);
         initUserData();
     }
     
-    private void initUserData() {
-        this.authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
-        this.selectedEeProfile = authorizedEndEntityProfiles.get(1).getValue(); // Initially EMPTY (id 1) is selected
+    private void initUserData() throws EndEntityProfileNotFoundException, AddEndEntityException {
+
+        profileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
+        
+        if (profileNames == null || profileNames.length == 0) {
+            throw new AddEndEntityException(getEjbcaWebBean().getText("NOTAUTHORIZEDTOCREATEENDENTITY"));
+        } else {
+            this.selectedEeProfileId = raBean.getEndEntityProfileId(profileNames[0]);
+            this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+        }
+        
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
+        this.maxLoginAttemptsStatus = selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1") ? "unlimited" : "specified";
+        
         this.emailDomains = selectedEeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
         this.eeBean = new EditEndEntityBean();
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
 
         this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery()
-                && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
+                && ejbcaWebBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
                 && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
 
-        final String issuacneRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
-        if ((issuacneRevocationReason != null) && ((issuacneRevocationReason).length() > 0)) {
-            setRevocationStatus((Integer.parseInt(issuacneRevocationReason)));
+        final String issuanceRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+        if ((issuanceRevocationReason != null) && ((issuanceRevocationReason).length() > 0)) {
+            setRevocationStatus((Integer.parseInt(issuanceRevocationReason)));
         }
 
         /* Main Certificate Data */
@@ -403,22 +412,15 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getMaxLoginAttempts() {
-        return maxLoginAttempts != -1 ? String.valueOf(maxLoginAttempts) : "-1" ;
+        return maxLoginAttempts;
     }
 
     public void setMaxLoginAttempts(String maxLoginAttempts) {
-        this.maxLoginAttempts = Integer.parseInt(maxLoginAttempts);
+        this.maxLoginAttempts = maxLoginAttempts;
     }    
     
     public boolean isMaxLoginAttemptsDisabled() {
-        return maxLoginAttempts == -1; 
-    }
-    
-    public void actionUpdateMaxLoginAttempts() {
-        try {
-            this.maxLoginAttempts = Integer.parseInt(selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0));
-        } catch (NumberFormatException ignored) {
-        }
+        return selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1"); 
     }
 
     public String getSelectedEeProfileName() {
@@ -429,13 +431,13 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.selectedEeProfileName = selectedEeProfileName;
     }
 
-    public List<SelectItem> getAvailableEndEntityProfiles() {
+    public List<SelectItem> getAvailableEndEntityProfiles() throws EndEntityProfileNotFoundException {
         final List<SelectItem> ret = new ArrayList<>();
-        ret.add(new SelectItem(1, "EMPTY"));
-        ret.addAll(authorizedEndEntityProfiles.entrySet().stream()
-                .filter(item -> item.getKey() != 1)
-                .map(item -> new SelectItem(String.valueOf(item.getKey()), item.getValue().getName()))
-                .collect(Collectors.toList()));
+        for(int i = 0; i < profileNames.length; i++) {
+            int pId = raBean.getEndEntityProfileId(profileNames[i]);
+            ret.add(new SelectItem(pId, profileNames[i]));
+
+        }
         return ret;
     }
     
@@ -495,14 +497,11 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     
     public String actionChangeEndEntityProfile(AjaxBehaviorEvent event) {
         
-        this.selectedEeProfile = authorizedEndEntityProfiles.getValue(selectedEeProfileId);
+        this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
         
-        try {
-            this.maxLoginAttempts = Integer.parseInt(selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0));
-        } catch (NumberFormatException ignored) {
-        }
-        
-        this.maxLoginAttemptsStatus = maxLoginAttempts == -1 ? "unlimited" : "specified";
+        this.maxLoginAttempts = selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1") ? StringUtils.EMPTY
+                : selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0);
+        this.maxLoginAttemptsStatus = selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1") ? "unlimited" : "specified";
         
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
         this.emailDomains = selectedEeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
@@ -513,7 +512,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));
         this.setUsePrinting(selectedEeProfile.getPrintingDefault());
         this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery()
-                && ejbcaBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
+                && ejbcaWebBean.isAuthorizedNoLogSilent(AccessRulesConstants.REGULAR_KEYRECOVERY)
                 && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
 
         /* Main Certificate Data */
@@ -1063,7 +1062,12 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage(e.getMessage());
             return;
         }
-        newUserView = checkAndSetLoginAttempts(newUserView);
+        try {
+            newUserView = checkAndSetLoginAttempts(newUserView);
+        } catch (AddEndEntityException e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+            return;
+        }
 
         try {
             if (checkAndSetUserEmail(newUserView).isPresent()) {
@@ -1540,8 +1544,8 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         if (emailDomain != null) {
             emailDomain = emailDomain.trim();
             if (!emailDomain.equals("")) { // We have a domain but no username, so email incomplete!
-                addNonTranslatedErrorMessage(ejbcaBean.getText("EMAILINCOMPLETE"));
-                throw new AddEndEntityException(ejbcaBean.getText("EMAILINCOMPLETE"));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
+                throw new AddEndEntityException(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
             }
         }
     }
@@ -1554,7 +1558,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             if (!emailDomain.equals("")) {
                 newUserView.setEmail(emailUserName + "@" + emailDomain);
             } else {
-                addNonTranslatedErrorMessage(ejbcaBean.getText("EMAILINCOMPLETE"));
+                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
                 return Optional.empty();
             }
         }
@@ -1565,10 +1569,15 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return Optional.of(newUserView);
     }
 
-    private UserView checkAndSetLoginAttempts(UserView newUserView) {
+    private UserView checkAndSetLoginAttempts(UserView newUserView) throws AddEndEntityException {
         ExtendedInformation ei = newUserView.getExtendedInformation();
         if (ei == null) {
             ei = new ExtendedInformation();
+        }
+        try {
+            Integer.parseInt(getMaxLoginAttempts());
+        } catch (NumberFormatException e) {
+            throw new AddEndEntityException("Malformed number for max login attempts!");
         }
         ei.setMaxLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
         ei.setRemainingLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
