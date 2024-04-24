@@ -20,6 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.certificate.DnComponents;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
@@ -30,9 +33,6 @@ import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.cesecore.util.LogRedactionUtils;
 import org.ietf.ldap.LDAPDN;
-
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * A class used to retrieve different fields from a Distinguished Name or Subject Alternate Name or Subject Directory Attributes strings.
@@ -77,11 +77,22 @@ public class DNFieldExtractor implements Serializable {
     public static final int ROLE = 70;
     public static final int DESCRIPTION = 60;
     public static final int ORGANIZATIONIDENTIFIER = 106;
+    // Start Matter
     public static final int VID = 107;
     public static final int PID = 108;
+    // Matter Operational PKI
+    public static final int RCACID = 123;
+    public static final int ICACID = 124;
+    public static final int NODEID = 125;
+    public static final int FABRICID = 126;
+    public static final int NOCCAT = 127;
+    public static final int FWSIGNINGID = 128;
+    // End Matter
+    public static final int CERTIFICATIONID = 109; // BSI TR03145-5
     public static final int UNIQUEIDENTIFIER = 62;
-    public static final int CERTIFICATIONID = 109;
     // 110 is reserved
+
+    // Mark Certificate according to BIMI VMC requirements
     public static final int LEGALENTITYIDENTIFIER = 111;
     public static final int MARKTYPE = 112;
     public static final int TRADEMARKCOUNTRYORREGIONNAME = 113;
@@ -110,7 +121,7 @@ public class DNFieldExtractor implements Serializable {
     public static final int KRB5PRINCIPAL = 52;
     public static final int PERMANTIDENTIFIER = 56;
     public static final int SUBJECTIDENTIFICATIONMETHOD = 59;
-    
+
     // Subject Directory Attributes
     public static final int DATEOFBIRTH = 27;
     public static final int PLACEOFBIRTH = 28;
@@ -132,13 +143,13 @@ public class DNFieldExtractor implements Serializable {
     public int getType() {
         return type;
     }
-    
+
     /**
      * Creates a new instance of DNFieldExtractor
-     * 
+     *
      * @param dn the DN we want to process for example CN=Tomas,O=PrimeKey,C=SE
      * @param type one of the constants {@link #TYPE_SUBJECTDN}, {@link #TYPE_SUBJECTALTNAME}, {@link #TYPE_SUBJECTDIRATTR}
-     * @throws IllegalArgumentException if DN is multi-valued but has multi-values that are not one on {@link #allowedMulti} 
+     * @throws IllegalArgumentException if DN is multi-valued but has multi-values that are not one on {@link #allowedMulti}
      */
     public DNFieldExtractor(final String dn, final int type) throws IllegalArgumentException {
         dnfields = new HashMap<>();
@@ -159,7 +170,7 @@ public class DNFieldExtractor implements Serializable {
             return new ArrayList<>();
         }
     }
-    
+
     /**
      * Returns the valid components for the given DN type (Subject DN, Subject Alternative Name or Subject Directory Attributes)
      * @param dnType DNFieldExtractor.TYPE_&ast;
@@ -200,11 +211,11 @@ public class DNFieldExtractor implements Serializable {
         default: throw new IllegalArgumentException("Invalid DN type " + dnType);
         }
     }
-    
-    /** The only DN components that are allowed to be used in multi-value RDNs, to prevent users from 
+
+    /** The only DN components that are allowed to be used in multi-value RDNs, to prevent users from
      * making horrible mistakes like a multi-value RDN like 'O=PrimeKey+Tech' */
     static final List<ASN1ObjectIdentifier> allowedMulti = new ArrayList<>(Arrays.asList(
-            CeSecoreNameStyle.CN, 
+            CeSecoreNameStyle.CN,
             CeSecoreNameStyle.SERIALNUMBER,
             CeSecoreNameStyle.SURNAME,
             CeSecoreNameStyle.UID,
@@ -214,12 +225,12 @@ public class DNFieldExtractor implements Serializable {
 
 
     /**
-     * Fills the dnfields variable with dn (or altname or subject dir attrs) numerical IDs and the value of the components 
+     * Fills the dnfields variable with dn (or altname or subject dir attrs) numerical IDs and the value of the components
      * (i.e. the value of CN). Also populates fieldnumbers with number of occurrences in dn
-     * 
+     *
      * @param dninput the DN we want to process for example CN=Tomas,O=PrimeKey,C=SE
      * @param type one of the constants {@link #TYPE_SUBJECTDN}, {@link #TYPE_SUBJECTALTNAME}, {@link #TYPE_SUBJECTDIRATTR}
-     * @throws IllegalArgumentException if DN is multi-valued but has multi-values that are not one on {@link #allowedMulti} 
+     * @throws IllegalArgumentException if DN is multi-valued but has multi-values that are not one on {@link #allowedMulti}
      */
     public final void setDN(final String dninput, final int type) throws IllegalArgumentException {
         this.type = type;
@@ -239,18 +250,20 @@ public class DNFieldExtractor implements Serializable {
         }
 
         String dn = dninput;
-        // An empty DN, or using the DN "null" is a "no DN", don't try to parse it 
+        // An empty DN, or using the DN "null" is a "no DN", don't try to parse it
         if ((StringUtils.isNotEmpty(dn)) && !dn.equalsIgnoreCase("null")) {
             try {
                 if (type == TYPE_SUBJECTDN) {
+                    System.out.println("1");
                     // Check if there are multi value RDNs
                     RDN[] rdns = IETFUtils.rDNsFromString(dn, CeSecoreNameStyle.INSTANCE);
+                    System.out.println(rdns.length);
                     final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
                     boolean hasMultiValue = false;
                     for (RDN rdn : rdns) {
                         if (rdn.isMultiValued()) {
                             hasMultiValue = true;
-                            // If DN is multi valued we will split it up and create a non-multi-value DN string, in order to make it easy to validate the different 
+                            // If DN is multi valued we will split it up and create a non-multi-value DN string, in order to make it easy to validate the different
                             // fields against required fields and validators in an EE profile
                             hasMultiValueRDN = true;
                             AttributeTypeAndValue[] avas = rdn.getTypesAndValues();
@@ -347,12 +360,12 @@ public class DNFieldExtractor implements Serializable {
 
     /**
      * Returns the value of a certain DN component.
-     * 
+     *
      * @param field
      *            the DN component, one of the constants DNFieldExtractor.CN, ...
      * @param number
      *            the number of the component if several entries for this component exists, normally 0 fir the first
-     * 
+     *
      * @return A String for example "PrimeKey" if DNFieldExtractor.O and 0 was passed, "PrimeKey" if DNFieldExtractor.DC and 0 was passed or "com" if
      *         DNFieldExtractor.DC and 1 was passed. Returns an empty String "", if no such field with the number exists.
      */
@@ -368,7 +381,7 @@ public class DNFieldExtractor implements Serializable {
 
     /**
      * Returns a string representation of a certain DN component
-     * 
+     *
      * @param field
      *            the DN component, one of the constants DNFieldExtractor.CN, ...
      * @return A String for example "CN=Tomas Gustavsson" if DNFieldExtractor.CN was passed, "DC=PrimeKey,DC=com" if DNFieldExtractor.DC was passed.
@@ -392,7 +405,7 @@ public class DNFieldExtractor implements Serializable {
 
     /**
      * Function that returns true if non standard DN field exists in dn string.
-     * 
+     *
      * @return true if non standard DN field exists, false otherwise
      */
     public boolean existsOther() {
@@ -401,10 +414,10 @@ public class DNFieldExtractor implements Serializable {
 
     /**
      * Returns the number of one kind of dn field.
-     * 
+     *
      * @param field
      *            the DN component, one of the constants DNFieldExtractor.CN, ...
-     * 
+     *
      * @return number of components available for a field, for example 1 if DN is "dc=primekey" and 2 if DN is "dc=primekey,dc=com"
      */
     public int getNumberOfFields(final int field) {
@@ -418,20 +431,20 @@ public class DNFieldExtractor implements Serializable {
 
     /**
      * Returns the complete array determining the number of DN components of the various types (i.e. if there are two CNs but 0 L:s etc)
-     * 
+     *
      * Example, a DN with 'CN=User,O=PrimeKey,C=SE', will return:
      * (2, 1)
      * (9, 1)
      * (13, 1)
      * And all other IDs in the returned map with (id, 0)
-     * 
+     *
      * @return HashMap mapping DN component field ID to number of occurrences in this DN
      */
     public HashMap<Integer, Integer> getNumberOfFields() {
         return fieldnumbers;
     }
 
-    /** 
+    /**
      * @return true if the input DN contains multi value RDNs
      */
     public boolean hasMultiValueRDN() {
