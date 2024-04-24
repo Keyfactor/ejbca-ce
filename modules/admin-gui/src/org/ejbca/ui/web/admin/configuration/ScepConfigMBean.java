@@ -12,7 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import com.keyfactor.util.StringTools;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -35,13 +44,6 @@ import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.model.ListDataModel;
 import jakarta.faces.model.SelectItem;
 import jakarta.inject.Named;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * JavaServer Faces Managed Bean for managing SCEP configuration.
@@ -635,7 +637,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
                 new SelectItem(ScepConfiguration.Mode.CA.getResource())
         );
     }
-    
+
     /** @return a list of usable operational modes */
     public List<SelectItem> getChainOrderOptions() {
         final List<SelectItem> ret = new ArrayList<>();
@@ -751,6 +753,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         ret.add(new SelectItem("NIF", "NIF"));
         ret.add(new SelectItem("VID", "VID"));
         ret.add(new SelectItem("PID", "PID"));
+        ret.add(new SelectItem("RCACID", "RCACID"));
+        ret.add(new SelectItem("ICACID", "ICACID"));
+        ret.add(new SelectItem("NODEID", "NODEID"));
+        ret.add(new SelectItem("FABRICID", "FABRICID"));
+        ret.add(new SelectItem("NOCCAT", "NOCCAT"));
+        ret.add(new SelectItem("FirmwareSigningID", "FirmwareSigningID"));
         ret.add(new SelectItem("CertificationID", "CertificationID"));
         // UniqueIdentifier is left out, because we don't want people to use that
         return ret;
