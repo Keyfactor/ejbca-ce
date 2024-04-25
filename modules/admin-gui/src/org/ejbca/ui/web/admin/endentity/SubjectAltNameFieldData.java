@@ -163,7 +163,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         private String rfc822NameString;
         private String fieldValue;
 
-
         public Builder(final String label, final boolean modifiable, final boolean required) {
             this.label = label;
             this.modifiable = modifiable;
@@ -239,12 +238,12 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             this.fieldValue = value;
             return this;
         }
-        
+
         public SubjectAltNameFieldData build() {
             return new SubjectAltNameFieldData(this);
         }
     }
-    
+
     public boolean isRenderRegex() {
         return StringUtils.isNotBlank(regex);
     }
@@ -285,7 +284,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             if (isUpn) {
                 if (StringUtils.isNotBlank(upnName) && StringUtils.isNotBlank(upnDomain)) {
                     fieldValueToSave = upnName + "@" + upnDomain;
-                    
+
                 } else if (StringUtils.isNotBlank(upnDomain)) {
                     fieldValueToSave = "@" + upnDomain;
                 }
@@ -296,26 +295,27 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             }
 
         }
-        
-        if(StringUtils.isNotBlank(fieldValueToSave)) {
+
+        if (StringUtils.isNotBlank(fieldValueToSave)) {
             validateFieldValue(fieldValueToSave, fieldData);
             fieldValueToSave = constructFinalValueToSave(fieldData, fieldValueToSave);
         }
-        
+
         return fieldValueToSave;
     }
 
     @Override
     protected void validateFieldValue(final String fieldValueToSave, final int[] fieldData) throws AddEndEntityException {
-        
+
         if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.IPADDRESS)) {
             validateIPAddrValue(fieldValueToSave);
+            return;
         }
-        
+
         if (!isRfc822Name() && isUpn && StringUtils.isNotBlank(upnName) && !AddEndEntityUtil.isValidDNField(upnName)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
-        
+
         if (isModifiable() && !isUpn && !AddEndEntityUtil.isValidDNField(fieldValueToSave)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
@@ -327,7 +327,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
                         DNFieldExtractor.TYPE_SUBJECTALTNAME) + fieldValueToSave);
         return fieldValueToSave;
     }
-    
+
     private void validateIPAddrValue(final String ipAddress) throws AddEndEntityException {
         if (!AddEndEntityUtil.isValidIPv4(ipAddress) && !AddEndEntityUtil.isValidIPv6(ipAddress)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDIPADDRESS") + " " + getLabel());
