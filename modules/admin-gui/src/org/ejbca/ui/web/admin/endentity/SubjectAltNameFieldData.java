@@ -316,7 +316,8 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
 
-        if (isModifiable() && !isUpn && !AddEndEntityUtil.isValidDNField(fieldValueToSave)) {
+        // Skip SIM and hand over validation to EE profile
+        if (isModifiable() && !isUpn && !AddEndEntityUtil.isValidDNField(fieldValueToSave) && !EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
     }
