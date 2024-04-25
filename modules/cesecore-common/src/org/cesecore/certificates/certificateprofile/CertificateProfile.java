@@ -30,6 +30,12 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -50,12 +56,6 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.ValidityDate;
-
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
 
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
@@ -177,14 +177,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String ALLOWDNOVERRIDE = "allowdnoverride";
     protected static final String ALLOWDNOVERRIDEBYEEI = "allowdnoverridebyeei";
     protected static final String ALLOWCERTSNOVERIDE = "allowcertsnoverride";
-   
-    //Standard key settings 
+
+    //Standard key settings
     protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
     protected static final String AVAILABLEECCURVES = "availableeccurves";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
-    
+
     //Alternative key settings, with a focus on hybrid certificates
     private static final String ALTERNATIVE_AVAILABLEKEYALGORITHMS = "alternativeAvailableKeyAlgorithms";
 
@@ -217,11 +217,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @Deprecated
     protected static final String APPROVALPROFILE = "approvalProfile";
     protected static final String APPROVALS = "approvals";
-    
+
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
     private static final String ALTERNATIVE_SIGNATUREALGORITHM = "alternativeSignatureAlgorithm";
     private static final String USE_ALTERNATIVE_SIGNATURE = "useAlternativeSignature";
-    
+
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String STORECERTIFICATEDATA = "storecertificatedata";
     protected static final String STORESUBJECTALTNAME = "storesubjectaltname";
@@ -1056,7 +1056,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseSubjectKeyIdentifier() {
         return (Boolean) data.get(USESUBJECTKEYIDENTIFIER);
     }
-    
+
     public void setUseSubjectKeyIdentifier(boolean usesubjectkeyidentifier) {
         data.put(USESUBJECTKEYIDENTIFIER, usesubjectkeyidentifier);
     }
@@ -1318,14 +1318,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public void addCertificatePolicy(CertificatePolicy policy) {
         if (data.get(CERTIFICATE_POLICIES) == null) {
-            setCertificatePolicies(new ArrayList<CertificatePolicy>());
+            setCertificatePolicies(new ArrayList<>());
         }
         ((List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES)).add(policy);
     }
 
     public void setCertificatePolicies(List<CertificatePolicy> policies) {
         if (policies == null) {
-            data.put(CERTIFICATE_POLICIES, new ArrayList<CertificatePolicy>(0));
+            data.put(CERTIFICATE_POLICIES, new ArrayList<>(0));
         } else {
             data.put(CERTIFICATE_POLICIES, policies);
         }
@@ -1475,7 +1475,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(MINIMUMAVAILABLEBITLENGTH, minimumavailablebitlength);
         data.put(MAXIMUMAVAILABLEBITLENGTH, maximumavailablebitlength);
     }
-    
+
     public void setAvailableBitLengths(int[] availablebitlengths) {
         List<Integer> availbitlengths = new ArrayList<>(availablebitlengths.length);
         for (int availablebitlength : availablebitlengths) {
@@ -1505,13 +1505,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (StringUtils.isNumeric(keySpecification)) {
             // keySpecification is a bit length (RSA)
             return availableBitLengths.contains(Integer.parseInt(keySpecification));
-        } else {
+        } else if (AlgorithmConstants.KEYALGORITHM_EC.equals(keyAlgorithm) || AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlgorithm)) {
             // keySpecification is a curve name (EC)
             final boolean anyCurveIsAllowed = availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE);
             final boolean specifiedCurveIsAllowed = availableEcCurves
                     .stream()
                     .anyMatch(AlgorithmTools.getEcKeySpecAliases(keySpecification)::contains);
             return anyCurveIsAllowed || specifiedCurveIsAllowed;
+        } else {
+            return availableKeyAlgorithms.contains(keyAlgorithm);
         }
     }
 
@@ -1527,8 +1529,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         // If it's null, it is inherited from issuing CA.
         return (String) data.get(SIGNATUREALGORITHM);
     }
-    
-    
+
     /**
      * Returns the alternative chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
      * algorithm used to sign the CA certificate).
@@ -1556,11 +1557,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setSignatureAlgorithm(String signAlg) {
         data.put(SIGNATUREALGORITHM, signAlg);
     }
-    
+
     /**
      * Sets the alternate algorithm to be used for signing the certificates. A null value means that the signature algorithm is to be inherited from the CA
      * (i.e., it is the same as the algorithm used to sign the CA certificate).
-     * 
+     *
      * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
      *
      * @param alternativeSignatureAlgorithm JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
@@ -1769,7 +1770,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseMicrosoftTemplate(boolean use) {
         data.put(USEMICROSOFTTEMPLATE, use);
     }
-    
+
     public boolean getUseMsObjectSidSecurityExtension() {
         return (Boolean) data.get(USE_MS_OBJECTSID_SECURITY_EXTENSION);
     }
@@ -2337,15 +2338,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseQCCountries() {
         return (Boolean) data.get(USEQCCOUNTRIES);
     }
-    
+
     public void setUseQCCountries(boolean useqccountriesstring) {
         data.put(USEQCCOUNTRIES, useqccountriesstring);
     }
-    
+
     public String getQCCountriesString() {
         return (String) data.get(QCCOUNTRIESSTRING);
     }
-    
+
     public void setQCCountriesString(String iso3166_2_list) {
         if (iso3166_2_list == null) {
             data.put(QCCOUNTRIESSTRING, "");
@@ -2353,7 +2354,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(QCCOUNTRIESSTRING, iso3166_2_list);
         }
     }
-    
+
     public boolean getUseQCCustomString() {
         return (Boolean) data.get(USEQCCUSTOMSTRING);
     }
@@ -2548,7 +2549,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setUsedCertificateExtensions(List<Integer> usedCertificateExtensions) {
         if (usedCertificateExtensions == null) {
-            data.put(USEDCERTIFICATEEXTENSIONS, new ArrayList<Integer>());
+            data.put(USEDCERTIFICATEEXTENSIONS, new ArrayList<>());
         } else {
             data.put(USEDCERTIFICATEEXTENSIONS, usedCertificateExtensions);
         }
@@ -3327,7 +3328,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
         }
         if (AlgorithmTools.isPQC(keyAlgorithm)) {
-            //We implicitly allow a specific key length when configuring FALCON and/or DILITHIUM algorithms, 
+            //We implicitly allow a specific key length when configuring FALCON and/or DILITHIUM algorithms,
             //hence we don't need to check for key length compliancy with the certificate profile.
             return;
          }
@@ -3414,7 +3415,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseMicrosoftTemplate(false);
                 setMicrosoftTemplate("");
             }
-            
+
             if (data.get(USE_MS_OBJECTSID_SECURITY_EXTENSION) == null) {
                 setUseMsObjectSidSecurityExtension(true);
             }
@@ -3687,7 +3688,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseQCCountries(false);
                 setQCCountriesString("");
             }
-            
+
             // v50 truncated subject key identifier
             if (data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER) == null) {
                 setUseTruncatedSubjectKeyIdentifier(false);

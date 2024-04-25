@@ -1838,12 +1838,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return isRunningBuildWith("org.cesecore.certificates.ca.X509CAImpl");
     }
 
-    /** @return true if we are running EJBCA build that has VA functionality enabled. */
-    @Override
-    public boolean isRunningBuildWithVA() {
-        return isRunningBuildWith("org.ejbca.ui.web.protocol.OCSPServlet");
-    }
-
     /** @return true if we are running an EJBCA build that has RA functionality enabled.
      * The check is implemented to look for RaMasterApiPeerImpl, as it is excluded from the "variant=va ziprelease.
      * We decided to use RaMasterApiPeerImpl for this check, because it seemd the most painless one among
@@ -1853,6 +1847,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public boolean isRunningBuildWithRA() {
         return isRunningBuildWith("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
+    }
+
+    /** @return true if we are running EJBCA build that has VA functionality enabled. */
+    @Override
+    public boolean isRunningBuildWithVA() {
+        return isRunningBuildWithCA() || !isRunningBuildWithRA();
     }
 
     private static boolean isRunningBuildWith(String className) {
