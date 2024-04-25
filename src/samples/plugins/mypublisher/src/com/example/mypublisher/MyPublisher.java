@@ -17,7 +17,9 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ExternalScriptsAllowlist;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherException;
@@ -58,6 +60,12 @@ public class MyPublisher implements ICustomPublisher {
 	public boolean storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException {
         log.debug("MyPublisher, Storing CRL");
 		return true;
+	}
+
+	@Override
+	public boolean storeOcspResponseData(OcspResponseData ocspResponseData) throws PublisherException {
+	    log.debug("MyPublisher, Storing OCSP response data");
+	    return true;
 	}
 
 	/**

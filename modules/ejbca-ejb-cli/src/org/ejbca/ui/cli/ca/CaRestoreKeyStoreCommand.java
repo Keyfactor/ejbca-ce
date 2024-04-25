@@ -50,6 +50,8 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
     private static final String SIG_ALIAS_KEY = "-s";
     private static final String ENC_ALIAS_KEY = "-e";
     private static final String KEYSTORE_PASSWORD_KEY = "-kspassword";
+    private static final String AUTOACTIVATE_KEY = "--autoactivate";
+
 
     {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
@@ -62,6 +64,8 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
                 "Alias for the Encryption key. If left out the existing alias will be used, and if multiple are available a list will be displayed."));
         registerParameter(new Parameter(KEYSTORE_PASSWORD_KEY, "Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "If left out, then password will be prompted for."));
+        registerParameter(new Parameter(AUTOACTIVATE_KEY, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Set to true|false to allow|disallow whether crypto token should be autoactivated or not. Default is false."));
     }
 
     @Override
@@ -142,8 +146,14 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
             }
             // else alias already contains the only alias, so we can use that
         }
+        final boolean autoActivate;
+        if(parameters.containsKey(AUTOACTIVATE_KEY)) {           
+            autoActivate = Boolean.valueOf(parameters.get(AUTOACTIVATE_KEY));
+        } else {
+            autoActivate = false;
+        }
         EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).restoreCAKeyStore(getAuthenticationToken(), caName, keystorebytes,
-                kspwd, kspwd, alias, encryptionAlias);
+                kspwd, kspwd, alias, encryptionAlias, autoActivate);
         return CommandResult.SUCCESS;
 
     }

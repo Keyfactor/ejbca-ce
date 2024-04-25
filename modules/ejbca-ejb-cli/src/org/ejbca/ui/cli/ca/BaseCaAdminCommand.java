@@ -46,6 +46,7 @@ import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionRemote;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
@@ -84,7 +85,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
      */
     protected Collection<Certificate> getCertChain(AuthenticationToken authenticationToken, String caname) {
         log.trace(">getCertChain()");
-        Collection<Certificate> returnval = new ArrayList<Certificate>();
+        Collection<Certificate> returnval = new ArrayList<>();
         try {
             CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
             if (cainfo != null) {
@@ -127,11 +128,11 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
             return;
         }
 
-        FileOutputStream os1 = new FileOutputStream(reqfile);
-        os1.write("-----BEGIN CERTIFICATE REQUEST-----\n".getBytes());
-        os1.write(Base64.encode(bOut.toByteArray()));
-        os1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
-        os1.close();
+        try (FileOutputStream os1 = new FileOutputStream(reqfile)) {
+            os1.write("-----BEGIN CERTIFICATE REQUEST-----\n".getBytes());
+            os1.write(Base64.encode(bOut.toByteArray()));
+            os1.write("\n-----END CERTIFICATE REQUEST-----\n".getBytes());
+        }
         log.info("CertificationRequest '" + reqfile + "' generated successfully.");
         log.trace("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     }
@@ -144,7 +145,7 @@ public abstract class BaseCaAdminCommand extends EjbcaCliUserCommandBase {
                         issuerdn.hashCode());
                 if (!deltaCRL) {
                     EjbRemoteHelper.INSTANCE.getRemoteSession(PublishingCrlSessionRemote.class).forceCRL(getAuthenticationToken(), cainfo.getCAId(),
-                            CertificateConstants.NO_CRL_PARTITION, validFrom);
+                            CertificateConstants.NO_CRL_PARTITION, new CrlCreationParams(validFrom));
                     int number = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, CertificateConstants.NO_CRL_PARTITION, false);
                     log.info("CRL with number " + number + " generated.");
                 } else {

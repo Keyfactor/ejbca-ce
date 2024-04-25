@@ -13,19 +13,13 @@
 
 package org.cesecore.certificates.certificateprofile;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +32,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
@@ -49,9 +44,16 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Tests the CertificateProfile class.
- * 
+ *
  * @version $Id$
  */
 public class CertificateProfileTest {
@@ -59,13 +61,12 @@ public class CertificateProfileTest {
     @Test
     public void test01DefaultValues() {
     	final CertificateProfile prof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-    	
+
     	// Check that default values are as they should be
     	assertEquals(CertificateProfile.VERSION_X509V3, prof.getCertificateVersion());
     	assertEquals(CertificateConstants.CERTTYPE_ENDENTITY, prof.getType());
-    	// ECA-5141: old setValidity methods are removed, getValidity only reads the old validity value from 
+    	// ECA-5141: old setValidity methods are removed, getValidity only reads the old validity value from
     	// DB to display it on GUI. After post-upgrade the method is supposed not to be called anymore!
-//    	assertEquals(730, prof.getValidity());
     	assertEquals("2y", prof.getEncodedValidity());
     	assertNull(prof.getSignatureAlgorithm());
         assertEquals(false, prof.getAllowValidityOverride());
@@ -130,7 +131,7 @@ public class CertificateProfileTest {
         assertEquals(0, asub.size());
         assertEquals(false, prof.getUsePathLengthConstraint());
         assertEquals(0, prof.getPathLengthConstraint());
-        
+
         assertEquals(false, prof.getUseQCStatement());
         assertEquals(false, prof.getUsePkixQCSyntaxV2());
         assertEquals(false, prof.getQCStatementCritical());
@@ -149,7 +150,8 @@ public class CertificateProfileTest {
         assertEquals(false, prof.getUseQCCustomString());
         assertEquals("", prof.getQCCustomStringOid());
         assertEquals("", prof.getQCCustomStringText());
-        
+        assertEquals(false, prof.getUseValidityAssuredShortTerm());
+        assertEquals(false, prof.getValidityAssuredShortTermCritical());
         assertEquals(false, prof.getUseSubjectDirAttributes());
         assertEquals(false, prof.getUseAuthorityInformationAccess());
         final Collection<String> cai = prof.getCaIssuers();
@@ -179,7 +181,7 @@ public class CertificateProfileTest {
         final ArrayList<Integer> publishers = new ArrayList<>();
         publishers.add(1);
         publishers.add(2);
-        
+
         prof.setPublisherList(publishers);
         final Collection<Integer> pub = prof.getPublisherList();
         assertEquals(2, pub.size());
@@ -197,7 +199,7 @@ public class CertificateProfileTest {
         assertNull(prof.getSignatureAlgorithm());
         prof.setSignatureAlgorithm("SHA256WithRSA");
         assertEquals("SHA256WithRSA", prof.getSignatureAlgorithm());
-        
+
         assertTrue(prof.isApplicableToAnyCA());
         ArrayList<Integer> cas = new ArrayList<>();
         cas.add(1);
@@ -206,7 +208,7 @@ public class CertificateProfileTest {
         Collection<Integer> cas1 = prof.getAvailableCAs();
         assertEquals(1, cas1.size());
         assertEquals(Integer.valueOf(1), cas.iterator().next());
-        
+
     	final CertificateProfile orgprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
         Map<Object, Object> diff = orgprof.diff(prof);
         Set<Map.Entry<Object, Object>> set = diff.entrySet();
@@ -224,12 +226,12 @@ public class CertificateProfileTest {
         	assertNotNull(entry.getKey()+" is empty", entry.getValue());
         }
 
-    }   
-    
+    }
+
     @Test
     public void test02ChangeValuesForQcExtension() {
         final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-        
+
         // Assert defaults.
         assertFalse(profile.getUseQCStatement());
         assertFalse(profile.getQCStatementCritical());
@@ -251,24 +253,24 @@ public class CertificateProfileTest {
         assertFalse(profile.getUseQCCustomString());
         assertEquals("", profile.getQCCustomStringOid());
         assertEquals("", profile.getQCCustomStringText());
-        
+
         profile.setUseQCStatement(true);
         profile.setQCStatementCritical(true);
         assertEquals("Use QC statement does not match.", profile.getUseQCStatement(), true);
         assertEquals("QC statement critical does not match.", profile.getQCStatementCritical(), true);
-        
+
         profile.setUsePkixQCSyntaxV2(true);
         assertEquals("Use PKIX QC syntax V2 does not match.", profile.getUsePkixQCSyntaxV2(), true);
-        
+
         profile.setQCSemanticsIds("0.4.0.194121.1.2");
         assertEquals("QC semantics OID does not match.", profile.getQCSemanticsIds(), "0.4.0.194121.1.2");
-        
+
         profile.setUseQCEtsiQCCompliance(true);
         assertEquals("Use QC ETSI QC compliance does not match.", profile.getUseQCEtsiQCCompliance(), true);
-        
+
         profile.setUseQCEtsiSignatureDevice(true);
         assertEquals("Use QC ETSI qualified signature/e-seal signature creation device does not match.", profile.getUseQCEtsiSignatureDevice(), true);
-        
+
         profile.setUseQCEtsiValueLimit(true);
         profile.setQCEtsiValueLimitCurrency("EUR");
         profile.setQCEtsiValueLimit(100);
@@ -277,17 +279,17 @@ public class CertificateProfileTest {
         assertEquals("QC ETSI transaction currency does not match.", profile.getQCEtsiValueLimitCurrency(), "EUR");
         assertEquals("QC ETSI transaction value limit does not match.", profile.getQCEtsiValueLimit(), 100);
         assertEquals("QC ETSI transaction value limit exponent does not match.", profile.getQCEtsiValueLimitExp(), 2);
-        
+
         profile.setUseQCEtsiRetentionPeriod(true);
         profile.setQCEtsiRetentionPeriod(3600);
         assertEquals("Use QC ETSI retention period does not match.", profile.getUseQCEtsiRetentionPeriod(), true);
         assertEquals("QC ETSI retention period does not match.", profile.getQCEtsiRetentionPeriod(), 3600);
-        
+
         profile.setQCEtsiType(ETSIQCObjectIdentifiers.id_etsi_qct_esign.getId());
         assertEquals("QC ETSI type does not match.", profile.getQCEtsiType(), ETSIQCObjectIdentifiers.id_etsi_qct_esign.getId());
-        
+
         // Setting an empty list causes it to be changed into null
-        profile.setQCEtsiPds(new ArrayList<PKIDisclosureStatement>());
+        profile.setQCEtsiPds(new ArrayList<>());
         assertNull(profile.getQCEtsiPds());
         // Test with one PDS
         profile.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://pds.foo.bar/pds", "en")));
@@ -305,15 +307,15 @@ public class CertificateProfileTest {
         assertEquals("https://pds.foo.bar/pds", pdsResult.get(0).getUrl());
         assertEquals("sv", pdsResult.get(1).getLanguage());
         assertEquals("https://pds.example.com/pds.pdf", pdsResult.get(1).getUrl());
-        
+
         profile.setUseQCPSD2(true);
         assertEquals("Use QC ETSI PSD2 statement does not match.", profile.getUseQCPSD2(), true);
-        
+
         profile.setUseQCCountries(true);
         profile.setQCCountriesString("SE,DE,IT");
         assertEquals("Use ETSI QC legislation countries does not match.", profile.getUseQCCountries(), true);
         assertEquals("QC ETSI countries string does not match.", profile.getQCCountriesString(), "SE,DE,IT");
-        
+
         profile.setUseQCCustomString(true);
         profile.setQCCustomStringOid("1.2.3.4.5.6");
         profile.setQCCustomStringText("test-1.2.3.4.5.6");
@@ -321,7 +323,7 @@ public class CertificateProfileTest {
         assertEquals("QC custom string OID does not match.", profile.getQCCustomStringOid(), "1.2.3.4.5.6");
         assertEquals("QC custom string text does not match.", profile.getQCCustomStringText(), "test-1.2.3.4.5.6");
     }
-    
+
     @Test
     public void test03FixedProfiles() {
     	assertTrue(CertificateProfile.FIXED_PROFILENAMES.contains(CertificateProfile.ROOTCAPROFILENAME));
@@ -376,23 +378,23 @@ public class CertificateProfileTest {
     	assertFalse(prof.getKeyUsage(CertificateConstants.KEYENCIPHERMENT));
     	assertFalse(prof.getKeyUsage(CertificateConstants.NONREPUDIATION));
     }
-    
+
     @Test
-    public void test04createSubjectDNSubSet() throws Exception{
+    public void test04createSubjectDNSubSet() {
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-    	
+
         ArrayList<Integer> dnsubset = new ArrayList<>();
         dnsubset.add(DNFieldExtractor.CN);
         dnsubset.add(DNFieldExtractor.UID);
         dnsubset.add(DNFieldExtractor.GIVENNAME);
         dnsubset.add(DNFieldExtractor.SURNAME);
     	profile.setSubjectDNSubSet(dnsubset);
-    	
+
     	String indn1 = "UID=PVE,CN=Philip Vendil,SN=123435,GIVENNAME=Philip,SURNAME=Vendil";
     	String outdn1 = profile.createSubjectDNSubSet(indn1);
     	String expecteddn1 = "UID=PVE,CN=Philip Vendil,GIVENNAME=Philip,SURNAME=Vendil";
-        assertTrue("createSubjectDNSubSet doesn't work" + outdn1 + " != "+ expecteddn1, expecteddn1.equalsIgnoreCase(outdn1)); 
-        
+        assertTrue("createSubjectDNSubSet doesn't work" + outdn1 + " != "+ expecteddn1, expecteddn1.equalsIgnoreCase(outdn1));
+
     	String indn2 = "UID=PVE,CN=Philip Vendil,CN=SecondUsername,SN=123435,SN=54321,GIVENNAME=Philip,SURNAME=Vendil";
     	String outdn2 = profile.createSubjectDNSubSet(indn2);
     	String expecteddn2 = "UID=PVE,CN=Philip Vendil,CN=SecondUsername,GIVENNAME=Philip,SURNAME=Vendil";
@@ -402,17 +404,17 @@ public class CertificateProfileTest {
     @Test
     public void test05createSubjectAltNameSubSet() throws Exception{
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-    	
+
     	ArrayList<Integer> altnamesubset = new ArrayList<>();
     	altnamesubset.add(DNFieldExtractor.RFC822NAME);
-    	altnamesubset.add(DNFieldExtractor.UPN);    	
+    	altnamesubset.add(DNFieldExtractor.UPN);
     	profile.setSubjectAltNameSubSet(altnamesubset);
-    	
+
     	String inaltname1 = "RFC822NAME=test@test.se,UPN=testacc@test.se,IPADDRESS=10.1.1.0";
     	String outaltname1 = profile.createSubjectAltNameSubSet(inaltname1);
     	String expectedaltname1 = "RFC822NAME=test@test.se,UPN=testacc@test.se";
-        assertTrue("createSubjectAltNameSubSet doesn't work" + outaltname1 + " != "+ expectedaltname1, expectedaltname1.equalsIgnoreCase(outaltname1)); 
-        
+        assertTrue("createSubjectAltNameSubSet doesn't work" + outaltname1 + " != "+ expectedaltname1, expectedaltname1.equalsIgnoreCase(outaltname1));
+
     	String inaltname2 = "RFC822NAME=test@test.se,RFC822NAME=test2@test2.se,UPN=testacc@test.se,IPADDRESS=10.1.1.0,IPADDRESS=10.1.1.2";
     	String outaltname2 = profile.createSubjectAltNameSubSet(inaltname2);
     	String expectedaltname2 = "RFC822NAME=test@test.se,RFC822NAME=test2@test2.se,UPN=testacc@test.se";
@@ -420,9 +422,9 @@ public class CertificateProfileTest {
     }
 
     @Test
-    public void test06CertificateExtensions() throws Exception{
+    public void test06CertificateExtensions() {
     	CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-    	
+
     	// Check standard values for the certificate profile
     	List<String> l = profile.getUsedStandardCertificateExtensions();
     	assertEquals(7, l.size());
@@ -435,7 +437,7 @@ public class CertificateProfileTest {
     	assertTrue(l.contains(CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT));
 
     	CertificateProfile eprofile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-    	
+
     	// Check standard values for the certificate profile
     	l = eprofile.getUsedStandardCertificateExtensions();
     	assertEquals(8, l.size());
@@ -456,10 +458,11 @@ public class CertificateProfileTest {
     	profile.setUseMicrosoftTemplate(true);
     	profile.setUseOcspNoCheck(true);
     	profile.setUseQCStatement(true);
+    	profile.setUseValidityAssuredShortTerm(true);
     	profile.setUseExtendedKeyUsage(true);
     	profile.setUseSubjectDirAttributes(true);
     	l = profile.getUsedStandardCertificateExtensions();
-    	assertEquals(16, l.size());
+    	assertEquals(17, l.size());
     	assertTrue(l.contains(Extension.keyUsage.getId()));
     	assertTrue(l.contains(Extension.basicConstraints.getId()));
     	assertTrue(l.contains(Extension.subjectKeyIdentifier.getId()));
@@ -473,10 +476,11 @@ public class CertificateProfileTest {
     	assertTrue(l.contains(Extension.freshestCRL.getId()));
     	assertTrue(l.contains(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId()));
     	assertTrue(l.contains(Extension.qCStatements.getId()));
+    	assertTrue(l.contains(CertTools.OID_VALIDITY_ASSURED_SHORT_TERM));
     	assertTrue(l.contains(Extension.subjectDirectoryAttributes.getId()));
     	assertTrue(l.contains(CertTools.OID_MSTEMPLATE));
     	assertTrue(l.contains(CertTools.OID_MS_SZ_OID_NTDS_CA_SEC_EXT));
-    } // test09CertificateExtensions
+    }
 
     @Test
     public void test08Clone() throws Exception {
@@ -505,7 +509,7 @@ public class CertificateProfileTest {
         assertEquals(clonemap2.size(), clonemap.size()-1);
         assertEquals(clonemap2.size(), profmap.size()-1);
     }
-    
+
     @Test
     public void test09ManyValues() {
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
@@ -524,7 +528,7 @@ public class CertificateProfileTest {
         assertTrue(profile.getAllowExtensionOverride());
         profile.setAllowExtensionOverride(false);
         assertFalse(profile.getAllowExtensionOverride());
-        
+
         assertEquals("", profile.getCRLDistributionPointURI());
         profile.setCRLDistributionPointURI("http://foo");
         assertEquals("http://foo", profile.getCRLDistributionPointURI());
@@ -582,7 +586,7 @@ public class CertificateProfileTest {
         CertificatePolicy p2 = new CertificatePolicy("1.1.1.2", "1.1.2.1", "qualifiertext");
         profile.addCertificatePolicy(p2);
         l = profile.getCertificatePolicies();
-        assertEquals(2, l.size());        
+        assertEquals(2, l.size());
         policy = l.get(1);
         assertEquals("1.1.1.2", policy.getPolicyID());
         assertEquals("1.1.2.1", policy.getQualifierId());
@@ -590,11 +594,11 @@ public class CertificateProfileTest {
         profile.removeCertificatePolicy(p2);
         assertEquals(1, l.size());
         policy = l.get(0);
-        assertEquals("1.1.1.1", policy.getPolicyID());        
+        assertEquals("1.1.1.1", policy.getPolicyID());
     }
 
     @Test
-    public void test10CertificateProfileValues() throws Exception {
+    public void test10CertificateProfileValues() {
         CertificateProfile ep = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         List<CertificatePolicy> l = ep.getCertificatePolicies();
         assertEquals(0, l.size());
@@ -630,11 +634,32 @@ public class CertificateProfileTest {
         assertNull(cp.getSignatureAlgorithm()); // default value null = inherit from CA
         cp.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, cp.getSignatureAlgorithm());
-    } 
+    }
+
+
+    /**
+     * Simple smoke test to just verify that the values associated with alternative keys and signatures kan be stored and retrieved.
+     */
+    @Test
+    public void testAlternativeKeyAlgorithmsCRUD() {
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(new String[] { "foo" });
+        assertTrue(
+                "Available key algorithms could not be saved/retrieved, was: "
+                        + Arrays.toString(certificateProfile.getAlternativeAvailableKeyAlgorithms()),
+                Arrays.equals(certificateProfile.getAlternativeAvailableKeyAlgorithms(), new String[] { "foo" }));
+        certificateProfile.setAlternativeAvailableKeyAlgorithmsAsList(Arrays.asList("bar"));
+        assertEquals(
+                "Available key algorithms could not be saved/retrieved as a list, was: "
+                        + certificateProfile.getAlternativeAvailableKeyAlgorithmsAsList(),
+                CollectionUtils.subtract(certificateProfile.getAlternativeAvailableKeyAlgorithmsAsList(), Arrays.asList("bar")),
+                Collections.EMPTY_LIST);
+
+    }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
-    public void test11CertificatePolicyClassUpgrade() throws Exception {
+    public void test11CertificatePolicyClassUpgrade() {
         CertificateProfile ep = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         List<CertificatePolicy> l = ep.getCertificatePolicies();
         assertEquals(0, l.size());
@@ -645,7 +670,7 @@ public class CertificateProfileTest {
         assertEquals("2.5.29.32.0", pol.getPolicyID() );
         assertNull(pol.getQualifier());
         assertNull(pol.getQualifierId());
-        
+
         // Add policy as if we had run an old EJBCA 4 installation, now running in this version.
         // The class name of CertificatePolicy changed from EJBCA 4 to EJBCA 5.
         List list = new ArrayList();
@@ -671,7 +696,7 @@ public class CertificateProfileTest {
         assertNull(pol.getQualifier());
         assertEquals("foo", pol.getQualifierId());
     }
-    
+
     @SuppressWarnings({ "unchecked", "deprecation" })
     @Test
     public void testCertificateProfileUpgradeDefaults() {
@@ -683,19 +708,19 @@ public class CertificateProfileTest {
         data.put(CertificateProfile.QCETSIPDSURL, "");
         final CertificateProfile cp = new CertificateProfile();
         cp.loadData(data);
-        
+
         Map<String,Object> res = (Map<String, Object>) cp.saveData();
         assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSLANG));
         assertTrue("Old property should still exist, so 100% uptime upgrades work", res.containsKey(CertificateProfile.QCETSIPDSURL));
         assertTrue("New property should have been added", res.containsKey(CertificateProfile.QCETSIPDS));
         assertNull(res.get(CertificateProfile.QCETSIPDS));
-        
+
         cp.setQCEtsiPds(Arrays.asList(new PKIDisclosureStatement("https://example.com/pds", "en")));
         res = (Map<String, Object>) cp.saveData();
         assertFalse("Old property should have been removed after profile modification", res.containsKey(CertificateProfile.QCETSIPDSLANG));
         assertFalse("Old property should have been removed after profile modification", res.containsKey(CertificateProfile.QCETSIPDSURL));
     }
-    
+
     @SuppressWarnings({ "unchecked", "deprecation" })
     @Test
     public void testCertificateProfileUpgradeNonDefaults() {
@@ -777,8 +802,8 @@ public class CertificateProfileTest {
                 new String[]{"secp256r1"}, new int[]{});
     }
 
-    
-    private void testInvalidKeySpecsInternal(final boolean expectedNoIllegalKeyException, final PublicKey publicKey, final String[] availableKeyAlgorithms, 
+
+    private void testInvalidKeySpecsInternal(final boolean expectedNoIllegalKeyException, final PublicKey publicKey, final String[] availableKeyAlgorithms,
             final String[] availableEcCurves, final int[] availableBitLengths) {
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfile.setAvailableKeyAlgorithms(availableKeyAlgorithms);
@@ -795,7 +820,7 @@ public class CertificateProfileTest {
             }
         }
     }
-    
+
     @Test
     public void testIsKeyTypeAllowed() {
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -807,16 +832,26 @@ public class CertificateProfileTest {
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "2048"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
-        
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+
         certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA});
-        certificateProfile.setAvailableEcCurves(new String[] {"secp256r1"});
+        certificateProfile.setAvailableEcCurves(new String[] {"secp256r1", "secp384r1"});
         certificateProfile.setAvailableBitLengths(new int[] {});
         assertFalse(certificateProfile.isKeyTypeAllowed("OTHER", "2048"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "1024"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "2048"));
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp384r1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
-        
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        // Allow ED25519 as well
+        certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_ED25519});
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmConstants.KEYALGORITHM_ED448));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+
         certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA});
         certificateProfile.setAvailableEcCurves(new String[] {CertificateProfile.ANY_EC_CURVE});
         certificateProfile.setAvailableBitLengths(new int[] {});
@@ -825,6 +860,32 @@ public class CertificateProfileTest {
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "2048"));
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+
+        certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.SIGALG_ED25519});
+        certificateProfile.setAvailableEcCurves(new String[] {CertificateProfile.ANY_EC_CURVE});
+        certificateProfile.setAvailableBitLengths(new int[] {2048});
+        assertFalse(certificateProfile.isKeyTypeAllowed("OTHER", "2048"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "1024"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "2048"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        // Add dilithium as allowed
+        certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_DILITHIUM2});
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        // With Dilithium Specify only one EC curve
+        certificateProfile.setAvailableEcCurves(new String[] {"secp256r1"});
+        certificateProfile.setAvailableBitLengths(new int[] {2048});
+        assertFalse(certificateProfile.isKeyTypeAllowed("OTHER", "2048"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "1024"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_RSA, "2048"));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
     }
 
     @Test

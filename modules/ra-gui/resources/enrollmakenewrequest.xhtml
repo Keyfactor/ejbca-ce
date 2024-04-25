@@ -45,7 +45,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectEndEntityProfileRendered}">
 								<h:outputLabel for="selectEEPOneMenu" value="#{msg.enroll_certificate_type}"/>
-								<h:selectOneMenu id="selectEEPOneMenu" styleClass="jsAutoFocusLast" style="width: 30%; margin-right: 5%;"
+								<h:selectOneMenu id="selectEEPOneMenu" styleClass="jsAutoFocusLast" style="margin-right: 5%;"
 									value="#{enrollMakeNewRequestBean.selectedEndEntityProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"/>
@@ -62,7 +62,7 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectCertificateProfileRendered}">
 								<h:outputLabel for="selectCPOneMenu" value="#{msg.enroll_certificate_subtype}"/>
-								<h:selectOneMenu id="selectCPOneMenu" styleClass="jsAutoFocusLast" style="width: 30%; margin-right: 5%;"
+								<h:selectOneMenu id="selectCPOneMenu" styleClass="jsAutoFocusLast" style="margin-right: 5%;"
 									value="#{enrollMakeNewRequestBean.selectedCertificateProfile}"
 									disabled="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems.size()==1}">
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"/>
@@ -200,7 +200,11 @@
                     <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.uploadCsrDoneRendered}">
                         <h:panelGroup layout="block" styleClass="pure-control-group">
                             <h:outputLabel for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
-                            <h:outputText id="certificateRequestNode" value="#{enrollMakeNewRequestBean.algorithmUiRepresentation}"/>
+                            <h:outputText id="certificateRequestNode" style="color:white;" value="#{enrollMakeNewRequestBean.algorithmUiRepresentation}"/>
+                        </h:panelGroup>
+                        <h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.hybrid}"> 
+                            <h:outputLabel for="alternativeKeyAlgorithm" value="#{msg.enroll_upload_csr_keyalgo_alternative_label}"/>
+                            <h:outputText id="alternativeKeyAlgorithm" style="color:white;" value="#{enrollMakeNewRequestBean.alternativeAlgorithmUiRepresentation}"/>
                         </h:panelGroup>
                         <h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
                             action="#{enrollMakeNewRequestBean.uploadCsrChange}">
@@ -485,7 +489,7 @@
                                         <h:message for="upnRfcEmail2" id="upnRfcEmailMessage2" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
 									<h:panelGroup rendered="#{instance.copyDns || instance.copyUpn}">
-										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText" />
+										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText ra-MakeRequest" />
 									</h:panelGroup>
 								</h:panelGroup>
 							</ui:repeat>
@@ -562,7 +566,7 @@
                                         <h:message for="upnRfcEmail2" id="upnRfcEmailMessage2" styleClass="showErrorMessage"/>
                                     </h:panelGroup>
 									<h:panelGroup rendered="#{instance.copyDns || instance.copyUpn}">
-										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText"/>
+										<h:outputText value="#{msg.subject_alternative_name_USEENTITYCNFIELD}" styleClass="ra-outputText ra-MakeRequest"/>
 									</h:panelGroup>
                             	</h:panelGroup>
                             	</ui:fragment>
@@ -645,7 +649,7 @@
 								value="#{enrollMakeNewRequestBean.subjectDirectoryAttributes.requiredFieldInstances}"
 								var="instance">
 								<h:panelGroup layout="block" styleClass="pure-control-group">
-									<h:outputLabel for="subjectDirectoryField"
+									<h:outputLabel for="subjectDirectoryNonModifiableField"
 										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} = "
 										rendered="#{instance.required and !instance.modifiable}" />
 									<h:outputLabel for="subjectDirectoryField"
@@ -663,11 +667,10 @@
 										<f:ajax event="keyup" execute="@this"
 											render=":requestInfoForm:requestPreviewOuterPanel subjectDirectoryAttributesMessage"/>
 									</h:inputText>
-									<h:outputLabel for="subjectDirectoryNonModifiableField"
-										value="#{msg['subject_directory_attributes_'.concat(instance.name)]} = "
-										rendered="#{!instance.modifiable and instance.required}" />
-									<h:outputText id="subjectDirectoryNonModifiableField" rendered="#{!instance.modifiable and instance.required}" value="#{instance.value}" style="color:white;"/>
-									<h:selectOneMenu value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
+									<h:outputLabel id="subjectDirectoryFieldNonModifiableLabel" value="#{instance.value}"
+										 rendered="#{!instance.modifiable and !instance.selectable}" styleClass="pure-control-group label" style="text-align: left">
+									</h:outputLabel>
+									<h:selectOneMenu id="subjectDirectoryNonModifiableField" value="#{instance.value}" rendered="#{instance.selectable}" styleClass="jsAutoFocusFirst">
 										<f:selectItems value="#{instance.selectableValues}" />
 										<f:attribute name="_label" value="#{instance.name}"/>
 										<f:ajax event="change" execute="@this"
@@ -995,9 +998,9 @@
 									value="#{msg.enroll_username} *" />
 								<h:inputText id="usernameField"
 									styleClass="#{enrollMakeNewRequestBean.endEntityProfile.username.instances.get(0).required ? 'required-input' : ''}"
-									value="#{enrollMakeNewRequestBean.endEntityInformation.username}">
+									value="#{enrollMakeNewRequestBean.endEntityInformation.inputUsernameValue}">
 									<f:ajax event="change" execute="@this"
-										listener="#{enrollMakeNewRequestBean.checkUserCredentials}"
+										listener="#{enrollMakeNewRequestBean.validateUsername}"
 										render=":requestInfoForm:userCredentialsMessage" />
 									<f:validator validatorId="extendedRequiredValidator"/>
 									<f:attribute name="_required" value="true"/>

@@ -26,9 +26,9 @@ import org.ejbca.util.query.BasicMatch;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "userMatch", propOrder = {
-    "matchwith",
     "matchtype",
-    "matchvalue"
+    "matchvalue",
+    "matchwith"
 })
 public class UserMatch implements Serializable {
 

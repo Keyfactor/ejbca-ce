@@ -17,6 +17,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 
@@ -51,6 +52,7 @@ import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
+import org.ejbca.ui.web.rest.api.io.response.CertificateEnrollmentRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
@@ -100,9 +102,10 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enrollment with client generated keys, using CSR subject",
-            notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-            response = CertificateRestResponse.class,
+    @ApiOperation(value = "Enrollment with client generated keys, using CSR subject.",
+            notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR. "
+                    + "\nResponse Format is 'DER' (default when excluded) or 'PKCS7' in base64 encoded PEM format",
+            response = CertificateEnrollmentRestResponse.class,
             code = 201)
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext,
                                             final EnrollCertificateRestRequest enrollCertificateRestRequest)
@@ -116,7 +119,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Enrollment with client generated keys for an existing End Entity",
             notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-            response = CertificateRestResponse.class,
+            response = CertificateEnrollmentRestResponse.class,
             code = 201)
     public Response certificateRequest(@Context HttpServletRequest requestContext,
                                        final CertificateRequestRestRequest certificateRequestRestRequest)
@@ -131,11 +134,12 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Keystore enrollment",
             notes = "Creates a keystore for the specified end entity",
-            response = CertificateRestResponse.class,
+            response = CertificateEnrollmentRestResponse.class,
             code = 201)
     public Response enrollKeystore(@Context HttpServletRequest requestContext, KeyStoreRestRequest keyStoreRestRequest)
             throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, IOException, RestException {
+            NoSuchAlgorithmException, CertificateException, IOException, RestException, CADoesntExistsException,
+            UnrecoverableKeyException {
         return super.enrollKeystore(requestContext, keyStoreRestRequest);
     }
 
@@ -158,15 +162,15 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/{issuer_dn}/{certificate_serial_number}/revoke")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Revokes the specified certificate",
-                  notes = "Revokes the specified certificate or changes revocation reason for an already revoked certificate",
+                  notes = "Revokes the specified certificate, changes revocation reason for an already revoked certificate, sets invalidity or revocation date",
                   response = RevokeStatusRestResponse.class)
     public Response revokeCertificate(
             @Context HttpServletRequest requestContext,
             @ApiParam(value = "Subject DN of the issuing CA")
             @PathParam("issuer_dn") String issuerDN,
-            @ApiParam(value = "hex serial number (without prefix, e.g. '00')")
+            @ApiParam(value = "Hex serial number (without prefix, e.g. '00')")
             @PathParam("certificate_serial_number") String serialNumber,
-            @ApiParam(value = "Must be valid RFC5280 reason. One of\n" +
+            @ApiParam(value = "Valid RFC5280 reason. One of\n" +
                     " NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n" +
                     " CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n" +
                     " CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE \n\n" +
@@ -174,7 +178,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             @QueryParam("reason") String reason,
             @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date,
-            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
+            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'. Will be ignored with revocation reason REMOVE_FROM_CRL")
             @QueryParam("invalidity_date") String invalidityDate)
 
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,

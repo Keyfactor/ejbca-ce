@@ -25,12 +25,20 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
@@ -49,12 +57,6 @@ import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.ValidityDate;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-
 /**
  * CertificateProfile is a basic class used to customize a certificate configuration or be inherited by fixed certificate profiles.
  *
@@ -67,7 +69,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 51.0;
+    public static final float LATEST_VERSION = (float) 52.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -168,18 +170,24 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String EXPIRATION_RESTRICTION_FOR_WEEKDAYS_BEFORE = "expirationrestrictionforweekdaysbefore";
     protected static final String EXPIRATION_RESTRICTION_WEEKDAYS = "expirationrestrictionweekdays";
     protected static final String ALLOWVALIDITYOVERRIDE = "allowvalidityoverride";
+    protected static final String ALLOWEXPIREDVALIDITYENDDATE = "allowexpiredvalidityenddate";
     protected static final String ALLOWKEYUSAGEOVERRIDE = "allowkeyusageoverride";
     protected static final String ALLOWBACKDATEDREVOCATION = "allowbackdatedrevokation";
     protected static final String ALLOWEXTENSIONOVERRIDE = "allowextensionoverride";
     protected static final String ALLOWDNOVERRIDE = "allowdnoverride";
     protected static final String ALLOWDNOVERRIDEBYEEI = "allowdnoverridebyeei";
     protected static final String ALLOWCERTSNOVERIDE = "allowcertsnoverride";
+
+    //Standard key settings
     protected static final String AVAILABLEKEYALGORITHMS = "availablekeyalgorithms";
     protected static final String AVAILABLEECCURVES = "availableeccurves";
     protected static final String AVAILABLEBITLENGTHS = "availablebitlengths";
-    protected static final String AVAILABLESECURITYLEVEL = "availablesecuritylevel";
     protected static final String MINIMUMAVAILABLEBITLENGTH = "minimumavailablebitlength";
     protected static final String MAXIMUMAVAILABLEBITLENGTH = "maximumavailablebitlength";
+
+    //Alternative key settings, with a focus on hybrid certificates
+    private static final String ALTERNATIVE_AVAILABLEKEYALGORITHMS = "alternativeAvailableKeyAlgorithms";
+
     public static final String TYPE = "type";
     protected static final String AVAILABLECAS = "availablecas";
     protected static final String USEDPUBLISHERS = "usedpublishers";
@@ -209,7 +217,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @Deprecated
     protected static final String APPROVALPROFILE = "approvalProfile";
     protected static final String APPROVALS = "approvals";
+
     protected static final String SIGNATUREALGORITHM = "signaturealgorithm";
+    private static final String ALTERNATIVE_SIGNATUREALGORITHM = "alternativeSignatureAlgorithm";
+    private static final String USE_ALTERNATIVE_SIGNATURE = "useAlternativeSignature";
+
     protected static final String USECERTIFICATESTORAGE = "usecertificatestorage";
     protected static final String STORECERTIFICATEDATA = "storecertificatedata";
     protected static final String STORESUBJECTALTNAME = "storesubjectaltname";
@@ -298,6 +310,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String USEQCCUSTOMSTRING = "useqccustomstring";
     protected static final String QCCUSTOMSTRINGOID = "qccustomstringoid";
     protected static final String QCCUSTOMSTRINGTEXT = "qccustomstringtext";
+    protected static final String USE_VALIDITY_ASSURED_SHORT_TERM = "usevalidityassuredshortterm";
+    protected static final String VALIDITY_ASSURED_SHORT_TERM_CRITICAL = "validityassuredshorttermcritical";
     protected static final String USENAMECONSTRAINTS = "usenameconstraints";
     protected static final String NAMECONSTRAINTSCRITICAL = "nameconstraintscritical";
     protected static final String USECABFORGANIZATIONIDENTIFIER = "usecabforganizationidentifier";
@@ -379,7 +393,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public static final String OID_CARDNUMBER = "1.2.752.34.2.1";
 
-    /** Constants holding the use properties for certificate extensions */
     protected static final Map<String, String> useStandardCertificateExtensions = new LinkedHashMap<>();
     {
         // Please keep the cert extensions ordered in this order
@@ -406,7 +419,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         useStandardCertificateExtensions.put(USESUBJECTKEYIDENTIFIER, Extension.subjectKeyIdentifier.getId());
         useStandardCertificateExtensions.put(USEPRIVKEYUSAGEPERIOD, Extension.privateKeyUsagePeriod.getId());
         useStandardCertificateExtensions.put(USEKEYUSAGE, Extension.keyUsage.getId());
+        useStandardCertificateExtensions.put(USE_VALIDITY_ASSURED_SHORT_TERM, CertTools.OID_VALIDITY_ASSURED_SHORT_TERM);
     }
+
 
     // Old values used to upgrade from v22 to v23
     protected static final String CERTIFICATEPOLICYID = "certificatepolicyid";
@@ -452,6 +467,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setExpirationRestrictionForWeekdaysExpireBefore(true);
         setDefaultExpirationRestrictionWeekdays();
         setAllowValidityOverride(false);
+        setAllowExpiredValidityEndDate(false);
         setDescription("");
 
         setAllowExtensionOverride(false);
@@ -496,6 +512,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setAvailableEcCurvesAsList(Collections.singletonList(ANY_EC_CURVE));
         setAvailableBitLengthsAsList(AlgorithmTools.getAllBitLengths());
         setSignatureAlgorithm(null);
+        setUseAlternativeSignature(false);
+        setAlternativeAvailableKeyAlgorithmsAsList(
+                AlgorithmTools.getAvailableKeyAlgorithms().stream().filter(alg -> AlgorithmTools.isPQC(alg)).collect(Collectors.toList()));
+        setAlternativeSignatureAlgorithm(null);
 
         setUseKeyUsage(true);
         setKeyUsage(new boolean[9]);
@@ -557,6 +577,9 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setQCCustomStringText(null);
         setQCEtsiPds(null);
         setQCEtsiType(null);
+
+        setUseValidityAssuredShortTerm(false);
+        setValidityAssuredShortTermCritical(false);
 
         setUseCertificateTransparencyInCerts(false);
         setUseCertificateTransparencyInOCSP(false);
@@ -876,6 +899,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setExpirationRestrictionWeekday(Calendar.SUNDAY, true);
     }
 
+    public boolean getUseValidityAssuredShortTerm() {
+        return Optional.ofNullable((Boolean) data.get(USE_VALIDITY_ASSURED_SHORT_TERM)).orElse(false);
+    }
+
+    public void setUseValidityAssuredShortTerm(boolean enabled) {
+        data.put(USE_VALIDITY_ASSURED_SHORT_TERM, enabled);
+    }
+
+    public boolean getValidityAssuredShortTermCritical() {
+        return Optional.ofNullable((Boolean) data.get(VALIDITY_ASSURED_SHORT_TERM_CRITICAL)).orElse(false);
+    }
+
+    public void setValidityAssuredShortTermCritical(boolean critical) {
+        data.put(VALIDITY_ASSURED_SHORT_TERM_CRITICAL, critical);
+    }
+
     /**
      * If validity override is allowed, a certificate can have a shorter validity than the one specified in the certificate profile, but never longer.
      * A certificate created with validity override can hava a starting point in the future.
@@ -892,6 +931,22 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setAllowValidityOverride(boolean allowvalidityoverride) {
         data.put(ALLOWVALIDITYOVERRIDE, allowvalidityoverride);
+    }
+
+    /**
+     * Allows creation of certificates with end date in the past.
+     */
+    public boolean getAllowExpiredValidityEndDate() {
+        final Object d = data.get(ALLOWEXPIREDVALIDITYENDDATE);
+        return d != null && (Boolean) d;
+    }
+
+    /**
+     * Allows creation of certificates with end date in the past.
+     * @param   allowExpiredValidityEndDate
+     */
+    public void setAllowExpiredValidityEndDate(boolean allowExpiredValidityEndDate) {
+        data.put(ALLOWEXPIREDVALIDITYENDDATE, allowExpiredValidityEndDate);
     }
 
     /**
@@ -1001,7 +1056,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseSubjectKeyIdentifier() {
         return (Boolean) data.get(USESUBJECTKEYIDENTIFIER);
     }
-    
+
     public void setUseSubjectKeyIdentifier(boolean usesubjectkeyidentifier) {
         data.put(USESUBJECTKEYIDENTIFIER, usesubjectkeyidentifier);
     }
@@ -1263,14 +1318,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     @SuppressWarnings("unchecked")
     public void addCertificatePolicy(CertificatePolicy policy) {
         if (data.get(CERTIFICATE_POLICIES) == null) {
-            setCertificatePolicies(new ArrayList<CertificatePolicy>());
+            setCertificatePolicies(new ArrayList<>());
         }
         ((List<CertificatePolicy>) data.get(CERTIFICATE_POLICIES)).add(policy);
     }
 
     public void setCertificatePolicies(List<CertificatePolicy> policies) {
         if (policies == null) {
-            data.put(CERTIFICATE_POLICIES, new ArrayList<CertificatePolicy>(0));
+            data.put(CERTIFICATE_POLICIES, new ArrayList<>(0));
         } else {
             data.put(CERTIFICATE_POLICIES, policies);
         }
@@ -1329,10 +1384,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
-    public boolean isKeyAlgorithmsRequireSecurityLevel() {
-        return false;
-    }
-
     public String[] getAvailableKeyAlgorithms() {
         final List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
@@ -1349,6 +1400,27 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public void setAvailableKeyAlgorithmsAsList(final List<String> availableKeyAlgorithms) {
         data.put(AVAILABLEKEYALGORITHMS, new ArrayList<>(availableKeyAlgorithms));
+    }
+
+    public String[] getAlternativeAvailableKeyAlgorithms() {
+        final List<String> availableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
+        if (availableKeyAlgorithms == null) {
+            return ArrayUtils.EMPTY_STRING_ARRAY;
+        }
+        return availableKeyAlgorithms.toArray(new String[availableKeyAlgorithms.size()]);
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<String> getAlternativeAvailableKeyAlgorithmsAsList() {
+        return (ArrayList<String>) data.get(ALTERNATIVE_AVAILABLEKEYALGORITHMS);
+    }
+
+    public void setAlternativeAvailableKeyAlgorithms(final String[] alternativeAvailableKeyAlgorithms) {
+        setAlternativeAvailableKeyAlgorithmsAsList(Arrays.asList(alternativeAvailableKeyAlgorithms));
+    }
+
+    public void setAlternativeAvailableKeyAlgorithmsAsList(final List<String> alternativeAvailableKeyAlgorithms) {
+        data.put(ALTERNATIVE_AVAILABLEKEYALGORITHMS, new ArrayList<>(alternativeAvailableKeyAlgorithms));
     }
 
     public String[] getAvailableEcCurves() {
@@ -1369,19 +1441,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(AVAILABLEECCURVES, new ArrayList<>(availableEcCurves));
     }
 
-
-    public int[] getAvailableSecurityLevels(){
-        final List<Integer> availableSecurityLevels = getAvailableSecurityLevelsAsList();
-        if (availableSecurityLevels != null) {
-            final int[] returnval = new int[availableSecurityLevels.size()];
-            for (int i = 0; i < availableSecurityLevels.size(); i++) {
-                returnval[i] = availableSecurityLevels.get(i);
-            }
-            return returnval;
-        }
-        return new int[]{};
-    }
-
     public int[] getAvailableBitLengths() {
         final List<Integer> availablebitlengths = getAvailableBitLengthsAsList();
         final int[] returnval = new int[availablebitlengths.size()];
@@ -1389,19 +1448,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             returnval[i] = availablebitlengths.get(i);
         }
         return returnval;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Integer> getAvailableSecurityLevelsAsList() {
-        return (ArrayList<Integer>) data.get(AVAILABLESECURITYLEVEL);
-    }
-
-    public void setAvailableSecurityLevelsAsList(final List<Integer> availableSecurityLevels) {
-        data.put(AVAILABLESECURITYLEVEL, availableSecurityLevels);
-    }
-
-    public void setAvailableSecurityLevels(int[] availableSecurityLevelsArray) {
-        setAvailableSecurityLevelsAsList(Arrays.stream(availableSecurityLevelsArray).boxed().collect(Collectors.toList()));
     }
 
     @SuppressWarnings("unchecked")
@@ -1459,13 +1505,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         if (StringUtils.isNumeric(keySpecification)) {
             // keySpecification is a bit length (RSA)
             return availableBitLengths.contains(Integer.parseInt(keySpecification));
-        } else {
+        } else if (AlgorithmConstants.KEYALGORITHM_EC.equals(keyAlgorithm) || AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlgorithm)) {
             // keySpecification is a curve name (EC)
             final boolean anyCurveIsAllowed = availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE);
             final boolean specifiedCurveIsAllowed = availableEcCurves
                     .stream()
                     .anyMatch(AlgorithmTools.getEcKeySpecAliases(keySpecification)::contains);
             return anyCurveIsAllowed || specifiedCurveIsAllowed;
+        } else {
+            return availableKeyAlgorithms.contains(keyAlgorithm);
         }
     }
 
@@ -1483,6 +1531,21 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     /**
+     * Returns the alternative chosen algorithm to be used for signing the certificates or null if it is to be inherited from the CA (i.e., it is the same as the
+     * algorithm used to sign the CA certificate).
+     *
+     * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
+     *
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     * @return JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used to
+     *         sign the CA certificate).
+     */
+    public String getAlternativeSignatureAlgorithm() {
+        // If it's null, it is inherited from issuing CA.
+        return (String) data.get(ALTERNATIVE_SIGNATUREALGORITHM);
+    }
+
+    /**
      * Sets the algorithm to be used for signing the certificates. A null value means that the signature algorithm is to be inherited from the CA
      * (i.e., it is the same as the algorithm used to sign the CA certificate).
      *
@@ -1493,6 +1556,28 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setSignatureAlgorithm(String signAlg) {
         data.put(SIGNATUREALGORITHM, signAlg);
+    }
+
+    /**
+     * Sets the alternate algorithm to be used for signing the certificates. A null value means that the signature algorithm is to be inherited from the CA
+     * (i.e., it is the same as the algorithm used to sign the CA certificate).
+     *
+     * This value is used for alternative key certificates, i.e. quantum safe hybrid certificates containing two keys and signatures
+     *
+     * @param alternativeSignatureAlgorithm JCE identifier for the signature algorithm or null if it is to be inherited from the CA (i.e., it is the same as the algorithm used
+     *            to sign the CA certificate).
+     * @see com.keyfactor.util.crypto.algorithm.core.model.AlgorithmConstants.AVAILABLE_SIGALGS
+     */
+    public void setAlternativeSignatureAlgorithm(String alternativeSignatureAlgorithm) {
+        data.put(ALTERNATIVE_SIGNATUREALGORITHM, alternativeSignatureAlgorithm);
+    }
+
+    public boolean getUseAlternativeSignature() {
+        return BooleanUtils.isTrue((Boolean) data.get(USE_ALTERNATIVE_SIGNATURE));
+    }
+
+    public void setUseAlternativeSignature(boolean enabled) {
+        data.put(USE_ALTERNATIVE_SIGNATURE, enabled);
     }
 
     public boolean[] getKeyUsage() {
@@ -1685,7 +1770,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public void setUseMicrosoftTemplate(boolean use) {
         data.put(USEMICROSOFTTEMPLATE, use);
     }
-    
+
     public boolean getUseMsObjectSidSecurityExtension() {
         return (Boolean) data.get(USE_MS_OBJECTSID_SECURITY_EXTENSION);
     }
@@ -2253,15 +2338,15 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean getUseQCCountries() {
         return (Boolean) data.get(USEQCCOUNTRIES);
     }
-    
+
     public void setUseQCCountries(boolean useqccountriesstring) {
         data.put(USEQCCOUNTRIES, useqccountriesstring);
     }
-    
+
     public String getQCCountriesString() {
         return (String) data.get(QCCOUNTRIESSTRING);
     }
-    
+
     public void setQCCountriesString(String iso3166_2_list) {
         if (iso3166_2_list == null) {
             data.put(QCCOUNTRIESSTRING, "");
@@ -2269,7 +2354,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             data.put(QCCOUNTRIESSTRING, iso3166_2_list);
         }
     }
-    
+
     public boolean getUseQCCustomString() {
         return (Boolean) data.get(USEQCCUSTOMSTRING);
     }
@@ -2464,7 +2549,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      */
     public void setUsedCertificateExtensions(List<Integer> usedCertificateExtensions) {
         if (usedCertificateExtensions == null) {
-            data.put(USEDCERTIFICATEEXTENSIONS, new ArrayList<Integer>());
+            data.put(USEDCERTIFICATEEXTENSIONS, new ArrayList<>());
         } else {
             data.put(USEDCERTIFICATEEXTENSIONS, usedCertificateExtensions);
         }
@@ -3243,7 +3328,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
         }
         if (AlgorithmTools.isPQC(keyAlgorithm)) {
-            //We implicitly allow a specific key length when configuring FALCON and/or DILITHIUM algorithms, 
+            //We implicitly allow a specific key length when configuring FALCON and/or DILITHIUM algorithms,
             //hence we don't need to check for key length compliancy with the certificate profile.
             return;
          }
@@ -3330,7 +3415,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseMicrosoftTemplate(false);
                 setMicrosoftTemplate("");
             }
-            
+
             if (data.get(USE_MS_OBJECTSID_SECURITY_EXTENSION) == null) {
                 setUseMsObjectSidSecurityExtension(true);
             }
@@ -3383,6 +3468,10 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             }
             if (data.get(ALLOWVALIDITYOVERRIDE) == null) {
                 setAllowValidityOverride(false);
+            }
+
+            if (data.get(ALLOWEXPIREDVALIDITYENDDATE) == null) {
+                setAllowExpiredValidityEndDate(false);
             }
 
             if (data.get(CRLISSUER) == null) {
@@ -3599,10 +3688,16 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setUseQCCountries(false);
                 setQCCountriesString("");
             }
-            
+
             // v50 truncated subject key identifier
             if (data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER) == null) {
                 setUseTruncatedSubjectKeyIdentifier(false);
+            }
+
+            // v52. ETSI Validity Assured - Short Term certificate extension specified in EN 319 412-01.
+            if (data.get(USE_VALIDITY_ASSURED_SHORT_TERM) == null) {
+                setUseValidityAssuredShortTerm(false);
+                setValidityAssuredShortTermCritical(false);
             }
 
             data.put(VERSION, LATEST_VERSION);

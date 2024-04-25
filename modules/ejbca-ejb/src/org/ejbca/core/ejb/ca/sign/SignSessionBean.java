@@ -48,18 +48,6 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -123,6 +111,7 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CA;
+import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.BaseCertificateData;
@@ -168,7 +157,8 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.ocsp.PreSigningOcspResponseSessionLocal;
+import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
+import org.ejbca.core.ejb.ocsp.PresignResponseValidity;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -198,6 +188,18 @@ import org.ejbca.cvc.PublicKeyEC;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
+
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Creates and signs certificates.
@@ -234,13 +236,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
+    private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
+    @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
     private RevocationSessionLocal revocationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
-    @EJB
-    private PreSigningOcspResponseSessionLocal ocspResponseSigningSession;
+
 
     // Re-factor: Remove Cyclic module dependency.
     @EJB
@@ -376,13 +379,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
+    
+    @Override
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk, final PublicKey altPK)
+            throws NoSuchEndEntityException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException {
+        // Default key usage is defined in certificate profiles
+        return createCertificate(admin, username, password, pk, altPK, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
+                SecConst.CAID_USEUSERDEFINED);
+    }
 
     @Override
     public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKeyWrapper pk)
             throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException, IllegalKeyException, CertificateCreateException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException,
             CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException {
-        return createCertificate(admin, username, password, pk.getPublicKey());
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey());
     }
 
     @Override
@@ -401,10 +415,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CADoesntExistsException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException {
-        return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter,
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey(), keyusage, notBefore, notAfter,
                 CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
-
+    
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert)
             throws NoSuchEndEntityException, AuthorizationDeniedException, SignRequestSignatureException, CADoesntExistsException,
@@ -611,7 +625,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException {
-        return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
     }
 
     @Override
@@ -621,8 +635,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, NoSuchEndEntityException {
+        return createCertificate(admin, username, password, pk, null, keyusage, notBefore, notAfter, certificateprofileid, caid);
+    }
+
+    @Override
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk,
+            final PublicKey altPK, final int keyusage, final Date notBefore, final Date notAfter, final int certificateprofileid, final int caid)
+            throws CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException, IllegalKeyException,
+            CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, ku, date)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, date)");
         }
         // Authorize user and get DN
         final EndEntityInformation data = authUser(admin, username, password);
@@ -655,7 +679,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final Certificate cert;
         try {
             // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-            cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null, null);
+            cert = createCertificate(admin, data, ca, pk, altPK, keyusage, notBefore, notAfter, null, null);
             // Call authentication session and tell that we are finished with this user
             finishUser(ca, data);
         } catch (CustomCertificateSerialNumberException e) {
@@ -665,7 +689,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("CertificateExtensionException was thrown, even though no extensions were supplied.", e);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, date)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, date)");
         }
         return cert;
     }
@@ -1370,12 +1394,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws IllegalNameException                   if the certificate request contained an illegal name
      */
     private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
-                                          final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
+            final PublicKey pk, final PublicKey altPK, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
             throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CertificateExtensionException, IllegalNameException,
             CustomCertificateSerialNumberException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, ku, notAfter)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");
         }
         final long updateTime = System.currentTimeMillis();
         //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
@@ -1385,8 +1409,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         CertificateDataWrapper certWrapper;
         final CertificateGenerationParams certGenParams = fetchCertGenParams();
         try {
-            certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage,
-                    notBefore, notAfter, extensions, sequence, certGenParams, updateTime);
+            certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, altPK, keyusage, notBefore, notAfter,
+                    extensions, sequence, certGenParams, updateTime);
+            
         } catch (CTLogException e) {
             if (e.getPreCertificate() != null) {
                 certWrapper = (CertificateDataWrapper) e.getPreCertificate();
@@ -1397,7 +1422,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, notAfter)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");          
         }
         return certWrapper.getCertificate();
     }
@@ -1487,7 +1512,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // At this point, it is safe to remove the certificate from "incomplete issuance journal". This runs in the same transaction as the certificate creation
         if (certData != null) {
             certGenParams.removeFromIncompleteIssuanceJournal(ca.getCAId(), new BigInteger(certData.getSerialNumber()), storePreCert);
-            ocspResponseSigningSession.preSignOcspResponse(ca, certData);
+            //If it's an X509 CA, we have the option to pre-compute the OCSP response directly upon issuance
+            if (ca.getCAType() == X509CAInfo.CATYPE_X509) {
+                final X509CA x509ca = (X509CA) ca;
+                final X509Certificate x509Certificate = (X509Certificate) certificateWrapper.getCertificate();
+                
+                if ((x509ca.isDoPreProduceOcspResponses() && x509ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
+                        && (x509Certificate != null && !x509ca.getCertificateChain().isEmpty())) {
+                    ocspResponseGeneratorSession.preSignOcspResponse((X509Certificate) x509ca.getCertificateChain().get(0),
+                            CertTools.getSerialNumber(x509Certificate), PresignResponseValidity.CONFIGURATION_BASED, true, CertificateConstants.DEFAULT_CERTID_HASH_ALGORITHM);
+                }
+            }
+
         }
     }
 

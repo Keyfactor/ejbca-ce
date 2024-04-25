@@ -108,10 +108,30 @@
                 <h:outputText value="#{cc.attrs.raCertificateDetails.publicKeyAlgorithm} "/>
                 <h:outputText value=" #{cc.attrs.raCertificateDetails.publicKeySpecification} "/>
             </h:panelGroup>
+            
+            <h:outputLabel for="alternativepublickeyspec" value="#{msg.component_certdetails_field_publickeyspec_alternative}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                            rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
+            <h:panelGroup id="alternativepublickeyspec"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}">
+                <h:outputText value="#{cc.attrs.raCertificateDetails.publicAlternativeKeyAlgorithm} "  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
+                <h:outputText value=" #{cc.attrs.raCertificateDetails.publicAlternativeKeySpecification} "  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
+            </h:panelGroup>
+            
+            
             <h:outputLabel for="signaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="signaturealgorithm" value="#{cc.attrs.raCertificateDetails.signatureAlgorithm}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+			
+			<h:outputLabel for="alternativeSignaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm_alternative}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                            rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
+            <h:outputText id="alternativeSignaturealgorithm" value="#{cc.attrs.raCertificateDetails.alternativeSignatureAlgorithm}"
+            			  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
 
             <h:outputLabel for="basicconstraints" value="#{msg.component_certdetails_field_basicconstraints}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"

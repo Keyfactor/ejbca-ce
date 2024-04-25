@@ -21,8 +21,8 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlType(name = "nameAndId", propOrder = {
-        "name",
-        "id"
+        "id",
+        "name"
 })
 public class NameAndId implements Serializable{
 

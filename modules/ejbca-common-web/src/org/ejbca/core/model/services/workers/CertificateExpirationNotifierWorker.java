@@ -83,7 +83,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                 try {
                     caInfo = caSession.getCAInfo(getAdmin(), caid);
                     if(caInfo == null) {
-                        log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoca", caid, null));
+                        log.info("CA with id " + caid + " does not exist. Has it been removed?");
                         continue;
                     }
                 }  catch (AuthorizationDeniedException e) {
@@ -158,7 +158,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         if (userData != null) {
                             if (isSendToEndUsers()) {
                                 if (userData.getEmail() == null || userData.getEmail().trim().equals("")) {
-                                    log.info(InternalEjbcaResources.getInstance().getLocalizedMessage("services.errorworker.errornoemail", username));
+                                    log.info("Sending email notification to user " + username + " failed, no email address configured.");
                                 } else {
                                     // Populate end user message
                                     if(log.isDebugEnabled()) {

@@ -97,6 +97,22 @@
                         <f:converter converterId="trimConverter"/>
                     </h:inputText>
                 </h:panelGroup>
+                
+                <!-- Policy Update Interval -->
+                <h:panelGroup>
+                    <h:outputLabel value="#{web.text.MSAE_POLICY_UPDATE_INTERVAL}" styleClass="titles"/>
+                    <br/>
+                    <h:outputText value="#{web.text.MSAE_POLICY_UPDATE_INTERVAL_HELP}" styleClass="help"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <h:inputText id="policyUpdateInterval" disabled="#{autoenrollmentConfigMBean.viewOnly}"
+                                 value="#{msAutoEnrollmentSettings.dto.policyUpdateInterval}" size="5"
+                                 title="#{web.text.FORMAT_INTEGER}"
+                                 validatorMessage="#{web.text.MSAE_POLICY_UPDATE_INTERVAL_INVALID_NUMBER}"
+                                 converterMessage="#{web.text.MSAE_POLICY_UPDATE_INTERVAL_INVALID_NUMBER}">
+                        <f:validateLongRange minimum="1" maximum="2147483647"/>
+                    </h:inputText>
+                </h:panelGroup>
 
                 <!-- MSAE Service Principal -->
                 <h:panelGroup>

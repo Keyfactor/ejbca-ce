@@ -31,129 +31,148 @@
             <f:metadata>
                 <f:viewParam name="publisherId" value="#{inspectPublisherQueue.publisherId}" />
             </f:metadata>
-            <div class="commandButton">
-                <h1>
-                    <h:outputText value="#{web.text.INSPECT_PUBLISHER_QUEUE_TITLE}" />
-                </h1>
-                <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_PROCESS_QUEUE}"
-                                 type="submit"
-                                 disabled="#{not empty inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"
-                                 rendered="#{inspectPublisherQueue.items.size() gt 0}"
-                                 action="#{inspectPublisherQueue.republish}">
-                    <f:ajax render=":resultsForm :messagesBlock" />
-                </h:commandButton>
-                <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_FLUSH}"
-                                 type="submit"
-                                 rendered="#{inspectPublisherQueue.items.size() gt 0}"
-                                 action="#{inspectPublisherQueue.flush}">
-                    <f:ajax render=":resultsForm" />
-                </h:commandButton>
-                <div>
-                    <h:outputText value="#{inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"
-                        rendered="#{not empty inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"/>
-                </div>
+            <script type="application/javascript">
+                function uncheckMasterCheckbox() {
+                    document.getElementById('publisherQueueForm:publisherQueueTable:publisherQueueMasterCheckbox').checked = false;
+                }
+                function toggleAllCheckboxes(source) {
+                    checkboxes = document.getElementsByClassName('itemCheckbox');
+                    for (const checkbox of checkboxes) {
+                        checkbox.checked = source.checked;
+                    }
+                }
+                function republishingDone(source) {
+                    uncheckMasterCheckbox();
+                    ejbca.adminweb.onAjaxSuccessScrollTo(source,'messagesBlock');
+                }
+            </script>
+            <h1>
+                <h:outputText value="#{web.text.INSPECT_PUBLISHER_QUEUE_TITLE}" />
+            </h1>
+            <div>
+                <h:outputText value="#{inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"
+                              rendered="#{not empty inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"/>
             </div>
-            <h:form id="resultsForm">
-                <div style="display: inline-block;">
-                    <h:dataTable id="queuedItems"
-                        value="#{inspectPublisherQueue.items}"
-                        var="item" styleClass="grid"
-                        rendered="#{inspectPublisherQueue.items.size() gt 0}">
-                        <h:column>
-                            <f:facet name="header">
-                                <h:outputText
-                                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_DESCRIPTION_HEADER}" />
-                            </f:facet>
-                            <div>
-                                <h:outputLink rendered="#{item.canView}" value="#{item.link}" rel="noopener noreferer" target="_blank">
-                                    <h:outputText value="#{item.fingerprint}" />
-                                </h:outputLink>
-                                <h:outputText rendered="#{not item.canView}" value="#{item.fingerprint}" />
-                                <br />
-                                <h:outputText value="#{item.description}" />
-                            </div>
-                        </h:column>
-                        <h:column>
-                            <f:facet name="header">
-                                <h:outputText
-                                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_STATUS_HEADER}" />
-                            </f:facet>
-                            <div>
-                                <h:graphicImage
+            <div>
+                <h:outputText value="#{web.text.INSPECT_PUBLISHER_QUEUE_EMPTY}"
+                              rendered="#{inspectPublisherQueue.itemsForCurrentPage.size() eq 0}"/>
+            </div>
+            <h:form id="publisherQueueForm">
+                <h:dataTable id="publisherQueueTable"
+                             value="#{inspectPublisherQueue.itemsForCurrentPage}"
+                             var="item"
+                             styleClass="grid"
+                             rendered="#{inspectPublisherQueue.itemsForCurrentPage.size() gt 0}">
+                    <h:column>
+                        <f:facet name="header">
+                            <h:selectBooleanCheckbox id="publisherQueueMasterCheckbox" onclick="toggleAllCheckboxes(this)"/>
+                        </f:facet>
+                        <h:selectBooleanCheckbox class="itemCheckbox" value="#{item.selected}"/>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="#{web.text.INSPECT_PUBLISHER_QUEUE_DESCRIPTION_HEADER}" />
+                        </f:facet>
+                        <div>
+                            <h:outputLink rendered="#{item.canView}" value="#{item.link}" rel="noopener noreferer" target="_blank">
+                                <h:outputText value="#{item.fingerprint}"/>
+                            </h:outputLink>
+                            <h:outputText rendered="#{not item.canView}" value="#{item.fingerprint}"/>
+                            <br/>
+                            <h:outputText value="#{item.description}"/>
+                        </div>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText value="#{web.text.INSPECT_PUBLISHER_QUEUE_STATUS_HEADER}" />
+                        </f:facet>
+                        <div>
+                            <h:graphicImage
                                     rendered="#{item.statusOk}"
                                     url="/images/verify-log-failed.png"
                                     height="12" width="12"
-                                    style="border-width:0" />
-                                <h:graphicImage
+                                    style="border-width:0"/>
+                            <h:graphicImage
                                     rendered="#{item.statusNotOk}"
                                     url="/images/verify-log-success.png"
                                     height="12" width="12"
-                                    style="border-width:0" />
-                                <h:graphicImage
+                                    style="border-width:0"/>
+                            <h:graphicImage
                                     rendered="#{item.statusPending}"
                                     url="/images/status-ca-pending.png"
                                     height="12" width="12"
-                                    style="border-width:0" />
-                                <h:outputText value="#{item.status}" />
-                            </div>
-                        </h:column>
-                        <h:column>
-                            <f:facet name="header">
-                                <h:outputText
+                                    style="border-width:0"/>
+                            <h:outputText value="#{item.status}"/>
+                        </div>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText
                                     value="#{web.text.INSPECT_PUBLISHER_QUEUE_CREATED_HEADER}" />
-                            </f:facet>
-                            <div>
-                                <h:outputText
-                                    value="#{item.timeCreated}" />
-                            </div>
-                        </h:column>
-                        <h:column>
-                            <f:facet name="header">
-                                <h:outputText
+                        </f:facet>
+                        <div>
+                            <h:outputText value="#{item.timeCreated}"/>
+                        </div>
+                    </h:column>
+                    <h:column>
+                        <f:facet name="header">
+                            <h:outputText
                                     value="#{web.text.INSPECT_PUBLISHER_QUEUE_LAST_UPDATED_HEADER}" />
-                            </f:facet>
-                            <div>
-                                <h:outputText
-                                    value="#{item.timeLastUpdated}" />
-                            </div>
-                        </h:column>
-                        <h:column>
-                            <f:facet name="header">
-                                <h:outputText
-                                        value="#{web.text.INSPECT_PUBLISHER_QUEUE_ACTIONS_HEADER}" />
-                            </f:facet>
-                            <div>
-                                <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_FLUSH_ITEM}"
-                                                 type="submit"
-                                                 action="#{inspectPublisherQueue.flushItem()}">
-                                    <f:param name="fingerprintOfItemToFlush" value="#{item.fingerprint}" />
-                                    <f:ajax render="@form" />
-                                </h:commandButton>
-                            </div>
-                        </h:column>
-                    </h:dataTable>
-                    <h:outputText
-                        value="#{web.text.INSPECT_PUBLISHER_QUEUE_EMPTY}"
-                        rendered="#{inspectPublisherQueue.items.size() eq 0}" />
-                    <div class="commandButton">
+                        </f:facet>
+                        <h:outputText value="#{item.timeLastUpdated}"/>
+                    </h:column>
+                </h:dataTable>
+                <h:panelGrid columns="1" styleClass="publisherQueueTable">
+                    <h:panelGroup>
+                        <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_REPUBLISH_SELECTED}"
+                                         type="submit"
+                                         action="#{inspectPublisherQueue.republishSelected()}"
+                                         rendered="#{inspectPublisherQueue.items.size() gt 0}"
+                                         disabled="#{not empty inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}"
+                                         onclick="ejbca.adminweb.loadingScreen()">
+                            <f:ajax execute="@form"
+                                    render="@all"
+                                    onevent="republishingDone"/>
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_PROCESS_QUEUE}"
+                                         type="submit"
+                                         action="#{inspectPublisherQueue.republishAll()}"
+                                         rendered="#{inspectPublisherQueue.items.size() gt 0}"
+                                         disabled="#{not empty inspectPublisherQueue.reasonWhyPublisherQueueProcessQueueCannotRun}">
+                            <f:ajax render=":messagesBlock" />
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_FLUSH_SELECTED}"
+                                         type="submit"
+                                         rendered="#{inspectPublisherQueue.items.size() gt 0}"
+                                         action="#{inspectPublisherQueue.flushSelected()}">
+                            <f:ajax execute="@form" render="@all" onevent="uncheckMasterCheckbox()"/>
+                        </h:commandButton>
+                        <h:commandButton value="#{web.text.INSPECT_PUBLISHER_QUEUE_FLUSH_ALL}"
+                                         type="submit"
+                                         rendered="#{inspectPublisherQueue.items.size() gt 0}"
+                                         action="#{inspectPublisherQueue.flushAll()}">
+                            <f:ajax render="@all" />
+                        </h:commandButton>
+                    </h:panelGroup>
+                    <h:panelGroup>
                         <h:commandButton
-                            value="#{web.text.INSPECT_PUBLISHER_QUEUE_PREVIOUS_PAGE}"
-                            type="submit"
-                            rendered="#{not inspectPublisherQueue.firstPage}"
-                            action="#{inspectPublisherQueue.previousPage}">
+                                value="#{web.text.INSPECT_PUBLISHER_QUEUE_PREVIOUS_PAGE}"
+                                type="submit"
+                                rendered="#{not inspectPublisherQueue.firstPage}"
+                                action="#{inspectPublisherQueue.previousPage}">
                             <f:ajax render="@form" />
                         </h:commandButton>
                         <div style="float: right;">
                             <h:commandButton
-                                value="#{web.text.INSPECT_PUBLISHER_QUEUE_NEXT_PAGE}"
-                                type="submit"
-                                rendered="#{not inspectPublisherQueue.lastPage}"
-                                action="#{inspectPublisherQueue.nextPage}">
+                                    value="#{web.text.INSPECT_PUBLISHER_QUEUE_NEXT_PAGE}"
+                                    type="submit"
+                                    rendered="#{not inspectPublisherQueue.lastPage}"
+                                    action="#{inspectPublisherQueue.nextPage}">
                                 <f:ajax render="@form" />
                             </h:commandButton>
                         </div>
-                    </div>
-                </div>
+                    </h:panelGroup>
+                </h:panelGrid>
             </h:form>
         </ui:define>
     </ui:composition>

@@ -94,12 +94,27 @@ public class LogRedactionUtils {
         return SUBJECT_ALT_NAME_COMPONENTS.toString();
     }
 
-    public static String getSubjectDnLogSafe(String subjectDn) {
-        if(redactPii()) {
+    /**
+     * Returns the given content unmodified if log redaction is disabled,
+     * or the string &quot;<code>&lt;redacted&gt;</code>&quot; if log redaction is enabled.
+     *
+     * Use {@link #getSubjectDnLogSafe} or {@link #getSubjectAltNameLogSafe} instead when
+     * logging a SubjectDN or SAN.
+     *
+     * This method is for logging data that either contains or is derived from
+     * the SubjectDN or the SAN. For example JSON containing an encoded certificate,
+     * or the value of a component extracted from the SubjectDN/SAN.
+     */
+    public static String getContentLogSafe(final String content) {
+        if (redactPii()) {
             return REDACTED_CONTENT;
         } else {
-            return subjectDn;
+            return content;
         }
+    }
+
+    public static String getSubjectDnLogSafe(final String subjectDn) {
+        return getContentLogSafe(subjectDn);
     }
 
     public static String getSubjectDnLogSafe(String subjectDn, int endEntityProfileId) {
@@ -135,11 +150,7 @@ public class LogRedactionUtils {
     }
 
     public static String getSubjectAltNameLogSafe(String san) {
-        if(redactPii()) {
-            return REDACTED_CONTENT;
-        } else {
-            return san;
-        }
+        return getContentLogSafe(san);
     }
 
     public static String getSubjectAltNameLogSafe(String san, int endEntityProfileId) {
