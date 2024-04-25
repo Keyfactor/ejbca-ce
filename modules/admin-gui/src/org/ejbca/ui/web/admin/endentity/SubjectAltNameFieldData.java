@@ -297,7 +297,9 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         }
 
         if (StringUtils.isNotBlank(fieldValueToSave)) {
-            validateFieldValue(fieldValueToSave, fieldData);
+            if(!isRfc822Name) {
+                validateFieldValue(fieldValueToSave, fieldData);
+            }
             fieldValueToSave = constructFinalValueToSave(fieldData, fieldValueToSave);
         }
 
@@ -312,7 +314,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             return;
         }
 
-        if (!isRfc822Name() && isUpn && StringUtils.isNotBlank(upnName) && !AddEndEntityUtil.isValidDNField(upnName)) {
+        if (isUpn && StringUtils.isNotBlank(upnName) && !AddEndEntityUtil.isValidDNField(upnName)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
 
