@@ -1056,19 +1056,20 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         newUserView.setEndEntityProfileId(selectedEeProfileId);
         newUserView = checkAndSetExtendedInformation(newUserView);
 
-        try { // Fields require validation
+        try { // Fields require validation, order is somehow important!
             newUserView = checkAndSetUserNameAndPassword(newUserView);
             newUserView = checkAndSetLoginAttempts(newUserView);
-            newUserView = checkAndSetSubjectDN(newUserView);
-            newUserView = checkAndSetSubjectAltName(newUserView);
-            newUserView = checkAndSetSubjectDirName(newUserView);
-            newUserView = checkAndSetMainCertificateData(newUserView);
-            newUserView = checkAndSetCustomSerialNumber(newUserView);
             if (checkAndSetUserEmail(newUserView).isPresent()) {
                 newUserView = checkAndSetUserEmail(newUserView).get();
             } else {
                 return;
             }
+            newUserView = checkAndSetSubjectDN(newUserView);
+            newUserView = checkAndSetSubjectAltName(newUserView);
+            newUserView = checkAndSetSubjectDirName(newUserView);
+            newUserView = checkAndSetMainCertificateData(newUserView);
+            newUserView = checkAndSetCustomSerialNumber(newUserView);
+
         } catch (AddEndEntityException e) {
             addNonTranslatedErrorMessage(e.getMessage());
             return;
