@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.endentityprofiles;
+package org.ejbca.ui.web.admin.endentity;
 
 import org.apache.commons.lang3.StringUtils;
 import org.cesecore.certificates.util.DNFieldExtractor;
@@ -127,85 +127,121 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         this.regex = regex;
     }
 
-    // Private constructor to enforce usage of the builder
-    private SubjectAltNameFieldData(String label, boolean modifiable, boolean required, String value) {
-        super(label, modifiable, required, value);
+    private SubjectAltNameFieldData(Builder builder) {
+        super(builder.label, builder.modifiable, builder.required, builder.fieldValue);
+        this.isRfc822Name = builder.isRfc822Name;
+        this.isDnsName = builder.isDnsName;
+        this.copyDataFromCN = builder.copyDataFromCN;
+        this.isUpn = builder.isUpn;
+        this.options = builder.options;
+        this.regex = builder.regex;
+        this.renderUseDataFromRFC822NameField = builder.renderUseDataFromRFC822NameField;
+        this.rfc822NameString = builder.rfc822NameString;
+        this.rfcDomain = builder.rfcDomain;
+        this.rfcName = builder.rfcName;
+        this.upnDomain = builder.upnDomain;
+        this.upnName = builder.upnName;
+        this.useDataFromRFC822NameField = builder.useDataFromRFC822NameField;
     }
 
     public static class Builder {
-        private SubjectAltNameFieldData fieldData;
+        private String label;
+        private boolean modifiable;
+        private boolean required;
+        private boolean isRfc822Name;
+        private boolean useDataFromRFC822NameField;
+        private boolean renderUseDataFromRFC822NameField;
+        private boolean isUpn;
+        private boolean copyDataFromCN;
+        private boolean isDnsName;
+        private String rfcName;
+        private String rfcDomain;
+        private String[] options;
+        private String upnName;
+        private String upnDomain;
+        private String regex;
+        private String rfc822NameString;
+        private String fieldValue;
 
-        public Builder(final String label, final boolean modifiable, final boolean required, final String value) {
-            fieldData = new SubjectAltNameFieldData(label, modifiable, required, value);
+
+        public Builder(final String label, final boolean modifiable, final boolean required) {
+            this.label = label;
+            this.modifiable = modifiable;
+            this.required = required;
         }
 
         public Builder withRFC822Name(boolean isRFC822Name) {
-            fieldData.isRfc822Name = isRFC822Name;
+            this.isRfc822Name = isRFC822Name;
             return this;
         }
 
         public Builder withUseDataFromRFC822NameField(boolean useDataFromRFC822NameField) {
-            fieldData.useDataFromRFC822NameField = useDataFromRFC822NameField;
+            this.useDataFromRFC822NameField = useDataFromRFC822NameField;
             return this;
         }
 
         public Builder withUpn(boolean isUpn) {
-            fieldData.isUpn = isUpn;
+            this.isUpn = isUpn;
             return this;
         }
 
         public Builder withCopyDataFromCN(boolean copyDataFromCN) {
-            fieldData.copyDataFromCN = copyDataFromCN;
+            this.copyDataFromCN = copyDataFromCN;
             return this;
         }
 
         public Builder withDNSName(boolean isDnsName) {
-            fieldData.isDnsName = isDnsName;
+            this.isDnsName = isDnsName;
             return this;
         }
 
         public Builder withRfcName(String rfcName) {
-            fieldData.rfcName = rfcName;
+            this.rfcName = rfcName;
             return this;
         }
 
         public Builder withRfcDomain(String rfcDomain) {
-            fieldData.rfcDomain = rfcDomain;
+            this.rfcDomain = rfcDomain;
             return this;
         }
 
         public Builder withOptions(String[] options) {
-            fieldData.options = options;
+            this.options = options;
             return this;
         }
 
         public Builder withUpnName(String upnName) {
-            fieldData.upnName = upnName;
+            this.upnName = upnName;
             return this;
         }
 
         public Builder withUpnDomain(String upnDomain) {
-            fieldData.upnDomain = upnDomain;
+            this.upnDomain = upnDomain;
             return this;
         }
 
         public Builder withRegex(String regex) {
-            fieldData.regex = regex;
+            this.regex = regex;
             return this;
         }
 
         public Builder withRfc822NameString(String rfc822NameString) {
-            fieldData.rfc822NameString = rfc822NameString;
+            this.rfc822NameString = rfc822NameString;
             return this;
         }
 
         public Builder withRenderUseDataFromRFC822NameField(boolean renderUseDataFromRFC822NameField) {
-            fieldData.renderUseDataFromRFC822NameField = renderUseDataFromRFC822NameField;
+            this.renderUseDataFromRFC822NameField = renderUseDataFromRFC822NameField;
             return this;
         }
 
+        public Builder withFieldValue(String value) {
+            this.fieldValue = value;
+            return this;
+        }
+        
         public SubjectAltNameFieldData build() {
-            return fieldData;
+            return new SubjectAltNameFieldData(this);
         }
     }
     
@@ -241,7 +277,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
                 if (StringUtils.isBlank(emailFromProfile)) {
                     throw new AddEndEntityException("RFC822Name field required but not set in profile.");
                 }
-                return userView.getEmail();
+                return emailFromProfile;
             } else if (StringUtils.isNotBlank(rfcName) && StringUtils.isNotBlank(rfcDomain)) {
                 fieldValueToSave = rfcName + "@" + rfcDomain;
             }
@@ -276,11 +312,11 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             validateIPAddrValue(fieldValueToSave);
         }
         
-        if (!isRfc822Name() && isUpn && StringUtils.isNotBlank(upnName) && !AddEndEntityUtil.validateDNField(upnName)) {
+        if (!isRfc822Name() && isUpn && StringUtils.isNotBlank(upnName) && !AddEndEntityUtil.isValidDNField(upnName)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
         
-        if (isModifiable() && !isUpn && !AddEndEntityUtil.validateDNField(fieldValueToSave)) {
+        if (isModifiable() && !isUpn && !AddEndEntityUtil.isValidDNField(fieldValueToSave)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
     }
@@ -293,7 +329,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
     }
     
     private void validateIPAddrValue(final String ipAddress) throws AddEndEntityException {
-        if (!AddEndEntityUtil.validateIPv4(ipAddress) && !AddEndEntityUtil.validateIPv6(ipAddress)) {
+        if (!AddEndEntityUtil.isValidIPv4(ipAddress) && !AddEndEntityUtil.isValidIPv6(ipAddress)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDIPADDRESS") + " " + getLabel());
         }
     }
