@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.endentityprofiles;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.rainterface.UserView;
@@ -26,16 +27,16 @@ import com.keyfactor.util.certificate.DnComponents;
  */
 public class SubjectDnFieldData extends SubjectFieldData {
 
-    private boolean isEmail;
+    private MutablePair<Boolean, Boolean> isEmailAndUsesEmailFieldData;
     private String[] options;
-    private String regex;
+    private String regex; 
 
-    public boolean isEmail() {
-        return isEmail;
+    public MutablePair<Boolean, Boolean> getIsEmailAndUsesEmailFieldData() {
+        return isEmailAndUsesEmailFieldData;
     }
 
-    public void setEmail(boolean isEmail) {
-        this.isEmail = isEmail;
+    public void setIsEmailAndUsesEmailFieldData(MutablePair<Boolean, Boolean> isEmailAndUsesEmailFieldData) {
+        this.isEmailAndUsesEmailFieldData = isEmailAndUsesEmailFieldData;
     }
 
     public String[] getOptions() {
@@ -56,7 +57,7 @@ public class SubjectDnFieldData extends SubjectFieldData {
 
     private SubjectDnFieldData(Builder builder) {
         super(builder.label, builder.modifiable, builder.required, builder.value);
-        this.isEmail = builder.isEmail;
+        this.isEmailAndUsesEmailFieldData = builder.isEmailAndUsesEmailFieldData;
         this.options = builder.options;
         this.regex = builder.regex;
     }
@@ -65,7 +66,7 @@ public class SubjectDnFieldData extends SubjectFieldData {
         private String label;
         private boolean modifiable;
         private boolean required;
-        private boolean isEmail;
+        private MutablePair<Boolean, Boolean> isEmailAndUsesEmailFieldData;
         private String[] options;
         private String value;
         private String regex;
@@ -74,10 +75,10 @@ public class SubjectDnFieldData extends SubjectFieldData {
             this.label = label;
             this.modifiable = modifiable;
             this.required = required;
-        } 
+        }
 
-        public Builder withIsEmail(boolean isEmail) {
-            this.isEmail = isEmail;
+        public Builder withIsEmailAndUsesEmailFieldData(MutablePair<Boolean, Boolean> isEmailAndUsesEmailFieldData) {
+            this.isEmailAndUsesEmailFieldData = isEmailAndUsesEmailFieldData;
             return this;
         }
 
@@ -112,9 +113,11 @@ public class SubjectDnFieldData extends SubjectFieldData {
 
     @Override
     protected void validateFieldValue(String fieldValueToSave, int[] fieldData) throws AddEndEntityException {
-        if (!isEmail && isModifiable() && StringUtils.isNotBlank(fieldValueToSave) && (!AddEndEntityUtil.validateDNField(fieldValueToSave))) {
-                throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
+        if (!isEmailAndUsesEmailFieldData.left && isModifiable() && StringUtils.isNotBlank(fieldValueToSave)
+                && (!AddEndEntityUtil.validateDNField(fieldValueToSave))) {
+            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
-        
+
     }
+
 }
