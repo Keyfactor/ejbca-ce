@@ -165,14 +165,14 @@
 						<h:outputLabel value="#{subjectDnFieldAndData.label}" />
 					</h:panelGroup>
 					<h:panelGroup
-						rendered="#{!subjectDnFieldAndData.email and !subjectDnFieldAndData.modifiable   
+						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and !subjectDnFieldAndData.modifiable   
 										      and fn:length(subjectDnFieldAndData.options) == 1}">
 						<h:outputLabel
 							value="#{subjectDnFieldAndData.options[0].trim()}"
 							style="font-weight:bold" />
 					</h:panelGroup>
 					<h:panelGroup
-						rendered="#{!subjectDnFieldAndData.email 
+						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left 
 										      and !subjectDnFieldAndData.modifiable 
 										      and fn:length(subjectDnFieldAndData.options) > 1 }">
 						<h:selectOneMenu value="#{subjectDnFieldAndData.fieldValue}"
@@ -181,7 +181,7 @@
 						</h:selectOneMenu>
 					</h:panelGroup>
 					<h:panelGroup 
-						rendered="#{!subjectDnFieldAndData.email and subjectDnFieldAndData.modifiable and subjectDnFieldAndData.regex ne null}">
+						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and subjectDnFieldAndData.modifiable and subjectDnFieldAndData.regex ne null}">
 						<h:inputText value="#{subjectDnFieldAndData.fieldValue}" 
 							size="40" maxlength="255"
 							title="Must match format specified in profile. / Technical detail - the regex is #{subjectDnFieldAndData.regex}"
@@ -193,7 +193,7 @@
 						</h:inputText>
 					</h:panelGroup>
 					<h:panelGroup 
-						rendered="#{!subjectDnFieldAndData.email and subjectDnFieldAndData.modifiable and subjectDnFieldAndData.regex eq null}">
+						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and subjectDnFieldAndData.modifiable and subjectDnFieldAndData.regex eq null}">
 						<h:inputText value="#{subjectDnFieldAndData.fieldValue}" 
 							size="40" maxlength="255"
 							readonly="#{!resourceBean.allowedToAddEndEntity}"
@@ -204,9 +204,9 @@
 					</h:panelGroup>
 					
 					<h:panelGroup
-						rendered="#{subjectDnFieldAndData.email}">
+						rendered="#{subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left}">
 						<h:selectBooleanCheckbox id="sdnEmail"
-							value="#{subjectDnFieldAndData.required}"
+							value="#{subjectDnFieldAndData.isEmailAndUsesEmailFieldData.right}"
 							disabled="#{subjectDnFieldAndData.required}" />
 						<h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
 					</h:panelGroup>
