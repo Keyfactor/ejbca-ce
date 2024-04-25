@@ -105,8 +105,6 @@ public class SubjectDnFieldData extends SubjectFieldData {
     @Override
     protected String getFieldValueToSave(UserView userView, int[] fieldData) throws AddEndEntityException {
         String fieldValueToSave = StringUtils.EMPTY;
-
-        validateFieldValue(fieldValueToSave, fieldData);
         fieldValueToSave = LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),
                 DNFieldExtractor.TYPE_SUBJECTDN) + fieldValueToSave);
         return fieldValueToSave.trim();
