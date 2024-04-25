@@ -70,8 +70,10 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.configuration.GlobalConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
@@ -95,6 +97,7 @@ import org.ejbca.core.ejb.approval.ApprovalProfileSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.config.ConfigurationCheckerConfiguration;
 import org.ejbca.core.ejb.config.GlobalUpgradeConfiguration;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -147,6 +150,7 @@ public class UpgradeSessionBeanTest {
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private PublisherSessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
@@ -1443,6 +1447,61 @@ public class UpgradeSessionBeanTest {
         upgradeSession.upgrade(null, "7.11.0", false);
         config = (AvailableExtendedKeyUsagesConfiguration) globalConfigSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID);
         assertTrue("Doc signing EKU should be present after upgrade", config.isExtendedKeyUsageSupported("1.3.6.1.5.5.7.3.36"));
+    }
+    
+    @Test
+    public void testMigrateOcspSettings830() throws AuthorizationDeniedException {
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        //Store old value
+        long oldUntilNextUpdate = globalOcspConfiguration.getDefaultValidityTime();
+        long oldMaxAge = globalOcspConfiguration.getDefaultResponseMaxAge();
+        boolean oldUseMaxAgeForExpired = globalOcspConfiguration.getUseMaxValidityForExpiration();
+        try {
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("8.0.0");
+            guc.setPostUpgradedToVersion("8.0.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set ocsp.untilNextUpdate to a non-default value
+            cesecoreConfigSession.setConfigurationValue("ocsp.untilNextUpdate", "50");
+            cesecoreConfigSession.setConfigurationValue("ocsp.maxAge", "60");
+            cesecoreConfigSession.setConfigurationValue("ocsp.expires.useMaxAge", "true");
+            upgradeSession.upgrade(null, "8.0.0", false);
+            globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+            assertEquals("ocsp.untilNextUpdate was not migrated to GlobalOcspConfiguration", 50, globalOcspConfiguration.getDefaultValidityTime());
+            assertEquals("ocsp.maxAge was not migrated to GlobalOcspConfiguration", 60, globalOcspConfiguration.getDefaultResponseMaxAge());
+            assertEquals("ocsp.expires.useMaxAg was not migrated to GlobalOcspConfiguration", true, globalOcspConfiguration.getUseMaxValidityForExpiration());
+        } finally {
+            //Restore old values
+            globalOcspConfiguration.setDefaultValidityTime(oldUntilNextUpdate);
+            globalOcspConfiguration.setDefaultResponseMaxAge(oldMaxAge);
+            globalOcspConfiguration.setUseMaxValidityForExpiration(oldUseMaxAgeForExpired);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalOcspConfiguration);
+        }
+
+    }
+    
+    @Test
+    public void testRemoveConfigurationCheckerPost830() throws AuthorizationDeniedException {
+        //First make sure that there is a Configuration Checker config
+        if(globalConfigurationProxySession.findByConfigurationId(ConfigurationCheckerConfiguration.CONFIGURATION_ID) == null) {
+            globalConfigurationProxySession.addConfiguration( new ConfigurationCheckerConfiguration());
+        }
+        
+        if(globalConfigurationProxySession.findByConfigurationId(ConfigurationCheckerConfiguration.CONFIGURATION_ID) == null) {
+            throw new IllegalStateException("No ConfigurationCheckerConfiguration present, test cannot continue.");
+        }
+        
+        final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+        guc.setUpgradedToVersion("8.0.0");
+        guc.setPostUpgradedToVersion("8.0.0");
+        globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+        upgradeSession.upgrade(null, "8.0.0", true);
+        
+        assertNull("ConfigurationCheckerConfiguration was not removed.", globalConfigurationProxySession.findByConfigurationId(ConfigurationCheckerConfiguration.CONFIGURATION_ID));
+        
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {

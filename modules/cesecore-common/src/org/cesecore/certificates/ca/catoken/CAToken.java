@@ -24,7 +24,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 
 import com.keyfactor.util.StringTools;
@@ -44,7 +43,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * 
  * The CA token stores a reference (an integer) to the CryptoToken where the CA keys are stored.
  * 
- * @version $Id$
  */
 public class CAToken extends UpgradeableDataHashMap {
 
@@ -52,12 +50,11 @@ public class CAToken extends UpgradeableDataHashMap {
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(CAToken.class);
-    /** Internal localization of logs and errors */
-    private static final InternalResources intres = InternalResources.getInstance();
+
 
     /** Latest version of the UpgradeableHashMap, this determines if we need to auto-upgrade any data. */
     public static final float LATEST_VERSION = 8;
-
+    
     @Deprecated // Used by upgrade code
     public static final String CLASSPATH = "classpath";
     public static final String PROPERTYDATA = "propertydata";
@@ -73,6 +70,8 @@ public class CAToken extends UpgradeableDataHashMap {
     /** These aliases were changed in EJBCA 6.4.1 */
     private static final String OLDPRIVATESIGNKEYALIAS = "privatesignkeyalias";   
     protected static final String OLDPRIVATEDECKEYALIAS = "privatedeckeyalias";
+    
+    public static final String ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS = "alternateSignKey";
 
     /** A sequence for the keys, updated when keys are re-generated */
     public static final String SEQUENCE = "sequence";
@@ -81,6 +80,10 @@ public class CAToken extends UpgradeableDataHashMap {
     public static final String SIGNATUREALGORITHM = "signaturealgorithm";
     public static final String ENCRYPTIONALGORITHM = "encryptionalgorithm";
     public static final String CRYPTOTOKENID = "cryptotokenid";
+    
+    //For quantum safe keys the signature alg is derived from the key type, but ISO 15118 allows non-quantum safe keys to be used as the alternative key
+    private static final String ALTERNATIVE_SIGNATURE_ALGORITHM = "alternativeSignatureAlgorithm";
+    
 
     private int cryptoTokenId;
     private transient PurposeMapping keyStrings = null;
@@ -187,7 +190,7 @@ public class CAToken extends UpgradeableDataHashMap {
                                 // If we can test the testkey, we are finally active!
                                 ret = CryptoToken.STATUS_ACTIVE;
                             } catch (Throwable th) { // NOPMD: we need to catch _everything_ when dealing with HSMs
-                                log.error(intres.getLocalizedMessage("token.activationtestfail", cryptoToken.getId()), th);
+                                log.error("Error testing activation for Crypto Token with ID " + cryptoToken.getId() + ".", th);
                             }
                         }
                     }
@@ -220,7 +223,7 @@ public class CAToken extends UpgradeableDataHashMap {
      * 
      * @param purpose one of the constants in {@link CATokenConstants}.
      * @return the alias of a key.
-     * @throws CryptoTokenOfflineException if the key alias cannot be read.
+     * @throws CryptoTokenOfflineException if the key alias cannot be read and alias is not from alternative cert sign key.
      */
     public String getAliasFromPurpose(final int purpose) throws CryptoTokenOfflineException {
         if (keyStrings==null) {
@@ -228,9 +231,11 @@ public class CAToken extends UpgradeableDataHashMap {
             keyStrings = new PurposeMapping(getProperties());
         }
         final String alias = keyStrings.getAlias(purpose);
-        if (alias == null) {
-            throw new CryptoTokenOfflineException("No alias for key purpose " + purpose);
-        }
+        // PurposeMapping.getAlias() can return null for a non-existing alternative certificate signing key
+        // i.e. no hybrid settings are used for this CA. Any other null should throw CryptoTokenOfflineException.  
+        if (alias == null && purpose != CATokenConstants.CAKEYPUPROSE_ALTERNATIVE_CERTSIGN) {
+            throw new CryptoTokenOfflineException("No alias found for key purpose " + purpose);
+        }        
         return alias;
     }
 
@@ -243,8 +248,8 @@ public class CAToken extends UpgradeableDataHashMap {
         this.cryptoTokenId = cryptoTokenId;
         data.put(CAToken.CRYPTOTOKENID, String.valueOf(cryptoTokenId));
     }
-
-    /** Set a property and update underlying Map */
+  
+  /** Set a property and update underlying Map */
     public void setProperty(String key, String value) {
         final Properties caTokenProperties = getProperties();
         caTokenProperties.setProperty(key, value);
@@ -347,6 +352,16 @@ public class CAToken extends UpgradeableDataHashMap {
     public void setSignatureAlgorithm(String signaturealgoritm) {
         data.put(CAToken.SIGNATUREALGORITHM, signaturealgoritm);
     }
+    
+    /** @return the alternative SignatureAlgoritm, or null if none is set */
+    public String getAlternativeSignatureAlgorithm() {
+        return (String) data.get(CAToken.ALTERNATIVE_SIGNATURE_ALGORITHM);
+    }
+
+    /** Sets the alternative SignatureAlgoritm */
+    public void setAlternativeSignatureAlgorithm(String signaturealgoritm) {
+        data.put(CAToken.ALTERNATIVE_SIGNATURE_ALGORITHM, signaturealgoritm);
+    }
 
     /** Returns the EncryptionAlgoritm */
     public String getEncryptionAlgorithm() {
@@ -369,7 +384,7 @@ public class CAToken extends UpgradeableDataHashMap {
     public void upgrade() {
         if (Float.compare(LATEST_VERSION, getVersion()) != 0) {
             // New version of the class, upgrade
-            String msg = intres.getLocalizedMessage("token.upgrade", getVersion());
+            String msg = "Upgrading Crypto Token with version " + getVersion() + ".";
             log.info(msg);
             // Put upgrade stuff here
             if (data.get(CAToken.SEQUENCE_FORMAT) == null) { // v7

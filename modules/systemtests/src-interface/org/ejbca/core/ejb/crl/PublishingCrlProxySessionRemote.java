@@ -52,8 +52,9 @@ public interface PublishingCrlProxySessionRemote {
      *            CRL overlap time (configured in CA) and the poll time. The
      *            used CRL overlap time will be (crloverlaptime +
      *            addtocrloverlaptime)
+     * @param params Additional parameters, such as time limit for certificate archival.
      */
-    Set<Integer> createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException;
+    Set<Integer> createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime, CrlCreationParams params) throws AuthorizationDeniedException;
 
     /**
      * Method that checks if there are any delta CRLs needed to be updated and

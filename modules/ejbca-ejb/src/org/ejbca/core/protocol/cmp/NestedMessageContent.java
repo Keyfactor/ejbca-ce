@@ -14,7 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -33,6 +32,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.keyfactor.util.CertTools;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -43,8 +44,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
-
-import com.keyfactor.util.CertTools;
 
 /**
  * Nested Message Content according to RFC4210. The PKI message is signed by an RA authority.
@@ -166,19 +165,23 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
             log.debug("Looking for trusted RA certificate in " + raCertsPath);
         }
         final File raCertDirectory = new File(raCertsPath);
-        final String[] files = raCertDirectory.list();
+        final File[] files = raCertDirectory.listFiles();
         if (files != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Found " + files.length + " trusted RA certificate in " + raCertsPath);
             }
-            for (final String certFile : files) {
-                final String filepath = raCertsPath + "/" + certFile;
+            for (final File certFile : files) {
                 try {
-                    racerts.add(CertTools.getCertsFromPEM(filepath, X509Certificate.class).iterator().next());
-                    if (log.isDebugEnabled()) {
-                        log.debug("Added " + certFile + " to the list of trusted RA certificates");
+                    if (certFile.isFile()) {
+                        racerts.add(CertTools.getCertsFromPEM(certFile.getCanonicalPath(), X509Certificate.class).iterator().next());
+                        if (log.isDebugEnabled()) {
+                            log.debug("Added " + certFile + " to the list of trusted RA certificates");
+                        }
+                    } else if (log.isDebugEnabled()) {
+                        log.debug(certFile + " is a directory, ignoring directories for the list of trusted RA certificates");
                     }
-                } catch (CertificateParsingException | FileNotFoundException e) {
+
+                } catch (CertificateParsingException | IOException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("Failed to add " + certFile + " to the list of trusted RA certificates: " + e.getMessage());
                     }

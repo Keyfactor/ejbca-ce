@@ -28,6 +28,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -69,7 +71,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CABase;
-import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -142,7 +143,6 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityInformationFiller;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
-import org.ejbca.core.model.ra.FieldValidator;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -169,6 +169,7 @@ import com.keyfactor.util.certificate.DnComponents;
 public class EndEntityManagementSessionBean implements EndEntityManagementSessionLocal, EndEntityManagementSessionRemote {
     private static final Logger log = Logger.getLogger(EndEntityManagementSessionBean.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    public static final String INVALID_SYMBOLS_INUSERNAME = "Only characters, numbers, whitespace, comma, period, ', _, @, *, -, :, /, =, (, ), and vertical bar are allowed in Username";
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -285,8 +286,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         // Make a deep copy
         EndEntityInformation endEntityInformationCopy = new EndEntityInformation(endEntity);
         final int endEntityProfileId = endEntityInformationCopy.getEndEntityProfileId();
-        final String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
-        FieldValidator.validate(endEntity, endEntityProfileId, endEntityProfileName);
         final String dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformationCopy.getDN()));
         endEntityInformationCopy.setDN(dn);
         endEntityInformationCopy.setSubjectAltName(StringTools.strip(endEntityInformationCopy.getSubjectAltName()));
@@ -355,6 +354,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         cnAppendedSan = copyCnToAltName(endEntity.getDN(), cnAppendedSan, profile, DnComponents.UPN);
         endEntity.setSubjectAltName(cnAppendedSan);
 
+        if (!isUsernameValid(endEntity.getUsername())) {
+            throw new IllegalNameException(INVALID_SYMBOLS_INUSERNAME);
+        }
         if( profile.getAllowMergeDn()) {
             endEntity = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntity, profile);
         }
@@ -591,6 +593,20 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.trace("<addUser(" + username + ", password, " + LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId) + ", " + email + ")");
         }
         return endEntity;
+    }
+
+   static boolean isUsernameValid(String username) {
+        if (StringUtils.isEmpty(username)){
+           return true;
+        }
+        Pattern pattern = Pattern.compile(EndEntityInformation.VALID_USERNAME_REGEX);
+        Matcher matcher = pattern.matcher(username);
+
+        if (matcher.find()) {
+            return false;
+        } else {
+            return true;
+        }
     }
 
     private List<ValidationResult> runApprovalRequestValidation(
@@ -856,13 +872,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             endEntityAuthenticationSession.assertAuthorizedToEndEntityProfile(authenticationToken, endEntityProfileId, AccessRulesConstants.EDIT_END_ENTITY, caId);
         }
 
-        final String eeProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
-        if (eeProfileName == null) {
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
+        if (profile == null) {
             throw new EndEntityProfileValidationException("End Entity profile " + endEntityProfileId + " does not exist trying to change user: " + username);
         }
-        FieldValidator.validate(endEntityInformation, endEntityProfileId, eeProfileName);
-        
-        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
         String dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
         String altName = endEntityInformation.getSubjectAltName();
         if (log.isTraceEnabled()) {
@@ -946,6 +959,9 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
         final String trimmedNewUsername = StringTools.trim(newUsername);
 
+        if (!isUsernameValid(trimmedNewUsername)) {
+            throw new IllegalNameException(INVALID_SYMBOLS_INUSERNAME);
+        }
         // Check if user fulfills it's profile.
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(endEntityInformation.getCertificateProfileId());
@@ -2074,7 +2090,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         //Check if revocation includes invalidityDate and is allowed
         final CAInfo cainfo = caSession.getCAInfoInternal(caId, null, true);
-        if (invalidityDate != null && !(cainfo.isAllowInvalidityDate())) {
+        boolean allowInvalidityDate = cainfo != null && cainfo.isAllowInvalidityDate();
+        if (invalidityDate != null && !allowInvalidityDate) {
             final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed", issuerDn, certSerNo.toString(16));
             log.info(msg);
             throw new AlreadyRevokedException(msg);
@@ -2093,8 +2110,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     // a valid certificate could have reason "REVOCATION_REASON_REMOVEFROMCRL" if it has been revoked in the past.
                     revocationReason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
 
-                final CAData cadata = caSession.findById(certificateData.getIssuerDN().hashCode());
-                final boolean allowedOnCa = cadata != null ? cadata.getCA().getCAInfo().isAllowChangingRevocationReason() : false;
+                final boolean allowedOnCa = cainfo != null && cainfo.isAllowChangingRevocationReason();
 
                 final boolean isX509 = cdw.getCertificate() instanceof X509Certificate;
                 
@@ -2104,22 +2120,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     if (revocationDate == null){
                         revocationDate = new Date(certificateData.getRevocationDate());
                     }
-                    if (invalidityDate != null && !(cadata.getCA().getCAInfo().isAllowInvalidityDate())) {
-                        invalidityDate = new Date(certificateData.getInvalidityDate());
-                        final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
-                        log.info(msg);
-                        throw new AlreadyRevokedException(msg);
-                    }
-                }
-                else if ((invalidityDate != null) && (reason == certificateData.getRevocationReason())) {
+                } else if ((invalidityDate != null) && (reason == certificateData.getRevocationReason())) {
+                    // If we will update with invalidityDate, the revocationDate should be the same as the original revocation
                     revocationDate = new Date(certificateData.getRevocationDate());
-                    if (!cainfo.isAllowInvalidityDate()) {
-                        final String msg = intres.getLocalizedMessage("ra.invaliditydatenotallowed");
-                        log.info(msg);
-                        throw new AlreadyRevokedException(msg);
-                    }
-                }
-                else if (!canChangeRevocationReason){
+                } else if (!canChangeRevocationReason){
                     // Revocation reason cannot be changed, find out why and throw appropriate exception
                     if (!RevokedCertInfo.isDateOk(revocationDate, certificateData.getRevocationDate())) {
                         final String msg = intres.getLocalizedMessage("ra.invalidrevocationdate");

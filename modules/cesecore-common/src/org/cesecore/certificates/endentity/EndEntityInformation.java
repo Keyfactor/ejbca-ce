@@ -43,6 +43,8 @@ public class EndEntityInformation implements Serializable {
 
     private static final Logger log = Logger.getLogger(EndEntityInformation.class);
 
+    public static final String VALID_USERNAME_REGEX = "[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\'\\=\\(\\)\\|.]";
+
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -55,6 +57,7 @@ public class EndEntityInformation implements Serializable {
     private static final long serialVersionUID = 3837505643343885941L;
 
     private String username;
+    private String inputUsernameValue;
     private String subjectDN;
     transient private String subjectDNClean = null;
     private int caid;
@@ -175,6 +178,14 @@ public class EndEntityInformation implements Serializable {
         setCardNumber(null);
     }
 
+    public void setInputUsernameValue(String inputUsernameValue) {
+        this.inputUsernameValue = StringTools.putBase64String(inputUsernameValue);
+        setUsername(inputUsernameValue);
+    }
+
+    public String getInputUsernameValue() {
+        return StringTools.getBase64String(inputUsernameValue);
+    }
 
     public void setUsername(String user) {
         this.username = StringTools.putBase64String(StringTools.stripUsername(user));

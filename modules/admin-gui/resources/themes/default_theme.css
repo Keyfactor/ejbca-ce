@@ -244,12 +244,12 @@ div#footer {
 /*--------------------------------------------------------------------------*/
 /* CONTENT */
 .main-wrapper {
-	margin: .5em auto .5em 15%;
+	margin: 1em auto;
 }
 
 h1 {
-	margin-top: 0em;
-	margin-bottom: .2em;
+	margin-top: 0;
+	margin-bottom: 1em;
 	text-align: left;
 	font-size: 2em;
 	color: #284E81;
@@ -889,6 +889,9 @@ div.status h4 {
 	color: #FFF;
 	font-size: small;
 }
+div.status h4.warning {
+	background: #fb4c2f none;
+}
 div.status h4 a:link,
 div.status h4 a:visited,
 div.status h4 a:hover,
@@ -914,6 +917,9 @@ div.status table td img {
 	width: 16px;
 	height: 16px;
 	margin-top: .1em;
+}
+div.status table.grid tr:hover {
+	background: #FFF;
 }
 
 /* --- Page: CA > CryptoTokens */
@@ -1199,6 +1205,11 @@ table#config tr td:first-child {
 
 /* --- Search end entity page */
 .searchEndEntityTable button {
+	margin-right: .5em;
+}
+
+/* --- Publisher Queue page */
+.publisherQueueTable input {
 	margin-right: .5em;
 }
 

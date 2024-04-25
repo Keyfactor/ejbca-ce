@@ -12,13 +12,25 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.math.BigInteger;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
+import java.util.Map;
+
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.ws.rs.core.Response;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
-import org.cesecore.certificates.certificate.InternalCertificateRestSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -33,19 +45,6 @@ import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
-
-import java.math.BigInteger;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
-import java.util.Map;
-
 /**
  * JAX-RS resource handling certificate-related requests version 2.
  */
@@ -59,9 +58,6 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
     private static final Logger log = Logger.getLogger(CertificateRestResourceV2.class);
-
-    @EJB
-    private InternalCertificateRestSessionLocal certificateSessionLocal;
     
     @EJB
     private CertificateDataSessionLocal certDataSession;
@@ -79,7 +75,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     public Response getCertificateCount(HttpServletRequest requestContext, Boolean isActive) throws AuthorizationDeniedException, RestException {
         AuthenticationToken admin = getAdmin(requestContext, false);
         return Response.ok(new CertificateCountResponse(
-                certificateSessionLocal.getCertificateCount(admin, isActive)
+                certDataSession.getCertificateCount(admin, isActive)
         )).build();
     }
 

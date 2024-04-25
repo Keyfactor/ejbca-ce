@@ -157,86 +157,6 @@
             </h:panelGroup>
             <!-- End Client Mode -->
 
-            <!-- Vendor Mode, part of client mode -->
-            <h:panelGroup id="vendormode">
-                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
-                             columnClasses="editColumnSystem1,editColumn2"
-                             rendered="#{!editEstConfigMBean.raMode}">
-                    <h:panelGroup>
-                        <h:outputLabel value="#{web.text.CMPVENDORCERT}" style="font-weight: bold;"/>
-                    </h:panelGroup>
-                    <h:panelGroup>&nbsp;</h:panelGroup>
-
-                    <h:panelGroup>
-                        <h:outputText value="#{web.text.CMPVENDORCERT}" styleClass="titles"/>
-                        <br/>
-                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP}" styleClass="help"/>
-                        <br/>
-                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP1}" styleClass="help"/>
-                        <br/>
-                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP2}" styleClass="help"/>
-                    </h:panelGroup>
-                    <h:panelGroup>
-                        <h:selectBooleanCheckbox id="usevendorcertcheckbox"
-                                                 value="#{editEstConfigMBean.estAlias.vendorMode}"
-                                                 rendered="#{!editEstConfigMBean.raMode}"
-                                                 disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.dnPartPwdSelected or editEstConfigMBean.estAlias.challengePwdSelected or editEstConfigMBean.estAlias.httpBasicAuthSelected}">
-                            <f:ajax render="estconfiguration:vendorcas usevendorcertcheckbox allowchangesubjectnamecheckbox"/>
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="#{web.text.USE}"
-                                      rendered="#{!editEstConfigMBean.raMode}"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup>
-                        <h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" styleClass="titles"/>
-                        <br/>
-                        <h:outputText value="#{web.text.ESTVENDORCERT_VENDORCAS_HELP}" styleClass="help"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup id="vendorcas">
-                        <h:selectOneMenu id="selectvendorca" value="#{editEstConfigMBean.estAlias.selectedVendorCa}"
-                                         disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
-                            <f:selectItems value="#{editEstConfigMBean.vendorCaSelectItems}"/>
-                            <f:ajax event="change" update="estconfiguration:vendorcas"/>
-                        </h:selectOneMenu>
-                        &nbsp;
-                        <h:commandButton id="addvendorcabutton" value="#{web.text.ADD}"
-                                         action="#{editEstConfigMBean.actionAddVendorCa}"
-                                         disabled="#{!editEstConfigMBean.estAlias.vendorMode or editEstConfigMBean.viewOnly}">
-                            <f:ajax render="estconfiguration:vendorcas"/>
-                        </h:commandButton>
-                        &nbsp;
-                        <h:commandButton id="removevendorcabutton" value="#{web.text.REMOVE}"
-                                         action="#{editEstConfigMBean.actionRemoveVendorCa}"
-                                         disabled="#{!editEstConfigMBean.estAlias.vendorMode or editEstConfigMBean.viewOnly}">
-                            <f:ajax render="estconfiguration:vendorcas"/>
-                        </h:commandButton>
-                        <br/>
-                        <h:outputText value="#{editEstConfigMBean.currentVendorCas}"/>
-                    </h:panelGroup>
-
-                    <h:panelGroup>
-                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME}" styleClass="titles"/>
-                        <br/>
-                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME_HELP}" styleClass="help"/>
-                        <br/>
-                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME_HELP1}" styleClass="help"/>
-                    </h:panelGroup>
-                    <h:panelGroup>
-                        <h:selectBooleanCheckbox id="allowchangesubjectnamecheckbox"
-                                                 value="#{editEstConfigMBean.estAlias.allowChangeSubjectName}"
-                                                 rendered="#{!editEstConfigMBean.raMode}"
-                                                 disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
-                            <f:ajax render="estconfiguration:vendorcas allowchangesubjectnamecheckbox"/>
-                        </h:selectBooleanCheckbox>
-                        <h:outputText value="#{web.text.ALLOW}"
-                                      rendered="#{!editEstConfigMBean.raMode}"/>
-                    </h:panelGroup>
-                </h:panelGrid>
-            </h:panelGroup>
-            <!-- End Vendor Mode, part of client mode -->
-
             <!-- RA Mode -->
             <h:panelGroup id="ramode">
                 <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
@@ -410,6 +330,81 @@
                 </h:panelGrid>
             </h:panelGroup>
             <!-- RA Mode -->
+            
+            <!-- Vendor Mode -->
+            <h:panelGroup id="vendormode">
+                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                             columnClasses="editColumnSystem1,editColumn2">
+                    <h:panelGroup>
+                        <h:outputLabel value="#{web.text.CMPVENDORCERT}" style="font-weight: bold;"/>
+                    </h:panelGroup>
+                    <h:panelGroup>&nbsp;</h:panelGroup>
+
+                    <h:panelGroup>
+                        <h:outputText value="#{web.text.CMPVENDORCERT}" styleClass="titles"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP}" styleClass="help"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP1}" styleClass="help"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTVENDORCERT_USE_HELP2}" styleClass="help"/>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:selectBooleanCheckbox id="usevendorcertcheckbox"
+                                                 value="#{editEstConfigMBean.estAlias.vendorMode}"
+                                                 disabled="#{editEstConfigMBean.viewOnly or editEstConfigMBean.estAlias.dnPartPwdSelected or editEstConfigMBean.estAlias.challengePwdSelected or editEstConfigMBean.estAlias.httpBasicAuthSelected}">
+                            <f:ajax render="estconfiguration:vendorcas usevendorcertcheckbox allowchangesubjectnamecheckbox"/>
+                        </h:selectBooleanCheckbox>
+                        <h:outputText value="#{web.text.USE}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup>
+                        <h:outputText value="#{web.text.CMPVENDORCERT_VENDORCAS}" styleClass="titles"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTVENDORCERT_VENDORCAS_HELP}" styleClass="help"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="vendorcas">
+                        <h:selectOneMenu id="selectvendorca" value="#{editEstConfigMBean.estAlias.selectedVendorCa}"
+                                         disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
+                            <f:selectItems value="#{editEstConfigMBean.vendorCaSelectItems}"/>
+                            <f:ajax event="change" update="estconfiguration:vendorcas"/>
+                        </h:selectOneMenu>
+                        &nbsp;
+                        <h:commandButton id="addvendorcabutton" value="#{web.text.ADD}"
+                                         action="#{editEstConfigMBean.actionAddVendorCa}"
+                                         disabled="#{!editEstConfigMBean.estAlias.vendorMode or editEstConfigMBean.viewOnly}">
+                            <f:ajax render="estconfiguration:vendorcas"/>
+                        </h:commandButton>
+                        &nbsp;
+                        <h:commandButton id="removevendorcabutton" value="#{web.text.REMOVE}"
+                                         action="#{editEstConfigMBean.actionRemoveVendorCa}"
+                                         disabled="#{!editEstConfigMBean.estAlias.vendorMode or editEstConfigMBean.viewOnly}">
+                            <f:ajax render="estconfiguration:vendorcas"/>
+                        </h:commandButton>
+                        <br/>
+                        <h:outputText value="#{editEstConfigMBean.currentVendorCas}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup>
+                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME}" styleClass="titles"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME_HELP}" styleClass="help"/>
+                        <br/>
+                        <h:outputText value="#{web.text.ESTALLOWCHANGESUBJECTNAME_HELP1}" styleClass="help"/>
+                    </h:panelGroup>
+                    <h:panelGroup>
+                        <h:selectBooleanCheckbox id="allowchangesubjectnamecheckbox"
+                                                 value="#{editEstConfigMBean.estAlias.allowChangeSubjectName}"
+                                                 disabled="#{!editEstConfigMBean.vendorMode or editEstConfigMBean.viewOnly}">
+                            <f:ajax render="estconfiguration:vendorcas allowchangesubjectnamecheckbox"/>
+                        </h:selectBooleanCheckbox>
+                        <h:outputText value="#{web.text.ALLOW}"/>
+                    </h:panelGroup>
+                </h:panelGrid>
+            </h:panelGroup>
+            <!-- End Vendor Mode -->
 
             <h:panelGroup id="general">
                 <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"

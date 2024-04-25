@@ -47,6 +47,7 @@
         <path location="${mod.cesecore-x509ca.lib}"/>
         <path refid="lib.x509-common-util.classpath"/>
         <path refid="lib.jee-client.classpath"/>
+    	<path refid="lib.cryptotokens.classpath"/>
     </path>
 
     <target name="clean" description="Clean up this module">
@@ -82,7 +83,7 @@
         </copy>
         <!-- systemtests.properties needs to be in the classpath, if it exists for targeting non-default environment-->
         <copy file="${systemtests.properties.file}" todir="${plugins.build-test.dir}" failonerror="false"/>
-        <!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
+        <!-- jndi.properties needs to be in the classpath, if it exists -->
         <copy file="${jndi.properties.file}" tofile="${plugins.build-test.dir}/jndi.properties" failonerror="false"/>
         <copy file="${jboss-ejb-client.properties}" todir="${plugins.build-test.dir}" failonerror="true"/>
         <javac srcdir="${plugins.src.plugins.test.dir}" destdir="${plugins.build-test.dir}" debug="on" includeantruntime="no"
