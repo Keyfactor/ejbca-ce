@@ -159,15 +159,16 @@
 					style="font-weight:bold; font-size:1.2em;" />
 
 				<h:panelGroup />
-				<c:forEach items="#{resourceBean.subjectDnFieldsAndDatas}"
+				<c:forEach items="#{resourceBean.subjectDnFieldsAndDatas}" varStatus="subjectDnField"
 					var="subjectDnFieldAndData">
 					<h:panelGroup>
-						<h:outputLabel value="#{subjectDnFieldAndData.label}" />
+						<h:outputLabel value="#{subjectDnFieldAndData.label}" id="labelSDN${subjectDnField.index + 1}"/>
 					</h:panelGroup>
 					<h:panelGroup
 						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and !subjectDnFieldAndData.modifiable   
 										      and fn:length(subjectDnFieldAndData.options) == 1}">
 						<h:outputLabel
+							id="emailDomain${subjectDnField.index + 1}"
 							value="#{subjectDnFieldAndData.options[0].trim()}"
 							style="font-weight:bold" />
 					</h:panelGroup>
@@ -175,14 +176,18 @@
 						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left 
 										      and !subjectDnFieldAndData.modifiable 
 										      and fn:length(subjectDnFieldAndData.options) > 1 }">
-						<h:selectOneMenu value="#{subjectDnFieldAndData.fieldValue}"
+						<h:selectOneMenu
+							id="useEmailFieldDataCheckBox${subjectDnField.index + 1}" 
+							value="#{subjectDnFieldAndData.fieldValue}"
 							disabled="#{!resourceBean.allowedToAddEndEntity}">
 							<f:selectItems value="#{subjectDnFieldAndData.options}" />
 						</h:selectOneMenu>
 					</h:panelGroup>
 					<h:panelGroup 
 						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and subjectDnFieldAndData.modifiable and subjectDnFieldAndData.regex ne null}">
-						<h:inputText value="#{subjectDnFieldAndData.fieldValue}" 
+						<h:inputText 
+							id="valueWithRegex${subjectDnField.index + 1}"
+							value="#{subjectDnFieldAndData.fieldValue}" 
 							size="40" maxlength="255"
 							title="Must match format specified in profile. / Technical detail - the regex is #{subjectDnFieldAndData.regex}"
 							readonly="#{!resourceBean.allowedToAddEndEntity}"
@@ -194,7 +199,9 @@
 					</h:panelGroup>
 					<h:panelGroup 
 						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and subjectDnFieldAndData.modifiable and subjectDnFieldAndData.regex eq null}">
-						<h:inputText value="#{subjectDnFieldAndData.fieldValue}" 
+						<h:inputText 
+							id="valueWithoutRegex${subjectDnField.index + 1}"
+							value="#{subjectDnFieldAndData.fieldValue}" 
 							size="40" maxlength="255"
 							readonly="#{!resourceBean.allowedToAddEndEntity}"
 							required="#{subjectDnFieldAndData.required}"
@@ -205,7 +212,8 @@
 					
 					<h:panelGroup
 						rendered="#{subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left}">
-						<h:selectBooleanCheckbox id="sdnEmail"
+						<h:selectBooleanCheckbox 
+							id="sdnEmail"
 							value="#{subjectDnFieldAndData.isEmailAndUsesEmailFieldData.right}"
 							disabled="#{subjectDnFieldAndData.required}" />
 						<h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
@@ -226,11 +234,12 @@
 				<h:panelGroup />
 
 				<c:forEach items="#{resourceBean.subjectAltNameFieldDatas}"
-					var="subjectAltNameFieldAndData">
-
+					var="subjectAltNameFieldAndData" varStatus="subjecAltField">
 
 					<h:panelGroup>
-						<h:outputLabel value="#{subjectAltNameFieldAndData.label}" />
+						<h:outputLabel 
+							id="labelSAN${subjecAltField.index + 1}"
+						 	value="#{subjectAltNameFieldAndData.label}" />
 					</h:panelGroup>
 
 					<h:panelGroup
@@ -244,11 +253,13 @@
 						rendered="#{subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.renderUseDataFromRFC822NameField
 									and (subjectAltNameFieldAndData.modifiable or subjectAltNameFieldAndData.rfc822NameStringHaveAtSign)}">
 						<h:inputText
+							id="rfcName${subjecAltField.index + 1}"
 							value="#{subjectAltNameFieldAndData.rfcName}"
 							size="20" maxlength="255"
 							readonly="#{!resourceBean.allowedToAddEndEntity}"> 
 						</h:inputText> @
 						<h:inputText
+							id="rfcDomain${subjecAltField.index + 1}"
 							value="#{subjectAltNameFieldAndData.rfcDomain}"
 							size="15" maxlength="255" 
 							title="#{web.text.FORMAT_DOMAINNAME}"
@@ -260,6 +271,7 @@
 						rendered="#{subjectAltNameFieldAndData.rfc822Name 
 									and !subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) == 1}">
 						<h:outputLabel
+							id="fieldValueLabel${subjecAltField.index + 1}"
 							value="#{subjectAltNameFieldAndData.fieldValue}"
 							style="font-weight:bold" />
 					</h:panelGroup>
@@ -268,7 +280,9 @@
 						rendered="#{subjectAltNameFieldAndData.rfc822Name  
 									and !subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) > 1}}">
 
-						<h:selectOneMenu value="#{subjectAltNameFieldAndData.fieldValue}"
+						<h:selectOneMenu
+							id="fieldValueSelectOne${subjecAltField.index + 1}"
+							value="#{subjectAltNameFieldAndData.fieldValue}"
 							disabled="#{!resourceBean.allowedToAddEndEntity}">
 							<f:selectItems
 								value="#{subjectAltNameFieldAndData.options}" />
@@ -277,6 +291,7 @@
 
 					<h:panelGroup rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable}">
 						<h:inputText
+							id="upnName${subjecAltField.index + 1}"
 							rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn}"
 							value="#{subjectAltNameFieldAndData.upnName}"
 							size="20" maxlength="255"
@@ -284,11 +299,13 @@
 						</h:inputText> @
 
 						<h:outputLabel
+							id="upnDomain${subjecAltField.index + 1}"
 							rendered="#{(!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn and fn:length(subjectAltNameFieldAndData.options) == 1)}"
 							value="#{subjectAltNameFieldAndData.upnDomain}"
 							style="font-weight:bold" />
 
 						<h:selectOneMenu
+							id="upnDomainSelectOne${subjecAltField.index + 1}"
 							rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn and fn:length(subjectAltNameFieldAndData.options) > 1}"
 							value="#{subjectAltNameFieldAndData.upnDomain}"
 							disabled="#{!resourceBean.allowedToAddEndEntity}">
@@ -299,11 +316,15 @@
 					<h:panelGroup
 						rendered="#{!subjectAltNameFieldAndData.rfc822Name and subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn}">
 
-						<h:inputText size="20" maxlength="255"
+						<h:inputText
+							id="upnNameInputText${subjecAltField.index + 1}"
+							size="20" maxlength="255"
 							value="#{subjectAltNameFieldAndData.upnName}"
 							readonly="#{!resourceBean.allowedToAddEndEntity}">
 						</h:inputText> @
-						<h:inputText size="15" maxlength="255"
+						<h:inputText 
+							id="upnDomainInputText${subjecAltField.index + 1}"
+							size="15" maxlength="255"
 							value="#{subjectAltNameFieldAndData.upnDomain}"
 							readonly="#{!resourceBean.allowedToAddEndEntity}">
 						</h:inputText>
@@ -315,7 +336,8 @@
 									 !subjectAltNameFieldAndData.upn and 
 									 (subjectAltNameFieldAndData.copyDataFromCN and subjectAltNameFieldAndData.dnsName)}">
 
-						<h:selectBooleanCheckbox id="altNameDns"
+						<h:selectBooleanCheckbox 
+							id="altNameDns"
 							value="true" disabled="true"/>
 						<h:outputLabel value="#{web.text.USESCNFIELDDATA}" />
 					</h:panelGroup>
@@ -323,14 +345,18 @@
 					<h:panelGroup
 						rendered="#{!subjectAltNameFieldAndData.rfc822Name and subjectAltNameFieldAndData.modifiable and !subjectAltNameFieldAndData.upn
 						  and !(subjectAltNameFieldAndData.copyDataFromCN and subjectAltNameFieldAndData.dnsName)}">
-						<h:inputText size="40" maxlength="355" rendered="#{!subjectAltNameFieldAndData.renderRegex}"
+						<h:inputText
+							id="subjectAltNameInputTextWithoutRegex${subjecAltField.index + 1}"
+							size="40" maxlength="355" rendered="#{!subjectAltNameFieldAndData.renderRegex}"
 							value="#{subjectAltNameFieldAndData.fieldValue}"
 							label = "#{subjectAltNameFieldAndData.label}"
 							required="#{subjectAltNameFieldAndData.required}"
 							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
 							readonly="#{!resourceBean.allowedToAddEndEntity}">
 						</h:inputText>
-						<h:inputText size="40" maxlength="355" rendered="#{subjectAltNameFieldAndData.renderRegex}"
+						<h:inputText
+							id="subjectAltNameInputTextWithRegex${subjecAltField.index + 1}"
+							size="40" maxlength="355" rendered="#{subjectAltNameFieldAndData.renderRegex}"
 							value="#{subjectAltNameFieldAndData.fieldValue}"
 							title="Must match format specified in profile. / Technical detail - the regex is #{subjectAltNameFieldAndData.regex}"
 							label = "#{subjectAltNameFieldAndData.label}"
@@ -357,18 +383,20 @@
 				<h:panelGroup />
 
 				<c:forEach items="#{resourceBean.subjectDirAttrFieldDatas}"
-					var="subjectDirAttrFieldNameAndData">
+					var="subjectDirAttrFieldNameAndData" varStatus="subjectDirAttr" >
 
 					<h:panelGroup>
-						<h:outputLabel value="#{subjectDirAttrFieldNameAndData.label}" />
+						<h:outputLabel id="labelSDA${subjectDirAttr.index + 1}" value="#{subjectDirAttrFieldNameAndData.label}" />
 					</h:panelGroup>
 
 					<h:outputLabel
+						id="oneOptionSDA${subjectDirAttr.index + 1}"
 						rendered="#{!subjectDirAttrFieldNameAndData.modifiable and fn:length(subjectDirAttrFieldNameAndData.options) == 1}"
 						value="#{subjectDirAttrFieldNameAndData.fieldValue}"
 						style="font-weight:bold" />
 
 					<h:selectOneMenu
+						id="multiOptionsSDA${subjectDirAttr.index + 1}"
 						rendered="#{!subjectDirAttrFieldNameAndData.modifiable and fn:length(subjectDirAttrFieldNameAndData.options) > 1}"
 						value="#{subjectDirAttrFieldNameAndData.fieldValue}"
 						disabled="#{!resourceBean.allowedToAddEndEntity}">
@@ -378,6 +406,7 @@
 					<h:panelGroup
 						rendered="#{subjectDirAttrFieldNameAndData.modifiable}">
 						<h:inputText size="20" maxlength="255"
+							id="inputTextSDA${subjectDirAttr.index + 1}"
 							value="#{subjectDirAttrFieldNameAndData.fieldValue}"
 							readonly="#{!resourceBean.allowedToAddEndEntity}"
 							required="#{subjectDirAttrFieldNameAndData.required}"
@@ -400,7 +429,7 @@
 				<h:panelGroup />
 
 
-				<h:outputLabel for="selectedCertProfile"
+				<h:outputLabel for="selectedCertProfile" id= "selectedCertProfileLabel"
 					value="#{web.text.CERTIFICATEPROFILE}" style="font-size:1.2em;" />
 
 				<h:panelGroup id="selectedCertProfile">
@@ -411,7 +440,7 @@
 					</h:selectOneMenu>
 				</h:panelGroup>
 				
-				<h:outputLabel for="selectedCa"
+				<h:outputLabel for="selectedCa" id="selectedCaLabel"
 					value="#{web.text.CA}" style="font-size:1.2em;" />
 
 				<h:panelGroup id="selectedCa">
@@ -421,7 +450,7 @@
 					</h:selectOneMenu>
 				</h:panelGroup>
 
-				<h:outputLabel value="#{web.text.TOKEN}" style="font-size:1.2em;" />
+				<h:outputLabel id="tokenLabel" value="#{web.text.TOKEN}" style="font-size:1.2em;" />
 
 				<h:panelGroup id="token">
 					<h:selectOneMenu value="#{resourceBean.selectedTokenId}"
@@ -446,7 +475,7 @@
 
 				<h:panelGroup rendered="#{resourceBean.customSerialNumberUsed}">
 
-					<h:outputLabel value="#{web.text.CERT_SERIALNUMBER_HEXA}"
+					<h:outputLabel id="customSerialNumberLabel" value="#{web.text.CERT_SERIALNUMBER_HEXA}"
 						style="font-size:1.2em;" />
 					<br />
 					<h:outputLabel styleClass="help"
@@ -455,13 +484,13 @@
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.customSerialNumberUsed}">
-					<h:inputText size="20" maxlength="40"
+					<h:inputText size="20" maxlength="40" id="customSerialNumber"
 						title="#{web.text.FORMAT_HEXA}" class="hexa" value="#{resourceBean.customSerialNumber}" />
 				</h:panelGroup>
 
 
 				<h:panelGroup rendered="#{resourceBean.validityStartTimeUsed}">
-					<h:outputLabel value="#{web.text.TIMEOFSTART}"
+					<h:outputLabel value="#{web.text.TIMEOFSTART}" id="validityStartTimeUsedLabel"
 						style="font-size:1.2em;" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles.html#Certificate_Validity')}"
@@ -473,6 +502,7 @@
 
 				<h:panelGroup rendered="#{resourceBean.validityStartTimeUsed}">
 					<h:inputText size="25" maxlength="40"
+						id="validityStartTimeUsed"
 						title="#{resourceBean.validityTimeTitle}"
 						value="#{resourceBean.validityStartTimeValue}"
 						readonly="#{resourceBean.validityStartTimeReadOnly}"
@@ -481,7 +511,8 @@
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.validityEndTimeUsed}">
-					<h:outputLabel value="#{web.text.TIMEOFEND}"
+					<h:outputLabel value="#{web.text.TIMEOFEND}" 
+						id="validityEndTimeUsedLabel"
 						style="font-size:1.2em;" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles.html#Certificate_Validity')}"
@@ -493,6 +524,7 @@
 
 				<h:panelGroup rendered="#{resourceBean.validityEndTimeUsed}">
 					<h:inputText size="25" maxlength="40"
+						id="validityEndTimeUsed"
 						title="#{resourceBean.validityTimeTitle}"
 						value="#{resourceBean.validityEndTimeValue}"
 						readonly="#{resourceBean.validityEndTimeReadOnly}"
@@ -501,12 +533,16 @@
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.cardNumberUsed}">
-					<h:outputLabel value="#{web.text.CARDNUMBER}"
+					<h:outputLabel
+						id="cardNumberUsedLabel" 
+						value="#{web.text.CARDNUMBER}"
 						style="font-size:1.2em;" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.cardNumberUsed}">
-					<h:inputText size="20" maxlength="40"
+					<h:inputText 
+						id="cardNumberUsed" 
+						size="20" maxlength="40"
 						title="#{web.text.FORMAT_STRING}"
 						value="#{resourceBean.cardNumber}"
 						styleClass="#{resourceBean.cardNumberRequired ? 'mandatory' : ''}" />
@@ -515,7 +551,9 @@
 				<h:panelGroup
 					rendered="#{resourceBean.nameConstraintsPermittedUsed}">
 
-					<h:outputLabel value="#{web.text.EXT_PKIX_NC_PERMITTED}"
+					<h:outputLabel
+						id="nameConstraintsPermittedLabel" 
+						value="#{web.text.EXT_PKIX_NC_PERMITTED}"
 						style="font-size:1.2em;" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Name_Constraints')}"
@@ -529,15 +567,18 @@
 				<h:panelGroup
 					rendered="#{resourceBean.nameConstraintsPermittedUsed}">
 
-					<h:inputTextarea rows="4" cols="38"
+					<h:inputTextarea
+						id="nameConstraintsPermitted" 
+						rows="4" cols="38"
 						styleClass="#{resourceBean.nameConstraintsPermittedRequired ? 'mandatory' : ''}"
 						value="#{resourceBean.nameConstraintsPermitted}" />
-
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.nameConstraintsExcludedUsed}">
 
-					<h:outputLabel value="#{web.text.EXT_PKIX_NC_EXCLUDED}"
+					<h:outputLabel
+						id="nameConstraintsExcludedLabel" 
+						value="#{web.text.EXT_PKIX_NC_EXCLUDED}"
 						style="font-size:1.2em;" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/CA_Fields.html#Name_Constraints')}"
@@ -545,17 +586,16 @@
 					<br />
 					<h:outputLabel styleClass="help"
 						value="#{resourceBean.nameConstraintsExcludedHelpText}" />
-
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.nameConstraintsExcludedUsed}">
 
-					<h:inputTextarea rows="4" cols="38"
+					<h:inputTextarea
+						id="nameConstraintsExcluded" 
+						rows="4" cols="38"
 						styleClass="#{resourceBean.nameConstraintsExcludedRequired ? 'mandatory' : ''}"
 						value="#{resourceBean.nameConstraintsExcluded}" />
-
 				</h:panelGroup>
-
 
 				<h:panelGroup rendered="#{resourceBean.useExtensionData}">
 					<h:outputLabel value="#{web.text.CERT_EXTENSIONDATA}"
@@ -569,66 +609,69 @@
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
-
-					<h:outputLabel value="#{web.text.PSD2_NCANAME}"
+					<h:outputLabel
+						id="psd2NcaNameLabel" 
+						value="#{web.text.PSD2_NCANAME}"
 						style="font-size:1.2em;" />
-
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
 
-					<h:inputText size="30" maxlength="256"
+					<h:inputText 
+						id="psd2NcaName" 
+						size="30" maxlength="256"
 						value="#{resourceBean.psd2NcaName}" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
-
-					<h:outputLabel value="#{web.text.PSD2_NCAID}"
+					<h:outputLabel
+						id="psd2NcaIdLabel" 
+						value="#{web.text.PSD2_NCAID}"
 						style="font-size:1.2em;" />
-
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
-
-					<h:inputText size="30" maxlength="256"
+					<h:inputText
+						id="psd2NcaId" 
+						size="30" maxlength="256"
 						value="#{resourceBean.psd2NcaId}" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
-
-					<h:outputLabel value="#{web.text.PSD2_PSP_ROLES}"
+					<h:outputLabel 
+						id="psd2PspRolesLabel"
+						value="#{web.text.PSD2_PSP_ROLES}"
 						style="font-size:1.2em;" />
-
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
-
-					<h:selectManyListbox value="#{resourceBean.psd2PspRoles}" size="4"
+					<h:selectManyListbox
+						id="psd2PspRoles"
+						value="#{resourceBean.psd2PspRoles}" size="4"
 						styleClass="select-list">
 						<f:selectItems value="#{resourceBean.availablePsd2PspRoles}" />
 					</h:selectManyListbox>
-
 				</h:panelGroup>
 
 				<h:panelGroup
 					rendered="#{resourceBean.cabfOrganizationIdentifierUsed}">
-
-					<h:outputLabel value="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER}"
+					<h:outputLabel
+						id="cabFOrganizationIdLabel" 
+						value="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER}"
 						style="font-size:1.2em;" />
-
 				</h:panelGroup>
 
 				<h:panelGroup
 					rendered="#{resourceBean.cabfOrganizationIdentifierUsed}">
-
-					<h:inputText size="30" maxlength="256"
+					<h:inputText
+						id="cabFOrganizationId" 
+						size="30" maxlength="256"
 						value="#{resourceBean.cabfOrganizationIdentifier}"
 						readonly="#{resourceBean.cabfOrganizationIdentifierReadOnly}"
 						title="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER_FORMAT}"
 						styleClass="#{resourceBean.cabfOrganizationIdentifierRequired ? 'mandatory' : ''}">
 						<f:validateRegex pattern="[A-Z0-9]{5,5}(\+[A-Z0-9]+)?-.+" />
 					</h:inputText>
-
 				</h:panelGroup>
 			</h:panelGrid>
 
@@ -646,18 +689,23 @@
 				
 				<h:panelGroup rendered="#{resourceBean.allowedRequestsUsed}">
 				<h:outputLabel 
+					id="allowedRequestsLabel"
 					value="#{web.text.ALLOWEDREQUESTS}" style="font-size:1.2em;" />
 				</h:panelGroup>
-				<h:panelGroup id="allowedRequests" rendered="#{resourceBean.allowedRequestsUsed}">
-					<h:selectOneMenu value="#{resourceBean.numberOfRequests}" 
+				<h:panelGroup  
+					rendered="#{resourceBean.allowedRequestsUsed}">
+					<h:selectOneMenu 
+						id="allowedRequests"
+						value="#{resourceBean.numberOfRequests}" 
 						disabled="#{!resourceBean.allowedToAddEndEntity}">
 						<f:selectItems value="#{resourceBean.allowedRequests}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
 				
 				<h:panelGroup rendered="#{resourceBean.useKeyRecovery}">
-
-					<h:outputLabel value="#{web.text.KEYRECOVERABLE}"
+					<h:outputLabel
+						id="useKeyRecoveryLabel" 
+						value="#{web.text.KEYRECOVERABLE}"
 						style="font-size:1.2em;" />
 					<h:outputText
 						value="#{web.ejbcaWebBean.getHelpReference('/Key_Recovery.html')}"
@@ -671,7 +719,7 @@
 				</h:panelGroup>
 				
 				<h:panelGroup rendered="#{resourceBean.useIssuanceRevocationReason}">
-				<h:outputLabel 
+				<h:outputLabel id="useIssuanceRevocationReasonLabel"
 					value="#{web.text.ISSUANCEREVOCATIONREASON}" style="font-size:1.2em;" />
 				</h:panelGroup>
 				<h:panelGroup id="useIssuanceRevocationReason" rendered="#{resourceBean.useIssuanceRevocationReason}">
@@ -681,10 +729,9 @@
 					</h:selectOneMenu>
 				</h:panelGroup>
 
-
 				<h:panelGroup rendered="#{resourceBean.useSendNotification}">
-
-					<h:outputLabel value="#{web.text.SENDNOTIFICATION}"
+					<h:outputLabel id="useSendNotificationLabel"
+						value="#{web.text.SENDNOTIFICATION}"
 						style="font-size:1.2em;" />
 				</h:panelGroup>
 				<h:panelGroup rendered="#{resourceBean.useSendNotification}">
@@ -694,10 +741,8 @@
 					<h:outputLabel value="#{web.text.ACTIVATE}" for="useSendNotification" />
 				</h:panelGroup>
 
-
 				<h:panelGroup rendered="#{resourceBean.usePrintingEnabled}">
-
-					<h:outputLabel value="#{web.text.PRINTUSERDATA}"
+					<h:outputLabel id="usePrintingLabel" value="#{web.text.PRINTUSERDATA}"
 						style="font-size:1.2em;" />
 				</h:panelGroup>
 				<h:panelGroup rendered="#{resourceBean.usePrintingEnabled}">
