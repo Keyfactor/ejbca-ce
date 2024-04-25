@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.ejb.EJB;
@@ -54,6 +55,7 @@ import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.DeltaCrlException;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -71,6 +73,8 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CAFunctionsMBean.class);
+    /** Don't spend more than 5 minutes on archiving expired certificates here. */
+    private static final long MAX_CRL_ARCHIVAL_SECS = 5 * 60;
 
     @EJB
     private CaSessionLocal caSession;
@@ -441,7 +445,7 @@ public class CAFunctionsMBean extends BaseManagedBean implements Serializable {
 
     public void createNewCrl(final int caid) throws CAOfflineException {
         try {
-            publishingCrlSession.forceCRL(getAdmin(), caid);
+            publishingCrlSession.forceCRL(getAdmin(), caid, new CrlCreationParams(MAX_CRL_ARCHIVAL_SECS, TimeUnit.SECONDS));
             refreshCaGuiInfos();
         } catch (final CADoesntExistsException | AuthorizationDeniedException e) {
             throw new IllegalStateException(e);

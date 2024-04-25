@@ -134,7 +134,10 @@ public abstract class ScepTestBase {
     protected abstract String getResourceScep();
     
     protected byte[] sendGetCACapsRequest(final String caname, final int expectedStatusCode) throws IOException {
-        final String reqUrl = httpReqPath + '/' + getResourceScep() + "?operation=GetCACaps&message=" + URLEncoder.encode(caname, "UTF-8");
+        String reqUrl = httpReqPath + '/' + getResourceScep() + "?operation=GetCACaps";
+        if (caname != null) {
+            reqUrl += ("&message=" + URLEncoder.encode(caname, "UTF-8"));
+        }
         final URL url = new URL(reqUrl);
         final HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
@@ -212,7 +215,7 @@ public abstract class ScepTestBase {
             con.connect();
         }
 
-        assertEquals("Response code", responseCode, con.getResponseCode());
+        assertEquals("Response code was not correct", responseCode, con.getResponseCode());
         // Some appserver (Weblogic) responds with
         // "application/x-pki-message; charset=UTF-8"
         if (responseCode == HttpServletResponse.SC_OK) {

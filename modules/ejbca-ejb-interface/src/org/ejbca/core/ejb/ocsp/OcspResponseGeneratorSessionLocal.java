@@ -33,23 +33,6 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
 
     String healthCheck();
 
-    /**
-     * Returns the OCSP response with the latest 'nextUpdate' given CA and serial number.
-     *
-     * @param caId of the CA which signed the OCSP response
-     * @param serialNumber of the certificate which the OCSP response represents
-     * @return OCSP data for the caId and serialNubmer, null if no such data.
-     */
-    boolean isOcspExists(Integer caId, String serialNumber);
-
-    /**
-     * Deletes all the OCSP data from table corresponding to caId and serialNumber.
-     *
-     * @param caId certificate authority identifier.
-     * @param serialNumber of the certificate which the OCSP response represents
-     */
-    void deleteOcspDataByCaIdSerialNumber(final int caId, final String serialNumber);
-
     /** @see org.cesecore.certificates.ocsp.cache.OcspRequestSignerStatusCache#flush() */
     void clearOcspRequestSignerRevocationStatusCache();
 
@@ -62,9 +45,10 @@ public interface OcspResponseGeneratorSessionLocal extends OcspResponseGenerator
      *
      * @param cacert of the CA which signs the OCSP response
      * @param serialNr of the certificate to produce a response for.
-     * @param issueFinalResponse TODO
+     * @param presignResponseValidity causes the validity of the response to be set to 9999. WARNING: This should only be used in the ETSI EN 319 411-2 and -1 usecase. 
      * @param includeExpiredCertificates to include expired certificates in presigned OCSP responses
      * @param certIDHashAlgorithm of the certId
      */
-    void preSignOcspResponse(X509Certificate cacert, BigInteger serialNr, boolean issueFinalResponse, boolean includeExpiredCertificates, String certIDHashAlgorithm);
+    void preSignOcspResponse(X509Certificate cacert, BigInteger serialNr, PresignResponseValidity presignResponseValidity, boolean includeExpiredCertificates, String certIDHashAlgorithm);
+
 }

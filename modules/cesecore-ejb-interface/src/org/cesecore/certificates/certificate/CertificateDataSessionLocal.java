@@ -39,6 +39,9 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     List<CertificateData> findBySubjectDN(String subjectDN);
 
     /** @return return the query results as a List. */
+    List<Certificate> findActiveBySubjectDnAndType(final String subjectDN, final Collection<Integer> certificateTypes);
+
+    /** @return return the query results as a List. */
     List<CertificateData> findBySerialNumber(String serialNumber);
 
     /** @return return the query results as a List. */
@@ -78,7 +81,7 @@ public interface CertificateDataSessionLocal extends CertificateDataSession {
     
     /**
      * 
-     * @param issuerDN of the issing CA to find entries for
+     * @param issuerDN of the issuing CA to find entries for
      * @param limit maximum number of results
      * @param offset starting offset. E.g. if previous 'limit' was 100. Next results will be available at 'offset' 100
      * @return the query results as a List<String>
