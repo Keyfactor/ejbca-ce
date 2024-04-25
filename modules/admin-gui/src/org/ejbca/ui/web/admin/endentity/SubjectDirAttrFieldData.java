@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.endentityprofiles;
+package org.ejbca.ui.web.admin.endentity;
 
 import org.apache.commons.lang3.StringUtils;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -86,13 +86,13 @@ public class SubjectDirAttrFieldData extends SubjectFieldData {
     }
 
     private void validateGender(String fieldValue) throws AddEndEntityException {
-        if (!AddEndEntityUtil.validateGender(fieldValue)) {
+        if (!AddEndEntityUtil.isValidGender(fieldValue)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYMORFINGENDERFIELD") + " " + getLabel());
         }
     }
     
     private void validateDOB(String fieldValueToSave) throws AddEndEntityException {
-        if (!AddEndEntityUtil.validateDateOfBirth(fieldValueToSave)) {
+        if (!AddEndEntityUtil.isValidDateOfBirth(fieldValueToSave)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDDATEOFBIRTH") + " " + getLabel());
         }
     }

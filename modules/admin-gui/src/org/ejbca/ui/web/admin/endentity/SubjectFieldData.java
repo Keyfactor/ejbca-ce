@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.endentityprofiles;
+package org.ejbca.ui.web.admin.endentity;
 
 import org.ejbca.ui.web.admin.rainterface.UserView;
 

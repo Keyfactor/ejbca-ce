@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.endentityprofiles;
+package org.ejbca.ui.web.admin.endentity;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -288,7 +288,8 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             if (EndEntityProfile.isFieldImplemented(fieldType)) {
                 final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
                 
-                SubjectAltNameFieldData subjectAltNameFieldData = new SubjectAltNameFieldData.Builder(label, modifiable, required, fieldValue)
+                SubjectAltNameFieldData subjectAltNameFieldData = new SubjectAltNameFieldData.Builder(label, modifiable, required)
+                        .withFieldValue(fieldValue)
                         .withRFC822Name(isRFC822Name)
                         .withUseDataFromRFC822NameField(useDataFromRFC822NameField && required)
                         .withRenderUseDataFromRFC822NameField(useDataFromRFC822NameField)
@@ -1053,23 +1054,16 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         // User view initialization
         UserView newUserView = new UserView();
         newUserView.setEndEntityProfileId(selectedEeProfileId);
-        
-        newUserView = checkAndSetExtednedInformation(newUserView);
+        newUserView = checkAndSetExtendedInformation(newUserView);
 
-        try {
+        try { // Fields require validation
             newUserView = checkAndSetUserNameAndPassword(newUserView);
-        } catch (AddEndEntityException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
-            return;
-        }
-        try {
             newUserView = checkAndSetLoginAttempts(newUserView);
-        } catch (AddEndEntityException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
-            return;
-        }
-
-        try {
+            newUserView = checkAndSetSubjectDN(newUserView);
+            newUserView = checkAndSetSubjectAltName(newUserView);
+            newUserView = checkAndSetSubjectDirName(newUserView);
+            newUserView = checkAndSetMainCertificateData(newUserView);
+            newUserView = checkAndSetCustomSerialNumber(newUserView);
             if (checkAndSetUserEmail(newUserView).isPresent()) {
                 newUserView = checkAndSetUserEmail(newUserView).get();
             } else {
@@ -1081,61 +1075,20 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         }
         
         newUserView = checkAndSetCardNumber(newUserView);
-
-        try {
-            newUserView = checkAndSetSubjectDN(newUserView);
-        } catch (AddEndEntityException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
-            return;
-        }
-
-        try {
-            newUserView = checkAndSetSubjectAltName(newUserView);
-        } catch (AddEndEntityException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
-            return;
-        }
-        
-        try {
-            newUserView = checkAndSetSubjectDirName(newUserView);
-        } catch (AddEndEntityException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
-            return;
-        }
-
         newUserView = checkAndSetMaxNumberOfRequests(newUserView);
-
         newUserView.setKeyRecoverable(keyRecoveryCheckboxStatus.left);
         newUserView.setSendNotification(sendNotification);
         newUserView.setPrintUserData(usePrinting);
-
         newUserView = checkAndSetRevokationReason(newUserView);
-
-        try {
-            newUserView = checkAndSetMainCertificateData(newUserView);
-        } catch (AddEndEntityException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
-            return;
-        }
-
         newUserView = checkAndSetValidityTimes(newUserView);
-        try {
-            newUserView = checkAndSetCustomSerialNumber(newUserView);
-        } catch (AddEndEntityException e) {
-            addNonTranslatedErrorMessage(e.getMessage());
-            return;
-        }
-
         newUserView = checkAndSetPsd2QcStatement(newUserView);
-
         newUserView = checkAndSetCabfOrgId(newUserView);
-
         newUserView = checkAndSetNameConstraints(newUserView);
 
         finallyCreateUser(newUserView);
     }
 
-    private UserView checkAndSetExtednedInformation(UserView newUserView) {
+    private UserView checkAndSetExtendedInformation(UserView newUserView) {
         if (getExtensionData() != null) {
             ExtendedInformation ei = newUserView.getExtendedInformation();
             if (ei == null) {
@@ -1460,7 +1413,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 value = handleEmailCase(fieldData, newUserView);
             } else {
                 value = subjectDnFieldAndData.getFieldValue();
-                subjectDnFieldAndData.validateFieldValue(value, fieldData);
             }
             
             if (StringUtils.isNotBlank(value)) {
@@ -1574,15 +1526,18 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         if (ei == null) {
             ei = new ExtendedInformation();
         }
-        try {
-            Integer.parseInt(getMaxLoginAttempts());
-        } catch (NumberFormatException e) {
-            throw new AddEndEntityException("Malformed number for max login attempts!");
+
+        if (StringUtils.isNotBlank(getMaxLoginAttempts())) {
+            try {
+                Integer.parseInt(getMaxLoginAttempts());
+            } catch (NumberFormatException e) {
+                throw new AddEndEntityException("Malformed number for max login attempts!");
+            }
+            ei.setMaxLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
+            ei.setRemainingLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
+            newUserView.setExtendedInformation(ei);
         }
-        ei.setMaxLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
-        ei.setRemainingLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
-        newUserView.setExtendedInformation(ei);
-        
+
         return newUserView;
     }
 
@@ -1597,7 +1552,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         }
 
         if (StringUtils.isNotBlank(getUserName())) {
-            if(!selectedEeProfile.isAutoGeneratedUsername() && !AddEndEntityUtil.validateDNField(getUserName())) {
+            if(!selectedEeProfile.isAutoGeneratedUsername() && !AddEndEntityUtil.isValidDNField(getUserName())) {
                 throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getEjbcaWebBean().getText("USERNAME"));
             }
             
