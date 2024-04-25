@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.endentityprofiles;
+package org.ejbca.ui.web.admin.endentity;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -103,9 +103,10 @@ public class SubjectDnFieldData extends SubjectFieldData {
     }
 
     @Override
-    protected String getFieldValueToSave(UserView userView, int[] fieldData) {
+    protected String getFieldValueToSave(UserView userView, int[] fieldData) throws AddEndEntityException {
         String fieldValueToSave = StringUtils.EMPTY;
 
+        validateFieldValue(fieldValueToSave, fieldData);
         fieldValueToSave = LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),
                 DNFieldExtractor.TYPE_SUBJECTDN) + fieldValueToSave);
         return fieldValueToSave.trim();
@@ -114,7 +115,7 @@ public class SubjectDnFieldData extends SubjectFieldData {
     @Override
     protected void validateFieldValue(String fieldValueToSave, int[] fieldData) throws AddEndEntityException {
         if (!isEmailAndUsesEmailFieldData.left && isModifiable() && StringUtils.isNotBlank(fieldValueToSave)
-                && (!AddEndEntityUtil.validateDNField(fieldValueToSave))) {
+                && (!AddEndEntityUtil.isValidDNField(fieldValueToSave))) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
 

@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.admin.endentityprofiles;
+package org.ejbca.ui.web.admin.endentity;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -38,32 +38,32 @@ public final class AddEndEntityUtil {
     private AddEndEntityUtil() {
     }
 
-    protected static boolean validateIPv6(final String ipv6) {
+    protected static boolean isValidIPv6(final String ipv6) {
         Pattern pattern = Pattern.compile(IPV6_REGEX);
         Matcher matcher = pattern.matcher(ipv6);
         return matcher.matches();
     }
 
-    protected static boolean validateIPv4(final String ipv4) {
+    protected static boolean isValidIPv4(final String ipv4) {
         Pattern pattern = Pattern.compile(IPV4_REGEX);
         Matcher matcher = pattern.matcher(ipv4);
         return matcher.matches();
     }
     
-    protected static boolean validateDNField(final String value) {
+    protected static boolean isValidDNField(final String value) {
         Pattern pattern = Pattern.compile(LEGAL_CHARS_REGEX);
         Matcher matcher = pattern.matcher(value);
         return matcher.matches();
         
     }
     
-    protected static boolean validateGender(final String gender) {
+    protected static boolean isValidGender(final String gender) {
         Pattern pattern = Pattern.compile(GENDER_REGEX);
         Matcher matcher = pattern.matcher(gender);
         return matcher.matches();
     }
     
-    protected static boolean validateDateOfBirth(final String birthDate) {
+    protected static boolean isValidDateOfBirth(final String birthDate) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_OF_BIRTH_REGEX);
 
         try {
