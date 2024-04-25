@@ -290,7 +290,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 
                 SubjectAltNameFieldData subjectAltNameFieldData = new SubjectAltNameFieldData.Builder(label, modifiable, required, fieldValue)
                         .withRFC822Name(isRFC822Name)
-                        .withUseDataFromRFC822NameField(useDataFromRFC822NameField)
+                        .withUseDataFromRFC822NameField(useDataFromRFC822NameField && required)
                         .withRenderUseDataFromRFC822NameField(useDataFromRFC822NameField)
                         .withUpn(isUpn)
                         .withCopyDataFromCN(copyDataFromCN)
@@ -347,7 +347,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             
             SubjectDnFieldData subjectDnFieldData = new SubjectDnFieldData.Builder(label, modifiable, required)
-                    .withIsEmail(isEmailAddress)
+                    .withIsEmailAndUsesEmailFieldData(new MutablePair<>(isEmailAddress, required))
                     .withOptions(options)
                     .withValue(fieldValue)
                     .withRegex(regex)
@@ -1456,7 +1456,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             String value = null;
             int[] fieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
 
-            if (subjectDnFieldAndData.isEmail()) {
+            if (subjectDnFieldAndData.getIsEmailAndUsesEmailFieldData().left) {
                 value = handleEmailCase(fieldData, newUserView);
             } else {
                 value = subjectDnFieldAndData.getFieldValue();
