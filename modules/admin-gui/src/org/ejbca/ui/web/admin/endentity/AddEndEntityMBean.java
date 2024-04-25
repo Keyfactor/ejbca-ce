@@ -524,9 +524,9 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.keyRecoveryCheckboxStatus.setLeft(selectedTokenId != SecConst.TOKEN_SOFT_BROWSERGEN && selectedEeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0));
         this.keyRecoveryCheckboxStatus.setRight(selectedEeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE,0));
         
-        final String issuacneRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
-        if ((issuacneRevocationReason != null) && ((issuacneRevocationReason).length() > 0)) {
-            setRevocationStatus((Integer.parseInt(issuacneRevocationReason)));
+        final String issuanceRevocationReason = selectedEeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+        if ((issuanceRevocationReason != null) && ((issuanceRevocationReason).length() > 0)) {
+            setRevocationStatus((Integer.parseInt(issuanceRevocationReason)));
         }
         composeSubjectDnFieldsAndData();
         composeSubjectAltNameFieldAndData();
