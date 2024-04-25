@@ -221,7 +221,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
             JWTClaimsSet claims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Access token Claims:" + claims);
+                LOG.debug("Token Claims:" + claims);
             }
 
             if (!verifyOauth2Audience(keyInfo, claims)) {
