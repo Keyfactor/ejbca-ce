@@ -1508,12 +1508,15 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         }
     }
 
-    private Optional<UserView> handleEmailUserNameNotEmptyCase(UserView newUserView) {
+    private Optional<UserView> handleEmailUserNameNotEmptyCase(UserView newUserView) throws AddEndEntityException {
         String emailDomain = getSelectedEmailDomain();
 
         if (emailDomain != null) {
             emailDomain = emailDomain.trim();
             if (!emailDomain.equals("")) {
+                if (!AddEndEntityUtil.isValidDNField(emailDomain) || !AddEndEntityUtil.isValidDNField(emailUserName)) {
+                    throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " Email.");
+                }
                 newUserView.setEmail(emailUserName + "@" + emailDomain);
             } else {
                 addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
@@ -1522,6 +1525,9 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         }
         emailDomain = getEmailDomain();
         if (emailDomain != null && (!emailDomain.equals(""))) {
+            if (!AddEndEntityUtil.isValidDNField(emailDomain) || !AddEndEntityUtil.isValidDNField(emailUserName)) {
+                throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " Email.");
+            }
             newUserView.setEmail(emailUserName + "@" + emailDomain);
         }
         return Optional.of(newUserView);
