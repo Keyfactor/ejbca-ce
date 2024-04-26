@@ -112,8 +112,7 @@ public class SubjectDnFieldData extends SubjectFieldData {
 
     @Override
     protected void validateFieldValue(String fieldValueToSave, int[] fieldData) throws AddEndEntityException {
-        if (!isEmailAndUsesEmailFieldData.left && isModifiable() && StringUtils.isNotBlank(fieldValueToSave)
-                && (!AddEndEntityUtil.isValidDNField(fieldValueToSave))) {
+        if (!isEmailAndUsesEmailFieldData.left && isModifiable() && StringUtils.isNotBlank(fieldValueToSave) && !AddEndEntityUtil.isValidDNField(fieldValueToSave)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
 

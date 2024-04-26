@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
  */
 public final class AddEndEntityUtil {
     
-    private static final String LEGAL_CHARS_REGEX = "([A-Za-z0-9\\-\\_]+)";
-    
+    private static final String LEGAL_DN_CHARS_REGEX = "^[^~?`!|%$;\0\r\n]*$"; // Check cesecore.properties 
+    private static final String USERNAME_CHARS_REGEX = "^[^%$;?]*$";
     private static final String IPV4_REGEX =
             "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
     
@@ -51,10 +51,15 @@ public final class AddEndEntityUtil {
     }
     
     protected static boolean isValidDNField(final String value) {
-        Pattern pattern = Pattern.compile(LEGAL_CHARS_REGEX);
+        Pattern pattern = Pattern.compile(LEGAL_DN_CHARS_REGEX);
         Matcher matcher = pattern.matcher(value);
         return matcher.matches();
-        
+    }
+
+    protected static boolean isValidUserNameField(final String value) {
+        Pattern pattern = Pattern.compile(USERNAME_CHARS_REGEX);
+        Matcher matcher = pattern.matcher(value);
+        return matcher.matches();
     }
     
     protected static boolean isValidGender(final String gender) {
