@@ -28,14 +28,11 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
     private boolean isRfc822Name;
     private boolean useDataFromRFC822NameField;
     private boolean renderUseDataFromRFC822NameField;
-    private boolean isUpn;
     private boolean copyDataFromCN;
     private boolean isDnsName;
     private String rfcName;
     private String rfcDomain;
     private String[] options;
-    private String upnName;
-    private String upnDomain;
     private String regex;
     private String rfc822NameString;
 
@@ -53,14 +50,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
 
     public void setUseDataFromRFC822NameField(boolean useDataFromRFC822NameField) {
         this.useDataFromRFC822NameField = useDataFromRFC822NameField;
-    }
-
-    public boolean isUpn() {
-        return isUpn;
-    }
-
-    public void setUpn(boolean isUpn) {
-        this.isUpn = isUpn;
     }
 
     public boolean isCopyDataFromCN() {
@@ -103,22 +92,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         this.options = options;
     }
 
-    public String getUpnName() {
-        return upnName;
-    }
-
-    public void setUpnName(String upnName) {
-        this.upnName = upnName;
-    }
-
-    public String getUpnDomain() {
-        return upnDomain;
-    }
-
-    public void setUpnDomain(String upnDomain) {
-        this.upnDomain = upnDomain;
-    }
-
     public String getRegex() {
         return regex;
     }
@@ -132,15 +105,12 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         this.isRfc822Name = builder.isRfc822Name;
         this.isDnsName = builder.isDnsName;
         this.copyDataFromCN = builder.copyDataFromCN;
-        this.isUpn = builder.isUpn;
         this.options = builder.options;
         this.regex = builder.regex;
         this.renderUseDataFromRFC822NameField = builder.renderUseDataFromRFC822NameField;
         this.rfc822NameString = builder.rfc822NameString;
         this.rfcDomain = builder.rfcDomain;
         this.rfcName = builder.rfcName;
-        this.upnDomain = builder.upnDomain;
-        this.upnName = builder.upnName;
         this.useDataFromRFC822NameField = builder.useDataFromRFC822NameField;
     }
 
@@ -151,14 +121,11 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         private boolean isRfc822Name;
         private boolean useDataFromRFC822NameField;
         private boolean renderUseDataFromRFC822NameField;
-        private boolean isUpn;
         private boolean copyDataFromCN;
         private boolean isDnsName;
         private String rfcName;
         private String rfcDomain;
         private String[] options;
-        private String upnName;
-        private String upnDomain;
         private String regex;
         private String rfc822NameString;
         private String fieldValue;
@@ -176,11 +143,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
 
         public Builder withUseDataFromRFC822NameField(boolean useDataFromRFC822NameField) {
             this.useDataFromRFC822NameField = useDataFromRFC822NameField;
-            return this;
-        }
-
-        public Builder withUpn(boolean isUpn) {
-            this.isUpn = isUpn;
             return this;
         }
 
@@ -206,16 +168,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
 
         public Builder withOptions(String[] options) {
             this.options = options;
-            return this;
-        }
-
-        public Builder withUpnName(String upnName) {
-            this.upnName = upnName;
-            return this;
-        }
-
-        public Builder withUpnDomain(String upnDomain) {
-            this.upnDomain = upnDomain;
             return this;
         }
 
@@ -276,24 +228,14 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
                 if (StringUtils.isBlank(emailFromProfile)) {
                     throw new AddEndEntityException("RFC822Name field required but not set in profile.");
                 }
-                return emailFromProfile;
+                fieldValueToSave = emailFromProfile;
             } else if (StringUtils.isNotBlank(rfcName) && StringUtils.isNotBlank(rfcDomain)) {
                 fieldValueToSave = rfcName + "@" + rfcDomain;
             }
         } else {
-            if (isUpn) {
-                if (StringUtils.isNotBlank(upnName) && StringUtils.isNotBlank(upnDomain)) {
-                    fieldValueToSave = upnName + "@" + upnDomain;
-
-                } else if (StringUtils.isNotBlank(upnDomain)) {
-                    fieldValueToSave = "@" + upnDomain;
-                }
-            } else {
-                if (StringUtils.isNotBlank(getFieldValue())) {
-                    fieldValueToSave = getFieldValue().trim();
-                }
+            if (StringUtils.isNotBlank(getFieldValue())) {
+                fieldValueToSave = getFieldValue().trim();
             }
-
         }
 
         if (StringUtils.isNotBlank(fieldValueToSave)) {
@@ -319,13 +261,20 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             return;
         }
 
-        if (isUpn && StringUtils.isNotBlank(upnName) && !AddEndEntityUtil.isValidDNField(upnName)) {
-            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
+        if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
+            validateUpn(fieldValueToSave);
+            return;
         }
 
         // Skip SIM and hand over validation to EE profile
-        if (isModifiable() && !isUpn && !AddEndEntityUtil.isValidDNField(fieldValueToSave) && !EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
+        if (isModifiable() && !AddEndEntityUtil.isValidDNField(fieldValueToSave) && !EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
+        }
+    }
+
+    private void validateUpn(String fieldValueToSave) throws AddEndEntityException {
+        if (!AddEndEntityUtil.isValidMsUpn(fieldValueToSave)) {
+            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDUPN") + " " + getLabel());
         }
     }
 
