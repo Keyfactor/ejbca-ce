@@ -23,8 +23,10 @@ import java.util.regex.Pattern;
  */
 public final class AddEndEntityUtil {
     
-    private static final String LEGAL_DN_CHARS_REGEX = "^[^~?`!|%$;\0\r\n]*$"; // Check cesecore.properties 
+    private static final String LEGAL_DN_CHARS_REGEX = "^[^~?`!|%$;\0\r\n]*$"; // Excluding disallowed DN characters, see cesecore.properties 
     private static final String USERNAME_CHARS_REGEX = "^[^%$;?]*$";
+    private static final String OID_REGEX = "^([0-2])((\\.0)|(\\.[1-9][0-9]*))*$";
+    
     private static final String IPV4_REGEX =
             "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
     
@@ -38,6 +40,12 @@ public final class AddEndEntityUtil {
     private AddEndEntityUtil() {
     }
 
+    protected static boolean isValidOID(final String oid) {
+        Pattern pattern = Pattern.compile(OID_REGEX);
+        Matcher matcher = pattern.matcher(oid);
+        return matcher.matches();
+    }
+    
     protected static boolean isValidIPv6(final String ipv6) {
         Pattern pattern = Pattern.compile(IPV6_REGEX);
         Matcher matcher = pattern.matcher(ipv6);

@@ -313,6 +313,11 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             validateIPAddrValue(fieldValueToSave);
             return;
         }
+        
+        if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.REGISTEREDID)) {
+            validateOid(fieldValueToSave);
+            return;
+        }
 
         if (isUpn && StringUtils.isNotBlank(upnName) && !AddEndEntityUtil.isValidDNField(upnName)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
@@ -321,6 +326,12 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         // Skip SIM and hand over validation to EE profile
         if (isModifiable() && !isUpn && !AddEndEntityUtil.isValidDNField(fieldValueToSave) && !EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
+        }
+    }
+
+    private void validateOid(String fieldValueToSave) throws AddEndEntityException {
+        if (!AddEndEntityUtil.isValidOID(fieldValueToSave)) {
+            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDOID") + " " + getLabel());
         }
     }
 
