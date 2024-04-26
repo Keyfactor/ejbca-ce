@@ -1074,7 +1074,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             final boolean required = selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean isRFC822Name = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
             final boolean useDataFromRFC822NameField = selectedEeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
-            final boolean isUpn = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN);
             final boolean copyDataFromCN = selectedEeProfile.getCopy(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean isDnsName = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
             String[] options = null;
@@ -1082,8 +1081,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             String regex = null;
             String rfcName = null;
             String rfcDomain = null;
-            String upnName = null;
-            String upnDomain = null;
             String rfc822NameString = null;
 
             // Handle RFC822NAME separately
@@ -1105,10 +1102,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 options = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
                         .split(EndEntityProfile.SPLITCHAR);
 
-                if (isUpn && (options.length == 1)) {
-                    upnDomain = options[0].trim();
-                }
-                if (isUpn && options.length == 0 && copyDataFromCN) {
+                if (options.length == 0 && copyDataFromCN) {
                     fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
                 } else {
 
@@ -1127,14 +1121,11 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                         .withRFC822Name(isRFC822Name)
                         .withUseDataFromRFC822NameField(useDataFromRFC822NameField && required)
                         .withRenderUseDataFromRFC822NameField(useDataFromRFC822NameField)
-                        .withUpn(isUpn)
                         .withCopyDataFromCN(copyDataFromCN)
                         .withDNSName(isDnsName)
                         .withRfcName(rfcName)
                         .withRfcDomain(rfcDomain)
                         .withOptions(options)
-                        .withUpnName(upnName)
-                        .withUpnDomain(upnDomain)
                         .withRegex(regex)
                         .withRfc822NameString(rfc822NameString)
                         .build();
