@@ -21,6 +21,7 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.IdentifiedRegion;
 
 public class IdentifiedRegionCountry implements ItsGeographicElement {
     
+    private static final long serialVersionUID = 1L;
     private ItsSupportedCountries country;
     
     public IdentifiedRegionCountry(ItsSupportedCountries country) {

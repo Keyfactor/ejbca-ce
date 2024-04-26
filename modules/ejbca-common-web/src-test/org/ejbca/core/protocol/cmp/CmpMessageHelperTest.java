@@ -49,7 +49,6 @@ import com.keyfactor.util.CryptoProviderTools;
 /**
  * JUnit tests for CmpMessageHelper.
  * 
- * @version $Id$
  */
 public class CmpMessageHelperTest {
 
@@ -301,7 +300,7 @@ public class CmpMessageHelperTest {
             fail();
         } catch (IllegalArgumentException e) {
             final String msg = e.getMessage();
-            assertEquals("string foobar not an OID", msg);
+            assertEquals("string foobar not a valid OID", msg);
         }
     }
 
@@ -346,7 +345,7 @@ public class CmpMessageHelperTest {
             fail();
         } catch (IllegalArgumentException e) {
             final String msg = e.getMessage();
-            assertEquals("string foobar not an OID", msg);
+            assertEquals("string foobar not a valid OID", msg);
         }
     }
 
