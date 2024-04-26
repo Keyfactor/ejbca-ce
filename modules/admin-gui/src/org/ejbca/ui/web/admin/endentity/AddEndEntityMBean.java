@@ -1010,6 +1010,10 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     public void setKeyRecoveryCheckboxStatus(MutablePair<Boolean, Boolean> keyRecoveryCheckboxStatus) {
         this.keyRecoveryCheckboxStatus = keyRecoveryCheckboxStatus;
     }
+    
+    public boolean isProfileEmailRequired() {
+        return selectedEeProfile.isEmailRequired();
+    }
 
     private void initUserData() throws EndEntityProfileNotFoundException, AddEndEntityException {
 
