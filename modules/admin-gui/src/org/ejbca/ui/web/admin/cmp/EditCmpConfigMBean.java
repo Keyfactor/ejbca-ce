@@ -58,7 +58,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
             "SN", "givenName", "initials", "surname", "title", "unstructuredAddress", "unstructuredName", "postalCode",
             "businessCategory", "dnQualifier", "postalAddress", "telephoneNumber", "pseudonym", "streetAddress", "name",
             "role", "CIF", "NIF",
-            "VID", "PID", "RCACID", "ICACID", "NODEID", "FABRICID", "NOCCAT", "FirmwareSigningID", // Matter IoT
+            "VID", "PID", "NODEID", "FABRICID", "NOCCAT", "FirmwareSigningID", // Matter IoT
             "CertificationID");
 
     @EJB
