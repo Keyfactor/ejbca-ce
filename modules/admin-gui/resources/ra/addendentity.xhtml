@@ -302,77 +302,26 @@
 						</h:selectOneMenu>
 					</h:panelGroup>
 
-					<h:panelGroup rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable}">
-						<h:inputText
-							id="upnName${subjecAltField.index + 1}"
-							rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn}"
-							value="#{subjectAltNameFieldAndData.upnName}"
-							size="20" maxlength="255"
-							label="#{subjectAltNameFieldAndData.label}"
-							required="#{subjectAltNameFieldAndData.required}"
-							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"								
-							readonly="#{!resourceBean.allowedToAddEndEntity}">
-						</h:inputText>
-						<h:outputText value="@" rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn}"/> 
-						<h:outputLabel
-							id="upnDomain${subjecAltField.index + 1}"
-							rendered="#{(!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn and fn:length(subjectAltNameFieldAndData.options) == 1)}"
-							value="#{subjectAltNameFieldAndData.upnDomain}"
-							style="font-weight:bold" />
-
+					<h:panelGroup rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and !subjectAltNameFieldAndData.copyDataFromCN}">
 						<h:outputLabel
 							id="altNameField${subjecAltField.index + 1}"
-							rendered="#{(!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and !subjectAltNameFieldAndData.upn and fn:length(subjectAltNameFieldAndData.options) == 1)}"
+							rendered="#{(!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) == 1)}"
 							value="#{subjectAltNameFieldAndData.fieldValue}"
 							style="font-weight:bold" />
-
-						<h:selectOneMenu
-							id="upnDomainSelectOne${subjecAltField.index + 1}"
-							rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn and fn:length(subjectAltNameFieldAndData.options) > 1}"
-							value="#{subjectAltNameFieldAndData.upnDomain}"
-							disabled="#{!resourceBean.allowedToAddEndEntity}">
-							<f:selectItems value="#{subjectAltNameFieldAndData.options}" />
-						</h:selectOneMenu>
 						
 						<h:selectOneMenu
 							id="subjectAltField${subjecAltField.index + 1}"
-							rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and !subjectAltNameFieldAndData.upn and fn:length(subjectAltNameFieldAndData.options) > 1}"
+							rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) > 1}"
 							value="#{subjectAltNameFieldAndData.fieldValue}"
 							disabled="#{!resourceBean.allowedToAddEndEntity}">
 							<f:selectItems value="#{subjectAltNameFieldAndData.options}" />
 						</h:selectOneMenu>
 						
-					</h:panelGroup>
-
-					<h:panelGroup
-						rendered="#{!subjectAltNameFieldAndData.rfc822Name and subjectAltNameFieldAndData.modifiable and subjectAltNameFieldAndData.upn}">
-
-						<h:inputText
-							id="upnNameInputText${subjecAltField.index + 1}"
-							size="20" maxlength="255"
-							value="#{subjectAltNameFieldAndData.upnName}"
-							required="#{subjectAltNameFieldAndData.required}"
-							label="#{subjectAltNameFieldAndData.label}"
-							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"								
-							readonly="#{!resourceBean.allowedToAddEndEntity}">
-						</h:inputText> @
-						<h:inputText 
-							id="upnDomainInputText${subjecAltField.index + 1}"
-							size="15" maxlength="255"
-							required="#{subjectAltNameFieldAndData.required}"
-							label="#{subjectAltNameFieldAndData.label}"
-							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"								
-							value="#{subjectAltNameFieldAndData.upnDomain}"
-							readonly="#{!resourceBean.allowedToAddEndEntity}">
-						</h:inputText>
 					</h:panelGroup>
 
 					<h:panelGroup
 						rendered="#{!subjectAltNameFieldAndData.rfc822Name and 
-									 subjectAltNameFieldAndData.modifiable and 
-									 !subjectAltNameFieldAndData.upn and 
-									 (subjectAltNameFieldAndData.copyDataFromCN and subjectAltNameFieldAndData.dnsName)}">
-
+									 subjectAltNameFieldAndData.copyDataFromCN}">
 						<h:selectBooleanCheckbox 
 							id="altNameDns"
 							value="true" disabled="true"/>
@@ -380,8 +329,9 @@
 					</h:panelGroup>
 
 					<h:panelGroup
-						rendered="#{!subjectAltNameFieldAndData.rfc822Name and subjectAltNameFieldAndData.modifiable and !subjectAltNameFieldAndData.upn
-						  and !(subjectAltNameFieldAndData.copyDataFromCN and subjectAltNameFieldAndData.dnsName)}">
+						rendered="#{!subjectAltNameFieldAndData.rfc822Name and 
+									 subjectAltNameFieldAndData.modifiable and 
+									 !subjectAltNameFieldAndData.copyDataFromCN}">
 						<h:inputText
 							id="subjectAltNameInputTextWithoutRegex${subjecAltField.index + 1}"
 							size="40" maxlength="355" rendered="#{!subjectAltNameFieldAndData.renderRegex}"
