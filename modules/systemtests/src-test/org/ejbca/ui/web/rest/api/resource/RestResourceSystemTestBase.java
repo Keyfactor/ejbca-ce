@@ -117,6 +117,7 @@ import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
 import org.jboss.resteasy.client.jaxrs.engines.ApacheHttpClient43Engine;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
@@ -241,6 +242,7 @@ public class RestResourceSystemTestBase {
     }
 
     public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProvider();
         backupProtocolConfiguration();
         enableRestProtocolConfiguration();
     }

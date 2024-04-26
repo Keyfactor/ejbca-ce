@@ -1748,4 +1748,7 @@ public interface RaMasterApi {
      * @since RA Master API version 18 (EJBCA 8.3.0)
      */
     String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber);
+
+    byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 }
