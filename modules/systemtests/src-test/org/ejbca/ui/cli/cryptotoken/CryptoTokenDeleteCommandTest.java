@@ -53,7 +53,6 @@ public class CryptoTokenDeleteCommandTest {
     @Before
     public void setup() throws Exception {
         final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenManagementSession.createCryptoToken(authenticationToken, CRYPTOTOKEN_NAME, SoftCryptoToken.class.getName(), cryptoTokenProperties,
                 null, null);
     }

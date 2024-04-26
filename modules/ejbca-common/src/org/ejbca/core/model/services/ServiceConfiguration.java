@@ -18,9 +18,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
+import org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorkerConstants;
 
 /**
  * Value class used for persist the worker, interval and action configurations
@@ -33,7 +35,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
     private static final long serialVersionUID = -3094484762673017432L;
     private static final Logger log = Logger.getLogger(ServiceConfiguration.class);
     
-	private static final float LATEST_VERSION = 6;
+	private static final float LATEST_VERSION = 7;
 	
 	private static final String INTERVALCLASSPATH = "INTERVALCLASSPATH";
 	private static final String INTERVALPROPERTIES = "INTERVALPROPERTIES";
@@ -234,7 +236,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 
             log.debug(LATEST_VERSION);
 			// We changed the names of properties between v1 and v2, so we have to upgrade a few of them
-            if (Float.compare(Float.valueOf(2), getVersion()) > 0) { // v2
+            if (Float.compare(2f, getVersion()) > 0) { // v2
 	            log.debug("Upgrading to version 2");
 				Properties prop = getWorkerProperties();
 				if (prop != null) {
@@ -287,30 +289,53 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 					setWorkerProperties(prop);
 				}
 				
-	            if (Float.compare(Float.valueOf(3), getVersion()) > 0) { // v3
+	            if (Float.compare(3f, getVersion()) > 0) { // v3
 		            log.debug("Upgrading to version 3");
 		            // The hidden field was added
 		            setHidden(false);
 				}
 	            
-	            if (Float.compare(Float.valueOf(4), getVersion()) > 0) { // v4
+	            if (Float.compare(4f, getVersion()) > 0) { // v4
 		            log.debug("Upgrading to version 4");
 		            // The NEXTRUNTIMESTAMP and OLDRUNTIMESTAMP disappeared in version 4 but we don't do anything here. 
 		            // This is handled in ServiceData.getServiceConfiguration when we check if the service is upgraded
 				}
 			}
 
-            if (Float.compare(Float.valueOf(5), getVersion()) > 0) { // v5
+            if (Float.compare(5f, getVersion()) > 0) { // v5
 	            log.debug("Upgrading to version 5");
 	            // The PINTONODES field was added
             	setPinToNodes(null);
             }
-            if (Float.compare(Float.valueOf(6), getVersion()) > 0) { // v6
+            if (Float.compare(6f, getVersion()) > 0) { // v6
                 log.debug("Upgrading to version 6");
                 // The RUNONALLNODES field was added
                 setRunOnAllNodes(false);
             }
-
+            
+            if (Float.compare(7f, getVersion()) > 0) { // v7
+                // Revoke Pre cert checkbox in Pre-certificate maintenance service should be by default enabled on upgrade from older versions.
+                log.debug("Upgrading to version 7");
+                Properties prop = getWorkerProperties();
+                if (prop != null) {
+                    final String revokePreCerts = prop.getProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS);
+                    if (StringUtils.isBlank(revokePreCerts)) {
+                        prop.setProperty(PreCertificateMaintenanceWorkerConstants.PROP_REVOKE_PRE_CERTS,
+                                PreCertificateMaintenanceWorkerConstants.DEFAULT_IS_REVOKE_PRE_CERTS_LEGACY);
+                    }
+                    setWorkerProperties(prop);
+                }
+                
+                String updatedWorkerCurrentClassPath = getWorkerClassPath();
+                
+                // Class path for the worker should also be upgraded
+                if (StringUtils.isNotBlank(updatedWorkerCurrentClassPath) && updatedWorkerCurrentClassPath.endsWith("PreCertificateRevocationWorker")) {
+                    updatedWorkerCurrentClassPath = "org.ejbca.core.model.services.workers.PreCertificateMaintenanceWorker";
+                    setWorkerClassPath(updatedWorkerCurrentClassPath);
+                }
+                
+            }
+            
 			data.put(VERSION, Float.valueOf(LATEST_VERSION));
 		}		
 	}
@@ -330,8 +355,4 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
         clone.loadData(clonedata);
         return clone;
       }
-
-
-	
-
 }
