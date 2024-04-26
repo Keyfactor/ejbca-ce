@@ -61,7 +61,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title",
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress",
             "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF",
-            "VID", "PID", "RCACID", "ICACID", "NODEID", "FABRICID", "NOCCAT", "FirmwareSigningID", // Matter IoT
+            "VID", "PID", "NODEID", "FABRICID", "NOCCAT", "FirmwareSigningID", // Matter IoT
             "CertificationID");
 
     private String selectedRaNameSchemeDnPart;
