@@ -108,3 +108,16 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Append the application variant to enterprise edition repository paths
+*/}}
+{{- define "ejbca.imageRepository" -}}
+{{- $variant := .Values.image.variant | default "" }}
+{{- $repository := .Values.image.repository }}
+{{- if and (hasSuffix "/ejbca-ee" $repository) (or (eq $variant "ra") (eq $variant "va")) }}
+{{- printf "%s-%s" $repository $variant }}
+{{- else }}
+{{- print $repository }}
+{{- end }}
+{{- end }}

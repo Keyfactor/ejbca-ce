@@ -116,7 +116,6 @@ import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.keys.token.KeyPairInfo;
-import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.keys.validation.KeyValidationFailedActions;
 import org.cesecore.keys.validation.KeyValidatorProxySessionRemote;
@@ -2168,22 +2167,31 @@ public class EjbcaWSTest extends CommonEjbcaWs {
     public void test47CertificateRequestWithSpecialChars07() throws Exception {
         long rnd = secureRandom.nextLong();
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
-        // We now handle + signs "correctly, it's a multi-value RDN now an 'b' should be an OID, which it's not
-        // = signs must be escaped, or it's truncated
+        // We now handle + signs "correctly", that's a multi-value RDN.
+        // = signs must be escaped, or you get an error.
         testCertificateRequestWithSpecialChars(
-                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C=SE\\\"",
-                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C");
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"",
+                "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
         testCertificateRequestWithSpecialChars(
                 "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"",
                 "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
         try {
+            // 'b' after the + should be an OID, which it's not
             testCertificateRequestWithSpecialChars(
                     "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"",
                     "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
             fail("Test should fail as unknown oid (b) passed as multi-value RDN");
         } catch (EjbcaException_Exception e) {
             assertTrue("Exception must be about Unknown object id", e.getMessage().contains("Unknown object id"));
-
+        }
+        try {
+            // The , but not the = is not escaped, so this is an error
+            testCertificateRequestWithSpecialChars(
+                    "CN=test47CertificateRequestWithSpecialChars07" + rnd + ", O=\\\"foo\\+b\\+ar\\, C=SE\\\"",
+                    "CN=test47CertificateRequestWithSpecialChars07" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
+            fail("Test should fail as unknown oid (b) passed as multi-value RDN");
+        } catch (EjbcaException_Exception e) {
+            assertTrue("Exception message must contain \"badly formatted directory string\"", e.getMessage().contains("badly formatted directory string"));
         }
     }
 
@@ -2421,9 +2429,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
         // empty DN component is allowed (CN=) in the core API, but when using AllowDNOverrideByEndEntityInformation empties are remove in X509CA with DNFieldsUtil.removeAllEmpties
-        // equal signs must be escaped in order to work so ';C=SE' gets an escaped ; and the =SE part is truncated
+        // Special characters such as = + , (equals, plus, comma) must be escaped.
         testCertificateRequestWithEeiDnOverride(true, true,
-                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C=SE,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
+                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
                 "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C,ST=Sthlm/,OU=OU2,O=PrimeKey,SN=12345+JurisdictionCountry=SE,BusinessCategory=Private Organization");
     }
 
@@ -2434,9 +2442,9 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         // Behavior changed with introduction of multi-valued RDNs and using IETFUtils.rDNsFromString, in ECA-3934
         // The multi-value RDN SN=12345+JurisdictionCountry=SE is now handled correctly
         // empty DN component is allowed (CN=) in the core API, but when using AllowDNOverrideByEndEntityInformation empties are remove in X509CA with DNFieldsUtil.removeAllEmpties
-        // equal signs must be escaped in order to work so ';C=SE' gets an escaped ; and the =SE part is truncated
+        // Special characters such as = + , (equals, plus, comma) must be escaped.
         testCertificateRequestWithEeiDnOverride(true, false,
-                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C=SE,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
+                "L=locality,OU=OU1, JURISDICTIONLOCALITY= jlocality ,CN=,CN=rox" + rnd + ".primekey.se;C,ST=Sthlm\n,OU=OU2 ,O=PrimeKey,JURISDICTIONCOUNTRY=SE+SN=12345,BUSINESSCATEGORY=Private Organization",
                 "L=locality,OU=OU1,JurisdictionLocality=jlocality,CN=rox" + rnd + ".primekey.se/C,ST=Sthlm/,OU=OU2,O=PrimeKey,SN=12345+JurisdictionCountry=SE,BusinessCategory=Private Organization");
     }
 
@@ -2497,15 +2505,11 @@ public class EjbcaWSTest extends CommonEjbcaWs {
         }
 
         try {
-            ArrayList<KeyValuePair> cryptotokenProperties = new ArrayList<>();
+            List<KeyValuePair> cryptotokenProperties = new ArrayList<>();
             KeyValuePair allowExtract = new KeyValuePair();
             allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
             allowExtract.setValue(Boolean.toString(false));
             cryptotokenProperties.add(allowExtract);
-            KeyValuePair nodefaultPwd = new KeyValuePair();
-            nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
-            nodefaultPwd.setValue(Boolean.TRUE.toString());
-            cryptotokenProperties.add(nodefaultPwd);
 
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
@@ -2513,10 +2517,7 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             CryptoTokenInfo token = cryptoTokenManagementSession.getCryptoTokenInfo(intAdmin, ctid);
 
             Properties ctproperties = token.getCryptoTokenProperties();
-            assertEquals(3, ctproperties.keySet().size());
-            assertTrue(ctproperties.containsKey(SoftCryptoToken.NODEFAULTPWD));
-            assertEquals(ctproperties.getProperty(SoftCryptoToken.NODEFAULTPWD), Boolean.TRUE.toString());
-
+            assertEquals("Incorrect number of properties created in crypto token.", 2, ctproperties.keySet().size());
             assertEquals("SoftCryptoToken", token.getType());
             assertFalse(Boolean.getBoolean((String)token.getCryptoTokenProperties().get(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY)));
             assertTrue(token.isActive());
@@ -2553,10 +2554,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             allowExtract.setKey(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY);
             allowExtract.setValue(Boolean.toString(false));
             cryptotokenProperties.add(allowExtract);
-            KeyValuePair nodefaultPwd = new KeyValuePair();
-            nodefaultPwd.setKey(SoftCryptoToken.NODEFAULTPWD);
-            nodefaultPwd.setValue(Boolean.TRUE.toString());
-            cryptotokenProperties.add(nodefaultPwd);
 
             ejbcaraws.createCryptoToken(ctname, "SoftCryptoToken", "1234", false, cryptotokenProperties);
             ctid = cryptoTokenManagementSession.getIdFromName(ctname);
@@ -2596,7 +2593,6 @@ public class EjbcaWSTest extends CommonEjbcaWs {
             // Create CryptoToken
             final List<KeyValuePair> cryptoTokenProperties = new ArrayList<>();
             cryptoTokenProperties.add(getKeyValuePair(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.FALSE.toString()));
-            cryptoTokenProperties.add(getKeyValuePair(SoftCryptoToken.NODEFAULTPWD, Boolean.TRUE.toString()));
             ejbcaraws.createCryptoToken(cryptoTokenName, "SoftCryptoToken", "1234", true, cryptoTokenProperties);
             cryptoTokenId = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
             // Generate CA key pairs

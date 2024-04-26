@@ -3278,46 +3278,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
             final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-    	AuthorizationDeniedException authorizationDeniedException = null;
-    	CADoesntExistsException caDoesntExistException = null;
-    	NotFoundException notFoundException = null;
-        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
-                try {
-                    return raMasterApi.generateOrKeyRecoverToken(authenticationToken, username, password, hardTokenSN, keySpecification, keyAlgorithm);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                } catch (AuthorizationDeniedException e) {
-                    log.info("Authorization was denied to access CA for proxied request: " + e.getMessage());
-                    if (authorizationDeniedException == null) {
-                        authorizationDeniedException = e;
-                    }
-                    // Just try next implementation
-                } catch (CADoesntExistsException e) {
-                    log.debug("CA for proxied request could not be found: " + e.getMessage());
-                    if (caDoesntExistException == null) {
-                    	caDoesntExistException = e;
-                    }
-                    // Just try next implementation
-                } catch (NotFoundException e) {
-                    log.debug("End entity with name " + username + " for proxied request could not be found: " + e.getMessage());
-                    if (notFoundException == null) {
-                    	notFoundException = e;
-                    }
-                    // Just try next implementation
-                }
-            }
-        }
-        if (authorizationDeniedException != null) {
-            throw authorizationDeniedException;
-        }
-        if (notFoundException != null) {
-            throw notFoundException;
-        }
-        if (caDoesntExistException != null) {
-            throw caDoesntExistException;
-        }
-        return null;
+        GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification,
+                keyAlgorithm, null);
+        return generateOrKeyRecoverTokenV2(authenticationToken, request);
     }
 
     @Override
@@ -4021,6 +3984,77 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation
                 }
             }
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        CADoesntExistsException caDoesntExistException = null;
+        NotFoundException notFoundException = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 18) {
+                try {
+                    return raMasterApi.generateOrKeyRecoverTokenV2(authenticationToken, request);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Authorization was denied to access CA for proxied request: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    log.debug("CA for proxied request could not be found: " + e.getMessage());
+                    if (caDoesntExistException == null) {
+                        caDoesntExistException = e;
+                    }
+                    // Just try next implementation
+                } catch (NotFoundException e) {
+                    log.debug("End entity with name " + request.getUsername() + " for proxied request could not be found: " + e.getMessage());
+                    if (notFoundException == null) {
+                        notFoundException = e;
+                    }
+                    // Just try next implementation
+                }
+            } else if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.generateOrKeyRecoverToken(authenticationToken, request.getUsername(), request.getPassword(),
+                            request.getHardTokenSN(), request.getKeySpecification(), request.getKeyAlgorithm());
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Authorization was denied to access CA for proxied request: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    log.debug("CA for proxied request could not be found: " + e.getMessage());
+                    if (caDoesntExistException == null) {
+                        caDoesntExistException = e;
+                    }
+                    // Just try next implementation
+                } catch (NotFoundException e) {
+                    log.debug("End entity with name " + request.getUsername() + " for proxied request could not be found: " + e.getMessage());
+                    if (notFoundException == null) {
+                        notFoundException = e;
+                    }
+                    // Just try next implementation
+                }
+
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (notFoundException != null) {
+            throw notFoundException;
+        }
+        if (caDoesntExistException != null) {
+            throw caDoesntExistException;
         }
         return null;
     }
