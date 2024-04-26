@@ -519,8 +519,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, BigInteger serialNumber) {
-        return certificateDataSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber.toString());
+    public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber) {
+        return certificateDataSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber);
     }
 
     @SuppressWarnings("unchecked")

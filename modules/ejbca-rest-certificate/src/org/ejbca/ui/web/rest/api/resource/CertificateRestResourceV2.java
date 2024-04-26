@@ -160,10 +160,10 @@ public class CertificateRestResourceV2 extends BaseRestResource {
         }
 
         // Finding username from db first, as it is needed by key recovery code flow.
-        String userName = StringUtils.EMPTY;
+        String userName;
 
         try {
-            userName = certDataSession.findUsernameByIssuerDnAndSerialNumber(issuerDN, certDecimalSerialNumber);
+            userName = raMasterApi.findUsernameByIssuerDnAndSerialNumber(issuerDN, certDecimalSerialNumber);
         } catch (Exception ex) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),
                     "No username found for the combination of the issuer dn and certificate serial number.");
