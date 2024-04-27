@@ -1600,49 +1600,42 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     }
 
     private Optional<UserView> checkAndSetUserEmail(UserView newUserView) throws AddEndEntityException {
-        if (emailUserName != null) {
-            if (StringUtils.isNotEmpty(emailUserName)) {
-                if (handleEmailUserNameNotEmptyCase(newUserView).isPresent()) {
-                    return Optional.of(handleEmailUserNameNotEmptyCase(newUserView).get());
-                } else {
-                    return Optional.empty();
-                }
+        if (StringUtils.isNotBlank(emailUserName)) {
+            if (handleEmailUserNameNotEmpty(newUserView).isPresent()) {
+                return Optional.of(handleEmailUserNameNotEmpty(newUserView).get());
             } else {
-                handleEmailUserNameEmptyCase();
+                return Optional.empty();
             }
+        } else {
+            handleEmailUserNameEmpty();
         }
         return Optional.of(newUserView);
     }
 
-    private void handleEmailUserNameEmptyCase() throws AddEndEntityException {
+    private void handleEmailUserNameEmpty() throws AddEndEntityException {
         String emailDomain = getSelectedEmailDomain();
-        if (emailDomain != null) {
-            emailDomain = emailDomain.trim();
-            if (!emailDomain.equals("")) { // We have a domain but no username, so email incomplete!
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
-                throw new AddEndEntityException(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
-            }
+        if (StringUtils.isNotBlank(emailDomain)) { // We have a domain but no username, so email incomplete!
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
+            throw new AddEndEntityException(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
         }
     }
 
-    private Optional<UserView> handleEmailUserNameNotEmptyCase(UserView newUserView) throws AddEndEntityException {
+    private Optional<UserView> handleEmailUserNameNotEmpty(UserView newUserView) throws AddEndEntityException {
         String emailDomain = getSelectedEmailDomain();
 
-        if (emailDomain != null) {
-            emailDomain = emailDomain.trim();
-            if (!emailDomain.equals("")) {
-                if (!AddEndEntityUtil.isValidDNField(emailDomain) || !AddEndEntityUtil.isValidDNField(emailUserName)) {
-                    throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " Email.");
-                }
-                newUserView.setEmail(emailUserName + "@" + emailDomain);
-            } else {
-                addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
-                return Optional.empty();
+        if (StringUtils.isNotBlank(emailDomain)) {
+            if (!AddEndEntityUtil.isValidEmail(emailUserName + "@" + emailDomain.trim())) {
+                throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYEMAILCHARSNOAT") + " Email.");
             }
+            newUserView.setEmail(emailUserName + "@" + emailDomain.trim());
+        } else {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
+            return Optional.empty();
         }
+        
         emailDomain = getEmailDomain();
-        if (emailDomain != null && (!emailDomain.equals(""))) {
-            if (!AddEndEntityUtil.isValidDNField(emailDomain) || !AddEndEntityUtil.isValidDNField(emailUserName)) {
+        if (StringUtils.isNotBlank(emailDomain)) {
+            if (!AddEndEntityUtil.isValidEmail(emailUserName + "@" + emailDomain)) {
                 throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " Email.");
             }
             newUserView.setEmail(emailUserName + "@" + emailDomain);
