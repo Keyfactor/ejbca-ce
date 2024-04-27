@@ -23,10 +23,12 @@ import java.util.regex.Pattern;
  */
 public final class AddEndEntityUtil {
     
-    private static final String LEGAL_DN_CHARS_REGEX = "^[^~?`!|%$;\0\r\n]*$"; // Excluding disallowed DN characters, see cesecore.properties 
-    private static final String USERNAME_CHARS_REGEX = "^[^%$;?]*$";
+    private static final String LEGAL_DN_CHARS_REGEX = "^[^~?`!|%$;\0\r\n\\\"]*$"; // Excluding disallowed DN characters, see cesecore.properties 
+    private static final String USERNAME_CHARS_REGEX = "^[^%$;\"?\\\\]*$";
     private static final String OID_REGEX = "^([0-2])((\\.0)|(\\.[1-9][0-9]*))*$";
     private static final String UPN_REGEX = "^(?=.{1,64}$)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+    private static final String EMAIL_REGEX = "[a-zA-Z0-9_.-@]+";
+
     
     private static final String IPV4_REGEX =
             "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
@@ -39,6 +41,12 @@ public final class AddEndEntityUtil {
     private static final String DATE_OF_BIRTH_REGEX = "yyyyMMdd";
     
     private AddEndEntityUtil() {
+    }
+
+    protected static boolean isValidEmail(final String email) {
+        Pattern pattern = Pattern.compile(EMAIL_REGEX);
+        Matcher matcher = pattern.matcher(email);
+        return matcher.matches();
     }
     
     protected static boolean isValidMsUpn(final String upn) {
