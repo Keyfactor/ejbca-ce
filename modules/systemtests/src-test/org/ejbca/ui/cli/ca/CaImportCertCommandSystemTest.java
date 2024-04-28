@@ -195,5 +195,12 @@ public class CaImportCertCommandSystemTest {
         assertEquals("Certificate revocation date was incorrectly imported.", new SimpleDateFormat(CaImportCertDirCommand.DATE_FORMAT).parse("2015.05.04-10:15"),
                 certificateStatus.revocationDate);
     }
+
+    @Test
+    public void testStrictParameter() {
+        String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", "--email", "foo@foo.com", "--strict", certificateFile.getAbsolutePath(),
+                "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
+    }
     
 }

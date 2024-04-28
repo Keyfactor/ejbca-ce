@@ -81,6 +81,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
     private static final String ENDENTITY_PASSWORD_KEY = "--password";
     private static final String CA_NAME_KEY = "--caname";
     private static final String ACTIVE_KEY = "-a";
+    private static final String CA_VALIDATION_KEY = "--strict";
     private static final String E_MAIL_KEY = "--email";
     private static final String FILE_KEY = "-f";
     private static final String EE_PROFILE_KEY = "--eeprofile";
@@ -103,6 +104,8 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                 "Set the status of the imported end entity."));
         registerParameter(new Parameter(FILE_KEY, "Certificate File", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Must be PEM encoded"));
+        registerParameter(new Parameter(CA_VALIDATION_KEY, "Validation Key", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
+                "Must be true by default"));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "End Entity Profile to create end entity with. If no profile specified then the EMPTY profile will be used."));
         registerParameter(new Parameter(CERT_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -247,11 +250,15 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
             errorString.append("CA with name '" + caname + "' does not exist.\n");
         }
 
+        // Check the CA parameter (--caname) in CaImportCertCommand corresponds to the issuer DN of the imported certificate
+        if (parameters.containsKey(CA_VALIDATION_KEY) && !cainfo.getSubjectDN().equals(CertTools.getIssuerDN(certificate))) {
+            errorString.append("Importing a certificate into the wrong CA "+ caname);
+        }
+        
         if (errorString.length() > 0) {
             log.error(errorString.toString());
             return CommandResult.FUNCTIONAL_FAILURE;
         }
-
         final int crlPartitionIndex = cainfo.determineCrlPartitionIndex(certificate);
 
         final Certificate cacert = cainfo.getCertificateChain().iterator().next();
