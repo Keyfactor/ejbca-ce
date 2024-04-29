@@ -995,6 +995,14 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return selectedEeProfile.isEmailRequired();
     }
 
+    public boolean isPasswordRequiredInProfile() {
+        return selectedEeProfile.isPasswordRequired();
+    }
+    
+    public boolean isPasswordPreDefined() {
+        return selectedEeProfile.isPasswordPreDefined();
+    }
+    
     private void initUserData() throws EndEntityProfileNotFoundException, AddEndEntityException {
 
         profileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
