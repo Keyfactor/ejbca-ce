@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli.cryptotoken;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.Arrays;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -61,10 +62,11 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
         final String tokenType = cryptoTokenManagementSession.getCryptoTokenInfo(getAdmin(), cryptoTokenId.intValue()).getType();
         final String cliMessageEnterOldPin = "Enter old CryptoToken password: ";
         final String cliMessageEnterNewPin = "Enter new CryptoToken password: ";
+        final String cliMessageConfirmNewPin = "Confirm new CryptoToken password: ";
         final boolean isSoftToken = TOKEN_TYPE_SOFT.equals(tokenType);
         final boolean updateOnly = parameters.containsKey(SWITCH_UPDATE_ONLY_KEY);
         final boolean removeAuto = parameters.containsKey(SWITCH_REMOVE_AUTO_KEY);
-        final char[] currentAuthenticationCode;
+        final char[] currentAuthenticationCode; 
         if (isSoftToken) {
             if (parameters.get(OLD_PIN_KEY) == null) {
                 getLogger().info("For soft tokens, the old pin must always be provided.");
@@ -73,7 +75,16 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
         } else {
             currentAuthenticationCode = null;
         }
+        // Get the new pin, unless we intend to remove the auto-activation in which case we will set it to null.  
         final char[] newAuthenticationCode = removeAuto ? null : getAuthenticationCode(parameters.get(NEW_PIN_KEY), cliMessageEnterNewPin);
+        // If we intend to set a new pin, prompt twice (unless the '--newpin' argument was used) allowing the user to confirm the new pin, 
+        // thus making it harder to accidently locking oneself out in case of a typo.
+        if (parameters.get(NEW_PIN_KEY) == null && !removeAuto) {
+            if (!Arrays.areEqual(getAuthenticationCode(parameters.get(NEW_PIN_KEY), cliMessageConfirmNewPin), newAuthenticationCode)) {
+                getLogger().info("The passwords do not match.");
+                return CommandResult.CLI_FAILURE;
+            }            
+        }
         try {
             boolean result = cryptoTokenManagementSession.updatePin(getAdmin(), cryptoTokenId.intValue(), currentAuthenticationCode,
                     newAuthenticationCode, updateOnly);
