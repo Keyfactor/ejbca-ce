@@ -313,20 +313,8 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         
         if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.REGISTEREDID)) {
             validateOid(fieldValueToSave);
-            return;
         }
 
-        if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
-            if (!AddEndEntityUtil.isValidDNField(fieldValueToSave)) {
-                throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
-            }
-            return;
-        }
-
-        // Skip SIM and hand over validation to EE profile
-        if (isModifiable() && !AddEndEntityUtil.isValidDNField(fieldValueToSave) && !EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
-            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
-        }
     }
 
     private void validateOid(String fieldValueToSave) throws AddEndEntityException {
