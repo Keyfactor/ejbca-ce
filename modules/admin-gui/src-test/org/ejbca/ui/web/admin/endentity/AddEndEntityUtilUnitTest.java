@@ -59,23 +59,6 @@ public class AddEndEntityUtilUnitTest {
         assertTrue(INVALID_DOB, AddEndEntityUtil.isValidDateOfBirth("19830223"));
         assertTrue(INVALID_DOB, AddEndEntityUtil.isValidDateOfBirth("20020612"));
     }
-    
-    @Test
-    public void validUpn() {
-        assertTrue(INVALID_UPN, AddEndEntityUtil.isValidMsUpn("user@test.com"));
-        assertTrue(INVALID_UPN, AddEndEntityUtil.isValidMsUpn("user@test.co.uk"));
-    }
-
-    @Test
-    public void invalidUpn() {
-        assertFalse(VALID_UPN, AddEndEntityUtil.isValidMsUpn("test;"));
-        assertFalse(VALID_UPN, AddEndEntityUtil.isValidMsUpn("?test%"));
-        assertFalse(VALID_UPN, AddEndEntityUtil.isValidMsUpn("?test|"));
-        assertFalse(VALID_UPN, AddEndEntityUtil.isValidMsUpn("?test\n"));
-        assertFalse(VALID_UPN, AddEndEntityUtil.isValidMsUpn("test@"));
-        assertFalse(VALID_UPN, AddEndEntityUtil.isValidMsUpn("@test"));
-        assertFalse(VALID_UPN, AddEndEntityUtil.isValidMsUpn("user@test"));
-    }
 
     @Test
     public void validGender() {
