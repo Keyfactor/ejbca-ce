@@ -28,16 +28,11 @@ public final class AddEndEntityUtil {
     private static final String OID_REGEX = "^([0-2])((\\.0)|(\\.[1-9][0-9]*))*$";
     private static final String UPN_REGEX = "^(?=.{1,64}$)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
     private static final String EMAIL_REGEX = "[a-zA-Z0-9_.-@]+";
-
-    
     private static final String IPV4_REGEX =
             "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$";
-    
     private static final String IPV6_REGEX =
-            "^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$";
-    
+            "^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$";    
     private static final String GENDER_REGEX = "([MFmf])$";
-    
     private static final String DATE_OF_BIRTH_REGEX = "yyyyMMdd";
     
     private AddEndEntityUtil() {

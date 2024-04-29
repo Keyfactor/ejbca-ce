@@ -25,6 +25,7 @@ import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
+import javax.ejb.EJBException;
 import javax.faces.context.ExternalContext;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -108,7 +109,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     private String maxLoginAttemptsStatus;
     private boolean useClearTextPasswordStorage;
     private String[] emailDomains;
-    private String selectedEmailDomain;
+    private String emailDomain;
     private String emailUserName;
     private String profileEmail;
     private String selectedSubjectDn;
@@ -191,20 +192,8 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.userName = userName;
     }
     
-    public boolean isOnlyOneEmailDomain() {
-        if (emailDomains != null) {
-            return emailDomains.length == 1;
-        } else {
-            return false;
-        }
-    }
-    
-    public String getEmailDomain() {
-        if (emailDomains.length == 1) {
-            return emailDomains[0];
-        } else {
-            return StringUtils.EMPTY;
-        }
+    public String[] getAvailableEmailDomains() {
+        return emailDomains;
     }
 
     public String getMaxLoginAttempts() {
@@ -235,16 +224,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
 
         }
         return ret;
-    }
-    
-    public List<SelectItem> getAvailableEmailDomains() {
-        final List<SelectItem> emailDomainList = new ArrayList<>();
-        
-        for (final String domain : emailDomains) {
-            emailDomainList.add(new SelectItem(domain, domain));
-        }
-        
-        return emailDomainList;
     }
     
     public boolean isAllowedToAddEndEntity() {
@@ -302,6 +281,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
         this.emailDomains = selectedEeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
+        this.emailDomain = setDefaultEmailDomainFromProfile();
         this.eeBean = new EditEndEntityBean();
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
         this.numberOfRequests = selectedEeProfile.getAllowedRequests();
@@ -371,12 +351,12 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return selectedEeProfile.isModifyable(EndEntityProfile.EMAIL,0);
     }
 
-    public String getSelectedEmailDomain() {
-        return selectedEmailDomain;
+    public String getEmailDomain() {
+        return emailDomain;
     }
 
-    public void setSelectedEmailDomain(String selectedEmailDomain) {
-        this.selectedEmailDomain = selectedEmailDomain;
+    public void setEmailDomain(String selectedEmailDomain) {
+        this.emailDomain = selectedEmailDomain;
     }
 
     public String getProfileEmail() {
@@ -1030,6 +1010,8 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.maxLoginAttemptsStatus = selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1") ? "unlimited" : "specified";
         
         this.emailDomains = selectedEeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
+        
+        this.emailDomain = setDefaultEmailDomainFromProfile();
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
         this.eeBean = new EditEndEntityBean();
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
@@ -1059,6 +1041,16 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         composeSubjectDirAttrFieldsAndData();
     }
     
+    private String setDefaultEmailDomainFromProfile() {
+        if(!selectedEeProfile.isEmailModifiable() && emailDomains.length == 1) {
+            return emailDomains[0];
+        } else if (selectedEeProfile.isEmailModifiable()) {
+            return selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
+        } else {
+            return StringUtils.EMPTY;
+        }
+    }
+
     private void composeSubjectAltNameFieldAndData() {
 
         this.subjectAltNameFieldDatas = new ArrayList<>();
@@ -1073,15 +1065,18 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             final boolean modifiable = selectedEeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean required = selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean isRFC822Name = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
-            final boolean useDataFromRFC822NameField = selectedEeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean useDataFromEmailField = selectedEeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE],fieldData[EndEntityProfile.NUMBER]);
             final boolean copyDataFromCN = selectedEeProfile.getCopy(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean isDnsName = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
+            final boolean isUpn = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN);
             String[] options = null;
             String fieldValue = null;
             String regex = null;
             String rfcName = null;
             String rfcDomain = null;
             String rfc822NameString = null;
+            String upnDomain = null;
+            String upnName = null;
 
             // Handle RFC822NAME separately
             if (isRFC822Name) {
@@ -1096,16 +1091,22 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 } else {
                     options = rfc822NameString.split(EndEntityProfile.SPLITCHAR);
                 }
-                
             } else {
-
+                
                 options = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
                         .split(EndEntityProfile.SPLITCHAR);
+                
+                if(isUpn && modifiable) {
+                    upnDomain = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+                } 
+                
+                if (isUpn && !modifiable && options.length == 1) {
+                    upnDomain = options[0];
+                }
 
                 if (options.length == 0 && copyDataFromCN) {
                     fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
                 } else {
-
                     fieldValue = selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
                     final Map<String, Serializable> validation = selectedEeProfile.getValidation(fieldData[EndEntityProfile.FIELDTYPE],
                             fieldData[EndEntityProfile.NUMBER]);
@@ -1119,8 +1120,8 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 SubjectAltNameFieldData subjectAltNameFieldData = new SubjectAltNameFieldData.Builder(label, modifiable, required)
                         .withFieldValue(fieldValue)
                         .withRFC822Name(isRFC822Name)
-                        .withUseDataFromRFC822NameField(useDataFromRFC822NameField && required)
-                        .withRenderUseDataFromRFC822NameField(useDataFromRFC822NameField)
+                        .withUseDataFromRFC822NameField(required)
+                        .withRenderDataFromRFC822CheckBox(useDataFromEmailField)
                         .withCopyDataFromCN(copyDataFromCN)
                         .withDNSName(isDnsName)
                         .withRfcName(rfcName)
@@ -1128,6 +1129,9 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                         .withOptions(options)
                         .withRegex(regex)
                         .withRfc822NameString(rfc822NameString)
+                        .withUpn(isUpn)                        
+                        .withUpnName(upnName)
+                        .withUpnDomain(upnDomain)
                         .build();
                 subjectAltNameFieldDatas.add(subjectAltNameFieldData);
             }
@@ -1287,9 +1291,9 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 handleEjbcaException(e);
             } catch (IllegalNameException e) {
                 handleIllegalNameException(e);
-            } catch (EndEntityProfileValidationException e) {
+            } catch (EndEntityProfileValidationException | EJBException e) {
                 addNonTranslatedErrorMessage(e.getMessage());
-            }
+            } 
         }
     }
 
@@ -1506,7 +1510,13 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         int i = 0;
         for (final SubjectAltNameFieldData subjectAltNameFieldAndData : getSubjectAltNameFieldDatas()) {
             int[] fieldData = selectedEeProfile.getSubjectAltNameFieldsInOrder(i++);
-            String fieldValue = subjectAltNameFieldAndData.getFieldValueToSave(newUserView, fieldData);
+            String fieldValue;
+            
+            if(subjectAltNameFieldAndData.isCopyDataFromCN()) {
+                fieldValue = handleCopyFromCN(subjectAltNameFieldAndData, fieldData);
+            } else  {
+                fieldValue = subjectAltNameFieldAndData.getFieldValueToSave(newUserView, fieldData);
+            }
 
             if (StringUtils.isNotBlank(fieldValue)) {
                 if(!cerProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectAlternativeName()) {
@@ -1519,11 +1529,55 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 }
             }
         }
-
         newUserView.setSubjectAltName(subjectAltName.toString());
         return newUserView;
     }
     
+    private String handleCopyFromCN(final SubjectAltNameFieldData subjectAltNameFieldAndData, final int[] sANfieldData) throws AddEndEntityException {
+
+        String resutlFieldValue = StringUtils.EMPTY;
+
+        if (EndEntityProfile.isFieldOfType(sANfieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME)) {
+            int i = 0;
+            for (SubjectDnFieldData dnFieldData : getSubjectDnFieldsAndDatas()) {
+                int[] sDNfieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
+
+                if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)
+                        && StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
+                    resutlFieldValue = dnFieldData.getFieldValue();
+                    break;
+                }
+            }
+        } else if (EndEntityProfile.isFieldOfType(sANfieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
+            int i = 0;
+            for (SubjectDnFieldData dnFieldData : getSubjectDnFieldsAndDatas()) {
+                int[] sDNfieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
+
+                if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)
+                        && StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
+                    
+                    
+                    if (StringUtils.isNotBlank(dnFieldData.getFieldValue()) && StringUtils.isNotBlank(subjectAltNameFieldAndData.getUpnDomain())) {
+                        resutlFieldValue = dnFieldData.getFieldValue() + "@" + subjectAltNameFieldAndData.getUpnDomain();
+                    } else {
+                        throw new AddEndEntityException("Incomplete UPN!");
+                    }
+                    
+                    if(!AddEndEntityUtil.isValidMsUpn(resutlFieldValue)) {
+                        throw new AddEndEntityException("Invalid UPN " + resutlFieldValue);
+                    }
+                    break;
+                }
+            }
+        }
+        if (StringUtils.isNotBlank(resutlFieldValue)) {
+            resutlFieldValue = org.ietf.ldap.LDAPDN
+                    .escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(sANfieldData[EndEntityProfile.FIELDTYPE]),
+                            DNFieldExtractor.TYPE_SUBJECTALTNAME) + resutlFieldValue);
+        }
+        return resutlFieldValue;
+    }
+
     private UserView checkAndSetSubjectDN(UserView newUserView) throws AddEndEntityException {
         StringBuilder subjectDn = new StringBuilder();
         int i = 0;
@@ -1570,7 +1624,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 }
             }
         }
-
         newUserView.setSubjectDN(subjectDn.toString());
         return newUserView;
     }
@@ -1613,16 +1666,14 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     }
 
     private void handleEmailUserNameEmpty() throws AddEndEntityException {
-        String emailDomain = getSelectedEmailDomain();
-        if (StringUtils.isNotBlank(emailDomain)) { // We have a domain but no username, so email incomplete!
+        String selectedeEmailDomain = getEmailDomain();
+        if (StringUtils.isNotBlank(selectedeEmailDomain) && selectedEeProfile.isEmailRequired()) { // We have a domain but no username, so email incomplete!
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
             throw new AddEndEntityException(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
         }
     }
 
     private Optional<UserView> handleEmailUserNameNotEmpty(UserView newUserView) throws AddEndEntityException {
-        String emailDomain = getSelectedEmailDomain();
-
         if (StringUtils.isNotBlank(emailDomain)) {
             if (!AddEndEntityUtil.isValidEmail(emailUserName + "@" + emailDomain.trim())) {
                 throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYEMAILCHARSNOAT") + " Email.");
@@ -1632,14 +1683,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
             return Optional.empty();
         }
-        
-        emailDomain = getEmailDomain();
-        if (StringUtils.isNotBlank(emailDomain)) {
-            if (!AddEndEntityUtil.isValidEmail(emailUserName + "@" + emailDomain)) {
-                throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " Email.");
-            }
-            newUserView.setEmail(emailUserName + "@" + emailDomain);
-        }
+
         return Optional.of(newUserView);
     }
 
