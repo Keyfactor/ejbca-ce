@@ -1128,7 +1128,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 SubjectAltNameFieldData subjectAltNameFieldData = new SubjectAltNameFieldData.Builder(label, modifiable, required)
                         .withFieldValue(fieldValue)
                         .withRFC822Name(isRFC822Name)
-                        .withUseDataFromRFC822NameField(useDataFromEmailField)
+                        .withUseDataFromRFC822NameField(useDataFromEmailField && required)
                         .withRenderDataFromRFC822CheckBox(useDataFromEmailField)
                         .withCopyDataFromCN(copyDataFromCN)
                         .withDNSName(isDnsName)
@@ -1563,14 +1563,24 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
 
                 if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)
                         && StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
-                    if (StringUtils.isNotBlank(dnFieldData.getFieldValue()) && StringUtils.isNotBlank(subjectAltNameFieldAndData.getUpnName())) {
-                        if (!dnFieldData.getFieldValue().startsWith("@")) {
-                            throw new AddEndEntityException("Common name must start with @ sign!");
+
+                    if (dnFieldData.isRequired()) {
+                        if (StringUtils.isNotBlank(dnFieldData.getFieldValue()) && StringUtils.isNotBlank(subjectAltNameFieldAndData.getUpnName())) {
+                            if (!dnFieldData.getFieldValue().startsWith("@")) {
+                                throw new AddEndEntityException("Common name must start with @ sign!");
+                            }
+                            resutlFieldValue = dnFieldData.getFieldValue();
+                            break;
+                        } else {
+                            throw new AddEndEntityException("Incomplete UPN!");
                         }
-                        resutlFieldValue = dnFieldData.getFieldValue();
-                        break;
                     } else {
-                        throw new AddEndEntityException("Incomplete UPN!");
+                        if (StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
+                            resutlFieldValue = dnFieldData.getFieldValue() + "@" + subjectAltNameFieldAndData.getUpnDomain();
+                        } else {
+                            resutlFieldValue = subjectAltNameFieldAndData.getUpnDomain() + "@" + subjectAltNameFieldAndData.getUpnDomain();
+                        }
+                        break;
                     }
                 }
             }
