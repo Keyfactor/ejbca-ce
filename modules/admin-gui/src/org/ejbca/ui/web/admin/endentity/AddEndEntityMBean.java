@@ -1585,8 +1585,8 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             String value = null;
             int[] fieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
 
-            if (subjectDnFieldAndData.getIsEmailAndUsesEmailFieldData().left) {
-                value = handleEmailCase(fieldData, newUserView);
+            if (subjectDnFieldAndData.getIsEmailAndUsesEmailFieldData().getLeft() && subjectDnFieldAndData.getIsEmailAndUsesEmailFieldData().getRight()) {
+                value = newUserView.getEmail();
             } else {
                 value = subjectDnFieldAndData.getFieldValue();
                 subjectDnFieldAndData.validateFieldValue(value, fieldData);
@@ -1626,20 +1626,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         }
         newUserView.setSubjectDN(subjectDn.toString());
         return newUserView;
-    }
-
-    private String handleEmailCase(final int[] fieldData, final UserView newUserView) throws AddEndEntityException {
-
-        final String emailSetInUserView = newUserView.getEmail();
-        if (selectedEeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
-                && StringUtils.isBlank(emailSetInUserView)) {
-            final String msg = "Email address required in SDN but not set in profile.";
-            if(log.isDebugEnabled()) {
-                log.debug(msg);
-            }
-            throw new AddEndEntityException(msg);
-        }
-        return emailSetInUserView;
     }
 
     private UserView checkAndSetCardNumber(UserView newUserView) {
