@@ -131,6 +131,9 @@ public final class CertificateConstants {
             AlgorithmConstants.HASHALGORITHM_SHA384, AlgorithmConstants.HASHALGORITHM_SHA512 };
     public static final String DEFAULT_CERTID_HASH_ALGORITHM = AlgorithmConstants.HASHALGORITHM_SHA1;
 
-    
+    /**
+     * Allow non-Bouncycastle keypairs to be recovered.
+     * The persisted key data is either secure or came from Microsoft environment.
+     */
     public static final String ENABLE_UNSAFE_RSA_KEYS = "org.bouncycastle.rsa.allow_unsafe_mod";
 }
