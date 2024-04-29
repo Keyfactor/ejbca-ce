@@ -43,12 +43,6 @@ public final class AddEndEntityUtil {
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }
-    
-    protected static boolean isValidMsUpn(final String upn) {
-        Pattern pattern = Pattern.compile(UPN_REGEX);
-        Matcher matcher = pattern.matcher(upn);
-        return matcher.matches();
-    }
 
     protected static boolean isValidOID(final String oid) {
         Pattern pattern = Pattern.compile(OID_REGEX);

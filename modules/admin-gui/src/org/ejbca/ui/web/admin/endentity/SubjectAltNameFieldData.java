@@ -272,6 +272,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
 
         if (isRfc822Name) {
             if (useDataFromRFC822NameField) {
+
                 final String emailFromProfile = userView.getEmail();
                 if (StringUtils.isNotBlank(emailFromProfile)) {
                     fieldValueToSave = emailFromProfile;
@@ -283,7 +284,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
                 fieldValueToSave = rfcName + "@" + rfcDomain;
             }
         } else if (isUpn) {
-            if (StringUtils.isNotBlank(upnName) || StringUtils.isNotBlank(upnDomain)) {
+            if (StringUtils.isNotBlank(upnName) && StringUtils.isNotBlank(upnDomain)) {
                 fieldValueToSave = upnName + "@" + upnDomain;
             }
         } else {
@@ -316,7 +317,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         }
 
         if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
-            validateUpn(fieldValueToSave);
             if (!AddEndEntityUtil.isValidDNField(fieldValueToSave)) {
                 throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
             }
@@ -326,12 +326,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         // Skip SIM and hand over validation to EE profile
         if (isModifiable() && !AddEndEntityUtil.isValidDNField(fieldValueToSave) && !EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.SUBJECTIDENTIFICATIONMETHOD)) {
             throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
-        }
-    }
-
-    private void validateUpn(String fieldValueToSave) throws AddEndEntityException {
-        if (!AddEndEntityUtil.isValidMsUpn(fieldValueToSave)) {
-            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDUPN") + " " + getLabel());
         }
     }
 

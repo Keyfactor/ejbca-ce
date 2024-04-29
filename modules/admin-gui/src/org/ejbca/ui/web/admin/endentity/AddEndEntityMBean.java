@@ -1128,7 +1128,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 SubjectAltNameFieldData subjectAltNameFieldData = new SubjectAltNameFieldData.Builder(label, modifiable, required)
                         .withFieldValue(fieldValue)
                         .withRFC822Name(isRFC822Name)
-                        .withUseDataFromRFC822NameField(required)
+                        .withUseDataFromRFC822NameField(useDataFromEmailField)
                         .withRenderDataFromRFC822CheckBox(useDataFromEmailField)
                         .withCopyDataFromCN(copyDataFromCN)
                         .withDNSName(isDnsName)
@@ -1564,16 +1564,12 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)
                         && StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
                     
-                    
                     if (StringUtils.isNotBlank(dnFieldData.getFieldValue()) && StringUtils.isNotBlank(subjectAltNameFieldAndData.getUpnDomain())) {
                         resutlFieldValue = dnFieldData.getFieldValue() + "@" + subjectAltNameFieldAndData.getUpnDomain();
                     } else {
                         throw new AddEndEntityException("Incomplete UPN!");
                     }
-                    
-                    if(!AddEndEntityUtil.isValidMsUpn(resutlFieldValue)) {
-                        throw new AddEndEntityException("Invalid UPN " + resutlFieldValue);
-                    }
+
                     break;
                 }
             }
