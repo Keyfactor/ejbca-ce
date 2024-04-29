@@ -66,7 +66,7 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
         final boolean isSoftToken = TOKEN_TYPE_SOFT.equals(tokenType);
         final boolean updateOnly = parameters.containsKey(SWITCH_UPDATE_ONLY_KEY);
         final boolean removeAuto = parameters.containsKey(SWITCH_REMOVE_AUTO_KEY);
-        final char[] currentAuthenticationCode; 
+        final char[] currentAuthenticationCode;
         if (isSoftToken) {
             if (parameters.get(OLD_PIN_KEY) == null) {
                 getLogger().info("For soft tokens, the old pin must always be provided.");
