@@ -20,13 +20,13 @@ import org.junit.Test;
 public class AddEndEntityUtilUnitTest {
     
     private static final String VALID_SDN = "Snd is valid!";
-    private static final String VALID_UPN = "Upn is valid!";
     private static final String VALID_DOB = "Dob is valid!";
     private static final String VALID_GENDER = "Gender is valid!";
     private static final String INVALID_SDN = "Snd is invalid!";
-    private static final String INVALID_UPN = "Upn is invalid!";
     private static final String INVALID_GENDER = "Gender is invalid!";
     private static final String INVALID_DOB = "DOB is invalid!";
+    private static final String INVALID_USERNAME = "Username invalid!";
+    private static final String VALID_USERNAME = "Username valid!";
     
     @Test
     public void validSubjectDN() {
@@ -34,13 +34,45 @@ public class AddEndEntityUtilUnitTest {
         assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("user.name@subdomain.example.co.uk"));
         assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test*"));
     }
+    
+    @Test
+    public void validUserName() {
+        assertTrue(INVALID_USERNAME, AddEndEntityUtil.isValidUserNameField("blabla"));
+        assertTrue(INVALID_USERNAME, AddEndEntityUtil.isValidUserNameField("200:"));
+        assertTrue(INVALID_USERNAME, AddEndEntityUtil.isValidUserNameField("200:+"));
+        assertTrue(INVALID_USERNAME, AddEndEntityUtil.isValidUserNameField("孩儿"));
+        assertTrue(INVALID_USERNAME, AddEndEntityUtil.isValidUserNameField("'="));
+        assertTrue(INVALID_USERNAME, AddEndEntityUtil.isValidUserNameField("  "));
+    }
 
+    @Test
+    public void invalidUserName() {
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("blabla%"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("200:?"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("200:+`"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("孩儿\t"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("'=\r"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("'=\t"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("'=\n"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("'=\0"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("\""));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("\\"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("~"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("^"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("}"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("{"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("\\"));
+    }
+
+    
     @Test
     public void invalidSubjectDN() {
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test;"));
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test%"));
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test|"));
         assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test\n"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test\r"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test`"));
     }
     
     @Test
@@ -77,8 +109,5 @@ public class AddEndEntityUtilUnitTest {
         assertFalse(VALID_GENDER, AddEndEntityUtil.isValidGender("test"));
         assertFalse(VALID_GENDER, AddEndEntityUtil.isValidGender("bla;"));
         assertFalse(VALID_GENDER, AddEndEntityUtil.isValidGender("?$%"));
-        
     }
-
-    
 }
