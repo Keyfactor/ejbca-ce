@@ -27,7 +27,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
 
     private boolean isRfc822Name;
     private boolean useDataFromRFC822NameField;
-    private boolean renderUseDataFromRFC822NameField;
     private boolean copyDataFromCN;
     private boolean isDnsName;
     private String rfcName;
@@ -35,6 +34,26 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
     private String[] options;
     private String regex;
     private String rfc822NameString;
+    private boolean isUpn;
+    private String upnName;
+    private String upnDomain;
+    private boolean renderDataFromRFC822CheckBox;
+
+    public String getUpnName() {
+        return upnName;
+    }
+
+    public void setUpnName(String upnName) {
+        this.upnName = upnName;
+    }
+
+    public String getUpnDomain() {
+        return upnDomain;
+    }
+
+    public void setUpnDomain(String upnDomain) {
+        this.upnDomain = upnDomain;
+    }
 
     public boolean isRfc822Name() {
         return isRfc822Name;
@@ -100,6 +119,22 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         this.regex = regex;
     }
 
+    public boolean isUpn() {
+        return isUpn;
+    }
+
+    public void setUpn(boolean isUpn) {
+        this.isUpn = isUpn;
+    }
+    
+    public boolean isRenderDataFromRFC822CheckBox() {
+        return renderDataFromRFC822CheckBox;
+    }
+
+    public void setRenderDataFromRFC822CheckBox(boolean renderDataFromRFC822CheckBox) {
+        this.renderDataFromRFC822CheckBox = renderDataFromRFC822CheckBox;
+    }
+    
     private SubjectAltNameFieldData(Builder builder) {
         super(builder.label, builder.modifiable, builder.required, builder.fieldValue);
         this.isRfc822Name = builder.isRfc822Name;
@@ -107,11 +142,14 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         this.copyDataFromCN = builder.copyDataFromCN;
         this.options = builder.options;
         this.regex = builder.regex;
-        this.renderUseDataFromRFC822NameField = builder.renderUseDataFromRFC822NameField;
         this.rfc822NameString = builder.rfc822NameString;
         this.rfcDomain = builder.rfcDomain;
         this.rfcName = builder.rfcName;
         this.useDataFromRFC822NameField = builder.useDataFromRFC822NameField;
+        this.isUpn = builder.isUpn;
+        this.upnName = builder.upnName;
+        this.upnDomain = builder.upnDomain;
+        this.setRenderDataFromRFC822CheckBox(builder.renderDataFromRFC822CheckBox);
     }
 
     public static class Builder {
@@ -120,7 +158,6 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         private boolean required;
         private boolean isRfc822Name;
         private boolean useDataFromRFC822NameField;
-        private boolean renderUseDataFromRFC822NameField;
         private boolean copyDataFromCN;
         private boolean isDnsName;
         private String rfcName;
@@ -129,6 +166,10 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         private String regex;
         private String rfc822NameString;
         private String fieldValue;
+        private boolean isUpn;
+        private String upnName;
+        private String upnDomain;
+        private boolean renderDataFromRFC822CheckBox;
 
         public Builder(final String label, final boolean modifiable, final boolean required) {
             this.label = label;
@@ -181,19 +222,35 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
             return this;
         }
 
-        public Builder withRenderUseDataFromRFC822NameField(boolean renderUseDataFromRFC822NameField) {
-            this.renderUseDataFromRFC822NameField = renderUseDataFromRFC822NameField;
-            return this;
-        }
-
         public Builder withFieldValue(String value) {
             this.fieldValue = value;
             return this;
         }
+        
+        public Builder withUpn(boolean isUpn) {
+            this.isUpn = isUpn;
+            return this;
+        }
 
+        public Builder withUpnName(String upnName) {
+            this.upnName = upnName;
+            return this;
+        }
+        
+        public Builder withUpnDomain(String upnDomain) {
+            this.upnDomain = upnDomain;
+            return this;
+        }
+        
+        public Builder withRenderDataFromRFC822CheckBox(boolean useDataFromEmailField) {
+            this.renderDataFromRFC822CheckBox = useDataFromEmailField;
+            return this;
+        }
+        
         public SubjectAltNameFieldData build() {
             return new SubjectAltNameFieldData(this);
         }
+
     }
 
     public boolean isRenderRegex() {
@@ -208,29 +265,26 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         return rfc822NameString != null && rfc822NameString.contains("@");
     }
 
-    public boolean isRenderUseDataFromRFC822NameField() {
-        return renderUseDataFromRFC822NameField;
-    }
-
-    public void setRenderUseDataFromRFC822NameField(boolean renderUseDataFromRFC822NameField) {
-        this.renderUseDataFromRFC822NameField = renderUseDataFromRFC822NameField;
-    }
-
     @Override
     protected String getFieldValueToSave(UserView userView, int[] fieldData) throws AddEndEntityException {
 
         String fieldValueToSave = StringUtils.EMPTY;
 
         if (isRfc822Name) {
-            if (useDataFromRFC822NameField && isRequired()) {
-
+            if (useDataFromRFC822NameField) {
                 final String emailFromProfile = userView.getEmail();
-                if (StringUtils.isBlank(emailFromProfile)) {
-                    throw new AddEndEntityException("RFC822Name field required but not set in profile.");
+                if (StringUtils.isNotBlank(emailFromProfile)) {
+                    fieldValueToSave = emailFromProfile;
                 }
-                fieldValueToSave = emailFromProfile;
             } else if (StringUtils.isNotBlank(rfcName) && StringUtils.isNotBlank(rfcDomain)) {
+                if(!AddEndEntityUtil.isValidDNField(rfcName) || !AddEndEntityUtil.isValidDNField(rfcDomain)) {
+                    throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
+                }                
                 fieldValueToSave = rfcName + "@" + rfcDomain;
+            }
+        } else if (isUpn) {
+            if (StringUtils.isNotBlank(upnName) || StringUtils.isNotBlank(upnDomain)) {
+                fieldValueToSave = upnName + "@" + upnDomain;
             }
         } else {
             if (StringUtils.isNotBlank(getFieldValue())) {
@@ -239,7 +293,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         }
 
         if (StringUtils.isNotBlank(fieldValueToSave)) {
-            if(!isRfc822Name) {
+            if (!isRfc822Name) {
                 validateFieldValue(fieldValueToSave, fieldData);
             }
             fieldValueToSave = constructFinalValueToSave(fieldData, fieldValueToSave);
@@ -263,6 +317,9 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
 
         if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
             validateUpn(fieldValueToSave);
+            if (!AddEndEntityUtil.isValidDNField(fieldValueToSave)) {
+                throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
+            }
             return;
         }
 
