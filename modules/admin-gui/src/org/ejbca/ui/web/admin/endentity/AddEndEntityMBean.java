@@ -1563,14 +1563,15 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
 
                 if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)
                         && StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
-                    
-                    if (StringUtils.isNotBlank(dnFieldData.getFieldValue()) && StringUtils.isNotBlank(subjectAltNameFieldAndData.getUpnDomain())) {
-                        resutlFieldValue = dnFieldData.getFieldValue() + "@" + subjectAltNameFieldAndData.getUpnDomain();
+                    if (StringUtils.isNotBlank(dnFieldData.getFieldValue()) && StringUtils.isNotBlank(subjectAltNameFieldAndData.getUpnName())) {
+                        if (!dnFieldData.getFieldValue().startsWith("@")) {
+                            throw new AddEndEntityException("Common name must start with @ sign!");
+                        }
+                        resutlFieldValue = dnFieldData.getFieldValue();
+                        break;
                     } else {
                         throw new AddEndEntityException("Incomplete UPN!");
                     }
-
-                    break;
                 }
             }
         }
