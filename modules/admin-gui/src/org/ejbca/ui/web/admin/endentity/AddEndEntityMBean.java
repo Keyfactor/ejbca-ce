@@ -1516,9 +1516,9 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
 
         StringBuilder subjectAltName = new StringBuilder();
         int i = 0;
+        String fieldValue;
         for (final SubjectAltNameFieldData subjectAltNameFieldAndData : getSubjectAltNameFieldDatas()) {
             int[] fieldData = selectedEeProfile.getSubjectAltNameFieldsInOrder(i++);
-            String fieldValue;
             
             if(subjectAltNameFieldAndData.isCopyDataFromCN()) {
                 fieldValue = handleCopyFromCN(subjectAltNameFieldAndData, fieldData);
@@ -1541,54 +1541,60 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return newUserView;
     }
     
-    private String handleCopyFromCN(final SubjectAltNameFieldData subjectAltNameFieldAndData, final int[] sANfieldData) throws AddEndEntityException {
+    private String handleCopyFromCN(final SubjectAltNameFieldData subjectAltNameFieldAndData, final int[] fieldData) throws AddEndEntityException {
 
         String resutlFieldValue = StringUtils.EMPTY;
 
-        if (EndEntityProfile.isFieldOfType(sANfieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME)) {
-            int i = 0;
-            for (SubjectDnFieldData dnFieldData : getSubjectDnFieldsAndDatas()) {
-                int[] sDNfieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
-
-                if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)
-                        && StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
-                    resutlFieldValue = dnFieldData.getFieldValue();
-                    break;
-                }
-            }
-        } else if (EndEntityProfile.isFieldOfType(sANfieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
-            int i = 0;
-            for (SubjectDnFieldData dnFieldData : getSubjectDnFieldsAndDatas()) {
-                int[] sDNfieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
-
-                if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)
-                        && StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
-
-                    if (dnFieldData.isRequired()) {
-                        if (StringUtils.isNotBlank(dnFieldData.getFieldValue()) && StringUtils.isNotBlank(subjectAltNameFieldAndData.getUpnName())) {
-                            if (!dnFieldData.getFieldValue().startsWith("@")) {
-                                throw new AddEndEntityException("Common name must start with @ sign!");
-                            }
-                            resutlFieldValue = dnFieldData.getFieldValue();
-                            break;
-                        } else {
-                            throw new AddEndEntityException("Incomplete UPN!");
-                        }
-                    } else {
-                        if (StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
-                            resutlFieldValue = dnFieldData.getFieldValue() + "@" + subjectAltNameFieldAndData.getUpnDomain();
-                        } else {
-                            resutlFieldValue = subjectAltNameFieldAndData.getUpnDomain() + "@" + subjectAltNameFieldAndData.getUpnDomain();
-                        }
-                        break;
-                    }
-                }
-            }
-        }
+        if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME)) {
+            resutlFieldValue = handleCopyFromCnDns();
+        } else if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN)) {
+            resutlFieldValue = handleCopyFromCnUpn(subjectAltNameFieldAndData, selectedEeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]));
+        } 
+        
         if (StringUtils.isNotBlank(resutlFieldValue)) {
             resutlFieldValue = org.ietf.ldap.LDAPDN
-                    .escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(sANfieldData[EndEntityProfile.FIELDTYPE]),
+                    .escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),
                             DNFieldExtractor.TYPE_SUBJECTALTNAME) + resutlFieldValue);
+        }
+        return resutlFieldValue;
+    }
+
+    private String handleCopyFromCnUpn(SubjectAltNameFieldData subjectAltNameFieldAndData, String upnFromProfile) throws AddEndEntityException {
+
+        String resutlFieldValue = StringUtils.EMPTY;
+        String valueFromCN;
+        String upnUserName = subjectAltNameFieldAndData.getUpnName();
+        String upnDomain = subjectAltNameFieldAndData.getUpnDomain();
+
+        int i = 0;
+        for (SubjectDnFieldData dnFieldData : getSubjectDnFieldsAndDatas()) {
+            int[] sDNfieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
+            if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)) {
+                valueFromCN = dnFieldData.getFieldValue();
+                if (StringUtils.isNotBlank(valueFromCN) && StringUtils.isNotBlank(upnFromProfile)) {
+                    resutlFieldValue = valueFromCN + "@" + upnFromProfile;
+                } 
+                break;
+            } 
+        }
+        
+        if (StringUtils.isBlank(resutlFieldValue) &&  StringUtils.isNotBlank(upnUserName)) {
+            resutlFieldValue = upnUserName + "@" + upnDomain;
+        }
+        return resutlFieldValue;
+    }
+
+    private String handleCopyFromCnDns() {
+        String resutlFieldValue = StringUtils.EMPTY;
+        int i = 0;
+        for (SubjectDnFieldData dnFieldData : getSubjectDnFieldsAndDatas()) {
+            int[] sDNfieldData = selectedEeProfile.getSubjectDNFieldsInOrder(i++);
+
+            if (EndEntityProfile.isFieldOfType(sDNfieldData[EndEntityProfile.FIELDTYPE], DnComponents.COMMONNAME)
+                    && StringUtils.isNotBlank(dnFieldData.getFieldValue())) {
+                resutlFieldValue = dnFieldData.getFieldValue();
+                break;
+            }
         }
         return resutlFieldValue;
     }
