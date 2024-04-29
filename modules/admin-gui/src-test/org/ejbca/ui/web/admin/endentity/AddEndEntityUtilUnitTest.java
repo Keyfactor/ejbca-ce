@@ -33,6 +33,29 @@ public class AddEndEntityUtilUnitTest {
         assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test"));
         assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("user.name@subdomain.example.co.uk"));
         assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test*"));
+        assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test*孩儿"));
+        assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test=*"));
+        assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test*)"));
+        assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test*(孩儿"));
+        assertTrue(INVALID_SDN, AddEndEntityUtil.isValidDNField("test*孩儿/"));
+    }
+
+    @Test
+    public void invalidSubjectDN() {
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test;"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test%"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test|"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test\n"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test\r"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test`"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test&"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test#"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test&"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test{"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test}"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test^"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test$"));
+        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test\\"));
     }
     
     @Test
@@ -62,17 +85,10 @@ public class AddEndEntityUtilUnitTest {
         assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("}"));
         assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("{"));
         assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("\\"));
-    }
-
-    
-    @Test
-    public void invalidSubjectDN() {
-        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test;"));
-        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test%"));
-        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test|"));
-        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("?test\n"));
-        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test\r"));
-        assertFalse(VALID_SDN, AddEndEntityUtil.isValidDNField("test`"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("$"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("#"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("&"));
+        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("!"));
     }
     
     @Test
