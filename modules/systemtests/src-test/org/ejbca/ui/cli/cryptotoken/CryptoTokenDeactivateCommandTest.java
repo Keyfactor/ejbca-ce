@@ -54,7 +54,6 @@ public class CryptoTokenDeactivateCommandTest {
     @Before
     public void setup() throws Exception {
         final Properties cryptoTokenProperties = new Properties();
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(authenticationToken, TOKEN_NAME, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, "foo123".toCharArray());
         CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
