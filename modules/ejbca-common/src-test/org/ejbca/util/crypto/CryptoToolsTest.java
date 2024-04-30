@@ -12,6 +12,11 @@
  *************************************************************************/
 package org.ejbca.util.crypto;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -42,14 +47,10 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 /**
  * This class contains unit tests for the CryptoTools class.
@@ -107,13 +108,15 @@ public class CryptoToolsTest {
     }
 
     /** Test that we can encrypt and decrypt an RSA KeyPair 
+     * @throws CryptoTokenAuthenticationFailedException 
      * 
      */
     @Test
     public void testEncryptDecryptRsaKeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, CryptoTokenAuthenticationFailedException {
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
+        cryptoToken.activate("foo123".toCharArray());
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
@@ -140,12 +143,14 @@ public class CryptoToolsTest {
     }
 
     /** Test that we can encrypt and decrypt a P256 KeyPair 
+     * @throws CryptoTokenAuthenticationFailedException 
      */
     @Test
     public void testEncryptDecryptP256KeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, CryptoTokenAuthenticationFailedException {
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
+        cryptoToken.activate("foo123".toCharArray());
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
@@ -172,13 +177,15 @@ public class CryptoToolsTest {
     }
     
     /** Test that we can encrypt and decrypt a keypair but this time using Elliptic Curve Cofactor Diffie Hellman, and with P224
+     * @throws CryptoTokenAuthenticationFailedException 
      */
     @Test
     public void testEncryptDecryptKeyPairWithEccDhP224() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {   
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, CryptoTokenAuthenticationFailedException {   
         final String curveName = "secp224r1";
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
+        cryptoToken.activate("foo123".toCharArray());
         final String encAlias = "encAlias";
         final String signAlias = "signAlias";
         // key pair to encrypt decrypt keys
@@ -211,13 +218,15 @@ public class CryptoToolsTest {
     }
     
     /** Test that we can encrypt and decrypt a keypair but this time using Elliptic Curve Cofactor Diffie Hellman, and with P384
+     * @throws CryptoTokenAuthenticationFailedException 
      */
     @Test
     public void testEncryptDecryptKeyPairWithEccDhP384() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {   
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, CryptoTokenAuthenticationFailedException {   
         final String curveName = "secp384r1";
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
+        cryptoToken.activate("foo123".toCharArray());
         final String encAlias = "encAlias";
         final String signAlias = "signAlias";
         // key pair to encrypt decrypt keys
@@ -251,10 +260,11 @@ public class CryptoToolsTest {
     
 
     /** Test that we can encrypt and decrypt a P256 KeyPair 
+     * @throws CryptoTokenAuthenticationFailedException 
      */
     @Test
     public void testEncryptDecryptEd25519KeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, CryptoTokenAuthenticationFailedException {
 
         final String bCEdDSAPublicKey;
         final String bCEdDSAPrivateKey;
@@ -269,6 +279,7 @@ public class CryptoToolsTest {
 
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
+        cryptoToken.activate("foo123".toCharArray());
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
@@ -295,10 +306,11 @@ public class CryptoToolsTest {
     }
 
     /** Test that we can encrypt and decrypt a P256 KeyPair 
+     * @throws CryptoTokenAuthenticationFailedException 
      */
     @Test
     public void testEncryptDecryptEd448KeyPair() throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException,
-            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException {
+            IOException, InvalidKeyException, OperatorCreationException, CertificateException, NoSuchProviderException, CryptoTokenAuthenticationFailedException {
 
         final String bCEdDSAPublicKey;
         final String bCEdDSAPrivateKey;
@@ -313,6 +325,7 @@ public class CryptoToolsTest {
 
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
+        cryptoToken.activate("foo123".toCharArray());
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
@@ -339,12 +352,14 @@ public class CryptoToolsTest {
 
     }
 
-    /** Test that we can encrypt and decrypt a SecretKeySpec with AES key. */
+    /** Test that we can encrypt and decrypt a SecretKeySpec with AES key. 
+     */
     @Test
     public void testEncryptDecryptSecret()
-            throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, IOException, InvalidKeyException {
+            throws NoSuchSlotException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, IOException, InvalidKeyException, CryptoTokenAuthenticationFailedException {
         CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), new Properties(), null, 111,
                 "Soft CryptoToken");
+        cryptoToken.activate("foo123".toCharArray());
         final String alias = "alias";
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
         final String base64Key = "7tUe3OLf3xO4BGV0q0NPYlu2du4zJuUPzKeJDg5NRJo";
