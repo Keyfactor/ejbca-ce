@@ -44,7 +44,7 @@
 
 .content-body h2 {
 	margin: 0.2em 0;
-	font-size: 1.3em;
+	font-size: 1.4em;
 	font-weight: 300;
 	color: #1f589f;
 }
@@ -98,24 +98,6 @@
 
 .internal-frame fieldset {
 	padding: 0;
-}
-
-.internal-frame fieldset > .pure-control-group > label,
-#requestInfoForm\:selectKeyAlgorithmOuterPanel > .internal-frame > .pure-control-group > label {
-    min-width: 22.0em;
-}
-.internal-frame fieldset > .pure-control-group > input[type="text"],
-.internal-frame fieldset > .pure-control-group > input[type="password"],
-.internal-frame fieldset > .pure-control-group > input[type="email"],
-.internal-frame fieldset > .pure-control-group > input[type="url"],
-.internal-frame fieldset > .pure-control-group > input[type="number"],
-.internal-frame fieldset > .pure-control-group > input[type="search"],
-.internal-frame fieldset > .pure-control-group > textarea {
-    min-width: 27.8em;
-}
-.internal-frame fieldset > .pure-control-group > select,
-#requestInfoForm\:selectKeyAlgorithmOuterPanel > .internal-frame > .pure-control-group > select {
-    min-width: 36.7%;
 }
 
 .internal-frame-with-left-margin {
@@ -176,6 +158,11 @@
 }
 .pure-form-aligned .pure-control-group select {
     /* min-width: 27.8em;	/* Too wide for Email address domain list! */
+}
+.pure-form-aligned #requestTemplateForm\:selectRequestTemplateOuterPanel .pure-control-group select,
+.pure-form-aligned #requestInfoForm\:selectKeyAlgorithmOuterPanel .pure-control-group select,
+.pure-form-aligned #requestInfoForm\:selectTokenOuterPanel .pure-control-group select {
+    min-width: 27.8em;
 }
 
 .bigStatus {
@@ -356,9 +343,20 @@ textarea.row-odd,
 	margin-right: 5px;
 }
 
+.ra-editEndEntity input:nth-of-type(1)[type="text"],
+.ra-editEndEntity input:nth-of-type(1)[type="password"],
+.ra-editEndEntity input:nth-of-type(1)[type="email"],
+.ra-editEndEntity input:nth-of-type(1)[type="url"],
+.ra-editEndEntity input:nth-of-type(1)[type="number"],
+.ra-editEndEntity input:nth-of-type(1)[type="search"],
+.ra-editEndEntity textarea {
+    width: 25em;
+}
+
 .editNameConstraints {
 	width: 50%;
-	margin: 5px;
+    min-width: 25em;
+	margin: 0.5em 0 0.2em 0;
 }
 
 #detailsForm .ra-editEndEntity table {
@@ -371,8 +369,9 @@ textarea.row-odd,
 
 .ra-editEndEntity .remaining-number-of-login-attempts, .ra-editEndEntity .next-to-radio
 	{
-	width: 40px;
+	width: 3em !important;
 	margin-right: 15px;
+	text-align: center;
 }
 
 #detailsForm .ra-editEndEntity table+.next-to-radio {
@@ -418,17 +417,6 @@ input[type="file"]:focus {
 
 @media (max-width: 47.99em) {
 
-    .internal-frame fieldset > .pure-control-group > input[type="text"],
-    .internal-frame fieldset > .pure-control-group > input[type="password"],
-    .internal-frame fieldset > .pure-control-group > input[type="email"],
-    .internal-frame fieldset > .pure-control-group > input[type="url"],
-    .internal-frame fieldset > .pure-control-group > input[type="number"],
-    .internal-frame fieldset > .pure-control-group > input[type="search"],
-    .internal-frame fieldset > .pure-control-group > select,
-    .internal-frame fieldset > .pure-control-group > textarea {
-        min-width: 100%;
-    }
-
     .pure-form-aligned .pure-control-group input[type="text"],
     .pure-form-aligned .pure-control-group input[type="password"],
     .pure-form-aligned .pure-control-group input[type="email"],
@@ -438,6 +426,32 @@ input[type="file"]:focus {
     .pure-form-aligned .pure-control-group select,
     .pure-form-aligned .pure-control-group textarea {
         min-width: 100%;
+    }
+    .pure-form-aligned #requestTemplateForm\:selectRequestTemplateOuterPanel .pure-control-group select,
+    .pure-form-aligned #requestInfoForm\:selectKeyAlgorithmOuterPanel .pure-control-group select,
+    .pure-form-aligned #requestInfoForm\:selectTokenOuterPanel .pure-control-group select {
+        min-width: 100%;
+    }
+
+    .ra-editEndEntity input[type="text"],
+    .ra-editEndEntity input[type="email"],
+    .ra-editEndEntity input[type="url"],
+    .ra-editEndEntity input[type="number"],
+    .ra-editEndEntity input[type="search"],
+    .ra-editEndEntity textarea {
+        width: 90%;
+    }
+    .ra-editEndEntity input[type="password"] {
+        width: 180%;
+    }
+    .ra-editEndEntity select {
+        width: 95% !important;
+    }
+    .editNameConstraints {
+        width: 95%;
+    }
+    .ra-editEndEntity .remaining-number-of-login-attempts, .ra-editEndEntity .next-to-radio {
+        width: 3em !important;
     }
 
 }
