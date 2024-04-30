@@ -1,0 +1,12 @@
+org.ejbca.core.ejb.config.EstConfigurationCache
+org.ejbca.core.ejb.config.EABConfigurationCache
+org.ejbca.core.ejb.config.AvailableCustomCertificateExtensionsConfigurationCache
+org.ejbca.core.ejb.config.ScepConfigurationCache
+org.ejbca.core.ejb.config.AvailableExtendedKeyUsagesConfigurationCache
+org.ejbca.core.ejb.config.GlobalUpgradeConfigurationCache
+org.ejbca.core.ejb.config.OAuthConfigurationCache
+org.ejbca.core.ejb.config.MSAutoEnrollmentConfigurationCache
+org.ejbca.core.ejb.config.CMPConfigurationCache
+org.ejbca.core.ejb.config.GlobalCustomCssConfigurationCache
+org.ejbca.core.ejb.config.GlobalConfigurationCache
+org.ejbca.core.ejb.config.AvailableProtocolsConfigurationCache

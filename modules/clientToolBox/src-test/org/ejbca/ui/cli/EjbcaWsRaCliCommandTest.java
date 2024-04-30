@@ -37,6 +37,7 @@ import org.junit.rules.Timeout;
 import org.junit.runners.MethodSorters;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Run stress tests with ClientToolBax command EjbcaWsRaCli
@@ -47,7 +48,7 @@ public class EjbcaWsRaCliCommandTest {
     private final EjbcaWsRaCli command = new EjbcaWsRaCli();
 
     @Rule
-    public Timeout testTimeout = new Timeout(90_000); // per test case
+    public Timeout testTimeout = new Timeout(90_000, TimeUnit.MILLISECONDS); // per test case
 
     private static final String CERTIFICATE_PROFILE_NAME = "EjbcaWsRaCliCommandTestCP";
     private static final String END_ENTITY_PROFILE_NAME = "EjbcaWsRaCliCommandTestEEP";

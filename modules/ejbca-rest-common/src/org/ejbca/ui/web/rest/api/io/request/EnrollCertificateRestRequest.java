@@ -38,7 +38,9 @@ public class EnrollCertificateRestRequest {
     private boolean includeChain;
     @ApiModelProperty(value = "Email", example = "john.doe@example.com")
     private String email;
-    
+    @ApiModelProperty(value = "Response Format (DER format is default)", example = "DER")
+    private String responseFormat ="DER";
+
     public EnrollCertificateRestRequest() {
     }
     
@@ -69,7 +71,6 @@ public class EnrollCertificateRestRequest {
     public String getCertificateAuthorityName() {
         return certificateAuthorityName;
     }
-
     public void setCertificateAuthorityName(String certificateAuthorityName) {
         this.certificateAuthorityName = certificateAuthorityName;
     }
@@ -112,6 +113,14 @@ public class EnrollCertificateRestRequest {
         this.email = email;
     }
 
+    public String getResponseFormat() {
+        return responseFormat;
+    }
+
+    public void setResponseFormat(String responseFormat) {
+        this.responseFormat = responseFormat;
+    }
+
     /**
      * Returns a converter instance for this class.
      *
@@ -144,6 +153,7 @@ public class EnrollCertificateRestRequest {
                     .accountBindingId(enrollCertificateRestRequest.getAccountBindingId())
                     .includeChain(enrollCertificateRestRequest.getIncludeChain())
                     .email(enrollCertificateRestRequest.getEmail())
+                    .responseFormat(enrollCertificateRestRequest.getResponseFormat())
                     .build();
         }
     }

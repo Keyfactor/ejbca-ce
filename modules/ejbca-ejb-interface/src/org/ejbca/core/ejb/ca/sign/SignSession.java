@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
@@ -474,6 +475,11 @@ public interface SignSession {
      * There's no point in accessing it from EJBCA code.
      */
     CertificateGenerationParams fetchCertGenParams();
-    
+
+    Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, PublicKey altPK, int keyusage,
+            Date notBefore, Date notAfter, int certificateprofileid, int caid) throws CADoesntExistsException, AuthorizationDeniedException,
+            AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
+            InvalidAlgorithmException, CustomCertificateSerialNumberException, NoSuchEndEntityException;
 
 }

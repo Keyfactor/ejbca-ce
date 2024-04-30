@@ -143,7 +143,7 @@ public interface CA extends CACommon {
      */
     void initExtendedService(CryptoToken cryptoToken, int type, CA ca, AvailableCustomCertificateExtensionsConfiguration cceConfig) throws Exception;
     
-    /**
+   /**
     *
     * @param publicKey provided public key. Will not have any precedence over subject.extendedInformation.certificateRequest
     * @param subject end entity information. If it contains certificateRequest under extendedInformation, it will be used instead of the provided RequestMessage and publicKey
