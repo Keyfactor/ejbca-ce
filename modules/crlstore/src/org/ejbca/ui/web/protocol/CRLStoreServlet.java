@@ -32,6 +32,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.ejbca.core.protocol.crlstore.CRLCache;
 import org.ejbca.util.HTMLTools;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 
 /** 
@@ -140,4 +141,20 @@ public class CRLStoreServlet extends StoreServletBase {
 		resp.setContentLength(crl.length);
 		resp.getOutputStream().write(crl);
 	}
+	
+    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, String url) {
+        for (X509Certificate cert : certs) {
+            //Verify that there is a CRL to download
+            if (crlStoreSession.crlExistsForCa(CertTools.getSubjectDN(cert))) {
+                // Escape the URL as it might be unsafe
+                printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
+                pw.println();
+            }
+            final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            if (ArrayUtils.isEmpty(issuedCerts)) {
+                continue;
+            }
+            printInfo(issuedCerts, SPACE + indent, pw, url);
+        }
+    }
 }
