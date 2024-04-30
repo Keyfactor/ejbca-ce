@@ -520,13 +520,14 @@ public class RAInterfaceBean implements Serializable {
             sortedMap.put(caInfo, caInfo.getCAId());
         }
         final Collection<Integer> authorizedCas = sortedMap.values();
+        
         // 2. Retrieve the list of CA's available to the end entity profile
         final EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(endentityprofileid);
         // If the end entity profile has been removed, just return empty result
         if (endentityprofile != null) {
-            final List<Integer> casDefineInEndEntityProfile = new ArrayList<>(endentityprofile.getAvailableCAs());
+            final List<Integer> casDefinedInEndEntityProfile = new ArrayList<>(endentityprofile.getAvailableCAs());
             boolean allCasDefineInEndEntityProfile = false;
-            if (casDefineInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
+            if (casDefinedInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
                 allCasDefineInEndEntityProfile = true;
             }
             // 3. Next retrieve all certificate profiles defined in the end entity profile
@@ -547,7 +548,7 @@ public class RAInterfaceBean implements Serializable {
                 }
                 if (!allCasDefineInEndEntityProfile) {
                     //If ALL wasn't defined in the EE profile, only keep the intersection
-                    authorizedCasClone.retainAll(casDefineInEndEntityProfile);
+                    authorizedCasClone.retainAll(casDefinedInEndEntityProfile);
                 }
                 ret.put(certificateProfileId, authorizedCasClone);
             }
