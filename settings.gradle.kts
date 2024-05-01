@@ -21,7 +21,7 @@ dependencyResolutionManagement {
             library("commons-lang", ":commons-lang:2.6")
             library("commons-lang3", ":commons-lang3:3.12.0")
             library("commons-lang3-old", ":commons-lang3:3.2.1")
-            library("commons-configuration2", ":commons-configuration2:2.8.0")
+            library("commons-configuration2", ":commons-configuration2:2.10.1")
             library("commons-collections4", ":commons-collections4:4.4")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
             library("x509-common-util", ":x509-common-util:3.1.0")
