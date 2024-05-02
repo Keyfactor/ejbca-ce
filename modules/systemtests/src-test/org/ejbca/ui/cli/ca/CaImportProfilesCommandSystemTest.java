@@ -9,7 +9,6 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.cert.CertificateParsingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,20 +22,14 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.logging.log4j.message.SimpleMessage;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.X509CA;
-import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -45,36 +38,22 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
-import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
-import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.TemporaryFolder;
-import org.junit.runners.MethodSorters;
-
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * Unit tests for the CaImportProfilesCommand class.
  * <br/>
  * Check resources-test/readme.txt for files definition.
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CaImportProfilesCommandSystemTest {
 
     private static final Logger log = LogManager.getLogger(CaImportProfilesCommandSystemTest.class);
@@ -140,7 +119,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_01_shouldFailOnMissingDirectoryParameter() {
+    public void testFailOnMissingDirectoryParameter() {
         // given
         final String[] params = new String[] {};
         // when
@@ -157,7 +136,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_02_shouldFailOnNonExistingCAInput() throws AuthorizationDeniedException {
+    public void testFailOnNonExistingCAInput() throws AuthorizationDeniedException {
         // given
         final String caName = "IDon'tExist";
         final String[] params = new String[] { "-d", "some", "--caname", caName };
@@ -170,7 +149,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_03_shouldFailOnAuthorizationDeniedExceptionOnCAInput() throws Exception {
+    public void testFailOnAuthorizationDeniedExceptionOnCAInput() throws Exception {
         // given
         final String[] params = new String[] { "-u", username, "--clipassword", "serverpwd", "-d", "some", "--caname", caName };
         
@@ -195,7 +174,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_04_shouldFailOnCannotRead() {
+    public void testFailOnCannotRead() {
         // given
         final String[] params = new String[] { "-d", "some" };
         // when
@@ -206,7 +185,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_05_shouldFailOnFileInput() throws IOException {
+    public void testFailOnFileInput() throws IOException {
         // given
         final File inputFile = temporaryFolder.newFile("InputFile.file");
         final String[] params = new String[] { "-d", inputFile.getAbsolutePath() };
@@ -218,7 +197,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_06_shouldFailOnEmptyDirectoryInput() throws IOException {
+    public void testFailOnEmptyDirectoryInput() throws IOException {
         // given
         final File inputDir = temporaryFolder.newFolder("empty_folder");
         final String[] params = new String[] { "-d", inputDir.getAbsolutePath() };
@@ -230,7 +209,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_07_shouldSkipFileInputBecauseOfName() throws IOException {
+    public void testSkipFileInputBecauseOfName() throws IOException {
         // given
         final String fileName = "certprofile.txt";
         temporaryFolder.newFile(fileName);
@@ -245,7 +224,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_08_shouldSkipFileInputBecauseOfCertProfileNamePattern() throws IOException {
+    public void testSkipFileInputBecauseOfCertProfileNamePattern() throws IOException {
         // given
         final String fileName = "certprofile_.a";
         temporaryFolder.newFile(fileName);
@@ -261,7 +240,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_09_shouldSkipFileInputBecauseOfEntityProfileNamePattern() throws IOException {
+    public void testSkipFileInputBecauseOfEntityProfileNamePattern() throws IOException {
         // given
         final String fileName = "entityprofile_.a";
         temporaryFolder.newFile(fileName);
@@ -277,7 +256,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_10_shouldNotProcessFixedCertProfile() throws IOException {
+    public void testNotProcessFixedCertProfile() throws IOException {
         // given
         final String profileName = "ENDUSER";
         final String fileName = "certprofile_" + profileName + "-1.xml";
@@ -293,7 +272,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_11_shouldNotProcessFixedEntityProfile() throws IOException {
+    public void testNotProcessFixedEntityProfile() throws IOException {
         // given
         final String profileName = "EMPTY";
         final String fileName = "entityprofile_" + profileName + "-1.xml";
@@ -308,7 +287,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_12_shouldSkipCertProfileWithExistingName() throws IOException {
+    public void testSkipCertProfileWithExistingName() throws IOException {
         // given
         final int profileId = 111;
         final String profileName = "CP";
@@ -327,7 +306,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_13_shouldRemapCertProfileWithExistingId() throws Exception {
+    public void testRemapCertProfileWithExistingId() throws Exception {
         // given
         final int profileId = 609758752;
         final String fileName = "certprofile_" + profileName + "-" + profileId + ".xml";
@@ -351,7 +330,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_14_shouldSkipEntityProfileWithExistingName() throws Exception {
+    public void testSkipEntityProfileWithExistingName() throws Exception {
         // given
         final int profileId = 112;
         final String profileName = CaImportProfilesCommandSystemTest.profileName + "_EP";
@@ -374,7 +353,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_15_shouldRemapEntityProfileWithExistingId() throws Exception {
+    public void testRemapEntityProfileWithExistingId() throws Exception {
         // given
         final int profileId = 198381618;
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
@@ -399,7 +378,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_16_shouldRemoveNonExistingCAsFromCertProfileWithoutCAInput() throws Exception {
+    public void testRemoveNonExistingCAsFromCertProfileWithoutCAInput() throws Exception {
         // given
         final int profileId = 609758752;
         final int caToRemove = 1020;
@@ -436,7 +415,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_17_shouldRemoveNonExistingCAsFromCertProfileWithCAInput() throws Exception {
+    public void testRemoveNonExistingCAsFromCertProfileWithCAInput() throws Exception {
         // given
         final int profileId = 609758752;
         final int caToRemove = 1020;
@@ -476,7 +455,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_18_shouldRemoveUnknownPublishersFromCertProfile() throws Exception {
+    public void testRemoveUnknownPublishersFromCertProfile() throws Exception {
         // given
         final int profileId = 609758752;
         final int publisherToRemove = 1120;
@@ -499,7 +478,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_19_shouldRemoveUnknownCertificateProfileForEntityProfile() throws Exception {
+    public void testRemoveUnknownCertificateProfileForEntityProfile() throws Exception {
         // given
         final int profileId = 198381618;
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
@@ -522,7 +501,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_20_shouldRemoveNonExistingCAsFromEntityProfileWithoutCAInput() throws Exception {
+    public void testRemoveNonExistingCAsFromEntityProfileWithoutCAInput() throws Exception {
         // given
         final int profileId = 198381618;
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
@@ -549,7 +528,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_21_shouldRemoveNonExistingCAsFromEntityProfileWithCAInput() throws Exception {
+    public void testRemoveNonExistingCAsFromEntityProfileWithCAInput() throws Exception {
         // given
         final int profileId = 198381618;
         final int caToRemove = -1027462528;
