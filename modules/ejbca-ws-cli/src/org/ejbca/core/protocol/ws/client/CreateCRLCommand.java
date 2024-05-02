@@ -39,6 +39,7 @@ public class CreateCRLCommand extends EJBCAWSRABaseCommand implements IAdminComm
      * @throws IllegalAdminCommandException Error in command args
      * @throws ErrorAdminCommandException Error running command
      */
+    @Override
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
          try {   
            
@@ -57,9 +58,10 @@ public class CreateCRLCommand extends EJBCAWSRABaseCommand implements IAdminComm
     }
 
 
-	protected void usage() {
-		getPrintStream().println("Command used to generate a new CRL for a CA");
-		getPrintStream().println("Usage : createcrl <caname>\n\n");
+    @Override
+    protected void usage() {
+        getPrintStream().println("Command used to generate a new CRL for a CA");
+        getPrintStream().println("Usage : createcrl <caname>\n\n");
    }
 
 

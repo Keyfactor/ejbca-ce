@@ -40,9 +40,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import javax.ejb.EJBException;
 import javax.net.ssl.HostnameVerifier;
@@ -83,7 +85,10 @@ import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionLocal;
+import org.cesecore.roles.member.RoleMember;
+import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.provider.X509TrustManagerAcceptAll;
@@ -125,6 +130,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.keys.KeyTools;
 
+import static org.ejbca.core.ejb.authorization.AuthorizationSystemSession.SUPERADMIN_ROLE;
 import static org.primefaces.util.Constants.SEMICOLON;
 
 /**
@@ -140,6 +146,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private static Logger log = Logger.getLogger(EjbcaWebBeanImpl.class);
 
     private static final char SINGLE_SPACE_CHAR = ' ';
+    private static final String PUBLIC_ACCESS_AUTHENTICATION_TOKEN = "PublicAccessAuthenticationToken";
 
     private final EjbBridgeSessionLocal ejbLocalHelper;
     private final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
@@ -155,6 +162,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private final PublisherSessionLocal publisherSession;
     private final SecurityEventsLoggerSessionLocal auditSession;
     private final RoleSessionLocal roleSession;
+    private final RoleMemberSessionLocal roleMemberSession;
     private final UpgradeSessionLocal upgradeSession;
     private final GlobalConfigurationSessionLocal globalConfigurationSession;
     private final WebAuthenticationProviderSessionLocal authenticationSession;
@@ -222,6 +230,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         publisherSession = ejbLocalHelper.getPublisherSession();
         auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
         roleSession = ejbLocalHelper.getRoleSession();
+        roleMemberSession = ejbLocalHelper.getRoleMemberSession();
         upgradeSession = ejbLocalHelper.getUpgradeSession();
         globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
         authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
@@ -986,7 +995,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public void reloadAutoenrollmentConfiguration() {
-        msAutoenrollmentConfig = (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+        msAutoenrollmentConfig =  (MSAutoEnrollmentConfiguration) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
     }
     
     @Override
@@ -1829,12 +1838,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         return isRunningBuildWith("org.cesecore.certificates.ca.X509CAImpl");
     }
 
-    /** @return true if we are running EJBCA build that has VA functionality enabled. */
-    @Override
-    public boolean isRunningBuildWithVA() {
-        return isRunningBuildWith("org.ejbca.ui.web.protocol.OCSPServlet");
-    }
-
     /** @return true if we are running an EJBCA build that has RA functionality enabled.
      * The check is implemented to look for RaMasterApiPeerImpl, as it is excluded from the "variant=va ziprelease.
      * We decided to use RaMasterApiPeerImpl for this check, because it seemd the most painless one among
@@ -1844,6 +1847,12 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     @Override
     public boolean isRunningBuildWithRA() {
         return isRunningBuildWith("org.ejbca.peerconnector.ra.RaMasterApiPeerImpl");
+    }
+
+    /** @return true if we are running EJBCA build that has VA functionality enabled. */
+    @Override
+    public boolean isRunningBuildWithVA() {
+        return isRunningBuildWithCA() || !isRunningBuildWithRA();
     }
 
     private static boolean isRunningBuildWith(String className) {
@@ -2217,6 +2226,47 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
             }
         }
         return peerConnectorPresent.booleanValue();
+    }
+
+    public boolean getRenderPublicAccessRemoval() {
+        if (!isAuthorizedNoLogSilent(new String[]{String.valueOf(StandardRules.ROLE_ROOT)})) {
+            return false;
+        }
+
+        List<RoleMember> members;
+        try {
+            Role superAdminRole = roleSession.getRole(authState.administrator, null, SUPERADMIN_ROLE);
+            if (Objects.isNull(superAdminRole)) {
+                return false;
+            }
+            List<Role> currentUserRoles = roleSession.getRolesAuthenticationTokenIsMemberOf(authState.administrator);
+            boolean isSuperAdmin = currentUserRoles.stream().anyMatch(role -> role.equals(superAdminRole));
+            if (!isSuperAdmin) {
+                return false;
+            }
+            members = roleMemberSession.getRoleMembersByRoleId(authState.administrator,superAdminRole.getRoleId());
+        } catch (AuthorizationDeniedException e) {
+            return false;
+        }
+        boolean hasPublicAccessMember = false;
+        if(members.size() > 0) {
+            hasPublicAccessMember = members.stream().anyMatch(member -> member.getTokenType().equals(PUBLIC_ACCESS_AUTHENTICATION_TOKEN));
+        }
+        return hasPublicAccessMember;
+    }
+
+    public void removePublicAccessRoleMember() throws AuthorizationDeniedException {
+        Role superAdminRole = roleSession.getRole(authState.administrator, null, SUPERADMIN_ROLE);
+        List<RoleMember> members = roleMemberSession.getRoleMembersByRoleId(authState.administrator,superAdminRole.getRoleId());
+
+        List<Integer> publicAccessMembers = members.stream()
+            .filter(member -> member.getTokenType().equals(PUBLIC_ACCESS_AUTHENTICATION_TOKEN))
+            .map(member -> member.getId())
+            .collect(Collectors.toList());
+
+        for (int member: publicAccessMembers) {
+            roleMemberSession.remove(authState.administrator, member);
+        }
     }
 
 }

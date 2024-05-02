@@ -76,7 +76,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authorization.AuthorizationSystemSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
-import org.ejbca.core.ejb.ocsp.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -132,8 +131,6 @@ public class StartupSingletonBean {
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
-    @EJB
-    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
     @EJB
     private OcspResponseGeneratorSessionLocal ocspResponseGeneratorSession;
     @EJB
@@ -408,9 +405,6 @@ public class StartupSingletonBean {
         // Start CA certificate cache reload
         log.debug(">startup start CA certificate cache reload");
         certificateStoreSession.initTimers();
-        // Start legacy background service for renewal of OCSP signers via EJBCA WS calls to CA
-        log.debug(">startup start OCSP renewal background service");
-        ocspKeyRenewalSession.startTimer();
         // Verify that the EJB CLI user (if present) cannot be used to generate certificates
         log.debug(">startup verifying that EJBCA CLI user can not be used to generate a certificate");
         final String cliUsername = EjbcaConfiguration.getCliDefaultUser();

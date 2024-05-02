@@ -24,6 +24,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -88,6 +89,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyPair;
@@ -136,6 +138,8 @@ import static org.junit.Assume.assumeTrue;
  * A unit test class for CertificateRestResource to test its content.
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
+    
+    private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
 
     private static final String CRL_FILENAME = "CertificateRestSystemTestCrlFile";
     private static final String ALREADY_REVOKED_ERROR_MESSAGE_TEMPLATE = "Certificate with issuer: {0} and serial " +
@@ -364,7 +368,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDateString, responseInvalidityDate);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        final long databaseInvalidityDate = certificateData.getInvalidityDate();
+        final long databaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         assertEquals(invalidityDatelong, databaseInvalidityDate);
     }
 
@@ -402,7 +406,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDateString, responseInvalidityDate);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        final long databaseInvalidityDate = certificateData.getInvalidityDate();
+        final long databaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         assertEquals(invalidityDatelong, databaseInvalidityDate);
     }
 
@@ -498,7 +502,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&invalidity_date=" + invalidityDateString).request().put(null);
         // Get invalidity date value from data base
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDate = certificateData.getInvalidityDate();
+        long dataBaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         // Now change reason
         final Response actualResponse2 = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -514,7 +518,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String responseInvalidityDateUpdate = (String) actualJsonObject2.get("invalidity_date");
         // Get invalidity date value from database
         CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDateAfterRevocationReasonChange = certificateData2.getInvalidityDate();
+        long dataBaseInvalidityDateAfterRevocationReasonChange = certificateData2.getInvalidityDateNeverNull();
 
         // then
         // verify rest response
@@ -544,7 +548,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&invalidity_date=" + invalidityDateString).request().put(null);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDate = certificateData.getInvalidityDate();
+        long dataBaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         disableRevocationReasonChange();
 
         // Try to update revocation reason, it is not allowed and should fail
@@ -560,7 +564,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // Verify expected failure         
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, actualJsonObject2.toJSONString());
         CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBasenvalidityDateAfterFailedRevocationReasonChange = certificateData2.getInvalidityDate();
+        long dataBasenvalidityDateAfterFailedRevocationReasonChange = certificateData2.getInvalidityDateNeverNull();
         final String responseSerialNr = (String) actualJsonObject.get("serial_number");
         final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
         String responseReason = (String) actualJsonObject2.get("revocation_reason");
@@ -939,9 +943,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String updatedRevocationReason = KEYCOMPROMISE.getStringValue();
         // when
         revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
-        createCrl(false);
         Thread.sleep(1000);
         revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
+        createCrl(false);
         final X509CRL deltaCrl = createCrl(true);
         // then
         assertEquals("Wrong revocation reason in Delta CRL", updatedRevocationReason, getRevocationReason(deltaCrl, serialNumber));
@@ -950,20 +954,20 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     @Test
     public void shouldContainBackdatedRevocationDateInDeltaCrl() throws Exception {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
-        // Scenario: base CRL > initial revocation > revocation backdating with a date after last base CRL > delta CRL
+        // Scenario: initial revocation > revocation backdating with a date after last base CRL > base CRL > delta CRL
         // given
         enableRevocationReasonChange();
         enableRevocationBackdating();
         final String serialNumber = generateTestSerialNumber();
         final String revocationReason = KEYCOMPROMISE.getStringValue();
         // when
-        createCrl(false);
         Thread.sleep(1000);
         final String backdatedRevocationDate = getRevocationRequestDate();
         final long backdatedRevocationTime = DatatypeConverter.parseDateTime(backdatedRevocationDate).getTime().getTime();
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, null); // revoke using sysdate
         Thread.sleep(1000);
         revokeCertificate(testIssuerDn, serialNumber, revocationReason, backdatedRevocationDate); // backdate
+        createCrl(false);
         final X509CRL deltaCrl = createCrl(true);
         // then
         assertNotNull("Certificate should be present in delta CRL", deltaCrl.getRevokedCertificate(CertTools.getSerialNumberFromString(serialNumber)));
@@ -982,10 +986,11 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // when
         revokeCertificate(testIssuerDn, serialNumber, initialRevocationReason, null);
         final X509CRL initialCrl = getLatestCrl(false);
+
         revokeCertificate(testIssuerDn, serialNumber, updatedRevocationReason, null);
         final X509CRL lastCrl = getLatestCrl(false);
         // then
-        assertTrue("CRL number should be greater then the last", CrlExtensions.getCrlNumber(lastCrl).compareTo(CrlExtensions.getCrlNumber(initialCrl)) == 1);
+        assertTrue("CRL number should be greater then the last", CrlExtensions.getCrlNumber(lastCrl).compareTo(CrlExtensions.getCrlNumber(initialCrl)) > 0);
         assertEquals("Revocation reasons should match", initialRevocationReason, getRevocationReason(initialCrl, serialNumber));
         assertEquals("Revocation reasons should match", updatedRevocationReason, getRevocationReason(lastCrl, serialNumber));
     }
@@ -1055,7 +1060,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName("ENDUSER").
                 endEntityProfileName("EMPTY").
                 username(testUsername).
-                password("foo123").email(email).
+                password("foo123").
+                email(email).
+                responseFormat("DER").
                 certificateRequest(certificateRequest).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
@@ -1089,6 +1096,45 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+    public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
+        String responseFormat = "PKCS7";
+
+        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
+                certificateAuthorityName(testCaName).
+                certificateProfileName("ENDUSER").
+                endEntityProfileName("EMPTY").
+                username(testUsername).
+                password("foo123").includeChain(false).responseFormat(responseFormat).
+                certificateRequest(CSR_WITHOUT_HEADERS).build();
+
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+        // Send request
+        final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        // Verify response
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String responseFormatREST = (String) actualJsonObject.get("response_format");
+        assertEquals("The response format is not PKCS7", responseFormat, responseFormatREST);
+        final String responseCertificate = (String) actualJsonObject.get("certificate");
+        assertNotNull(responseCertificate);
+        //Verify certificate is a pkcs7
+        String pkcs7CertificatePem = new String(Base64.decode(responseCertificate.getBytes()), StandardCharsets.UTF_8);
+        assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
+        assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
+        //Varify certificate
+        pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("^-----BEGIN PKCS7-----","");
+        pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("-----END PKCS7-----$", "");
+        byte[] certBytes = Base64.decode(pkcs7CertificatePem.getBytes());
+        Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
+        String responseSerialNo = (String) actualJsonObject.get("serial_number");
+        assertEquals("", CertTools.getSerialNumber(cert), CertTools.getSerialNumberFromString(responseSerialNo));
+    }
+
+    @Test
     public void certificateRequestExpectCsrSubjectIgnoredWithoutHeaders() throws Exception {
         certificateRequestExpectCsrSubjectIgnored(false);
     }
@@ -1098,7 +1144,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         certificateRequestExpectCsrSubjectIgnored(true);
     }
 
-    public void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
+    private void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
         // Add End Entity
         EndEntityInformation userdata = new EndEntityInformation(testUsername, "O=PrimeKey,CN=" + testUsername, x509TestCa.getCAId(), null,
                 null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -1142,7 +1188,227 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Object certificatesToExpire = actualJsonObject.get("certificates_rest_response");
         assertNotNull(certificatesToExpire);
     }
+    
+    @Test
+    public void testGetCertificateAboutToExpireDetailedSearch() throws Exception {
+        
+        final String issuerDN = "CN=CaSigningForVariedValidity";
+        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false, 
+                            X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        X509CAInfo caInfo = (X509CAInfo) testX509Ca.getCAInfo();
+        caInfo.setDoEnforceUniquePublicKeys(false);
+        testX509Ca.setCAInfo(caInfo);
+        caSession.addCA(INTERNAL_ADMIN_TOKEN, testX509Ca);
+        
+        final String profilePrefix = "CertProfileVariedValidity";
+        // there is always a 10min in past offset
+        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEncodedValidity("30m");
+        int certificateProfile30mId = 
+                certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "30m", certificateProfile);
 
+        certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEncodedValidity("5d");
+        int certificateProfile5dId = 
+                certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "5d", certificateProfile);
+
+        certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEncodedValidity("15d");
+        certificateProfile.setAvailableCAs(Arrays.asList(issuerDN.hashCode()));
+        int certificateProfile15dId = 
+                certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "15d", certificateProfile);
+
+        
+        final String eeProfileName = "EeProfileVariedValidity";
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.setDefaultCertificateProfile(certificateProfile30mId);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(
+                                    certificateProfile30mId, certificateProfile5dId, certificateProfile15dId));
+        endEntityProfile.setAvailableCAs(Arrays.asList(issuerDN.hashCode()));
+        int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(
+                                INTERNAL_ADMIN_TOKEN, eeProfileName, endEntityProfile);        
+        
+        List<String> addedUserNames = new ArrayList<>();
+        
+        try {
+            // there is no limit for offset or max results today
+            int created30mCerts = 50;
+            for (int i=0; i<50; i++) {
+                String username = addAndEnrollEntity(issuerDN,  profilePrefix + "30m", certificateProfile30mId,
+                                            eeProfileName, endEntityProfileId);
+                if (username!=null) {
+                    addedUserNames.add(username);
+                } else {
+                    created30mCerts--;
+                }
+            }
+            
+            int created5dCerts = 75;
+            for (int i=0; i<75; i++) {
+                String username = addAndEnrollEntity(issuerDN,  profilePrefix + "5d", certificateProfile5dId,
+                                            eeProfileName, endEntityProfileId);
+                if (username!=null) {
+                    addedUserNames.add(username);
+                } else {
+                    created5dCerts--;
+                }
+            }
+            
+            int created15dCerts = 60;
+            for (int i=0; i<60; i++) {
+                String username = addAndEnrollEntity(issuerDN,  profilePrefix + "15d", certificateProfile15dId,
+                                            eeProfileName, endEntityProfileId);
+                if (username!=null) {
+                    addedUserNames.add(username);
+                } else {
+                    created15dCerts--;
+                }
+            }
+            
+            // test vectors
+            // 1d offset: 0, 10
+            searchToBeExpiredCerts(1, 0, 0, created30mCerts);
+            searchToBeExpiredCerts(1, 10, 0, created30mCerts - 10);
+            // 6d offset: 0, 10
+            searchToBeExpiredCerts(6, 0, 0, created30mCerts + created5dCerts);
+            searchToBeExpiredCerts(6, 10, 0, created30mCerts + created5dCerts - 10);
+            // 16d offset: 0, 10
+            searchToBeExpiredCerts(16, 0, 0, created30mCerts + created5dCerts + created15dCerts);
+            searchToBeExpiredCerts(16, 10, 0, created30mCerts + created5dCerts + created15dCerts - 10);
+            
+            // 1d offset: 10, max: 10,50  offset: 40, max: 10,50
+            searchToBeExpiredCerts(1, 10, 10, created30mCerts - 10);
+            searchToBeExpiredCerts(1, 10, 50, created30mCerts - 10, false);
+            searchToBeExpiredCerts(1, 40, 10, created30mCerts - 40, false);
+            searchToBeExpiredCerts(1, 40, 50, created30mCerts - 40, false);
+            // 6d
+            searchToBeExpiredCerts(6, 10, 10, created30mCerts + created5dCerts - 10);
+            searchToBeExpiredCerts(6, 10, 50, created30mCerts + created5dCerts - 10);
+            searchToBeExpiredCerts(6, 40, 10, created30mCerts + created5dCerts - 40);
+            searchToBeExpiredCerts(6, 40, 50, created30mCerts + created5dCerts - 40);
+            // 16d
+            searchToBeExpiredCerts(16, 10, 10, created30mCerts + created5dCerts + created15dCerts - 10);
+            searchToBeExpiredCerts(16, 10, 50, created30mCerts + created5dCerts + created15dCerts - 10);
+            searchToBeExpiredCerts(16, 40, 10, created30mCerts + created5dCerts + created15dCerts - 40);
+            searchToBeExpiredCerts(16, 40, 50, created30mCerts + created5dCerts + created15dCerts - 40);
+            
+            // negative integers are possible as input, please be gentle
+            
+        } catch (Exception e) {
+            log.error("Exception while testing expired certificate search: ", e);
+            fail("Exception while testing expired certificate search");
+        } finally {
+        
+            for (String user: addedUserNames) {
+                endEntityManagementSession.revokeAndDeleteUser(INTERNAL_ADMIN_TOKEN, user, 0);
+                internalCertificateStoreSession.removeCertificatesByUsername(user);
+            }
+            
+            endEntityProfileSession.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, eeProfileName);
+            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "30m");
+            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "5d");
+            certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "15d");
+            caSession.removeCA(INTERNAL_ADMIN_TOKEN, issuerDN.hashCode());
+        }
+        
+    }
+    
+    private void searchToBeExpiredCerts(int days, int offset, int maxResult, 
+            int minimumResultsExpected) throws Exception {
+        searchToBeExpiredCerts(days, offset, maxResult, minimumResultsExpected, true);
+    }
+    
+    private void searchToBeExpiredCerts(int days, int offset, int maxResult, 
+                                                int minimumResultsExpected, boolean expectedMoreResults) throws Exception {
+        
+        String url = "/v1/certificate/expire?days=" + days;
+        if (offset!=0) {
+            url += "&offset=" + offset;
+        }
+        if (maxResult==0) {
+            maxResult = 25;
+        }
+        url += "&maxNumberOfResults=" + maxResult;
+        int expectedEntries = maxResult;
+        
+        log.error("searchToBeExpiredCerts url: " + url);
+        final Response actualResponse = newRequest(url).request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONObject certificatesToExpire = (JSONObject) actualJsonObject.get("certificates_rest_response");
+        assertNotNull(certificatesToExpire);
+        
+        final JSONObject pagination = (JSONObject) actualJsonObject.get("pagination_rest_response_component");
+        assertNotNull(pagination);
+        
+        assertTrue(pagination.containsKey("more_results"));
+        assertTrue(pagination.containsKey("number_of_results"));
+        assertTrue(pagination.containsKey("next_offset"));
+        
+        assertTrue("number_of_results is lower than expected", 
+                (long) pagination.get("number_of_results") >= minimumResultsExpected - expectedEntries);
+        
+        assertTrue(certificatesToExpire.containsKey("certificates"));
+        JSONArray certificates = (JSONArray) certificatesToExpire.get("certificates");
+        if (expectedMoreResults) {
+            assertEquals("certificates has mismatched number of entries", certificates.size(), expectedEntries);
+        } else {
+            assertFalse("certificates has mismatched number of entries with no next page", certificates.isEmpty());
+        }
+        
+        return;
+    }
+
+    private String addAndEnrollEntity(String caDn, String certProfileName, int certProfileId,
+                                                            String eeProfileName, int eeProfileId) {
+        
+        String userName = "expireSearchTest" + RANDOM.nextLong();
+        
+        try {
+            EndEntityInformation userdata = new EndEntityInformation(
+                    userName, "CN=" + userName, caDn.hashCode(), null,
+                    null, new EndEntityType(EndEntityTypes.ENDUSER), 
+                    eeProfileId, certProfileId,
+                    SecConst.TOKEN_SOFT_BROWSERGEN, new ExtendedInformation());
+            userdata.setPassword("foo123");
+            userdata.setStatus(EndEntityConstants.STATUS_NEW);
+            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
+            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
+            
+            final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            PKCS10CertificationRequest pkcs10CertificationRequest = CertTools.genPKCS10CertificationRequest(
+                    AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+                    DnComponents.stringToBcX500Name("CN=" + userName), 
+                    keys.getPublic(), null, keys.getPrivate(), null);
+
+            // Create CSR REST request
+            EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder()
+                    .certificateAuthorityName(caDn.substring(3))
+                    .username(userName)
+                    .password("foo123")
+                    .certificateProfileName(certProfileName)
+                    .endEntityProfileName(eeProfileName)
+                    .certificateRequest(CertTools.buildCsr(pkcs10CertificationRequest)).build();
+            // Construct POST  request
+            final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+            final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+            final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+    
+            // Send request
+            final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
+            if (actualResponse.getStatus()!=201) {
+                return null;
+            }
+        } catch (Exception e) {
+            log.error("Exception while adding: " + userName, e);
+            return null;
+        }
+        
+        return userName;
+    }
+    
     @Test
     public void enrollPkcs10WithUnidFnr() throws Exception {
 
@@ -1181,7 +1447,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName(profileName).
                 endEntityProfileName(profileName).
                 username(username).
-                password(password).
+                password(password). responseFormat("DER").
                 certificateRequest(unidFnrCsr).build();
 
         // Construct POST  request

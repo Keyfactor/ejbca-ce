@@ -82,6 +82,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
@@ -173,6 +174,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
     private static final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Internal upgrade");
+    
+    //Used to remove the configuration checker during post-upgrade to 8.3
+    private static final String CONFIGURATION_CHECKER_CONFIGURATION_ID = "ISSUE_TRACKER";
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -631,6 +635,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 return false;
             }
         }
+        if (isLesserThan(oldVersion, "8.3.0")) {
+            try {
+                upgradeSession.migrateDatabase830();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }        
         setLastUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
         return true;
     }
@@ -696,6 +707,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             setLastPostUpgradedToVersion("7.11.0");
         }
+        if (isLesserThan(oldVersion, "8.3.0")) {
+            if (!postMigrateDatabase830()) {
+                return false;
+            }
+            setLastPostUpgradedToVersion("8.3.0");
+        }
         
         // NOTE: If you add additional post upgrade tasks here, also modify isPostUpgradeNeeded() and performPreUpgrade()
         //setLastPostUpgradedToVersion(InternalConfiguration.getAppVersionNumber());
@@ -734,6 +751,28 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
         }
         log.info("Post upgrade to 7.8.1 complete.");
+        return true;
+    }
+    
+    /**
+     * Remove the Configuration Checker fom database
+     *
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
+     */
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    private boolean postMigrateDatabase830() {
+        log.info("Starting post upgrade to 8.3.0");
+       
+        try {
+            if (globalConfigurationSession.findByConfigurationId(CONFIGURATION_CHECKER_CONFIGURATION_ID) != null) {
+                globalConfigurationSession.removeConfiguration(authenticationToken, CONFIGURATION_CHECKER_CONFIGURATION_ID);
+            }
+        } catch (AuthorizationDeniedException e) {
+            log.error("Administrator was not authorized to perform post-upgrade, lacks access to Configuration Checker configuration");
+            return false;
+        }
+        
+        log.info("Post upgrade to 8.3.0 complete.");
         return true;
     }
     
@@ -2557,6 +2596,29 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.debug("Added RFC9336 Extended Key Usage to availabe key usages list");
         try {
             globalConfigurationSession.saveConfiguration(authenticationToken, config);
+        } catch (AuthorizationDeniedException e) {
+            log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+    }
+    
+    @Override
+    public void migrateDatabase830() throws UpgradeFailedException {
+        log.debug(">migrateDatabase830");
+        // ECA-10671: Migrate ocsp.untilNextUpdate from ocsp.properties into Global Configuration
+        //Retrieve the old value, in ms and convert to seconds (smallest granularity
+        GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
+        
+        @SuppressWarnings("deprecation")
+        long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
+        globalOcspConfiguration.setDefaultValidityTime(nextUpdate);
+        @SuppressWarnings("deprecation")
+        long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
+        globalOcspConfiguration.setDefaultResponseMaxAge(maxAge);
+        @SuppressWarnings("deprecation")
+        boolean useMaxAgeForExpired = OcspConfiguration.getCacheHeaderMaxAge();
+        globalOcspConfiguration.setUseMaxValidityForExpiration(useMaxAgeForExpired);
+        try {
+            globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {
             log.error("Always allow token was denied authoriation to global configuration table.", e);
         }

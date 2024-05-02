@@ -55,7 +55,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.IInterval;
@@ -98,16 +97,12 @@ import java.util.Map;
  * Session bean that handles adding and editing services as displayed in EJBCA. This bean manages the service configuration as stored in the database,
  * and executes services at timeouts triggered by the timeoutHandler.
  * 
- * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ServiceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRemote {
 
     private static final Logger log = Logger.getLogger(ServiceSessionBean.class);
-
-    /** Internal localization of logs and errors */
-    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /**
      * Constant indicating the Id of the "service loader" service. Used in a clustered environment to periodically load available services
@@ -219,13 +214,13 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         }
         boolean success = addServiceInternal(admin, id, name, serviceConfiguration);
         if (success) {
-            final String msg = intres.getLocalizedMessage("services.serviceadded", name);
+            final String msg = "Service " + name  + " added.";
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
         } else {
-            final String msg = intres.getLocalizedMessage("services.erroraddingservice", name);
+            final String msg = "Error adding service " + name;
             log.info(msg);
             throw new ServiceExistsException(msg);
         }
@@ -242,7 +237,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 }
             }
         } else {
-            final String msg = intres.getLocalizedMessage("services.notauthorizedtoadd", name);
+            final String msg = "Error, not authorized to add service : " + name;
             log.info(msg);
         }
         return success;
@@ -264,13 +259,13 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             servicedata = (ServiceConfiguration) htp.getServiceConfiguration().clone();
             if (isAuthorizedToEditService(admin)) {
                 addServiceInternal(admin, findFreeServiceId(), newname, servicedata);
-                final String msg = intres.getLocalizedMessage("services.servicecloned", newname, oldname);
+                final String msg = "New service " +  newname + ", used service " + oldname + " as template.";
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                         admin.toString(), null, null, null, details);
             } else {
-                final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", oldname);
+                final String msg = "Error, not authorized to service : " + oldname;
                 log.info(msg);
             }
         } catch (CloneNotSupportedException e) {
@@ -299,18 +294,18 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     serviceSession.cancelTimer(htp.getId());
                 }
                 serviceDataSession.removeServiceData(htp.getId());
-                final String msg = intres.getLocalizedMessage("services.serviceremoved", name);
+                final String msg = "Service " + name + " removed.";
                 final Map<String, Object> details = new LinkedHashMap<>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.SERVICE_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                         admin.toString(), null, null, null, details);
                 retval = true;
             } else {
-                final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
+                final String msg = "Error, not authorized to service : " + name;
                 log.info(msg);
             }
         } catch (Exception e) {
-            final String msg = intres.getLocalizedMessage("services.errorremovingservice", name);
+            final String msg = "Error removing user data source " + name + ".";
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
@@ -334,19 +329,19 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     htp.setName(newname);
                     success = true;
                 } else {
-                    final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", oldname);
+                    final String msg = "Error, not authorized to service : " + oldname;
                     log.info(msg);
                 }
             }
         }
         if (success) {
-            final String msg = intres.getLocalizedMessage("services.servicerenamed", oldname, newname);
+            final String msg = "Service " + oldname + " renamed to " + newname + ".";
             final Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.SERVICE_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
                     admin.toString(), null, null, null, details);
         } else {
-            final String msg = intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname);
+            final String msg = "Error renaming Service " + oldname + " to " + newname + ".";
             log.info(msg);
             throw new ServiceExistsException(msg);
         }
@@ -413,7 +408,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     }
                 }
             } else {
-                final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
+                final String msg = "Error, not authorized to service : " + name;
                 log.info(msg);
             }
         } else {
@@ -483,7 +478,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 addTimer(30 * 1000, timerInfo);
             }
             if (serviceName == null) {
-                final String msg = intres.getLocalizedMessage("services.servicenotfound", timerInfo);
+                final String msg = "Service with id " + timerInfo + " not found.";
                 log.info(msg);
             } else {
                 // Get interval of worker
@@ -542,7 +537,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                             if (serviceName != null) {
                                 o = serviceName;
                             }
-                            final String msg = intres.getLocalizedMessage("services.servicerunonothernode", o);
+                            final String msg = "Service " + o + " has been executed on another node in the cluster, waiting.";
                             log.debug(msg);
                         }
                     }
@@ -799,10 +794,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
             ejbs.put(RevocationSessionLocal.class, revocationSession);
             ServiceExecutionResult result = worker.work(ejbs);
-            final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName, result.getResult().getOutput(), result.getMessage());
+            final String msg = "Service " + serviceName + " executed with the following result: " + result.getResult().getOutput() + "." + result.getMessage();
             log.info(msg);
         } catch (ServiceExecutionFailedException e) {
-            final String msg = intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName);
+            final String msg = "Service " + serviceName + " execution failed.";
             log.info(msg, e);
         }
     }
@@ -847,7 +842,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(OcspDataSessionLocal.class, ocspDataSessionLocal);
             ejbs.put(RevocationSessionLocal.class, revocationSession);
             ServiceExecutionResult result = worker.work(ejbs);            
-            final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName, result.getResult().getOutput(), result.getMessage());
+            final String msg = "Service " + serviceName + " executed with the following result: " + result.getResult().getOutput() + "." + result.getMessage();
             log.info(msg);
             return result;
     }
@@ -863,7 +858,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             if (oldservice != null) {
                 final Map<Object, Object> diff = oldservice.getServiceConfiguration().diff(serviceConfiguration);
                 if (serviceDataSession.updateServiceConfiguration(name, serviceConfiguration)) {
-                    final String msg = intres.getLocalizedMessage("services.serviceedited", name);
+                    final String msg = "Service " + name + " edited.";
                     if (noLogging) {
                         log.info(msg);
                     } else {
@@ -876,7 +871,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                                 admin.toString(), null, null, null, details);
                     }
                 } else {
-                    String msg = intres.getLocalizedMessage("services.serviceedited", name);
+                    String msg = "Service " + name + " edited.";
                     if (noLogging) {
                         log.error(msg);
                     } else {
@@ -890,7 +885,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 log.error("Can not find service to change: " + name);
             }
         } else {
-            String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
+            String msg = "Error, not authorized to service : " + name;
             log.info(msg);
         }
         log.trace("<changeService()");

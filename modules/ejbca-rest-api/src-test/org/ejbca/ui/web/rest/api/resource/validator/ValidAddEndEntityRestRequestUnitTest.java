@@ -41,7 +41,7 @@ public class ValidAddEndEntityRestRequestUnitTest {
     @Test
     public void errorSubjectDn() {
         // given
-        final String expectedMessage = "Invalid AddEndEntityRestRequest content, subjectDn cannot be null or empty.";
+        final String expectedMessage = "Invalid AddEndEntityRestRequest content, subjectDn is malformed";
         final AddEndEntityRestRequest testClass = new AddEndEntityRestRequest();
         testClass.setUsername("username");
         testClass.setSubjectDn("something wrong");

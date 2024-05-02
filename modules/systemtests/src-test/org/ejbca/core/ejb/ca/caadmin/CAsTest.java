@@ -980,12 +980,17 @@ public class CAsTest extends CaTestCase {
         try {
             // Set a policy in the CA settings, and check for values
             X509CAInfo xinfo = (X509CAInfo)info;
-            List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+            List<CertificatePolicy> policies = new ArrayList<>();
             CertificatePolicy pol = new CertificatePolicy("2.2.2.2", null, null);
             policies.add(pol);
             xinfo.setPolicies(policies);
             caSession.editCA(admin, xinfo);
+            
+            int lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            int lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);            
+            assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
+
             info = caSession.getCAInfo(admin, getTestCAId());
             certs = info.getCertificateChain();
             X509Certificate cacert2 = (X509Certificate) certs.iterator().next();
@@ -1001,15 +1006,20 @@ public class CAsTest extends CaTestCase {
             assertTrue("Renewed CA expire time should be after old one: "+info.getExpireTime()+", old: "+oldExpire, oldExpire.before(info.getExpireTime()));
             // Add a new policy to the certificate profile, and renew again to verify certificate policy handling during renewal
             final CertificateProfile caProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-            policies = new ArrayList<CertificatePolicy>();
+            policies = new ArrayList<>();
             pol = new CertificatePolicy("1.1.1.1", null, null);
             policies.add(pol);
             caProfile.setCertificatePolicies(policies);
             final int certificateprofileid = certificateProfileSession.addCertificateProfile(admin, caProfileName, caProfile);
             info.setCertificateProfileId(certificateprofileid);
             caAdminSession.editCA(admin, info);
+
             // Now we have edited the CA with the new Certificate Profile, let's renew it
+            lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+            assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
+
             info = caSession.getCAInfo(admin, getTestCAId());
             certs = info.getCertificateChain();
             X509Certificate cacert3 = (X509Certificate) certs.iterator().next();
@@ -1021,7 +1031,11 @@ public class CAsTest extends CaTestCase {
             assertEquals("2.2.2.2", policyId);
 
             // Test renew CA keys
+            lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             caAdminSession.renewCA(admin, getTestCAId(), true, null, true);
+            lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
+            assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
+            
             info = caSession.getCAInfo(admin, getTestCAId());
             certs = info.getCertificateChain();
             X509Certificate cacert4 = (X509Certificate) certs.iterator().next();
@@ -1049,7 +1063,7 @@ public class CAsTest extends CaTestCase {
             cacert5.verify(cacert2.getPublicKey());
 
             // Test make request just making a request using the old keys
-            byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            byte[] request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<>(), info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             assertNotNull(request);
             PKCS10RequestMessage msg = RequestMessageUtils.genPKCS10RequestMessage(request);
             PublicKey pk1 = cacert4.getPublicKey();
@@ -1081,12 +1095,25 @@ public class CAsTest extends CaTestCase {
             // active certificate, we should simply renew the CA
             info.setStatus(CAConstants.CA_ACTIVE);
             caAdminSession.editCA(admin, info); // need active status in order
-            // finally do a new renew
+
+            // finally do a new renew (in here we enable delta CRLs before renewal and also test for that)
+            info.setDeltaCRLPeriod(100_100);
+            caAdminSession.editCA(admin, info);
+            
+            lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLInfo(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false).getLastCRLNumber();
             caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
+            lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLInfo(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false).getLastCRLNumber();
+            int lastDeltaCrlNumberAfterRenewCA = crlStoreSession.getLastCRLInfo(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, true).getLastCRLNumber();
+            assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
+            assertTrue("Delta CRL number does not match!", lastDeltaCrlNumberAfterRenewCA == lastCrlNumberAfterRenewCA + 1);
         } finally {
             certificateProfileSession.removeCertificateProfile(admin, caProfileName);
         }
     } // test13RenewCA
+
+    private void assertCrlGenerationAfterCARenewal(final int lastCrlNumberBeforeRenewCA, final int lastCrlNumberAfterRenewCA) {
+        assertTrue("CRL number does not match!", lastCrlNumberAfterRenewCA == lastCrlNumberBeforeRenewCA + 1);
+    }
 
     /**
      * Revoking a CA will automatically create a final CRL for that CA's issued certificates. According to CAO Doc-9303-12, this CRL should contain 

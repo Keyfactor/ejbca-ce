@@ -16,6 +16,8 @@ import org.ejbca.core.EjbcaException;
 
 public class CmpServletValidationError extends EjbcaException {
 
+    private static final long serialVersionUID = 1L;
+
     public CmpServletValidationError(String message) {
         super(message);
     }

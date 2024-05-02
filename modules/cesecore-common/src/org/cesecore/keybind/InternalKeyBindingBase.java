@@ -23,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -52,7 +53,18 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     private List<InternalKeyBindingTrustEntry> trustedCertificateReferences;
     private List<InternalKeyBindingTrustEntry> signOcspResponseOnBehalf;
     private List<String> ocspExtensions;
-    private String signatureAlgorithm;    
+    private String signatureAlgorithm;
+    
+    // currently only for configdump(with initialize flag) for automated enrollment of the first certificate, 
+    // no use after that
+    // Manual upload and linking of certificate and other UI flows e.g. "Update" button is unaffected
+    // useful for both key bindings in CA node
+    // possibly can also be used for OCSP key bindings in VA node(restrict to always and only OCSPSIGNER EKU)
+    public static final String PROP_SUBJECT_DN = "subjectDn";
+    public static final String PROP_ISSUER_DN = "issuerDn";
+    public static final String PROP_EE_PROFILE_NAME = "endEntityProfileName";
+    public static final String PROP_CERT_PROFILE_NAME = "certificateProfileName";
+    public static final String PROP_KEY_SPEC = "keySpec";
     
     private final LinkedHashMap<String,DynamicUiProperty<? extends Serializable>> propertyTemplates = new LinkedHashMap<>();
     
@@ -269,6 +281,51 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
         putDataInternal(PROP_SIGNATURE_ALGORITHM, signatureAlgorithm);
     }
     
+    @Override
+    public String getSubjectDn() {
+        return getDataInternal(PROP_SUBJECT_DN, "");
+    }
+
+    @Override
+    public void setSubjectDn(String subjectDn) {
+        putDataInternal(PROP_SUBJECT_DN, subjectDn);
+    }
+    
+    @Override
+    public String getIssuerDn() {
+        return getDataInternal(PROP_ISSUER_DN, "");
+    }
+
+    @Override
+    public void setIssuerDn(String issuerDn) {
+        putDataInternal(PROP_ISSUER_DN, issuerDn);
+    }
+
+    @Override
+    public String getEndEntityProfileName() {
+        return getDataInternal(PROP_EE_PROFILE_NAME, EndEntityConstants.EMPTY_ENDENTITYPROFILENAME);
+    }
+
+    @Override
+    public void setEndEntityProfileName(String endEntityProfileName) {
+        putDataInternal(PROP_EE_PROFILE_NAME, endEntityProfileName);
+    }
+
+    @Override
+    public void setCertificateProfileName(String certificateProfileName) {
+        putData(PROP_CERT_PROFILE_NAME, certificateProfileName);
+    }
+    
+    @Override
+    public String getKeySpec() {
+        return getDataInternal(PROP_KEY_SPEC, "");
+    }
+    
+    @Override
+    public void setKeySpec(String keySpec) {
+        putDataInternal(PROP_KEY_SPEC, keySpec);
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public LinkedHashMap<Object, Object> getDataMapToPersist() {

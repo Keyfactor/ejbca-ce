@@ -104,7 +104,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfo(INTERNAL_ADMIN_TOKEN, TEST_ISSUER_DN1.hashCode());
         cainfo.setCrlPartitions(5);
         cainfo.setUsePartitionedCrl(true);
-        cainfo.setDeltaCRLPeriod(0);
+        cainfo.setDeltaCRLPeriod(100_000); // Is required to be able to create delta crls
         cainfo.setUseCrlDistributionPointOnCrl(true);
         cainfo.setDefaultCRLDistPoint("http://localhost:8080/ejbca/publicweb/webdist/certdist"
                 + "?cmd=crl&issuer=CN%3DCaRestResourceSystemTest1&partition=*");
@@ -185,22 +185,23 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     @Test
     public void testCreateCrlWithoutDeltaCrl() throws Exception {
         log.error("testCreateCrlWithoutDeltaCrl");
-        // with delta
-        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl?deltacrl=true");
-        assertTrue(responseBody, ("\"all_success\":false"));
+
+        // without delta
+        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl??deltacrl=false");
+
+        assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":0,"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":0"));
         
-        // without delta
-        responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl??deltacrl=false");
+        // with delta
+        responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
-        assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":0,"));
-        assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":2,"));
-        assertTrue(responseBody, ("\"latest_crl_version\":2"));
-        assertTrue(responseBody, ("\"latest_delta_crl_version\":0"));
-        
+        assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":2,"));
+        assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
+        assertTrue(responseBody, ("\"latest_crl_version\":1"));
+        assertTrue(responseBody, ("\"latest_delta_crl_version\":2"));
     }
     
     @Test
@@ -217,10 +218,10 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         // with delta
         responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
-        assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":3,"));
-        assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":2,"));
-        assertTrue(responseBody, ("\"latest_crl_version\":2"));
-        assertTrue(responseBody, ("\"latest_delta_crl_version\":3"));
+        assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":2,"));
+        assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
+        assertTrue(responseBody, ("\"latest_crl_version\":1"));
+        assertTrue(responseBody, ("\"latest_delta_crl_version\":2"));
         
         // suspend two partition
         X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfo(INTERNAL_ADMIN_TOKEN, TEST_ISSUER_DN2.hashCode());
@@ -230,31 +231,32 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         // with delta
         responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
-        assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":5,"));
-        assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":4,"));
-        assertTrue(responseBody, ("\"latest_crl_version\":4"));
-        assertTrue(responseBody, ("\"latest_delta_crl_version\":5"));
+        assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":3,"));
+        assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
+        assertTrue(responseBody, ("\"latest_crl_version\":1"));
+        assertTrue(responseBody, ("\"latest_delta_crl_version\":3"));
     }
     
     @Test
     public void testCreateCrlNoPartition() throws Exception {
         log.error("testCreateCrlNoPartition");
         
+        // first we generate base CRL without delta
+        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=false");
+        assertTrue(responseBody, ("\"all_success\":true"));
+        assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":null"));
+        assertTrue(responseBody, ("\"latest_partition_crl_versions\":null"));
+        assertTrue(responseBody, ("\"latest_crl_version\":1"));
+        assertTrue(responseBody, ("\"latest_delta_crl_version\":0")); // did not generate
+        
+        
         // with delta
-        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=true");
+        responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":null"));
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":null"));
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":2")); // generated over base version
-        
-        // without delta
-        responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=false");
-        assertTrue(responseBody, ("\"all_success\":true"));
-        assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":null"));
-        assertTrue(responseBody, ("\"latest_partition_crl_versions\":null"));
-        assertTrue(responseBody, ("\"latest_crl_version\":3"));
-        assertTrue(responseBody, ("\"latest_delta_crl_version\":2")); // did not generate
     }
     
     @Test

@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
+import java.util.concurrent.TimeUnit;
+
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
@@ -30,7 +32,7 @@ import org.junit.rules.Timeout;
 public class HealthCheckCommandTest {
 
     @Rule
-    public Timeout testTimeout = new Timeout(60_000); // per test case
+    public Timeout testTimeout = new Timeout(60_000, TimeUnit.MILLISECONDS); // per test case
 
     private HealthCheck command = new HealthCheck();
     private String httpReqPath;
