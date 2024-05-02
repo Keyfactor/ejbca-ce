@@ -63,6 +63,7 @@
         <path location="${mod.cesecore-cvcca.lib}"/>
 		<path refid="lib.hibernate.validator"/>
 		<path refid="lib.test.powermock.classpath"/>
+		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
 	<path id="test.classpath">

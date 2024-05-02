@@ -212,7 +212,41 @@
                         <h:outputLabel styleClass="smallHelp" value="#{web.text.SIGNINGALGORITHM_FILTERED}"/>
                     </h:panelGroup>
 
-                    <!-- Edit CA -->
+					<!-- Alternative Signing Algorithm -->
+					<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
+						<h:outputLabel for="getAlternativeSigningAlgorithm"
+							value="#{web.text.ALTERNATIVESIGNINGALGORITHM}"
+							style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
+						<h:outputText id="getAlternativeSigningAlgorithm"
+							value="#{editCAsMBean.currentCaAlternativeSigningAlgorithm}"
+							rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and not editCAsMBean.caExternal}" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+						<h:outputLabel value="#{web.text.ALTERNATIVESIGNINGALGORITHM}"
+							style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+						<h:selectOneMenu id="alternativeSignatureAlgorithmParam"
+							value="#{editCAsMBean.alternativeSignatureAlgorithmParam}">
+							<f:selectItems
+								value="#{editCAsMBean.availableSigningAlgListNoneOption}" />
+							<f:ajax event="change" render="editcapage" />
+						</h:selectOneMenu>
+						<br />
+						<h:outputLabel styleClass="smallHelp"
+							value="#{web.text.SIGNINGALGORITHM_ALTERNATIVE_FILTERED}" />
+					</h:panelGroup>
+
+
+
+					<!-- Edit CA -->
                     <h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
                         <h:outputLabel for="defaultKey"
@@ -226,6 +260,7 @@
                                       rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"/>
                     </h:panelGroup>
 
+					<!--  Certificate Signing Key -->
                     <h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
                         <h:outputLabel for="certSignKey" value="certSignKey"/>
@@ -237,7 +272,21 @@
                                       rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"/>
                     </h:panelGroup>
 
-                    <h:panelGroup
+					<!--  Alternative Certificate Signing Key -->
+					<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
+						<h:outputLabel for="alternativeCertSignKey"
+							value="alternativeCertSignKey" />
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
+						<h:outputText id="alternativeCertSignKey"
+							value="#{editCAsMBean.currentCaCryptoTokenAlternativeCertSignKey}"
+							rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+					</h:panelGroup>
+
+					<!-- CRL Sign Key -->
+					<h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable
 									and editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.caTypeCits}">
                         <h:outputLabel for="crlSignKey" value="crlSignKey"/>
@@ -250,6 +299,7 @@
                                       rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"/>
                     </h:panelGroup>
 
+					<!--  Encryption Key -->
                     <h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable
 									and editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.caTypeCits}">
@@ -263,6 +313,7 @@
                                       rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"/>
                     </h:panelGroup>
 
+					<!--  Test Key -->
                     <h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
                         <h:outputLabel for="testKey" value="testKey"/>
@@ -302,7 +353,24 @@
                         </h:selectOneMenu>
                     </h:panelGroup>
 
-                    <h:panelGroup
+					<!--  Alternative Certificate Signing Key -->
+					<h:panelGroup
+						rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
+						<h:outputText value="alternativeCertSignKey" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
+						<h:selectOneMenu
+							value="#{editCAsMBean.selectedCryptoTokenAlternativeCertSignKey}"
+							disabled="#{not editCAsMBean.alternativeSignatureAlgorithmSelected}">
+							<f:selectItems
+								value="#{editCAsMBean.getKeyAliasesList('alternativeCertSignKey')}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+
+
+					<h:panelGroup
                             rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable
 									and not editCAsMBean.caTypeCits}">
                         <h:outputText value="crlSignKey"/>
@@ -1047,6 +1115,7 @@
                                          rendered="#{editCAsMBean.renderSelectCertificateProfile}"
                                          disabled="#{!editCAsMBean.hasEditRight or editCAsMBean.signedByExternal and !editCAsMBean.caUninitialized}">
                             <f:selectItems value="#{editCAsMBean.certificateProfiles}"/>
+                            <f:ajax render="warningNameConstraintsPermitted warningNameConstraintsExcluded"/>
                         </h:selectOneMenu>
                     </h:panelGroup>
 
@@ -1199,7 +1268,12 @@
                         <h:inputTextarea id="textfieldnameconstraintspermitted" rows="4"
                                          cols="38" value="#{editCAsMBean.caInfoDto.nameConstraintsPermitted}"
                                          disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}"/>
-                        <br/>
+                        <h:panelGroup layout="block" id="warningNameConstraintsPermitted">
+                            <h:outputText
+                                    rendered="#{editCAsMBean.renderNameConstraintsWarning}"
+                                    styleClass="warning"
+                                    value="#{web.text.NAME_CONSTRAINTS_WARNING}"/>
+                        </h:panelGroup>
                         <h:outputText styleClass="smallHelp"
                                       value="#{web.text.EXT_PKIX_NC_PERMITTED_HELP1}"/>
                         <br/>
@@ -1225,7 +1299,12 @@
                         <h:inputTextarea id="textfieldnameconstraintsexcluded" rows="4"
                                          cols="38" value="#{editCAsMBean.caInfoDto.nameConstraintsExcluded}"
                                          disabled="#{not editCAsMBean.hasEditRight or (!editCAsMBean.editCA and editCAsMBean.signedByExternal)}"/>
-                        <br/>
+                        <h:panelGroup layout="block" id="warningNameConstraintsExcluded">
+                            <h:outputText
+                                    rendered="#{editCAsMBean.renderNameConstraintsWarning}"
+                                    styleClass="warning"
+                                    value="#{web.text.NAME_CONSTRAINTS_WARNING}"/>
+                        </h:panelGroup>
                         <h:outputText styleClass="smallHelp"
                                       value="#{web.text.EXT_PKIX_NC_EXCLUDED_HELP1}"/>
                         <br/>

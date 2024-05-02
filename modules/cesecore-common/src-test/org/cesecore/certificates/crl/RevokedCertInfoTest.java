@@ -14,10 +14,10 @@ package org.cesecore.certificates.crl;
 
 import java.math.BigInteger;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
-import org.cesecore.util.CompressedCollection;
 import org.cesecore.util.ValidityDate;
 import org.junit.Test;
 
@@ -53,16 +53,16 @@ public class RevokedCertInfoTest {
     
     @Test
     public void mergeEmpty() {
-        final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>(RevokedCertInfo.class);
+        final Collection<RevokedCertInfo> a = new ArrayList<>();
         a.add(REVINFO_1_NOTREVOKED);
-        final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>(RevokedCertInfo.class);
+        final Collection<RevokedCertInfo> b = new ArrayList<>();
         assertSame("Empty 'b' collection should cause 'a' to be returned.", a, RevokedCertInfo.mergeByDateAndStatus(a, b, 0));
     }
     
     @Test
     public void mergeWithDuplicates() {
-        final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>(RevokedCertInfo.class);
-        final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>(RevokedCertInfo.class);
+        final Collection<RevokedCertInfo> a = new ArrayList<>();
+        final Collection<RevokedCertInfo> b = new ArrayList<>();
         b.add(REVINFO_1_NOTREVOKED);
         b.add(REVINFO_4_UNSPECIFIED); // permanent revocation => wins
         b.add(REVINFO_5_REMOVEFROMCRL);
@@ -73,9 +73,9 @@ public class RevokedCertInfoTest {
     
     @Test
     public void mergeWithDuplicates2() {
-        final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>(RevokedCertInfo.class);
+        final Collection<RevokedCertInfo> a = new ArrayList<>();
         a.add(REVINFO_4_UNSPECIFIED); // permanent revocation => wins
-        final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>(RevokedCertInfo.class);
+        final Collection<RevokedCertInfo> b = new ArrayList<>();
         b.add(REVINFO_1_NOTREVOKED);
         b.add(REVINFO_5_REMOVEFROMCRL);
         final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, System.currentTimeMillis());
@@ -85,8 +85,8 @@ public class RevokedCertInfoTest {
     
     @Test
     public void mergeWithDuplicates3() {
-        final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>(RevokedCertInfo.class);
-        final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>(RevokedCertInfo.class);
+        final Collection<RevokedCertInfo> a = new ArrayList<>();
+        final Collection<RevokedCertInfo> b = new ArrayList<>();
         b.add(REVINFO_2_ONHOLD); // only temporary revocations, and most recent entry => wins
         b.add(REVINFO_1_NOTREVOKED);
         final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
@@ -96,8 +96,8 @@ public class RevokedCertInfoTest {
     
     @Test
     public void mergeWithDuplicates4() {
-        final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>(RevokedCertInfo.class);
-        final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>(RevokedCertInfo.class);
+        final Collection<RevokedCertInfo> a = new ArrayList<>();
+        final Collection<RevokedCertInfo> b = new ArrayList<>();
         b.add(REVINFO_4_UNSPECIFIED);
         b.add(REVINFO_3_UNSPECIFIED); // permanent revocation with oldest date wins
         final Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
@@ -107,8 +107,8 @@ public class RevokedCertInfoTest {
     
     @Test
     public void mergeWithRemoveFromCrl1() {
-        final CompressedCollection<RevokedCertInfo> a = new CompressedCollection<>(RevokedCertInfo.class);
-        final CompressedCollection<RevokedCertInfo> b = new CompressedCollection<>(RevokedCertInfo.class);
+        final Collection<RevokedCertInfo> a = new ArrayList<>();
+        final Collection<RevokedCertInfo> b = new ArrayList<>();
         b.add(REVINFO_5_REMOVEFROMCRL); // should be skipped
         Collection<RevokedCertInfo> res = RevokedCertInfo.mergeByDateAndStatus(a, b, 0);
         assertEquals("REMOVEFROMCRL should be removed in Base CRL.", 0, res.size());

@@ -55,7 +55,6 @@ import java.nio.file.Path;
  * Just to be used for encryption (not decryption) and verifying (not signing)
  * by the public part of an asymmetric key.
  * 
- * @version $Id$
  */
 public class PublicCryptoToken implements CryptoToken {
 

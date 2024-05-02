@@ -31,8 +31,14 @@ import javax.persistence.SqlResultSetMappings;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyTools;
+
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.ssh.SshCertificate;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -40,12 +46,6 @@ import org.cesecore.dbprotection.DatabaseProtectionException;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.SshCertificateUtils;
-
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Representation of a certificate and related information.
@@ -109,6 +109,10 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     private static final int LATEST_PROTECT_VERSON = 7;
 
+    // These are data fields that map to columns in the database
+    // Note that getters and setters for these must return/set the exact column value and not do modifications, otherwise it may lead to 
+    // org.hibernate.StaleObjectStateException
+    // If a get-value need to be modified another Transient method should be added, setters must be "pure" due to how hibernate works
     private String issuerDN;
     private String subjectDN;
     private String subjectAltName = null;  // @since EJBCA 6.6.0
@@ -144,7 +148,8 @@ public class CertificateData extends BaseCertificateData implements Serializable
      *
      * @param certificate the (X509)Certificate to be stored in the database. If the property "database.useSeparateCertificateTable" is true then it should be null.
      * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have
-     *            parameters. Can be null if RSA or certificate public key contains all parameters.
+     *            parameters. Can be null if RSA or PQC or certificate public key contains all parameters. Only used for generating Subject Key ID,
+     *            so the alternative public key is not needed here.
      * @param username the username in UserData to map the certificate to
      * @param cafp CA certificate fingerprint, can be null
      * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)
@@ -388,6 +393,14 @@ public class CertificateData extends BaseCertificateData implements Serializable
         this.expireDate = expireDate;
     }
 
+    /** This method is needed because the invalidityDate column was added in EJBCA 7.12 and the column value will be null
+     * for existing certificates. 
+     * @return Invalidity date if it was saved or -1 of not set. */
+    @Transient
+    public Long getInvalidityDateNeverNull() {
+        return invalidityDate == null ? -1L : invalidityDate;
+    }
+
     @Override
     public Long getInvalidityDate() {
         return invalidityDate;
@@ -395,7 +408,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
 
     @Override
     public void setInvalidityDate(Long invalidityDate) {
-        this.invalidityDate = (Long) ObjectUtils.defaultIfNull(invalidityDate, -1L);
+        this.invalidityDate = invalidityDate;
     }
 
     @Override
@@ -796,7 +809,7 @@ public class CertificateData extends BaseCertificateData implements Serializable
         protectionStringBuilder.append(getFingerprint()).append(getIssuerDN());
         if (version >= 7 ) {
             // In version 7 (EJBCA 7.12.0) the invalidityDate column is added
-            protectionStringBuilder.append(getInvalidityDate());
+            protectionStringBuilder.append(getInvalidityDateNeverNull());
         }
         if (version > 6) {
         	// In version 6 (EJBCA 7.5.0) the accountBindingId column is added

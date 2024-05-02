@@ -133,12 +133,9 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB UpgradeSessionLocal upgradeSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
-	@EJB
-	SctDataSessionLocal sctDataSession;
-	@EJB
-	OcspDataSessionLocal ocspDataSession;
-	@EJB
-	OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
+	@EJB SctDataSessionLocal sctDataSession;
+	@EJB OcspDataSessionLocal ocspDataSession;
+	@EJB OcspResponseCleanupSessionLocal ocspResponseCleanupSession;
 
     @Override public AdminPreferenceSessionLocal getAdminPreferenceSession() { return adminPreferenceSession; }
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
@@ -189,13 +186,6 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
     @Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
     @Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
     @Override public OcspResponseCleanupSessionLocal getOcspResponseCleanupSession() { return ocspResponseCleanupSession; }
-
-	@Override
-	public SctDataSessionLocal getSctDataSession() {
-		return sctDataSession;
-	}
-    @Override
-    public OcspDataSessionLocal getOcspDataSession() {
-        return ocspDataSession;
-    }
+    @Override public SctDataSessionLocal getSctDataSession() { return sctDataSession; }
+    @Override public OcspDataSessionLocal getOcspDataSession() { return ocspDataSession; }
 }

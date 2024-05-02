@@ -77,46 +77,20 @@
     </condition>
 	
 	<!-- Auto-detect supported application server type -->
-	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.type" value="jboss"/>
-	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.type" value="jboss"/>
-	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jboss7"/>
-	<!-- WildFly 8 through 14 is the same as JBoss EAP 6 for building -->
-	<available file="${appserver.home}/modules/system/layers/base/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jbosseap6"/>
-	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
-	<available file="${appserver.home}/glassfish/lib/javaee.jar" property="appserver.type" value="glassfish"/>
-	<available file="${appserver.home}/modules/bean-validator.jar" property="appserver.subtype" value="glassfish3"/>
-	<available file="${appserver.home}/glassfish/lib/appserv-rt.jar" property="appserver.subtype" value="glassfish4"/>
-	<property name="appserver.type.detected.errormessage"
-		value="'appserver.type' could not be detected or is not configured. Glassfish 3.1, Glassfish 4.0, JBoss 7.1.1, JBoss EAP 6.1, 6.2, 6.3, 6.4, WildFly 8, 9, 10 can be detected. (Is 'appserver.home' configured?)"/>
-	<ant antfile="${ejbca.home}/echo.xml" target="appserver.error.message" inheritall="true" inheritrefs="true"/>
+	<!-- Note: Only WF 23-26 are currently supported --> 
+	<property name="appserver.type" value="jboss"/>
+	<property name="appserver.subtype" value="jboss7"/>
 	
-	<condition property="bundle-hibernate-jpa">
-		<or>
-			<matches pattern="glassfish" string="${appserver.type}"/>
-			<!-- ... -->
-		</or>
-	</condition>
-	
-	<condition property="exclude-slf4j">
-		<or>
-			<matches pattern="glassfish3" string="${appserver.subtype}"/>
-			<matches pattern="glassfish4" string="${appserver.subtype}"/>
-			<!-- ... -->
-		</or>
-	</condition>
 
 	<condition property="exclude-xerces">
 		<or>
 			<matches pattern="jboss7" string="${appserver.subtype}"/>
-			<matches pattern="jbosseap6" string="${appserver.subtype}"/>
-			<matches pattern="glassfish" string="${appserver.type}"/>
 			<!-- ... -->
 		</or>
 	</condition>
 
 	<!-- Automatically determine DataSource JNDI name prefix from application server type -->
 	<condition property="datasource.jndi-name-prefix" value="java:/"><equals arg1="jboss" arg2="${appserver.type}"/></condition>
-	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="glassfish" arg2="${appserver.type}"/></condition>
 
    <!-- Finally we read in default properties from file. This should be done last since a few settings above
          are automagically detected based on appserver-type for instance -->
@@ -213,7 +187,6 @@ httpsserver.hostname     = ${httpsserver.hostname}
 httpsserver.password     = ***
 httpserver.external.fqdn = ${httpserver.external.fqdn}
 web.contentencoding      = ${web.contentencoding}
-web.renewalenabled       = ${web.renewalenabled}
 ejbcaws.enabled          = ${ejbcaws.enabled}
 unidfnr.enabled          = ${unidfnr.enabled}
 

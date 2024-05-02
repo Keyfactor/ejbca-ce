@@ -1,0 +1,3 @@
+org.ejbca.core.model.validation.domainblacklist.DomainBlacklistExactMatchChecker
+org.ejbca.core.model.validation.domainblacklist.DomainBlacklistComponentChecker
+org.ejbca.core.model.validation.domainblacklist.DomainBlacklistBaseDomainChecker

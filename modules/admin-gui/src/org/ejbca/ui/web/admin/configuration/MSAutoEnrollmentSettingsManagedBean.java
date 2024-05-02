@@ -40,6 +40,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.config.MSAutoEnrollmentSettingsTemplate;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -50,6 +51,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.util.msae.MsaeUtil;
 import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
 import org.ejbca.ui.web.admin.BaseManagedBean;
@@ -115,14 +117,13 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             if (StringUtils.isEmpty(aliasName)) {
                 this.dto = new AutoEnrollmentDTO();
             } else {
-                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
-                        globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+                final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(aliasName);
                 this.dto = new AutoEnrollmentDTO(aliasName, autoEnrollmentConfiguration);
             }
         }
         return dto;
     }
-
+    
     public void setDto(AutoEnrollmentDTO dto) {
         this.dto = dto;
     }
@@ -476,8 +477,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
         }
         if (adLoginPass.equals(HIDDEN_PWD)) {
             // If password field has been reset in GUI, test connection with persisted password
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
-                    globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(getDto().getAlias());
             adLoginPass = autoEnrollmentConfiguration.getAdLoginPassword(getDto().getAlias());
             if (StringUtils.isEmpty(adLoginPass)) {
                 addErrorMessage("MSAE_AD_TEST_CONNECTION_FAILURE", "Invalid Credentials");
@@ -501,8 +501,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      */
     public void saveKeyTabFile() {
         try {
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
-                    globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(getDto().getAlias());
 
             autoEnrollmentConfiguration.setMsaeKeyTabFilename(getDto().getAlias(), getDto().getKeyTabFilename());
             autoEnrollmentConfiguration.setMsaeKeyTabBytes(getDto().getAlias(), getDto().getKeyTabFileBytes());
@@ -522,8 +521,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      */
     public void saveKrb5ConfFile() {
         try {
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
-                    globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(getDto().getAlias());
 
             autoEnrollmentConfiguration.setMsaeKrb5ConfFilename(getDto().getAlias(), getDto().getKrb5ConfFilename());
             autoEnrollmentConfiguration.setMsaeKrb5ConfBytes(getDto().getAlias(), getDto().getKrb5ConfFileBytes());
@@ -562,6 +560,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             persistedTemplate.setIncludeUPNInSubjectSAN(newTemplateSettings.isIncludeUPNInSubjectSAN());
             persistedTemplate.setPublishToActiveDirectory(newTemplateSettings.isPublishToActiveDirectory());
             persistedTemplate.setArchivePrivateKey(newTemplateSettings.isArchivePrivateKey());
+            persistedTemplate.setSupplySubjectInformationInRequest(newTemplateSettings.isSupplySubjectInformationInRequest());
         }
     }
 
@@ -608,13 +607,13 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
                 return null;
             }
 
-            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = (MSAutoEnrollmentConfiguration)
-                    globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
-
+            final MSAutoEnrollmentConfiguration autoEnrollmentConfiguration = MsaeUtil.fetchMSAEConfig(getDto().getAlias());
+            
             // MSAE Kerberos Settings
             autoEnrollmentConfiguration.setMsaeForestRoot(getDto().getAlias(), getDto().getMsaeForestRoot());
             autoEnrollmentConfiguration.setMsaeDomain(getDto().getAlias(), getDto().getMsaeDomain());
             autoEnrollmentConfiguration.setPolicyName(getDto().getAlias(), getDto().getPolicyName());
+            autoEnrollmentConfiguration.setPolicyUpdateInterval(getDto().getAlias(), getDto().getPolicyUpdateInterval());
             autoEnrollmentConfiguration.setPolicyUid(getDto().getAlias());
             autoEnrollmentConfiguration.setSpn(getDto().getAlias(), getDto().getServicePrincipalName());
 
@@ -641,12 +640,20 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             autoEnrollmentConfiguration.setMsTemplateSettings(getDto().getAlias(), getDto().getMappedMsTemplates());
 
             globalConfigurationSession.saveConfiguration(getAdmin(), autoEnrollmentConfiguration);
+            getEjbcaErrorWebBean().clearAutoenrollCache();
+            getEjbcaWebBean().reloadAutoenrollmentConfiguration();
             addInfoMessage("MSAE_AUTOENROLLMENT_SAVE_OK");
             return "done";
         } catch (AuthorizationDeniedException e) {
             log.error("Cannot save the configuration for the MS Auto Enrollment because the current "
                     + "administrator is not authorized. Error description: " + e.getMessage());
             addErrorMessage("MSAE_AUTOENROLLMENT_SAVE_ERROR");
+            return null;
+        } catch (InvalidConfigurationException e) {
+            String message = "Cannot save the configuration for the MS Auto Enrollment due to failing validation. "
+                    + "Error description: " + e.getLocalizedMessage();
+            log.error(message);
+            super.addNonTranslatedErrorMessage(message);
             return null;
         }
     }

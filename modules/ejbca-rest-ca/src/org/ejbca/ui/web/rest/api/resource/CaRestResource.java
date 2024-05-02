@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -50,8 +51,11 @@ import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.ejbca.core.ejb.crl.CrlCreationParams;
 import org.ejbca.core.ejb.crl.ImportCrlSessionLocal;
 import org.ejbca.core.ejb.crl.PublishingCrlSessionLocal;
+import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaCaListRequest;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -109,11 +113,15 @@ public class CaRestResource extends BaseRestResource {
      * Returns the Response containing the list of CAs with general information per CA as Json.
      *
      * @param httpServletRequest HttpServletRequest of a request.
+     * @param includeExternal boolean true to get external cartificates, false to not include external certificates
      * @return The response containing the list of CAs and its general information.
      */
-    public Response listCas(final HttpServletRequest httpServletRequest) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
+    public Response listCas(final HttpServletRequest httpServletRequest, boolean includeExternal) throws AuthorizationDeniedException, CADoesntExistsException, RestException {
         final AuthenticationToken adminToken = getAdmin(httpServletRequest, false);
-        List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(raMasterApiProxy.getAuthorizedCAInfos(adminToken));
+        final RaCaListRequest raCaListRequest = new RaCaListRequest();
+        raCaListRequest.setIncludeExternal(includeExternal);
+        final IdNameHashMap<CAInfo> authorizedCAInfos = raMasterApiProxy.getRequestedAuthorizedCAInfos(adminToken, raCaListRequest);
+        final List<CaInfoRestResponse> caInfoRestResponseList = CaInfosRestResponse.converter().toRestResponses(authorizedCAInfos);
         final CaInfosRestResponse caInfosRestResponse = CaInfosRestResponse.builder()
                 .certificateAuthorities(caInfoRestResponseList)
                 .build();
@@ -157,7 +165,7 @@ public class CaRestResource extends BaseRestResource {
                 result &= publishingCrlSession.forceDeltaCRL(admin, caId);
             } else {
                 // if false, generate base CRL
-                result &= publishingCrlSession.forceCRL(admin, caId);
+                result &= publishingCrlSession.forceCRL(admin, caId, new CrlCreationParams(5, TimeUnit.MINUTES));
             }
         } catch (CADoesntExistsException | CryptoTokenOfflineException | CAOfflineException | DeltaCrlException e) {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(),

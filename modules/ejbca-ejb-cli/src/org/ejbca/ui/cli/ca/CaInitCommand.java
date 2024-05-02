@@ -72,6 +72,7 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -172,9 +173,8 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 "Crypto Token Type to create new Crypto Token",
                 MandatoryMode.OPTIONAL,
                 StandaloneMode.ALLOW,
-                ParameterMode.ARGUMENT,
-                "Defines if the CA Crypto Token should be created with soft keys or on a HSM. Use 'soft' for software keys, 'org.cesecore.keys.token.PKCS11CryptoToken' "
-                + "for PKCS#11 HSMs and 'org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken' for Utimaco CP5 HSM."));
+                ParameterMode.ARGUMENT, "Use 'soft' for software keys, 'org.cesecore.keys.token.PKCS11CryptoToken' for legacy Java PKCS#11 HSMs and " + 
+                "'org.cesecore.keys.token.p11ng.cryptotoken.Pkcs11NgCryptoToken' for Enterprise PKCS#11 HSMs."));
         registerParameter(new Parameter(
                 TOKEN_NAME_KEY,
                 "Name of Crypto Token",
@@ -188,7 +188,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 MandatoryMode.OPTIONAL,
                 StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT,
-                "catokenpassword is the password for the CA token. Set to 'null' to use the default system password for Soft token CAs. Set to 'prompt' to prompt for the password on the terminal."));
+                "catokenpassword is the password for the CA token. Set to 'prompt' to prompt for the password on the terminal."));
         registerParameter(new Parameter(KEY_SPEC_KEY, "Key Specification", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Key specification for CA signing key (soft crypto token) and OCSP service keys. Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192). " + "Keyspec for DSA keys is size of DSA keys (1024). "
                         + "Keyspec for ECDSA keys is name of curve."));
@@ -407,7 +407,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         getLogger().info("SuperAdmin CN: " + superAdminCN);
         getLogger().info("DN: " + dn);
         getLogger().info("CA token type: " + catokentype);
-        getLogger().info("CA token password: " + (catokenpassword == null ? "null" : "hidden"));
+        getLogger().info("CA token password: hidden");
         getLogger().info("Keytype: " + keytype);
         getLogger().info("Keyspec: " + keyspec);
         getLogger().info("Validity: " + encodedValidity);
@@ -473,25 +473,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
                 cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
             }
-            // If authentication code is provided as "null", use the default token password for soft tokens (from cesecore.properties), and auto activation
-            // If a user defined authentication code is provided, use this and do not enable auto activation for soft tokens
-            final char[] authenticationCode;
-            if (catokenpassword == null || StringUtils.equalsIgnoreCase(catokenpassword, "null")) {
-                authenticationCode = null;
-                // auto activation is enabled by default when using the default soft token pwd, which is used by default
-                // for existing, active, crypto tokens no authenticationCode is needed
-            } else {
-                authenticationCode = catokenpassword.toCharArray();
-            }
-            // We must do this in order to not set the default password when creating a new soft CA token
-            // A bit tricky, but thats how it is as of EJBCA 5.0.x, 2012-05.
+            
+            final char[] authenticationCode = catokenpassword.toCharArray();
+            
             final String className;
             if (StringUtils.equalsIgnoreCase(catokentype, "soft")) {
                 className = SoftCryptoToken.class.getName();
-                if (authenticationCode != null) {
-                    getLogger().info("Non default password used for soft CA token, auto activation disabled.");
-                    cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
-                }
+                BaseCryptoToken.setAutoActivatePin(cryptoTokenProperties, new String(authenticationCode), true);
             } else {
                 // if no catokentype was specified className will be null, and we will use an existing crypto token.
                 className = catokentype;
