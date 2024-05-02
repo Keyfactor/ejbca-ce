@@ -115,7 +115,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @After
-    public void tearDown() throws AuthorizationDeniedException, NoSuchEndEntityException, CouldNotRemoveEndEntityException {
+    public void tearDown() throws Exception {
         if (endEntityManagementSession.existsUser(username)) {
             endEntityManagementSession.deleteUser(admin, username);
         }
@@ -148,14 +148,12 @@ public class CaImportProfilesCommandSystemTest {
         // then
         assertEquals("CLI return code mismatch.", CommandResult.CLI_FAILURE, commandResult);
         
-        // No more logging.
-        // Missing parameters now are handled in org.ejbca.ui.cli.infrastructure.parameter.ParameterHandler in keyfactor-commons-cli
+        // No more logging here.
+        // Missing parameters are handled in org.ejbca.ui.cli.infrastructure.parameter.ParameterHandler in keyfactor-commons-cli
         // 
         // ERROR: Incorrect parameter usage.
         // The following mandatory arguments are missing or poorly formed, use --help for more information:
         //      -d      Directory containing profiles.
-        // 
-        // assertLog("ERROR: Incorrect parameter usage.");
     }
 
     @Test
@@ -172,7 +170,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_03_shouldFailOnAuthorizationDeniedExceptionOnCAInput() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, AuthorizationDeniedException, CAExistsException, CADoesntExistsException, EndEntityExistsException, CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, WaitingForApprovalException {
+    public void test_03_shouldFailOnAuthorizationDeniedExceptionOnCAInput() throws Exception {
         // given
         final String[] params = new String[] { "-u", username, "--clipassword", "serverpwd", "-d", "some", "--caname", caName };
         
@@ -329,7 +327,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_13_shouldRemapCertProfileWithExistingId() throws IOException, CertificateProfileExistsException, AuthorizationDeniedException {
+    public void test_13_shouldRemapCertProfileWithExistingId() throws Exception {
         // given
         final int profileId = 609758752;
         final String fileName = "certprofile_" + profileName + "-" + profileId + ".xml";
@@ -353,7 +351,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_14_shouldSkipEntityProfileWithExistingName() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException {
+    public void test_14_shouldSkipEntityProfileWithExistingName() throws Exception {
         // given
         final int profileId = 112;
         final String profileName = CaImportProfilesCommandSystemTest.profileName + "_EP";
@@ -376,7 +374,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_15_shouldRemapEntityProfileWithExistingId() throws IOException, EndEntityProfileExistsException, EndEntityProfileNotFoundException, AuthorizationDeniedException {
+    public void test_15_shouldRemapEntityProfileWithExistingId() throws Exception {
         // given
         final int profileId = 198381618;
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
@@ -401,7 +399,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_16_shouldRemoveNonExistingCAsFromCertProfileWithoutCAInput() throws IOException, CertificateProfileExistsException, AuthorizationDeniedException {
+    public void test_16_shouldRemoveNonExistingCAsFromCertProfileWithoutCAInput() throws Exception {
         // given
         final int profileId = 609758752;
         final int caToRemove = 1020;
@@ -438,7 +436,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_17_shouldRemoveNonExistingCAsFromCertProfileWithCAInput() throws IOException, CertificateProfileExistsException, AuthorizationDeniedException, CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException {
+    public void test_17_shouldRemoveNonExistingCAsFromCertProfileWithCAInput() throws Exception {
         // given
         final int profileId = 609758752;
         final int caToRemove = 1020;
@@ -478,7 +476,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_18_shouldRemoveUnknownPublishersFromCertProfile() throws IOException, CertificateProfileExistsException, AuthorizationDeniedException {
+    public void test_18_shouldRemoveUnknownPublishersFromCertProfile() throws Exception {
         // given
         final int profileId = 609758752;
         final int publisherToRemove = 1120;
@@ -501,7 +499,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_19_shouldRemoveUnknownCertificateProfileForEntityProfile() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException {
+    public void test_19_shouldRemoveUnknownCertificateProfileForEntityProfile() throws Exception {
         // given
         final int profileId = 198381618;
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
@@ -524,7 +522,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_20_shouldRemoveNonExistingCAsFromEntityProfileWithoutCAInput() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException, CertificateProfileExistsException {
+    public void test_20_shouldRemoveNonExistingCAsFromEntityProfileWithoutCAInput() throws Exception {
         // given
         final int profileId = 198381618;
         final String fileName = "entityprofile_" + profileName + "-" + profileId + ".xml";
@@ -551,7 +549,7 @@ public class CaImportProfilesCommandSystemTest {
     }
 
     @Test
-    public void test_21_shouldRemoveNonExistingCAsFromEntityProfileWithCAInput() throws IOException, EndEntityProfileExistsException, AuthorizationDeniedException, CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, CertificateProfileExistsException {
+    public void test_21_shouldRemoveNonExistingCAsFromEntityProfileWithCAInput() throws Exception {
         // given
         final int profileId = 198381618;
         final int caToRemove = -1027462528;
@@ -581,7 +579,7 @@ public class CaImportProfilesCommandSystemTest {
         assertLog("INFO - Added entity profile '" + profileName + "' to database.");
     }
     
-    private void createCa(final String name) throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, AuthorizationDeniedException {
+    private void createCa(final String name) throws Exception {
         final X509CA ca = CaTestUtils.createTestX509CA("CN=" + name, "foo123".toCharArray(), false);
         ca.setName(name);
         caSession.addCA(admin, ca);
