@@ -150,6 +150,10 @@ public interface InternalCertificateStoreSessionRemote {
     void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username,
             BigInteger serialNumber, int status, Date revocationDate, int reasonCode, String caFingerprint)  throws AuthorizationDeniedException;
 
+    void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username,
+            BigInteger serialNumber, int status, Date revocationDate, int reasonCode, String caFingerprint, Date invalidityDate)
+            throws AuthorizationDeniedException;
+
     /** @return a raw CertificateData row */
     CertificateData getCertificateData(String fingerprint);
 
