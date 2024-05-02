@@ -179,7 +179,7 @@ public class SearchCertificatesRestResponseV2 {
                         .setUsername(cd.getUsername())
                         .setCertificate(encodedCertificateBytes)
                         .setCertificateRequest(cd.getCertificateRequest())
-                        .setInvalidityDate(cd.getInvalidityDate())
+                        .setInvalidityDate(cd.getInvalidityDateNeverNull())
                         .build();
                     result.getCertificates().add(response);
                 }

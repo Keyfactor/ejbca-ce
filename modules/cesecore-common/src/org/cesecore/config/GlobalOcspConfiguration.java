@@ -39,6 +39,9 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     private static final String PROPERTY_OCSP_AUDIT_LOG_PATTERN = "ocspAuditLogPattern";
     private static final String PROPERTY_OCSP_AUDIT_LOG_VALUES = "ocspAuditLogValues";
     private static final String PROPERTY_OCSP_LOGGING_DATE_FORMAT = "ocspLoggingDateFormat";
+    private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY = "ocspDefaultResponseValidity";
+    private static final String PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE = "ocspDefaultResponseMaxAge";
+    private static final String PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION = "useMaxValidityForExpiration";
 
     public boolean getExplicitNoCacheUnauthorizedResponsesEnabled() {
         if (Objects.isNull(data.get(EXPLICIT_NO_CACHE_UNAUTHORIZED_RESPONSES_ENABLED))) {
@@ -198,6 +201,66 @@ public class GlobalOcspConfiguration extends ConfigurationBase implements Serial
     @Override
     public String getConfigurationId() {
         return OCSP_CONFIGURATION_ID;
+    }
+    
+    /**
+     * 
+     * @return the default validity time, in seconds
+     */
+    public long getDefaultValidityTime() {
+        if(data.get(PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY) == null) {
+            return 0L;
+        } else {
+            return (long) data.get(PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY);
+        }
+    }
+    
+    /**
+     * 
+     * @param validityTime the default validity time, in seconds
+     */
+    public void setDefaultValidityTime(long validityTime) {
+        data.put(PROPERTY_OCSP_DEFAULT_RESPONSE_VALIDITY, validityTime);
+    }
+    
+    /**
+     * 
+     * @return the default validity time, in seconds
+     */
+    public long getDefaultResponseMaxAge() {
+        if(data.get(PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE) == null) {
+            //Default based on legacy configuration
+            return 30L;
+        } else {
+            return (long) data.get(PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE);
+        }
+    }
+    
+    /**
+     * 
+     * @param responseMaxAge the default response max age, in seconds
+     * 
+     */
+    public void setDefaultResponseMaxAge(long responseMaxAge) {        
+        data.put(PROPERTY_OCSP_DEFAULT_RESPONSE_MAX_AGE, responseMaxAge);
+    }
+    
+    /**
+     * 
+     * @return true for if expired OCSP replies should use Max Age as a validity instead of the validity time
+     */
+    public boolean getUseMaxValidityForExpiration() {
+
+        if (data.get(PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION) == null) {
+            //Default based on legacy configuration
+            return false;
+        } else {
+            return (boolean) data.get(PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION);
+        }
+    }
+    
+    public void setUseMaxValidityForExpiration(boolean useMaxValidityForExpiration) {
+        data.put(PROPERTY_OCSP_USE_MAX_AGE_FOR_EXPIRATION, useMaxValidityForExpiration);
     }
 
 }

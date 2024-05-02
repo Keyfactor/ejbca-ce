@@ -40,8 +40,8 @@ public class PublishingCrlProxySessionBean implements PublishingCrlProxySessionR
     private PublishingCrlSessionLocal publishingCrlSession;
     
     @Override
-    public Set<Integer> createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException {
-        return publishingCrlSession.createCRLs(admin, caids, addtocrloverlaptime);
+    public Set<Integer> createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime, CrlCreationParams params) throws AuthorizationDeniedException {
+        return publishingCrlSession.createCRLs(admin, caids, addtocrloverlaptime, params);
     }
 
     @Override

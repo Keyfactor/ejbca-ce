@@ -19,8 +19,6 @@
     *  See terms of license at gnu.org.                                     *
     *                                                                       *
     *************************************************************************/
-
-    version: $Id$
      -->
 </ui:remove>
 
@@ -32,7 +30,7 @@
                     value="#{cmpConfigMBean.authorizedToEdit ? web.text.CMPMANAGEALIASES : web.text.CMP_VIEW_ALIASES}"/>
             <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/CMP.html')}" escape="false"/>
         </h1>
-        <h:form rendered="#{web.ejbcaWebBean.runningEnterprise}">
+        <h:form>
             <h:panelGroup rendered="#{cmpConfigMBean.authorizedToEdit}">
                 <h3>
                     <h:outputText value="#{web.text.CLONE}"/>

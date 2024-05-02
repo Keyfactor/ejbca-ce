@@ -773,7 +773,7 @@
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <link rel="stylesheet" type="text/css" href="<c:out value='<%= ejbcawebbean.getBaseUrl() + ejbcawebbean.getCssFile() %>' />" />
-  <link rel="shortcut icon" href="<%=ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath("favicon.png")%>" type="image/png" />
+  <link rel="shortcut icon" href="<%=ejbcawebbean.getAdminWebBaseUrl() + ejbcawebbean.getImagePath(ejbcawebbean.getEditionFolder() + "/favicon.png")%>" type="image/png" />
   <script type="text/javascript">
 
   <% if(!noprofiles){ %>
@@ -1508,7 +1508,7 @@ function checkallfields(){
                                 id="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"
                                 onchange="toggleModifySubjectAltName(this, '<%= TEXTFIELD_SUBJECTALTNAME + i %>')"
                                 checked disabled>
-                            <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>">Use entity CN</label><br />
+                            <label for="<%= CHECKBOX_SUBJECTALTNAME_DNS + i %>"><c:out value="<%= ejbcawebbean.getText(\"USESCNFIELDDATA\") %>" /></label><br />
                         <% }
 				        final Map<String,Serializable> validation = profile.getValidation(fielddata[EndEntityProfile.FIELDTYPE],fielddata[EndEntityProfile.NUMBER]);
                         final String regex = (validation != null ? (String)validation.get(RegexFieldValidator.class.getName()) : null); %>

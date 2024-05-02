@@ -1,0 +1,26 @@
+ # Configuration for NGINX meant for cluster internal communication
+{{- if .Values.nginx.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ejbca.fullname" . }}-nginx
+spec:
+  type: {{ .Values.nginx.service.type }}
+  ports:
+    - name: nginx-http
+      port: {{ .Values.nginx.service.httpPort }}
+      {{- if eq .Values.nginx.service.type "NodePort" }}
+      nodePort: {{ .Values.nginx.service.httpPort }}
+      {{- end }}
+      targetPort: nginx-http
+      protocol: TCP
+    - name: nginx-https
+      port: {{ .Values.nginx.service.httpsPort }}
+      {{- if eq .Values.nginx.service.type "NodePort" }}
+      nodePort: {{ .Values.nginx.service.httpsPort }}
+      {{- end }}
+      targetPort: nginx-https
+      protocol: TCP
+  selector:
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
+{{- end }}

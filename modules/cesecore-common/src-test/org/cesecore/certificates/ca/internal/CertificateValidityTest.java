@@ -18,6 +18,7 @@ import static org.easymock.EasyMock.reset;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -32,6 +33,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -57,9 +59,6 @@ import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Tests calculation of certificate validity dates
- * 
- * @version $Id$
- *
  */
 public class CertificateValidityTest {
 
@@ -429,6 +428,42 @@ public class CertificateValidityTest {
         // Should work
         CertificateValidity.checkPrivateKeyUsagePeriod(cert);
 	}
+
+    @Test()
+    public void testNotBeforeDateInPastOutsideEncodedValidity() throws Exception {
+        LOG.trace(">testNotBeforeDateInPastOutsideEncodedValidity");
+
+        // Given
+        final Date now = new Date();
+        final Date notBefore = DateUtils.addYears(now, -10);
+        final Date notAfter = DateUtils.addYears(now, 5);
+
+        final EndEntityInformation endEntityInformation = new EndEntityInformation();
+        final ExtendedInformation extendedInformation = new ExtendedInformation();
+        extendedInformation.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(notBefore));
+        extendedInformation.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, ValidityDate.formatAsUTC(notAfter));
+        endEntityInformation.setExtendedInformation(extendedInformation);
+
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certificateProfile.setEncodedValidity("3y");
+        certificateProfile.setAllowValidityOverride(true);
+
+        // Should throw IllegalValidityException during certificate validation
+        final IllegalValidityException exception = assertThrows(IllegalValidityException.class,
+                                                                () -> new CertificateValidity(now, endEntityInformation, caInfo, certificateProfile,
+                                                                                              notBefore, notAfter, caCertificate, false, false)
+        );
+        assertTrue(exception.getMessage().contains("is outside the allowed validity period and would result in an already expired certificate"));
+
+        // Should give correct notAfter based on certificateProfileLastDate
+        endEntityInformation.getExtendedInformation().setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(now));
+        final CertificateValidity certificateValidity = new CertificateValidity(now, endEntityInformation, caInfo, certificateProfile,
+                                                                                notBefore, notAfter, caCertificate, false, false);
+
+        assertTrue("notAfter from CertificateValidity should conform to encoded validity (certificateProfileLastDate): ", certificateValidity.getNotAfter().before(notAfter));
+
+        LOG.trace("<testNotBeforeDateInPastOutsideEncodedValidity");
+    }
 	
     private void testBaseTestCertificateValidity(String encodedValidity) throws Exception {
         final Date caFrom = new Date();

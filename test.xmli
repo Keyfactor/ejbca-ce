@@ -139,10 +139,6 @@
         <ant antfile="build.xml" dir="modules/cits" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear, deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/systemtests" target="rungfver" inheritall="true" inheritrefs="true"/>
-    </target>
-
     <target name="test:runone" description="run a single Test specified -Dtest.runone=classname" depends="deleteDirectories">
     	<fail message="'test.runone' is not set. Example -Dtest.runone=TestDnComponents . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
     	<!-- Locate the right module where the test resides.. -->
@@ -179,6 +175,7 @@
                     <include name="modules/ssh/src-test/**/${test.runone}.java" />
                     <include name="modules/msae/src-test/**/${test.runone}.java" />
                     <include name="modules/cits/src-test/**/${test.runone}.java" />
+                    <include name="modules/cesecore-x509ca/src-test/**/${test.runone}.java" />
 				</fileset>
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
@@ -276,6 +273,9 @@
         </condition>
         <condition property="module" value="modules/cits">
             <matches string="${test-fullname}" pattern="^modules/cits/.*$"/>
+        </condition>
+        <condition property="module" value="modules/cesecore-x509ca">
+            <matches string="${test-fullname}" pattern="^modules/cesecore-x509ca/.*$"/>
         </condition>
         <fail message="The requested test '${test.runone}' was not found." unless="module"/>
     	<ant antfile="${test-buildfile}" dir="${module}" target="runone" inheritall="true" inheritrefs="true"/>

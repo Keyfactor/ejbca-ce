@@ -1252,11 +1252,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         // caData should not be null if configured properly
         boolean allowedOnCa = true;
+        boolean allowInvalidityDate = true;
         final CAData caData = caSession.findById(caid);
-        if(caData!=null) {
+        if (caData != null) {
             final CAInfo caInfo = caData.getCA().getCAInfo();
             // external CA for CRLReader in VA
             allowedOnCa = caInfo.isAllowChangingRevocationReason() || caInfo.getStatus() == CAConstants.CA_EXTERNAL;
+            allowInvalidityDate = caInfo.isAllowInvalidityDate();
         } 
         
         boolean returnVal = false;
@@ -1269,7 +1271,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             }
             certificateData.setUpdateTime(now.getTime());
             certificateData.setRevocationReason(reason);
-            if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+            if (invalidityDate != null && allowInvalidityDate) {
                 certificateData.setInvalidityDate(invalidityDate);
             } else {
                 certificateData.setInvalidityDate(-1L);
@@ -1283,21 +1285,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             certificateData.setUpdateTime(now.getTime());
             certificateData.setStatus(CertificateConstants.CERT_REVOKED);
             certificateData.setRevocationReason(reason);
-            if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
+            if (invalidityDate != null && allowInvalidityDate) {
                 certificateData.setInvalidityDate(invalidityDate);
             }
             if (revokeDate != null) {
                 certificateData.setRevocationDate(revokeDate);
             }
             final String msg = INTRES.getLocalizedMessage("store.revokedcertreasonchange", username, certificateData.getFingerprint(), reason, certificateData.getLogSafeSubjectDn(), certificateData.getIssuerDN(), serialNumber);
-            Map<String, Object> details = new LinkedHashMap<>();
-            details.put("msg", msg);
-            logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
-            returnVal = true;
-        } else if (invalidityDate != null && caData.getCA().getCAInfo().isAllowInvalidityDate()) {
-            certificateData.setUpdateTime(now.getTime());
-            certificateData.setInvalidityDate(invalidityDate);
-            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), certificateData.getRevocationReason(), certificateData.getLogSafeSubjectDn(), certificateData.getIssuerDN(), serialNumber);
             Map<String, Object> details = new LinkedHashMap<>();
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
@@ -1317,6 +1311,14 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             details.put("msg", msg);
             logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
             returnVal = true; // we did change status
+        } else if (invalidityDate != null && allowInvalidityDate) {
+            certificateData.setUpdateTime(now.getTime());
+            certificateData.setInvalidityDate(invalidityDate);
+            final String msg = INTRES.getLocalizedMessage("store.revokedcertinvaldatechange", username, certificateData.getFingerprint(), certificateData.getRevocationReason(), certificateData.getLogSafeSubjectDn(), certificateData.getIssuerDN(), serialNumber);
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("msg", msg);
+            logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNumber, username, details);
+            returnVal = true;
         } else {
             final String msg = INTRES.getLocalizedMessage("store.ignorerevoke", serialNumber, certificateData.getStatus(), reason);
             log.info(msg);
@@ -1793,7 +1795,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         	} else {
         	    final CertificateData limitedCertificateData = cdw.getCertificateData();
                 if (cdw.getCertificateData().getRevocationDate() != revocationDate.getTime() || cdw.getCertificateData().getRevocationReason() != reasonCode
-                        || cdw.getCertificateData().getInvalidityDate() != invalidityDate.getTime()) {
+                        || cdw.getCertificateData().getInvalidityDateNeverNull() != invalidityDate.getTime()) {
                     // Update the limited entry
                     log.info("Updating limited CertificateData entry with fingerprint=" + limitedFingerprint + ", serialNumber=" + serialNumber.toString(16).toUpperCase()+", issuerDn='"+issuerDn+"'");
                     limitedCertificateData.setStatus(CertificateConstants.CERT_REVOKED);
@@ -1818,10 +1820,19 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void reloadCaCertificateCache() {
         log.info("Reloading CA certificate cache.");
-        Collection<Certificate> certs = certificateDataSession.findActiveCaCertificatesByType(Arrays.asList(CertificateConstants.CERTTYPE_SUBCA,
+        Collection<Certificate> caCerts = certificateDataSession.findActiveCaCertificatesByType(Arrays.asList(CertificateConstants.CERTTYPE_SUBCA,
                         CertificateConstants.CERTTYPE_ROOTCA));
-        CaCertificateCache.INSTANCE.loadCertificates(certs);
-        log.info("Reloaded CA certificate cache with "+certs.size()+" certificates");
+        // Very old CAs might not have the SYSTEMCA username, therefore we need to double-check that they are included
+        final List<CAData> caDatas = caSession.findAll();
+        for (final CAData caData : caDatas) {
+            final List<Certificate> queryResults = certificateDataSession.findActiveBySubjectDnAndType(caData.getSubjectDN(),
+                    Arrays.asList(CertificateConstants.CERTTYPE_SUBCA, CertificateConstants.CERTTYPE_ROOTCA));
+            if (queryResults != null && queryResults.size() > 0 && !caCerts.contains(queryResults.get(0))) {
+                caCerts.add(queryResults.get(0));
+            }
+        }
+        CaCertificateCache.INSTANCE.loadCertificates(caCerts);
+        log.info("Reloaded CA certificate cache with " + caCerts.size() + " certificates");
     }
 
     /**

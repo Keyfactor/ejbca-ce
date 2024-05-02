@@ -13,9 +13,13 @@
 package org.cesecore.certificates.certificate;
 
 import static java.util.stream.Collectors.toList;
+import static org.cesecore.authorization.control.StandardRules.SYSTEMCONFIGURATION_VIEW;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.LogRedactionUtils;
@@ -23,6 +27,7 @@ import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValidityDate;
 import org.cesecore.util.ValueExtractor;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -46,7 +51,7 @@ import java.util.TimeZone;
  */
 @Stateless //(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateDataSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public class CertificateDataSessionBean extends BaseCertificateDataSessionBean implements CertificateDataSessionLocal {
+public class CertificateDataSessionBean extends BaseCertificateDataSessionBean implements CertificateDataSessionLocal, CertificateDataSessionRemote {
 
     private static final Logger log = Logger.getLogger(CertificateDataSessionBean.class);
 
@@ -58,6 +63,9 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
+    
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
 
     @Override
     protected EntityManager getEntityManager() {
@@ -89,6 +97,20 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         final TypedQuery<CertificateData> query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN", CertificateData.class);
         query.setParameter("subjectDN", subjectDN);
         return query.getResultList();
+    }
+
+    /**
+     * @return active certificates that match the specified types and subjectDN
+     */
+    @Override
+    public List<Certificate> findActiveBySubjectDnAndType(final String subjectDN, final Collection<Integer> certificateTypes) {
+        final TypedQuery<CertificateData> query = entityManager
+                .createQuery("SELECT a FROM CertificateData a WHERE (a.status=:status1 or a.status=:status2) AND a.type IN (:ctypes) AND a.subjectDN=:subjectDN", CertificateData.class);
+        query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
+        query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
+        query.setParameter("ctypes", certificateTypes);
+        query.setParameter("subjectDN", subjectDN);
+        return getCertificateList(query.getResultList());
     }
 
     /** @return return the query results as a List. */
@@ -372,6 +394,21 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);
         query.setParameter("status2", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
         return ((Long) query.getSingleResult()).intValue();
+    }
+    
+    @Override
+    public Long getCertificateCount(AuthenticationToken adminToken, Boolean isActive) throws AuthorizationDeniedException {
+        final String errorMessage = "Unauthorized access to the resource. Token: %s. "
+                + "Only the user with the \"/system_functionality/view_systemconfiguration/\" privilege "
+                + "is allowed to perform this operation.";
+        
+        if (!authorizationSession.isAuthorized(adminToken, SYSTEMCONFIGURATION_VIEW.resource())) {
+            throw new AuthorizationDeniedException(String.format(errorMessage, adminToken.toString()));
+        }
+        if (isActive != null && isActive) {
+            return findQuantityOfTheActiveCertificates();
+        }
+        return findQuantityOfAllCertificates();
     }
 
     @Override

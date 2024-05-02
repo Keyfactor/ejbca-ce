@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.crl;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.Set;
 
 import javax.ejb.Local;
@@ -48,10 +47,11 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
      * @param addtocrloverlaptime given in milliseconds and added to the CRL overlap time, if set to how often this method is run (poll time), it can 
      * be used to issue a new CRL if the current one expires within the CRL overlap time (configured in CA) and the poll time. The  used CRL overlap 
      * time will be (crloverlaptime + addtocrloverlaptime)
+     * @param params Additional parameters, such as time limit for certificate archival.
      *            
      * @return a set of all CAs that had CRLs created.                   
      */
-     Set<Integer> createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException;
+     Set<Integer> createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime, final CrlCreationParams params) throws AuthorizationDeniedException;
 
     /**
      * Method that checks if there are any delta CRLs needed to be updated and then creates them. This method can be called by a scheduler or a 
@@ -84,7 +84,7 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
             throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
     /** Internal method, do not use. Needs to be here for transaction management. */
-    String internalCreateCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo, final Date validFrom)
+    String internalCreateCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo, final CrlCreationParams params)
             throws CAOfflineException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**

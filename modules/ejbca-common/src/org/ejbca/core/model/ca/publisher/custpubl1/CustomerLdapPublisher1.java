@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.ca.publisher.custpubl1;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -583,7 +583,7 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                 // connect to the server
                 lc.connect(currentServer, Integer.parseInt(port));
                 // authenticate to the server
-                lc.bind(LDAPConnection.LDAP_V3, loginDN, loginPassword.getBytes("UTF8"), ldapBindConstraints);
+                lc.bind(LDAPConnection.LDAP_V3, loginDN, loginPassword.getBytes(StandardCharsets.UTF_8), ldapBindConstraints);
                 
                 // Perform the action
                 result = action.performAction(lc);
@@ -594,9 +594,6 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
                 } else {
                     action.failed(e);
                 }
-            } catch (UnsupportedEncodingException e) {
-                String msg = intres.getLocalizedMessage("publisher.errorpassword", loginPassword);
-                throw new RuntimeException(msg);
             } finally {
                 // disconnect with the server
                 try {
