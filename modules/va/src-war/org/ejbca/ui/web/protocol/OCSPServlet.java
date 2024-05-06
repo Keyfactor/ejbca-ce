@@ -17,12 +17,12 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJB;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.ejb.EJB;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -211,7 +211,7 @@ public class OCSPServlet extends HttpServlet {
             OcspResponseInformation ocspResponseInformation = null;
             try {
                 byte[] requestBytes = checkAndGetRequestBytes(request, httpMethod);
-                X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("jakarta.servlet.request.X509Certificate");
                 ocspResponseInformation = integratedOcspResponseGeneratorSession.getOcspResponse(
                         requestBytes, requestCertificates, remoteAddress, xForwardedFor, requestUrl, auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false);
             } catch (MalformedRequestException e) {

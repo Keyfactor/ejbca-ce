@@ -17,10 +17,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.Persistence;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
@@ -552,7 +552,7 @@ public class DatabaseSchemaTest {
 
     /**
      * Outputs which method it is run from.
-     * Validates that all getters on the entity that is annotated with @javax.persistence.Column is set. 
+     * Validates that all getters on the entity that is annotated with @jakarta.persistence.Column is set. 
      * Commits the entity in one transaction and then removes it in another transaction.
      */
     private void storeAndRemoveEntity(Object entity) {
@@ -564,7 +564,7 @@ public class DatabaseSchemaTest {
             boolean allOk = true;
             for (Method m : entityClass.getDeclaredMethods()) {
                 for (Annotation a : m.getAnnotations()) {
-                    if (a.annotationType().equals(javax.persistence.Column.class) && m.getName().startsWith("get")) {
+                    if (a.annotationType().equals(jakarta.persistence.Column.class) && m.getName().startsWith("get")) {
                         try {
                             m.setAccessible(true);
                             if (m.invoke(entity) == null) {

@@ -15,8 +15,8 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.persistence.PostPersist;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.persistence.PostPersist;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.apache.log4j.Logger;
 

@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.ejb.CreateException;
+import jakarta.ejb.CreateException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
