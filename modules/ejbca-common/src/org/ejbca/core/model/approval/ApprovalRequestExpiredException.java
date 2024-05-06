@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 /**
  * Exception throws after approving,executing or requesting actions that have expired in the approval database

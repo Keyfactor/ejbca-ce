@@ -23,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.audit.enums.EventType;

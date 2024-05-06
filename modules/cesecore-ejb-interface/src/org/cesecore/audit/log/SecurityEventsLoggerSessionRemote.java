@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.audit.log;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Remote interface for the SecurityEventsLogger

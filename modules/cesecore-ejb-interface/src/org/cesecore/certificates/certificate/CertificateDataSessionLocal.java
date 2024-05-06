@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.certificates.crl.RevokedCertInfo;
 

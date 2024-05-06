@@ -14,7 +14,7 @@ package org.ejbca.core.protocol.acme;
 
 import java.util.List;
 
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.cesecore.NonSensitiveException;
 import org.ejbca.core.protocol.acme.response.AcmeProblem;

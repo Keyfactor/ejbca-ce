@@ -75,7 +75,7 @@ public class EjbDependencyGraphTool {
             List<BeanInfo> ejbs = new ArrayList<BeanInfo>();
             for (String className : interestingClasses) {
                 Class<?> c = loader.loadClass(className);
-                if (c.isAnnotationPresent(javax.ejb.Stateless.class)) {
+                if (c.isAnnotationPresent(jakarta.ejb.Stateless.class)) {
                     ejbs.add(new BeanInfo(c));
                 }
             }
@@ -199,14 +199,14 @@ public class EjbDependencyGraphTool {
 			this.beanClass = beanClass;
 			// Find all @Local interfaces that this class implements
 			for (Class<?> iface : beanClass.getInterfaces()) {
-				if (iface.isAnnotationPresent(javax.ejb.Local.class)) {
+				if (iface.isAnnotationPresent(jakarta.ejb.Local.class)) {
 					ifaceClasses.add(iface);
 					//log(" @Stateless " + beanClass.getSimpleName() + " implements @Local " + iface.getSimpleName());
 				}
 			}
 			// Find all @EJB annotated fields and add these classes as dependencies
 			for (Field field : beanClass.getDeclaredFields()) {
-				if (field.isAnnotationPresent(javax.ejb.EJB.class)) {
+				if (field.isAnnotationPresent(jakarta.ejb.EJB.class)) {
 					interfaceDependencies.add(field.getType());
 					//log("   depends on " + field.getType().getSimpleName());
 					if (field.getType().getName().endsWith("Remote")) {

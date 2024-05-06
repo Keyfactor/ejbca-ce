@@ -41,7 +41,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import javax.ejb.CreateException;
+import jakarta.ejb.CreateException;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;

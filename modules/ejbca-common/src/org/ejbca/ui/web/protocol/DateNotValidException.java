@@ -13,7 +13,7 @@
 
 package org.ejbca.ui.web.protocol;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 import org.ejbca.core.EjbcaException;
 

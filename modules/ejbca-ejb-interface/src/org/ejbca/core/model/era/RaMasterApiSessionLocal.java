@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Interface for EJB access to the RaMasterApi local bean

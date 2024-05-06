@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;

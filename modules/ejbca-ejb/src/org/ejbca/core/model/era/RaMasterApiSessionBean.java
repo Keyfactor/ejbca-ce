@@ -208,15 +208,15 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.PersistenceException;
-import javax.persistence.Query;
-import javax.persistence.QueryTimeoutException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceException;
+import jakarta.persistence.Query;
+import jakarta.persistence.QueryTimeoutException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -1321,7 +1321,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
          */
         final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
         if (queryTimeout > 0L) {
-            query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
+            query.setHint("jakarta.persistence.query.timeout", String.valueOf(queryTimeout));
         }
         try {
             if (countOnly) {
@@ -1864,7 +1864,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
          */
         final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
         if (queryTimeout > 0L) {
-            query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
+            query.setHint("jakarta.persistence.query.timeout", String.valueOf(queryTimeout));
         }
         log.info("query:" + LogRedactionUtils.getRedactedMessage(query.toString()));
         final List<String> usernames;
@@ -1974,7 +1974,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         query.setMaxResults(maxResults);
         final long queryTimeout = getGlobalCesecoreConfiguration().getMaximumQueryTimeout();
         if (queryTimeout > 0L) {
-            query.setHint("javax.persistence.query.timeout", String.valueOf(queryTimeout));
+            query.setHint("jakarta.persistence.query.timeout", String.valueOf(queryTimeout));
         }
 
         // Execute

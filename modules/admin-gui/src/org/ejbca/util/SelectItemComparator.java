@@ -18,7 +18,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.faces.model.SelectItem;
+import jakarta.faces.model.SelectItem;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.log4j.Logger;

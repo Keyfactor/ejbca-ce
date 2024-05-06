@@ -21,10 +21,10 @@ import java.util.Set;
 import org.ejbca.ui.web.rest.api.config.ExceptionHandler;
 import org.ejbca.ui.web.rest.api.config.ObjectMapperContextResolver;
 
-import javax.ws.rs.client.Client;
-import  javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Application;
+import jakarta.ws.rs.client.Client;
+import  jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Application;
 
 import org.jboss.resteasy.plugins.server.undertow.UndertowJaxrsServer;
 
