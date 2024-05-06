@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.audit.AuditExporter;

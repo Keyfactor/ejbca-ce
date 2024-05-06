@@ -17,8 +17,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 
 import java.io.Serializable;
 
-import javax.faces.application.Application;
-import javax.faces.context.FacesContext;
+import jakarta.faces.application.Application;
+import jakarta.faces.context.FacesContext;
 
 /**
  * Interface used to integrate the old jsp framework with the new JSF one.

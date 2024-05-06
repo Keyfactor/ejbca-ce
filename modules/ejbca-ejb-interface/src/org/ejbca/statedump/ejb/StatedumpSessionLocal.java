@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.statedump.ejb;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @version $Id$
