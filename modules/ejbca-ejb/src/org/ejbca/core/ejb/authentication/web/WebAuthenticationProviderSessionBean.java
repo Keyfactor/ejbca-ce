@@ -188,6 +188,10 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 logAuthenticationFailure(intres.getLocalizedMessage(keyId != null ? "authentication.jwt.keyid_missing" : "authentication.jwt.default_keyid_not_configured"));
                 return null;
             }
+            if (keyInfo.getKeys() == null || keyInfo.getKeys().isEmpty()) {
+                logAuthenticationFailure(intres.getLocalizedMessage("authentication.jwt.no_keys_exist", keyInfo.getLabel()));
+                return null;
+            }
             final OAuthPublicKey oAuthPublicKey = keyInfo.getKeys().get(keyId);
             if (oAuthPublicKey != null) {
                 // Default provider (Key ID does not match)
@@ -217,7 +221,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
             JWTClaimsSet claims = jwt.getJWTClaimsSet();
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Access token Claims:" + claims);
+                LOG.debug("Token Claims:" + claims);
             }
 
             if (!verifyOauth2Audience(keyInfo, claims)) {
