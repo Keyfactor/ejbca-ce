@@ -32,11 +32,16 @@ import com.keyfactor.util.Base64;
  */
 public class KeyStoreHelper {
 
+    // Magic first byte of a keystore enabling us to detect a keystore type from the byte[].
+    public static final byte PKCS12_MAGIC = (byte)48;
+    public static final byte PEM_MAGIC = (byte)66;
+    public static final byte JKS_MAGIC = (byte)(0xfe);
+
     /**
      * Retrieves the keystore from the encoded data.
      *
-     * @param keystoreData byte array
-     * @param type         "PKCS12" or "JKS"
+     * @param keystoreData Base64 encoded byte array
+     * @param type         "PKCS12", "BCFKS" or "JKS"
      * @param password     to lock the keystore
      * @return the loaded and unlocked keystore.
      * @throws CertificateException     if any of the certificates in the keystore could not be loaded
