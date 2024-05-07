@@ -83,7 +83,7 @@
         	<p:menuitem id="caEditvalidators" value="#{web.text.NAV_VALIDATORS}" url="#{adminMenuBean.adminWebUrl}ca/editvalidators/editvalidators.xhtml" rendered="#{adminMenuBean.authorizedToViewValidators}"/>
         </p:submenu>
         <p:submenu id="mainRaFunctions" label="#{web.text.NAV_RAFUNCTIONS}" icon="pi pi-fw pi-users" rendered="#{adminMenuBean.authorizedToViewRAHeader}">	
-			<p:menuitem id="raAddendentity" url="#{adminMenuBean.adminWebUrl}ra/addendentity.jsp" rendered="#{adminMenuBean.authorizedToCreateEndEntity}" value="#{web.text.NAV_ADDENDENTITY}"/>
+			<p:menuitem id="raAddendentity" url="#{adminMenuBean.adminWebUrl}ra/addendentity.xhtml" rendered="#{adminMenuBean.authorizedToCreateEndEntity}" value="#{web.text.NAV_ADDENDENTITY}"/>
        		<p:menuitem id="raEditendentityprofiles" url="#{adminMenuBean.adminWebUrl}ra/editendentityprofiles/editendentityprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntityProfiles}" value="#{web.text.NAV_ENDENTITYPROFILES}"/>
        		<p:menuitem id="raListendentities" url="#{adminMenuBean.adminWebUrl}ra/searchendentities.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntity}" value="#{web.text.NAV_SEARCHENDENTITIES}"/>
        		<p:menuitem id="raEdituserdatasources" url="#{adminMenuBean.adminWebUrl}ra/edituserdatasources/userdatasourcespage.xhtml" rendered="#{adminMenuBean.authorizedToEditUserDataSources}" value="#{web.text.NAV_USERDATASOURCES}"/>         
