@@ -2309,23 +2309,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
-            //UUTEST
             String altKeyAlgo;
             String altKeySpec;
-            //UUTEST
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
                 // Make it easy for ourselves and create a default one if there is none in the end entity
                 ei = new ExtendedInformation();
             }
-            //UUTEST
-            //if(ei.getKeyStoreAlternativeKeyAlgorithm()!= null) {
-                altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();
-            //}
-            //if(ei.getKeyStoreAlternativeKeySpecification()!= null) {
-                altKeySpec = ei.getKeyStoreAlternativeKeySpecification();
-             //}
-            //UUTEST    
+            altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();
+            altKeySpec = ei.getKeyStoreAlternativeKeySpecification();
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
                     ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
@@ -2391,23 +2383,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
-            //UUTET
             String altKeyAlgo;
             String altKeySpec;
-            //UUTEST
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
                 // Make it easy for ourselves and create a default one if there is none in the end entity
                 ei = new ExtendedInformation();
             }
-            //UUTEST
-            //if(ei.getKeyStoreAlternativeKeyAlgorithm()!= null) {
-                altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();    
-            // }
-            //if(ei.getKeyStoreAlternativeKeySpecification()!= null) {
-                altKeySpec = ei.getKeyStoreAlternativeKeySpecification();    
-            // }
-            //UUTEST    
+            altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();    
+            altKeySpec = ei.getKeyStoreAlternativeKeySpecification();    
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
                     ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
