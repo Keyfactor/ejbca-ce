@@ -10,8 +10,8 @@ public class GenerateOrKeyRecoverTokenRequest implements Serializable {
     private String password;
     private String hardTokenSN;
     private String keySpecification;
-    private String altKeySpecification;
     private String keyAlgorithm;
+    private String altKeySpecification;    
     private String altKeyAlgorithm;
 
     public GenerateOrKeyRecoverTokenRequest(String username, String password, String hardTokenSN, String keySpecification, String altKeySpecification,
@@ -20,8 +20,8 @@ public class GenerateOrKeyRecoverTokenRequest implements Serializable {
         this.password = password;
         this.hardTokenSN = hardTokenSN;
         this.keySpecification = keySpecification;
-        this.altKeySpecification = altKeySpecification;
         this.keyAlgorithm = keyAlgorithm;
+        this.altKeySpecification = altKeySpecification;
         this.altKeyAlgorithm = altKeyAlgorithm;
     }
 
@@ -41,12 +41,12 @@ public class GenerateOrKeyRecoverTokenRequest implements Serializable {
         this.keySpecification = keySpecification;
     }
 
-    public void setAltKeySpecification(String altKeySpecification) {
-        this.altKeySpecification = altKeySpecification;
-    }
-
     public void setKeyAlgorithm(String keyAlgorithm) {
         this.keyAlgorithm = keyAlgorithm;
+    }
+
+    public void setAltKeySpecification(String altKeySpecification) {
+        this.altKeySpecification = altKeySpecification;
     }
 
     public void setAltKeyAlgorithm(String altKeyAlgorithm) {
@@ -69,12 +69,12 @@ public class GenerateOrKeyRecoverTokenRequest implements Serializable {
         return keySpecification;
     }
 
-    public String getAltKeySpecification() {
-        return altKeySpecification;
-    }
-
     public String getKeyAlgorithm() {
         return keyAlgorithm;
+    }
+
+    public String getAltKeySpecification() {
+        return altKeySpecification;
     }
 
     public String getAltKeyAlgorithm() {
