@@ -166,7 +166,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             log.debug("reusecertificate: " + reuseCertificate);
         }
         try {
-            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, alternativeKeySpecification, keyAlgorithm, alternativeKeyAlgorithm, null,
+            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm,  alternativeKeySpecification, alternativeKeyAlgorithm, null,
                     null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
             return KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (AuthLoginException | AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
@@ -189,7 +189,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        return generateOrKeyRecoverTokenAsByteArray(administrator, username, password, caid, keyspec, null, keyalg, null, keystoreType, loadkeys, savekeys, reusecertificate, endEntityProfileId) ;
+        return generateOrKeyRecoverTokenAsByteArray(administrator, username, password, caid, keyspec, keyalg, null, null, keystoreType, loadkeys, savekeys, reusecertificate, endEntityProfileId) ;
     }
     
     @Override
@@ -200,7 +200,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, alternativeKeySpec, keyalg, alternativeKeyalg, null, null, keystoreType, loadkeys,
+        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, alternativeKeySpec, alternativeKeyalg, null, null, keystoreType, loadkeys,
                 savekeys,
                 reusecertificate, endEntityProfileId);
         return KeyStoreTools.getAsByteArray(keyStore, password);
