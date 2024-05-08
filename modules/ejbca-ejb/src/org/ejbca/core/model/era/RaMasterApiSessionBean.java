@@ -2328,7 +2328,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     ei.getKeyStoreAlgorithmSubType(), // Keylength
                     ei.getKeyStoreAlgorithmType(),
                     altKeySpec, // Alternative key specification                    
-                    altKeyAlgo,// Alternative key signature algorithm
+                    altKeyAlgo,// Alternative key algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
                     endEntity.getTokenType(), // Type of token
@@ -2402,7 +2402,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     ei.getKeyStoreAlgorithmSubType(), // Keylength
                     ei.getKeyStoreAlgorithmType(),
                     altKeySpec, // Alternative key specification                   
-                    altKeyAlgo, // Alternative signature algorithm
+                    altKeyAlgo, // Alternative key algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
                     endEntity.getTokenType(), // Type of token
