@@ -14,8 +14,8 @@ public class GenerateOrKeyRecoverTokenRequest implements Serializable {
     private String altKeySpecification;    
     private String altKeyAlgorithm;
 
-    public GenerateOrKeyRecoverTokenRequest(String username, String password, String hardTokenSN, String keySpecification, String altKeySpecification,
-            String keyAlgorithm, String altKeyAlgorithm) {
+    public GenerateOrKeyRecoverTokenRequest(String username, String password, String hardTokenSN, String keySpecification,
+            String keyAlgorithm, String altKeySpecification, String altKeyAlgorithm) {
         this.username = username;
         this.password = password;
         this.hardTokenSN = hardTokenSN;
