@@ -118,11 +118,11 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification, final String keyAlgorithm)
             throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
-        return generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, null, keyAlgorithm, null);
+        return generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm, null, null);
     }
 
     @Override
-    public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification, final String alternativeKeySpecification, final String keyAlgorithm, final String alternativeKeyAlgorithm)
+    public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification,  final String keyAlgorithm, final String alternativeKeySpecification, final String alternativeKeyAlgorithm)
             throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException { 
         // Check if user exists.
         final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
@@ -216,13 +216,13 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        return generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, null, keyalg, null, notBefore, notAfter, keystoreType, loadkeys,
+        return generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, null, notBefore, notAfter, keystoreType, loadkeys,
                 savekeys, reusecertificate, endEntityProfileId);
     }
     
     @Override
     public KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid,
-            String keyspec, String altKeyspec, String keyalg, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
+            String keyspec, String keyalg, String altKeyspec, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
             boolean reusecertificate,
             int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
@@ -329,13 +329,13 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        return generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(administrator, username, password, caid, keyspec, null, keyalg, null, notBefore,
+        return generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(administrator, username, password, caid, keyspec, keyalg, null, null, notBefore,
                 notAfter, keystoreType, loadkeys, savekeys, reusecertificate, endEntityProfileId);
     }
     
     @Override
     public KeyStore generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(AuthenticationToken administrator, String username, String password, int caid,
-            String keyspec, String altKeyspec, String keyalg, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
+            String keyspec, String keyalg, String altKeyspec, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
             boolean reusecertificate,
             int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
