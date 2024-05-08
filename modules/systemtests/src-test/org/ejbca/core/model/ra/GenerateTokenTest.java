@@ -209,7 +209,7 @@ public class GenerateTokenTest extends CaTestCase {
             eeinfo.setPassword("foo123");
             //Providing separately algorithm RSA_1024 that is going to be overridden with ECDSA_secp256r1
             final byte[] keyStore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123", caId, "1024",
-                    AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.SIGALG_FALCON1024, SecConst.TOKEN_SOFT_P12, false, true, false, eeProfileId);
+                    AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024, SecConst.TOKEN_SOFT_P12, false, true, false, eeProfileId);
             KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             ks.load(new ByteArrayInputStream(keyStore), eeinfo.getPassword().toCharArray());
             Certificate cert = null;
