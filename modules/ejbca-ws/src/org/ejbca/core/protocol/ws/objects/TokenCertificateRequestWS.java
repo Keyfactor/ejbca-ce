@@ -15,9 +15,9 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.io.IOException;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.ejbca.core.model.token.TokenConstants;

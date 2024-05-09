@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;

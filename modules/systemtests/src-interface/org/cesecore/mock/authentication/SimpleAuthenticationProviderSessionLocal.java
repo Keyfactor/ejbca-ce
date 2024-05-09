@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.mock.authentication;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationProvider;
 

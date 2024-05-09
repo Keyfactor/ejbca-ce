@@ -14,10 +14,10 @@
 package org.ejbca.ra;
 
 import java.util.Locale;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.FacesConverter;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.Converter;
+import jakarta.faces.convert.FacesConverter;
 
 /**
  * Used in preferences section of RA GUI to convert selected locale and make it digestible by Preferences.xhtml and vice versa.

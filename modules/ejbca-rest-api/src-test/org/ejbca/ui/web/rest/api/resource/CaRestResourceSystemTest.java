@@ -26,9 +26,9 @@ import java.security.cert.X509CRL;
 import java.util.Map;
 import java.util.Random;
 
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;

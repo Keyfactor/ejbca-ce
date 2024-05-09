@@ -19,14 +19,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Query;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Query;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.DatabaseProtectionException;
@@ -200,7 +200,7 @@ public class EndEntityProfileData extends ProtectedData implements Serializable 
 	}
 	
 	/**
-	 * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
+	 * @throws jakarta.persistence.NonUniqueResultException if more than one entity with the name exists
 	 * @return the found entity instance or null if the entity does not exist
 	 */
 	public static EndEntityProfileData findByProfileName(EntityManager entityManager, String profileName) {

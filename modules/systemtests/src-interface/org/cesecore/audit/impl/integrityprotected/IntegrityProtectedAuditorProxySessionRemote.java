@@ -15,7 +15,7 @@ package org.cesecore.audit.impl.integrityprotected;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;

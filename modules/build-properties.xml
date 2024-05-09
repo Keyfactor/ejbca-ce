@@ -271,7 +271,7 @@
 			<include name="jboss-servlet-api_4.0_spec-2.*.jar"/>
 			<include name="resteasy-jackson2-provider-4.*.jar"/>
 			<include name="json-patch-1.*.jar"/>
-			<include name="javax.ws.rs-api-2.*.jar"/>
+			<include name="jakarta.ws.rs-api-2.*.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
 			<include name="jackson-jaxrs-base-2.*.jar"/>
@@ -387,13 +387,13 @@
 	
 	<path id="lib.jaxws-rs.classpath"><fileset dir="${ejbca.home}/lib/jee/soapclient" includes="jaxws-rt-*.jar"/></path>
 	<path id="lib.jaxws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jaxws-api-*.jar"/></path>
-	<path id="lib.javax.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.ejb-api-*.jar"/></path>
+	<path id="lib.javax.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.ejb-api-*.jar"/></path>
 	<path id="lib.javax.activaton.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="activation-*.jar"/></path>
-	<path id="lib.javax.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.jws-api-*.jar"/></path>
-	<path id="lib.javax.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.xml.soap-api-*.jar"/></path>
-	<path id="lib.javax.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.mail-*.jar"/></path>
+	<path id="lib.javax.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jws-api-*.jar"/></path>
+	<path id="lib.jakarta.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.soap-api-*.jar"/></path>
+	<path id="lib.javax.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.mail-*.jar"/></path>
 
-	<path id="lib.javax.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="javax.servlet-api-*.jar"/></path>
+	<path id="lib.javax.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jakarta.servlet-api-*.jar"/></path>
 	
 	
 	<path id="wsgen.classpath">
@@ -403,7 +403,7 @@
 		<path refid="lib.jaxws-api.classpath"/>
 		<path refid="lib.jaxws-rs.classpath"/>
 		<path refid="lib.javax.jws-api.classpath"/>
-		<path refid="lib.javax.xml.soap-api.classpath"/>
+		<path refid="lib.jakarta.xml.soap-api.classpath"/>
 		<path refid="soapclient.classpath"/>
 	</path>
 
@@ -421,9 +421,9 @@
 
     	<fileset dir="${ejbca.home}/lib/jee">
     		<include name="jaxws-api-*.jar"/>
-    		<include name="javax.jws-api-*.jar"/>
+    		<include name="jakarta.jws-api-*.jar"/>
     		<include name="activation-*.jar"/>
-    		<include name="javax.xml.soap-api-*.jar"/>
+    		<include name="jakarta.xml.soap-api-*.jar"/>
     	</fileset>
     </path>
 
@@ -492,8 +492,8 @@
             <include name="hibernate-core-*.jar"/>
         	<include name="istack-commons-runtime*.jar"/>
         	<include name="jandex*.jar"/>
-        	<include name="javax.activation*.jar"/>
-        	<include name="javax.persistence*.jar"/>
+        	<include name="jakarta.activation*.jar"/>
+        	<include name="jakarta.persistence*.jar"/>
             <include name="jaxb-api*.jar"/>
         	<include name="jaxb-runtime*.jar"/>
 <!--            <include name="jboss-logging-*.jar"/>-->

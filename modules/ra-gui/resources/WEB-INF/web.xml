@@ -15,21 +15,21 @@
 
  version: $Id$
  -->
-<web-app version="3.1" id="ra-gui"
+<web-app version="5.0" id="ra-gui"
     metadata-complete="false"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-                        http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    xmlns="https://jakarta.ee/xml/ns/jakartaee"
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                        https://jakarta.ee/xml/ns/jakartaee/web-app_5_0.xsd">
 
     <description><![CDATA[EJBCA RA GUI]]></description>
 
     <!-- Set to "Development" for debugging.
-        "Production" also implies javax.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
+        "Production" also implies jakarta.faces.FACELETS_REFRESH_PERIOD=-1 which means pages are never recompiled.
         TODO: Set automatically when ejbca.productionmode=false
     -->
     <context-param>
-        <param-name>javax.faces.PROJECT_STAGE</param-name>
+        <param-name>jakarta.faces.PROJECT_STAGE</param-name>
         <param-value>Production</param-value>
     </context-param>
 
@@ -72,7 +72,7 @@
     
     <servlet>
         <servlet-name>Faces Servlet</servlet-name>
-        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
         <multipart-config>
             <!-- Upload file size limit. 52428800 = 50 MB -->

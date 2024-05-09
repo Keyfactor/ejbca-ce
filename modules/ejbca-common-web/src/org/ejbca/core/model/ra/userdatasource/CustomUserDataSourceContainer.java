@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 

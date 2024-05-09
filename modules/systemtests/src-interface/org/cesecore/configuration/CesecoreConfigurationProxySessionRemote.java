@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Acts as a proxy for ConfigurationHolder tests

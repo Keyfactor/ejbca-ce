@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.certificates.ca.IncompleteIssuanceJournalCallbacks;
 

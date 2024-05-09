@@ -14,8 +14,8 @@ package org.cesecore.keys.token;
 
 import java.security.PrivateKey;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
 
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.PublicKeyWrapper;
