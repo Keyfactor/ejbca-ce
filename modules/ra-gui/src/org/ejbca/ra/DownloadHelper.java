@@ -15,8 +15,8 @@ package org.ejbca.ra;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
 
 import com.keyfactor.util.StringTools;
 

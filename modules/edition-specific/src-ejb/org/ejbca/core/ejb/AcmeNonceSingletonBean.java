@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.Singleton;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 import org.ejbca.core.protocol.acme.AcmeNonceSingletonLocal;
 

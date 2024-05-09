@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.authorization;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * 

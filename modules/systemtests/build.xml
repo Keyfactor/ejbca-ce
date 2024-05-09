@@ -73,7 +73,7 @@
 		<path refid="lib.javax.activaton.classpath"/>
 		<path refid="lib.javax.mail.classpath"/>
 		<path refid="lib.jaxws-api.classpath"/>
-		<path refid="lib.javax.xml.soap-api.classpath"/>
+		<path refid="lib.jakarta.xml.soap-api.classpath"/>
         <path refid="systemtests.classpath.nojee"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>

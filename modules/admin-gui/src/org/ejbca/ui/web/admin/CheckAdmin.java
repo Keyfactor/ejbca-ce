@@ -14,10 +14,10 @@ package org.ejbca.ui.web.admin;
 
 import java.io.IOException;
 
-import javax.ejb.EJB;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.resource.spi.IllegalStateException;
+import jakarta.ejb.EJB;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.resource.spi.IllegalStateException;
 
 import org.cesecore.certificates.ca.CaSessionLocal;
 
