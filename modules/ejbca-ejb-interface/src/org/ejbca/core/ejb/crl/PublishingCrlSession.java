@@ -72,7 +72,7 @@ public interface PublishingCrlSession {
      *            used CRL overlap time will be (crloverlaptime +
      *            addtocrloverlaptime)
      * @return true if a CRL was created
-     * @throws javax.ejb.EJBException if communication or system error occurs
+     * @throws jakarta.ejb.EJBException if communication or system error occurs
      */
     boolean createCRLNewConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime, final CrlCreationParams params) throws CryptoTokenOfflineException,
             CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;

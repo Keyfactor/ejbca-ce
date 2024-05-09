@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @version $Id$

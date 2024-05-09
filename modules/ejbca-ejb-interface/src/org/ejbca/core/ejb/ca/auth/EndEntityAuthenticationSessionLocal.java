@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.auth;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Local interface for AuthenticationSession.

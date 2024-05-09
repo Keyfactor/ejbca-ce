@@ -15,10 +15,10 @@ package org.ejbca.core.ejb.config;
 
 import java.util.Properties;
 
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.jndi.JndiConstants;

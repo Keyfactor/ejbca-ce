@@ -46,14 +46,14 @@ import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -246,13 +246,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
 
     @Override
     public X509Certificate getClientX509Certificate(final HttpServletRequest httpServletRequest) {
-        final X509Certificate[] certificates = (X509Certificate[]) httpServletRequest.getAttribute("javax.servlet.request.X509Certificate");
+        final X509Certificate[] certificates = (X509Certificate[]) httpServletRequest.getAttribute("jakarta.servlet.request.X509Certificate");
         return certificates == null || certificates.length==0 ? null : certificates[0];
     }
 
     private String getTlsSessionId(final HttpServletRequest httpServletRequest) {
         final String sslSessionIdServletsStandard;
-        final Object sslSessionIdServletsStandardObject = httpServletRequest.getAttribute("javax.servlet.request.ssl_session_id");
+        final Object sslSessionIdServletsStandardObject = httpServletRequest.getAttribute("jakarta.servlet.request.ssl_session_id");
         if (sslSessionIdServletsStandardObject!=null && sslSessionIdServletsStandardObject instanceof byte[]) {
             // Wildfly 9 stores the TLS sessions as a raw byte array. Convert it to a hex String.
             sslSessionIdServletsStandard = new String(Hex.encode((byte[]) sslSessionIdServletsStandardObject), StandardCharsets.UTF_8);

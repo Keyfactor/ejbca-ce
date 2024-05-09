@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.time;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Local interface for the TrustedTime
