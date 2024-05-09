@@ -12,8 +12,8 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.era.KeyToValueHolder;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.validator.ValidatorException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.validator.ValidatorException;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

@@ -21,9 +21,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.EJBException;
-import javax.faces.application.Application;
-import javax.faces.context.FacesContext;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.Application;
+import jakarta.faces.context.FacesContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;

@@ -14,7 +14,7 @@ package org.ejbca;
 
 import java.security.PublicKey;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @version $Id$

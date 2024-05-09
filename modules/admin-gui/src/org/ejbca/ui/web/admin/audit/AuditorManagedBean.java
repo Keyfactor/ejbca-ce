@@ -26,13 +26,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditDevicesConfig;
@@ -574,7 +574,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	 * 
 	 * Example: "#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}"
 	 * 
-	 * TODO: Use javax.faces.model.DataModel instead
+	 * TODO: Use jakarta.faces.model.DataModel instead
 	 * 
 	 * @return a fake "Map" where the get(Map) returns the length of the output-formatted Map
 	 */

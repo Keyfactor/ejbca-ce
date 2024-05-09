@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.applicationserver;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * This bean exists for the sole purpose of verifying that transactional timeouts work as expected on different application servers.

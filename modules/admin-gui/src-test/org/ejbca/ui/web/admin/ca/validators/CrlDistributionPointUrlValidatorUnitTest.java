@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca.validators;
 
-import javax.faces.validator.ValidatorException;
+import jakarta.faces.validator.ValidatorException;
 
 import org.junit.Test;
 

@@ -13,7 +13,7 @@
  
 package org.ejbca.core.model.hardtoken;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 /**
  * Deprecated class, kept for web service compatibility. It was used for Hard Tokens, which is a removed feature.

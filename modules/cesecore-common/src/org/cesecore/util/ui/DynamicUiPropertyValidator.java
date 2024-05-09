@@ -16,7 +16,7 @@ import java.io.Serializable;
 
 /**
  * This interface defines common methods for all Validator types, i.e classes which can be attached to DynamicUiProperties in order to validate 
- * their values. Extends javax.faces.validator.Validator, meaning that it can be used both internally (through the validate(T value) method 
+ * their values. Extends jakarta.faces.validator.Validator, meaning that it can be used both internally (through the validate(T value) method 
  * defined here) and through the one defined in Validator. 
  */
 public interface DynamicUiPropertyValidator<T extends Serializable> extends Serializable {

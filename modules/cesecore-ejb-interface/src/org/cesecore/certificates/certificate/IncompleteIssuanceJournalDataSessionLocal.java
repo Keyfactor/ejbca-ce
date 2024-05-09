@@ -14,7 +14,7 @@ package org.cesecore.certificates.certificate;
 
 import java.util.List;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.certificates.ca.IncompleteIssuanceJournalCallbacks;
 

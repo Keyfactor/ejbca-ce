@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ocsp;
 
-import javax.ejb.ScheduleExpression;
+import jakarta.ejb.ScheduleExpression;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;

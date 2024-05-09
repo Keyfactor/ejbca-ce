@@ -28,8 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.ws.rs.core.Response;
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * A class representing the input for SSH certificate request REST method.

@@ -16,7 +16,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.bouncycastle.its.ETSISignedDataBuilder;
 import org.bouncycastle.its.ITSCertificate;

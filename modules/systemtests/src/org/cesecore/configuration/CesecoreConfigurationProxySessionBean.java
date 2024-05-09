@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
-import javax.ejb.Stateless;
+import jakarta.ejb.Stateless;
 
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
