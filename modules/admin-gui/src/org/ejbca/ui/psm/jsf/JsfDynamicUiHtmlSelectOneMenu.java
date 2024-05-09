@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.faces.component.UISelectItems;
-import javax.faces.component.html.HtmlSelectOneMenu;
-import javax.faces.model.SelectItem;
+import jakarta.faces.component.UISelectItems;
+import jakarta.faces.component.html.HtmlSelectOneMenu;
+import jakarta.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.ui.DynamicUiComponent;

@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.audit;
 
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.authentication.tokens.AuthenticationToken;

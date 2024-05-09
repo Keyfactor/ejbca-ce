@@ -14,8 +14,8 @@ package org.ejbca.core.ejb;
 
 import java.util.Arrays;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InvocationContext;
+import jakarta.interceptor.AroundInvoke;
+import jakarta.interceptor.InvocationContext;
 
 import org.apache.log4j.Logger;
 

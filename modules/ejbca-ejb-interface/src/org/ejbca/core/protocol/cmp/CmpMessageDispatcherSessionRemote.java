@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface CmpMessageDispatcherSessionRemote extends CmpMessageDispatcherSession {

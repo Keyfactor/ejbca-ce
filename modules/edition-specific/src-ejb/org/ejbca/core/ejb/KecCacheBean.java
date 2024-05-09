@@ -12,10 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.DependsOn;
-import javax.ejb.Singleton;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.Singleton;
 
 import org.ejbca.core.protocol.msae.KecCache;
 

@@ -13,7 +13,7 @@
  
 package org.ejbca.core.model.ra.raadmin;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 /**
  * An exception thrown when someone tries to add or edit a profile that doesn't match its end entity

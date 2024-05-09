@@ -26,10 +26,10 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import com.keyfactor.util.StringTools;
 
-import javax.faces.application.Application;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.validator.ValidatorException;
+import jakarta.faces.application.Application;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.ValidatorException;
 
 import java.util.HashMap;
 import java.util.Map;

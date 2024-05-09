@@ -18,9 +18,9 @@
 <web-app version="3.1" id="crlstore"
     metadata-complete="false"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-                        http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    xmlns="https://jakarta.ee/xml/ns/jakartaee"
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                        https://jakarta.ee/xml/ns/jakartaee/web-app_3_1.xsd">
 
     <description><![CDATA[Certificate Store]]></description>
 

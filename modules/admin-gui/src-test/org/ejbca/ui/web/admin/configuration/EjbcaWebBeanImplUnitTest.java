@@ -37,9 +37,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.authentication.AuthenticationFailedException;
@@ -194,16 +194,16 @@ public final class EjbcaWebBeanImplUnitTest {
     }
 
     private void expectExtractCertificate() {
-        expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(new X509Certificate[] { adminCert });
-        expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
+        expect(mockedRequest.getAttribute("jakarta.servlet.request.X509Certificate")).andReturn(new X509Certificate[] { adminCert });
+        expect(mockedRequest.getAttribute("jakarta.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
         expectAccessTokenCheckAndReturn(null);
         expectIdTokenCheckAndReturn(null);
     }
 
     private void expectExtractBearerToken() {
-        expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
-        expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
+        expect(mockedRequest.getAttribute("jakarta.servlet.request.X509Certificate")).andReturn(null);
+        expect(mockedRequest.getAttribute("jakarta.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
         expectAccessTokenCheckAndReturn(bearerToken);
         expectIdTokenCheckAndReturn(idToken);
@@ -291,8 +291,8 @@ public final class EjbcaWebBeanImplUnitTest {
     
     @Test
     public void noToken() throws Exception {
-        expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(null);
-        expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
+        expect(mockedRequest.getAttribute("jakarta.servlet.request.X509Certificate")).andReturn(null);
+        expect(mockedRequest.getAttribute("jakarta.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
         expectAccessTokenCheckAndReturn(null);
         expectIdTokenCheckAndReturn(null);
@@ -442,8 +442,8 @@ public final class EjbcaWebBeanImplUnitTest {
 
     @Test
     public void certWithoutRoleButAuthorizedBearerToken() throws Exception {
-        expect(mockedRequest.getAttribute("javax.servlet.request.X509Certificate")).andReturn(new X509Certificate[] { adminCert });
-        expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session_id")).andReturn(tlsSession);
+        expect(mockedRequest.getAttribute("jakarta.servlet.request.X509Certificate")).andReturn(new X509Certificate[] { adminCert });
+        expect(mockedRequest.getAttribute("jakarta.servlet.request.ssl_session_id")).andReturn(tlsSession);
         expect(mockedRequest.getAttribute("javax.servlet.request.ssl_session")).andReturn(null);
         expectAccessTokenCheckAndReturn(bearerToken);
         expectIdTokenCheckAndReturn(null);

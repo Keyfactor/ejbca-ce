@@ -19,13 +19,13 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -43,7 +43,7 @@ import org.ejbca.core.model.util.EjbLocalHelper;
  */
 public class ProxiedAuthenticationFilter implements Filter {
 
-	private static final String ATTR_X509CERTIFICATE = "javax.servlet.request.X509Certificate";
+	private static final String ATTR_X509CERTIFICATE = "jakarta.servlet.request.X509Certificate";
     private static final String ATTR_PROXIED_AUTH_TOKEN_STRING = "proxiedAuthenticationTokenString";
 	private static final Logger log = Logger.getLogger(ProxiedAuthenticationFilter.class);
 	

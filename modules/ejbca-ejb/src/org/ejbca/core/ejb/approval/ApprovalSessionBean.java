@@ -26,16 +26,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -977,7 +977,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
          * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
          * where the first value is the value and the second is the row.
          */
-        final javax.persistence.Query query = entityManager.createQuery("SELECT id FROM ApprovalData WHERE " + queryWrapper.getQueryString());
+        final jakarta.persistence.Query query = entityManager.createQuery("SELECT id FROM ApprovalData WHERE " + queryWrapper.getQueryString());
         for (int i = 0; i < queryWrapper.getValues().size(); i++) {
             query.setParameter(i + 1, queryWrapper.getValues().get(i));
         }

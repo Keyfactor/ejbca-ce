@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.scep;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 
 @Remote

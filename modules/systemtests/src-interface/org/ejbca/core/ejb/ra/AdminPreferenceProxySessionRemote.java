@@ -1,6 +1,6 @@
 package org.ejbca.core.ejb.ra;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 

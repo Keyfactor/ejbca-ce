@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.cmp;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;

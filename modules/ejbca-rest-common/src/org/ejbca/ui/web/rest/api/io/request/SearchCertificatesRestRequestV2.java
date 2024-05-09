@@ -15,8 +15,8 @@ package org.ejbca.ui.web.rest.api.io.request;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
