@@ -14,7 +14,7 @@ package org.cesecore.certificates.ocsp;
 
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import com.keyfactor.util.certificate.CertificateWrapper;
 

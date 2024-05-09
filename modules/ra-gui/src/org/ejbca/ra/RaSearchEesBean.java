@@ -26,15 +26,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 
-import javax.ejb.EJB;
-import javax.faces.component.UIComponent;
-import javax.faces.component.html.HtmlOutputLabel;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.html.HtmlOutputLabel;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;

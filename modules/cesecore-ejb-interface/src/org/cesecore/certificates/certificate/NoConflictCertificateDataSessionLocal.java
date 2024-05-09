@@ -15,7 +15,7 @@ package org.cesecore.certificates.certificate;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.certificates.crl.RevokedCertInfo;
 

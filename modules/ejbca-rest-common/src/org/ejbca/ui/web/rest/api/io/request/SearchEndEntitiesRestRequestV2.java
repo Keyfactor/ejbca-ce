@@ -22,8 +22,8 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntitiesSortRestRequest
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequestList;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityMaxNumberOfResults;
 
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;

@@ -14,13 +14,13 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Collection;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.jndi.JndiConstants;

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Assists with some actions in CliAuthenticationTest

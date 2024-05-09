@@ -65,19 +65,19 @@ import org.ejbca.core.model.services.ServiceExecutionResult;
 import org.ejbca.core.model.services.ServiceExistsException;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.Timeout;
-import javax.ejb.Timer;
-import javax.ejb.TimerConfig;
-import javax.ejb.TimerService;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TimerService;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
@@ -452,7 +452,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @Override
     @Timeout
     // Glassfish 2.1.1:
-    // "Timeout method ....timeoutHandler(javax.ejb.Timer)must have TX attribute of TX_REQUIRES_NEW or TX_REQUIRED or TX_NOT_SUPPORTED"
+    // "Timeout method ....timeoutHandler(jakarta.ejb.Timer)must have TX attribute of TX_REQUIRES_NEW or TX_REQUIRED or TX_NOT_SUPPORTED"
     // JBoss 5.1.0.GA: We cannot mix timer updates with our EJBCA DataSource transactions.
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeoutHandler(Timer timer) {
