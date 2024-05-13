@@ -98,7 +98,7 @@ public interface CertificateStoreSession {
      * @param serialNumber the serial number of the sought certificate. 
      * @return the matching username,
      */
-    String findUsernameByIssuerDnAndSerialNumber(String issuerDn, BigInteger serialNumber);
+    String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber);
     
     /**
      * Lists certificates for a given subject.

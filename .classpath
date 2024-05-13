@@ -76,6 +76,7 @@
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
 	<classpathentry kind="src" path="modules/msae/src"/>
+    <classpathentry kind="src" path="modules/msae/src-test"/>
 	<classpathentry kind="src" path="modules/p11ng-cli/src"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-cli"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
@@ -139,7 +140,7 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-servlet-api_4.0_spec-2.0.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.6.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-configuration2-2.8.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-configuration2-2.10.1.jar"/>
 	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.20.jar"/>
 	<classpathentry kind="lib" path="lib/kerb4j-server-common-0.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/kerb-core-2.0.3.jar"/>

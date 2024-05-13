@@ -28,9 +28,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
  * 
  * Currently only used for extension data.
  *
- * @version $Id$
  */
-public class EditEndEntityBean {
+public final class EditEndEntityBean {
     private ExtendedInformation extendedInformation;
 
     /**
