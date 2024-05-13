@@ -324,6 +324,8 @@
 	<path id="lib.commons-config.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-configuration2-*.jar"/></path>
 	<path id="lib.commons-collections4.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-collections4-*.jar"/></path>
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
+	<path id="lib.commons-fileupload2.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload2-jakarta-*.jar"/></path>
+	<path id="lib.commons-fileupload2-core.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload2-core-*.jar"/></path>
 	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
 	<path id="lib.hc.classpath"><fileset dir="${ejbca.home}/lib" includes="httpcore-*.jar httpclient-*.jar httpmime-*.jar"/></path>
 	<path id="lib.commons-io.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-io-*.jar"/></path>
@@ -381,12 +383,13 @@
 	</path>
 
 	<path id="lib.jee.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-8.*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jakartaee-*.jar"/>
 		<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
 	</path>
 	
 	<path id="lib.jaxws-rs.classpath"><fileset dir="${ejbca.home}/lib/jee/soapclient" includes="jaxws-rt-*.jar"/></path>
 	<path id="lib.jaxws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jaxws-api-*.jar"/></path>
+	<path id="lib.jakarta.xml.ws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.ws-api-*.jar"/></path>
 	<path id="lib.javax.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.ejb-api-*.jar"/></path>
 	<path id="lib.javax.activaton.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="activation-*.jar"/></path>
 	<path id="lib.javax.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jws-api-*.jar"/></path>
@@ -410,7 +413,7 @@
     <!-- Client jars needed din order to run a WS client on Java 9 and later where the WS stack is not part of the SDK -->
     <path id="soapclient.classpath">
         <fileset dir="${ejbca.home}/lib/jee">
-            <include name="javaee-api*.jar"/>
+            <include name="jakarta.jakartaee-api*.jar"/>
         </fileset>
         <fileset dir="${ejbca.home}/lib/jee/soapclient">
             <include name="*.jar"/>
@@ -421,6 +424,7 @@
 
     	<fileset dir="${ejbca.home}/lib/jee">
     		<include name="jaxws-api-*.jar"/>
+    		<include name="jakarta.xml.ws-api-*.jar"/>
     		<include name="jakarta.jws-api-*.jar"/>
     		<include name="activation-*.jar"/>
     		<include name="jakarta.xml.soap-api-*.jar"/>

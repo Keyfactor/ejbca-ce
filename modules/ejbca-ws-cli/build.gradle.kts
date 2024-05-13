@@ -7,6 +7,7 @@ dependencies {
     implementation(project(":modules:ejbca-common"))
     implementation(project(":modules:ejbca-ws:common"))
     implementation(libs.jaxws.api)
+    implementation(libs.jakarta.xml.ws.api)
     implementation(libs.bcpkix)
     implementation(libs.bcprov)
     implementation(libs.bctls)
