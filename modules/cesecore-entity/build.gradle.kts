@@ -5,6 +5,7 @@ plugins {
 dependencies {
     compileOnly(project(":modules:cesecore-common"))
     compileOnly(libs.jaxws.api)
+    compileOnly(libs.jakarta.xml.ws.api)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
@@ -16,7 +17,7 @@ dependencies {
     compileOnly(libs.x509.common.util)
     compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl) 
-    compileOnly(libs.javax.persistence.api)
+    compileOnly(libs.jakarta.persistence.api)
 }
 
 sourceSets {
