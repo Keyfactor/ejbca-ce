@@ -23,7 +23,7 @@
 	<classpathentry kind="src" path="modules/cesecore-entity/src"/>
 	<classpathentry kind="src" path="modules/cesecore-entity/src-test"/>
 	<classpathentry kind="src" path="modules/cesecore-x509ca/src"/>
-	<classpathentry kind="src" path="modules/cesecore-x509ca/src-test"/>	
+	<classpathentry kind="src" path="modules/cesecore-x509ca/src-test"/>
 	<classpathentry kind="src" path="modules/cits/src"/>
 	<classpathentry kind="src" path="modules/cits/src-test"/>
 	<classpathentry kind="src" path="modules/cits/src-war"/>
@@ -49,7 +49,6 @@
 	<classpathentry kind="src" path="modules/ejbca-ejb/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-cli/src"/>
-    <classpathentry kind="src" path="modules/ejbca-ejb-cli/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-interface/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src-cli"/>
@@ -76,7 +75,7 @@
 	<classpathentry kind="src" path="modules/healthcheck-war/src"/>
 	<classpathentry kind="src" path="modules/healthcheck-war/src-test"/>
 	<classpathentry kind="src" path="modules/msae/src"/>
-    <classpathentry kind="src" path="modules/msae/src-test"/>
+	<classpathentry kind="src" path="modules/msae/src-test"/>
 	<classpathentry kind="src" path="modules/p11ng-cli/src"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-cli"/>
 	<classpathentry kind="src" path="modules/peerconnector/src-common"/>
@@ -164,8 +163,8 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
 	<classpathentry kind="lib" path="lib/x509-common-util-3.2.0.jar" sourcepath="/x509-common-util"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-api-1.1.0.jar" />
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-1.1.0.jar" />
+	<classpathentry kind="lib" path="lib/cryptotokens-api-1.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-1.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-12.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/p11ng-0.23.0.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
