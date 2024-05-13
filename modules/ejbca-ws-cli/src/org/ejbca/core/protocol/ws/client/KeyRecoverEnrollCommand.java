@@ -14,8 +14,14 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+
+import com.keyfactor.util.Base64;
 
 import org.bouncycastle.util.Properties;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -31,12 +37,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
-import com.keyfactor.util.Base64;
-
 /**
- * 
- * @version $Id$
- *
+ * Calling EjbcaWS.keyRecoverEnroll to recover keys to be stored as a keystore file. 
  */
 public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAdminCommand {
 
@@ -53,9 +55,6 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
     private static final int ARG_HARDTOKENSN              = 5;
     
     private static final int ARG_OUTPUTPATH               = 6;
-    
-    private static final byte PKCS12_MAGIC = (byte)48;
-    private static final byte JKS_MAGIC = (byte)(0xfe);
     
     KeyRecoverEnrollCommand(String[] args) {
         super(args);
@@ -86,6 +85,7 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                         getPrintStream().println("No keystore could be generated for user, check server logs for error.");
                     } else {
                         String filepath = username;
+                        String extension;
                         String outputPath = null;
 
                         if (args.length == 7) {
@@ -93,24 +93,45 @@ public class KeyRecoverEnrollCommand extends EJBCAWSRABaseCommand implements IAd
                         }
 
                         if (outputPath != null) {
-                            filepath = outputPath + "/" + filepath;
+                            filepath = outputPath + "/" + username;
                         }
                         final byte[] keyStoreBytes = Base64.decode(result.getKeystoreData());
-                        String keyStoreType;
-                        if (keyStoreBytes[0] == PKCS12_MAGIC) {
-                            keyStoreType = "PKCS12";
-                            filepath = filepath + ".p12";
-                        } else if (keyStoreBytes[0] == JKS_MAGIC) {
-                            keyStoreType = "JKS";
-                            filepath = filepath + ".jks";
+                        final String type;
+                        // Keystore type is stored in the end entity, but we don't want an extra roundtrip to read that
+                        if (keyStoreBytes[0] == KeyStoreHelper.PKCS12_MAGIC) {
+                            extension = ".p12";
+                            type = "PKCS12";
+                        } else if (keyStoreBytes[0] == KeyStoreHelper.JKS_MAGIC) {
+                            extension = ".jks";
+                            type = "JKS";
+                        } else if (keyStoreBytes[0] == KeyStoreHelper.PEM_MAGIC) {
+                            extension = ".pem";
+                            type = "PEM";
                         } else {
                             throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
                         }
 
-                        try (FileOutputStream fos = new FileOutputStream(filepath)) {
-                            java.security.KeyStore ks = KeyStoreHelper.getKeyStore(result.getKeystoreData(), keyStoreType, password);
-                            ks.store(fos, password.toCharArray());
-                            getPrintStream().println("Key recovery sucessfull!\nKeystore generated, written to " + filepath);
+                        // Double check that the returned keystore is OK before storing it, this is just a helper for 
+                        // to detect issues
+                        try {
+                            // We can't load a PEM file as a keystore
+                            if (!"PEM".equals(type)) {
+                                try {
+                                    KeyStoreHelper.getKeyStore(result.getKeystoreData(), type, password);
+                                } catch (IOException e) {
+                                    // It may be a BCFKS that we detected as a P12 (since they have the same magic byte)
+                                    KeyStoreHelper.getKeyStore(result.getKeystoreData(), "BCFKS", password);
+                                    // Ok, it was a bcfks, change the filename
+                                    extension = ".bcfks";
+                                }                                
+                            }
+                            Files.write(Path.of(filepath + extension), keyStoreBytes);
+                            getPrintStream().println("Key recovery sucessfull!\nKeystore generated, written to " + filepath + extension);
+                        } catch (CertificateException | NoSuchAlgorithmException | IOException | KeyStoreException e) {
+                            Files.write(Path.of(filepath + extension), keyStoreBytes);
+                            e.printStackTrace();
+                            getPrintStream().println("Recovered keystore can not be loaded as a " + type + ". " + e.getMessage());
+                            getPrintStream().println("Keystore bytes written to " + filepath + extension);
                         }
                     }
                 } catch (AuthorizationDeniedException_Exception e) {

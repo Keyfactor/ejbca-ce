@@ -3975,6 +3975,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
+    public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 18) {
+                try {
+                    return raMasterApi.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
     public byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         AuthorizationDeniedException authorizationDeniedException = null;
