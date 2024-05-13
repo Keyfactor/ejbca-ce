@@ -29,6 +29,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
@@ -137,4 +138,18 @@ public class CertStoreServlet extends StoreServletBase {
 			throw new ServletException(e);
 		}
 	}
+	
+	protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, String url) {
+
+        for (X509Certificate cert : certs) {
+            // Escape the URL as it might be unsafe
+            printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
+            pw.println();
+            final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
+            if (ArrayUtils.isEmpty(issuedCerts)) {
+                continue;
+            }
+            printInfo(issuedCerts, SPACE + indent, pw, url);
+        }
+    }
 }
