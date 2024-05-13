@@ -15,7 +15,6 @@ ejbca:
     configMapName: # Option 1: Specify a ConfigMap containing your EJBCA ConfigDump JSON data
     configMapKey: # (Optional) The key in the ConfigMap where the EJBCA ConfigDump data is found (default: "configdump.json")
     inlineConfigdump: # Option 2: Directly insert your EJBCA ConfigDump JSON data here
-
   ## not recommended: applicable only when direct HTTP access to EJBCA is enabled
   importAppserverKeystore: false
   #appserverKeystoreSecret: keystore-secret
@@ -40,18 +39,15 @@ ejbca:
     # INFO, DEBUG, TRACE, ERROR
     LOG_LEVEL_APP: "INFO"
     LOG_LEVEL_SERVER: "INFO"
-
     ## Observability
     # The IP address where port 8090 will listen for requests to /health, /health/ready,
     # /health/live and /metrics . Set this to 0.0.0.0 to bind to all container interfaces.
     OBSERVABLE_BIND: "127.0.0.1"
     # Set this to "true" to collect metrics and expose them at the /metrics endpoint for scraping.
     METRICS_ENABLED: false
-
     ## Global OCSP configurations
     OCSP_CHECK_SIGN_CERT_VALIDITY: true
     OCSP_NON_EXISTING_IS_GOOD: false
-
     ## SMTP configuration
     # Specify the FQDN or IP Address of the SMTP host for EJBCA to send email notifications.
     SMTP_DESTINATION: "localhost"
@@ -64,7 +60,6 @@ ejbca:
     SMTP_USERNAME: ejbca-mail
     # SMTP password should be given as secrets, see SMTP_PASSWORD secret in envRaw
     #SMTP_PASSWORD: ejbca
-
   #envRaw:
   #  - name: DATABASE_USER
   #    valueFrom:
@@ -104,13 +99,12 @@ ejbca:
   volumes: []
   # Extra volume mounts to be added to the deployment
   volumeMounts: []
-
 replicaCount: 1
 image:
   # Application variant: not set for full EJBCA, "ra" or "va"
   #variant: ra
   repository: keyfactor/ejbca-ce
-  tag: latest
+  tag: 8.3.1
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""
@@ -158,7 +152,6 @@ services:
   # Extra sidecar ports to be added to the service, optionally used when sidecarContainers
   # are defined and need to expose ports
   sidecarPorts: []
-
 # Recommended for cluster internal communications
 # Requires proxyHttp service to be enabled
 nginx:
@@ -172,7 +165,6 @@ nginx:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
-
 # External communication from cluster
 # Requires proxyAJP or proxyHttp service to be enabled for adminweb access
 ingress:
