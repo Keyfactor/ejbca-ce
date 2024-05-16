@@ -14,6 +14,9 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -32,10 +35,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.core.FileItemInput;
+import org.apache.commons.fileupload2.core.FileItemInputIterator;
+import org.apache.commons.fileupload2.jakarta.JakartaServletFileUpload;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
@@ -210,20 +213,22 @@ public class CaRestResource extends BaseRestResource {
         try {
             // FormParam annotations in resource definition class are just for Swagger - the default JavaEE rest library has
             // no support for multipart data parameters, so we need to parse them ourselves.
-            final DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
-            final ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
-            upload.setSizeMax(MAX_CRL_FILE_SIZE);
-            // Upload consists of at least 6 DiskFileItems, at least 5 (or 6 with crlPartitionIndex) form fields and 1 data stream.
-            upload.setFileCountMax(10);
-            final List<FileItem> requestItems = upload.parseRequest(httpServletRequest);
-            FileItem uploadedFile = null;
-            for (final FileItem item : requestItems) {
+            
+            JakartaServletFileUpload upload = new JakartaServletFileUpload();
+            FileItemInputIterator iterStream = upload.getItemIterator(httpServletRequest);
+            FileItemInput uploadedFile = null;
+            while (iterStream.hasNext()) {
+                FileItemInput item = iterStream.next();
+                InputStream stream = item.getInputStream();
+
                 if (item.isFormField() && "crlPartitionIndex".equals(item.getFieldName())) {
-                    if (item.getString().matches("\\d+")) {
-                        crlPartitionIndex = Integer.parseInt(item.getString());
+                    String fieldValue = IOUtils.toString(stream, StandardCharsets.UTF_8);
+
+                    if (fieldValue.matches("\\d+")) {
+                        crlPartitionIndex = Integer.parseInt(fieldValue);
                     } else {
                         throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid CRL partition index: " +
-                                item.getString() + ", should be 0 or greater.");
+                                fieldValue + ", should be 0 or greater.");
                     }
                 } else if ("crlFile".equals(item.getFieldName())) {
                     uploadedFile = item;
@@ -232,7 +237,7 @@ public class CaRestResource extends BaseRestResource {
             if (uploadedFile == null) {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No CRL file uploaded.");
             }
-            final X509CRL x509crl = CertTools.getCRLfromByteArray(uploadedFile.get());
+            final X509CRL x509crl = CertTools.getCRLfromByteArray(uploadedFile.getInputStream().readAllBytes());
             if (x509crl == null) {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(),
                         "Could not parse CRL. It must be in DER format.");
@@ -246,15 +251,15 @@ public class CaRestResource extends BaseRestResource {
                     throw new RestException(Status.BAD_REQUEST.getStatusCode(),
                             "CRL #" + uploadedCrlNumber + " or higher is already in the database.");
                 }
-                importCrlSession.importCrl(admin, cainfo, uploadedFile.get(), crlPartitionIndex);
+                importCrlSession.importCrl(admin, cainfo, uploadedFile.getInputStream().readAllBytes(), crlPartitionIndex);
                 return Response.status(Status.OK).build();
             }
-        } catch (final FileUploadException e) {
-            log.info("Error uploading CRL file", e);
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No file uploaded.");
         } catch (CrlImportException | CrlStoreException | CRLException | AuthorizationDeniedException e) {
             log.info("Error importing CRL:", e);
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Error while importing CRL: " + e.getMessage());
+        } catch (IOException e) {
+            log.info("Error uploading CRL file", e);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No file uploaded.");
         }
     }
 }

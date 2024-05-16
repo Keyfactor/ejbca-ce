@@ -16,6 +16,7 @@ dependencies {
     compileOnly(libs.caffeine)
     compileOnly(libs.java.ee.api)
     compileOnly(libs.jaxws.api)
+    compileOnly(libs.jakarta.xml.ws.api)    
     compileOnly(libs.jaxb.runtime)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)

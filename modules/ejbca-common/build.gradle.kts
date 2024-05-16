@@ -13,6 +13,7 @@ dependencies {
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
     compileOnly(libs.jaxws.api)
+    compileOnly(libs.jakarta.xml.ws.api)
     compileOnly(libs.jakarta.xml.bind.api)
     compileOnly(libs.httpclient)
     compileOnly(libs.httpcore)
