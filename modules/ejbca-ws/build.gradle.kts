@@ -16,7 +16,6 @@ dependencies {
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
     compileOnly(libs.commons.lang)
-    compileOnly(libs.jakarta.xml.ws.api)    
     compileOnly(libs.javax.jws.api)
     compileOnly(libs.cert.cvc)
     compileOnly(libs.log4j.v12.api)
