@@ -383,7 +383,7 @@
 	</path>
 
 	<path id="lib.jee.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jakartaee-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jakartaee-api*.jar"/>
 		<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
 	</path>
 	
