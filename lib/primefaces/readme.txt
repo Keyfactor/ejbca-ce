@@ -1,2 +1,2 @@
 "Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
-"PrimeFaces";			"primefaces-12.0.0-jakarta";                    "MIT";		        "LICENSE-MIT";  		"https://primefaces.github.io/";	      			    "PrimeFaces library used for UX sugar.";
+"PrimeFaces";			"primefaces-14.0.0-jakarta";                    "MIT";		        "LICENSE-MIT";  		"https://repo1.maven.org/maven2/org/primefaces/primefaces/14.0.0/";	      			    "PrimeFaces library used for UX sugar.";

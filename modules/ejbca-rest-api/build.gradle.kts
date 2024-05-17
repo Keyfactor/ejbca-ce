@@ -23,7 +23,7 @@ dependencies {
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
-    compileOnly(libs.commons.fileupload)
+    compileOnly(libs.commons.fileupload2)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.java.ee.api)
     compileOnly(libs.x509.common.util)
