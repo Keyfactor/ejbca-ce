@@ -29,9 +29,9 @@ import org.junit.Test;
  * @see SelectItemComparator
  * @version $Id$
  */
-public class SelectItemComparatorTest {
+public class SelectItemComparatorUnitTest {
     
-    private static final Logger log = Logger.getLogger(SelectItemComparatorTest.class);
+    private static final Logger log = Logger.getLogger(SelectItemComparatorUnitTest.class);
 
     @Test
     public void testBasic() {
