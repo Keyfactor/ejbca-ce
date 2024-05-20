@@ -38,7 +38,6 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -50,9 +49,8 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Some test methods that are used from system tests
  * 
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CAAdminTestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
 

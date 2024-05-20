@@ -36,7 +36,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.query.QueryCriteria;
 
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -44,10 +43,9 @@ import com.keyfactor.util.keys.token.CryptoToken;
 /**
  * This class handles secure logs auditing. This class is responsible for checking
  * authorization and delegating a request to the right implementation.
- * 
- * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SecurityEventsAuditorSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSessionLocal, SecurityEventsAuditorSessionRemote {
 	

@@ -18,7 +18,6 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
@@ -29,7 +28,7 @@ import org.ejbca.core.protocol.acme.AcmeIdentifier;
  * Class that receives a Acme message and passes it on to the correct message handler.
  * Not available in Community Edition
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAuthorizationDataSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AcmeAuthorizationDataSessionBean implements AcmeAuthorizationDataSessionRemote, AcmeAuthorizationDataSessionLocal {
 

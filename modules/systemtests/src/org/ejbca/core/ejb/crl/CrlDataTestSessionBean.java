@@ -13,7 +13,6 @@
 package org.ejbca.core.ejb.crl;
 
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -23,9 +22,9 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
 /**
- * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlDataTestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CrlDataTestSessionBean implements CrlDataTestSessionRemote {
 

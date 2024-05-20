@@ -61,7 +61,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.EjbRemoteHelper;
@@ -97,7 +96,7 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * Handles management of Publishers.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublisherSessionBean implements PublisherSessionLocal, PublisherSessionRemote {
 

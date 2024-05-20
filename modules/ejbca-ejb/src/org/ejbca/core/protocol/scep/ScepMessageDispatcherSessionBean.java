@@ -85,7 +85,6 @@ import org.cesecore.certificates.endentity.EndEntityApprovalRequest;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.impl.AuthenticationKeyBinding;
@@ -124,7 +123,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 /** Implements processing of SCEP requests.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ScepMessageDispatcherSessionRemote")
+@Stateless
 public class ScepMessageDispatcherSessionBean implements ScepMessageDispatcherSessionLocal, ScepMessageDispatcherSessionRemote {
 
     /** Internal localization of logs and errors */

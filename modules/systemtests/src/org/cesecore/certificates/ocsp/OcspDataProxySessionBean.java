@@ -20,7 +20,6 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
 
@@ -30,9 +29,8 @@ import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
  *
  * See OcspDataSessionBeanTest.java
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspDataProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class OcspDataProxySessionBean implements OcspDataProxySessionRemote {
 

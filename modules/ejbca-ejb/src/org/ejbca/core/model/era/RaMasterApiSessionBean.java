@@ -257,7 +257,7 @@ import java.util.stream.Collectors;
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
  */
-@Stateless//(mappedName = JndiConstants.APP_JNDI_PREFIX + "RaMasterApiSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 

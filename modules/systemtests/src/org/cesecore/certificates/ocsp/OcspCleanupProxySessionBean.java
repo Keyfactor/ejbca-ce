@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.ocsp.OcspResponseCleanupSessionLocal;
 
 import jakarta.ejb.EJB;
@@ -24,9 +23,8 @@ import jakarta.ejb.TransactionAttributeType;
  * Provide access to OcspCleanupSessionLocal methods for convenient call
  * with EjbRemoteHelper in Ocsp related system tests.
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspCleanupProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class OcspCleanupProxySessionBean implements OcspCleanupProxySessionRemote {
 

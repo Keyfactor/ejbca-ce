@@ -40,7 +40,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
@@ -61,9 +60,8 @@ import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
 /**
  * Stores data used by web server clients.
  * 
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UserDataSourceSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, UserDataSourceSessionRemote {
 

@@ -14,7 +14,6 @@ package org.ejbca.core.ejb.ocsp;
 
 import org.apache.log4j.Logger;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.GlobalConfiguration;
 
 import jakarta.annotation.PostConstruct;
@@ -32,9 +31,9 @@ import jakarta.ejb.TransactionAttributeType;
 import java.util.concurrent.TimeUnit;
 
 /**
- * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseCleanupSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class OcspResponseCleanupSessionBean implements OcspResponseCleanupSessionLocal, OcspResponseCleanupSessionRemote {
 
