@@ -66,7 +66,6 @@ import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.crl.CrlCreationParams;
@@ -85,7 +84,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * - Setting revocation status in the database (using certificate store)
  * - Publishing revocations to publishers 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RevocationSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RevocationSessionBean implements RevocationSessionLocal, RevocationSessionRemote {
 

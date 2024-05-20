@@ -34,7 +34,6 @@ import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AccessRulesHelper;
 import org.cesecore.roles.management.RoleDataSessionLocal;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -69,7 +68,7 @@ import java.util.Map.Entry;
 /**
  * Business logic for the EJBCA 6.8.0+ authorization system.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AuthorizationSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AuthorizationSessionBean implements AuthorizationSessionLocal, AuthorizationSessionRemote {
     private static final Logger log = Logger.getLogger(AuthorizationSessionBean.class);

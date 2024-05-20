@@ -26,15 +26,13 @@ import jakarta.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 
 /**
  * 
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspDataSessionRemote") // Do we need remote interface?
+@Stateless // Do we need remote interface?
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class OcspDataSessionBean implements OcspDataSessionLocal, OcspDataSessionRemote {
 

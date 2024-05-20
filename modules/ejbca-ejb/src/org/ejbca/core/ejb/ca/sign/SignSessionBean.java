@@ -144,7 +144,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -204,7 +203,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Creates and signs certificates.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SignSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 

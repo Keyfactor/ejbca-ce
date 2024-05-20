@@ -17,13 +17,11 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.jndi.JndiConstants;
 
-/**  
- * @version $Id$
+/**
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ConfigurationHolderProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ConfigurationHolderProxySessionBean implements ConfigurationHolderProxySessionRemote {
 

@@ -22,7 +22,6 @@ import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.certificates.ocsp.cache.OcspSigningCache;
 import org.cesecore.certificates.ocsp.cache.OcspSigningCacheEntry;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 
 import com.keyfactor.util.EJBTools;
@@ -31,10 +30,9 @@ import com.keyfactor.util.certificate.CertificateWrapper;
 /**
  * Test session bean used to do some nasty manipulation on StandaloneOcspResponseGeneratorSessionBean
  * 
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspResponseGeneratorTestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class OcspResponseGeneratorTestSessionBean implements
         OcspResponseGeneratorTestSessionRemote, OcspResponseGeneratorTestSessionLocal {
