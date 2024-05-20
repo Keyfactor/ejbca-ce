@@ -52,8 +52,9 @@
 							<h:panelGroup id="enteredRequestEnrollmentCode" layout="block" styleClass="pure-control-group"
 								rendered="#{enrollWithUsernameBean.paramEnrollmentCodeEmpty}">
 								<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}" />
-								<h:inputSecret id="enrollmentCode" value="#{enrollWithUsernameBean.enrollmentCode}" autocomplete="off">
+								<h:inputSecret id="enrollmentCode" value="#{enrollWithUsernameBean.enrollmentCode}">
 									<f:validateRequired/>
+									<f:passThroughAttribute name="autocomplete" value="new-password"/>
 								</h:inputSecret>
 								<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>

@@ -323,7 +323,9 @@
                         <h:inputSecret id="textfieldrequirepassword" size="25"
                                        maxlength="150" redisplay="true"
                                        value="#{editEstConfigMBean.estAlias.password}"
-                                       autocomplete="off" rendered="#{!editEstConfigMBean.viewOnly}"/>
+                                       rendered="#{!editEstConfigMBean.viewOnly}">
+                            <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                        </h:inputSecret>
                         <h:outputText value="**********" rendered="#{editEstConfigMBean.viewOnly}"/>
                     </h:panelGroup>
                     <h:panelGroup>&nbsp;</h:panelGroup>
