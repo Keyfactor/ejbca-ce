@@ -107,7 +107,7 @@ import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
  * Generic Management implementation for InternalKeyBindings.
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalKeyBindingMgmtSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmtSessionLocal, InternalKeyBindingMgmtSessionRemote {
 

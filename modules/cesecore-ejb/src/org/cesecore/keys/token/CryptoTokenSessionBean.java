@@ -31,7 +31,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.util.QueryResultWrapper;
@@ -44,8 +43,7 @@ import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
  * Basic CRUD and activation caching of CryptoTokens is provided through this local access SSB.
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenSessionRemote")
-@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
 public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTokenSessionRemote {
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;

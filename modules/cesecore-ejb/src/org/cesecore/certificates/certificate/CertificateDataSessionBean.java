@@ -49,7 +49,7 @@ import java.util.TimeZone;
 /**
  * Low level CRUD functions to access CertificateData
  */
-@Stateless //(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateDataSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateDataSessionBean extends BaseCertificateDataSessionBean implements CertificateDataSessionLocal, CertificateDataSessionRemote {
 

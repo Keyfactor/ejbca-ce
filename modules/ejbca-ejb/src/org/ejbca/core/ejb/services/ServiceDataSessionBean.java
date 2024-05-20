@@ -21,16 +21,14 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.services.ServiceConfiguration;
 
 /**
  * Session bean for the Service Data table.
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ServiceDataSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceDataSessionRemote {
 

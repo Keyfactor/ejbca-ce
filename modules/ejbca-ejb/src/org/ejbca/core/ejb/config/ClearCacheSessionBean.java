@@ -50,7 +50,7 @@ import com.keyfactor.util.keys.token.CryptoToken;
  * Session bean for clearing all caches of the local EJBCA instance.
  * 
  */
-@Stateless//(mappedName = JndiConstants.APP_JNDI_PREFIX + "ClearCacheSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ClearCacheSessionBean implements ClearCacheSessionLocal {
 

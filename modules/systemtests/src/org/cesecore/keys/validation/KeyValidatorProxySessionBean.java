@@ -35,16 +35,14 @@ import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 
 /**
- * @version $Id$
  *
  */
 
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyValidatorProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyValidatorProxySessionBean implements KeyValidatorProxySessionRemote {
 

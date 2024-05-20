@@ -28,7 +28,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.member.RoleMemberDataSessionLocal;
@@ -38,9 +37,8 @@ import org.cesecore.util.QueryResultWrapper;
 /**
  * Implementation of the RoleDataSession local interface.
  * 
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleDataSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleDataSessionBean implements RoleDataSessionLocal, RoleDataSessionRemote {
 

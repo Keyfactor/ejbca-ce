@@ -37,7 +37,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.CmpConfiguration;
@@ -71,7 +70,7 @@ import org.ejbca.core.protocol.NoSuchAliasException;
  *  Responses of type 'CertRepMessage' may contain additional CA certificates in its 'caPubs' field 
  *  which can be configured in the CMP configuration ({@link CmpConfiguration#getResponseCaPubsCA(String)}.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CmpMessageDispatcherSessionRemote")
+@Stateless
 public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSessionLocal, CmpMessageDispatcherSessionRemote {
 
     private static final Logger log = Logger.getLogger(CmpMessageDispatcherSessionBean.class);

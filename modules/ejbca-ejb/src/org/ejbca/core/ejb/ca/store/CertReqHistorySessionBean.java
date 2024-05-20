@@ -32,7 +32,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.store.CertReqHistory;
@@ -46,7 +45,7 @@ import com.keyfactor.util.certificate.DnComponents;
  *
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertReqHistorySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, CertReqHistorySessionLocal {
 

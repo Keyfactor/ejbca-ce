@@ -20,15 +20,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
 
 /**
  * This bean handles configuration changes for system tests.
  * 
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "HealthCheckSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class HealthCheckSessionBean implements HealthCheckSessionLocal, HealthCheckSessionRemote {
 

@@ -50,7 +50,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ValidityDate;
 
 import com.keyfactor.util.CertTools;
@@ -65,7 +64,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * entry if there's more than one (taking permanent revocations into account), and for updates it
  * appends new entries instead of updating existing ones. 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "NoConflictCertificateStoreSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class NoConflictCertificateStoreSessionBean implements NoConflictCertificateStoreSessionRemote, NoConflictCertificateStoreSessionLocal {
 

@@ -36,9 +36,9 @@ import org.cesecore.util.QueryResultWrapper;
 
 /**
  * @see org.cesecore.keybind.InternalKeyBindingDataSessionLocal
- * @version $Id$
+ *
  */
-@Stateless  //(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalKeyBindingDataSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InternalKeyBindingDataSessionBean implements InternalKeyBindingDataSessionLocal {
 
