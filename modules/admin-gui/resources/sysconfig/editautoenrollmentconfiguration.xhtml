@@ -282,11 +282,11 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputSecret id="msaeAdLoginPassword" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                   autocomplete="off"
                                    redisplay="true"
                                    value="#{msAutoEnrollmentSettings.dto.adLoginPassword}" size="45"
                                    title="#{web.text.FORMAT_STRING}">
                         <f:converter converterId="trimConverter"/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
                 </h:panelGroup>
 
