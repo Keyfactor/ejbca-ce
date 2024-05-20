@@ -118,8 +118,9 @@
 
 		<h:outputLabel for="rapwd" value="#{web.text.SCEP_RA_AUTH_PASSWORD}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="rapwd" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputSecret redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}"
+	    	<h:inputSecret redisplay="true" value="#{scepConfigMBean.currentAlias.raAuthPassword}" rendered="#{scepConfigMBean.currentAliasEditMode}"
 	    		disabled="#{scepConfigMBean.currentAlias.useIntune}">
+				<f:passThroughAttribute name="autocomplete" value="new-password"/>
 	    	</h:inputSecret>
 	    	<h:outputText value="**********" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
@@ -201,7 +202,9 @@
 			
 		<h:outputLabel for="intuneAadAppKey" value="#{web.text.SCEP_AAD_APP_KEY}" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}"/>
 		<h:panelGroup id="intuneAadAppKey" rendered="#{scepConfigMBean.currentAlias.modeRa and not scepConfigMBean.currentAlias.intuneAadUseKeyBinding}">
-	    	<h:inputSecret  redisplay="true" autocomplete="off" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}"/>
+	    	<h:inputSecret  redisplay="true" value="#{scepConfigMBean.currentAlias.intuneAadAppKey}" rendered="#{scepConfigMBean.currentAliasEditMode}">
+				<f:passThroughAttribute name="autocomplete" value="new-password"/>
+			</h:inputSecret>
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>
 		</h:panelGroup>
 				
@@ -263,8 +266,9 @@
 		
 		<h:outputLabel for="intuneProxyPass" value="#{web.text.SCEP_PROXY_PASS}" rendered="#{scepConfigMBean.currentAlias.modeRa}"/>
 		<h:panelGroup id="intuneProxyPass" rendered="#{scepConfigMBean.currentAlias.modeRa}">
-	    	<h:inputSecret redisplay="true" autocomplete="off"  value="#{scepConfigMBean.currentAlias.intuneProxyPass}" 
+	    	<h:inputSecret redisplay="true" value="#{scepConfigMBean.currentAlias.intuneProxyPass}"
 	    		rendered="#{scepConfigMBean.currentAliasEditMode}" size="60">
+				<f:passThroughAttribute name="autocomplete" value="new-password"/>
 	    	</h:inputSecret>
 	    	<h:outputText value="*****" rendered="#{!scepConfigMBean.currentAliasEditMode}"/>	    	
 		</h:panelGroup>
