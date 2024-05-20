@@ -82,11 +82,15 @@
 	            	<h:inputSecret id="inputhmacsecret" value="#{editCmpConfigMBean.hmacSecret}" 
 	            			disabled="#{editCmpConfigMBean.caSharedSecret or !editCmpConfigMBean.hmacSelected}"
 	            			rendered="#{editCmpConfigMBean.cmpDto.raMode and not editCmpConfigMBean.viewOnly}"
-	            			redisplay="true" autocomplete="off"/>
+	            			redisplay="true">
+						<f:passThroughAttribute name="autocomplete" value="new-password"/>
+					</h:inputSecret>
            			<h:inputSecret id="inputsecretviewonlydummy" value="**********" 
            					disabled="true" 
            					rendered="#{editCmpConfigMBean.viewOnly}"
-           					redisplay="true" autocomplete="off"/>
+           					redisplay="true">
+						<f:passThroughAttribute name="autocomplete" value="new-password"/>
+					</h:inputSecret>
 	            	<br/>
 	            	<h:panelGroup id="endentitycertificategroup" rendered="#{editCmpConfigMBean.responseProtection ne 'pbe'}">
 	            		<h:selectBooleanCheckbox value="#{editCmpConfigMBean.eeCertSelected}" disabled="#{editCmpConfigMBean.viewOnly}">
