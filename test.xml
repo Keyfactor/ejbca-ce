@@ -75,7 +75,7 @@
     </target>
     <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
     <target name="optionaltestct" if="${ct.exists}">
-        <ant antfile="build.xml" dir="modules/ct" target="test" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/ct" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="statedump.exists"><available file="modules/statedump/build.xml" /></condition>
     <target name="optionalteststatedump" if="${statedump.exists}">
@@ -362,8 +362,8 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target name="test:ct" description="run JUnit Certificate Transparency test." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/ct" target="test" inheritall="true" inheritrefs="true"/>
+    <target name="test:unit:ct" description="run JUnit Certificate Transparency test." depends="deleteDirectories">
+    	<ant antfile="build.xml" dir="modules/ct" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
