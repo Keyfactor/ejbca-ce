@@ -29,7 +29,7 @@ import org.junit.Test;
  *
  */
 @Deprecated
-public class AdminGroupDataTest {
+public class AdminGroupDataUnitTest {
     
     @Test
     public void testHasAccessToRule() {
