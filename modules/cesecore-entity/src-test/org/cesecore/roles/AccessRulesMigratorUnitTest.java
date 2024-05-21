@@ -31,9 +31,9 @@ import static org.junit.Assert.assertEquals;
  * @version $Id$
  */
 @SuppressWarnings("deprecation")
-public class AccessRulesMigratorTest {
+public class AccessRulesMigratorUnitTest {
 
-    private static final Logger log = Logger.getLogger(AccessRulesMigratorTest.class);
+    private static final Logger log = Logger.getLogger(AccessRulesMigratorUnitTest.class);
 
     private static final String ERRMSG_ALLOWED_TO_DENIED = "Access granted that should have been denied.";
     private static final String ERRMSG_DENIED_TO_ALLOWED = "Access denied that should have been granted.";
