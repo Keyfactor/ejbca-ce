@@ -21,7 +21,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class AccessUserAspectDataTest {
+public class AccessUserAspectDataUnitTest {
 
     @SuppressWarnings("deprecation")
     @Test

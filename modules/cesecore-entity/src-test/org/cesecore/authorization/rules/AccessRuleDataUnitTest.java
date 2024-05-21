@@ -23,7 +23,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class AccessRuleDataTest {
+public class AccessRuleDataUnitTest {
 
     @SuppressWarnings("deprecation")
     @Test

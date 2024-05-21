@@ -54,9 +54,9 @@ import org.junit.Test;
  * @version $Id$
  */
 @Deprecated
-public class Eca7277RegressionTest {
+public class Eca7277RegressionUnitTest {
     
-    private static final Logger log = Logger.getLogger(Eca7277RegressionTest.class);
+    private static final Logger log = Logger.getLogger(Eca7277RegressionUnitTest.class);
 
     private boolean isDatabaseProtectionImplementationAvailable() {
         try {

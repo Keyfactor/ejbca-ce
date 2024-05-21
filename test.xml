@@ -44,7 +44,7 @@
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test:unit" inheritall="true" inheritrefs="true"/>
-       	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test" inheritall="true" inheritrefs="true"/>
+       	<ant antfile="build.xml" dir="modules/cesecore-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/ejbca-common" target="test-common" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test-common-web" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" inheritall="true" inheritrefs="true"/>
@@ -453,6 +453,11 @@
 
     <target name="test:unit:caa" description="run all JUnit tests for caa." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/caa" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:cesecore-entity" description="run all JUnit tests for cesecore-entity." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/cesecore-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
