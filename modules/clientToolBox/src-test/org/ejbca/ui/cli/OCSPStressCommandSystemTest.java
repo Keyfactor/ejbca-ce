@@ -35,11 +35,11 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.configuration.GlobalConfigurationSessionRemote;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -61,23 +61,25 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
-import org.junit.runners.MethodSorters;
 
+import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
@@ -87,24 +89,21 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertNotNull;
 
 /**
- * Run stress tests with ClientToolBax command CMPKeyUpdateStressTest
+ * Run stress tests with ClientToolBox command Ocsp stress
  */
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CMPKeyUpdateStressTestCommandTest {
+public class OCSPStressCommandSystemTest {
+    Ocsp command = new Ocsp();
 
     @Rule
     public Timeout testTimeout = new Timeout(90_000, TimeUnit.MILLISECONDS); // per test case
 
-    private static final String END_ENTITY_PROFILE_NAME = "CMPKeyUpdateStressTestCommandTestEEP";
-    private static final String CA_NAME = "CMPKeyUpdateStressTestCommandTestCA";
+    private static final String END_ENTITY_PROFILE_NAME = "OCSPStressCommandTestEEP";
+    private static final String CA_NAME = "OCSPStressCommandTestCA";
     private static final String DEFAULT_CA_DN = "CN=" + CA_NAME;
     private static final String PASSWORD = "foo123";
-    private static final String USERNAME = "CMPKeyUpdateStressTestCommandTestUser";
-    private static final String CMP_ALIAS = "CMPKeyUpdateStressTestCmpAlias";
-    private static final int NUM_ENDENTITIES = 10;
+    private static final String USERNAME = "OCSPStressCommandTestUser";
 
     private static X509CA x509ca;
-    private static CmpConfiguration cmpConfiguration;
     private static String httpHost;
     private static String httpPort;
     private static String p12CertsPath;
@@ -116,37 +115,10 @@ public class CMPKeyUpdateStressTestCommandTest {
     private static final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private static final EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private static final KeyStoreCreateSessionRemote keyStoreCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyStoreCreateSessionRemote.class);
-    private static final GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private static final EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private static final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
-
-    @Rule
-    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
-    @Rule
-    public TemporaryFolder folder = new TemporaryFolder();
-
-    private static void cleanup() throws Exception {
-        internalCertificateStoreSession.removeCertificatesByIssuer(DEFAULT_CA_DN);
-        for (int i = 0; i < NUM_ENDENTITIES; i++) {
-            try {
-                endEntityManagementSession.deleteUser(authToken, USERNAME + i);
-            } catch (NoSuchEndEntityException e) {
-                // NOPMD the cleanup method is run before the test also
-            }
-        }
-        endEntityProfileSession.removeEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME);
-        if (cmpConfiguration == null) {
-            cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        }
-        cmpConfiguration.removeAlias(CMP_ALIAS);
-        globalConfigSession.saveConfiguration(authToken, cmpConfiguration);
-        CaTestUtils.removeCa(authToken, CA_NAME, CA_NAME);
-    }
+    private final static CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        cleanup();
         ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         httpHost = SystemTestsConfiguration.getRemoteHost(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME));
         httpPort = SystemTestsConfiguration.getRemotePortHttp(configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP));
@@ -154,6 +126,10 @@ public class CMPKeyUpdateStressTestCommandTest {
         x509ca = CaTestUtils.createTestX509CAOptionalGenKeys(DEFAULT_CA_DN, "foo123".toCharArray(), true,
                 false, "1024", X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         caSession.addCA(authToken, x509ca);
+        caAdminSession.publishCACertificate(authToken, x509ca.getCertificateChain(), null, x509ca.getSubjectDN());
+        OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
 
         final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
         endEntityProfile.setAvailableCAs(Collections.singleton(x509ca.getCAId()));
@@ -161,13 +137,6 @@ public class CMPKeyUpdateStressTestCommandTest {
         endEntityProfile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
         endEntityProfile.setReUseKeyRecoveredCertificate(true);
         endEntityProfileId = endEntityProfileSession.addEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME, endEntityProfile);
-
-        cmpConfiguration = (CmpConfiguration) globalConfigSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        cmpConfiguration.addAlias(CMP_ALIAS);
-        cmpConfiguration.setRAMode(CMP_ALIAS, false);
-        cmpConfiguration.setResponseProtection(CMP_ALIAS, "signature");
-        cmpConfiguration.setKurAllowAutomaticUpdate(CMP_ALIAS, true);
-        globalConfigSession.saveConfiguration(authToken, cmpConfiguration);
     }
 
     @Before
@@ -178,27 +147,63 @@ public class CMPKeyUpdateStressTestCommandTest {
 
     @After
     public void tearDown() {
+        final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
+                InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         internalCertificateStoreSession.removeCertificatesByIssuer(DEFAULT_CA_DN);
+        EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         endEntityManagementProxySession.deleteUsersByEndEntityProfileId(endEntityProfileId);
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
-        cleanup();
+        endEntityProfileSession.removeEndEntityProfile(authToken, END_ENTITY_PROFILE_NAME);
+        CaTestUtils.removeCa(authToken, x509ca.getCAInfo());
     }
 
+
+    @Rule
+    public final ExpectedSystemExit exit = ExpectedSystemExit.none();
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
+
     @Test
-    public void testCommandCMPKeyUpdateStressTest() throws InvalidAlgorithmException, WaitingForApprovalException, InvalidKeySpecException, AuthStatusException, EndEntityExistsException, CustomCertificateSerialNumberException, AuthLoginException, NoSuchEndEntityException, AuthorizationDeniedException, IllegalNameException, EndEntityProfileValidationException, CADoesntExistsException, IllegalValidityException, CustomFieldException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, CertificateRevokeException, KeyStoreException, IOException, CertificateSerialNumberException, CertificateSignatureException, ApprovalException, CertificateCreateException, CertificateException, IllegalKeyException, CAOfflineException {
+    public void testCommandOCSPStressTest() throws IOException, CertificateException, InvalidAlgorithmException, WaitingForApprovalException, InvalidKeySpecException, AuthStatusException, EndEntityExistsException, CustomCertificateSerialNumberException, AuthLoginException, NoSuchEndEntityException, AuthorizationDeniedException, IllegalNameException, EndEntityProfileValidationException, CADoesntExistsException, IllegalValidityException, CustomFieldException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, CryptoTokenOfflineException, CertificateRevokeException, KeyStoreException, CertificateSerialNumberException, CertificateSignatureException, ApprovalException, CertificateCreateException, IllegalKeyException, CAOfflineException {
         exit.expectSystemExitWithStatus(0);
-        createUsersWithP12(NUM_ENDENTITIES);
-        // CMPKeyUpdateStressTest ca keys foo123 testClient 10:100 1000 8080
-        int numberOfThreads = 10;
+        createUsersWithP12(1);
+        File caCertificateFile = saveCaToFile();
+        File serialsFile = createSerialsFile();
+
+        int numberOfThreads = 30;
         int numberOfTests = 100;
         String waitTime = "1000";
-        String[] args = new String[]{"CMPKeyUpdateStressTest", httpHost, p12CertsPath, PASSWORD, CMP_ALIAS,
-                numberOfThreads + ":" + numberOfTests, waitTime, httpPort};
-        CMPKeyUpdateStressTest cmpKeyUpdateStressTestCommand = new CMPKeyUpdateStressTest();
-        cmpKeyUpdateStressTestCommand.execute(args);
+        String httpReqPath = "http://" + httpHost + ":" + httpPort + "/ejbca/publicweb/status/ocsp";
+
+        //OCSP stress http://ca:8080/ejbca/publicweb/status/ocsp serials.txt CMPCA.cacert.pem 30:100 1000 GET keys/tester-0.p12 foo123
+        String[] args = new String[]{"OCSP", "stress", httpReqPath, serialsFile.getCanonicalPath(), caCertificateFile.getCanonicalPath(),
+                numberOfThreads + ":" + numberOfTests, waitTime, "GET",
+                p12CertsPath + "/" + USERNAME + 0 + ".p12", PASSWORD};
+        command.execute(args);
+    }
+
+    /** Creates serials.txt with a hexadecimal and decimal serial (both non-existent */
+    private File createSerialsFile() throws IOException {
+        final String serials = "# This is a comment\n" +
+                "0x1234567890ABCDEF1234567890ABCDEF\n" +
+                "12345678901234567890\n";
+        File serialsFile = folder.newFile("serials.txt");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(serialsFile)) {
+            fileOutputStream.write(serials.getBytes(StandardCharsets.US_ASCII));
+        }
+        return serialsFile;
+    }
+
+    private File saveCaToFile() throws IOException, CertificateEncodingException {
+        Certificate caCertificate = x509ca.getCACertificate();
+        File caCertificateFile = folder.newFile("ca.pem");
+        try (FileOutputStream fileOutputStream = new FileOutputStream(caCertificateFile)) {
+            fileOutputStream.write(CertTools.getPemFromCertificateChain(Collections.singletonList(caCertificate)));
+        }
+        return caCertificateFile;
     }
 
     private void createUsersWithP12(int number) throws EndEntityExistsException, WaitingForApprovalException, CertificateSerialNumberException, CADoesntExistsException, EndEntityProfileValidationException, AuthorizationDeniedException, IllegalNameException, CustomFieldException, ApprovalException, NoSuchEndEntityException, AuthLoginException, IllegalKeyException, CertificateCreateException, CAOfflineException, CertificateRevokeException, NoSuchAlgorithmException, CustomCertificateSerialNumberException, CertificateSignatureException, IllegalValidityException, InvalidAlgorithmParameterException, KeyStoreException, InvalidAlgorithmException, AuthStatusException, CryptoTokenOfflineException, CertificateException, InvalidKeySpecException, IOException {
@@ -221,10 +226,9 @@ public class CMPKeyUpdateStressTestCommandTest {
                     true, endEntityProfileId);
 
             String filename = p12CertsPath + "/" + name + ".p12";
-            try (FileOutputStream fileOutputStream = new FileOutputStream(filename)) {
-                fileOutputStream.write(ks1);
-            }
+            FileOutputStream fileOutputStream = new FileOutputStream(filename);
+            fileOutputStream.write(ks1);
+            fileOutputStream.close();
         }
     }
-
 }

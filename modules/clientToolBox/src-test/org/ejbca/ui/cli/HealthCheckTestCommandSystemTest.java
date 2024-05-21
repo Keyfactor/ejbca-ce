@@ -12,12 +12,19 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.util.PerformanceTest;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,16 +32,20 @@ import org.junit.contrib.java.lang.system.ExpectedSystemExit;
 import org.junit.rules.Timeout;
 
 /**
- * Unit tests for ClientToolBax command healthCheck
+ * Run stress tests with ClientToolBax command healthCheckTest
  *
  * @version $Id$
  */
-public class HealthCheckCommandTest {
+public class HealthCheckTestCommandSystemTest {
+
+    private static final Logger log = Logger.getLogger(HealthCheckTestCommandSystemTest.class);
+
+    private static final int HEAD_ERROR_LOG_LINES = 20;
 
     @Rule
-    public Timeout testTimeout = new Timeout(60_000, TimeUnit.MILLISECONDS); // per test case
+    public Timeout testTimeout = new Timeout(600_000, TimeUnit.MILLISECONDS); // per test case
 
-    private HealthCheck command = new HealthCheck();
+    private HealthCheckTest command = new HealthCheckTest();
     private String httpReqPath;
 
     @Rule
@@ -49,16 +60,39 @@ public class HealthCheckCommandTest {
     }
 
     @Test
-    public void testCommandSucceeds() {
-        String[] args = new String[]{"healthCheck", httpReqPath + "/publicweb/healthcheck/ejbcahealth"};
-        command.execute(args);
+    public void testCommand() {
+        try {
+            log.trace(">testCommand");
+            exit.expectSystemExitWithStatus(0);
+            int numberOfThreads = 1000;
+            int numberOfTests = 100_000;
+            String waitTime = "2000";
+            String[] args = new String[]{"healthCheckTest", httpReqPath + "/publicweb/healthcheck/ejbcahealth",
+                    numberOfThreads + ":" + numberOfTests, waitTime};
+            command.execute(args);
+            log.trace("<testCommand");
+        } finally {
+            printErrors();
+        }
     }
 
-    @Test
-    public void testCommandWrongUri() {
-        exit.expectSystemExitWithStatus(-1);
-
-        String[] args = new String[]{"healthCheck", "bad.url"};
-        command.execute(args);
+    private void printErrors() {
+        log.trace("Checking for error.log");
+        final File errorLog = new File(PerformanceTest.Log.ERROR_LOG_FILENAME);
+        if (errorLog.exists() && FileUtils.sizeOf(errorLog) > 0) {
+            try {
+                final StringBuilder sb = new StringBuilder("error.log contents: ");
+                try (BufferedReader reader = new BufferedReader(new FileReader(errorLog))) {
+                    sb.append(System.lineSeparator());
+                    for (int i = 0; i < HEAD_ERROR_LOG_LINES; i++) {
+                        sb.append(reader.readLine());
+                        sb.append(System.lineSeparator());
+                    }
+                }
+                log.error(sb.toString());
+            } catch (IOException e) {
+                log.error("Unexpected IOException", e);
+            }
+        }
     }
 }
