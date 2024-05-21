@@ -36,7 +36,6 @@ public class ProxyCaInfo extends CAInfo {
     public static final String USERNAME = "username";
     public static final String PASSWORD = "password";
     public static final String UPSTREAM_CA = "upstreamCertificateAuthority";
-    public static final String TEMPLATE = "template";
     public static final String SANS = "sans";
     public static final String AUTHENTICATION_CODE_PLACEHOLDER_VALUE = "placeholder";
     private String enrollWithCsrUrl;
@@ -44,7 +43,6 @@ public class ProxyCaInfo extends CAInfo {
     private String username;
     private String password;
     private String upstreamCertificateAuthority; // upstream certificate authority
-    private String template;
     private String sans; // SANs in JSON format
 
     public ProxyCaInfo() {
@@ -55,7 +53,7 @@ public class ProxyCaInfo extends CAInfo {
 
     public ProxyCaInfo(final String name, final String description, final String subjectDn, final int status, Collection<Integer> validators,
                        final String enrollByCsrUrl, final List<MutablePair<String, String>> headers, final String username, final String password,
-                       final String ca, final String template, final String sans) {
+                       final String ca, final String sans) {
         this.name = name;
         this.description = description;
         this.subjectdn = subjectDn;
@@ -66,7 +64,6 @@ public class ProxyCaInfo extends CAInfo {
         this.username = username;
         this.password = password;
         this.upstreamCertificateAuthority = ca; // upstream certificate authority
-        this.template = template;
         this.sans = sans; // SANs in JSON format
         this.signedby = SIGNEDBYEXTERNALCA;
         this.status = CAConstants.CA_EXTERNAL;
@@ -165,14 +162,6 @@ public class ProxyCaInfo extends CAInfo {
         this.upstreamCertificateAuthority = upstreamCertificateAuthority;
     }
 
-    public String getTemplate() {
-        return template;
-    }
-
-    public void setTemplate(String template) {
-        this.template = template;
-    }
-
     public String getSans() {
         return sans;
     }
@@ -207,7 +196,6 @@ public class ProxyCaInfo extends CAInfo {
         private String username;
         private String password;
         private String ca; // upstream certificate authority
-        private String template;
         private String sans; // SANs in JSON format
 
         public ProxyCaInfo.ProxyCaInfoBuilder setCaId(int caId) {
@@ -305,15 +293,6 @@ public class ProxyCaInfo extends CAInfo {
             return this;
         }
 
-        public String getTemplate() {
-            return template;
-        }
-
-        public ProxyCaInfo.ProxyCaInfoBuilder setTemplate(String template) {
-            this.template = template;
-            return this;
-        }
-
         public String getSans() {
             return sans;
         }
@@ -324,7 +303,7 @@ public class ProxyCaInfo extends CAInfo {
         }
 
         public ProxyCaInfo build() {
-            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, ca, template, sans);
+            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, ca, sans);
 
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(updateTime);
@@ -339,7 +318,7 @@ public class ProxyCaInfo extends CAInfo {
         }
 
         public ProxyCaInfo buildForUpdate() {
-            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, ca, template, sans);
+            ProxyCaInfo caInfo = new ProxyCaInfo(name, description, subjectDn, status, validators, enrollWithCsrUrl, headers, username, password, ca, sans);
 
             caInfo.setCAId(caId);
             caInfo.setUpdateTime(new Date());
