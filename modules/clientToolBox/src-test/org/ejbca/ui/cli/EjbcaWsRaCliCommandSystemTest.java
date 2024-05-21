@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class EjbcaWsRaCliCommandTest {
+public class EjbcaWsRaCliCommandSystemTest {
     private final EjbcaWsRaCli command = new EjbcaWsRaCli();
 
     @Rule

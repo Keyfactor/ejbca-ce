@@ -91,9 +91,9 @@ import static org.junit.Assert.*;
  * @version Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class PKCS11HSMKeyToolCommandTest {
+public class PKCS11HSMKeyToolCommandSystemTest {
 
-    private static final Logger log = Logger.getLogger(PKCS11HSMKeyToolCommandTest.class);
+    private static final Logger log = Logger.getLogger(PKCS11HSMKeyToolCommandSystemTest.class);
 
     /** 15 second timeout per test case, in case some test case freezes */
     @Rule

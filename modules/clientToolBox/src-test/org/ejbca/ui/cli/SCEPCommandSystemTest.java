@@ -51,7 +51,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class SCEPCommandTest {
+public class SCEPCommandSystemTest {
 
     @Rule
     public Timeout testTimeout = new Timeout(15_000, TimeUnit.MILLISECONDS); // per test case

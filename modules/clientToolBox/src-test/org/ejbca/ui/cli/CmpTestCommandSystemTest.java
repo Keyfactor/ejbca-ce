@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
  * @version $Id$
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CmpTestCommandTest {
+public class CmpTestCommandSystemTest {
     private final CMPTest command = new CMPTest();
 
     @Rule
