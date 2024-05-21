@@ -2325,7 +2325,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setUsername(proxyCaInfo.getUsername());
             caInfoDto.setPassword(proxyCaInfo.getPassword());
             caInfoDto.setUpstreamCa(proxyCaInfo.getUpstreamCertificateAuthority());
-            caInfoDto.setUpstreamTemplate(proxyCaInfo.getTemplate());
             caInfoDto.setSansJson(proxyCaInfo.getSans());
 
             return;
