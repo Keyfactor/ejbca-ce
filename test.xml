@@ -431,6 +431,11 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
+    <target name="test:unit:cesecore-ejb-interface" description="run all JUnit tests for cesecore-ejb-interface." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="test:unit:plugins" description="run all JUnit tests for plugins." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
