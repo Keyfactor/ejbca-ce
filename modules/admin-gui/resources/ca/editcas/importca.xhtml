@@ -70,8 +70,10 @@
 						value="#{web.text.IMPORTCA_KEYSTOREPASSWORD}" />
 				</h:panelGroup>
 				<h:panelGroup>
-					<h:inputSecret autocomplete="off" id="textfieldimportcapassword"
-						size="20" maxlength="255" value="#{importCaMBean.importPassword}" />
+					<h:inputSecret id="textfieldimportcapassword"
+						size="20" maxlength="255" value="#{importCaMBean.importPassword}">
+						<f:passThroughAttribute name="autocomplete" value="new-password"/>
+					</h:inputSecret>
 				</h:panelGroup>
 
 				<h:panelGroup>
