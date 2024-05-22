@@ -22,7 +22,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class ValidEndEntityStatusRestRequestTest {
+public class ValidEndEntityStatusRestRequestUnitTest {
 
     private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
