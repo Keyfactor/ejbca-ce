@@ -304,7 +304,7 @@
     </target>
 
 	<target name="runone" depends="compile-test">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=FooBarUnitTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
         <copy file="${log4j.test.file}" tofile="${ejbca-entity.build-test.dir}/log4j.xml" failonerror="true"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>

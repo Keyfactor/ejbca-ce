@@ -21,7 +21,7 @@ public class ApprovalJunitHelper {
 	public static class JunitApprovalExecutorUtil1 extends ApprovalExecutorUtil {
 	    
 		public static void init() {
-			ApprovalExecutorUtil.globallyAllowedString = ApprovalExecutorUtilTest.class.getName();
+			ApprovalExecutorUtil.globallyAllowedString = ApprovalExecutorUtilUnitTest.class.getName();
 			ApprovalExecutorUtil.globallyAllowed = null;
 			
 		}
@@ -29,7 +29,7 @@ public class ApprovalJunitHelper {
 	public static class JunitApprovalExecutorUtil2 extends ApprovalExecutorUtil {
 	      
 		public static void init() {
-			ApprovalExecutorUtil.globallyAllowedString = "foo.base.Foo,".concat(ApprovalExecutorUtilTest.class.getName()).concat(", foo.bar.Bar");
+			ApprovalExecutorUtil.globallyAllowedString = "foo.base.Foo,".concat(ApprovalExecutorUtilUnitTest.class.getName()).concat(", foo.bar.Bar");
 			ApprovalExecutorUtil.globallyAllowed = null;
 			
 		}

@@ -31,8 +31,8 @@ import org.junit.Test;
 /**
  * @version $Id$
  */
-public class ApprovalExecutorUtilTest {
-    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalExecutorUtilTest"));
+public class ApprovalExecutorUtilUnitTest {
+    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalExecutorUtilUnitTest"));
 
     @Test
 	public void testNoOfApprovals() throws PropertyValidationException {
@@ -95,7 +95,7 @@ public class ApprovalExecutorUtilTest {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS1 = {
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
-				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilTest","foo"),
+				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilUnitTest","foo"),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
@@ -107,7 +107,7 @@ public class ApprovalExecutorUtilTest {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS2 = {
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
-				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilTest",null),
+				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilUnitTest",null),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)
@@ -119,7 +119,7 @@ public class ApprovalExecutorUtilTest {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS3 = {
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
 				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
-				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilTest","testOverridableClassNames"),
+				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilUnitTest","testOverridableClassNames"),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
 				new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)

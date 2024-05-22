@@ -50,7 +50,7 @@ import com.keyfactor.util.CryptoProviderTools;
  * JUnit tests for CmpMessageHelper.
  * 
  */
-public class CmpMessageHelperTest {
+public class CmpMessageHelperUnitTest {
 
     @Before
     public void setUp() throws Exception {
