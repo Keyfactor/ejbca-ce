@@ -25,7 +25,7 @@ import org.junit.Test;
  * Tests DomainBlacklistComponentChecker functions.
  * @version $Id$
  */
-public class DomainBlacklistComponentCheckerTest {
+public class DomainBlacklistComponentCheckerUnitTest {
 
     private static final Map<String,String> BLACKLIST = MapTools.unmodifiableMap(
             "something.com", "somethingORIG.com", // normalized -> original, un-normalized, domain

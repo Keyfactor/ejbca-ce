@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  *
  * @version $Id$
  */
-public class GoogleSafeBrowsingValidatorTest {
+public class GoogleSafeBrowsingValidatorUnitTest {
 
     @Test
     public void test1GoodDomain() throws IOException {

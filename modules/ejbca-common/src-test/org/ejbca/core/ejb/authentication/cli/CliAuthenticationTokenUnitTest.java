@@ -35,7 +35,7 @@ import org.junit.Test;
  * @version $Id$
  * 
  */
-public class CliAuthenticationTokenTest {
+public class CliAuthenticationTokenUnitTest {
 
     private static final String BCRYPT_SALT = "$2a$01$Hja7ojbew3RWKA5d4AXMt.";
     

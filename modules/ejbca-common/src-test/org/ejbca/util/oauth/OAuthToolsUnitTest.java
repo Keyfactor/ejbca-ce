@@ -30,7 +30,7 @@ import com.keyfactor.util.keys.KeyTools;
  * Unit tests for the OAuthTools class
  */
 
-public class OAuthToolsTest {
+public class OAuthToolsUnitTest {
 
     private static final String JWK_KEY_IDENTIFIER = "fAhtTrQfRIB0C31iCdPUe9ZJ_8wx4Ov-wn5MdUxCwoQ";
     private static final String JWK_PUBLIC_KEY = "{\"kid\":\"fAhtTrQfRIB0C31iCdPUe9ZJ_8wx4Ov-wn5MdUxCwoQ\",\"kty\":\"RSA\",\"alg\":\"RS256\",\"use\":\"sig"

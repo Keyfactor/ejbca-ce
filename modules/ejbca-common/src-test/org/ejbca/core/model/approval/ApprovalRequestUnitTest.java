@@ -41,7 +41,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @version $Id$
  */
-public class ApprovalRequestTest {
+public class ApprovalRequestUnitTest {
     
     private static byte[] testcertenc = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"

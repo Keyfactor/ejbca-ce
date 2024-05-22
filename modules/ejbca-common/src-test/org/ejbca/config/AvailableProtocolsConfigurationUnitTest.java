@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-public class AvailableProtocolsConfigurationTest {
+public class AvailableProtocolsConfigurationUnitTest {
 
     /**
      * Verifies protocol path lookup.

@@ -49,8 +49,8 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 
 @SuppressWarnings("deprecation")
-public class UserDataVOTest {
-    private final static Logger log = Logger.getLogger(UserDataVOTest.class);
+public class UserDataVOUnitTest {
+    private final static Logger log = Logger.getLogger(UserDataVOUnitTest.class);
 
     @Test
     public void testBasicEncodeDecodeXml() throws Exception {

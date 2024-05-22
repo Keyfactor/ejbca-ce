@@ -30,7 +30,7 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * @version $Id$
  */
-public class LdapToolsTest {
+public class LdapToolsUnitTest {
 
     private static final String LDAP_TEST_DN = "cn=Test Person,mail=test@example.com,serialnumber=123456-7890";
 

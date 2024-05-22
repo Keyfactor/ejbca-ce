@@ -34,7 +34,7 @@ import org.junit.Test;
  *  2. from persisted data during certificate issuance
  *  
  */
-public class SshRequestMessageTest {
+public class SshRequestMessageUnitTest {
     
     private static CertificateProfile certProfile;
     

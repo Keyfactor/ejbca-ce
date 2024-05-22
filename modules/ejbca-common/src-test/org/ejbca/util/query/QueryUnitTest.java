@@ -25,8 +25,8 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public class QueryTest {
-    private static Logger log = Logger.getLogger(QueryTest.class);
+public class QueryUnitTest {
+    private static Logger log = Logger.getLogger(QueryUnitTest.class);
 
     @Test
     public void test01TestUserQuery() throws Exception {

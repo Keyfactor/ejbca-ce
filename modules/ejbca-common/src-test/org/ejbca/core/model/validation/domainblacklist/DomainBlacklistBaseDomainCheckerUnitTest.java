@@ -23,7 +23,7 @@ import org.junit.Test;
 /**
  * Tests DomainBlacklistBaseDomainChecker functions.
  */
-public class DomainBlacklistBaseDomainCheckerTest {
+public class DomainBlacklistBaseDomainCheckerUnitTest {
 
     private static final Map<String,String> BLACKLIST = MapTools.unmodifiableMap(
             "something.com", "somethingORIG.com", // normalized -> original, un-normalized, domain
