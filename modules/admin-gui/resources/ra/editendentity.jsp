@@ -1064,7 +1064,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" autocomplete="off" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
+             <input type="password" autocomplete="new-password" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
            <% } %>
  
         </td>
@@ -1097,7 +1097,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" autocomplete="off" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
+             <input type="password" autocomplete="new-password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
            <% } %>
         </td>
 	<td>&nbsp;</td> 

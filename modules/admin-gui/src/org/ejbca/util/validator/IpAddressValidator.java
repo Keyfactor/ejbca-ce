@@ -19,24 +19,17 @@ import jakarta.faces.validator.FacesValidator;
 import jakarta.faces.validator.Validator;
 import jakarta.faces.validator.ValidatorException;
 
+import com.keyfactor.util.StringTools;
+
 /**
  * Validator used in validating IP addresses in jsf pages (Acme alias configuration for example).
- *  
- * @version $Id$
- *
  */
 @FacesValidator("org.ejbca.util.validator.ipAddressValidator")
 public class IpAddressValidator implements Validator<Object> {
  
-    private static final String IP_ADDRESS_PATTERN =
-            "^([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\." +
-                    "([01]?\\d\\d?|2[0-4]\\d|25[0-5])$";
- 
     @Override
     public void validate(FacesContext context, UIComponent component, Object value) {
-        if (!((String) value).matches(IP_ADDRESS_PATTERN)) {
+        if (!StringTools.isIpAddress((String) value)) {
             throw new ValidatorException(new FacesMessage("Incorrectly formatted IP address!"));
         }
     }

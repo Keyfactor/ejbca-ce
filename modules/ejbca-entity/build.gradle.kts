@@ -2,7 +2,12 @@ import org.apache.tools.ant.filters.ReplaceTokens
 import java.util.Properties
 
 val props: Properties = Properties().apply {
-    load(file("${rootProject.projectDir}/conf/database.properties").inputStream())
+    val propertiesFilePath = "${rootProject.projectDir}/conf/database.properties"
+    if (file(propertiesFilePath).exists()) {
+        load(file(propertiesFilePath).inputStream())
+    } else {
+        load(file(propertiesFilePath + ".sample").inputStream())
+    }
 }
 val dialectMap = mapOf(
     "db2" to "org.hibernate.dialect.DB2Dialect",

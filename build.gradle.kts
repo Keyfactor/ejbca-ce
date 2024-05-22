@@ -1,7 +1,12 @@
 import java.util.Properties
 
 val props: Properties = Properties().apply {
-    load(file("conf/ejbca.properties").inputStream())
+    val propertiesFilePath = "conf/ejbca.properties"
+    if (file(propertiesFilePath).exists()) {
+        load(file(propertiesFilePath).inputStream())
+    } else {
+        load(file(propertiesFilePath + ".sample").inputStream())
+    }
 }
 
 // Specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)

@@ -3279,7 +3279,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
             final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification,
-                keyAlgorithm, null);
+                keyAlgorithm, null, null);
         return generateOrKeyRecoverTokenV2(authenticationToken, request);
     }
 
