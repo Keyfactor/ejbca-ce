@@ -32,7 +32,7 @@ import static org.junit.Assert.assertNull;
  * 
  * @version $Id$
  */
-public class DistinguishedNameTest {
+public class DistinguishedNameUnitTest {
     
     private static final String DN = "cn=David Galichet,o=Fimasys,email=dgalichet@fimasys.fr," 
         + "g=M,email=david.galichet@fimasys.fr";

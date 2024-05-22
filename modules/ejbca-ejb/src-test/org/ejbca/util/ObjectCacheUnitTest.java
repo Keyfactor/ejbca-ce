@@ -24,7 +24,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class ObjectCacheTest {
+public class ObjectCacheUnitTest {
 	
     @Test
 	public void testObjectCache() throws Exception {

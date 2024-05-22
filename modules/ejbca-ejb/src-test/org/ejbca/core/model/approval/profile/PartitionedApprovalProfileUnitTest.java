@@ -32,7 +32,7 @@ import org.junit.Test;
  * Unit tests for the PartitionedApprovalProfile class.
  *
  */
-public class PartitionedApprovalProfileTest {
+public class PartitionedApprovalProfileUnitTest {
 
     /**
      * Approval is required if there are any partitions that the ANYBODY pseudo-role doesn't have access to
