@@ -54,7 +54,7 @@ import com.keyfactor.util.keys.KeyTools;
  * @version $Id$
  *
  */
-public class RequestHelperTest {
+public class RequestHelperUnitTest {
     
     /*
      * CSR for a external CA with DN: CN=foos

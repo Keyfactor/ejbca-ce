@@ -25,7 +25,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class UserNameGeneratorTest {
+public class UserNameGeneratorUnitTest {
 
     /**
      * Test user generation based on both SN and CN.

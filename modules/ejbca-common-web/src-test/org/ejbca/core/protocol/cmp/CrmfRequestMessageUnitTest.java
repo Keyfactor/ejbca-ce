@@ -91,7 +91,7 @@ import static org.junit.Assert.fail;
  * Test to verify that CrmfRequestMessage can be properly Serialized.
  * Previously the fields in the inherited class BaseCmpMessage could not be properly Serialized.
  */
-public class CrmfRequestMessageTest {
+public class CrmfRequestMessageUnitTest {
 
     @Before
     public void setUp() throws Exception {

@@ -26,9 +26,9 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class PatternLoggerTest {
+public class PatternLoggerUnitTest {
 
-    private static final Logger log = Logger.getLogger(PatternLoggerTest.class);
+    private static final Logger log = Logger.getLogger(PatternLoggerUnitTest.class);
 
     /** Try out some interpolation with focus on different date formats. */
     @Test 

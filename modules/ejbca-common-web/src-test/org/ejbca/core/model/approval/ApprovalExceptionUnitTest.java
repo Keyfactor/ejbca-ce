@@ -23,7 +23,7 @@ import com.keyfactor.ErrorCode;
 /**
  * @version $Id$
  */
-public class ApprovalExceptionTest {
+public class ApprovalExceptionUnitTest {
 
 	/**
 	 * Verify that nested ApprovalExceptions propagate errorCode.

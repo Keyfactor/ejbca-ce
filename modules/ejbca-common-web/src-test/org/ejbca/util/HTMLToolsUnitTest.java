@@ -21,7 +21,7 @@ import org.junit.Test;
 /**
  * @version $Id$
  */
-public class HTMLToolsTest {
+public class HTMLToolsUnitTest {
 
 
     @Test
