@@ -167,10 +167,10 @@
             <h:panelGroup id="clientSecretPanelGroup">
 	            <h:inputSecret value="#{systemConfigMBean.oauthKeyManager.oauthKeyEditor.clientSecret}" size="46" id="clientSecret"
 	                         rendered="#{!systemConfigMBean.oauthKeyManager.oauthKeyEditor.viewMode
-	                         		and systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyBinding == null}" 
-	                         autocomplete="off" redisplay="true">
+	                         		and systemConfigMBean.oauthKeyManager.oauthKeyEditor.keyBinding == null}" redisplay="true">
 	                <f:converter converterId="trimConverter"/>
-	            </h:inputSecret>
+                    <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                </h:inputSecret>
             </h:panelGroup>
 
         </h:panelGrid>
