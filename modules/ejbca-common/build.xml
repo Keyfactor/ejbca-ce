@@ -98,50 +98,50 @@
         	 classpathref="compile-common.classpath"/>
 	</target>
 	
-	<target name="test-common" depends="compile-tests" description="Run tests for this module, use -Dtest.includep11=true to include P11 tests">
+	<target name="test:unit" depends="compile-tests" description="Run unit tests for this module, use -Dtest.includep11=true to include P11 tests">
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>
     	<echo message="pkcs11-exclude=${p11exclude}"/>
 		<echo message=" ** Running unit tests in parallel chunks. Console output will be a bit scrambled.. **"/>
 		<parallel>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/ra/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/ra/*UnitTest.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/**/*Test.class" />
-				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/ra/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/**/*UnitTest.class" />
+				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/ra/*UnitTest.class" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/ejbca/util/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/ejbca/util/**/*UnitTest.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/ca/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/ca/**/*UnitTest.class" />
 				<param name="test-subprocess.exclude-pattern" value="${p11exclude}" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/util/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/util/**/*UnitTest.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/**/*Test.class" />
-				<param name="test-subprocess.exclude-pattern" value="org/cesecore/certificates/ca/**/*Test.class org/cesecore/certificates/util/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/**/*UnitTest.class" />
+				<param name="test-subprocess.exclude-pattern" value="org/cesecore/certificates/ca/**/*UnitTest.class org/cesecore/certificates/util/**/*UnitTest.class" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/cesecore/util/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/cesecore/util/**/*UnitTest.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/cesecore/keys/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/cesecore/keys/**/*UnitTest.class" />
 				<param name="test-subprocess.exclude-pattern" value="${p11exclude}" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="org/ejbca/core/protocol/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/ejbca/core/protocol/**/*UnitTest.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 			<antcall target="test-subprocess" inheritall="true" inheritrefs="true">
-				<param name="test-subprocess.include-pattern" value="**/*Test.class" />
-				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class org/cesecore/certificates/**/*Test.class org/cesecore/util/**/*Test.class org/ejbca/core/protocol/**/*Test.class org/cesecore/keys/**/*Test.class ${p11exclude}" />
+				<param name="test-subprocess.include-pattern" value="**/*UnitTest.class" />
+				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*UnitTest.class org/ejbca/util/**/*UnitTest.class org/cesecore/certificates/**/*UnitTest.class org/cesecore/util/**/*UnitTest.class org/ejbca/core/protocol/**/*UnitTest.class org/cesecore/keys/**/*UnitTest.class ${p11exclude}" />
 			</antcall>
 		</parallel>
 		<antcall target="showtime" inheritall="true" inheritrefs="true"/>

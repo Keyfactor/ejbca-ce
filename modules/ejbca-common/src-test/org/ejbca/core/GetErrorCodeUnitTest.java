@@ -38,9 +38,9 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
  * 
  * @version $Id$
  */
-public class GetErrorCodeTest {
+public class GetErrorCodeUnitTest {
     
-    private static final Logger log = Logger.getLogger(GetErrorCodeTest.class);
+    private static final Logger log = Logger.getLogger(GetErrorCodeUnitTest.class);
 
 	@Test
     public void testEjbcaExceptionDefaultConstructor() {

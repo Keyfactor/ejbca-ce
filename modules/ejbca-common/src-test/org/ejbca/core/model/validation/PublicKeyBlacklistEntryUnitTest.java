@@ -29,7 +29,7 @@ import com.keyfactor.util.CertTools;
  *
  * @version $Id$
  */
-public class PublicKeyBlacklistEntryTest {
+public class PublicKeyBlacklistEntryUnitTest {
 
     /**
      * Test if the Debian fingerprint was created correctly.

@@ -94,7 +94,7 @@ import com.keyfactor.util.keys.KeyTools;
  * Protocol messages.
  *
  */
-public class MessagesTest {
+public class MessagesUnitTest {
 
     private static byte[] keytoolp10 = Base64.decode(("MIIBbDCB1gIBADAtMQ0wCwYDVQQDEwRUZXN0MQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNF" +
             "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDY+ATE4ZB0oKfmXStu8J+do0GhTag6rOGtoydI" +
@@ -377,7 +377,7 @@ public class MessagesTest {
     
     private static PrivateKey privateKey = null;
     private static X509Certificate caCert = null;
-    private static final Logger log = Logger.getLogger(MessagesTest.class);
+    private static final Logger log = Logger.getLogger(MessagesUnitTest.class);
 
     @BeforeClass
     public static void beforeClass() throws Exception {

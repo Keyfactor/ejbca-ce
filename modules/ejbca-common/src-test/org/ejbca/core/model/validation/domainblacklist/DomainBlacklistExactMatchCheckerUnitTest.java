@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public class DomainBlacklistExactMatchCheckerTest {
+public class DomainBlacklistExactMatchCheckerUnitTest {
 
     private static final Map<String,String> BLACKLIST1 = MapTools.unmodifiableMap(
             "something.com", "somethingORIG.com", // normalized -> original, un-normalized, domain

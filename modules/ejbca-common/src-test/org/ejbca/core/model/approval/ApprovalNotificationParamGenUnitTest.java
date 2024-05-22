@@ -21,7 +21,7 @@ import static org.junit.Assert.assertNotNull;
 /** Tests some substitution variables for approval profile notifications
  * @version $Id$
  */
-public class ApprovalNotificationParamGenTest {
+public class ApprovalNotificationParamGenUnitTest {
 
 	@Test
 	public void testInterpolate(){

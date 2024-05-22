@@ -44,8 +44,8 @@ import static org.junit.Assert.fail;
  * Tests the end entity profile entity bean profile checks only
  *
  */
-public class UserFulfillEndEntityProfileTest {
-    private static final Logger log = Logger.getLogger(UserFulfillEndEntityProfileTest.class);
+public class UserFulfillEndEntityProfileUnitTest {
+    private static final Logger log = Logger.getLogger(UserFulfillEndEntityProfileUnitTest.class);
 
     private static final String STANDARD_DN = "CN=John Smith,OU=DEP1_1,OU=DEP2_1,C=SE";
     private static final int TEST_CA_1 = 2;

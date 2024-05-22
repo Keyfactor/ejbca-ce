@@ -38,9 +38,9 @@ import com.keyfactor.util.certificate.DnComponents;
  *
  *
  */
-public class EndEntityProfileTest {
+public class EndEntityProfileUnitTest {
 
-    private static final Logger log = Logger.getLogger(EndEntityProfileTest.class);
+    private static final Logger log = Logger.getLogger(EndEntityProfileUnitTest.class);
 
     /** Dummy certificate profile */
     private static final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);

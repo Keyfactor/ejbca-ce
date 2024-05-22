@@ -26,7 +26,7 @@ import com.keyfactor.util.string.StringConfigurationCache;
 /**
  * A unit test for static configuration and log value filtering.
  */
-public class ScepConfigurationTest {
+public class ScepConfigurationUnitTest {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
