@@ -31,9 +31,9 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class FixEndOfBrokenXMLTest {
+public class FixEndOfBrokenXMLUnitTest {
 
-	private static Logger log = Logger.getLogger(FixEndOfBrokenXMLTest.class);
+	private static Logger log = Logger.getLogger(FixEndOfBrokenXMLUnitTest.class);
 	private static String CHAR_ENCODING = "UTF-8";
 
 	/**
@@ -78,7 +78,7 @@ public class FixEndOfBrokenXMLTest {
 	}
 
 	private byte[] readXmlFromFile() throws IOException {
-		final InputStream is = FixEndOfBrokenXMLTest.class.getResourceAsStream("test.xml");
+		final InputStream is = FixEndOfBrokenXMLUnitTest.class.getResourceAsStream("test.xml");
 		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		while( true ) {
 			final int available = is.available();
