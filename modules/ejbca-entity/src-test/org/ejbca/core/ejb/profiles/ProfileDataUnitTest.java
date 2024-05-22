@@ -27,7 +27,7 @@ import org.junit.Test;
  * @version $Id$
  *
  */
-public class ProfileDataTest {
+public class ProfileDataUnitTest {
 
     /**
      * This test creates a ProfileData object using an ApprovalProfile, then extracts the profile back out in order to verify integrity. 

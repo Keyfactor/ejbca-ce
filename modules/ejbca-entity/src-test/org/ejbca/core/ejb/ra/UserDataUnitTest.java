@@ -30,7 +30,7 @@ import static org.junit.Assert.assertTrue;
 * @version $Id$
 */
 @SuppressWarnings("deprecation")
-public class UserDataTest {
+public class UserDataUnitTest {
 
 	@Test
     public void test01UserPassword() throws Exception {
