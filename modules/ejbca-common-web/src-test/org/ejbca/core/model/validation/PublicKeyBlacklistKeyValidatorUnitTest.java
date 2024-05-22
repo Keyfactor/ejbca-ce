@@ -41,10 +41,10 @@ import com.keyfactor.util.keys.KeyTools;
  * 
  * @version $Id$
  */
-public class PublicKeyBlacklistKeyValidatorTest {
+public class PublicKeyBlacklistKeyValidatorUnitTest {
 
     /** Class logger. */
-    private static final Logger log = Logger.getLogger(PublicKeyBlacklistKeyValidatorTest.class);
+    private static final Logger log = Logger.getLogger(PublicKeyBlacklistKeyValidatorUnitTest.class);
 
     @BeforeClass
     public static void setClassUp() throws Exception {

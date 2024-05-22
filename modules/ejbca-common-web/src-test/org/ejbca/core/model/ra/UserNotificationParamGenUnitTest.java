@@ -37,7 +37,7 @@ import static org.junit.Assert.assertNotNull;
 /** Tests some substitution variables for user notifications
  * @version $Id$
  */
-public class UserNotificationParamGenTest {
+public class UserNotificationParamGenUnitTest {
 
 	@Test
 	public void testInterpolate(){
