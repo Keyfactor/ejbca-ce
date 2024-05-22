@@ -76,9 +76,9 @@ import static org.junit.Assert.assertTrue;
  */
 @SuppressWarnings("deprecation")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class DatabaseSchemaTest {
+public class DatabaseSchemaSystemTest {
 
-    private static final Logger LOG = Logger.getLogger(DatabaseSchemaTest.class);
+    private static final Logger LOG = Logger.getLogger(DatabaseSchemaSystemTest.class);
 
     private static String VARCHAR_80B;
     private static String VARCHAR_250B;
