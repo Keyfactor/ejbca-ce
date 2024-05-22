@@ -113,12 +113,12 @@ import com.keyfactor.util.keys.token.KeyGenParams;
 /**
  * Test class with system tests verifying that hybrid certificates can be enrolled via REST. 
  */
-public class CertificateRestResourceHybridTest extends RestResourceSystemTestBase {
+public class CertificateRestResourceHybridSystemTest extends RestResourceSystemTestBase {
 
-    private static final Logger log = Logger.getLogger(CertificateRestResourceHybridTest.class);
+    private static final Logger log = Logger.getLogger(CertificateRestResourceHybridSystemTest.class);
 
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(
-            new UsernamePrincipal("CertificateRestResourceHybridTest"));
+            new UsernamePrincipal("CertificateRestResourceHybridSystemTest"));
 
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
