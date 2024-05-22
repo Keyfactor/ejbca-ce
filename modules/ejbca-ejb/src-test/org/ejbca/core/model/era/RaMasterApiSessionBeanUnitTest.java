@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class RaMasterApiSessionBeanTest {
+public class RaMasterApiSessionBeanUnitTest {
     private EntityManager entityManager;
     private Capture<String> queryString;
     private Capture<String> parameters;

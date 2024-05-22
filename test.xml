@@ -48,14 +48,13 @@
        	<ant antfile="build.xml" dir="modules/cesecore-x509ca" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/ejbca-common" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test:unit" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins-ee" target="runsa" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/ra-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestconfigdump-unit" inheritall="true" inheritrefs="true"/>

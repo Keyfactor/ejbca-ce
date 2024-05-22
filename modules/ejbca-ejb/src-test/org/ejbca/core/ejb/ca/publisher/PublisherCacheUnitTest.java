@@ -29,9 +29,9 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class PublisherCacheTest {
+public class PublisherCacheUnitTest {
     
-    private static final transient Logger log = Logger.getLogger(PublisherCacheTest.class);
+    private static final transient Logger log = Logger.getLogger(PublisherCacheUnitTest.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -46,9 +46,9 @@ public class PublisherCacheTest {
     public void disabledCacheBehavior() {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
         EjbcaConfigurationHolder.updateConfiguration("publisher.cachetime", "-1");
-        final String name1 = PublisherCacheTest.class.getSimpleName() + " Publ1";
-        final String name2 = PublisherCacheTest.class.getSimpleName() + " Publ2";
-        final String name3 = PublisherCacheTest.class.getSimpleName() + " Publ3";
+        final String name1 = PublisherCacheUnitTest.class.getSimpleName() + " Publ1";
+        final String name2 = PublisherCacheUnitTest.class.getSimpleName() + " Publ2";
+        final String name3 = PublisherCacheUnitTest.class.getSimpleName() + " Publ3";
         final BasePublisher publ1 = getNewPublisher();
         final BasePublisher publ2 = getNewPublisher();
         final BasePublisher publ3 = getNewPublisher();
@@ -103,9 +103,9 @@ public class PublisherCacheTest {
     public void enabledCacheBehavior() {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
         EjbcaConfigurationHolder.updateConfiguration("publisher.cachetime", "3000");
-        final String name1 = PublisherCacheTest.class.getSimpleName() + " Publ1";
-        final String name2 = PublisherCacheTest.class.getSimpleName() + " Publ2";
-        final String name3 = PublisherCacheTest.class.getSimpleName() + " Publ3";
+        final String name1 = PublisherCacheUnitTest.class.getSimpleName() + " Publ1";
+        final String name2 = PublisherCacheUnitTest.class.getSimpleName() + " Publ2";
+        final String name3 = PublisherCacheUnitTest.class.getSimpleName() + " Publ3";
         final BasePublisher publ1 = getNewPublisher();
         final BasePublisher publ2 = getNewPublisher();
         final BasePublisher publ3 = getNewPublisher();
@@ -176,9 +176,9 @@ public class PublisherCacheTest {
     public void cacheExpiration() throws InterruptedException {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
         EjbcaConfigurationHolder.updateConfiguration("publisher.cachetime", "2000");
-        final String name1 = PublisherCacheTest.class.getSimpleName() + " CA1";
-        final String name2 = PublisherCacheTest.class.getSimpleName() + " CA2";
-        final String name3 = PublisherCacheTest.class.getSimpleName() + " CA3";
+        final String name1 = PublisherCacheUnitTest.class.getSimpleName() + " CA1";
+        final String name2 = PublisherCacheUnitTest.class.getSimpleName() + " CA2";
+        final String name3 = PublisherCacheUnitTest.class.getSimpleName() + " CA3";
         final BasePublisher publ1 = getNewPublisher();
         final BasePublisher publ2 = getNewPublisher();
         final BasePublisher publ3 = getNewPublisher();

@@ -32,7 +32,7 @@ import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 
 @RunWith(EasyMockRunner.class)
-public class EndEntityAccessSessionBeanTest {
+public class EndEntityAccessSessionBeanUnitTest {
 
 	@Mock
 	private GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -52,7 +52,7 @@ public class EndEntityAccessSessionBeanTest {
 				+ "OR endEntityProfileId = 593825433 OR endEntityProfileId = 344292554 "
 				+ "OR endEntityProfileId = 1746014445 )";
 		final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(
-				new UsernamePrincipal("EndEntityAccessSessionBeanTestAT"));
+				new UsernamePrincipal("EndEntityAccessSessionBeanUnitTestAT"));
 		final String endEntityAccessRule = "/view_end_entity";
 		final boolean authorizedToAnyProfile = true;
 

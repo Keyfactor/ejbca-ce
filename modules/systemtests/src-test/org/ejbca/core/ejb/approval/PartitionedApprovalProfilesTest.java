@@ -114,9 +114,9 @@ public class PartitionedApprovalProfilesTest extends CaTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         createTestCA();
-        adminusername1 = "PartitionedApprovalProfileTest" + "1";
-        adminusername2 = "PartitionedApprovalProfileTest" + "2";
-        reqadminusername = "req" + "PartitionedApprovalProfileTest";
+        adminusername1 = "PartitionedApprovalProfileUnitTest" + "1";
+        adminusername2 = "PartitionedApprovalProfileUnitTest" + "2";
+        reqadminusername = "req" + "PartitionedApprovalProfileUnitTest";
 
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(EndEntityManagementSessionRemote.class);

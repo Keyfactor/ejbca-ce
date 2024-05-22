@@ -33,7 +33,7 @@ import java.util.Map;
 
 /** Tests DN merging
  */
-public class EndEntityInformationFillerTest {
+public class EndEntityInformationFillerUnitTest {
 	EndEntityProfile profile;
 	EndEntityProfile bigProfile;
 	String bigUserDn;

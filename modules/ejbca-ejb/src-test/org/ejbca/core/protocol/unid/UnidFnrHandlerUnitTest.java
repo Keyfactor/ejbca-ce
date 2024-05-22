@@ -44,7 +44,7 @@ import com.keyfactor.util.CeSecoreNameStyle;
 /**
  * Testing of {@link UnidFnrHandler} .
  */
-public class UnidFnrHandlerTest {
+public class UnidFnrHandlerUnitTest {
 	
    
     /**
