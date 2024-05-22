@@ -21,7 +21,7 @@ import static org.junit.Assert.assertEquals;
  *
  * @version $Id$
  */
-public class WebConfigurationTest {
+public class WebConfigurationUnitTest {
 
     @Test
     public void testDcBaseURI() {

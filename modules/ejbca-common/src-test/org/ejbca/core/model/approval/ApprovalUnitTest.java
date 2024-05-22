@@ -44,9 +44,9 @@ import com.keyfactor.util.CryptoProviderTools;
  * $Id$
  */
 
-public class ApprovalTest {
+public class ApprovalUnitTest {
     
-    private static final Logger log = Logger.getLogger(ApprovalTest.class);
+    private static final Logger log = Logger.getLogger(ApprovalUnitTest.class);
 	
     private static byte[] testcertenc = Base64.decode(("MIIDATCCAmqgAwIBAgIIczEoghAwc3EwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
             + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAzMDky"

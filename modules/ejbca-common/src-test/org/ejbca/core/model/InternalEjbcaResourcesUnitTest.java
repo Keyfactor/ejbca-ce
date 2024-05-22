@@ -23,7 +23,7 @@ import org.junit.Test;
 /**
  * @version $Id$
  */
-public class InternalEjbcaResourcesTest {
+public class InternalEjbcaResourcesUnitTest {
 
 	private static final String TEST_RESOURCE_PATH = "/intresources";
 	// Classpath issues, use "src/intresources" when running from within eclipse

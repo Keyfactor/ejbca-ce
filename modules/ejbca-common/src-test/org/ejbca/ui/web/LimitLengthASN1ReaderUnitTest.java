@@ -29,7 +29,7 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class LimitLengthASN1ReaderTest {
+public class LimitLengthASN1ReaderUnitTest {
 
 	private LimitLengthASN1Reader limitLengthASN1Reader;
 	private InputStream inputStreamStub;
@@ -194,7 +194,7 @@ public class LimitLengthASN1ReaderTest {
 	 * Private inner class which represents an input stream with controlled output.
 	 * 
 	 * TODO: When our test runner is reformed to only run tests matching
-	 * **\*Test.class, make this an inner class to LimitLengthASN1ReaderTest
+	 * **\*Test.class, make this an inner class to LimitLengthASN1ReaderUnitTest
 	 * 
 	 */
 	class InputStreamStub extends InputStream {

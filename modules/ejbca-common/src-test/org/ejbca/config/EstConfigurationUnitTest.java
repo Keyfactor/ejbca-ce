@@ -23,10 +23,12 @@ import org.junit.Test;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
+
+
 /**
  * A unit test for static configuration and log value filtering.
  */
-public class CmpConfigurationTest {
+public class EstConfigurationUnitTest {
 
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -40,35 +42,35 @@ public class CmpConfigurationTest {
         // if a specific value is set it will be more modern encryption with a salt giving different values every time
         StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
 
-        CmpConfiguration config = new CmpConfiguration();
+        EstConfiguration config = new EstConfiguration();
         config.addAlias("alias1");
         config.addAlias("alias2");
-        config.setAllowRAVerifyPOPO("alias1", true);
-        config.setAllowRAVerifyPOPO("alias3", true); // alias does not exist, value not set
-        config.setAuthenticationModule("alias2", "HMAC");
-        config.setAuthenticationParameters("alias2", "foo123");
-        config.setRACAName("alias2", "name1");
-        config.setVendorMode("alias1", true);
-        config.setVendorCaIds("alias1", "1:55");
-        assertEquals(true, config.getAllowRAVerifyPOPO("alias1"));
-        assertEquals(false, config.getAllowRAVerifyPOPO("alias2")); // default value
-        assertEquals(false, config.getAllowRAVerifyPOPO("alias3")); // default value when alias does not exist
-        assertEquals("foo123", config.getAuthenticationParameters("alias2"));
-        assertEquals("foo123", config.getAuthenticationParameter("HMAC", "alias2"));
-        assertEquals("", config.getAuthenticationParameter("dummy", "alias2"));
-        assertEquals("-;-", config.getAuthenticationParameters("alias1"));
-        assertTrue(config.getVendorMode("alias1"));
-        assertEquals("1:55", config.getVendorCaIds("alias1"));
-        assertEquals("", config.getVendorCaIds("alias2"));
+        config.addAlias("alias4");
+        config.setAllowChangeSubjectName("alias1", true);
+        config.setAllowChangeSubjectName("alias3", true); // alias does not exist, value not set
+        config.setPassword("alias2", "foo123");
+        config.setRANameGenPostfix("alias2", "name1");
+        config.setVendorMode("alias4", true);
+        config.setVendorCaIds("alias4", "1:2:4");
+        assertEquals(true, config.getAllowChangeSubjectName("alias1"));
+        assertEquals(false, config.getAllowChangeSubjectName("alias2")); // default value
+        assertEquals(false, config.getAllowChangeSubjectName("alias3")); // default value when alias does not exist
+        assertEquals("foo123", config.getPassword("alias2"));
+        assertEquals("", config.getPassword("alias1"));
+        assertTrue(config.getVendorMode("alias4"));
+        assertEquals("1:2:4", config.getVendorCaIds("alias4"));
+        assertEquals("", config.getVendorCaIds("alias1"));
         
-        CmpConfiguration config2 = new CmpConfiguration(config);
-        config2.setAuthenticationParameters("alias2", "bar123");
-        config2.setRACAName("alias2", "name2");
+        EstConfiguration config2 = new EstConfiguration(config);
+        config2.setPassword("alias2", "bar123");
+        config2.setRANameGenPostfix("alias2", "name2");
+        assertEquals("name2", config2.getRANameGenPostfix("alias2"));
+        assertEquals("bar123", config2.getPassword("alias2"));
         Map<Object,Object> diff = config.diff(config2);
         // Default encryption password gives the same value all the time
-        assertEquals("{changed:alias2.authenticationparameters=4794b442dc3e3d400ba2ed53b1893d19, changed:alias2.ra.caname=name2}", diff.toString());
+        assertEquals("{changed:alias2.reqpassword=4794b442dc3e3d400ba2ed53b1893d19, changed:alias2.ra.namegenerationpostfix=name2}", diff.toString());
         config.filterDiffMapForLogging(diff);
-        assertEquals("{changed:alias2.authenticationparameters=hidden, changed:alias2.ra.caname=name2}", diff.toString());
+        assertEquals("{changed:alias2.reqpassword=hidden, changed:alias2.ra.namegenerationpostfix=name2}", diff.toString());
         
     }
 }

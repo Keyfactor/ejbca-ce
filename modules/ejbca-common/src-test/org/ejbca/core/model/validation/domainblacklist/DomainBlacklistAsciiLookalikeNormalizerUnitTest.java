@@ -26,7 +26,7 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public class DomainBlacklistAsciiLookalikeNormalizerTest  {
+public class DomainBlacklistAsciiLookalikeNormalizerUnitTest  {
     private static DomainBlacklistAsciiLookalikeNormalizer normalizer;
 
     @BeforeClass
