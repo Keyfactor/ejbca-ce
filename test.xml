@@ -11,7 +11,7 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/ejbca-ws" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestconfigdump-system" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionalteststatedump" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionalteststatedump-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestplugins-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestplugins-ee-system" inheritall="true" inheritrefs="true"/>
@@ -80,9 +80,9 @@
         <ant antfile="build.xml" dir="modules/ct" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="statedump.exists"><available file="modules/statedump/build.xml" /></condition>
-    <target name="optionalteststatedump" if="${statedump.exists}">
+    <target name="optionalteststatedump-system" if="${statedump.exists}">
         <antcall target="statedump" inheritall="true" inheritrefs="true"/>
-        <ant antfile="build.xml" dir="modules/statedump" target="test" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/statedump" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
     <target name="optionaltestconfigdump" if="${configdump.exists}">
@@ -328,8 +328,8 @@
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target name="test:statedump" description="run JUnit Statedump test." depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/statedump" target="test" inheritall="true" inheritrefs="true"/>
+    <target name="test:system:statedump" description="run all System tests for statedump." depends="deleteDirectories">
+    	<ant antfile="build.xml" dir="modules/statedump" target="test:system" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
