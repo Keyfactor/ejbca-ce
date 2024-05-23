@@ -14,7 +14,7 @@
     	<antcall target="optionalteststatedump" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestplugins-system" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestplugins-ee" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestplugins-ee-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestssh-system" inheritall="true" inheritrefs="true"/>
@@ -54,7 +54,6 @@
     	<ant antfile="build.xml" dir="modules/ejbca-ws-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/plugins-ee" target="runsa" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -67,6 +66,7 @@
     	<antcall target="optionaltestcits-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestpeerconnector-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestplugins-ee-unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
     <target name="optionaltestconfigdump-system" if="${configdump.exists}">
@@ -102,8 +102,12 @@
         <ant antfile="build.xml" dir="modules/plugins" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="plugins-ee.exist"><available file="modules/plugins-ee/build.xml" /></condition>
-    <target name="optionaltestplugins-ee" if="${plugins-ee.exist}">
-        <ant antfile="build.xml" dir="modules/plugins-ee" target="test" inheritall="true" inheritrefs="true"/>
+    <target name="optionaltestplugins-ee-unit" if="${plugins-ee.exist}">
+        <ant antfile="build.xml" dir="modules/plugins-ee" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <condition property="plugins-ee.exist"><available file="modules/plugins-ee/build.xml" /></condition>
+    <target name="optionaltestplugins-ee-system" if="${plugins-ee.exist}">
+        <ant antfile="build.xml" dir="modules/plugins-ee" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="acme.exists"><available file="modules/acme"/></condition>
     <target name="optionaltestacme-unit" if="${acme.exists}">
@@ -492,6 +496,16 @@
 
     <target name="test:unit:healthcheck-war" description="run all JUnit tests for healthcheck-war." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/healthcheck-war" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:plugins-ee" description="run all JUnit tests for plugins-ee." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/plugins-ee" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:plugins-ee" description="run all System tests for plugins-ee." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/plugins-ee" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
