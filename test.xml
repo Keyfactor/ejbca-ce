@@ -12,7 +12,7 @@
         <ant antfile="build.xml" dir="modules/ejbca-ws" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestconfigdump-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionalteststatedump" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestpeerconnector" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestpeerconnector-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestplugins" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestplugins-ee" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
@@ -66,6 +66,7 @@
     	<antcall target="optionaltestssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestcits-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+        <antcall target="optionaltestpeerconnector-unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
     <target name="optionaltestconfigdump-system" if="${configdump.exists}">
@@ -89,8 +90,12 @@
         <ant antfile="build.xml" dir="modules/configdump" target="test" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
-    <target name="optionaltestpeerconnector" if="${peerconnector.exists}">
-        <ant antfile="build.xml" dir="modules/peerconnector" target="test" inheritall="true" inheritrefs="true"/>
+    <target name="optionaltestpeerconnector-unit" if="${peerconnector.exists}">
+        <ant antfile="build.xml" dir="modules/peerconnector" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
+    <target name="optionaltestpeerconnector-system" if="${peerconnector.exists}">
+        <ant antfile="build.xml" dir="modules/peerconnector" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="plugins.exist"><available file="modules/plugins/build.xml" /></condition>
     <target name="optionaltestplugins" if="${plugins.exist}">
@@ -365,9 +370,14 @@
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target name="test:pc" depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/peerconnector" target="test" inheritall="true" inheritrefs="true"/>
-    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    <target name="test:unit:test:peerconnector" depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/peerconnector" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:test:peerconnector" depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/peerconnector" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:vapub" depends="deleteDirectories">
