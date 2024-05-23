@@ -13,7 +13,7 @@
         <antcall target="optionaltestconfigdump-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionalteststatedump" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector-system" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestplugins" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optionaltestplugins-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestplugins-ee" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestrest-system" inheritall="true" inheritrefs="true"/>
@@ -98,7 +98,7 @@
         <ant antfile="build.xml" dir="modules/peerconnector" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="plugins.exist"><available file="modules/plugins/build.xml" /></condition>
-    <target name="optionaltestplugins" if="${plugins.exist}">
+    <target name="optionaltestplugins-system" if="${plugins.exist}">
         <ant antfile="build.xml" dir="modules/plugins" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="plugins-ee.exist"><available file="modules/plugins-ee/build.xml" /></condition>
