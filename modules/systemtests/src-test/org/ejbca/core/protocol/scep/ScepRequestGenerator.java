@@ -70,7 +70,8 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
-/** Class used to generate SCEP messages. Used for SCEP clients and testing
+/**
+ * Class used to generate SCEP messages. Used for SCEP clients and testing
  */
 public class ScepRequestGenerator {
     private static Logger log = Logger.getLogger(ScepRequestGenerator.class);

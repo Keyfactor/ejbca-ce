@@ -60,9 +60,6 @@ import com.keyfactor.util.FileTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
-/**
- * @version $Id$
- */
 public class CaImportCertCommandSystemTest {
 
     private static final String CA_NAME = "CaImportCertCommandSystemTest";
