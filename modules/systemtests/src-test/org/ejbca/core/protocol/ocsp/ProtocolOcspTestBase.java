@@ -92,9 +92,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-/**
- *
- */
 public abstract class ProtocolOcspTestBase {
 
     private static final String PKIX_OCSP_NONCE = "123456789";
