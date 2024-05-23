@@ -71,7 +71,6 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * Imports a certificate file to the database.
  *
- * @version $Id$
  */
 public class CaImportCertCommand extends BaseCaAdminCommand {
 
@@ -105,7 +104,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(FILE_KEY, "Certificate File", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Must be PEM encoded"));
         registerParameter(new Parameter(CA_VALIDATION_KEY, "Validation Key", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
-                "Validate the CA Name corresponds to the issuer DN of the imported certificate. Prevents importing a certificate into the wrong CA. Must be true by default"));
+                "Validate that the CA Name corresponds to the issuer DN of the imported certificate. Prevents importing a certificate into the wrong CA."));
         registerParameter(new Parameter(EE_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "End Entity Profile to create end entity with. If no profile specified then the EMPTY profile will be used."));
         registerParameter(new Parameter(CERT_PROFILE_KEY, "Profile Name", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -252,7 +251,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 
         // Check the CA parameter (--caname) in CaImportCertCommand corresponds to the issuer DN of the imported certificate
         if (parameters.containsKey(CA_VALIDATION_KEY) && !cainfo.getSubjectDN().equals(CertTools.getIssuerDN(certificate))) {
-            errorString.append("Certificate import failed for " + caname + ".Because the certificate issuer DN did not match CA subject DN.");
+            errorString.append("Certificate import failed for " + caname + ".The certificate issuer DN did not match CA subject DN.");
         }
         
         if (errorString.length() > 0) {
