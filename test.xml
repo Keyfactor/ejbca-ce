@@ -509,6 +509,16 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
+    <target name="test:unit:ssh" description="run all JUnit tests for ssh." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ssh" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:ssh" description="run all System tests for ssh." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ssh" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="createreport">
 		<junitreport todir="${reports.dir}">
 			<fileset dir="${reports.dir}">
