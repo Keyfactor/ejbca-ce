@@ -20,8 +20,8 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class RaRequestPreviewTest {
-    private static final Logger log = Logger.getLogger(RaRequestPreviewTest.class);
+public class RaRequestPreviewUnitTest {
+    private static final Logger log = Logger.getLogger(RaRequestPreviewUnitTest.class);
 
     @Test
     public void testIsAltNameContainsValueFromCnEmptyString() {

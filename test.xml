@@ -434,7 +434,7 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target name="test:unit:ragui" description="run all JUnit tests for RA UI." depends="deleteDirectories">
+    <target name="test:unit:ra-gui" description="run all JUnit tests for RA UI." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ra-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
