@@ -60,6 +60,7 @@ dependencyResolutionManagement {
             library("jackson-annotations", ":jackson-annotations:2.14.2")
             library("commons-fileupload2", ":commons-fileupload2-jakarta:2.0.0-M1")
             library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M2")
+            library("commons-fileupload", ":commons-fileupload:1.5")
             library("jacknji11", ":jacknji11:1.3.1")
             library("p11ng", ":p11ng:0.23.5")
             library("protobuf-java", ":protobuf-java:3.25.3")
