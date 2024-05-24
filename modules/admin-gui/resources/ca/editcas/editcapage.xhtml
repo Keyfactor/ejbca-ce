@@ -1958,20 +1958,19 @@
                          cellspacing="3" cellpadding="3" border="0" width="100%"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable
-								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeCits
-								and not  editCAsMBean.caTypeProxy}">
+								and not editCAsMBean.caTypeCits and not  editCAsMBean.caTypeProxy}">
                 <h:outputLabel for="otherdata" value="#{web.text.OTHERDATA}"
                                style="font-weight: bold;"/>
                 <h:panelGroup id="otherdata"/>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:outputLabel
                             value="#{web.text.VALIDATORS}"/>
                     <h:outputText
                             value="#{web.ejbcaWebBean.getHelpReference('/Validators_Overview.html')}"
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:selectManyListbox id="selectValidator" styleClass="select-list" size="5"
                                          name="selectavailablevalidators"
                                          disabled="#{not editCAsMBean.hasEditRight}"
@@ -1980,7 +1979,7 @@
                     </h:selectManyListbox>
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:outputLabel for="checkboxfinishuser"
                                    value="#{web.text.FINISHUSER}"/>
                     <h:outputText
@@ -1988,7 +1987,7 @@
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:selectBooleanCheckbox name="checkboxfinishuser"
                                              id="checkboxfinishuser" value="#{editCAsMBean.caInfoDto.finishUser}"
                                              disabled="#{not editCAsMBean.hasEditRight}"/>
@@ -2031,7 +2030,7 @@
                                    value="#{web.text.ACTIVATE}"/>
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:outputLabel for="requestProcessor"
                                    value="#{web.text.REQUEST_PROCESSOR}"/>
                     <h:outputText
