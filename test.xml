@@ -51,8 +51,8 @@
        	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
-        <ant antfile="build.xml" dir="modules/ejbca-ws-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/ejbca-ws-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
+    	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins-ee" target="runsa" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
@@ -477,6 +477,11 @@
 
     <target name="test:unit:cesecore-x509ca" description="run all JUnit tests for cesecore-x509ca." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/cesecore-x509ca" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:healthcheck-war" description="run all JUnit tests for healthcheck-war." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/healthcheck-war" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

@@ -24,16 +24,14 @@ import org.junit.Test;
 
 /**
  * Test code for util class that allows many concurrent requests for the same thing to share the result.
- * 
- * @version $Id$
  */
-public class SameRequestRateLimiterTest {
-    
-    private static final Logger log = Logger.getLogger(SameRequestRateLimiterTest.class);
+public class SameRequestRateLimiterUnitTest {
+
+    private static final Logger log = Logger.getLogger(SameRequestRateLimiterUnitTest.class);
 
     private int nextValue = 0;
     SameRequestRateLimiter<Integer> srrl = null;
-    
+
     @Before
     public void setUp() {
         nextValue = 0;
@@ -76,10 +74,12 @@ public class SameRequestRateLimiterTest {
         log.trace("<test100ThreadsWithLimiter");
     }
 
-    /** Start threads that perform the task */
+    /**
+     * Start threads that perform the task
+     */
     private void startTasks(final List<Integer> allResults, final int threads, final boolean useLimitWrapper) {
         log.trace(">startTasks");
-        for (int i=0; i<threads; i++) {
+        for (int i = 0; i < threads; i++) {
             new Thread() {
                 @Override
                 public void run() {
@@ -99,12 +99,14 @@ public class SameRequestRateLimiterTest {
         log.trace("<startTasks");
     }
 
-    /** Wait up to "timeoutSeconds" seconds for all "expected" number of threads to complete.. */
+    /**
+     * Wait up to "timeoutSeconds" seconds for all "expected" number of threads to complete..
+     */
     private void waitForAllResults(final List<Integer> allResults, int expected, int timeoutSeconds) {
         log.trace(">waitForAllResults");
-        while (timeoutSeconds-->0) {
+        while (timeoutSeconds-- > 0) {
             synchronized (allResults) {
-                if (allResults.size()>=expected) {
+                if (allResults.size() >= expected) {
                     break;
                 }
             }
@@ -113,8 +115,10 @@ public class SameRequestRateLimiterTest {
         }
         log.trace("<waitForAllResults");
     }
-    
-    /** Wrapped task */
+
+    /**
+     * Wrapped task
+     */
     private Integer getNextValueLimitWrapper() {
         log.trace(">getNextValueLimitWrapper");
         final SameRequestRateLimiter<Integer>.Result result = srrl.getResult();
@@ -131,12 +135,14 @@ public class SameRequestRateLimiterTest {
         return result.getValue();
     }
 
-    /** Original task emulation */
+    /**
+     * Original task emulation
+     */
     private Integer getNextValue() {
         log.trace(">getNextValue");
         // What the util really does is save server load when the same result is returned, but we need to increase the counter to track invocations..
         final Integer ret;
-        synchronized (SameRequestRateLimiterTest.this) {
+        synchronized (SameRequestRateLimiterUnitTest.this) {
             ret = Integer.valueOf(nextValue++);
         }
         log.info("Pretending to be tasks that generates server load.. Current invocation: " + ret);
@@ -144,8 +150,10 @@ public class SameRequestRateLimiterTest {
         log.trace("<getNextValue");
         return ret;
     }
-    
-    /** Simple Thread.sleep wrapper */
+
+    /**
+     * Simple Thread.sleep wrapper
+     */
     private void sleep(final long millis) {
         try {
             Thread.sleep(millis);
