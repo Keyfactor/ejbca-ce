@@ -17,7 +17,7 @@ val dialectMap = mapOf(
     "informix" to "org.hibernate.dialect.InformixDialect",
     "ingres" to "org.hibernate.dialect.IngresDialect",
     "mssql" to "org.hibernate.dialect.SQLServer2008Dialect",
-    "mysql" to "org.hibernate.dialect.MySQL5InnoDBDialect",
+    "mysql" to "org.hibernate.dialect.MySQLDialect",
     "oracle" to "org.hibernate.dialect.Oracle10gDialect",
     "postgres" to "org.hibernate.dialect.PostgreSQLDialect",
     "sybase" to "org.hibernate.dialect.SybaseDialect"
