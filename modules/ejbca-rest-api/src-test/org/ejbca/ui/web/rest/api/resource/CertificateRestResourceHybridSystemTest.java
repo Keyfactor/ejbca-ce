@@ -300,10 +300,8 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
     
     @Test
     public void testPkcs10Request() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            OperatorCreationException, EndEntityExistsException, CADoesntExistsException, IllegalNameException, CustomFieldException,
-            ApprovalException, CertificateSerialNumberException, AuthorizationDeniedException, EndEntityProfileValidationException,
-            WaitingForApprovalException, UnrecoverableKeyException, KeyManagementException, KeyStoreException, CertificateParsingException,
-            ParseException, CertificateEncodingException, CryptoTokenOfflineException, IOException, CertException {
+            OperatorCreationException, UnrecoverableKeyException, KeyManagementException, KeyStoreException, CertificateParsingException,
+            ParseException, CertificateEncodingException, CryptoTokenOfflineException, IOException, CertException, AuthorizationDeniedException {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_EC, BouncyCastleProvider.PROVIDER_NAME);
         keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
@@ -331,6 +329,7 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
                 endEntityProfileName("EMPTY").
                 username(username).
                 password("foo123").
+                responseFormat("DER").
                 certificateRequest(certificateRequest).build();
         
         // Construct POST  request
