@@ -51,6 +51,7 @@
        	<ant antfile="build.xml" dir="modules/ejbca-common-web" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/ejbca-ws-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins-ee" target="runsa" inheritall="true" inheritrefs="true"/>
@@ -403,6 +404,11 @@
 
     <target name="test:system:ejbca-ws" description="run all System tests for ejbca-ws module." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ejbca-ws" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:unit:ejbca-ws-cli" description="run all JUnit tests for ejbca-ws-cli module." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ejbca-ws-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

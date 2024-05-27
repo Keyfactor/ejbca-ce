@@ -23,11 +23,9 @@ import org.junit.Test;
 
 /**
  * Tests RevokeCertWithMetadataCommand parameter handling.
- * 
- * @version $Id: RevokeCertWithMetadataCommandTest.java 22930 2016-03-04 14:02:35Z tarmo_r_helmes $
  */
-public class RevokeCertWithMetadataCommandTest {
-    
+public class RevokeCertWithMetadataCommandUnitTest {
+
     @Test()
     public void testRevokeCertWithNoMetadataParameters() throws Exception {
         String[] args = new String[3];
