@@ -10,15 +10,15 @@
     <target name="test:runsys" description="run system test, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/ejbca-ws" target="test:system" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestconfigdump-system" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionalteststatedump-system" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestpeerconnector-system" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestplugins-system" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestplugins-ee-system" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestacme-system" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestrest-system" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestssh-system" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestcits-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-configdump-system" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-statedump-system" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-peerconnector-system" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-plugins-system" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-plugins-ee-system" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-acme-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-rest-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-ssh-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-cits-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     	<!-- The name of the output from the profiling result will vary slightly -->
 		<fileset id="profilingtest.logfile.id" dir="${reports.base.dir}/test/html/org/ejbca/core/ejb" includes="*_ProfilingTest-out.html"/>
@@ -41,7 +41,7 @@
 	</target>
 
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
-      	<antcall target="optionaltestacme-unit" inheritall="true" inheritrefs="true"/>
+      	<antcall target="optional-test-acme-unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-common" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb" target="test:unit" inheritall="true" inheritrefs="true"/>
        	<ant antfile="build.xml" dir="modules/cesecore-ejb-interface" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -54,91 +54,90 @@
     	<ant antfile="build.xml" dir="modules/ejbca-ws-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/healthcheck-war" target="test:unit" inheritall="true" inheritrefs="true"/>
     	<ant antfile="build.xml" dir="modules/plugins" target="test:unit" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestmsae-unit" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestrest-unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/admin-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/ra-gui" target="test:unit" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestconfigdump-unit" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestct" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestcaa" inheritall="true" inheritrefs="true"/>
-    	<ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestssh-unit" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optionaltestcits-unit" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/ejbca-ejb-cli" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-msae-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-rest-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-configdump-unit" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-ct" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-caa" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-cits-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-peerconnector-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-plugins-ee-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestpeerconnector-unit" inheritall="true" inheritrefs="true"/>
-        <antcall target="optionaltestplugins-ee-unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
-    <target name="optionaltestconfigdump-system" if="${configdump.exists}">
+    <target name="optional-test-configdump-system" if="${configdump.exists}">
         <ant antfile="build.xml" dir="modules/configdump" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
-    <target name="optionaltestconfigdump-unit" if="${configdump.exists}">
+    <target name="optional-test-configdump-unit" if="${configdump.exists}">
         <ant antfile="build.xml" dir="modules/configdump" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="ct.exists"><available file="modules/ct/build.xml" /></condition>
-    <target name="optionaltestct" if="${ct.exists}">
+    <target name="optional-test-ct" if="${ct.exists}">
         <ant antfile="build.xml" dir="modules/ct" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="statedump.exists"><available file="modules/statedump/build.xml" /></condition>
-    <target name="optionalteststatedump-system" if="${statedump.exists}">
-        <antcall target="statedump" inheritall="true" inheritrefs="true"/>
+    <target name="optional-test-statedump-system" if="${statedump.exists}">
         <ant antfile="build.xml" dir="modules/statedump" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
-    <target name="optionaltestpeerconnector-unit" if="${peerconnector.exists}">
+    <target name="optional-test-peerconnector-unit" if="${peerconnector.exists}">
         <ant antfile="build.xml" dir="modules/peerconnector" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
-    <target name="optionaltestpeerconnector-system" if="${peerconnector.exists}">
+    <target name="optional-test-peerconnector-system" if="${peerconnector.exists}">
         <ant antfile="build.xml" dir="modules/peerconnector" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="plugins.exist"><available file="modules/plugins/build.xml" /></condition>
-    <target name="optionaltestplugins-system" if="${plugins.exist}">
+    <target name="optional-test-plugins-system" if="${plugins.exist}">
         <ant antfile="build.xml" dir="modules/plugins" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="plugins-ee.exist"><available file="modules/plugins-ee/build.xml" /></condition>
-    <target name="optionaltestplugins-ee-unit" if="${plugins-ee.exist}">
+    <target name="optional-test-plugins-ee-unit" if="${plugins-ee.exist}">
         <ant antfile="build.xml" dir="modules/plugins-ee" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="plugins-ee.exist"><available file="modules/plugins-ee/build.xml" /></condition>
-    <target name="optionaltestplugins-ee-system" if="${plugins-ee.exist}">
+    <target name="optional-test-plugins-ee-system" if="${plugins-ee.exist}">
         <ant antfile="build.xml" dir="modules/plugins-ee" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="acme.exists"><available file="modules/acme"/></condition>
-    <target name="optionaltestacme-unit" if="${acme.exists}">
+    <target name="optional-test-acme-unit" if="${acme.exists}">
         <ant antfile="build.xml" dir="modules/acme" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
-    <target name="optionaltestacme-system" if="${acme.exists}">
+    <target name="optional-test-acme-system" if="${acme.exists}">
         <ant antfile="build.xml" dir="modules/acme" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="ejbca-msae.exists"><available file="modules/msae"/></condition>
-    <target name="optionaltestmsae-unit" if="${ejbca-msae.exists}">
+    <target name="optional-test-msae-unit" if="${ejbca-msae.exists}">
         <ant antfile="build.xml" dir="modules/msae" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="ejbca-rest-api.exists"><available file="modules/ejbca-rest-api"/></condition>
-    <target name="optionaltestrest-unit" if="${ejbca-rest-api.exists}">
+    <target name="optional-test-rest-unit" if="${ejbca-rest-api.exists}">
         <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
-    <target name="optionaltestrest-system" if="${ejbca-rest-api.exists}">
+    <target name="optional-test-rest-system" if="${ejbca-rest-api.exists}">
         <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
-    <target name="optionaltestcaa" if="${caa.exists}">
+    <target name="optional-test-caa" if="${caa.exists}">
         <ant antfile="build.xml" dir="modules/caa" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="ssh.exists"><available file="modules/ssh/build.xml" /></condition>
-    <target name="optionaltestssh-unit" if="${ssh.exists}">
+    <target name="optional-test-ssh-unit" if="${ssh.exists}">
         <ant antfile="build.xml" dir="modules/ssh" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
-    <target name="optionaltestssh-system" if="${ssh.exists}">
+    <target name="optional-test-ssh-system" if="${ssh.exists}">
         <ant antfile="build.xml" dir="modules/ssh" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="cits.exists"><available file="modules/cits/build.xml" /></condition>
-    <target name="optionaltestcits-unit" if="${cits.exists}">
+    <target name="optional-test-cits-unit" if="${cits.exists}">
         <ant antfile="build.xml" dir="modules/cits" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
-    <target name="optionaltestcits-system" if="${cits.exists}">
+    <target name="optional-test-cits-system" if="${cits.exists}">
         <ant antfile="build.xml" dir="modules/cits" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
 
@@ -380,11 +379,6 @@
     <target name="test:system:test:peerconnector" depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/peerconnector" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
-    </target>
-
-    <target name="test:vapub" depends="deleteDirectories">
-    	<ant antfile="build.xml" dir="modules/va" target="test" inheritall="true" inheritrefs="true"/>
-    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:unit:ejbca-rest-api" description="run all JUnit tests for ejbca-rest-api." depends="deleteDirectories">
