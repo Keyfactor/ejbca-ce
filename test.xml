@@ -9,6 +9,7 @@
 
     <target name="test:runsys" description="run system test, use -Dtest.includep11=true to include P11 tests" depends="deleteDirectories">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" inheritall="true" inheritrefs="true"/>
+        <ant antfile="build.xml" dir="modules/ejbca-ws" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="optionaltestconfigdump-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionalteststatedump" inheritall="true" inheritrefs="true"/>
     	<antcall target="optionaltestpeerconnector" inheritall="true" inheritrefs="true"/>
@@ -147,6 +148,7 @@
 				<fileset dir="${ejbca.home}" id="test.runone.fileset">
 					<include name="modules/ejbca-ejb/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-entity/src-test/**/${test.runone}.java" />
+					<include name="modules/ejbca-ws/src-test/**/${test.runone}.java" />
 					<include name="modules/systemtests/src-test/**/${test.runone}.java" />
 					<include name="modules/statedump/src-test/**/${test.runone}.java" />
 					<include name="modules/clientToolBox/src-test/**/${test.runone}.java" />
@@ -186,6 +188,9 @@
     	</condition>
     	<condition property="module" value="modules/ejbca-entity">
     		<matches string="${test-fullname}" pattern="^modules/ejbca-entity/.*$"/>
+    	</condition>
+    	<condition property="module" value="modules/ejbca-ws">
+    		<matches string="${test-fullname}" pattern="^modules/ejbca-ws/.*$"/>
     	</condition>
     	<condition property="module" value="modules/statedump">
     		<matches string="${test-fullname}" pattern="^modules/statedump/.*$"/>
@@ -393,6 +398,11 @@
 
     <target name="test:unit:ejbca-entity" description="run all JUnit tests for ejbca-entity module." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ejbca-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:ejbca-ws" description="run all System tests for ejbca-ws module." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/ejbca-ws" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

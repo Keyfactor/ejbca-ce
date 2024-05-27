@@ -27,26 +27,24 @@ import org.junit.Test;
 
 /**
  * Tests EjbcaWS helper methods.
- * 
- * @version $Id: EjbcaWSHelperMethodsTest.java 22930 2016-03-04 14:02:35Z tarmo_r_helmes $
  */
-public class EjbcaWSHelperMethodsTest {
+public class EjbcaWSHelperMethodsSystemTest {
 
     private EjbcaWS ejbcaWS = new EjbcaWS();
-    
+
     @Test
     public void testParseRevocationMetadataNormalFlow() throws DateNotValidException {
         CertRevocationDto certRevocationDto = new CertRevocationDto("issuerDN", "certificateSN");
-        
+
         String reason = "4";
         String date = "2012-06-07T23:55:59+02:00";
         String certProfileId = "1200";
-                
+
         List<KeyValuePair> metadata = new ArrayList<KeyValuePair>();
         metadata.add(new KeyValuePair("reason", reason));
         metadata.add(new KeyValuePair("revocationdate", date));
         metadata.add(new KeyValuePair("certificateprofileid", certProfileId));
-        
+
         CertRevocationDto result = ejbcaWS.parseRevocationMetadata(certRevocationDto, metadata);
         assertEquals(Integer.valueOf(reason), result.getReason());
         assertEquals(DatatypeConverter.parseDateTime(date).getTime(), result.getRevocationDate());
