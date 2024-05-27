@@ -72,6 +72,7 @@
     <target name="optionaltestconfigdump-system" if="${configdump.exists}">
         <ant antfile="build.xml" dir="modules/configdump" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
+    <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
     <target name="optionaltestconfigdump-unit" if="${configdump.exists}">
         <ant antfile="build.xml" dir="modules/configdump" target="test:unit" inheritall="true" inheritrefs="true"/>
     </target>
@@ -83,11 +84,6 @@
     <target name="optionalteststatedump-system" if="${statedump.exists}">
         <antcall target="statedump" inheritall="true" inheritrefs="true"/>
         <ant antfile="build.xml" dir="modules/statedump" target="test:system" inheritall="true" inheritrefs="true"/>
-    </target>
-    <condition property="configdump.exists"><available file="modules/configdump/build.xml" /></condition>
-    <target name="optionaltestconfigdump" if="${configdump.exists}">
-        <antcall target="configdump" inheritall="true" inheritrefs="true"/>
-        <ant antfile="build.xml" dir="modules/configdump" target="test" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="peerconnector.exists"><available file="modules/peerconnector/build.xml" /></condition>
     <target name="optionaltestpeerconnector-unit" if="${peerconnector.exists}">
@@ -333,12 +329,14 @@
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
-    <target name="test:configdump" description="run JUnit Configdump test." depends="deleteDirectories">
-        <ant antfile="build.xml" dir="modules/configdump" inheritall="true" inheritrefs="true">
-            <target name="test:unit" />
-            <target name="test:system" />
-        </ant>
-    	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    <target name="test:unit:configdump" description="run JUnit Configdump test." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/configdump" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:configdump" description="run System Configdump test." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/configdump" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="test:msae" description="run JUnit MSAE test." depends="deleteDirectories">
