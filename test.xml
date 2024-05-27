@@ -118,10 +118,6 @@
     <target name="optionaltestrest-system" if="${ejbca-rest-api.exists}">
         <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
-    <condition property="est.exists"><available file="modules/est"/></condition>
-    <target name="optionaltestest" if="${est.exists}">
-        <ant antfile="build.xml" dir="modules/est" target="test" inheritall="true" inheritrefs="true"/>
-    </target>
     <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
     <target name="optionaltestcaa" if="${caa.exists}">
         <ant antfile="build.xml" dir="modules/caa" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -243,9 +239,6 @@
         </condition>
     	<condition property="module" value="modules/acme">
     		<matches string="${test-fullname}" pattern="^modules/acme/.*$"/>
-    	</condition>
-    	<condition property="module" value="modules/est">
-    		<matches string="${test-fullname}" pattern="^modules/est/.*$"/>
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
