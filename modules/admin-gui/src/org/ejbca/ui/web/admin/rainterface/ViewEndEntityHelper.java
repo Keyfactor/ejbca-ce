@@ -32,11 +32,8 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 /**
  * Helper class for the View End Entity Page, parses the request and performs appropriate actions.
  * 
- * @version $Id$
  */
-
 public class ViewEndEntityHelper implements Serializable{
-
 	
 	private static final long serialVersionUID = 7172234379584156296L;
     public static final String USER_PARAMETER                = "username";
