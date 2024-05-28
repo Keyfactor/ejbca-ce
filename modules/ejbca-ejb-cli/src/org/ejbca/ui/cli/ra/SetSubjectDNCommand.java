@@ -103,7 +103,7 @@ public class SetSubjectDNCommand extends BaseRaCommand {
                 + "dnQualifier=<string>, postalAddress=<the postal address>, telephoneNumber=<telephone number>, "
                 + "pseudonym=<string>, streetAddress=<string>, name=<string>, role=<string>, CIF=<tax ID code for companies in Spain>, "
                 + "NIF=<tax ID number for companied in Spain>, "
-                + "VID=<Matter IoT VID>, PID=<Matter IoT PID>, RCACID=<Matter RCAC ID>, ICACID=<Matter ICAC ID>, NODEID=<Matter NodeID>, "
+                + "VID=<Matter IoT VID>, PID=<Matter IoT PID>, NODEID=<Matter NodeID>, "
                 + "FABRICID=>Matter Fabric ID>, NOCCAT=<Matter Noc Cat>, FirmwareSigningID=<Matter Firmware Signing ID>, "
                 + "CertificationID=<in form BSI-K-TR-'four digit number'-'year as four digit'>, "
                 + "legalEntityIdentifier=<for Mark Certificates>, markType=<for Mark Certificates>, and other fields for Mark Certificates";
