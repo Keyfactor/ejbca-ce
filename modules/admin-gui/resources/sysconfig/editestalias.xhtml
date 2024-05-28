@@ -256,7 +256,16 @@
                                      value="#{editEstConfigMBean.estAlias.caId}"
                                      disabled="#{editEstConfigMBean.viewOnly}">
                         <f:selectItems value="#{editEstConfigMBean.caItemList}"/>
+                        <f:ajax event="change" render="@form" listener="#{editEstConfigMBean.updateSupportProxyCa}"/>
                     </h:selectOneMenu>
+                    <!-- KF Template -->
+                    <h:panelGroup id="kf-template-label" rendered="#{editEstConfigMBean.estAlias.usesProxyCa}">
+                        <h:outputLabel for="kf-template" value="#{web.text.EST_KF_TEMPLATE}" styleClass="titles"/>
+                    </h:panelGroup>
+                    <h:panelGroup  id="kf-template-value" rendered="#{editEstConfigMBean.estAlias.usesProxyCa}">
+                        <h:inputText id="kf-template" value="#{editEstConfigMBean.estAlias.keyfactorTemplate}"/>
+                    </h:panelGroup>
+                    <!-- KF Template -->
 
                     <h:panelGroup>
                         <h:outputLabel for="listesteeprofile" value="#{web.text.ESTEEPROFILE}" styleClass="titles"/>

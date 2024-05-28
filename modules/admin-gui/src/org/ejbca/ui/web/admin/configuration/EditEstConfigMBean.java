@@ -99,6 +99,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         private String raNameGenPostfix;
         private String raNameGenParams;
         private String raNameGenScheme;
+        private String keyfactorTemplate;
 
         public String getName() {
             return name;
@@ -314,6 +315,14 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         public String getRaNameGenScheme() {
             return raNameGenScheme;
         }
+
+        public String getKeyfactorTemplate() {
+            return keyfactorTemplate;
+        }
+
+        public void setKeyfactorTemplate(String keyfactorTemplate) {
+            this.keyfactorTemplate = keyfactorTemplate;
+        }
     }
 
     protected EstAliasGui getDefaultEstAliasGui() {
@@ -338,6 +347,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         estAliasGui.setAllowChangeSubjectName(Boolean.valueOf(EstConfiguration.DEFAULT_ALLOW_CHANGESUBJECTNAME));
         estAliasGui.setUsesProxyCa(Boolean.valueOf(EstConfiguration.DEFAULT_SUPPORT_PROXY_CA));
         estAliasGui.setServerKeyGenEnabled(Boolean.valueOf(EstConfiguration.DEFAULT_SERVER_KEYGEN_ENABLED));
+        estAliasGui.setKeyfactorTemplate(EstConfiguration.DEFAULT_KEYFACTOR_TEMPLATE);
         return estAliasGui;
     }
 
@@ -386,6 +396,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
             estAliasGui.setVendorCas("");
         }
         estAliasGui.setUsesProxyCa(estConfiguration.getSupportProxyCa(aliasName));
+        estAliasGui.setKeyfactorTemplate(estConfiguration.getKeyfactorTemplate(aliasName));
         return estAliasGui;
     }
 
@@ -548,6 +559,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         }
         updateSupportProxyCa();
         estConfiguration.setSupportProxyCa(alias, estAliasGui.isUsesProxyCa());
+        estConfiguration.setKeyfactorTemplate(alias, estAliasGui.getKeyfactorTemplate());
         getEjbcaWebBean().updateEstConfigFromClone(alias);
         reset();
         return "done";
@@ -577,7 +589,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         }
     }
 
-    private void updateSupportProxyCa() {
+    public void updateSupportProxyCa() {
         final AuthenticationToken authenticationToken = getAdmin();
         final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
         estAliasGui.setUsesProxyCa(false); //default, repeated for remove action
