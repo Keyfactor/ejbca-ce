@@ -30,7 +30,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -61,9 +60,6 @@ import com.keyfactor.util.certificate.DnComponents;
 public class ViewEndEntityMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    
-    private static final Logger log = Logger.getLogger(ViewEndEntityMBean.class);
-
 
     private EjbcaWebBean ejbcaWebBean;
     private CAInterfaceBean caBean;
@@ -74,23 +70,10 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     private static final String USER_PARAMETER = "username";
     private static final String TIMESTAMP_PARAMETER = "timestamp";
 
-    private final String buttonClose = "buttonclose";
-    private final String buttonViewNewer = "buttonviewnewer";
-    private final String buttonViewOlder = "buttonviewolder";
+    private static final String BUTTON_VIEW_NEWER = "buttonviewnewer";
+    private static final String BUTTON_VIEW_OLDER = "buttonviewolder";
 
     private static final String ACTION = "action";
-    private static final String ACTION_PAGE = "actionpage";
-
-    private static final String HIDDEN_USERNAME = "hiddenusername";
-    private static final String HIDDEN_INDEX = "hiddenindex";
-
-    private static final String CHECKBOX_CLEARTEXTPASSWORD = "checkboxcleartextpassword";
-    private static final String CHECKBOX_ADMINISTRATOR = "checkboxadministrator";
-    private static final String CHECKBOX_KEYRECOVERABLE = "checkboxkeyrecoverable";
-    private static final String CHECKBOX_SENDNOTIFICATION = "checkboxsendnotification";
-    private static final String CHECKBOX_PRINT = "checkboxprint";
-    private static final String TEXTFIELD_CARDNUMBER = "textfieldcardnumber";
-    private static final String CHECKBOX_VALUE = "true";
 
     private static final int[] STATUSIDS = { EndEntityConstants.STATUS_NEW, EndEntityConstants.STATUS_FAILED, EndEntityConstants.STATUS_INITIALIZED,
             EndEntityConstants.STATUS_INPROCESS, EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_REVOKED,
@@ -99,11 +82,9 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     private static final String[] STATUSTEXTS = { "STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED",
             "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY", "STATUSWAITINGFORADDAPPROVAL" };
 
-    private static final int columnwidth = 330;
-
-    private boolean nouserparameter = true;
-    private boolean notauthorized = false;
-    private boolean profilenotfound = true;
+    private boolean noUserParameter = true;
+    private boolean notAuthorized = false;
+    private boolean profileNotFound = true;
 
     private UserView userData = null;
     private UserView[] userDatas = null;
@@ -112,7 +93,6 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     private EndEntityProfile eeProfile = null;
     
     private GlobalConfiguration globalConfiguration = null;
-
 
     private int currentUserIndex = 0;
 
@@ -123,9 +103,6 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     private List<ImmutablePair<String, String>> subjectDnNameFieldDatas;
     private List<ImmutablePair<String, String>> subjectAltNameFieldDatas;
     private List<ImmutablePair<String, String>> subjectDirAttrsFieldDatas;
-
-    
-
 
     // **************************************************************        
 
@@ -160,9 +137,23 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
 
         parseRequest(request);
         
+        checkInitParameters();
+        
         initSdnFieldsData();
         initSanFieldData();
         initSdaFieldData();
+    }
+
+    private void checkInitParameters() {
+        if (noUserParameter) {
+            addNonTranslatedErrorMessage(ejbcaWebBean.getText("YOUMUSTSPECIFYUSERNAME"));
+        } else if (userData == null) {
+            addNonTranslatedErrorMessage(ejbcaWebBean.getText("ENDENTITYDOESNTEXIST"));
+        } else if (notAuthorized) {
+            addNonTranslatedErrorMessage(ejbcaWebBean.getText("NOTAUTHORIZEDTOVIEW"));
+        } else if (profileNotFound) {
+            addNonTranslatedErrorMessage(ejbcaWebBean.getText("CANNOTVIEWUSERPROFREM"));
+        }
     }
 
     private void initSdnFieldsData() {
@@ -211,9 +202,9 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     }
     
     private void parseRequest(HttpServletRequest request) throws AuthorizationDeniedException, Exception {
-        nouserparameter = true;
-        notauthorized = false;
-        profilenotfound = true;
+        noUserParameter = true;
+        notAuthorized = false;
+        profileNotFound = true;
 
         RequestHelper.setDefaultCharacterEncoding(request);
         String action = request.getParameter(ACTION);
@@ -221,7 +212,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
             userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
             Date timestamp = new Date(Long.parseLong(request.getParameter(TIMESTAMP_PARAMETER)));
 
-            notauthorized = !getUserDatas(userName);
+            notAuthorized = !getUserDatas(userName);
             currentUserIndex = this.getTimeStampIndex(timestamp);
             if (userDatas == null || userDatas.length < 1) {
                 // Make sure possibly cached value is removed
@@ -230,15 +221,15 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
             }
             userData = userDatas[currentUserIndex];
 
-            nouserparameter = false;
+            noUserParameter = false;
             if (userData != null) {
                 eeProfile = raBean.getEndEntityProfile(userData.getEndEntityProfileId());
             }
         } else {
             if (action == null && request.getParameter(USER_PARAMETER) != null) {
                 userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
-                notauthorized = !getUserDatas(userName);
-                nouserparameter = false;
+                notAuthorized = !getUserDatas(userName);
+                noUserParameter = false;
                 if ((userDatas != null) && (userDatas.length > 0)) {
                     userData = userDatas[0];
                     currentUserIndex = 0;
@@ -252,21 +243,19 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
             } else {
                 if (action != null && request.getParameter(USER_PARAMETER) != null) {
                     userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
-                    if (request.getParameter(buttonViewNewer) != null) {
-                        if (currentUserIndex > 0) {
+                    if (request.getParameter(BUTTON_VIEW_NEWER) != null &&  (currentUserIndex > 0)) {
                             currentUserIndex--;
-                        }
+                        
                     }
-                    if (request.getParameter(buttonViewOlder) != null) {
-                        if (currentUserIndex + 1 < userDatas.length) {
+                    if (request.getParameter(BUTTON_VIEW_OLDER) != null &&  (currentUserIndex + 1 < userDatas.length)) {
                             currentUserIndex++;
-                        }
+                        
                     }
 
-                    notauthorized = !getUserDatas(userName);
+                    notAuthorized = !getUserDatas(userName);
                     userData = userDatas[currentUserIndex];
 
-                    nouserparameter = false;
+                    noUserParameter = false;
                     if (userData != null) {
                         eeProfile = raBean.getEndEntityProfile(userData.getEndEntityProfileId());
                     }
@@ -275,7 +264,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         }
 
         if (eeProfile != null) {
-            profilenotfound = false;
+            profileNotFound = false;
         } 
     }
 
@@ -317,11 +306,11 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
     }
     
     public String getButtonViewOlderName() {
-        return this.buttonViewOlder;
+        return ViewEndEntityMBean.BUTTON_VIEW_OLDER;
     }
     
     public String getButtonViewNewerName() {
-        return this.buttonViewNewer;
+        return ViewEndEntityMBean.BUTTON_VIEW_NEWER;
     }
     
     public boolean isEeProfileDefined() {
@@ -773,7 +762,5 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
 
         return i;
     }
-    
-
 
 }
