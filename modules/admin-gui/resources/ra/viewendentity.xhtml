@@ -31,12 +31,11 @@
 		</h2>
 
 		<h:panelGroup rendered="#{viewEndEntityMBean.currentUserIndex == 0}">
-			<strong> <h:outputText value="#{web.text.CURRENTUSERDATA}" /></strong>
+			<h4> <strong> <h:outputText value="#{web.text.CURRENTUSERDATA}" /></strong> </h4>
 		</h:panelGroup>
 
 		<h:panelGroup rendered="#{viewEndEntityMBean.currentUserIndex != 0}">
-			<strong> <h:outputText
-					value="#{web.text.HISTORICALUSERDATA}" /></strong>
+			<h4> <strong> <h:outputText value="#{web.text.HISTORICALUSERDATA}" /></strong> </h4>
 		</h:panelGroup>
 
 		<h:form id="vieweeform"
