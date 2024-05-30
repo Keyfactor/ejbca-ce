@@ -425,6 +425,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             dnsNames.add(split.trim().substring(DnComponents.DNS.length() + 1));
                         }
                     }
+                    
+                    //set CertificateProfile for SMIME/TLS DNS lookup
+                    DnsNameValidator.validationRequestParameters.setCertificateProfile(certificateProfile);
+                    
                     //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
                     if (certificateProfile.getAllowExtensionOverride() && requestMessage != null) {
                         Extensions extensions = requestMessage.getRequestExtensions();
