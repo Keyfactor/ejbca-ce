@@ -24,15 +24,13 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.jndi.JndiConstants;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublishingCrlProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
 public class PublishingCrlProxySessionBean implements PublishingCrlProxySessionRemote {
 

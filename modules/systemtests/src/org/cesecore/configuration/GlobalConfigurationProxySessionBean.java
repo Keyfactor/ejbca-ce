@@ -25,9 +25,8 @@ import jakarta.persistence.PersistenceContext;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "GlobalConfigurationProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class GlobalConfigurationProxySessionBean implements GlobalConfigurationProxySessionRemote {
 

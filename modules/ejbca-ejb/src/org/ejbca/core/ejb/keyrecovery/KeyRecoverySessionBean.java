@@ -47,7 +47,6 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -81,9 +80,8 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Stores key recovery data.
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyRecoverySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecoverySessionRemote {
 

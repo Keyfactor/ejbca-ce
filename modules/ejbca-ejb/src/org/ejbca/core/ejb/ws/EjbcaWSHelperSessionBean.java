@@ -33,7 +33,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
@@ -98,7 +97,7 @@ import java.util.Set;
  * Contains methods that are used by both the EjbcaWS, the Ejbca WS tests and by RAMasterApiSessionBean.
  * For instance, methods to convert between EndEntityInformation and UserDataWO.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaWSHelperSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, EjbcaWSHelperSessionRemote {
 

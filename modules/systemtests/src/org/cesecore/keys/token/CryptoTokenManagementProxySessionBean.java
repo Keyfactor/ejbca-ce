@@ -17,7 +17,6 @@ import java.security.PrivateKey;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.PublicKeyWrapper;
 
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -25,9 +24,9 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
  * @see CryptoTokenManagementProxySessionRemote
- * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenManagementProxySessionRemote")
+@Stateless
 public class CryptoTokenManagementProxySessionBean implements CryptoTokenManagementProxySessionRemote {
 
     @EJB
