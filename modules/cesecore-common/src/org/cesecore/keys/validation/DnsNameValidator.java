@@ -29,6 +29,7 @@ public interface DnsNameValidator extends Validator, DynamicUiModelAware {
     /** The validator type. */
     final String CAA_TYPE_IDENTIFIER = "CAA_VALIDATOR";
     
+    public static final ValidationRequestParameters validationRequestParameters = new ValidationRequestParameters();
     /**
      * Validates DNS names, specifically the dnsName value in the SubjectAltName (SAN) extension
      *
