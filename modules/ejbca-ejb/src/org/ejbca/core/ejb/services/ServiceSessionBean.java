@@ -28,7 +28,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.ProfileID;
@@ -98,7 +97,7 @@ import java.util.Map;
  * and executes services at timeouts triggered by the timeoutHandler.
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ServiceSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRemote {
 

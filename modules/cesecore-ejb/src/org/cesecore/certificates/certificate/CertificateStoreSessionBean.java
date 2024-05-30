@@ -80,7 +80,6 @@ import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ValueExtractor;
@@ -94,7 +93,7 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateStoreSessionBean implements CertificateStoreSessionRemote, CertificateStoreSessionLocal {
 

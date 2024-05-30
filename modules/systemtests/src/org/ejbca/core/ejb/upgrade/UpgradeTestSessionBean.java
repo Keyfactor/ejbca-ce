@@ -25,17 +25,15 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 
 /**
  * SSB helping with setup from tests of upgrade functionality.
  * 
- * @version $Id$
  */
 @SuppressWarnings("deprecation")
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeTestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class UpgradeTestSessionBean implements UpgradeTestSessionRemote {
 

@@ -35,7 +35,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.RaStyleInfo;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -45,7 +44,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
 /**
  * Stores data used by web server clients.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AdminPreferenceSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AdminPreferenceSessionBean extends AdminPreferenceSessionDefault implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
 

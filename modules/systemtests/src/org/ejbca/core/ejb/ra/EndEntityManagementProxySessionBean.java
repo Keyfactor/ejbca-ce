@@ -22,15 +22,13 @@ import jakarta.persistence.Query;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityManagementProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EndEntityManagementProxySessionBean implements EndEntityManagementProxySessionRemote {
 
