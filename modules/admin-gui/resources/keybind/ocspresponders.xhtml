@@ -231,7 +231,7 @@
 				<h:panelGroup>
 					<h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.defaultResponseValidity}"
 						onchange="this.form.submit()">
-							<f:converter converterId="javax.faces.Long"/>			
+							<f:converter converterId="jakarta.faces.Long"/>
 					</h:inputText>
 				</h:panelGroup>
 				<h:panelGroup layout="block">
@@ -244,7 +244,7 @@
 				<h:panelGroup>
 					<h:inputText disabled="#{not ocspResponderMBean.allowedToEdit}" value="#{ocspResponderMBean.defaultResponseMaxAge}"
 						onchange="this.form.submit()">
-							<f:converter converterId="javax.faces.Long"/>			
+							<f:converter converterId="jakarta.faces.Long"/>
 					</h:inputText>
 				</h:panelGroup>
 				<h:panelGroup layout="block">
