@@ -1940,7 +1940,7 @@
                 <h:column>
                     <h:selectOneMenu id="approvalProfile"
                                      value="#{requestItem.approvalProfileId}"
-                                     converter="javax.faces.Integer"
+                                     converter="jakarta.faces.Integer"
                                      disabled="#{not editCAsMBean.hasEditRight}">
                         <f:selectItems value="#{editCAsMBean.availableApprovalProfiles}"/>
                     </h:selectOneMenu>
