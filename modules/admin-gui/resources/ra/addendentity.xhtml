@@ -94,6 +94,7 @@
 						label="Password Confirmation"
 						value="#{resourceBean.confirmPasswordFieldValue}"
 						disabled="#{!resourceBean.allowedToAddEndEntity}">
+						<f:passThroughAttribute name="autocomplete" value="new-password"/>
 					</h:inputSecret>
 				</h:panelGroup>
 
