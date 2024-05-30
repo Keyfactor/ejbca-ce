@@ -39,7 +39,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
@@ -94,7 +93,7 @@ import static java.util.Objects.nonNull;
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 

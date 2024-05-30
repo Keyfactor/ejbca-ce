@@ -24,16 +24,14 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalSessionProxyRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
 

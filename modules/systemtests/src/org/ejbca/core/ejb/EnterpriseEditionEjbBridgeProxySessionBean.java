@@ -17,12 +17,11 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
-import org.cesecore.jndi.JndiConstants;
 
 /**
  * @see EnterpriseEditionEjbBridgeProxySessionRemote
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EnterpriseEditionEjbBridgeProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EnterpriseEditionEjbBridgeProxySessionBean implements EnterpriseEditionEjbBridgeProxySessionRemote {
 

@@ -17,7 +17,6 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -29,7 +28,7 @@ import org.ejbca.core.protocol.acme.AcmeAccountDataSessionRemote;
 /**
  * @see AcmeAccountDataSessionRemote
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAccountDataSessionProxyRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AcmeAccountDataSessionProxyBean implements AcmeAccountDataSessionProxyRemote {
 

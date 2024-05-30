@@ -30,7 +30,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -67,7 +66,7 @@ import java.util.Map;
  * Authenticates users towards a user database.
  * @see EndEntityAuthenticationSession
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityAuthenticationSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticationSessionLocal, EndEntityAuthenticationSessionRemote {
     private static final Logger log = Logger.getLogger(EndEntityAuthenticationSessionBean.class);

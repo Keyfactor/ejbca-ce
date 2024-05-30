@@ -46,7 +46,6 @@ import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
 import org.ejbca.util.JDBCUtil;
@@ -55,9 +54,9 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
- * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalCertificateStoreSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InternalCertificateStoreSessionBean implements InternalCertificateStoreSessionRemote {
 

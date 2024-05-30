@@ -23,7 +23,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
@@ -31,9 +30,8 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 /**
  * Contains proxy and test cleanup methods.
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherQueueProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublisherQueueProxySessionBean implements PublisherQueueProxySessionRemote {
 

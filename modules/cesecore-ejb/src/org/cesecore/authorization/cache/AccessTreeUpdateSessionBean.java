@@ -28,9 +28,8 @@ import org.cesecore.internal.InternalResources;
 /**
  * Bean to handle the AccessTreeUpdateData entity.
  * 
- * @version $Id$
  */
-@Stateless//(mappedName = JndiConstants.APP_JNDI_PREFIX + "AccessTreeUpdateSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AccessTreeUpdateSessionBean implements AccessTreeUpdateSessionLocal {
 

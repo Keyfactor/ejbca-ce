@@ -36,7 +36,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionLocal;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.Role;
@@ -48,10 +47,9 @@ import org.cesecore.roles.member.RoleMemberSessionLocal;
 import com.keyfactor.util.CertTools;
 
 /**
- * @version $Id$
- * 
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleInitializationSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleInitializationSessionBean implements RoleInitializationSessionRemote {
 

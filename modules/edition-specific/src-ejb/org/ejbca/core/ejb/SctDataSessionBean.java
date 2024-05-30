@@ -14,7 +14,6 @@ package org.ejbca.core.ejb;
 
 import org.cesecore.certificates.certificatetransparency.SctData;
 import org.cesecore.certificates.certificatetransparency.SctDataSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -23,9 +22,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 /**
- * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SctDataSession")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class SctDataSessionBean implements SctDataSessionLocal {
     @Override

@@ -19,16 +19,15 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionProxyRemote;
 
 /**
- * @version $Id$
+ *
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeOrderDataSessionProxyRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AcmeOrderDataSessionProxyBean implements AcmeOrderDataSessionProxyRemote {
 

@@ -19,11 +19,10 @@ import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.jndi.JndiConstants;
 
 /**
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalCertificateCreateSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InternalCertificateCreateSessionBean implements InternalCertificateCreateSessionRemote {
 
