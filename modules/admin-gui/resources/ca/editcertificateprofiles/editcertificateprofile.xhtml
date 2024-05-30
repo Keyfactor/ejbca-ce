@@ -2349,7 +2349,7 @@
                     disabled="#{certProfileBean.viewOnly}"
                     value="#{certProfileBean.certificateProfile.usedCertificateExtensions}"
                     size="#{certProfileBean.availableCertificateExtensionsAvailableSize}"
-                    converter="javax.faces.Integer">
+                    converter="jakarta.faces.Integer">
                     <f:selectItems
                         value="#{certProfileBean.availableCertificateExtensionsAvailable}" />
                 </h:selectManyListbox>
@@ -2466,7 +2466,7 @@
                 <h:selectOneMenu id="selectcvcsigntermdvtype"
                     value="#{certProfileBean.certificateProfile.CVCSignTermDVType}"
                     rendered="#{certProfileBean.cvcAvailable and certProfileBean.cvcTerminalTypeSt}"
-                    converter="javax.faces.Integer"
+                    converter="jakarta.faces.Integer"
                     disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.cvcSignTermDVTypeAvailable}" />
@@ -2526,7 +2526,7 @@
                         rendered="#{certProfileBean.cvcTerminalTypeAt}"
                         enabledClass="cvcoption_at"
                         value="#{certProfileBean.cvcLongAccessRights}"
-                        size="8" converter="javax.faces.Integer"
+                        size="8" converter="jakarta.faces.Integer"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:selectItems
                             value="#{certProfileBean.cvcAccessRightsAtAvailable}" />
@@ -2576,7 +2576,7 @@
                 <h:column>
                     <h:selectOneMenu id="approvalProfile"
                         value="#{requestItem.approvalProfileId}"
-                        converter="javax.faces.Integer"
+                        converter="jakarta.faces.Integer"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:selectItems
                             value="#{certProfileBean.availableApprovalProfiles}" />
@@ -2702,7 +2702,7 @@
                         id="selectsubjectdnsubset"
                         value="#{certProfileBean.certificateProfile.subjectDNSubSet}"
                         size="10"
-                        converter="javax.faces.Integer">
+                        converter="jakarta.faces.Integer">
                         <f:selectItems
                             value="#{certProfileBean.subjectDNSubSetAvailable}" />
                     </h:selectManyListbox>
@@ -2733,7 +2733,7 @@
                         disabled="#{certProfileBean.viewOnly}"
                         id="selectsubjectaltnamesubset"
                         value="#{certProfileBean.certificateProfile.subjectAltNameSubSet}"
-                        size="6" converter="javax.faces.Integer">
+                        size="6" converter="jakarta.faces.Integer">
                         <f:selectItems
                             value="#{certProfileBean.subjectAltNameSubSetAvailable}" />
                     </h:selectManyListbox>
@@ -2745,7 +2745,7 @@
                     id="selectavailablecas"
                     value="#{certProfileBean.certificateProfile.availableCAs}"
                     size="#{certProfileBean.availableCAsAvailableSize}"
-                    converter="javax.faces.Integer"
+                    converter="jakarta.faces.Integer"
                     style="min-width: 280px;"
                     disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
@@ -2761,7 +2761,7 @@
                     id="selectavailablepublishers"
                     value="#{certProfileBean.certificateProfile.publisherList}"
                     size="#{certProfileBean.publisherListAvailableSize}"
-                    converter="javax.faces.Integer"
+                    converter="jakarta.faces.Integer"
                     style="min-width: 280px;"
                     disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
