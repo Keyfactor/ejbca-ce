@@ -252,12 +252,28 @@
                         <br/>
                         <h:outputText value="#{web.text.ESTDEFAULTCA_HELP}" escape="false" styleClass="help"/>
                     </h:panelGroup>
+                    <h:panelGroup>
                     <h:selectOneMenu id="listestdefaultca" name="listestdefaultca"
-                                     value="#{editEstConfigMBean.estAlias.caId}"
+                                     value="#{editEstConfigMBean.caId}"
                                      disabled="#{editEstConfigMBean.viewOnly}">
                         <f:selectItems value="#{editEstConfigMBean.caItemList}"/>
-                        <f:ajax event="change" render="@form" listener="#{editEstConfigMBean.updateSupportProxyCa}"/>
+                        <f:ajax immediate="true" event="change" render="ramode2"/>
                     </h:selectOneMenu>
+                    </h:panelGroup>
+                   </h:panelGrid>
+            </h:panelGroup>
+            
+            <h:panelGroup id="ramode2">
+                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                             columnClasses="editColumnSystem1,editColumn2"
+                             rendered="#{editEstConfigMBean.raMode}">
+                             
+                    <h:panelGroup>
+                        <h:outputLabel value="#{web.text.CMPRAMODE} Enrollment Settings" style="font-weight: bold;"/>
+                    </h:panelGroup>
+                    <h:panelGroup>&nbsp;</h:panelGroup>
+
                     <!-- KF Template -->
                     <h:panelGroup id="kf-template-label" rendered="#{editEstConfigMBean.estAlias.usesProxyCa}">
                         <h:outputLabel for="kf-template" value="#{web.text.EST_KF_TEMPLATE}" styleClass="titles"/>
@@ -267,21 +283,21 @@
                     </h:panelGroup>
                     <!-- KF Template -->
 
-                    <h:panelGroup>
+                    <h:panelGroup rendered="#{not editEstConfigMBean.estAlias.usesProxyCa}">
                         <h:outputLabel for="listesteeprofile" value="#{web.text.ESTEEPROFILE}" styleClass="titles"/>
                         <br/>
                         <h:outputText value="#{web.text.ESTEEPROFILE_HELP}" escape="false" styleClass="help"/>
                     </h:panelGroup>
                     <h:selectOneMenu id="listesteeprofile" name="listesteeprofile"
                                      value="#{editEstConfigMBean.estAlias.endEntityProfileId}"
-                                     disabled="#{editEstConfigMBean.viewOnly}">
+                                     disabled="#{editEstConfigMBean.viewOnly}" rendered="#{not editEstConfigMBean.estAlias.usesProxyCa}">
                         <f:selectItems
                                 value="#{editEstConfigMBean.endEntityProfileItemList}"/>
                         <f:ajax execute=":estconfiguration:listestcertprofiles"
                                 render="estconfiguration:listestcertprofiles"/>
                     </h:selectOneMenu>
 
-                    <h:panelGroup>
+                    <h:panelGroup rendered="#{not editEstConfigMBean.estAlias.usesProxyCa}">
                         <h:outputLabel for="listestcertprofiles" value="#{web.text.ESTCERTPROFILE}"
                                        styleClass="titles"/>
                         <br/>
@@ -291,9 +307,23 @@
                     </h:panelGroup>
                     <h:selectOneMenu id="listestcertprofiles" name="listesteeprofile"
                                      value="#{editEstConfigMBean.estAlias.certificateProfileId}"
-                                     disabled="#{editEstConfigMBean.viewOnly}">
+                                     disabled="#{editEstConfigMBean.viewOnly}" rendered="#{not editEstConfigMBean.estAlias.usesProxyCa}">
                         <f:selectItems value="#{editEstConfigMBean.certificateProfileItemList}"/>
                     </h:selectOneMenu>
+                    
+                </h:panelGrid>
+            </h:panelGroup>
+            
+            <h:panelGroup id="ramode3">
+                <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+                             cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1"
+                             columnClasses="editColumnSystem1,editColumn2"
+                             rendered="#{editEstConfigMBean.raMode}">
+                             
+                    <h:panelGroup>
+                        <h:outputLabel value="#{web.text.CMPRAMODE} Authenication" style="font-weight: bold;"/>
+                    </h:panelGroup>
+                    <h:panelGroup>&nbsp;</h:panelGroup>
 
                     <h:panelGroup>
                         <h:outputLabel for="checkboxrequirecert" value="#{web.text.ESTREQUIRECERT}"
