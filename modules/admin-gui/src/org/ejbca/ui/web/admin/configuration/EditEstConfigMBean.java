@@ -16,6 +16,7 @@ import com.keyfactor.util.StringTools;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -51,6 +52,8 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     private static final long serialVersionUID = 1L;
 
     private static final String HIDDEN_PWD = "**********";
+    
+    private static Logger log = Logger.getLogger(EditEstConfigMBean.class);
 
     // UniqueIdentifier is left out, because we don't want people to use that
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title",
@@ -424,6 +427,15 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     public boolean isVendorMode() {
         return estAliasGui.getVendorMode();
     }
+    
+    public String getCaId() {
+            return estAliasGui.getCaId();
+    }
+
+    public void setCaId(String caId) {
+        estAliasGui.setCaId(caId);
+        updateSupportProxyCa();
+    }
 
     public List<SelectItem> getExtUsernameComponentSelectItems() {
         final List<SelectItem> selectItems = getDnFieldSelectItems();
@@ -590,10 +602,11 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     }
 
     public void updateSupportProxyCa() {
+    	log.info("checking proxy ca usage");
         final AuthenticationToken authenticationToken = getAdmin();
         final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
         estAliasGui.setUsesProxyCa(false); //default, repeated for remove action
-
+	
         if (!isRaMode() && isVendorMode() && StringUtils.isNotBlank(getCurrentVendorCas())) {
             List<String> currentVendorCaList = new ArrayList<>(Arrays.asList(getCurrentVendorCas().split(";")));
             for (String caName : currentVendorCaList) {
@@ -612,6 +625,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         if (isRaMode() && StringUtils.isNotBlank(estAliasGui.getCaId())) {
             try {
                 if (caSession.getCAInfo(authenticationToken, Integer.valueOf(estAliasGui.getCaId())).getCAType() == CAInfo.CATYPE_PROXY) {
+                	log.info("proxy ca is used");
                     estAliasGui.setUsesProxyCa(true);
                 }
             } catch (AuthorizationDeniedException e) {
