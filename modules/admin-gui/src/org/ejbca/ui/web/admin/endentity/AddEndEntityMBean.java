@@ -939,7 +939,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     }
 
     public String getEditEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/editendentity.jsp?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/editendentity.xhtml?username=" + username;
     }
 
     public void setConfirmPasswordFieldValue(String confirmPasswordFieldValue) {
