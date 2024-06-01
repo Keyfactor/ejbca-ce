@@ -6,7 +6,7 @@ public class ValidationRequestParameters {
     
     public CertificateProfile certificateProfile;
     
-    void setCertificateProfile(CertificateProfile certProfile) {
+    public void setCertificateProfile(CertificateProfile certProfile) {
         certificateProfile = certProfile;
     }
     
