@@ -425,10 +425,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             dnsNames.add(split.trim().substring(DnComponents.DNS.length() + 1));
                         }
                     }
-                    
-                    //set CertificateProfile for SMIME/TLS DNS lookup
-                    DnsNameValidator.validationRequestParameters.setCertificateProfile(certificateProfile);
-                    
+                                        
                     //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
                     if (certificateProfile.getAllowExtensionOverride() && requestMessage != null) {
                         Extensions extensions = requestMessage.getRequestExtensions();
@@ -444,8 +441,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             }
                         }
                     }
+                    
+                    ValidationRequestParameters validationRequestParameters = new ValidationRequestParameters();
+                    validationRequestParameters.setCertificateProfile(certificateProfile);
 
-                    final Entry<Boolean, List<String>> result = validator.validate(executorService, dnsNames.toArray(new String[dnsNames.size()]));
+                    final Entry<Boolean, List<String>> result = validator.validate(executorService, validationRequestParameters, dnsNames.toArray(new String[dnsNames.size()]));
                     final boolean successful = result.getKey();
                     for (final String message : result.getValue()) {
                         allResults.add(new ValidationResult(message, successful));
