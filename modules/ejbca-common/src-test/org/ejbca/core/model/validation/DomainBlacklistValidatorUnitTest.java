@@ -107,7 +107,7 @@ public class DomainBlacklistValidatorUnitTest {
     }
 
     private void tryValidator(final DomainBlacklistValidator validator, final String domain, final boolean expectedResult) {
-        final Entry<Boolean,List<String>> result = validator.validate(null, domain);
+        final Entry<Boolean,List<String>> result = validator.validate(null, null, domain);
         assertEquals("Unexpected validator result for " + domain + ". ",  expectedResult, result.getKey());
     }
 
@@ -120,7 +120,7 @@ public class DomainBlacklistValidatorUnitTest {
         validator.setNormalizations(Arrays.asList(DomainBlacklistAsciiLookalikeNormalizer.class.getName()));
         validator.setChecks(Arrays.asList(DomainBlacklistBaseDomainChecker.class.getName()));
         validator.setFailedAction(KeyValidationFailedActions.LOG_INFO.getIndex());
-        final Entry<Boolean,List<String>> result = validator.validate(null, "f0rbiclclen2.example.com");
+        final Entry<Boolean,List<String>> result = validator.validate(null, null, "f0rbiclclen2.example.com");
         assertFalse("Domain should be blacklsted", result.getKey());
         final String expectedMessage = "Domain 'f0rbiclclen2.example.com' is block listed. Matching domain on block list: 'forbidden2.example.com'";
         assertEquals("Wrong exception message.", expectedMessage, result.getValue().get(0));
