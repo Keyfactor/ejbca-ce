@@ -20,7 +20,6 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.acme.AcmeOrderData;
 import org.ejbca.core.protocol.acme.AcmeOrder;
 import org.ejbca.core.protocol.acme.AcmeOrderDataSessionLocal;
@@ -30,9 +29,8 @@ import org.ejbca.core.protocol.acme.AcmeOrderDataSessionRemote;
  * Class that receives a Acme message and passes it on to the correct message handler.
  * Not available in Community Edition
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeOrderDataSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AcmeOrderDataSessionBean implements AcmeOrderDataSessionRemote, AcmeOrderDataSessionLocal {
     

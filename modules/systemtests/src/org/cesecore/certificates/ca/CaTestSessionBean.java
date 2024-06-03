@@ -19,14 +19,12 @@ import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.jndi.JndiConstants;
 
 /**
  * Session bean used by functional tests in order to access local EJB interfaces of CaSession
  * 
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaTestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CaTestSessionBean implements CaTestSessionRemote {
 

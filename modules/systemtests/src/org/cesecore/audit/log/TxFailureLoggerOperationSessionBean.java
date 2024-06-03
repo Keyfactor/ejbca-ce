@@ -25,14 +25,12 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 
 /**
  * Dummy bean to test that log is not saved when an Exception is thrown.
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "TxFailureLoggerOperationSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class TxFailureLoggerOperationSessionBean implements TxFailureLoggerOperationSessionRemote {
 

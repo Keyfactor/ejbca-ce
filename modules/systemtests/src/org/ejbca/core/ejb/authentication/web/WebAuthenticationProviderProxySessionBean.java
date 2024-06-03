@@ -22,10 +22,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.jndi.JndiConstants;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "WebAuthenticationProviderProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class WebAuthenticationProviderProxySessionBean implements WebAuthenticationProviderProxySessionRemote {
 

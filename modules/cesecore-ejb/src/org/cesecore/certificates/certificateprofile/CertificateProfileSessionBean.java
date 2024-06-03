@@ -44,7 +44,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
 import org.cesecore.audit.log.dto.SecurityEventProperties;
 
@@ -53,7 +52,7 @@ import org.cesecore.audit.log.dto.SecurityEventProperties;
  *
  * Version moved from EJBCA: CertificateProfileSessionBean.java 11170 2011-01-12 17:08:32Z anatom
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateProfileSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CertificateProfileSessionBean implements CertificateProfileSessionLocal, CertificateProfileSessionRemote {
 

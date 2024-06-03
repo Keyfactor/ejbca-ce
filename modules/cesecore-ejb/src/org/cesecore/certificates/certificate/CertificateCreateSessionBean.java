@@ -104,7 +104,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -123,7 +122,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Session bean for creating certificates.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateCreateSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CertificateCreateSessionBean implements CertificateCreateSessionLocal, CertificateCreateSessionRemote {
 
