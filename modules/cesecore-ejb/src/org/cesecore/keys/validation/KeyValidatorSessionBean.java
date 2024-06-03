@@ -60,7 +60,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
@@ -72,9 +71,8 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * Handles management of key validators.
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyValidatorSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyValidatorSessionRemote {
 

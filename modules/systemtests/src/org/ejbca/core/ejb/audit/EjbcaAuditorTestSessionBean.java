@@ -29,13 +29,12 @@ import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 
 /**
  * Proxy to make EjbcaAuditorSessionLocal testable over RMI.
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaAuditorTestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EjbcaAuditorTestSessionBean implements EjbcaAuditorTestSessionRemote {
 

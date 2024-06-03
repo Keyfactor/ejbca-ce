@@ -25,7 +25,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -37,10 +36,9 @@ import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import com.keyfactor.util.certificate.CertificateWrapper;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "TestRaMasterApiProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class TestRaMasterApiProxySessionBean implements TestRaMasterApiProxySessionRemote {
 

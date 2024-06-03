@@ -41,7 +41,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValueExtractor;
 
@@ -52,7 +51,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * SignSessionBean.
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlStoreSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessionRemote {
 

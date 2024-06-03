@@ -34,14 +34,13 @@ import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
 
 /**
- * @see RoleMemberSessionDataLocal
+ * @see RoleMemberDataSessionLocal
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleMemberDataSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleMemberDataSessionBean implements RoleMemberDataSessionLocal, RoleMemberDataSessionRemote {
 

@@ -16,17 +16,15 @@ import jakarta.ejb.Stateless;
 
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.jndi.JndiConstants;
 
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
- * @version $Id$
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CesecoreConfigurationProxySessionRemote")
+@Stateless
 public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurationProxySessionRemote {
 
     @Override

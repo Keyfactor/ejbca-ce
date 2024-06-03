@@ -51,7 +51,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
@@ -101,7 +100,7 @@ import com.keyfactor.util.CryptoProviderTools;
 /**
  * Keeps track of approval requests and their approval or rejects.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessionRemote {
 

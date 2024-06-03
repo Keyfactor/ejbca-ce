@@ -19,14 +19,12 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalSessionProxyRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ApprovalProfileProxySessionBean implements ApprovalProfileProxySessionRemote {
 

@@ -43,7 +43,6 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 
 import com.keyfactor.util.CertTools;
@@ -55,7 +54,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * Business class for CRL actions, i.e. running CRLs. 
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlCreateSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSessionRemote {
 

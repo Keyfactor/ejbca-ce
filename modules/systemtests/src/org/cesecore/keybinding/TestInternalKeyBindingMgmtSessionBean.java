@@ -26,7 +26,6 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -36,7 +35,7 @@ import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "TestInternalKeyBindingMgmtSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class TestInternalKeyBindingMgmtSessionBean implements TestInternalKeyBindingMgmtSessionRemote {
     

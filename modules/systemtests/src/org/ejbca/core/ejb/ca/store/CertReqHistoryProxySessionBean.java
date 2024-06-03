@@ -22,14 +22,13 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 
 /**
- * @version $Id$
+ *
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertReqHistoryProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CertReqHistoryProxySessionBean implements CertReqHistoryProxySessionRemote {
 
