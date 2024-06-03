@@ -1,20 +1,32 @@
 package org.ejbca.ui.web.admin.endentity;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.context.FacesContext;
+import javax.faces.event.AjaxBehaviorEvent;
+import javax.faces.model.SelectItem;
 import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.AuthorizationSessionLocal;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.ejbca.ui.web.admin.bean.SessionBeans;
+import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 @Named
 @ViewScoped
@@ -110,11 +122,21 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     static final String HIDDEN_PROFILE = "hiddenprofile";
     
     
-    String THIS_FILENAME = "editendentity.jsp";
-    String username = null;
-    EndEntityProfile profile = null;
-    UserView userdata = null;
-    int profileid = EndEntityConstants.NO_END_ENTITY_PROFILE;
+    private String userName = null;
+    private String eePassword = null;
+    private String eeConfirmPassword = null;
+    private String maxLoginAttempts;
+    private String maxLoginAttemptsStatus;
+    private boolean resetMaxLoginAttempts;
+    private boolean useClearTextPasswordStorage;
+
+
+
+
+    private EndEntityProfile eeProfile = null;
+    private UserView userData = null;
+
+    private int selectedEeProfileId = EndEntityConstants.NO_END_ENTITY_PROFILE;
     int[] fielddata = null;
 
     boolean userchanged = false;
@@ -122,11 +144,23 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     boolean notauthorized = true;
     boolean endentitysaved = false;
     boolean usekeyrecovery = false;
-    String[] profilenames = null;
-    String approvalmessage = null;
-
+    private String[] profileNames = null; 
+    private int eeStatus;
+    private boolean regeneratePassword;
     
- // Authentication check and audit log page access request
+
+    String approvalmessage = null;
+    
+    private EjbcaWebBean ejbcaWebBean;
+    private RAInterfaceBean raBean;
+    
+    @EJB
+    CaSessionLocal caSession;
+    
+    @EJB
+    private AuthorizationSessionLocal authorizationSession;
+    
+    // Authentication check and audit log page access request
     @PostConstruct    
     public void initialize() throws Exception {
         
@@ -134,22 +168,254 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
             throw new AuthorizationDeniedException("You are not authorized to view this page.");
         }
         
+        initData();
+       // checkInitParameters();
+        
+    }
+
+    /*    private void checkInitParameters() {
+    
+            if (noUserParameter) {
+                addNonTranslatedErrorMessage(ejbcaWebBean.getText("YOUMUSTSPECIFYUSERNAME"));
+            } else if (userData == null) {
+                addNonTranslatedErrorMessage(ejbcaWebBean.getText("ENDENTITYDOESNTEXIST"));
+            } else if (notAuthorized) {
+                addNonTranslatedErrorMessage(ejbcaWebBean.getText("NOTAUTHORIZEDTOVIEW"));
+            } else if (profileNotFound) {
+                addNonTranslatedErrorMessage(ejbcaWebBean.getText("CANNOTVIEWUSERPROFREM"));
+            }
+    }*/
+
+    // Initialize environment.
+    private void initData() throws Exception {
         final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
-        // Initialize environment.
-        GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
+        ejbcaWebBean = getEjbcaWebBean();
+        
+        GlobalConfiguration globalconfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
         AccessRulesConstants.REGULAR_EDITENDENTITY);
-        rabean.initialize(ejbcawebbean);
+        raBean = SessionBeans.getRaBean(request);
+        raBean.initialize(ejbcaWebBean);
+
+        RequestHelper.setDefaultCharacterEncoding(request);
+        
+        // TODO: check if this should be edit_end_entity or is OK as is!
+        profileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
+        
+        if (profileNames == null || profileNames.length == 0) {
+            throw new AddEndEntityException(getEjbcaWebBean().getText("NOTAUTHORIZEDTOCREATEENDENTITY"));
+        } else {
+            this.setSelectedEeProfileId(raBean.getEndEntityProfileId(profileNames[0]));
+            //this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+        }
+        
+        userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
+        
+
+        if (request.getParameter(USER_PARAMETER) != null) {
+            userData = raBean.findUserForEdit(userName);
+            eeStatus = userData.getStatus();
+            selectedEeProfileId = userData.getEndEntityProfileId();
+            eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+            useClearTextPasswordStorage = (eeProfile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || userData.getClearTextPassword());
+
+        }
+        
+        
+                
+    }
+    
+    public int getRemainingLoginAttemps() {
+        if ((userData.getExtendedInformation() != null) && (userData.getExtendedInformation().getRemainingLoginAttempts() != -1)) {
+            return userData.getExtendedInformation().getRemainingLoginAttempts();
+        } else {
+            return -1;
+        }
+    }
+    
+    public boolean isMaxFailedLoginAttemptsModifiable() {
+        return eeProfile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0);
+     }
+
+    public String getEeConfirmPassword() {
+        return eeConfirmPassword;
+    }
+
+    public void setEeConfirmPassword(String eeConfirmPassword) {
+        this.eeConfirmPassword = eeConfirmPassword;
+    }
+    
+    public List<SelectItem> getSelectPasswordList() {
+        List<SelectItem> result = new ArrayList<>();
+
+        if (eeProfile.getPredefinedPassword() != null) {
+            result.add(new SelectItem(eeProfile.getPredefinedPassword().trim(), eeProfile.getPredefinedPassword().trim()));
+        }
+        return result;
+    }
+    
+    public boolean isPasswordRequired() {
+        return eeProfile.isPasswordRequired();
+    }
+
+    public String getEePassword() {
+        return eePassword;
+    }
+
+    public void setEePassword(String eePassword) {
+        this.eePassword = eePassword;
+    }
+    
+    public boolean isUseAutoGeneratedPasswd() {
+        return eeProfile.useAutoGeneratedPasswd();
+    }
+    
+    public boolean isPasswordModifiable() {
+        return eeProfile.isPasswordModifiable();
+    }
+    
+    public boolean isPredefinedPasswordNotNull() {
+        return eeProfile.getPredefinedPassword() != null;
+    }
+    
+    public boolean isUserNameHasRegex() {
+        return eeProfile.getUseValidationForUsername();
+    }
+    
+    public String getUserNameRegex() {
+        return eeProfile.getUsernameDefaultValidation();
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+    
+
+    public boolean isAllowedToEditEndEntity() {
+        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_EDITENDENTITY);
+    }
+    
+    public List<SelectItem> getAvailableEndEntityProfiles() throws EndEntityProfileNotFoundException {
+        final List<SelectItem> ret = new ArrayList<>();
+        for(int i = 0; i < profileNames.length; i++) {
+            int pId = raBean.getEndEntityProfileId(profileNames[i]);
+            ret.add(new SelectItem(pId, profileNames[i]));
+
+        }
+        return ret;
+    }
+
+    public List<SelectItem> getAvailableEeStatus() {
+        final List<SelectItem> ret = new ArrayList<>();
+
+        ret.add(new SelectItem(EndEntityConstants.STATUS_KEYRECOVERY, ejbcaWebBean.getText("STATUSKEYRECOVERY")));
+        ret.add(new SelectItem(EndEntityConstants.STATUS_NEW, ejbcaWebBean.getText("STATUSNEW")));
+        ret.add(new SelectItem(EndEntityConstants.STATUS_FAILED, ejbcaWebBean.getText("STATUSFAILED")));
+        ret.add(new SelectItem(EndEntityConstants.STATUS_INITIALIZED, ejbcaWebBean.getText("STATUSINITIALIZED")));
+        ret.add(new SelectItem(EndEntityConstants.STATUS_INPROCESS, ejbcaWebBean.getText("STATUSINPROCESS")));
+        ret.add(new SelectItem(EndEntityConstants.STATUS_GENERATED, ejbcaWebBean.getText("STATUSGENERATED")));
+        ret.add(new SelectItem(EndEntityConstants.STATUS_REVOKED, ejbcaWebBean.getText("STATUSREVOKED")));
+        ret.add(new SelectItem(EndEntityConstants.STATUS_HISTORICAL, ejbcaWebBean.getText("STATUSHISTORICAL")));
+
+        return ret;
+
+    }
+    
+    public String actionChangeEndEntityProfile(AjaxBehaviorEvent event) {
+    
+        return "editendentity";
 
     }
 
+    public int getSelectedEeProfileId() {
+        return selectedEeProfileId;
+    }
+
+    public void setSelectedEeProfileId(int selectedEeProfileId) {
+        this.selectedEeProfileId = selectedEeProfileId;
+    }
+
+    public int getEeStatus() {
+        return eeStatus;
+    }
+
+    public void setEeStatus(int eeStatus) {
+        this.eeStatus = eeStatus;
+    }
+
     
+    public void editUser() {
+        if (userData != null) {
+            notauthorized = false;
 
-    Map<Integer, String> caidtonamemap = ejbcawebbean.getCAIdToNameMap();
 
-    RequestHelper.setDefaultCharacterEncoding(request);
+            UserView newuser = new UserView();
+            newuser.setEndEntityProfileId(selectedEeProfileId);
+            newuser.setUsername(userName);
+            
+            /*            if (value != null) {
+                value = value.trim();
+                if (!value.equals("")) {
+                    newuser.setPassword(value);
+                }
+            }*/
+            
+        }   
+    }
 
-    profilenames = (String[]) ejbcawebbean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
+    public boolean isRegeneratePassword() {
+        return regeneratePassword;
+    }
+
+    public void setRegeneratePassword(boolean regeneratePassword) {
+        this.regeneratePassword = regeneratePassword;
+    }
+
+    public String getMaxLoginAttempts() {
+        return maxLoginAttempts;
+    }
+
+    public void setMaxLoginAttempts(String maxLoginAttempts) {
+        this.maxLoginAttempts = maxLoginAttempts;
+    }
+
+    public String getMaxLoginAttemptsStatus() {
+        return maxLoginAttemptsStatus;
+    }
+
+    public void setMaxLoginAttemptsStatus(String maxLoginAttemptsStatus) {
+        this.maxLoginAttemptsStatus = maxLoginAttemptsStatus;
+    }
+
+    public boolean isResetMaxLoginAttempts() {
+        return resetMaxLoginAttempts;
+    }
+
+    public void setResetMaxLoginAttempts(boolean resetMaxLoginAttempts) {
+        this.resetMaxLoginAttempts = resetMaxLoginAttempts;
+    }
+
+    public boolean isUseBatchGenerationPassword() {
+        return eeProfile.getUse(EndEntityProfile.CLEARTEXTPASSWORD,0);
+    }
+
+    public boolean isUseClearTextPasswordStorage() {
+        return useClearTextPasswordStorage;
+    }
+
+    public void setUseClearTextPasswordStorage(boolean useClearTextPasswordStorage) {
+        this.useClearTextPasswordStorage = useClearTextPasswordStorage;
+    }
+    
+    public boolean isRequiredClearTextPasswordStorage() {
+        return eeProfile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0);
+    }
+    
+/*
     
     
     if (request.getParameter(USER_PARAMETER) != null) {
@@ -633,9 +899,9 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     pageContext.setAttribute("profile", profile);
 
     int row = 0;
-    int tabindex = 1;
+    int tabindex = 1;*/
 
     
 }
     
-}
+
