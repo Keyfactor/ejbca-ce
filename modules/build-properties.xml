@@ -271,7 +271,7 @@
 			<include name="jboss-servlet-api_4.0_spec-2.*.jar"/>
 			<include name="resteasy-jackson2-provider-4.*.jar"/>
 			<include name="json-patch-1.*.jar"/>
-			<include name="jakarta.ws.rs-api-2.*.jar"/>
+			<include name="jakarta.ws.rs-api-3.*.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
 			<include name="jackson-jaxrs-base-2.*.jar"/>
