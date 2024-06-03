@@ -154,7 +154,6 @@ import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.config.InvalidConfigurationException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -236,7 +235,7 @@ import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
  * Manages CAs in EJBCA.
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CAAdminSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRemote {
 

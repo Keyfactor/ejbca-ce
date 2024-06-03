@@ -24,13 +24,11 @@ import jakarta.ejb.TransactionAttributeType;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleMemberDataProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RoleMemberDataProxySessionBean implements RoleMemberDataProxySessionRemote {
 

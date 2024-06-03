@@ -52,7 +52,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
@@ -90,7 +89,7 @@ import java.util.concurrent.TimeUnit;
  *
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "WebAuthenticationProviderSessionLocal")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class WebAuthenticationProviderSessionBean implements WebAuthenticationProviderSessionLocal {
 

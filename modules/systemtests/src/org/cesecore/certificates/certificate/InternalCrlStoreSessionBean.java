@@ -17,12 +17,11 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 
 /**
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalCrlStoreSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InternalCrlStoreSessionBean implements InternalCrlStoreSessionRemote {
 

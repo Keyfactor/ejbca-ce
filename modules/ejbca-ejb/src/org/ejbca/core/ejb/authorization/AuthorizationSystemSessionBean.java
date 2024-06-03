@@ -48,7 +48,6 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.roles.AccessRulesHelper;
@@ -71,7 +70,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
  * This session bean handles high level authorization system tasks.
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AuthorizationSystemSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AuthorizationSystemSessionBean implements AuthorizationSystemSessionLocal, AuthorizationSystemSessionRemote {
 

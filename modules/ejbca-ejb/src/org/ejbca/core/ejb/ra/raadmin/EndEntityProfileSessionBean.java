@@ -25,7 +25,6 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -58,7 +57,7 @@ import java.util.TreeMap;
 /**
  * Session bean for handling EndEntityProfiles
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityProfileSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal, EndEntityProfileSessionRemote {
 

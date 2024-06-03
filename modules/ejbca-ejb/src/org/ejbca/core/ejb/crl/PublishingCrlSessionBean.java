@@ -71,7 +71,6 @@ import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 
@@ -84,7 +83,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * This session bean provides a bridge between EJBCA and CESecore by incorporating CRL creation (CESeCore) with publishing (EJBCA)
  * into a single atomic action.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublishingCrlSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
 public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, PublishingCrlSessionRemote {
 
