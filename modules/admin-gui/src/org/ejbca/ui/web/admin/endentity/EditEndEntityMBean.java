@@ -3,6 +3,7 @@ package org.ejbca.ui.web.admin.endentity;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -13,6 +14,8 @@ import javax.faces.view.ViewScoped;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -21,12 +24,15 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
+import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+
+import com.keyfactor.util.certificate.DnComponents;
 
 @Named
 @ViewScoped
@@ -130,14 +136,22 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     private boolean resetMaxLoginAttempts;
     private boolean useClearTextPasswordStorage;
 
-
-
+    private String emailName = StringUtils.EMPTY;
+    private String emailDomain = StringUtils.EMPTY;
+    
+    private String[] emailOptions = null;
 
     private EndEntityProfile eeProfile = null;
     private UserView userData = null;
 
+    private List<SubjectDnFieldData> subjectDnFieldDatas;
+    private List<SubjectAltNameFieldData> subjectAltNameFieldDatas;
+    private List<SubjectDirAttrFieldData> subjectDirAttrFieldDatas;
+
+
+
+
     private int selectedEeProfileId = EndEntityConstants.NO_END_ENTITY_PROFILE;
-    int[] fielddata = null;
 
     boolean userchanged = false;
     boolean nouserparameter = true;
@@ -206,7 +220,7 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
             throw new AddEndEntityException(getEjbcaWebBean().getText("NOTAUTHORIZEDTOCREATEENDENTITY"));
         } else {
             this.setSelectedEeProfileId(raBean.getEndEntityProfileId(profileNames[0]));
-            //this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+            //this.eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
         }
         
         userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
@@ -219,9 +233,20 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
             eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
             useClearTextPasswordStorage = (eeProfile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || userData.getClearTextPassword());
 
+            
+            if (eeProfile.getUse(EndEntityProfile.EMAIL, 0) && (userData.getEmail() != null && !userData.getEmail().equals(StringUtils.EMPTY))) {
+                emailName = userData.getEmail().substring(0, userData.getEmail().indexOf('@'));
+                emailDomain = userData.getEmail().substring(userData.getEmail().indexOf('@') + 1);
+
+            }
+            
+            emailOptions = eeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
+
         }
         
-        
+        composeSubjectDnFieldsAndData();
+        composeSubjectAltNameFieldAndData();
+        composeSubjectDirAttrFieldsAndData();
                 
     }
     
@@ -236,7 +261,11 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     public boolean isMaxFailedLoginAttemptsModifiable() {
         return eeProfile.isModifyable(EndEntityProfile.MAXFAILEDLOGINS,0);
      }
-
+    
+    public List<SubjectDnFieldData> getSubjectDnFieldsAndDatas() {
+        return subjectDnFieldDatas;
+    }
+    
     public String getEeConfirmPassword() {
         return eeConfirmPassword;
     }
@@ -252,6 +281,14 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
             result.add(new SelectItem(eeProfile.getPredefinedPassword().trim(), eeProfile.getPredefinedPassword().trim()));
         }
         return result;
+    }
+    
+    public boolean isProfileHasSubjectAltNameFields() {
+        return eeProfile.getSubjectAltNameFieldOrderLength() > 0;
+    }
+
+    public boolean isProfileHasSubjectDirAttrFields() {
+        return eeProfile.getSubjectDirAttrFieldOrderLength() > 0;
     }
     
     public boolean isPasswordRequired() {
@@ -414,7 +451,202 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     public boolean isRequiredClearTextPasswordStorage() {
         return eeProfile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0);
     }
+
+    public String getEmailName() {
+        return emailName;
+    }
+
+    public void setEmailName(String emailName) {
+        this.emailName = emailName;
+    }
+
+    public String getEmailDomain() {
+        return emailDomain;
+    }
+
+    public void setEmailDomain(String emailDomain) {
+        this.emailDomain = emailDomain;
+    }
     
+    public boolean isEmailModifiable() {
+        return eeProfile.isModifyable(EndEntityProfile.EMAIL, 0);
+    }
+
+    public String[] getEmailOptions() {
+        return emailOptions;
+    }
+    
+    public boolean isEmailRequired() {
+        return eeProfile.isRequired(EndEntityProfile.EMAIL, 0);
+    }
+    
+    private void composeSubjectDnFieldsAndData() {
+
+        this.subjectDnFieldDatas = new ArrayList<>();
+
+        int numberOfSubjectDnFields = eeProfile.getSubjectDNFieldOrderLength();
+
+        for (int i = 0; i < numberOfSubjectDnFields; i++) {
+
+            int[] fieldData = eeProfile.getSubjectDNFieldsInOrder(i);
+
+            final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
+            final boolean required = eeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean modifiable = eeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean isEmailAddress = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAILADDRESS);
+
+            String[] options = null;
+            String regex = null;
+            String fieldValue = null;
+
+            options = eeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                    .split(EndEntityProfile.SPLITCHAR);
+            final Map<String, Serializable> validation = eeProfile.getValidation(fieldData[EndEntityProfile.FIELDTYPE],
+                    fieldData[EndEntityProfile.NUMBER]);
+            regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
+            
+            fieldValue = userData.getSubjectDNField(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),fieldData[EndEntityProfile.NUMBER]);
+            
+            SubjectDnFieldData subjectDnFieldData = new SubjectDnFieldData.Builder(label, modifiable, required)
+                    .withIsEmailAndUsesEmailFieldData(new MutablePair<>(isEmailAddress, required))
+                    .withOptions(options)
+                    .withValue(fieldValue)
+                    .withRegex(regex)
+                    .build();
+
+            this.subjectDnFieldDatas.add(subjectDnFieldData);
+        }
+    }
+
+    private void composeSubjectAltNameFieldAndData() {
+
+        this.subjectAltNameFieldDatas = new ArrayList<>();
+
+        final int numberOfSubjectAltNameFields = eeProfile.getSubjectAltNameFieldOrderLength();
+
+        for (int i = 0; i < numberOfSubjectAltNameFields; i++) {
+            
+            final int[] fieldData = eeProfile.getSubjectAltNameFieldsInOrder(i);
+            int fieldType = fieldData[EndEntityProfile.FIELDTYPE];
+
+            final boolean modifiable = eeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean required = eeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean isRFC822Name = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
+            final boolean useDataFromEmailField = eeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE],fieldData[EndEntityProfile.NUMBER]);
+            final boolean copyDataFromCN = eeProfile.getCopy(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean isDnsName = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
+            final boolean isUpn = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN);
+            String[] options = null;
+            String fieldValue = null;
+            String regex = null;
+            String rfcName = null;
+            String rfcDomain = null;
+            String rfc822NameString = null;
+            String upnDomain = null;
+            String upnName = null;
+
+            // Handle RFC822NAME separately
+            if (isRFC822Name) {
+
+                rfc822NameString = eeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+                String[] rfc822NameArray = new String[2];
+                rfc822NameArray = extractRfc822NameArray(rfc822NameString, rfc822NameArray);
+
+                if (modifiable) {
+                    rfcName = rfc822NameArray[0].trim();
+                    rfcDomain = rfc822NameArray[1].trim();
+                } else {
+                    options = rfc822NameString.split(EndEntityProfile.SPLITCHAR);
+                }
+            } else {
+                
+                options = eeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                        .split(EndEntityProfile.SPLITCHAR);
+                
+                if(isUpn && modifiable) {
+                    upnDomain = eeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+                } 
+                
+                if (isUpn && !modifiable && options.length == 1) {
+                    upnDomain = options[0];
+                }
+
+                if (options.length == 0 && copyDataFromCN) {
+                    fieldValue = userData.getSubjectAltNameField(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),fieldData[EndEntityProfile.NUMBER]);
+                } else {
+                    fieldValue = userData.getSubjectAltNameField(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),fieldData[EndEntityProfile.NUMBER]);
+                    final Map<String, Serializable> validation = eeProfile.getValidation(fieldData[EndEntityProfile.FIELDTYPE],
+                            fieldData[EndEntityProfile.NUMBER]);
+                    regex = (validation != null ? (String) validation.get(RegexFieldValidator.class.getName()) : null);
+                }
+            }
+
+            if (EndEntityProfile.isFieldImplemented(fieldType)) {
+                final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
+                
+                SubjectAltNameFieldData subjectAltNameFieldData = new SubjectAltNameFieldData.Builder(label, modifiable, required)
+                        .withFieldValue(fieldValue)
+                        .withRFC822Name(isRFC822Name)
+                        .withUseDataFromRFC822NameField(useDataFromEmailField && required)
+                        .withRenderDataFromRFC822CheckBox(useDataFromEmailField)
+                        .withCopyDataFromCN(copyDataFromCN)
+                        .withDNSName(isDnsName)
+                        .withRfcName(rfcName)
+                        .withRfcDomain(rfcDomain)
+                        .withOptions(options)
+                        .withRegex(regex)
+                        .withRfc822NameString(rfc822NameString)
+                        .withUpn(isUpn)                        
+                        .withUpnName(upnName)
+                        .withUpnDomain(upnDomain)
+                        .build();
+                subjectAltNameFieldDatas.add(subjectAltNameFieldData);
+            }
+        }
+    }
+
+    private void composeSubjectDirAttrFieldsAndData() {
+
+        this.subjectDirAttrFieldDatas = new ArrayList<>();
+
+        int numberOfSubjectDirAttrFields = eeProfile.getSubjectDirAttrFieldOrderLength();
+
+        for (int i = 0; i < numberOfSubjectDirAttrFields; i++) {
+            int[] fieldData = eeProfile.getSubjectDirAttrFieldsInOrder(i);
+
+            final boolean modifiable = eeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final boolean required = eeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
+            final String label = getEjbcaWebBean().getText(DnComponents.getLanguageConstantFromProfileId(fieldData[EndEntityProfile.FIELDTYPE]));
+            
+            final String fieldValue = userData.getSubjectDirAttributeField(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),fieldData[EndEntityProfile.NUMBER]);
+            final String[] options = eeProfile.getValue(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER])
+                    .split(EndEntityProfile.SPLITCHAR);
+
+            SubjectDirAttrFieldData subjectDirAttrFieldData = new SubjectDirAttrFieldData.Builder(label, modifiable, required)
+                    .withFieldValue(fieldValue).withOptions(options).build();
+            this.subjectDirAttrFieldDatas.add(subjectDirAttrFieldData);
+        }
+    }
+    
+    
+    private String[] extractRfc822NameArray(String rfc822NameString, String[] rfc822NameArray) {
+        if (rfc822NameString.indexOf("@") != -1) {
+            rfc822NameArray = rfc822NameString.split("@");
+        } else {
+            rfc822NameArray[0] = StringUtils.EMPTY;
+            rfc822NameArray[1] = rfc822NameString;
+        }
+        return rfc822NameArray;
+    }
+    
+    public List<SubjectAltNameFieldData> getSubjectAltNameFieldDatas() {
+        return subjectAltNameFieldDatas;
+    }
+
+    public List<SubjectDirAttrFieldData> getSubjectDirAttrFieldDatas() {
+        return subjectDirAttrFieldDatas;
+    }
+   
 /*
     
     
