@@ -24,7 +24,7 @@ import org.ejbca.ui.web.LimitLengthASN1Reader;
 
 /**
  * Client to send message to CMP server over HTTP.
- * 
+ *
  */
 public class CMPSendHTTP {
     /** Internal localization of logs and errors */
@@ -48,7 +48,7 @@ public class CMPSendHTTP {
     public static CMPSendHTTP sendMessage(final byte[] message, final String url, final boolean doClose) throws IOException {
         boolean isError = true;
         final HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
-        try (final LimitLengthASN1Reader limitLengthASN1Reader = new LimitLengthASN1Reader(con.getInputStream(), con.getContentLength())) {
+        try {
             // POST the CMP request
             con.setDoOutput(true);
             con.setRequestMethod("POST");
@@ -62,8 +62,7 @@ public class CMPSendHTTP {
             if (responseCode != HttpURLConnection.HTTP_OK) {
                 return new CMPSendHTTP(contentType, null, responseCode);
             }
-
-            try {
+            try (final LimitLengthASN1Reader limitLengthASN1Reader = new LimitLengthASN1Reader(con.getInputStream(), con.getContentLength())) {
                 final byte[] response = limitLengthASN1Reader.readFirstASN1Object();
                 isError = false;
                 return new CMPSendHTTP(contentType, response, responseCode);

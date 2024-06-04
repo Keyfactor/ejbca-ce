@@ -281,6 +281,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
             // 400
             case ApprovalRequestExecutionException:
             case ApprovalRequestExpiredException:
+            case KeyRecoveryNotAvailableException:
             case RoleExistsException:
                 return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.BAD_REQUEST.getStatusCode())

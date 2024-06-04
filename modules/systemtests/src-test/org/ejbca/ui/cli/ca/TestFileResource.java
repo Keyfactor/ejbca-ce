@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli;
+package org.ejbca.ui.cli.ca;
 
 import java.io.File;
 import java.net.URL;
