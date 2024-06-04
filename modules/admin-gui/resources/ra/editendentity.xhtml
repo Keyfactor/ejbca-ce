@@ -70,7 +70,7 @@
 			</h:panelGroup>
 			</h:panelGrid>
 
-		    <!-- ********** Status ******************** -->
+		    <!-- ********** Main ******************** -->
 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
 				cellpadding="3" border="0" width="100%" rowClasses="Row1"
 				columnClasses="editColumnSystem1,editColumn2">
@@ -217,9 +217,351 @@
 						<h:outputLabel for="checkBoxUseBatchGenerationPassword" value="#{web.text.USE}" />
 							
 			</h:panelGroup>				
+			
+
+			<h:panelGroup>
+				<h:outputLabel id="emailLabel" 
+					value="#{web.text.EMAIL}" />
+			</h:panelGroup>	
 				
+			<h:panelGroup>
+				<h:inputText id="eeEmailName"
+							value="#{resourceBean.emailName}" size="15" maxlength="255"
+							title="#{web.text.FORMAT_DOMAINNAME}"
+							required="#{resourceBean.emailRequired}"
+							styleClass="#{resourceBean.emailRequired ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}" /> @
+							
+				<h:inputText id="eeEmailDomain" rendered="#{resourceBean.emailModifiable}"
+							value="#{resourceBean.emailDomain}" size="20" maxlength="255"
+							required="#{resourceBean.emailRequired}"
+							styleClass="#{resourceBean.emailRequired ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}" />
+
+
+				<h:outputLabel id="emailDomainOneOption" 
+					rendered="#{fn:length(resourceBean.emailOptions) == 1}"
+					value="#{resourceBean.emailOptions[0].trim()}"
+					style="font-weight:bold; font-size:1.2em;" />		
+					
+					
+				<h:selectOneMenu id="emailDomainManyOptions"
+						rendered="#{fn:length(resourceBean.emailOptions) > 1}"
+						value="#{resourceBean.emailDomain}">
+						<f:selectItems value="#{resourceBean.emailOptions}" />
+				</h:selectOneMenu>						
+							
+			</h:panelGroup>
+
+
 
 			</h:panelGrid>
+			
+			<!-- ********** Subject DN ******************** -->
+
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1"
+				columnClasses="editColumnSystem1,editColumn2">
+				<h:outputLabel value="#{web.text.CERT_SUBJECTDN_ATTRIBUTES}"
+					style="font-weight:bold; font-size:1.2em;" />
+
+				<h:panelGroup />
+				<c:forEach items="#{resourceBean.subjectDnFieldsAndDatas}" varStatus="subjectDnField"
+					var="subjectDnFieldAndData">
+					<h:panelGroup>
+						<h:outputLabel value="#{subjectDnFieldAndData.label}" id="labelSDN${subjectDnField.index + 1}"/>
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and !subjectDnFieldAndData.modifiable
+										      and fn:length(subjectDnFieldAndData.options) == 1}">
+						<h:outputLabel
+							id="emailDomain${subjectDnField.index + 1}"
+							value="#{subjectDnFieldAndData.options[0].trim()}"
+							style="font-weight:bold" />
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left
+										      and !subjectDnFieldAndData.modifiable 
+										      and fn:length(subjectDnFieldAndData.options) > 1 }">
+						<h:selectOneMenu
+							id="useEmailFieldDataCheckBox${subjectDnField.index + 1}"
+							value="#{subjectDnFieldAndData.fieldValue}"
+							disabled="#{!resourceBean.allowedToEditEndEntity}">
+							<f:selectItems value="#{subjectDnFieldAndData.options}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and subjectDnFieldAndData.modifiable and subjectDnFieldAndData.regex ne null}">
+						<h:inputText
+							id="valueWithRegex${subjectDnField.index + 1}"
+							value="#{subjectDnFieldAndData.fieldValue}"
+							size="40" maxlength="255"
+							title="Must match format specified in profile. / Technical detail - the regex is #{subjectDnFieldAndData.regex}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}"
+							required="#{subjectDnFieldAndData.required}"
+							styleClass="#{subjectDnFieldAndData.required ? 'mandatory' : ''}"
+							label="#{subjectDnFieldAndData.label}">
+							<f:validateRegex pattern="#{subjectDnFieldAndData.regex}" />
+						</h:inputText>
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{!subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left and subjectDnFieldAndData.modifiable and subjectDnFieldAndData.regex eq null}">
+						<h:inputText
+							id="valueWithoutRegex${subjectDnField.index + 1}"
+							value="#{subjectDnFieldAndData.fieldValue}"
+							size="40" maxlength="255"
+							readonly="#{!resourceBean.allowedToEditEndEntity}"
+							required="#{subjectDnFieldAndData.required}"
+							label="#{subjectDnFieldAndData.label}"
+							styleClass="#{subjectDnFieldAndData.required ? 'mandatory' : ''}">
+						</h:inputText>
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{subjectDnFieldAndData.isEmailAndUsesEmailFieldData.left}">
+						<h:selectBooleanCheckbox
+							id="sdnEmail"
+							value="#{subjectDnFieldAndData.isEmailAndUsesEmailFieldData.right}"
+							disabled="#{subjectDnFieldAndData.required}" />
+						<h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
+					</h:panelGroup>
+				</c:forEach>
+			</h:panelGrid>
+			
+			<!-- ********** Subject Alternative Name ******************** -->
+
+ 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1"
+				columnClasses="editColumnSystem1,editColumn2"
+				rendered="#{resourceBean.profileHasSubjectAltNameFields}">
+				<h:outputLabel value="#{web.text.SUBJECTALTNAMES}"
+					style="font-weight:bold; font-size:1.2em;" />
+
+				<h:panelGroup />
+
+				<c:forEach items="#{resourceBean.subjectAltNameFieldDatas}"
+					var="subjectAltNameFieldAndData" varStatus="subjecAltField">
+
+					<h:panelGroup>
+						<h:outputLabel
+							id="labelSAN${subjecAltField.index + 1}"
+						 	value="#{subjectAltNameFieldAndData.label}" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{subjectAltNameFieldAndData.rfc822Name and subjectAltNameFieldAndData.renderDataFromRFC822CheckBox}">
+						<h:selectBooleanCheckbox id="altNameEmail" value="#{subjectAltNameFieldAndData.useDataFromRFC822NameField}"
+							disabled="#{subjectAltNameFieldAndData.required}"
+							 />
+						<h:outputLabel value="#{web.text.USESEMAILFIELDDATA}" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.renderDataFromRFC822CheckBox
+									and (subjectAltNameFieldAndData.modifiable or subjectAltNameFieldAndData.rfc822NameStringHaveAtSign)}">
+						<h:inputText
+							id="rfcName${subjecAltField.index + 1}"
+							value="#{subjectAltNameFieldAndData.rfcName}"
+							size="20" maxlength="255"
+							label="#{subjectAltNameFieldAndData.label}"
+							required="#{subjectAltNameFieldAndData.required}"
+							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}">
+						</h:inputText> @
+						<h:inputText
+							id="rfcDomain${subjecAltField.index + 1}"
+							value="#{subjectAltNameFieldAndData.rfcDomain}"
+							size="15" maxlength="255"
+							title="#{web.text.FORMAT_DOMAINNAME}"
+							label="#{subjectAltNameFieldAndData.label}"
+							required="#{subjectAltNameFieldAndData.required}"
+							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}">
+						</h:inputText>
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{subjectAltNameFieldAndData.rfc822Name
+									and !subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) == 1}">
+						<h:outputLabel
+							id="fieldValueLabel${subjecAltField.index + 1}"
+							value="#{subjectAltNameFieldAndData.fieldValue}"
+							style="font-weight:bold" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{subjectAltNameFieldAndData.rfc822Name
+									and !subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) > 1}}">
+
+						<h:selectOneMenu
+							id="fieldValueSelectOne${subjecAltField.index + 1}"
+							value="#{subjectAltNameFieldAndData.fieldValue}"
+							disabled="#{!resourceBean.allowedToEditEndEntity}">
+							<f:selectItems
+								value="#{subjectAltNameFieldAndData.options}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{!subjectAltNameFieldAndData.rfc822Name
+											   and !subjectAltNameFieldAndData.modifiable 
+											   and !subjectAltNameFieldAndData.upn
+											   and !subjectAltNameFieldAndData.copyDataFromCN}">
+						<h:outputLabel
+							id="altNameField${subjecAltField.index + 1}"
+							rendered="#{(!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) == 1)}"
+							value="#{subjectAltNameFieldAndData.fieldValue}"
+							style="font-weight:bold" />
+
+						<h:selectOneMenu
+							id="subjectAltField${subjecAltField.index + 1}"
+							rendered="#{!subjectAltNameFieldAndData.rfc822Name and !subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) > 1}"
+							value="#{subjectAltNameFieldAndData.fieldValue}"
+							disabled="#{!resourceBean.allowedToEditEndEntity}">
+							<f:selectItems value="#{subjectAltNameFieldAndData.options}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+
+					<h:panelGroup rendered="#{!subjectAltNameFieldAndData.modifiable
+											  and subjectAltNameFieldAndData.upn}">
+						<h:inputText
+							id="subjectAltNameUpnName${subjecAltField.index + 1}"
+							size="20" maxlength="355"
+							value="#{subjectAltNameFieldAndData.upnName}"
+							label = "#{subjectAltNameFieldAndData.label}"
+							required="#{subjectAltNameFieldAndData.required}"
+							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}">
+						</h:inputText> @
+
+						<h:outputLabel
+							id="subjectAltNameUpnDomainOneOption${subjecAltField.index + 1}"
+							rendered="#{!subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) == 1}"
+							value="#{subjectAltNameFieldAndData.upnDomain}"
+							style="font-weight:bold" />
+
+						<h:selectOneMenu
+							id="subjectAltNameUpnDomainMultiOption${subjecAltField.index + 1}"
+							rendered="#{!subjectAltNameFieldAndData.modifiable and fn:length(subjectAltNameFieldAndData.options) > 1}"
+							value="#{subjectAltNameFieldAndData.upnDomain}"
+							disabled="#{!resourceBean.allowedToEditEndEntity}">
+							<f:selectItems value="#{subjectAltNameFieldAndData.options}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+
+
+					<h:panelGroup rendered="#{subjectAltNameFieldAndData.modifiable
+											   and subjectAltNameFieldAndData.upn}">
+						<h:inputText
+							id="subjectAltNameUpnNameModifiableNoOptions${subjecAltField.index + 1}"
+							size="20" maxlength="355"
+							value="#{subjectAltNameFieldAndData.upnName}"
+							label = "#{subjectAltNameFieldAndData.label}"
+							required="#{subjectAltNameFieldAndData.required}"
+							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}">
+						</h:inputText> @
+
+						<h:inputText
+							id="subjectAltNameUpnDomainModifiableNoOptions${subjecAltField.index + 1}"
+							size="15" maxlength="355"
+							value="#{subjectAltNameFieldAndData.upnDomain}"
+							label = "#{subjectAltNameFieldAndData.label}"
+							required="#{subjectAltNameFieldAndData.required}"
+							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}">
+						</h:inputText>
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{!subjectAltNameFieldAndData.rfc822Name and
+						 			!subjectAltNameFieldAndData.upn and
+									 subjectAltNameFieldAndData.copyDataFromCN}">
+						<h:selectBooleanCheckbox
+							id="altNameDns"
+							value="true" disabled="true"/>
+						<h:outputLabel value="#{web.text.USESCNFIELDDATA}" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{!subjectAltNameFieldAndData.rfc822Name and
+									 subjectAltNameFieldAndData.modifiable and 
+									 !subjectAltNameFieldAndData.upn and
+									 !subjectAltNameFieldAndData.copyDataFromCN}">
+						<h:inputText
+							id="subjectAltNameInputTextWithoutRegex${subjecAltField.index + 1}"
+							size="40" maxlength="355" rendered="#{!subjectAltNameFieldAndData.renderRegex}"
+							value="#{subjectAltNameFieldAndData.fieldValue}"
+							label = "#{subjectAltNameFieldAndData.label}"
+							required="#{subjectAltNameFieldAndData.required}"
+							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}">
+						</h:inputText>
+						<h:inputText
+							id="subjectAltNameInputTextWithRegex${subjecAltField.index + 1}"
+							size="40" maxlength="355" rendered="#{subjectAltNameFieldAndData.renderRegex}"
+							value="#{subjectAltNameFieldAndData.fieldValue}"
+							title="Must match format specified in profile. / Technical detail - the regex is #{subjectAltNameFieldAndData.regex}"
+							label = "#{subjectAltNameFieldAndData.label}"
+							required="#{subjectAltNameFieldAndData.required}"
+							styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}">
+						<f:validateRegex pattern="#{subjectAltNameFieldAndData.regex}"/>
+						</h:inputText>
+					</h:panelGroup>
+
+				</c:forEach>
+
+			</h:panelGrid>
+
+
+			<!-- ********** Subject Directory Attributes ******************** -->
+
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1"
+				columnClasses="editColumnSystem1,editColumn2"
+				rendered="#{resourceBean.profileHasSubjectDirAttrFields}">
+				<h:outputLabel value="#{web.text.SUBJECTDIRATTRIBUTES}"
+					style="font-weight:bold; font-size:1.2em;" />
+
+				<h:panelGroup />
+
+				<c:forEach items="#{resourceBean.subjectDirAttrFieldDatas}"
+					var="subjectDirAttrFieldNameAndData" varStatus="subjectDirAttr" >
+
+					<h:panelGroup>
+						<h:outputLabel id="labelSDA${subjectDirAttr.index + 1}" value="#{subjectDirAttrFieldNameAndData.label}" />
+					</h:panelGroup>
+
+					<h:outputLabel
+						id="oneOptionSDA${subjectDirAttr.index + 1}"
+						rendered="#{!subjectDirAttrFieldNameAndData.modifiable and fn:length(subjectDirAttrFieldNameAndData.options) == 1}"
+						value="#{subjectDirAttrFieldNameAndData.fieldValue}"
+						style="font-weight:bold" />
+
+					<h:selectOneMenu
+						id="multiOptionsSDA${subjectDirAttr.index + 1}"
+						rendered="#{!subjectDirAttrFieldNameAndData.modifiable and fn:length(subjectDirAttrFieldNameAndData.options) > 1}"
+						value="#{subjectDirAttrFieldNameAndData.fieldValue}"
+						disabled="#{!resourceBean.allowedToEditEndEntity}">
+						<f:selectItems value="#{subjectDirAttrFieldNameAndData.options}" />
+					</h:selectOneMenu>
+
+					<h:panelGroup
+						rendered="#{subjectDirAttrFieldNameAndData.modifiable}">
+						<h:inputText size="20" maxlength="255"
+							id="inputTextSDA${subjectDirAttr.index + 1}"
+							value="#{subjectDirAttrFieldNameAndData.fieldValue}"
+							readonly="#{!resourceBean.allowedToEditEndEntity}"
+							required="#{subjectDirAttrFieldNameAndData.required}"
+							label="#{subjectDirAttrFieldNameAndData.label}"
+							styleClass="#{subjectDirAttrFieldNameAndData.required ? 'mandatory' : ''}">
+						</h:inputText>
+					</h:panelGroup>
+
+				</c:forEach>
+
+			</h:panelGrid>
+
 		
 		
 		</h:form>
