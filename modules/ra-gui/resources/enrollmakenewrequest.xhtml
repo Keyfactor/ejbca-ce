@@ -200,11 +200,11 @@
                     <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.uploadCsrDoneRendered}">
                         <h:panelGroup layout="block" styleClass="pure-control-group">
                             <h:outputLabel for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
-                            <h:outputText id="certificateRequestNode" value="#{enrollMakeNewRequestBean.algorithmUiRepresentation}"/>
+                            <h:outputText id="certificateRequestNode" style="color:white;" value="#{enrollMakeNewRequestBean.algorithmUiRepresentation}"/>
                         </h:panelGroup>
                         <h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.hybrid}"> 
                             <h:outputLabel for="alternativeKeyAlgorithm" value="#{msg.enroll_upload_csr_keyalgo_alternative_label}"/>
-                            <h:outputText id="alternativeKeyAlgorithm" value="#{enrollMakeNewRequestBean.alternativeAlgorithmUiRepresentation}"/>
+                            <h:outputText id="alternativeKeyAlgorithm" style="color:white;" value="#{enrollMakeNewRequestBean.alternativeAlgorithmUiRepresentation}"/>
                         </h:panelGroup>
                         <h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
                             action="#{enrollMakeNewRequestBean.uploadCsrChange}">
@@ -831,7 +831,7 @@
 						<h:panelGroup layout="block" styleClass="pure-control-group" id="accountBindingIdGroup">
 							<h:outputLabel for="accountBindingId" value="#{msg.enroll_EAB} *" />
 							<h:inputText id="accountBindingId" value="#{enrollMakeNewRequestBean.accountBindingId}" 
-								styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+								styleClass="#{component.valid?'':'jsAutoFocusError'}">
 								<f:ajax event="keyup" execute="@this" 
 										render="accountBindingIdGroupAuto" 
 										listener="#{enrollMakeNewRequestBean.autoCompleteEabId}"/>
@@ -862,16 +862,14 @@
 							<h:outputLabel for="sshKeyId" value="#{msg.enroll_ssh_key_id} *" />
 							<h:inputText id="sshKeyId" value="#{enrollMakeNewRequestBean.sshKeyId}" 
 								requirred="#{enrollMakeNewRequestBean.requiredCriticalOptionsSourceAddress}" 
-								requiredMessage="#{msg.enroll_ssh_keyid_required}"
-								autocomplete="off">
+								requiredMessage="#{msg.enroll_ssh_keyid_required}">
 							</h:inputText>
 							<h:message for="sshKeyId" id="sshKeyIdMessage" styleClass="validationErrorMessage showErrorMessage"/>
 						</h:panelGroup>
-						
+
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="sshCertificateComment" value="#{msg.enroll_ssh_comment}" />
-							<h:inputText id="sshCertificateComment" value="#{enrollMakeNewRequestBean.sshCertificateComment}" 
-								autocomplete="off">
+							<h:inputText id="sshCertificateComment" value="#{enrollMakeNewRequestBean.sshCertificateComment}">
 							</h:inputText>
 						</h:panelGroup>
 						
@@ -1011,15 +1009,16 @@
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordField" value="#{msg.enroll_password} *" />
-								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+								<h:inputSecret id="passwordField" value="#{enrollMakeNewRequestBean.endEntityInformation.password}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
 									<f:validator validatorId="extendedRequiredValidator"/>
 									<f:attribute name="_required" value="true"/>
+									<f:passThroughAttribute name="autocomplete" value="new-password"/>
 								</h:inputSecret>
 								<h:message for="passwordField" id="passwordFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.passwordRendered}">
 								<h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password} *" />
-								<h:inputSecret id="passwordConfirmField" binding="#{enrollMakeNewRequestBean.confirmPasswordComponent}" value="#{enrollMakeNewRequestBean.confirmPassword}" styleClass="#{component.valid?'':'jsAutoFocusError'}" autocomplete="off">
+								<h:inputSecret id="passwordConfirmField" binding="#{enrollMakeNewRequestBean.confirmPasswordComponent}" value="#{enrollMakeNewRequestBean.confirmPassword}" styleClass="#{component.valid?'':'jsAutoFocusError'}">
 									<f:validator validatorId="extendedRequiredValidator"/>
 									<f:attribute name="_required" value="true"/>
 								</h:inputSecret>
@@ -1085,12 +1084,11 @@
 						    <h:inputText
 						        id="validityField"
 						        styleClass="required-input"
-						        autocomplete="off"
 						        binding="#{enrollMakeNewRequestBean.validityInputComponent}"
 						        rendered="#{enrollMakeNewRequestBean.setCustomValidity}"
 						        value="#{enrollMakeNewRequestBean.validity}">
-						        <f:ajax event="keyup" render=":requestInfoForm:enrollButtons validityFieldHelpText" execute="@this" /> 
-						    </h:inputText>
+						        <f:ajax event="keyup" render=":requestInfoForm:enrollButtons validityFieldHelpText" execute="@this" />
+							</h:inputText>
 						    <h:outputText 
 						        id="validityFieldHelpText" 
 						        for="validityField"
