@@ -200,7 +200,8 @@ public class GenerateTokenTest extends CaTestCase {
             //Setting up algorithm specification ECDSA_secp256r1 that is going to be enforced
             eeinfo.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_ECDSA);
             eeinfo.getExtendedInformation().setKeyStoreAlgorithmSubType("prime256v1");
-            eeinfo.getExtendedInformation().setKeyStoreAlternateKeyAlgorithm(AlgorithmConstants.SIGALG_FALCON1024);
+            eeinfo.getExtendedInformation().setKeyStoreAlternativeKeyAlgorithm(AlgorithmConstants.SIGALG_FALCON1024);
+            eeinfo.getExtendedInformation().setKeyStoreAlternativeKeySpecification(AlgorithmConstants.KEYALGORITHM_FALCON1024);
             endEntityManagementSession.addUser(internalAdmin, eeinfo, false);
             endEntityManagementSession.setPassword(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123");
             eeinfo = eeAccessSession.findUser(internalAdmin, GENERATETOKENTEST_USERNAME);
@@ -208,7 +209,7 @@ public class GenerateTokenTest extends CaTestCase {
             eeinfo.setPassword("foo123");
             //Providing separately algorithm RSA_1024 that is going to be overridden with ECDSA_secp256r1
             final byte[] keyStore = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(internalAdmin, GENERATETOKENTEST_USERNAME, "foo123", caId, "1024",
-                    AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.SIGALG_FALCON1024, SecConst.TOKEN_SOFT_P12, false, true, false, eeProfileId);
+                    AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024, SecConst.TOKEN_SOFT_P12, false, true, false, eeProfileId);
             KeyStore ks = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             ks.load(new ByteArrayInputStream(keyStore), eeinfo.getPassword().toCharArray());
             Certificate cert = null;
@@ -228,6 +229,7 @@ public class GenerateTokenTest extends CaTestCase {
             assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(publicKey));
             assertEquals("prime256v1", AlgorithmTools.getKeySpecification(publicKey));
             assertEquals(AlgorithmConstants.SIGALG_FALCON1024, AlgorithmTools.getKeyAlgorithm(altPublicKey));
+            assertEquals(AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmTools.getKeySpecification(altPublicKey));
             
         } finally {
             if (endEntityManagementSession.existsUser(GENERATETOKENTEST_USERNAME)) {
