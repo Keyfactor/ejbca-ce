@@ -2008,8 +2008,9 @@
                     <h:inputSecret id="textfieldsharedcmprasecret" name="textfieldsharedcmprasecret"
                                    size="20" maxlength="64"
                                    value="#{editCAsMBean.caInfoDto.sharedCmpRaSecret}"
-                                   disabled="#{not editCAsMBean.hasEditRight}"/>
-                    <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                                   disabled="#{not editCAsMBean.hasEditRight}">
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                    </h:inputSecret>
                 </h:panelGroup>
 
                 <h:panelGroup>
