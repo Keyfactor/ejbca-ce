@@ -61,13 +61,6 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * Password used to protect CMS keystores in the database.
-     */
-    public static String getCaCmsKeyStorePass() {
-        return EjbcaConfigurationHolder.getExpandedString("ca.cmskeystorepass");
-    }
-
-    /**
      * How long an request should stay valid. The value is stored in seconds in the configuration, but returned as milliseconds.
      */
     public static long getApprovalDefaultRequestValidity() {

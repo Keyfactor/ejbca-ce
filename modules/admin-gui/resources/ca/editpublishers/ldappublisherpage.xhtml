@@ -80,15 +80,19 @@
 			<h:outputText value="#{web.text.LOGINPWD}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputSecret id="ldaploginpassword" autocomplete="off" size="20" maxlength="255" redisplay="true" value="#{editPublisher.ldapPublisherMBData.loginPWD}" disabled="#{editPublisher.readOnly}"
-							required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.LOGINPWD}"/>
+			<h:inputSecret id="ldaploginpassword" size="20" maxlength="255" redisplay="true" value="#{editPublisher.ldapPublisherMBData.loginPWD}" disabled="#{editPublisher.readOnly}"
+							required="true" requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.LOGINPWD}">
+				<f:passThroughAttribute name="autocomplete" value="new-password"/>
+			</h:inputSecret>
 		</h:panelGroup>
 
 		<h:panelGroup>
 			<h:outputText value="#{web.text.CONFIRMPASSWORD}"/>
 		</h:panelGroup>
 		<h:panelGroup>
-			<h:inputSecret id="ldapconfirmloginpassword" autocomplete="off" size="20" maxlength="255" redisplay="true" value="#{editPublisher.ldapPublisherMBData.confirmPWD}" disabled="#{editPublisher.readOnly}"/>
+			<h:inputSecret id="ldapconfirmloginpassword" size="20" maxlength="255" redisplay="true" value="#{editPublisher.ldapPublisherMBData.confirmPWD}" disabled="#{editPublisher.readOnly}">
+				<f:passThroughAttribute name="autocomplete" value="new-password"/>
+			</h:inputSecret>
 		</h:panelGroup>
 		
 		<h:panelGroup>

@@ -14,7 +14,6 @@ package org.ejbca.config;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -79,10 +78,10 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
     // Template to Settings
     public static final String MS_TEMPLATE_SETTINGS = "msTemplateSettings";
 
-    private static final int DEFAULT_POLICY_UPDATE_INTERVAL = 8; // In hours
-    private static final int DEFAULT_AD_CONNECTION_PORT = 389;    
-    private static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds    
-    private static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
+    public static final int DEFAULT_POLICY_UPDATE_INTERVAL = 8; // In hours
+    public static final int DEFAULT_AD_CONNECTION_PORT = 389;    
+    public static final int DEFAULT_LDAP_READ_TIMEOUT = 5000; // In milliseconds    
+    public static final int DEFAULT_LDAP_CONNECT_TIMEOUT = 5000; // In milliseconds
     
     private static final int MINIMUM_POLICY_UPDATE_INTERVAL = 1; // In hours
     private static final int MAXIMUM_POLICY_UPDATE_INTERVAL = 2147483647; // In hours
@@ -112,6 +111,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         }
     }
 
+    // Not effective in AdminWeb - create MSAE configuration, since alias is null.
     public void initWithDefaults(String alias) {
         if(StringUtils.isNotEmpty(alias)) {
             alias = alias + ".";
@@ -120,12 +120,15 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             data.put(alias + MSAE_KEYTAB_FILENAME, "");
             data.put(alias + MSAE_KEYTAB_BYTES, null);
             data.put(alias + POLICY_NAME, "");
+            data.put(alias + POLICY_UPDATE_INTERVAL, String.valueOf(DEFAULT_POLICY_UPDATE_INTERVAL));
             data.put(alias + SPN, "");
             data.put(alias + MSAE_KRB5_CONF_BYTES, null);
             data.put(alias + MSAE_KRB5_CONF_FILENAME, "");
             data.put(alias + IS_USE_SSL, "false");
             data.put(alias + IS_FOLLOW_LDAP_REFERRAL, "false");
             data.put(alias + AD_CONNECTION_PORT, String.valueOf(DEFAULT_AD_CONNECTION_PORT));
+            data.put(alias + LDAP_READ_TIMEOUT, String.valueOf(DEFAULT_LDAP_READ_TIMEOUT));
+            data.put(alias + LDAP_CONNECT_TIMEOUT, String.valueOf(DEFAULT_LDAP_CONNECT_TIMEOUT));
             data.put(alias + AD_LOGIN_DN, "");
             data.put(alias + AD_LOGIN_PASSWORD, "");
             data.put(alias + AUTH_KEY_BINDING, null);

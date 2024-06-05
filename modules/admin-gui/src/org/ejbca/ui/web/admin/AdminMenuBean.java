@@ -112,20 +112,8 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAuthorizedToViewVAHeader() {
-        return isAuthorizedViewInternalKeyBindings()
-                && isAuthorizedToViewVA();
-    }
-
-    private boolean isAuthorizedToViewVA() {
         return getEjbcaErrorWebBean().isRunningBuildWithVA()
-                || getEjbcaErrorWebBean().isRunningBuildWithCA()
-                || isRunningBuildInFullMode();
-    }
-
-    private boolean isRunningBuildInFullMode() {
-        return getEjbcaErrorWebBean().isRunningBuildWithVA()
-                && getEjbcaErrorWebBean().isRunningBuildWithCA()
-                && getEjbcaErrorWebBean().isRunningBuildWithRA();
+                && isAuthorizedViewInternalKeyBindings();
     }
 
     /*===SUPERVISION FUNCTIONS===*/

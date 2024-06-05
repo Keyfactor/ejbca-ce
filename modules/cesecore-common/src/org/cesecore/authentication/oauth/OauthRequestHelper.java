@@ -25,7 +25,7 @@ import org.cesecore.keybind.KeyBindingNotFoundException;
 import org.cesecore.keys.token.KeyAndCertFinder;
 
 /**
- * Helper, sends requests to oauth token providers to exchange code to token or to refresh token
+ * Helper, sends requests to oauth providers to exchange code to token, to refresh token or to fetch userinfo
  */
 public class OauthRequestHelper {
     
@@ -61,6 +61,19 @@ public class OauthRequestHelper {
      */
     public OAuthGrantResponseInfo sendRefreshTokenRequest(String refreshToken, OAuthKeyInfo oAuthKeyInfo, String redirectUri) throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {
         return sendRequest(refreshToken, true, oAuthKeyInfo, redirectUri);
+    }
+    
+    /**
+     * Requests userinfo from userinfo endpoint
+     * @param oAuthKeyInfo provider configurations
+     * @param bearerToken bearer token received from oauth provider
+     * @return OAuthUserInfoResponse userinfo response
+     * @throws IOException
+     */    
+    public OAuthUserInfoResponse sendUserInfoRequest(OAuthKeyInfo oAuthKeyInfo, final String bearerToken) throws IOException {
+        final OAuthUserInfoRequest request = new OAuthUserInfoRequest();
+        request.setUri(oAuthKeyInfo.getUserInfoUrl());
+        return request.execute(bearerToken);
     }
 
     private OAuthGrantResponseInfo sendRequest(String codeOrToken, boolean isRefresh, OAuthKeyInfo oAuthKeyInfo, String redirectUri) throws IOException, CryptoTokenOfflineException, KeyBindingNotFoundException {

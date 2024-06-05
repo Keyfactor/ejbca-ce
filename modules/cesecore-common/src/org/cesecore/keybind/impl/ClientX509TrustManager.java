@@ -85,6 +85,7 @@ public class ClientX509TrustManager implements X509TrustManager {
             // Nothing configured in the internal key binding. Trust ANY CA known to this EJBCA instance
             return Collections.emptyList();
         }
+
         final List<Collection<X509Certificate>> trustedCertificateChains = trustEntries.stream()
                 .map(trustEntry -> trustEntry.getChain(leafCertificate))
                 .filter(Optional::isPresent)

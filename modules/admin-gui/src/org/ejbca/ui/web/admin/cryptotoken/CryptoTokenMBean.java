@@ -12,22 +12,31 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cryptotoken;
 
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.BaseCryptoToken;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
-import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
-import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
-import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
-import org.apache.commons.lang.StringUtils;
+import java.io.File;
+import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import javax.ejb.EJBException;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
+import javax.faces.model.ListDataModel;
+import javax.faces.model.SelectItem;
+import javax.faces.view.ViewScoped;
+import javax.inject.Named;
+
 import org.apache.commons.lang.math.NumberUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -63,27 +72,20 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ejbca.util.SlotList;
 
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import java.io.File;
-import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.stream.Collectors;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.BaseCryptoToken;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
+import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabel;
+import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
 /**
  * JavaServer Faces Managed Bean for managing CryptoTokens.
@@ -1061,6 +1063,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         try {
             final String name = getCurrentCryptoToken().getName();
+            if (StringUtils.isBlank(name)) {
+                addNonTranslatedErrorMessage("Error: Crypto Token name may not be blank.");
+                return;
+            }
+            
+            
             final Properties properties = new Properties();
             String className = null;
             if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) ||
@@ -1158,7 +1166,6 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 }
             } else if (SoftCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = SoftCryptoToken.class.getName();
-                properties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
             } else if (AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
                 className = AzureCryptoToken.class.getName();
                 final String vaultType = getCurrentCryptoToken().getKeyVaultType().trim();
@@ -1816,13 +1823,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void testKeyPair() {
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
-        final String keyUsage = keyPairGuiInfo.getKeyUsage();
-        final String messageString;
-        if (keyUsage == null) {
-            messageString = "Keypair with alias " + alias + " tested successfully.";
-        } else {
-            messageString = "Keypair with alias " + alias + getKeyUsageInfoMessage(keyUsage);
-        }
+        final String messageString = getKeyUsageInfoMessage(keyPairGuiInfo.getKeyUsage(), alias);
         try {
             cryptoTokenManagementSession.testKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
             super.addNonTranslatedInfoMessage(messageString);
@@ -1834,14 +1835,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     /**
      * Provides additional GUI message info for testKeyPair() 
      * @param keyUsage the key usage fetched from KeyPairGuiInfo
+     * @param keyAlias the name/alias of the key (pair)
      * @return user friendly String with key usage for a key pair.
      */
-    private String getKeyUsageInfoMessage(String keyUsage) {
-        String keyUsageInfoMessageString = "";
-        if (keyUsage.equals("SIGN") || (keyUsage.equals("SIGN_ENCRYPT"))){
-            keyUsageInfoMessageString = " tested successfully using signing and verification operations.";
-        } else if (keyUsage.equals("ENCRYPT")){
-            keyUsageInfoMessageString = " tested successfully using encryption and decryption operations.";
+    private String getKeyUsageInfoMessage(final String keyUsage, final String keyAlias) {
+        String keyUsageInfoMessageString = "Keypair";
+        if (keyAlias != null) {
+            keyUsageInfoMessageString += " with alias " + keyAlias;
+        }
+        if (keyUsage != null && keyUsage.equals("ENCRYPT")) {
+            keyUsageInfoMessageString += " tested successfully using encryption and decryption operations.";
+        } else {
+            keyUsageInfoMessageString += " tested successfully using signing and verification operations.";
         }
         return keyUsageInfoMessageString;
     }

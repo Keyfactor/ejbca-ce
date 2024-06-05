@@ -16,6 +16,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.util.Properties;
 
+import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -151,7 +152,6 @@ public class CryptoTokenTestUtils {
                     SystemTestsConfiguration.getPkcs11SlotType(Pkcs11SlotLabelType.SLOT_NUMBER.getKey()).getKey());
         }
 
-        cryptoTokenProperties.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         if (pin == null) {
             cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo1234");
         } else {
@@ -208,6 +208,7 @@ public class CryptoTokenTestUtils {
         }
         Properties props = new Properties();
         props.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.TRUE.toString());
+        BaseCryptoToken.setAutoActivatePin(props, new String(SOFT_TOKEN_PIN), true);
         return cryptoTokenManagementSession.createCryptoToken(authenticationToken, cryptoTokenName, SoftCryptoToken.class.getName(), props, null,
                 SOFT_TOKEN_PIN);
     }

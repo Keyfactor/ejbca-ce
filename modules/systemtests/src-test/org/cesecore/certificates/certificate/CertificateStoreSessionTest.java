@@ -647,7 +647,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         String issuerDn = CertTools.getIssuerDN(cert);
         BigInteger serialNumber = CertTools.getSerialNumber(cert);
         assertEquals("Username was not delivered properly", USERNAME,
-                certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber));
+                certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber.toString()));
     }
 
 
@@ -768,6 +768,40 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         } finally {
             internalCertStoreSession.removeCertificate(serialNumber);
         }
+    }
+
+    @Test
+    public void testLimitedCertificateDataUpdateRemoveInvalidityDate() throws Exception {
+        final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        final X509Certificate caCertificate = CertTools.genSelfCert("CN=testLimitedCertificateDataCA2", 3600, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        final String issuerDn = CertTools.getSubjectDN(caCertificate);
+        final String caFingerprint = CertTools.getFingerprintAsString(caCertificate);
+        final BigInteger serialNumber = new BigInteger("1234567890");
+        final Date invalidityDate = new Date(2023, 12, 15);
+        // Remove any previous entry created due to a failed test
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
+                RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, caFingerprint);
+        final CertificateStatus certificateStatus1 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Fake limited CertificateData entry already existed in the database.",
+                certificateStatus1.equals(CertificateStatus.NOT_AVAILABLE));
+        // certificateStoreSession.updateLimitedCertificateDataStatus with invalidity date
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn,
+                "CN=limited", "", serialNumber, CertificateConstants.CERT_REVOKED, new Date(),
+                RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, caFingerprint, invalidityDate);
+        final CertificateStatus certificateStatus2 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Limited CertificateData entry was not created properly.",
+                certificateStatus2.equals(CertificateStatus.REVOKED));
+        assertEquals("Limited CertificateData entry was not created properly.",
+                certificateStatus2.revocationReason, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
+
+        internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn,
+                "CN=limited", "", serialNumber, CertificateConstants.CERT_REVOKED, new Date(),
+                RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, caFingerprint, null);
+        final CertificateStatus certificateStatus3 = certificateStoreSession.getStatus(issuerDn, serialNumber);
+        assertTrue("Limited CertificateData entry was not created properly.",
+                certificateStatus3.equals(CertificateStatus.REVOKED));
+        assertEquals("Limited CertificateData entry was not created properly.",
+                certificateStatus3.revocationReason, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
     }
 
     @Test
