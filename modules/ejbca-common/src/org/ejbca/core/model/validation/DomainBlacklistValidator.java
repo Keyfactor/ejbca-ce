@@ -442,7 +442,8 @@ public class DomainBlacklistValidator extends ValidatorBase implements DnsNameVa
     }
 
     @Override
-    public Entry<Boolean, List<String>> validate(final ExecutorService executorService, ValidationRequestParameters validationRequestParameters, final String... domainNames) {
+    public Entry<Boolean, List<String>> validate(final ExecutorService executorService, ValidationRequestParameters validationRequestParameters,
+            final String... domainNames) {
         loadBlacklistData();
         if (cache.initializationFailure) {
             final String message = "Validation cannot be performed due to a configuration problem with '" + getProfileName() + "'."; // getProfileName returns the validator name

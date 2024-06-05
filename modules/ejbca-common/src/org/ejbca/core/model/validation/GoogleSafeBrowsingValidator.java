@@ -72,7 +72,8 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
     }
 
     @Override
-    public Map.Entry<Boolean, List<String>> validate(final ExecutorService executorService, ValidationRequestParameters validationRequestParameters, final String... domainNames) {
+    public Map.Entry<Boolean, List<String>> validate(final ExecutorService executorService, ValidationRequestParameters validationRequestParameters,
+            final String... domainNames) {
         try (final CloseableHttpClient httpClient = supplyHttpClient.get()) {
             final HttpPost request = new HttpPost(String.format("https://safebrowsing.googleapis.com/v4/threatMatches:find?key=%s", getApiKey()));
             final StringEntity entity = new StringEntity(createJsonPayload(domainNames), StandardCharsets.UTF_8);
