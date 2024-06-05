@@ -445,7 +445,8 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     ValidationRequestParameters validationRequestParameters = new ValidationRequestParameters();
                     validationRequestParameters.setCertificateProfile(certificateProfile);
 
-                    final Entry<Boolean, List<String>> result = validator.validate(executorService, validationRequestParameters, dnsNames.toArray(new String[dnsNames.size()]));
+                    final Entry<Boolean, List<String>> result = validator.validate(executorService, validationRequestParameters,
+                            dnsNames.toArray(new String[dnsNames.size()]));
                     final boolean successful = result.getKey();
                     for (final String message : result.getValue()) {
                         allResults.add(new ValidationResult(message, successful));

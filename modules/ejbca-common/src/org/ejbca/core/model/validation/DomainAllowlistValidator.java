@@ -264,7 +264,8 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
     }
 
     @Override
-    public Entry<Boolean, List<String>> validate(ExecutorService executorService, ValidationRequestParameters validationRequestParameters, String... domainNames) {
+    public Entry<Boolean, List<String>> validate(ExecutorService executorService, ValidationRequestParameters validationRequestParameters,
+            String... domainNames) {
         final Set<String> whiteList = getWhitelist();
         if(whiteList==null || whiteList.isEmpty()) {
             return new AbstractMap.SimpleEntry<>(false, Arrays.asList("Allowed domain list is not initialized."));
