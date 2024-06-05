@@ -24,6 +24,7 @@ import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.IssuancePhase;
+import org.cesecore.keys.validation.ValidationRequestParameters;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.profiles.Profile;
@@ -71,7 +72,8 @@ public class GoogleSafeBrowsingValidator extends ValidatorBase implements DnsNam
     }
 
     @Override
-    public Map.Entry<Boolean, List<String>> validate(final ExecutorService executorService, final String... domainNames) {
+    public Map.Entry<Boolean, List<String>> validate(final ExecutorService executorService, ValidationRequestParameters validationRequestParameters,
+            final String... domainNames) {
         try (final CloseableHttpClient httpClient = supplyHttpClient.get()) {
             final HttpPost request = new HttpPost(String.format("https://safebrowsing.googleapis.com/v4/threatMatches:find?key=%s", getApiKey()));
             final StringEntity entity = new StringEntity(createJsonPayload(domainNames), StandardCharsets.UTF_8);
