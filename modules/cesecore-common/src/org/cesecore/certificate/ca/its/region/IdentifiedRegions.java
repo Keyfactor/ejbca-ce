@@ -21,6 +21,7 @@ import org.bouncycastle.oer.its.ieee1609dot2.basetypes.SequenceOfIdentifiedRegio
 
 public class IdentifiedRegions implements ItsGeographicElement {
     
+    private static final long serialVersionUID = 1L;
     // should only be populated by IdentifiedRegionCountry and IdentifiedRegionCountryRegions
     private List<ItsGeographicElement> identifiedRegions;
 

@@ -41,6 +41,7 @@ import javax.ws.rs.core.Response;
 import org.apache.commons.codec.binary.Base64;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
@@ -49,6 +50,7 @@ import org.easymock.Mock;
 import org.easymock.TestSubject;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.era.IdNameHashMap;
+import org.ejbca.core.model.era.RaCaListRequest;
 import org.ejbca.core.model.era.RaCrlSearchRequest;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
@@ -94,6 +96,7 @@ public class CaRestResourceUnitTest {
 
     @TestSubject
     private static CaRestResource testClass = new CaRestResourceWithoutSecurity();
+    
     @Mock
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
 
@@ -129,7 +132,9 @@ public class CaRestResourceUnitTest {
     @Test
     public void shouldReturnEmptyListOfCas() throws Exception {
         // given
-        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(new IdNameHashMap<CAInfo>());
+        final RaCaListRequest raCaListRequest = new RaCaListRequest();
+        raCaListRequest.setIncludeExternal(false);
+        expect(raMasterApiProxy.getRequestedAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(new IdNameHashMap<CAInfo>());
         replay(raMasterApiProxy);
         // when
         final Invocation.Builder request = server
@@ -138,7 +143,7 @@ public class CaRestResourceUnitTest {
         final Response actualResponse = request.get();
         final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final JSONArray actualCertificateAuthorities = (JSONArray)actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
+        final JSONArray actualCertificateAuthorities = (JSONArray) actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -148,8 +153,44 @@ public class CaRestResourceUnitTest {
     }
 
     @Test
+    public void shouldReturnExternalCas() throws Exception {
+        // given
+        final RaCaListRequest raCaListRequest = new RaCaListRequest();
+        raCaListRequest.setIncludeExternal(true);
+        final String expectedName = CaInfoBuilder.TEST_CA_NAME;
+        final int expectedId = 11;
+        final Date expectedExpirationDate = new Date();
+        final Boolean expectedExternal = Boolean.TRUE.booleanValue();
+        final CAInfo cAInfo = CaInfoBuilder.builder()
+                .id(expectedId)
+                .expirationDate(expectedExpirationDate)
+                .status(CAConstants.CA_EXTERNAL)
+                .build();
+        final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
+        caInfosMap.put(expectedId, expectedName, cAInfo);
+        expect(raMasterApiProxy.getRequestedAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(caInfosMap);
+        replay(raMasterApiProxy);
+        // when
+        final Invocation.Builder request = server
+                .newRequest("/v1/ca?includeExternal=true")
+                .request();
+        final Response actualResponse = request.get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final JSONArray actualCertificateAuthorities = (JSONArray) actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
+        // then
+        assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        assertJsonContentType(actualResponse);
+        final JSONObject actualCaInfo0JsonObject = (JSONObject) actualCertificateAuthorities.get(0);
+        final Object actualExternalString = actualCaInfo0JsonObject.get("external");
+        assertEquals(expectedExternal, actualExternalString);
+    }
+
+    @Test
     public void shouldReturnListOfCasWithOneProperCa() throws Exception {
         // given
+        final RaCaListRequest raCaListRequest = new RaCaListRequest();
+        raCaListRequest.setIncludeExternal(false);
         final String expectedSubjectDn = CaInfoBuilder.TEST_CA_SUBJECT_DN;
         final String expectedName = CaInfoBuilder.TEST_CA_NAME;
         final int expectedId = 11;
@@ -162,7 +203,7 @@ public class CaRestResourceUnitTest {
                 .build();
         final IdNameHashMap<CAInfo> caInfosMap = new IdNameHashMap<>();
         caInfosMap.put(expectedId, expectedName, cAInfo);
-        expect(raMasterApiProxy.getAuthorizedCAInfos(authenticationToken)).andReturn(caInfosMap);
+        expect(raMasterApiProxy.getRequestedAuthorizedCAInfos(authenticationToken, raCaListRequest)).andReturn(caInfosMap);
         replay(raMasterApiProxy);
         // when
         final Invocation.Builder request = server

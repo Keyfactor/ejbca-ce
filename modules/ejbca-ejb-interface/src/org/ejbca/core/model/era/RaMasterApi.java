@@ -477,6 +477,14 @@ public interface RaMasterApi {
     IdNameHashMap<CAInfo> getAuthorizedCAInfos(AuthenticationToken authenticationToken);
 
     /**
+     * @param authenticationToken administrator
+     * @param listRequest Object specifying the search criteria.
+     * @return map of authorized and enabled CAInfos for the provided authentication token
+     * @since RA Master API version 18 (EJBCA 8.3.0)
+     */
+    IdNameHashMap<CAInfo> getRequestedAuthorizedCAInfos(AuthenticationToken authenticationToken, RaCaListRequest listRequest);
+
+    /**
      * @return map of authorized certificate profiles for the provided authentication token
      * @since RA Master API version 11 (EJBCA 7.5.0)
      */
@@ -1653,6 +1661,15 @@ public interface RaMasterApi {
 
 
     /**
+     * Gets the global configuration for the concrete type <T extends ConfigurationBase> trying local db first.
+     *
+     * @param type type the concrete global configuration object class.
+     * @return the global configuration or null.
+     */
+    <T extends ConfigurationBase> T getGlobalConfigurationLocalFirst(Class<T> type);
+
+
+    /**
      * Dispatch SCEP message over RaMasterApi, returning enough information to update status in Intune
      *
      * @param authenticationToken the origin of the request
@@ -1721,4 +1738,17 @@ public interface RaMasterApi {
      */
     byte[] selfRenewCertificate(RaSelfRenewCertificateData renewCertificateData) throws AuthorizationDeniedException, EjbcaException, NoSuchEndEntityException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException, CADoesntExistsException;
 
+    /**
+     * Return the username of a certificate data object matching the given issuer DN and serial
+     * number (there may be only one).
+     *
+     * @param issuerDn The DN of the issuing CA
+     * @param serialNumber the serial number of the sought certificate.
+     * @return the matching username
+     * @since RA Master API version 18 (EJBCA 8.3.0)
+     */
+    String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber);
+
+    byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 }

@@ -82,6 +82,7 @@ import java.security.cert.CertificateException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertNotNull;
 
@@ -92,7 +93,7 @@ import static org.junit.Assert.assertNotNull;
 public class CMPKeyUpdateStressTestCommandTest {
 
     @Rule
-    public Timeout testTimeout = new Timeout(90_000); // per test case
+    public Timeout testTimeout = new Timeout(90_000, TimeUnit.MILLISECONDS); // per test case
 
     private static final String END_ENTITY_PROFILE_NAME = "CMPKeyUpdateStressTestCommandTestEEP";
     private static final String CA_NAME = "CMPKeyUpdateStressTestCommandTestCA";

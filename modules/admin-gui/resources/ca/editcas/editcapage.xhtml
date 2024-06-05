@@ -212,7 +212,41 @@
                         <h:outputLabel styleClass="smallHelp" value="#{web.text.SIGNINGALGORITHM_FILTERED}"/>
                     </h:panelGroup>
 
-                    <!-- Edit CA -->
+					<!-- Alternative Signing Algorithm -->
+					<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
+						<h:outputLabel for="getAlternativeSigningAlgorithm"
+							value="#{web.text.ALTERNATIVESIGNINGALGORITHM}"
+							style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable}">
+						<h:outputText id="getAlternativeSigningAlgorithm"
+							value="#{editCAsMBean.currentCaAlternativeSigningAlgorithm}"
+							rendered="#{editCAsMBean.editCA and not editCAsMBean.caUninitialized and not editCAsMBean.caExternal}" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+						<h:outputLabel value="#{web.text.ALTERNATIVESIGNINGALGORITHM}"
+							style="font-weight: bold;" />
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{not editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable}">
+						<h:selectOneMenu id="alternativeSignatureAlgorithmParam"
+							value="#{editCAsMBean.alternativeSignatureAlgorithmParam}">
+							<f:selectItems
+								value="#{editCAsMBean.availableSigningAlgListNoneOption}" />
+							<f:ajax event="change" render="editcapage" />
+						</h:selectOneMenu>
+						<br />
+						<h:outputLabel styleClass="smallHelp"
+							value="#{web.text.SIGNINGALGORITHM_ALTERNATIVE_FILTERED}" />
+					</h:panelGroup>
+
+
+
+					<!-- Edit CA -->
                     <h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
                         <h:outputLabel for="defaultKey"
@@ -226,6 +260,7 @@
                                       rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"/>
                     </h:panelGroup>
 
+					<!--  Certificate Signing Key -->
                     <h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
                         <h:outputLabel for="certSignKey" value="certSignKey"/>
@@ -237,7 +272,21 @@
                                       rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"/>
                     </h:panelGroup>
 
-                    <h:panelGroup
+					<!--  Alternative Certificate Signing Key -->
+					<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
+						<h:outputLabel for="alternativeCertSignKey"
+							value="alternativeCertSignKey" />
+					</h:panelGroup>
+					<h:panelGroup
+						rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
+						<h:outputText id="alternativeCertSignKey"
+							value="#{editCAsMBean.currentCaCryptoTokenAlternativeCertSignKey}"
+							rendered="#{editCAsMBean.currentCaCryptoTokenPresent}" />
+					</h:panelGroup>
+
+					<!-- CRL Sign Key -->
+					<h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable
 									and editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.caTypeCits}">
                         <h:outputLabel for="crlSignKey" value="crlSignKey"/>
@@ -250,6 +299,7 @@
                                       rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"/>
                     </h:panelGroup>
 
+					<!--  Encryption Key -->
                     <h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable
 									and editCAsMBean.currentCaCryptoTokenPresent and not editCAsMBean.caTypeCits}">
@@ -263,6 +313,7 @@
                                       rendered="#{editCAsMBean.currentCaCryptoTokenPresent}"/>
                     </h:panelGroup>
 
+					<!--  Test Key -->
                     <h:panelGroup
                             rendered="#{editCAsMBean.editCANotUninitializedNotExternal and not editCAsMBean.renderCvcAvailable and editCAsMBean.currentCaCryptoTokenPresent}">
                         <h:outputLabel for="testKey" value="testKey"/>
@@ -302,7 +353,24 @@
                         </h:selectOneMenu>
                     </h:panelGroup>
 
-                    <h:panelGroup
+					<!--  Alternative Certificate Signing Key -->
+					<h:panelGroup
+						rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
+						<h:outputText value="alternativeCertSignKey" />
+					</h:panelGroup>
+
+					<h:panelGroup
+						rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable}">
+						<h:selectOneMenu
+							value="#{editCAsMBean.selectedCryptoTokenAlternativeCertSignKey}"
+							disabled="#{not editCAsMBean.alternativeSignatureAlgorithmSelected}">
+							<f:selectItems
+								value="#{editCAsMBean.getKeyAliasesList('alternativeCertSignKey')}" />
+						</h:selectOneMenu>
+					</h:panelGroup>
+
+
+					<h:panelGroup
                             rendered="#{editCAsMBean.renderCreateCaTokenKeys and not editCAsMBean.renderCvcAvailable
 									and not editCAsMBean.caTypeCits}">
                         <h:outputText value="crlSignKey"/>
@@ -1890,20 +1958,19 @@
                          cellspacing="3" cellpadding="3" border="0" width="100%"
                          rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2"
                          rendered="#{not editCAsMBean.caExternal and not editCAsMBean.renderCvcAvailable
-								and not editCAsMBean.caInfoDto.caTypeSsh and not editCAsMBean.caTypeCits
-								and not  editCAsMBean.caTypeProxy}">
+								and not editCAsMBean.caTypeCits and not  editCAsMBean.caTypeProxy}">
                 <h:outputLabel for="otherdata" value="#{web.text.OTHERDATA}"
                                style="font-weight: bold;"/>
                 <h:panelGroup id="otherdata"/>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:outputLabel
                             value="#{web.text.VALIDATORS}"/>
                     <h:outputText
                             value="#{web.ejbcaWebBean.getHelpReference('/Validators_Overview.html')}"
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:selectManyListbox id="selectValidator" styleClass="select-list" size="5"
                                          name="selectavailablevalidators"
                                          disabled="#{not editCAsMBean.hasEditRight}"
@@ -1912,7 +1979,7 @@
                     </h:selectManyListbox>
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:outputLabel for="checkboxfinishuser"
                                    value="#{web.text.FINISHUSER}"/>
                     <h:outputText
@@ -1920,7 +1987,7 @@
                             escape="false" styleClass="helpReference"/>
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:selectBooleanCheckbox name="checkboxfinishuser"
                                              id="checkboxfinishuser" value="#{editCAsMBean.caInfoDto.finishUser}"
                                              disabled="#{not editCAsMBean.hasEditRight}"/>
@@ -1938,10 +2005,12 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{editCAsMBean.caInfoDto.caTypeX509}">
-                    <h:inputSecret id="textfieldsharedcmprasecret" autocomplete="off" name="textfieldsharedcmprasecret"
+                    <h:inputSecret id="textfieldsharedcmprasecret" name="textfieldsharedcmprasecret"
                                    size="20" maxlength="64"
                                    value="#{editCAsMBean.caInfoDto.sharedCmpRaSecret}"
-                                   disabled="#{not editCAsMBean.hasEditRight}"/>
+                                   disabled="#{not editCAsMBean.hasEditRight}">
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                    </h:inputSecret>
                 </h:panelGroup>
 
                 <h:panelGroup>
@@ -1962,7 +2031,7 @@
                                    value="#{web.text.ACTIVATE}"/>
                 </h:panelGroup>
 
-                <h:panelGroup>
+                <h:panelGroup rendered="#{not editCAsMBean.caInfoDto.caTypeSsh}">
                     <h:outputLabel for="requestProcessor"
                                    value="#{web.text.REQUEST_PROCESSOR}"/>
                     <h:outputText
@@ -2331,9 +2400,10 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputSecret id="textFieldPassword" name="password" size="25" maxlength="225" redisplay="true"
-                                   autocomplete="off" rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
+                                   rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}"
                                    value="#{editCAsMBean.upstreamPassword}" title="#{web.text.UPSTREAM_PASSWORD}">
                         <f:ajax/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
                     <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
                                   value="********"/>
@@ -2520,8 +2590,10 @@
 
                 <h:panelGroup rendered="#{editCAsMBean.caExportable}">
                     <h:outputText value="#{web.text.EXPORTCA_AUTHCODE}"/>
-                    <h:inputSecret autocomplete="off" id="#{editCAsMBean.textFieldExportCaPassword}" required="true"
-                                   label="Password is required for exporting CA!"/>
+                    <h:inputSecret id="#{editCAsMBean.textFieldExportCaPassword}" required="true"
+                                   label="Password is required for exporting CA!">
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
+                    </h:inputSecret>
                     <h:commandButton name="buttonexportca"
                                      value="#{web.text.EXPORTCA} ..."
                                      action="#{editCAsMBean.exportCA}">

@@ -108,10 +108,30 @@
                 <h:outputText value="#{cc.attrs.raCertificateDetails.publicKeyAlgorithm} "/>
                 <h:outputText value=" #{cc.attrs.raCertificateDetails.publicKeySpecification} "/>
             </h:panelGroup>
+            
+            <h:outputLabel for="alternativepublickeyspec" value="#{msg.component_certdetails_field_publickeyspec_alternative}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                            rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
+            <h:panelGroup id="alternativepublickeyspec"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                          rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}">
+                <h:outputText value="#{cc.attrs.raCertificateDetails.publicAlternativeKeyAlgorithm} "  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
+                <h:outputText value=" #{cc.attrs.raCertificateDetails.publicAlternativeKeySpecification} "  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
+            </h:panelGroup>
+            
+            
             <h:outputLabel for="signaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
             <h:outputText id="signaturealgorithm" value="#{cc.attrs.raCertificateDetails.signatureAlgorithm}"
                           styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+			
+			<h:outputLabel for="alternativeSignaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm_alternative}"
+                           styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
+                            rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
+            <h:outputText id="alternativeSignaturealgorithm" value="#{cc.attrs.raCertificateDetails.alternativeSignatureAlgorithm}"
+            			  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"
+                          styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+
 
             <h:outputLabel for="basicconstraints" value="#{msg.component_certdetails_field_basicconstraints}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
@@ -342,10 +362,10 @@
                     <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
                     <h:outputLabel for="passwordField" value="#{msg.enroll_password_new}"
                                    styleClass="#{cc.attrs.styleLabel}"/>
-                    <h:inputSecret id="passwordField" value="#{cc.attrs.raCertificateDetails.password}"
-                                   autocomplete="off">
+                    <h:inputSecret id="passwordField" value="#{cc.attrs.raCertificateDetails.password}">
                         <f:validator validatorId="extendedRequiredValidator"/>
                         <f:attribute name="_required" value="true"/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
                     <h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
                 </h:panelGroup>
@@ -353,10 +373,10 @@
                     <h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}"
                                    styleClass="#{cc.attrs.styleLabel}"/>
                     <h:inputSecret id="passwordConfirmField" binding="#{raSearchCertsBean.confirmPasswordComponent}"
-                                   value="#{cc.attrs.raCertificateDetails.confirmPassword}"
-                                   autocomplete="off">
+                                   value="#{cc.attrs.raCertificateDetails.confirmPassword}">
                         <f:validator validatorId="extendedRequiredValidator"/>
                         <f:attribute name="_required" value="true"/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
                     <h:message for="passwordConfirmField" id="passwordConfirmFieldMessage"
                                styleClass="showErrorMessage"/>

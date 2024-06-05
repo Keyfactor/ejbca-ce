@@ -89,6 +89,7 @@ import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyPair;
@@ -367,7 +368,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDateString, responseInvalidityDate);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        final long databaseInvalidityDate = certificateData.getInvalidityDate();
+        final long databaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         assertEquals(invalidityDatelong, databaseInvalidityDate);
     }
 
@@ -405,7 +406,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(invalidityDateString, responseInvalidityDate);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        final long databaseInvalidityDate = certificateData.getInvalidityDate();
+        final long databaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         assertEquals(invalidityDatelong, databaseInvalidityDate);
     }
 
@@ -501,7 +502,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&invalidity_date=" + invalidityDateString).request().put(null);
         // Get invalidity date value from data base
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDate = certificateData.getInvalidityDate();
+        long dataBaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         // Now change reason
         final Response actualResponse2 = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=KEY_COMPROMISE").request().put(null);
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -517,7 +518,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String responseInvalidityDateUpdate = (String) actualJsonObject2.get("invalidity_date");
         // Get invalidity date value from database
         CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDateAfterRevocationReasonChange = certificateData2.getInvalidityDate();
+        long dataBaseInvalidityDateAfterRevocationReasonChange = certificateData2.getInvalidityDateNeverNull();
 
         // then
         // verify rest response
@@ -547,7 +548,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Response actualResponse = newRequest("/v1/certificate/" + testIssuerDn + "/" + serialNr + "/revoke/?reason=SUPERSEDED&invalidity_date=" + invalidityDateString).request().put(null);
         // Verify actual database value
         CertificateData certificateData = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBaseInvalidityDate = certificateData.getInvalidityDate();
+        long dataBaseInvalidityDate = certificateData.getInvalidityDateNeverNull();
         disableRevocationReasonChange();
 
         // Try to update revocation reason, it is not allowed and should fail
@@ -563,7 +564,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // Verify expected failure         
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, actualJsonObject2.toJSONString());
         CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
-        long dataBasenvalidityDateAfterFailedRevocationReasonChange = certificateData2.getInvalidityDate();
+        long dataBasenvalidityDateAfterFailedRevocationReasonChange = certificateData2.getInvalidityDateNeverNull();
         final String responseSerialNr = (String) actualJsonObject.get("serial_number");
         final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
         String responseReason = (String) actualJsonObject2.get("revocation_reason");
@@ -1059,7 +1060,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName("ENDUSER").
                 endEntityProfileName("EMPTY").
                 username(testUsername).
-                password("foo123").email(email).
+                password("foo123").
+                email(email).
+                responseFormat("DER").
                 certificateRequest(certificateRequest).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
@@ -1093,6 +1096,45 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+    public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
+        String responseFormat = "PKCS7";
+
+        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
+                certificateAuthorityName(testCaName).
+                certificateProfileName("ENDUSER").
+                endEntityProfileName("EMPTY").
+                username(testUsername).
+                password("foo123").includeChain(false).responseFormat(responseFormat).
+                certificateRequest(CSR_WITHOUT_HEADERS).build();
+
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+        // Send request
+        final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        // Verify response
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String responseFormatREST = (String) actualJsonObject.get("response_format");
+        assertEquals("The response format is not PKCS7", responseFormat, responseFormatREST);
+        final String responseCertificate = (String) actualJsonObject.get("certificate");
+        assertNotNull(responseCertificate);
+        //Verify certificate is a pkcs7
+        String pkcs7CertificatePem = new String(Base64.decode(responseCertificate.getBytes()), StandardCharsets.UTF_8);
+        assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
+        assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
+        //Varify certificate
+        pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("^-----BEGIN PKCS7-----","");
+        pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("-----END PKCS7-----$", "");
+        byte[] certBytes = Base64.decode(pkcs7CertificatePem.getBytes());
+        Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
+        String responseSerialNo = (String) actualJsonObject.get("serial_number");
+        assertEquals("", CertTools.getSerialNumber(cert), CertTools.getSerialNumberFromString(responseSerialNo));
+    }
+
+    @Test
     public void certificateRequestExpectCsrSubjectIgnoredWithoutHeaders() throws Exception {
         certificateRequestExpectCsrSubjectIgnored(false);
     }
@@ -1102,7 +1144,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         certificateRequestExpectCsrSubjectIgnored(true);
     }
 
-    public void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
+    private void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
         // Add End Entity
         EndEntityInformation userdata = new EndEntityInformation(testUsername, "O=PrimeKey,CN=" + testUsername, x509TestCa.getCAId(), null,
                 null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -1405,7 +1447,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName(profileName).
                 endEntityProfileName(profileName).
                 username(username).
-                password(password).
+                password(password). responseFormat("DER").
                 certificateRequest(unidFnrCsr).build();
 
         // Construct POST  request

@@ -51,6 +51,12 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
     private boolean useIssuerNotBeforeAsArchiveCutoff;
     private String retentionPeriod;
     
+    private final String subjectDn;
+    private final String issuerDn;
+    private final String certificateProfileName;
+    private final String endEntityProfileName;
+    private final String keySpec;
+    
     public InternalKeyBindingInfo(final InternalKeyBinding internalKeyBinding) {
         this.implementationAlias = internalKeyBinding.getImplementationAlias();
         this.id = internalKeyBinding.getId();
@@ -66,6 +72,11 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
         this.signOcspResponseOnBehalf = internalKeyBinding.getSignOcspResponseOnBehalf();
         this.ocspExtensions = internalKeyBinding.getOcspExtensions();
         this.signatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
+        this.subjectDn = internalKeyBinding.getSubjectDn();
+        this.issuerDn = internalKeyBinding.getIssuerDn();
+        this.certificateProfileName = internalKeyBinding.getCertificateProfileName();
+        this.endEntityProfileName = internalKeyBinding.getEndEntityProfileName();
+        this.keySpec = internalKeyBinding.getKeySpec();
         if (internalKeyBinding instanceof OcspKeyBinding) {
             final OcspKeyBinding ocspKeyBinding = (OcspKeyBinding) internalKeyBinding;
             this.useIssuerNotBeforeAsArchiveCutoff = ocspKeyBinding.getUseIssuerNotBeforeAsArchiveCutoff();
@@ -246,5 +257,56 @@ public class InternalKeyBindingInfo implements InternalKeyBinding {
 
     public boolean useIssuerNotBeforeAsArchiveCutoff() {
         return useIssuerNotBeforeAsArchiveCutoff;
+    }
+
+    @Override
+    public String getIssuerDn() {
+        return issuerDn;
+    }
+
+    @Override
+    public void setIssuerDn(String issuerDn) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getEndEntityProfileName() {
+        return endEntityProfileName;
+    }
+
+    @Override
+    public void setEndEntityProfileName(String endEntityProfileName) {
+        throw new UnsupportedOperationException();
+        
+    }
+
+    @Override
+    public String getCertificateProfileName() {
+        return certificateProfileName;
+    }
+
+    @Override
+    public void setCertificateProfileName(String certificateProfileName) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getSubjectDn() {
+        return subjectDn;
+    }
+
+    @Override
+    public void setSubjectDn(String subjectDn) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getKeySpec() {
+        return keySpec;
+    }
+
+    @Override
+    public void setKeySpec(String keySpec) {
+        throw new UnsupportedOperationException();        
     }
 }

@@ -25,7 +25,7 @@ public class AutoEnrollmentDTO {
     private String msaeForestRoot;
     private String msaeDomain;
     private String policyName;
-    private int policyUpdateInterval = 8;
+    private int policyUpdateInterval = MSAutoEnrollmentConfiguration.DEFAULT_POLICY_UPDATE_INTERVAL;
     private String servicePrincipalName;
     private byte[] keyTabFileBytes;
     private byte[] krb5ConfFileBytes;
@@ -33,9 +33,9 @@ public class AutoEnrollmentDTO {
     private String keyTabFilename;
     private boolean isUseSSL;
     private boolean followLdapReferral;
-    private int adConnectionPort;
-    private int ldapReadTimeout;
-    private int ldapConnectTimeout;
+    private int adConnectionPort = MSAutoEnrollmentConfiguration.DEFAULT_AD_CONNECTION_PORT;
+    private int ldapReadTimeout = MSAutoEnrollmentConfiguration.DEFAULT_LDAP_READ_TIMEOUT;
+    private int ldapConnectTimeout = MSAutoEnrollmentConfiguration.DEFAULT_LDAP_CONNECT_TIMEOUT;
     private String adLoginDN;
     private String adLoginPassword;
     private Integer authKeyBinding;
