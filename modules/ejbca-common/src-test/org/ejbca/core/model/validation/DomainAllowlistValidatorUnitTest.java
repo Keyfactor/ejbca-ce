@@ -99,7 +99,7 @@ public class DomainAllowlistValidatorUnitTest {
         List<String> failures = new ArrayList<String>();
         Entry<Boolean,List<String>> result = null;
         for(String domain: expectedAllowedDomains) {
-            result = validator.validate(null, domain);
+            result = validator.validate(null, null, domain);
             if(!result.getKey())
                 failures.add(result.getValue().toString());
         }
@@ -117,7 +117,7 @@ public class DomainAllowlistValidatorUnitTest {
         List<String> failures = new ArrayList<String>();
         Entry<Boolean,List<String>> result = null;
         for(String domain: expectedDisallowedDomains) {
-            result = validator.validate(null, domain);
+            result = validator.validate(null, null, domain);
             if(result.getKey())
                 failures.add(result.getValue().toString());
         }
