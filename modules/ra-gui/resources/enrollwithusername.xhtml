@@ -52,8 +52,9 @@
 							<h:panelGroup id="enteredRequestEnrollmentCode" layout="block" styleClass="pure-control-group"
 								rendered="#{enrollWithUsernameBean.paramEnrollmentCodeEmpty}">
 								<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}" />
-								<h:inputSecret id="enrollmentCode" value="#{enrollWithUsernameBean.enrollmentCode}" autocomplete="off">
+								<h:inputSecret id="enrollmentCode" value="#{enrollWithUsernameBean.enrollmentCode}">
 									<f:validateRequired/>
+									<f:passThroughAttribute name="autocomplete" value="new-password"/>
 								</h:inputSecret>
 								<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
@@ -89,7 +90,7 @@
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithUsernameBean.sshEnrollmentMode}">
 							<h2>
 								<h:outputText
-									value="#{msg.enroll_upload_ssh_pubkey_placeholder} " />
+									value="#{msg.enroll_upload_ssh_public_key} " />
 							</h2>
 							
 							<h:panelGroup layout="block">
@@ -170,8 +171,12 @@
 								</h:panelGroup>
 								    <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithUsernameBean.uploadCsrDoneRendered}">
 									<h:panelGroup layout="block" styleClass="pure-control-group">
-									    <h:outputLabel id="uploadedKeyAlgorithm" for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
-									    <h:outputText id="certificateRequestNode" value="#{enrollWithUsernameBean.selectedAlgorithmUiRepresentation}"/>
+									    <h:outputLabel id="uploadedKeyAlgorithm" for="certificateRequestNode" value="&nbsp;&nbsp;#{msg.enroll_upload_csr_keyalgo_label}"/>
+									    <h:outputText id="certificateRequestNode" style="color:white;" value="#{enrollWithUsernameBean.selectedAlgorithmUiRepresentation}"/>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollWithUsernameBean.hybrid}">
+									    <h:outputLabel for="alternativeKeyAlgorithm" value="#{msg.enroll_upload_csr_keyalgo_alternative_label}"/>
+									    <h:outputText id="alternativeKeyAlgorithm" style="color:white;" value="#{enrollWithUsernameBean.alternativeAlgorithmUiRepresentation}"/>
 									</h:panelGroup>
 									<br/>
 									<h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"

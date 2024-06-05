@@ -139,7 +139,9 @@
 							<h:inputSecret size="16" title="#{web.text.CRYPTOTOKEN_PIN}"
 								value="#{cryptoTokenGuiInfo.authenticationCode}"
 								rendered="#{cryptoTokenGuiInfo.requiresSecretToActivate}"
-								autocomplete="off" onkeypress="preventSubmitOnEnter(this,event)" />
+								onkeypress="preventSubmitOnEnter(this,event)">
+								<f:passThroughAttribute name="autocomplete" value="new-password"/>
+							</h:inputSecret>
 							<h:commandButton value="#{web.text.CRYPTOTOKEN_ACTIVATE}"
 								action="#{cryptoTokenMBean.activateCryptoToken}" />
 						</h:panelGroup>

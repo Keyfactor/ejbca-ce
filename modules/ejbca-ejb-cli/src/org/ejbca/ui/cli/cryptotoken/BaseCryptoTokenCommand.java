@@ -80,10 +80,10 @@ public abstract class BaseCryptoTokenCommand extends EjbcaCliUserCommandBase {
     }
 
     /** @return a decrypted version of the parameter or use input if the parameter equals "null" */
-    protected char[] getAuthenticationCode(final String commandLineArgument) {
+    protected char[] getAuthenticationCode(final String commandLineArgument, final String cliMessageEnterPassword) {
         final char[] authenticationCode;
-        if (commandLineArgument == null || "null".equalsIgnoreCase(commandLineArgument)) {         
-            getLogger().info("Enter CryptoToken password: ");
+        if (commandLineArgument == null || "null".equalsIgnoreCase(commandLineArgument)) {
+                getLogger().info(cliMessageEnterPassword);
             getLogger().info("");
             authenticationCode = StringTools.passwordDecryption(String.valueOf(System.console().readPassword()), "CryptoToken pin").toCharArray();
         } else {

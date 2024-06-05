@@ -117,6 +117,7 @@ import org.ejbca.config.EstConfiguration;
 import org.ejbca.config.GlobalAcmeConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
+import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.config.ScepConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -167,6 +168,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryNotAvailableException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityProfileValidationRaException;
@@ -367,9 +369,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>15<td>=<td>7.11.0
      * <tr><th>16<td>=<td>8.1.0
      * <tr><th>17<td>=<td>8.2.0
+     * <tr><th>18<td>=<td>8.3.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 17;
+    private static final int RA_MASTER_API_VERSION = 18;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -1301,7 +1304,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                                                                        final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
         final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
         final boolean countOnly = request.getPageNumber() == -1;
-        final Query query = createQuery(request, countOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
+        final Query query = createQuery(entityManager, request, countOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
         int maxResults = -1;
         int offset = -1;
         if (!countOnly) {
@@ -1371,7 +1374,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * not necessarily a Long.  Casting to long may throw an exception for some database drivers.  The best
      * way to retrieve the count is to cast to java.lang.Number and use Number::longValue.
      */
-    private Query createQuery(final RaCertificateSearchRequestV2 request,
+    static Query createQuery( final EntityManager entityManager,
+                              final RaCertificateSearchRequestV2 request,
                               final boolean countOnly,
                               final List<String> issuerDns,
                               final List<Integer> authorizedCpIds,
@@ -1391,57 +1395,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             sb.append("a.fingerprint");
         }
         sb.append(" FROM CertificateData a");
-        if (StringUtils.isNotEmpty(subjectDnSearchString) || StringUtils.isNotEmpty(subjectAnSearchString) || StringUtils.isNotEmpty(usernameSearchString) ||
-                StringUtils.isNotEmpty(serialNumberSearchStringFromDec) || StringUtils.isNotEmpty(serialNumberSearchStringFromHex)
-                || StringUtils.isNotEmpty(externalAccountIdSearchString)) {
-            sb.append(" INNER JOIN (");
-            boolean firstAppended = false;
-            if (StringUtils.isNotEmpty(subjectDnSearchString)) {
-                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(subjectDN) LIKE :subjectDN");
-                firstAppended = true;
-            }
-            if (StringUtils.isNotEmpty(subjectAnSearchString)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                } else {
-                    firstAppended = true;
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE subjectAltName LIKE :subjectAltName");
-            }
-            if (StringUtils.isNotEmpty(usernameSearchString)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                } else {
-                    firstAppended = true;
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(username) LIKE :username");
-            }
-            if (StringUtils.isNotEmpty(serialNumberSearchStringFromDec)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                } else {
-                    firstAppended = true;
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE serialNumber LIKE :serialNumberDec");
-            }
-            if (StringUtils.isNotEmpty(serialNumberSearchStringFromHex)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                } else {
-                    firstAppended = true;
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE serialNumber LIKE :serialNumberHex");
-            }
-            if (StringUtils.isNotEmpty(externalAccountIdSearchString)) {
-                if (firstAppended) {
-                    sb.append(" UNION ");
-                }
-                sb.append("SELECT fingerprint FROM CertificateData WHERE UPPER(accountBindingId) LIKE :accountBindingId");
-            }
-
-            sb.append(") b ON a.fingerprint = b.fingerprint");
-        }
         sb.append(" WHERE a.issuerDN IN (:issuerDN)");
+        sb.append(buildStringSearchClause(request));
         // NOTE: notBefore is not indexed.. we might want to disallow such search.
         if (request.isIssuedAfterUsed()) {
             sb.append(" AND (a.notBefore > :issuedAfter)");
@@ -1520,24 +1475,51 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         if (StringUtils.isNotEmpty(subjectDnSearchString)) {
-            if (request.isSubjectDnSearchExact()) {
-                query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
-            } else {
-                query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
+            switch (request.getSubjectDnSearchOperation()) {
+                case "EQUAL":
+                    query.setParameter("subjectDN", subjectDnSearchString.toUpperCase());
+                    break;
+                case "LIKE":
+                    query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
+                    break;
+                case "BEGINS_WITH":
+                    query.setParameter("subjectDN", subjectDnSearchString + "%");
+                    break;
+                default:
+                    query.setParameter("subjectDN", "%" + subjectDnSearchString.toUpperCase() + "%");
+                    break;
             }
         }
         if (StringUtils.isNotEmpty(subjectAnSearchString)) {
-            if (request.isSubjectAnSearchExact()) {
-                query.setParameter("subjectAltName", subjectAnSearchString);
-            } else {
-                query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
+            switch (request.getSubjectAnSearchOperation()) {
+                case "EQUAL":
+                    query.setParameter("subjectAltName", subjectAnSearchString);
+                    break;
+                case "LIKE":
+                    query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
+                    break;
+                case "BEGINS_WITH":
+                    query.setParameter("subjectAltName", subjectAnSearchString + "%");
+                    break;
+                default:
+                    query.setParameter("subjectAltName", "%" + subjectAnSearchString + "%");
+                    break;
             }
         }
         if (StringUtils.isNotEmpty(usernameSearchString)) {
-            if (request.isUsernameSearchExact()) {
-                query.setParameter("username", usernameSearchString.toUpperCase());
-            } else {
-                query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
+            switch (request.getUsernameSearchOperation()) {
+                case "EQUAL":
+                    query.setParameter("username", usernameSearchString.toUpperCase());
+                    break;
+                case "LIKE":
+                    query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
+                    break;
+                case "BEGINS_WITH":
+                    query.setParameter("username", usernameSearchString + "%");
+                    break;
+                default:
+                    query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
+                    break;
             }
         }
         if (StringUtils.isNotEmpty(serialNumberSearchStringFromDec)) {
@@ -1553,10 +1535,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
         if (StringUtils.isNotEmpty(externalAccountIdSearchString)) {
-            if (request.isExternalAccountIdSearchExact()) {
-                query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
-            } else {
-                query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
+            switch (request.getExternalAccountIdSearchOperation()) {
+                case "EQUAL":
+                    query.setParameter("accountBindingId", externalAccountIdSearchString.toUpperCase());
+                    break;
+                case "LIKE":
+                    query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
+                    break;
+                case "BEGINS_WITH":
+                    query.setParameter("accountBindingId", externalAccountIdSearchString + "%");
+                    break;
+                default:
+                    query.setParameter("accountBindingId", "%" + externalAccountIdSearchString.toUpperCase() + "%");
+                    break;
             }
         }
         if (request.isIssuedAfterUsed()) {
@@ -1593,7 +1584,35 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         return query;
     }
 
-    private final String mapOrderColumn(final String property) {
+    static String buildStringSearchClause(RaCertificateSearchRequestV2 raRequest) {
+        ArrayList<String> comparisons = new ArrayList<String>();
+        // Add requested search criteria. Operation 'BEGINS_WITH' must be case sensitive to leverage indexes. 
+        if (StringUtils.isNotEmpty(raRequest.getSubjectDnSearchString())) {
+            comparisons.add(raRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ? "subjectDN LIKE :subjectDN" : "UPPER(subjectDN) LIKE :subjectDN");
+        }
+        if (StringUtils.isNotEmpty(raRequest.getSubjectAnSearchString())) {
+            comparisons.add("subjectAltName LIKE :subjectAltName");
+        }
+        if (StringUtils.isNotEmpty(raRequest.getUsernameSearchString())) {
+            comparisons.add(raRequest.getUsernameSearchOperation().equals("BEGINS_WITH") ? "username LIKE :username" : "UPPER(username) LIKE :username");
+        }
+        if (StringUtils.isNotEmpty(raRequest.getSerialNumberSearchStringFromDec())) {
+            comparisons.add("serialNumber LIKE :serialNumberDec");
+        }
+        if (StringUtils.isNotEmpty(raRequest.getSerialNumberSearchStringFromHex())) {
+            comparisons.add("serialNumber LIKE :serialNumberHex");
+        }
+        if (StringUtils.isNotEmpty(raRequest.getExternalAccountIdSearchString())) {
+            comparisons.add(raRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH") ? "accountBindingId LIKE :accountBindingId" : "UPPER(accountBindingId) LIKE :accountBindingId");
+        }
+
+        if (comparisons.size() == 0)
+            return "";
+        else
+            return " AND (" + comparisons.stream().collect(Collectors.joining(" OR ")) + ")";
+    }
+
+    private final static String mapOrderColumn(final String property) {
         if (property != null) {
             switch (property.trim()) {
                 case "USERNAME":
@@ -2074,6 +2093,21 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
+    public IdNameHashMap<CAInfo> getRequestedAuthorizedCAInfos(final AuthenticationToken authenticationToken, final RaCaListRequest listRequest) {
+        if (listRequest.isIncludeExternal()) {
+            IdNameHashMap<CAInfo> authorizedCAInfos = new IdNameHashMap<>();
+            List<CAInfo> authorizedCAInfosList = caSession.getAuthorizedCaInfos(authenticationToken);
+            for (CAInfo caInfo : authorizedCAInfosList) {
+                if (caInfo.getStatus() == CAConstants.CA_ACTIVE || caInfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                    authorizedCAInfos.put(caInfo.getCAId(), caInfo.getName(), caInfo);
+                }
+            }
+            return authorizedCAInfos;
+        }
+        return getAuthorizedCAInfos(authenticationToken);
+    }
+
+    @Override
     public void checkSubjectDn(final AuthenticationToken admin, final EndEntityInformation endEntity) throws EjbcaException {
         KeyToValueHolder<CAInfo> caInfoEntry = getAuthorizedCAInfos(admin).get(endEntity.getCAId());
         if (caInfoEntry == null) {
@@ -2276,11 +2310,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             final boolean loadKeysFlag = (data.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && useKeyRecovery;
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
+            String altKeySpec;
+            String altKeyAlgo;            
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
                 // Make it easy for ourselves and create a default one if there is none in the end entity
                 ei = new ExtendedInformation();
             }
+            altKeySpec = ei.getKeyStoreAlternativeKeySpecification();            
+            altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
                     ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
@@ -2289,7 +2327,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
                     ei.getKeyStoreAlgorithmSubType(), // Keylength
-                    ei.getKeyStoreAlgorithmType(), // Signature algorithm
+                    ei.getKeyStoreAlgorithmType(),
+                    altKeySpec, // Alternative key specification                    
+                    altKeyAlgo,// Alternative key algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
                     endEntity.getTokenType(), // Type of token
@@ -2344,11 +2384,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
             final boolean reuseCertificateFlag = endEntityProfile.getReUseKeyRecoveredCertificate();
             ExtendedInformation ei = endEntity.getExtendedInformation();
+            String altKeySpec;
+            String altKeyAlgo;
             if (ei == null) {
                 // ExtendedInformation is optional, and we don't want any NPEs here
                 // Make it easy for ourselves and create a default one if there is none in the end entity
                 ei = new ExtendedInformation();
             }
+            altKeySpec = ei.getKeyStoreAlternativeKeySpecification();    
+            altKeyAlgo = ei.getKeyStoreAlternativeKeyAlgorithm();    
             final String encodedValidity = ei.getCertificateEndTime();
             final Date notAfter = encodedValidity == null ? null :
                     ValidityDate.getDate(encodedValidity, new Date(), isNotAfterInclusive(admin, endEntity));
@@ -2357,7 +2401,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     endEntity.getPassword(), // Enrollment code
                     endEntity.getCAId(), // The CA signing the private keys
                     ei.getKeyStoreAlgorithmSubType(), // Keylength
-                    ei.getKeyStoreAlgorithmType(), // Signature algorithm
+                    ei.getKeyStoreAlgorithmType(),
+                    altKeySpec, // Alternative key specification                   
+                    altKeyAlgo, // Alternative key algorithm
                     null, // Not valid before
                     notAfter, // Not valid after
                     endEntity.getTokenType(), // Type of token
@@ -2494,12 +2540,19 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             EjbcaException, EndEntityProfileValidationException {
 
         EndEntityInformation endEntityInformation = ejbcaRestHelperSession.convertToEndEntityInformation(authenticationToken, enrollCertificateRequest);
+
+        int responseType;
         try {
+            if (enrollCertificateRequest.getResponseFormat().equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
+                    responseType = CertificateConstants.CERT_RES_TYPE_PKCS7;
+            } else {
+                responseType = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
+            }
             return certificateRequestSession.processCertReq(authenticationToken,
                     endEntityInformation,
                     enrollCertificateRequest.getCertificateRequest(),
                     CertificateHelper.CERT_REQ_TYPE_PKCS10,
-                    CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
+                    responseType);
         } catch (NotFoundException e) {
             log.debug("EJBCA REST exception", e);
             throw e; // NFE extends EjbcaException
@@ -2940,7 +2993,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         try {
             final boolean useKeyRecovery = ((GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID)).getEnableKeyRecovery();
             if (!useKeyRecovery) {
-                throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE, "Keyrecovery must be enabled in the system configuration in order to execute this command.");
+                throw new KeyRecoveryNotAvailableException( "Key recovery must be enabled in the system configuration in order to execute this command.");
 
             }
             final EndEntityInformation userData = endEntityAccessSession.findUser(authenticationToken, username);
@@ -2972,7 +3025,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             if (!endEntityManagementSession.prepareForKeyRecovery(authenticationToken, userData.getUsername(), userData.getEndEntityProfileId(), cert)) {
                 // Reset user status and throw exception
                 endEntityManagementSession.setUserStatus(authenticationToken, username, userData.getStatus());
-                throw new EjbcaException(ErrorCode.KEY_RECOVERY_NOT_AVAILABLE, "Key recovery data not found for user '" + username + "'");
+                throw new KeyRecoveryNotAvailableException( "Key recovery data not found for user '" + username + "'");
             }
         } catch (NotFoundException e) {
             log.debug("EJBCA WebService error", e);
@@ -3364,7 +3417,15 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
                                             final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm);
+        GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification, keyAlgorithm, null, null);
+        return generateOrKeyRecoverTokenV2(authenticationToken, request);
+    }
+    
+    @Override
+    public byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, request.getUsername(), request.getPassword(),
+                request.getKeySpecification(), request.getKeyAlgorithm(), request.getAltKeySpecification(), request.getAltKeyAlgorithm());
     }
 
     @Override
@@ -3674,27 +3735,44 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public <T extends ConfigurationBase> T getGlobalConfiguration(final Class<T> type) {
         T result = null;
-        if (GlobalConfiguration.class.getName().equals(type.getName())) {
+        if (type.isAssignableFrom(GlobalConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        } else if (GlobalCesecoreConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(GlobalCesecoreConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
-        } else if (GlobalAcmeConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(GlobalAcmeConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalAcmeConfiguration.ACME_CONFIGURATION_ID);
-        } else if (GlobalOcspConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(GlobalOcspConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
-        } else if (GlobalUpgradeConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(GlobalUpgradeConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
-        } else if (OAuthConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(OAuthConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
-        } else if (ScepConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(ScepConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
-        } else if (EABConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(EABConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(EABConfiguration.EAB_CONFIGURATION_ID);
-        } else if (CmpConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(CmpConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        } else if (EstConfiguration.class.getName().equals(type.getName())) {
+        } else if (type.isAssignableFrom(EstConfiguration.class)) {
             result = (T) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
         }
+        if (log.isDebugEnabled()) {
+            if (result != null) {
+                log.debug("Found configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
+            } else {
+                log.debug("Could not find configuration with class '" + type.getName() + "'. Probably the request was sent from an RA peer of a newer version");
+            }
+        }
+        return result;
+    }
+    
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T extends ConfigurationBase> T getGlobalConfigurationLocalFirst(final Class<T> type) {
+        T result = null;
+        if (type.isAssignableFrom(MSAutoEnrollmentConfiguration.class)) {
+            result = (T) globalConfigurationSession.getCachedConfiguration(MSAutoEnrollmentConfiguration.CONFIGURATION_ID);
+        } 
         if (log.isDebugEnabled()) {
             if (result != null) {
                 log.debug("Found configuration of class '" + type.getName() + "': " + result.getRawData() + ".");
@@ -3790,5 +3868,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         } else {
             throw new AuthorizationDeniedException("User " + authenticationToken.toString() + " was not authorized to view certificate profile " + profileName);
         }
+    }
+
+    @Override
+    public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber) {
+        return certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber);
     }
 }

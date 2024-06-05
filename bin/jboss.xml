@@ -40,11 +40,11 @@
 	    <property name="jboss.deploy.dir" value="${jboss.server.home.dir}/deployments"/>
 	    <property name="jboss.farm.dir" value="${jboss.deploy.dir}"/> <!-- TODO -->
 
-		<condition property="httpsserver.tokentype" value="P12" else="JKS">
-			<equals arg1="${httpsserver.tokentype}" arg2="P12" />
+		<condition property="httpsserver.tokentype" value="JKS" else="P12">
+			<equals arg1="${httpsserver.tokentype}" arg2="JKS" />
 		</condition>
-		<condition property="tokenfile.extension" value=".p12" else=".jks">
-			<equals arg1="${httpsserver.tokentype}" arg2="P12" />
+		<condition property="tokenfile.extension" value=".jks" else=".p12">
+			<equals arg1="${httpsserver.tokentype}" arg2="JKS" />
 		</condition>
 
 		<property name="localkeystore.filename" value="tomcat${tokenfile.extension}"/>

@@ -123,7 +123,11 @@
 							    <h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollWithRequestIdBean.uploadCsrDoneRendered}">
 									<h:panelGroup layout="block" styleClass="pure-control-group">
 									    <h:outputLabel for="certificateRequestNode" value="#{msg.enroll_upload_csr_keyalgo_label}"/>
-									    <h:outputText id="certificateRequestNode" value="#{enrollWithRequestIdBean.selectedAlgorithmUiRepresentation}"/>
+									    <h:outputText id="certificateRequestNode" style="color:white;" value="#{enrollWithRequestIdBean.selectedAlgorithmUiRepresentation}"/>
+									</h:panelGroup>
+									<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollWithRequestIdBean.hybrid}">
+									    <h:outputLabel for="alternativeKeyAlgorithm" value="#{msg.enroll_upload_csr_keyalgo_alternative_label}"/>
+									    <h:outputText id="alternativeKeyAlgorithm" style="color:white;" value="#{enrollWithRequestIdBean.alternativeAlgorithmUiRepresentation}"/>
 									</h:panelGroup>
 									<h:commandButton id="changeCsrButton" value="#{msg.enroll_upload_csr_change}" styleClass="pure-button ra-button"
 									    action="#{enrollWithRequestIdBean.uploadCsrChange}" rendered="#{!enrollWithRequestIdBean.csrPreSet}">
@@ -133,8 +137,9 @@
 							
 							<h:panelGroup id="enteredRequestEnrollmentCode" layout="block" styleClass="pure-control-group">
 								<h:outputLabel for="enrollmentCode" value="#{msg.enroll_password}" />
-								<h:inputSecret id="enrollmentCode" value="#{enrollWithRequestIdBean.endEntityInformation.password}" autocomplete="off">
+								<h:inputSecret id="enrollmentCode" value="#{enrollWithRequestIdBean.endEntityInformation.password}">
 									<f:validateRequired/>
+									<f:passThroughAttribute name="autocomplete" value="new-password"/>
 								</h:inputSecret>
 								<h:message for="enrollmentCode" id="enrollmentCodeMessage" styleClass="showErrorMessage"/>
 							</h:panelGroup>
