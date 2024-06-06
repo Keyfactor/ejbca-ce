@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -19,8 +20,10 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
@@ -148,7 +151,10 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     private List<SubjectAltNameFieldData> subjectAltNameFieldDatas;
     private List<SubjectDirAttrFieldData> subjectDirAttrFieldDatas;
 
-
+    /* Main Certificate Data */
+    private int selectedCertProfileId = -1;
+    private int selectedTokenId = -1;
+    private int selectedCaId = -1;
 
 
     private int selectedEeProfileId = EndEntityConstants.NO_END_ENTITY_PROFILE;
@@ -173,6 +179,9 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     
     @EJB
     private AuthorizationSessionLocal authorizationSession;
+    
+    @EJB
+    private CertificateProfileSessionLocal certProfileSession;
     
     // Authentication check and audit log page access request
     @PostConstruct    
@@ -241,6 +250,11 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
             }
             
             emailOptions = eeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
+            
+            /* Main Certificate Data */
+            this.selectedCertProfileId = userData.getCertificateProfileId();
+            this.selectedCaId = userData.getCAId();
+            this.selectedTokenId = userData.getTokenType();
 
         }
         
@@ -646,7 +660,94 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     public List<SubjectDirAttrFieldData> getSubjectDirAttrFieldDatas() {
         return subjectDirAttrFieldDatas;
     }
-   
+    
+    public List<SelectItem> getAvailableCertProfiles() {
+        List<SelectItem> profiles = new ArrayList<>();
+        String[] availableCertProfileIds = eeProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
+        
+        for (String profileId : availableCertProfileIds) {
+            profiles.add(new SelectItem(profileId, certProfileSession.getCertificateProfileName(Integer.parseInt(profileId))));
+        }
+        return profiles;
+    }
+
+    public int getSelectedCertProfileId() {
+        return selectedCertProfileId;
+    }
+
+    public void setSelectedCertProfileId(int selectedCertProfileId) {
+        this.selectedCertProfileId = selectedCertProfileId;
+    }
+
+    public int getSelectedTokenId() {
+        return selectedTokenId;
+    }
+
+    public void setSelectedTokenId(int selectedTokenId) {
+        this.selectedTokenId = selectedTokenId;
+    }
+
+    public int getSelectedCaId() {
+        return selectedCaId;
+    }
+
+    public void setSelectedCaId(int selectedCaId) {
+        this.selectedCaId = selectedCaId;
+    }
+    
+    public List<SelectItem> getAvailableCas() {
+        
+        Map<Integer, List<Integer>> currentAvailableCas = raBean.getCasAvailableToEndEntity(selectedEeProfileId);
+        List<SelectItem> availableCasList = new ArrayList<>();
+        List<Integer> availableCasToSelectedEeProfile = currentAvailableCas.get(selectedCertProfileId);
+        Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
+
+        if (Objects.nonNull(availableCasToSelectedEeProfile)) {
+            for (final int caId : availableCasToSelectedEeProfile) {
+                availableCasList.add(new SelectItem(caId, caIdToNameMap.get(caId)));
+            }
+        }
+
+        return availableCasList;
+    }
+    
+    public List<SelectItem> getAvailableTokens() {
+
+        List<SelectItem> listOfTokens = new ArrayList<>();
+
+        final String[] tokenTexts = SecConst.TOKENTEXTS;
+        final int[] tokenIds = SecConst.TOKENIDS;
+
+        String[] availableTokens = eeProfile.getValue(EndEntityProfile.AVAILKEYSTORE, 0).split(EndEntityProfile.SPLITCHAR);
+
+        if (availableTokens != null) {
+            for (int i = 0; i < availableTokens.length; i++) {
+                for (int j = 0; j < tokenTexts.length; j++) {
+                    if (tokenIds[j] == Integer.parseInt(availableTokens[i])) {
+                        if (tokenIds[j] > SecConst.TOKEN_SOFT) {
+                            listOfTokens.add(new SelectItem(tokenIds[j], tokenTexts[j]));
+                        } else {
+                            listOfTokens.add(new SelectItem(tokenIds[j], getEjbcaWebBean().getText(tokenTexts[j])));
+                        }
+                    }
+                }
+            }
+        }
+        return listOfTokens;
+    }
+    
+    public boolean isRenderOtherCertDataSection() {
+        return (eeProfile.isCustomSerialNumberUsed()
+        || eeProfile.isValidityStartTimeUsed()
+        || eeProfile.isValidityEndTimeUsed()
+        || eeProfile.isCardNumberUsed()
+        || eeProfile.isNameConstraintsPermittedUsed()
+        || eeProfile.isNameConstraintsExcludedUsed()
+        || eeProfile.isPsd2QcStatementUsed()
+        || eeProfile.isCabfOrganizationIdentifierUsed());
+    }
+
+    
 /*
     
     
