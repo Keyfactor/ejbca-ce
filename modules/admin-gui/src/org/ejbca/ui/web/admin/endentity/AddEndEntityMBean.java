@@ -95,7 +95,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
-    private CertificateProfileSessionLocal cerProfileSession;
+    private CertificateProfileSessionLocal certProfileSession;
     @EJB
     private CaSessionLocal caSession;
     
@@ -433,7 +433,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         String[] availableCertProfileIds = selectedEeProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
         
         for (String profileId : availableCertProfileIds) {
-            profiles.add(new SelectItem(profileId, cerProfileSession.getCertificateProfileName(Integer.parseInt(profileId))));
+            profiles.add(new SelectItem(profileId, certProfileSession.getCertificateProfileName(Integer.parseInt(profileId))));
         }
         return profiles;
     }
@@ -1494,7 +1494,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             String fieldValue = subjectDirAttrFieldAndData.getFieldValueToSave(newUserView, fieldData);
             
             if (StringUtils.isNotBlank(fieldValue)) {
-                if(!cerProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectDirAttributes()) {
+                if(!certProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectDirAttributes()) {
                     throw new AddEndEntityException("Usage of subject dir attributes is not allowed in the selected certificate profile.");
                 }
                 fieldValue = fieldValue.trim();
@@ -1527,7 +1527,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             }
 
             if (StringUtils.isNotBlank(fieldValue)) {
-                if(!cerProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectAlternativeName()) {
+                if(!certProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectAlternativeName()) {
                     throw new AddEndEntityException("Usage of subject alternative name is not allowed in the selected certificate profile.");
                 }
                 if (subjectAltName.length() == 0) {
