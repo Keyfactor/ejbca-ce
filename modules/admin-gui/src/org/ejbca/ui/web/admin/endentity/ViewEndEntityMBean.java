@@ -14,6 +14,7 @@ package org.ejbca.ui.web.admin.endentity;
 
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -209,10 +210,10 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
         RequestHelper.setDefaultCharacterEncoding(request);
         String action = request.getParameter(ACTION);
         if (action == null && request.getParameter(TIMESTAMP_PARAMETER) != null && request.getParameter(USER_PARAMETER) != null) {
-            userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
+            userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
             Date timestamp = new Date(Long.parseLong(request.getParameter(TIMESTAMP_PARAMETER)));
 
-            notAuthorized = !getUserDatas(userName);
+            notAuthorized = !populateUserDatas(userName);
             currentUserIndex = this.getTimeStampIndex(timestamp);
             if (userDatas == null || userDatas.length < 1) {
                 // Make sure possibly cached value is removed
@@ -227,8 +228,8 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
             }
         } else {
             if (action == null && request.getParameter(USER_PARAMETER) != null) {
-                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
-                notAuthorized = !getUserDatas(userName);
+                userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
+                notAuthorized = !populateUserDatas(userName);
                 noUserParameter = false;
                 if ((userDatas != null) && (userDatas.length > 0)) {
                     userData = userDatas[0];
@@ -242,7 +243,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
                 }
             } else {
                 if (action != null && request.getParameter(USER_PARAMETER) != null) {
-                    userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), "UTF-8");
+                    userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
                     if (request.getParameter(BUTTON_VIEW_NEWER) != null &&  (currentUserIndex > 0)) {
                             currentUserIndex--;
                         
@@ -252,7 +253,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
                         
                     }
 
-                    notAuthorized = !getUserDatas(userName);
+                    notAuthorized = !populateUserDatas(userName);
                     userData = userDatas[currentUserIndex];
 
                     noUserParameter = false;
@@ -715,7 +716,7 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
      * Sets the available userdatas of current and previous values
      */
 
-    private boolean getUserDatas(String username) throws Exception {
+    private boolean populateUserDatas(String username) throws Exception {
         boolean authorized = false;
 
         try {
