@@ -106,6 +106,7 @@ dependencyResolutionManagement {
             library("cglib", ":cglib-nodep:3.3.0")
             library("hamcrest-core", ":hamcrest-core:1.3")
             library("system-rules", ":system-rules:1.19.0")
+            // bundles
             bundle(
                 "junit",
                 listOf(
@@ -122,6 +123,7 @@ dependencyResolutionManagement {
             )
             bundle("easymock", listOf("easymock", "cglib", "objenesis"))
             bundle("powermock", listOf("powermock", "cglib", "objenesis"))
+            bundle("bouncy-castle", listOf("bcprov", "bcpkix", "bctls", "bcutil"))
         }
     }
 }
@@ -131,6 +133,7 @@ if (edition == "ee") {
         "modules:acme:common",
         "modules:acme",
         "modules:edition-specific-ee",
+        "modules:ejbca-entity:cli",
         "modules:statedump:common",
         "modules:peerconnector:common",
         "modules:peerconnector:interface",
