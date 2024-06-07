@@ -74,7 +74,6 @@ dependencyResolutionManagement {
             library("jsch", ":jsch:0.2.11")
             library("xstream", ":xstream:1.4.20")
             library("xpp3_min", ":xpp3_min:1.1.4c")
-            library("junit", ":junit:4.13.2")
             library("istack-commons-runtime", ":istack-commons-runtime:3.0.11")
             library("saaj-impl", ":saaj-impl:1.5.3")
             library("streambuffer", ":streambuffer:1.5.10")
@@ -99,6 +98,30 @@ dependencyResolutionManagement {
             library("jboss-transaction-api_v12_spec", ":jboss-transaction-api_1.2_spec:1.1.1.Final")
             library("stax-ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
+            // test dependencies
+            library("junit", ":junit:4.13.2")
+            library("easymock", ":easymock:4.3")
+            library("powermock", ":powermock-easymock:2.0.2-full")
+            library("objenesis", ":objenesis:3.0.1")
+            library("cglib", ":cglib-nodep:3.3.0")
+            library("hamcrest-core", ":hamcrest-core:1.3")
+            library("system-rules", ":system-rules:1.19.0")
+            bundle(
+                "junit",
+                listOf(
+                    "junit",
+                    "hamcrest-core",
+                    "httpcore",
+                    "httpclient",
+                    "httpmime",
+                    "commons-collections4",
+                    "commons-configuration2",
+                    "commons-text",
+                    "commons-beanutils"
+                )
+            )
+            bundle("easymock", listOf("easymock", "cglib", "objenesis"))
+            bundle("powermock", listOf("powermock", "cglib", "objenesis"))
         }
     }
 }
