@@ -1,4 +1,3 @@
-import org.apache.tools.ant.filters.ReplaceTokens
 import java.util.Properties
 
 val props: Properties = Properties().apply {
