@@ -236,16 +236,3 @@ task<Copy>("deployear") {
         println("Deployed EAR to application server at $appServerHome")
     }
 }
-
-// Import all Ant targets from build.xml and make them available as Gradle tasks.
-// NOTE: This is a migration convenience that should gradually be phased out in favor of native Gradle tasks.
-ant.importBuild("$projectDir/build.xml") { antTargetName ->
-    // append "-ant" to Ant targets whoese names match existing Gradle tasks
-    val overlapingTargetNames = arrayOf("build", "clean", "deployear")
-    if (antTargetName in overlapingTargetNames) {
-        antTargetName + "-ant"
-    } else {
-        // Gradle doesn't allow task names to contain the ":" character, so let's remap Ant tasks that contain it.
-        antTargetName.replace(":", "-")
-    }
-}
