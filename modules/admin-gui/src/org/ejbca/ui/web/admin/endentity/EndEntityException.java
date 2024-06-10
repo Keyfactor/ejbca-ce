@@ -15,11 +15,11 @@ package org.ejbca.ui.web.admin.endentity;
 /**
  * Exception class used when error happens in end entity creation (admin web)
  */
-public class AddEndEntityException extends Exception {
+public class EndEntityException extends Exception {
     
     private static final long serialVersionUID = 1L;
 
-    public AddEndEntityException() {
+    public EndEntityException() {
         super();
     }
 
@@ -29,7 +29,7 @@ public class AddEndEntityException extends Exception {
      *
      * @param message Human readable error message, can not be NULL.
      */
-    public AddEndEntityException(String message) {
+    public EndEntityException(String message) {
         super(message);
     }
 
@@ -40,7 +40,7 @@ public class AddEndEntityException extends Exception {
      *
      * @param message Human readable error message, can not be NULL.
      */
-    public AddEndEntityException(String message, Throwable cause) {
+    public EndEntityException(String message, Throwable cause) {
         super(message, cause);
     }
     
