@@ -634,19 +634,13 @@
 				<h:panelGroup rendered="#{resourceBean.validityStartTimeUsed}">
 					<h:outputLabel value="#{web.text.TIMEOFSTART}" id="validityStartTimeUsedLabel"
 						style="font-size:1.2em;" />
-					<h:outputText
-						value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles.html#Certificate_Validity')}"
-						escape="false" styleClass="helpReference" />
-					<br />
-					<h:outputLabel styleClass="help"
-						value="#{resourceBean.validityTimeHelpText}" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.validityStartTimeUsed}">
 					<h:inputText size="25" maxlength="40"
 						id="validityStartTimeUsed"
 						title="#{resourceBean.validityTimeTitle}"
-						value="#{resourceBean.validityStartTimeValue}"
+						value="#{resourceBean.validityStartTime}"
 						readonly="#{resourceBean.validityStartTimeReadOnly}"
 						required="#{resourceBean.validityStartTimeRequired}"
 						styleClass="#{resourceBean.validityStartTimeRequired ? 'mandatory' : ''}" />
@@ -656,19 +650,13 @@
 					<h:outputLabel value="#{web.text.TIMEOFEND}"
 						id="validityEndTimeUsedLabel"
 						style="font-size:1.2em;" />
-					<h:outputText
-						value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles.html#Certificate_Validity')}"
-						escape="false" styleClass="helpReference" />
-					<br />
-					<h:outputLabel styleClass="help"
-						value="#{resourceBean.validityTimeHelpText}" />
 				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.validityEndTimeUsed}">
 					<h:inputText size="25" maxlength="40"
 						id="validityEndTimeUsed"
 						title="#{resourceBean.validityTimeTitle}"
-						value="#{resourceBean.validityEndTimeValue}"
+						value="#{resourceBean.validityEndTime}"
 						readonly="#{resourceBean.validityEndTimeReadOnly}"
 						required="#{resourceBean.validityEndTimeRequired}"
 						styleClass="#{resourceBean.validityEndTimeRequired ? 'mandatory' : ''}" />
@@ -749,6 +737,27 @@
 					<h:inputTextarea rows="4" cols="38"
 						value="#{resourceBean.extensionData}" />
 				</h:panelGroup>
+				
+				
+				<h:panelGroup rendered="#{resourceBean.renderRawSubjectDN}">
+
+					<h:outputLabel
+						id="rawSdnLabel"
+						value="#{web.text.RAWSUBJECTDN}"
+						style="font-size:1.2em;" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/Certificate_Profile_Fields.html')}"
+						escape="false" styleClass="helpReference" />
+					<br />
+					<h:outputLabel styleClass="help"
+						value="#{web.text.RAWSUBJECTDN_HELP}" />
+				</h:panelGroup>
+				
+				<h:panelGroup rendered="#{resourceBean.renderRawSubjectDN}">
+					<h:outputLabel
+						id="rawSdnValueLabel"
+						value="#{resourceBean.rawSubjectDN}"/>
+				</h:panelGroup>
 
 				<h:panelGroup rendered="#{resourceBean.psd2QcStatementUsed}">
 					<h:outputLabel
@@ -817,8 +826,135 @@
 				</h:panelGroup>
 			</h:panelGrid>
 
+			<!-- ********** Other data ******************** -->
 
-		
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1"
+				columnClasses="editColumnSystem1,editColumn2"
+				rendered="#{resourceBean.renderOtherDataSection}">
+				<h:outputLabel value="#{web.text.OTHERDATA}"
+					style="font-weight:bold; font-size:1.2em;" />
+
+				<h:panelGroup />
+
+				<h:panelGroup rendered="#{resourceBean.allowedRequestsUsed}">
+				<h:outputLabel
+					id="allowedRequestsLabel"
+					value="#{web.text.ALLOWEDREQUESTS}" style="font-size:1.2em;" />
+				</h:panelGroup>
+				<h:panelGroup
+					rendered="#{resourceBean.allowedRequestsUsed}">
+					<h:selectOneMenu
+						id="allowedRequests"
+						value="#{resourceBean.numberOfRequests}"
+						disabled="#{!resourceBean.allowedToAddEndEntity}">
+						<f:selectItems value="#{resourceBean.allowedRequests}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{resourceBean.useKeyRecovery}">
+					<h:outputLabel
+						id="useKeyRecoveryLabel"
+						value="#{web.text.KEYRECOVERABLE}"
+						style="font-size:1.2em;" />
+					<h:outputText
+						value="#{web.ejbcaWebBean.getHelpReference('/Key_Recovery.html')}"
+						escape="false" styleClass="helpReference" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{resourceBean.useKeyRecovery}">
+					<h:selectBooleanCheckbox id="useKeyRecovery"
+						value="#{resourceBean.keyRecovery}"
+						disabled="#{resourceBean.keyRecoveryRequired}" />
+					<h:outputLabel value="#{web.text.ACTIVATE}" for="useKeyRecovery" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{resourceBean.useIssuanceRevocationReason}">
+				<h:outputLabel id="useIssuanceRevocationReasonLabel"
+					value="#{web.text.ISSUANCEREVOCATIONREASON}" style="font-size:1.2em;" />
+				</h:panelGroup>
+				<h:panelGroup id="useIssuanceRevocationReason" rendered="#{resourceBean.useIssuanceRevocationReason}">
+					<h:selectOneMenu value="#{resourceBean.revocationStatus}"
+						disabled="#{!resourceBean.allowedToAddEndEntity || resourceBean.issuanceRevocationReasonDisabled}">
+						<f:selectItems value="#{resourceBean.issuanceRevocationReasons}" />
+					</h:selectOneMenu>
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{resourceBean.useSendNotification}">
+					<h:outputLabel id="useSendNotificationLabel"
+						value="#{web.text.SENDNOTIFICATION}"
+						style="font-size:1.2em;" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{resourceBean.useSendNotification}">
+					<h:selectBooleanCheckbox id="useSendNotification"
+						value="#{resourceBean.sendNotification}"
+						disabled="#{resourceBean.sendNotificationRequired}" />
+					<h:outputLabel value="#{web.text.ACTIVATE}" for="useSendNotification" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{resourceBean.usePrintingEnabled}">
+					<h:outputLabel id="usePrintingLabel" value="#{web.text.PRINTUSERDATA}"
+						style="font-size:1.2em;" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{resourceBean.usePrintingEnabled}">
+					<h:selectBooleanCheckbox id="usePrinting"
+						value="#{resourceBean.usePrinting}"
+						disabled="#{resourceBean.printingRequired}" />
+					<h:outputLabel value="#{web.text.PRINT}" for="usePrinting" />
+				</h:panelGroup>
+				
+			</h:panelGrid>		
+
+			<!-- ********** CSR ******************** -->
+
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1"
+				columnClasses="editColumnSystem1,editColumn2"
+				rendered="#{resourceBean.renderCSRSection}">
+				<h:outputLabel value="#{web.text.CERTIFICATEREQUESTDATA}"
+					style="font-weight:bold; font-size:1.2em;" />
+
+				<h:panelGroup />
+
+				<h:panelGroup>
+					<h:outputLabel value="#{web.text.CSR}" />
+				</h:panelGroup>
+				<h:panelGroup>
+					<h:outputLabel value="#{resourceBean.csr}" />
+				</h:panelGroup>	
+
+				<h:panelGroup rendered="#{resourceBean.renderKeyAlgType}">
+					<h:outputLabel value="#{web.text.REQKSALGTYPE}" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{resourceBean.renderKeyAlgType}">
+					<h:outputLabel value="#{resourceBean.keyAlgType}" />
+				</h:panelGroup>	
+
+				<h:panelGroup rendered="#{resourceBean.renderKeyAlgType}">
+					<h:outputLabel value="#{web.text.REQKSALGSUBTYPE}" />
+				</h:panelGroup>
+				<h:panelGroup rendered="#{resourceBean.renderKeyAlgType}">
+					<h:outputLabel value="#{resourceBean.keyAlgSubType}" />
+				</h:panelGroup>		
+				
+			</h:panelGrid>
+
+			<!-- ********** Form buttons ******************** -->
+			
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
+				cellpadding="3" border="0" width="100%" rowClasses="Row1"
+				columnClasses="editColumnSystem1,editColumn2">
+				<h:panelGroup />
+
+				<h:panelGroup>
+
+				<h:commandButton id="buttonSave" value="#{web.text.SAVE}"
+						action="#{resourceBean.editUser}" />
+                    &nbsp;&nbsp;&nbsp;
+				<h:commandButton type="reset" id="closeButton" value="#{web.text.CLOSE}" tabindex="3" onclick="self.close()" />
+
+				</h:panelGroup>
+
+			</h:panelGrid>			
 		
 		</h:form>
 	</ui:define>

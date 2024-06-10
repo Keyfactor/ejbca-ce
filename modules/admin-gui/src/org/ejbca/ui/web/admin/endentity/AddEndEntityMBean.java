@@ -845,7 +845,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             newUserView = checkAndSetMainCertificateData(newUserView);
             newUserView = checkAndSetCustomSerialNumber(newUserView);
 
-        } catch (AddEndEntityException e) {
+        } catch (EndEntityException e) {
             addNonTranslatedErrorMessage(e.getMessage());
             return;
         }
@@ -1003,12 +1003,12 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return selectedEeProfile.isPasswordPreDefined();
     }
     
-    private void initUserData() throws EndEntityProfileNotFoundException, AddEndEntityException {
+    private void initUserData() throws EndEntityProfileNotFoundException, EndEntityException {
 
         profileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
         
         if (profileNames == null || profileNames.length == 0) {
-            throw new AddEndEntityException(getEjbcaWebBean().getText("NOTAUTHORIZEDTOCREATEENDENTITY"));
+            throw new EndEntityException(getEjbcaWebBean().getText("NOTAUTHORIZEDTOCREATEENDENTITY"));
         } else {
             this.selectedEeProfileId = raBean.getEndEntityProfileId(profileNames[0]);
             this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
@@ -1382,7 +1382,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return newUserView;
     }
 
-    private UserView checkAndSetCustomSerialNumber(UserView newUserView) throws AddEndEntityException {
+    private UserView checkAndSetCustomSerialNumber(UserView newUserView) throws EndEntityException {
         if (selectedEeProfile.isCustomSerialNumberUsed()) {
             ExtendedInformation ei = newUserView.getExtendedInformation();
             if (ei == null) {
@@ -1392,7 +1392,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 try {
                     ei.setCertificateSerialNumber(new BigInteger(customSerialNumber.trim(), 16));
                 } catch (NumberFormatException e) {
-                    throw new AddEndEntityException("Number format exception " + e.getMessage());
+                    throw new EndEntityException("Number format exception " + e.getMessage());
                 }
             } else {
                 ei.setCertificateSerialNumber(null);
@@ -1428,19 +1428,19 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return newUserView;
     }
 
-    private UserView checkAndSetMainCertificateData(UserView newUserView) throws AddEndEntityException {
+    private UserView checkAndSetMainCertificateData(UserView newUserView) throws EndEntityException {
         /*  Main Certificate Data   */
         
         if (selectedCertProfileId == -1) {
-            throw new AddEndEntityException(getEjbcaWebBean().getText("CERTIFICATEPROFILEMUST"));
+            throw new EndEntityException(getEjbcaWebBean().getText("CERTIFICATEPROFILEMUST"));
         }
         
         if (selectedCaId == -1) {
-            throw new AddEndEntityException(getEjbcaWebBean().getText("CAMUST"));
+            throw new EndEntityException(getEjbcaWebBean().getText("CAMUST"));
         }
         
         if (selectedTokenId == -1) {
-            throw new AddEndEntityException(getEjbcaWebBean().getText("TOKENMUST"));
+            throw new EndEntityException(getEjbcaWebBean().getText("TOKENMUST"));
         }
         
         newUserView.setCertificateProfileId(selectedCertProfileId);
@@ -1484,7 +1484,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return newUserView;
     }
 
-    private UserView checkAndSetSubjectDirName(UserView newUserView) throws AddEndEntityException {
+    private UserView checkAndSetSubjectDirName(UserView newUserView) throws EndEntityException {
 
         StringBuilder subjectDirAttr = new StringBuilder();
         
@@ -1495,7 +1495,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             
             if (StringUtils.isNotBlank(fieldValue)) {
                 if(!certProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectDirAttributes()) {
-                    throw new AddEndEntityException("Usage of subject dir attributes is not allowed in the selected certificate profile.");
+                    throw new EndEntityException("Usage of subject dir attributes is not allowed in the selected certificate profile.");
                 }
                 fieldValue = fieldValue.trim();
                 fieldValue = LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),
@@ -1512,7 +1512,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return newUserView;
     }
 
-    private UserView checkAndSetSubjectAltName(UserView newUserView) throws AddEndEntityException {
+    private UserView checkAndSetSubjectAltName(UserView newUserView) throws EndEntityException {
 
         StringBuilder subjectAltName = new StringBuilder();
         int i = 0;
@@ -1528,7 +1528,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
 
             if (StringUtils.isNotBlank(fieldValue)) {
                 if(!certProfileSession.getCertificateProfile(selectedCertProfileId).getUseSubjectAlternativeName()) {
-                    throw new AddEndEntityException("Usage of subject alternative name is not allowed in the selected certificate profile.");
+                    throw new EndEntityException("Usage of subject alternative name is not allowed in the selected certificate profile.");
                 }
                 if (subjectAltName.length() == 0) {
                     subjectAltName.append(fieldValue);
@@ -1541,7 +1541,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return newUserView;
     }
     
-    private String handleCopyFromCN(final SubjectAltNameFieldData subjectAltNameFieldAndData, final int[] fieldData) throws AddEndEntityException {
+    private String handleCopyFromCN(final SubjectAltNameFieldData subjectAltNameFieldAndData, final int[] fieldData) throws EndEntityException {
 
         String resutlFieldValue = StringUtils.EMPTY;
 
@@ -1559,7 +1559,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return resutlFieldValue;
     }
 
-    private String handleCopyFromCnUpn(SubjectAltNameFieldData subjectAltNameFieldAndData, String upnFromProfile) throws AddEndEntityException {
+    private String handleCopyFromCnUpn(SubjectAltNameFieldData subjectAltNameFieldAndData, String upnFromProfile) throws EndEntityException {
 
         String resutlFieldValue = StringUtils.EMPTY;
         String valueFromCN;
@@ -1599,7 +1599,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return resutlFieldValue;
     }
 
-    private UserView checkAndSetSubjectDN(UserView newUserView) throws AddEndEntityException {
+    private UserView checkAndSetSubjectDN(UserView newUserView) throws EndEntityException {
         StringBuilder subjectDn = new StringBuilder();
         int i = 0;
         for (SubjectDnFieldData subjectDnFieldAndData : getSubjectDnFieldsAndDatas()) {
@@ -1659,7 +1659,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return newUserView;
     }
 
-    private Optional<UserView> checkAndSetUserEmail(UserView newUserView) throws AddEndEntityException {
+    private Optional<UserView> checkAndSetUserEmail(UserView newUserView) throws EndEntityException {
         if (StringUtils.isNotBlank(emailUserName)) {
             if (handleEmailUserNameNotEmpty(newUserView).isPresent()) {
                 return Optional.of(handleEmailUserNameNotEmpty(newUserView).get());
@@ -1672,18 +1672,18 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return Optional.of(newUserView);
     }
 
-    private void handleEmailUserNameEmpty() throws AddEndEntityException {
+    private void handleEmailUserNameEmpty() throws EndEntityException {
         String selectedeEmailDomain = getEmailDomain();
         if (StringUtils.isNotBlank(selectedeEmailDomain) && selectedEeProfile.isEmailRequired()) { // We have a domain but no username, so email incomplete!
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
-            throw new AddEndEntityException(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
+            throw new EndEntityException(getEjbcaWebBean().getText("EMAILINCOMPLETE"));
         }
     }
 
-    private Optional<UserView> handleEmailUserNameNotEmpty(UserView newUserView) throws AddEndEntityException {
+    private Optional<UserView> handleEmailUserNameNotEmpty(UserView newUserView) throws EndEntityException {
         if (StringUtils.isNotBlank(emailDomain)) {
             if (!AddEndEntityUtil.isValidEmail(emailUserName + "@" + emailDomain.trim())) {
-                throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYEMAILCHARSNOAT") + " Email.");
+                throw new EndEntityException(getEjbcaWebBean().getText("ONLYEMAILCHARSNOAT") + " Email.");
             }
             newUserView.setEmail(emailUserName + "@" + emailDomain.trim());
         } else {
@@ -1694,7 +1694,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return Optional.of(newUserView);
     }
 
-    private UserView checkAndSetLoginAttempts(UserView newUserView) throws AddEndEntityException {
+    private UserView checkAndSetLoginAttempts(UserView newUserView) throws EndEntityException {
         ExtendedInformation ei = newUserView.getExtendedInformation();
         if (ei == null) {
             ei = new ExtendedInformation();
@@ -1704,7 +1704,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
             try {
                 Integer.parseInt(getMaxLoginAttempts());
             } catch (NumberFormatException e) {
-                throw new AddEndEntityException("Malformed number for max login attempts!");
+                throw new EndEntityException("Malformed number for max login attempts!");
             }
             ei.setMaxLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
             ei.setRemainingLoginAttempts(Integer.parseInt(getMaxLoginAttempts()));
@@ -1714,7 +1714,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         return newUserView;
     }
 
-    private UserView checkAndSetUserNameAndPassword(final UserView newUserView) throws AddEndEntityException {
+    private UserView checkAndSetUserNameAndPassword(final UserView newUserView) throws EndEntityException {
         if (getExtensionData() != null) {
             ExtendedInformation ei = newUserView.getExtendedInformation();
             if (ei == null) {
@@ -1726,7 +1726,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
 
         if (StringUtils.isNotBlank(getUserName())) {
             if(!selectedEeProfile.isAutoGeneratedUsername() && !AddEndEntityUtil.isValidUserNameField(getUserName())) {
-                throw new AddEndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getEjbcaWebBean().getText("USERNAME"));
+                throw new EndEntityException(getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getEjbcaWebBean().getText("USERNAME"));
             }
             
             newUserView.setUsername(getUserName().trim());
