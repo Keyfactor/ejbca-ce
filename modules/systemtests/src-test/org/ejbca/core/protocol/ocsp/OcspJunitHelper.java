@@ -62,10 +62,6 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.SHA1DigestCalculator;
 
-/**
- * 
- * @version $Id$
- */
 public class OcspJunitHelper {
 
 	private static Logger log = Logger.getLogger(OcspJunitHelper.class);

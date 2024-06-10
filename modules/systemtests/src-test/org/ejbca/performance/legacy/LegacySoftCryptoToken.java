@@ -49,7 +49,6 @@ import com.keyfactor.util.keys.token.KeyGenParams;
 
 /**
  * Handles maintenance of the soft devices producing signatures and handling the private key and stored in database.
- * 
  */
 public class LegacySoftCryptoToken extends LegacyBaseCryptoToken {
     private static final long serialVersionUID = 387950849444619646L;
