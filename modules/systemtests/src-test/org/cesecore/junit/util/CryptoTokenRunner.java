@@ -60,9 +60,7 @@ import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 
 /**
- * Base class for crypto token variations of the test runner. 
- * 
- *
+ * Base class for crypto token variations of the test runner.
  */
 public abstract class CryptoTokenRunner {
 

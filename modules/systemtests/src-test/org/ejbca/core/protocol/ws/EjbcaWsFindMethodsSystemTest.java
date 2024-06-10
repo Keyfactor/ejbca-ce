@@ -45,9 +45,6 @@ import com.keyfactor.util.FileTools;
 
 /**
  * Test class for working with the various find methods in EJBCA WS
- * 
- * @version $Id$
- *
  */
 public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
 

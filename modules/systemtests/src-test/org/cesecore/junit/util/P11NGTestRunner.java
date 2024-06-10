@@ -19,9 +19,6 @@ import java.security.Security;
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
 
-/**
- *
- */
 public class P11NGTestRunner extends HardtokenTestRunnerBase {
 
     private static final Logger log = Logger.getLogger(P11NGTestRunner.class);
