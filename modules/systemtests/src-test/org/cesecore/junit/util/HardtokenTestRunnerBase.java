@@ -27,9 +27,6 @@ import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
-/**
- *
- */
 public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
 
     protected static final String DEFAULT_TOKEN_PIN = "userpin1";
@@ -82,7 +79,4 @@ public abstract class HardtokenTestRunnerBase extends CryptoTokenRunner {
         setCaForRemoval(x509ca.getCAId(), x509ca);
         return x509ca;
     }
-    
-    
-
 }
