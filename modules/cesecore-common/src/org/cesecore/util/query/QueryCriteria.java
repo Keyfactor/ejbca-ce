@@ -28,7 +28,7 @@ import java.util.List;
  * TODO: For now there is no support for prioritizing certain conditions using parenthesis but with the current query generator
  * this could be easily supported.  
  * 
- * <em>For usage example @see QueryCriteriaTest</em>
+ * <em>For usage example @see QueryCriteriaUnitTest</em>
  * 
  * @version $Id$
  */
