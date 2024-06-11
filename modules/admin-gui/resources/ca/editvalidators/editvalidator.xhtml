@@ -81,7 +81,7 @@
 					<f:ajax render="validators" event="change"/>
 				</h:selectBooleanCheckbox>
 				<h:outputLabel for="selectapplicablecertificateprofiles" value="#{web.text.VALIDATORCERTIFICATEPROFILE}"/>
-				<h:selectManyListbox styleClass="select-list" id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" converter="javax.faces.Integer" 
+				<h:selectManyListbox styleClass="select-list" id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" converter="jakarta.faces.Integer"
 					validator="#{validatorBean.validateCertificateProfileIds}" size="10" disabled="#{validatorsBean.viewOnly or validatorBean.allCertificateProfileIds}">
 					<f:ajax event="change" render="validators" />
 					<f:selectItems value="#{validatorBean.availableCertificateProfiles}"/>

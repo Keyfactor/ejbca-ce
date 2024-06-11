@@ -47,7 +47,7 @@
                     <h:outputLabel styleClass="help" value="#{web.text.PREFEREDLANGUAGE_HELP}"/>
                 </h:panelGroup>    
                 <h:panelGroup>
-                    <h:selectOneMenu id="preferredLanguage" value="#{myPreferencesMBean.adminPreference.preferedLanguage}" converter="javax.faces.Integer">
+                    <h:selectOneMenu id="preferredLanguage" value="#{myPreferencesMBean.adminPreference.preferedLanguage}" converter="jakarta.faces.Integer">
 	                    <f:selectItems value="#{myPreferencesMBean.availableLanguages}"/>
 	                </h:selectOneMenu>
                 </h:panelGroup>
@@ -57,7 +57,7 @@
                     <h:outputLabel styleClass="help" value="#{web.text.SECONDARYLANGUAGE_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectOneMenu id="secondaryLanguage" value="#{myPreferencesMBean.adminPreference.secondaryLanguage}" converter="javax.faces.Integer">
+                    <h:selectOneMenu id="secondaryLanguage" value="#{myPreferencesMBean.adminPreference.secondaryLanguage}" converter="jakarta.faces.Integer">
                         <f:selectItems value="#{myPreferencesMBean.availableLanguages}"/>
                     </h:selectOneMenu>
                 </h:panelGroup>

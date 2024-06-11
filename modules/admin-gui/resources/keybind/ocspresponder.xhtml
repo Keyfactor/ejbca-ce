@@ -237,7 +237,7 @@
 					<h:panelGroup rendered="#{!property.multiValued}">
 						<h:inputText disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'String'}" value="#{property.value}"/>
 						<h:inputText disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}">
-							<f:converter converterId="javax.faces.Long"/>
+							<f:converter converterId="jakarta.faces.Long"/>
 						</h:inputText>
 						<h:selectBooleanCheckbox disabled="#{!ocspResponderMBean.inEditMode}" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 					</h:panelGroup>
