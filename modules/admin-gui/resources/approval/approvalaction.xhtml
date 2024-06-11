@@ -159,10 +159,10 @@
 	                            	<f:converter converterId="stringConverter"/>
 	                            </h:inputTextarea>
 					   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
-				                   <f:converter converterId="javax.faces.Long"/>
+				                   <f:converter converterId="jakarta.faces.Long"/>
 					   			</h:inputText>
 					   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
-				                   <f:converter converterId="javax.faces.Integer"/>
+				                   <f:converter converterId="jakarta.faces.Integer"/>
 					   			</h:inputText>
 				   				<h:selectBooleanCheckbox disabled="true" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 				   			</h:panelGroup>
@@ -217,12 +217,12 @@
 						   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 						   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 						   				rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
-					                   <f:converter converterId="javax.faces.Long"/>
+					                   <f:converter converterId="jakarta.faces.Long"/>
 						   			</h:inputText>
 						   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 						   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 						   				rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
-					                   <f:converter converterId="javax.faces.Integer"/>
+					                   <f:converter converterId="jakarta.faces.Integer"/>
 						   			</h:inputText>
 					   				<h:selectBooleanCheckbox disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 					   					|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
