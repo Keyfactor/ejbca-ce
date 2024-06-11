@@ -108,8 +108,9 @@ dependencyResolutionManagement {
             library("system-rules", ":system-rules:1.19.0")
             // bundles
             bundle(
-                "junit",
+                "test",
                 listOf(
+                    // junit
                     "junit",
                     "hamcrest-core",
                     "httpcore",
@@ -118,12 +119,33 @@ dependencyResolutionManagement {
                     "commons-collections4",
                     "commons-configuration2",
                     "commons-text",
-                    "commons-beanutils"
+                    "commons-beanutils",
+                    // easymock & powermock
+                    "easymock",
+                    "powermock",
+                    "cglib",
+                    "objenesis"
                 )
             )
-            bundle("easymock", listOf("easymock", "cglib", "objenesis"))
-            bundle("powermock", listOf("powermock", "cglib", "objenesis"))
-            bundle("bouncy-castle", listOf("bcprov", "bcpkix", "bctls", "bcutil"))
+            bundle("bouncy.castle", listOf("bcprov", "bcpkix", "bctls", "bcutil"))
+            bundle(
+                "utils",
+                listOf(
+                    "commons-lang",
+                    "commons-lang3",
+                    "commons-configuration2",
+                    "commons-collections4",
+                    "commons-logging",
+                    "commons-codec",
+                    "commons-io",
+                    "commons-fileupload",
+                    "commons-beanutils",
+                    "commons-text",
+                    "log4j-api",
+                    "log4j-core",
+                    "log4j-v12-api"
+                )
+            )
         }
     }
 }

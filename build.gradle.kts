@@ -44,7 +44,6 @@ configurations {
     create("earlibanddeploy")
 }
 
-
 dependencies {
     "earlibanddeploy"(project(path = ":modules:ejbca-ejb", configuration = "archives"))
     deploy(project(path = ":modules:cesecore-ejb", configuration = "archives"))
@@ -82,7 +81,7 @@ dependencies {
     }
     if (edition == "ce") {
         // When edition is CE we use :modules:edition-specific:ejb as a replacement for :modules:edition-specific-ee
-        "earlibanddeploy"(project(path = ":modules:edition-specific:ejb", configuration="archives"))
+        "earlibanddeploy"(project(path = ":modules:edition-specific:ejb", configuration = "archives"))
     }
     if (edition == "ee" && !props.getProperty("ejbca.productionmode", "true").toBoolean()) {
         deploy(":swagger-ui@war")
@@ -184,27 +183,67 @@ tasks.ear {
     from("src/deploy/ear/META-INF") {
         include("application.xml")
         filter { line: String ->
-            line.replace("<!--@status.war@-->", "<module><web><web-uri>status.war</web-uri><context-root>/ejbca/publicweb/status</context-root></web></module>")
-                    .replace("<!--@certstore.war@-->", "<module><web><web-uri>certstore.war</web-uri><context-root>/ejbca/publicweb/certificates</context-root></web></module>")
-                    .replace("<!--@crlstore.war@-->", "<module><web><web-uri>crlstore.war</web-uri><context-root>/ejbca/publicweb/crls</context-root></web></module>")
-                    .replace("<!--@ejbca-ws-ejb.jar@-->", "<module><ejb>ejbca-ws-ejb.jar</ejb></module>")
-                    .replace("<!--@ra-gui.war@-->", "<module><web><web-uri>ra-gui.war</web-uri><context-root>/ejbca/ra</context-root></web></module>")
+            line
+                .replace(
+                    "<!--@status.war@-->",
+                    "<module><web><web-uri>status.war</web-uri><context-root>/ejbca/publicweb/status</context-root></web></module>"
+                )
+                .replace(
+                    "<!--@certstore.war@-->",
+                    "<module><web><web-uri>certstore.war</web-uri><context-root>/ejbca/publicweb/certificates</context-root></web></module>"
+                )
+                .replace(
+                    "<!--@crlstore.war@-->",
+                    "<module><web><web-uri>crlstore.war</web-uri><context-root>/ejbca/publicweb/crls</context-root></web></module>"
+                )
+                .replace("<!--@ejbca-ws-ejb.jar@-->", "<module><ejb>ejbca-ws-ejb.jar</ejb></module>")
+                .replace(
+                    "<!--@ra-gui.war@-->",
+                    "<module><web><web-uri>ra-gui.war</web-uri><context-root>/ejbca/ra</context-root></web></module>"
+                )
         }
         if (edition == "ee") {
             filter { line: String ->
-                line.replace("<!--@status.war@-->", "<module><web><web-uri>status.war</web-uri><context-root>/ejbca/publicweb/status</context-root></web></module>")
-                        .replace("<!--@statedump-ejb.jar@-->", "<module><ejb>statedump-ejb.jar</ejb></module>")
-                        .replace("<!--@configdump-ejb.jar@-->", "<module><ejb>configdump-ejb.jar</ejb></module>")
-                        .replace("<!--@peerconnector-ejb.jar@-->", "<module><ejb>peerconnector-ejb.jar</ejb></module>")
-                        .replace("<!--@peerconnector.rar@-->", "<module><connector>peerconnector.rar</connector></module>")
-                        .replace("<!--@peerconnector.war@-->", "<module><web><web-uri>peerconnector.war</web-uri><context-root>/ejbca/peer</context-root></web></module>")
-                        .replace("<!--@ejbca-rest-api.war@-->", "<module><web><web-uri>ejbca-rest-api.war</web-uri><context-root>/ejbca/ejbca-rest-api</context-root></web></module>")
-                        .replace("<!--@acme.war@-->", "<module><web><web-uri>acme.war</web-uri><context-root>/ejbca/acme</context-root></web></module>")
-                        .replace("<!--@msae.war@-->", "<module><web><web-uri>msae.war</web-uri><context-root>/ejbca/msae</context-root></web></module>")
-                        .replace("<!--@est.war@-->", "<module><web><web-uri>est.war</web-uri><context-root>/.well-known/est</context-root></web></module>")
-                        .replace("<!--@ssh.war@-->", "<module><web><web-uri>ssh.war</web-uri><context-root>/ejbca/ssh</context-root></web></module>")
-                        .replace("<!--@swagger-ui.war@-->", "<module><web><web-uri>swagger-ui.war</web-uri><context-root>/ejbca/swagger-ui</context-root></web></module>")
-                        .replace("<!--@cits.war@-->", "<module><web><web-uri>cits.war</web-uri><context-root>/ejbca/its</context-root></web></module>")
+                line.replace(
+                    "<!--@status.war@-->",
+                    "<module><web><web-uri>status.war</web-uri><context-root>/ejbca/publicweb/status</context-root></web></module>"
+                )
+                    .replace("<!--@statedump-ejb.jar@-->", "<module><ejb>statedump-ejb.jar</ejb></module>")
+                    .replace("<!--@configdump-ejb.jar@-->", "<module><ejb>configdump-ejb.jar</ejb></module>")
+                    .replace("<!--@peerconnector-ejb.jar@-->", "<module><ejb>peerconnector-ejb.jar</ejb></module>")
+                    .replace("<!--@peerconnector.rar@-->", "<module><connector>peerconnector.rar</connector></module>")
+                    .replace(
+                        "<!--@peerconnector.war@-->",
+                        "<module><web><web-uri>peerconnector.war</web-uri><context-root>/ejbca/peer</context-root></web></module>"
+                    )
+                    .replace(
+                        "<!--@ejbca-rest-api.war@-->",
+                        "<module><web><web-uri>ejbca-rest-api.war</web-uri><context-root>/ejbca/ejbca-rest-api</context-root></web></module>"
+                    )
+                    .replace(
+                        "<!--@acme.war@-->",
+                        "<module><web><web-uri>acme.war</web-uri><context-root>/ejbca/acme</context-root></web></module>"
+                    )
+                    .replace(
+                        "<!--@msae.war@-->",
+                        "<module><web><web-uri>msae.war</web-uri><context-root>/ejbca/msae</context-root></web></module>"
+                    )
+                    .replace(
+                        "<!--@est.war@-->",
+                        "<module><web><web-uri>est.war</web-uri><context-root>/.well-known/est</context-root></web></module>"
+                    )
+                    .replace(
+                        "<!--@ssh.war@-->",
+                        "<module><web><web-uri>ssh.war</web-uri><context-root>/ejbca/ssh</context-root></web></module>"
+                    )
+                    .replace(
+                        "<!--@swagger-ui.war@-->",
+                        "<module><web><web-uri>swagger-ui.war</web-uri><context-root>/ejbca/swagger-ui</context-root></web></module>"
+                    )
+                    .replace(
+                        "<!--@cits.war@-->",
+                        "<module><web><web-uri>cits.war</web-uri><context-root>/ejbca/its</context-root></web></module>"
+                    )
             }
         }
         if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
@@ -236,5 +275,76 @@ task<Copy>("deployear") {
     into("$appServerHome/standalone/deployments")
     doLast {
         println("Deployed EAR to application server at $appServerHome")
+    }
+}
+
+tasks.withType<JavaCompile>().configureEach {
+    options.isFork = true
+}
+
+subprojects {
+    // Add common test configuration to all modules/subprojects containing test sources
+    if (file("src-test").exists()) {
+        // The weird `if` statement below is a temporary solution that will allow us to configure test tasks gradually
+        // one module at a time. It should be removed once all modules are configured.
+        if (name in listOf(
+                "ejbca-entity"
+            )
+        ) {
+            plugins.apply("java")
+
+            // Unit tests
+            tasks.withType<Test> {
+                description = "Runs unit tests."
+                maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+                forkEvery = 100
+
+                filter {
+                    includeTestsMatching("*UnitTest")
+                    isFailOnNoMatchingTests = false
+                }
+
+                java {
+                    sourceSets["test"].java.srcDirs("src-test")
+                    sourceSets["test"].compileClasspath += sourceSets["main"].compileClasspath
+                    sourceSets["test"].runtimeClasspath += sourceSets["main"].compileClasspath
+                }
+
+                testLogging.events("passed", "skipped", "failed")
+            }
+
+            // System tests
+            tasks.register<Test>("systemTest") {
+                description = "Runs system tests."
+                group = "verification"
+                shouldRunAfter("test")
+
+                filter {
+                    includeTestsMatching("*SystemTest")
+                    excludeTestsMatching("*UnitTest")
+                    isFailOnNoMatchingTests = false
+                }
+
+                // Since our system test classes live alongside unit tests in the "src-test" directory,
+                // we can reuse the source configuration of the "test" task.
+                testClassesDirs = sourceSets["test"].output.classesDirs
+                classpath = sourceSets["test"].runtimeClasspath
+
+                testLogging.events("passed", "skipped", "failed")
+            }
+
+            // Add the "systemTest" task to Gradle's "check" task dependencies
+            // so that it would be triggered alongside the unit "test" task.
+            tasks.named("check") {
+                dependsOn(tasks.named("systemTest"))
+            }
+
+            // Add common dependencies used by most tests.
+            dependencies {
+                val testImplementation by configurations
+                testImplementation(rootProject.libs.bundles.utils)
+                testImplementation(rootProject.libs.bundles.test)
+            }
+        }
     }
 }
