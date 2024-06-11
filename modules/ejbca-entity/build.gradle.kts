@@ -1,3 +1,4 @@
+import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.include
 import java.util.Properties
 
 val props: Properties = Properties().apply {
@@ -8,6 +9,7 @@ val props: Properties = Properties().apply {
         load(file(propertiesFilePath + ".sample").inputStream())
     }
 }
+
 val dialectMap = mapOf(
     "db2" to "org.hibernate.dialect.DB2Dialect",
     "derby" to "org.hibernate.dialect.DerbyDialect",
@@ -21,8 +23,9 @@ val dialectMap = mapOf(
     "postgres" to "org.hibernate.dialect.PostgreSQLDialect",
     "sybase" to "org.hibernate.dialect.SybaseDialect"
 )
+
 val dialect = dialectMap[props.getProperty("database.name", "mysql")]
-        ?: throw IllegalArgumentException("Unsupported database type ${props.getProperty("database.name")}")
+    ?: throw IllegalArgumentException("Unsupported database type ${props.getProperty("database.name")}")
 props.setProperty("hibernate.dialect", dialect)
 
 plugins {
@@ -37,6 +40,15 @@ dependencies {
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.commons.lang)
     compileOnly(libs.x509.common.util)
+
+    testImplementation(libs.bundles.bouncy.castle)
+    testImplementation(libs.xstream)
+    testImplementation(libs.xpp3.min)
+    testImplementation(libs.xmlpull)
+
+    if (project.extra["edition"] == "ee") {
+        testImplementation(project(":modules:ejbca-entity:cli"))
+    }
 }
 
 sourceSets {
@@ -44,6 +56,19 @@ sourceSets {
         java {
             setSrcDirs(listOf("src"))
         }
+    }
+    val test by getting {
+        java {
+            resources.srcDirs("src-test")
+        }
+    }
+}
+
+tasks.systemTest {
+    filter {
+        // TODO ECA-12480: Create custom test tasks similar to Ant's "test-dbschema" and "test-ocspmon" targets.
+        excludeTestsMatching("DatabaseSchemaSystemTest")
+        excludeTestsMatching("OcspMonitoringToolSystemTest")
     }
 }
 
