@@ -13,6 +13,7 @@ dependencies {
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.cryptotokens.impl) 
 }
 
 sourceSets {
