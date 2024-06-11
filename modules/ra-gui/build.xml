@@ -32,6 +32,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 	    <path refid="lib.snakeyaml.classpath"/>
+		<path refid="lib.cryptotokens.classpath" />
 	</path>
 
 	<path id="test.classpath">
