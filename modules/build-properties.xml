@@ -492,6 +492,7 @@
             <include name="classmate*.jar"/>
             <include name="dom4j-*.jar"/>
         	<include name="FastInfoset*.jar"/>
+			<include name="hibernate-community-dialects-*.jar"/>
             <include name="hibernate-commons-annotations-*.jar"/>
             <include name="hibernate-core-*.jar"/>
         	<include name="istack-commons-runtime*.jar"/>
