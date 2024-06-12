@@ -99,6 +99,8 @@ dependencyResolutionManagement {
             library("jboss-transaction-api_v12_spec", ":jboss-transaction-api_1.2_spec:1.1.1.Final")
             library("stax-ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
+            //library("slf4j.log4j", ":slf4j-reload4j:1.7.35")
+            library("slf4j.api", ":slf4j-api:1.7.35")
             // test dependencies
             library("junit", ":junit:4.13.2")
             library("easymock", ":easymock:4.3")
