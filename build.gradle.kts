@@ -145,6 +145,7 @@ dependencies {
         earlib(libs.dnsjava)
         earlib(libs.protobuf.java)
         earlib(libs.p11ng)
+        earlib(libs.cryptotokens.impl)
     }
     // Internal modules packaged as libraries
     earlib(project(path = ":modules:cesecore-common", configuration = "archives"))
