@@ -112,7 +112,7 @@
 	         <formatter type="xml" />
 	         <batchtest fork="yes" todir="${reports.dir}">
 	             <fileset dir="${admin-gui.build-test.dir}">
-	                 <include name="**/*Test.class" />
+	                 <include name="**/*UnitTest.class" />
 	             </fileset>
 	         </batchtest>
 	     	<jvmarg line="${tests.jvmargs}"/>
