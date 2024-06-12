@@ -20,7 +20,7 @@ dependencies {
     compileOnly(libs.commons.collections4)
     compileOnly(libs.commons.io)
     compileOnly(libs.jldap)
-    compileOnly(libs.myfaces.api)
+    compileOnly(libs.jsf)
     compileOnly(libs.x509.common.util)
 }
 

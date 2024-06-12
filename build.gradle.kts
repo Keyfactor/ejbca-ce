@@ -288,7 +288,8 @@ subprojects {
         // The weird `if` statement below is a temporary solution that will allow us to configure test tasks gradually
         // one module at a time. It should be removed once all modules are configured.
         if (name in listOf(
-                "ejbca-entity"
+                "ejbca-entity",
+                "admin-gui"
             )
         ) {
             plugins.apply("java")
