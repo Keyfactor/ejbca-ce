@@ -66,7 +66,7 @@ dependencyResolutionManagement {
             library("commons-beanutils", ":commons-beanutils:1.9.4")
             library("commons-text", ":commons-text:1.10.0")
             library("activation", ":activation:1.1.1")
-            library("myfaces-api", ":myfaces-api:2.3.9")
+            library("jsf", ":myfaces-api:2.3.9")
             library("kerb4j-server-common", ":kerb4j-server-common:0.1.2")
             library("kerb-core", ":kerb-core:2.0.3")
             library("kerb-crypto", ":kerb-crypto:2.0.3")
