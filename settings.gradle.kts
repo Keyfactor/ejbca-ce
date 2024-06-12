@@ -81,6 +81,7 @@ dependencyResolutionManagement {
             library("wsdl4j", ":wsdl4j:1.6.3")
             library("jcip-annotations", ":jcip-annotations:1.0-1")
             library("jna", ":jna:5.12.1")
+            library("keyfactor.commons.cli", ":keyfactor-commons-cli-1.0.1:1.0.1")
             // hibernate
             library("antlr", ":antlr:2.7.7")
             library("byte-buddy", ":byte-buddy:1.10.17")
@@ -166,6 +167,8 @@ if (edition == "ee") {
         "modules:peerconnector:rar",
         "modules:plugins-ee",
         "modules:statedump:ejb",
+        "modules:caa",
+        "modules:caa:cli",
         "modules:cits:common",
         "modules:cits",
         "modules:configdump:common",
@@ -213,7 +216,6 @@ include(
     "modules:ejbca-ws-cli",
     "modules:edition-specific:interface",
     "modules:plugins",
-    "modules:caa",
     "modules:ejbca-ejb",
     "modules:admin-gui",
     "modules:ra-gui",
