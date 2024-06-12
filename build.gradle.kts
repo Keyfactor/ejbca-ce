@@ -289,7 +289,8 @@ subprojects {
         // one module at a time. It should be removed once all modules are configured.
         if (name in listOf(
                 "ejbca-entity",
-                "admin-gui"
+                "admin-gui",
+                "caa"
             )
         ) {
             plugins.apply("java")
