@@ -78,6 +78,8 @@ public class CVCRequestMessage implements RequestMessage {
   
     private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
     
+    private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
+    
     /**
      * Constructs a new empty message handler object.
      */
@@ -130,6 +132,9 @@ public class CVCRequestMessage implements RequestMessage {
 
         PublicKey pk;
 		try {
+            if (cvcert == null) {
+                throw new IllegalArgumentException(ENROLL_INVALID_CERTIFICATE_REQUEST);
+            }
 			pk = cvcert.getCertificateBody().getPublicKey();
 		} catch (NoSuchFieldException e) {
 			throw new InvalidKeyException(e);
