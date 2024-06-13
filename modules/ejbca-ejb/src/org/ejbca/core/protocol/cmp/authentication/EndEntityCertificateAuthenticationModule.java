@@ -267,7 +267,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         List<X509Certificate> extraCertPath = getExtraCerts(msg);
         // The extraCert should itself be an end entity certificate, if there are more than one cert, find the end entity one
         if (extraCertPath != null && extraCertPath.size() > 1) {
-            // find the fist non CA certificate and assume this is the end entity extraCert
+            // find the first non CA certificate and assume this is the end entity extraCert
             for (X509Certificate cert : extraCertPath) {
                 if (!CertTools.isCA(cert)) {
                     extraCert = cert;
