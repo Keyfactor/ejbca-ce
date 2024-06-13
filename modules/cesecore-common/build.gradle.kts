@@ -33,7 +33,7 @@ dependencies {
     compileOnly(libs.xmlpull)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.cryptotokens.api)
-    compileOnly(libs.cryptotokens.impl) 
+    compileOnly(libs.cryptotokens.impl)
     // hibernate
     compileOnly(libs.antlr)
     compileOnly(libs.byte.buddy)
@@ -52,6 +52,14 @@ dependencies {
     compileOnly(libs.jboss.transaction.api.v12.spec)
     compileOnly(libs.stax.ex)
     compileOnly(libs.txw2)
+
+    testImplementation(project(":modules:cesecore-entity"))
+    testImplementation(project(":modules:cesecore-x509ca"))
+    testImplementation(libs.xpp3.min)
+
+    if (project.extra["edition"] == "ee") {
+        testImplementation(project(":modules:cesecore-cvcca"))
+    }
 }
 
 sourceSets {
@@ -62,6 +70,35 @@ sourceSets {
             )
         }
     }
+    val test by getting {
+        java {
+            resources.srcDirs("resources-test")
+        }
+    }
+}
+
+tasks.register<Copy>("copyExtraTestResources") {
+    description = "Copies additional resources to the test build directory that are required for executing tests."
+    group = JavaBasePlugin.VERIFICATION_GROUP
+    from("${rootProject.projectDir}/src/intresources") {
+        into("intresources")
+    }
+    from("${rootProject.projectDir}/src/java")
+    {
+        include("defaultvalues.properties")
+        include("dncomponents.properties")
+        include("profilemappings.properties")
+        include("profilemappings_enterprise.properties")
+        include("certextensions.properties")
+    }
+    from("resources/META-INF/services") {
+        into("META-INF/services")
+    }
+    into("build/resources/test/")
+}
+
+tasks.withType<Test>().configureEach {
+    dependsOn("copyExtraTestResources")
 }
 
 tasks.jar {
