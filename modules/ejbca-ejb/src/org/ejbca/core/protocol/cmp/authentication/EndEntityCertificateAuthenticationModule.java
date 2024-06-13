@@ -198,9 +198,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
 
     /**
-     * Get the certificate that was attached to the CMP request in it's extraCert filed.
+     * Get the certificate that was attached to the CMP request in it's extraCert field.
      *
-     * @return The certificate that was attached to the CMP request in it's extraCert filed
+     * @return The certificate that was attached to the CMP request in it's extraCert field
      */
     public Certificate getExtraCert() {
         return extraCert;
