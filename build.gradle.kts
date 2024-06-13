@@ -290,7 +290,8 @@ subprojects {
         if (name in listOf(
                 "ejbca-entity",
                 "admin-gui",
-                "caa"
+                "caa",
+                "cesecore-common"
             )
         ) {
             plugins.apply("java")
