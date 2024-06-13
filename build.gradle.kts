@@ -317,29 +317,37 @@ subprojects {
             }
 
             // System tests
-            tasks.register<Test>("systemTest") {
-                description = "Runs system tests."
-                group = "verification"
-                shouldRunAfter("test")
+            val systemTestsExist = fileTree("src-test").apply {
+                include("**/*SystemTest.java")
+            }.toList().isNotEmpty()
 
-                filter {
-                    includeTestsMatching("*SystemTest")
-                    excludeTestsMatching("*UnitTest")
-                    isFailOnNoMatchingTests = false
+            // We can reduce the number of Gradle tasks and configurations offered by IDEs for test execution
+            // by adding a systemTest task only if the module contains any system test classes.
+            if (systemTestsExist) {
+                tasks.register<Test>("systemTest") {
+                    description = "Runs system tests."
+                    group = "verification"
+                    shouldRunAfter("test")
+
+                    filter {
+                        includeTestsMatching("*SystemTest")
+                        excludeTestsMatching("*UnitTest")
+                        isFailOnNoMatchingTests = false
+                    }
+
+                    // Since our system test classes live alongside unit tests in the "src-test" directory,
+                    // we can reuse the source configuration of the "test" task.
+                    testClassesDirs = sourceSets["test"].output.classesDirs
+                    classpath = sourceSets["test"].runtimeClasspath
+
+                    testLogging.events("passed", "skipped", "failed")
                 }
 
-                // Since our system test classes live alongside unit tests in the "src-test" directory,
-                // we can reuse the source configuration of the "test" task.
-                testClassesDirs = sourceSets["test"].output.classesDirs
-                classpath = sourceSets["test"].runtimeClasspath
-
-                testLogging.events("passed", "skipped", "failed")
-            }
-
-            // Add the "systemTest" task to Gradle's "check" task dependencies
-            // so that it would be triggered alongside the unit "test" task.
-            tasks.named("check") {
-                dependsOn(tasks.named("systemTest"))
+                // Add the "systemTest" task to Gradle's "check" task dependencies
+                // so that it would be triggered alongside the unit "test" task.
+                tasks.named("check") {
+                    dependsOn(tasks.named("systemTest"))
+                }
             }
 
             // Add common dependencies used by most tests.
