@@ -78,7 +78,7 @@ sourceSets {
 }
 
 tasks.register<Copy>("copyExtraTestResources") {
-    description = "Copies additional resources to the test build directory that are required for executing tests."
+    description = "Copies additional resources required for executing tests to the test build directory."
     group = JavaBasePlugin.VERIFICATION_GROUP
     from("${rootProject.projectDir}/src/intresources") {
         into("intresources")
