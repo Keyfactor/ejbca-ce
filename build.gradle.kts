@@ -291,7 +291,8 @@ subprojects {
                 "ejbca-entity",
                 "admin-gui",
                 "caa",
-                "cesecore-common"
+                "cesecore-common",
+                "cesecore-ejb"
             )
         ) {
             plugins.apply("java")
