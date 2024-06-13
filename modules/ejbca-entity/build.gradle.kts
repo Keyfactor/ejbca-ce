@@ -1,4 +1,3 @@
-import org.gradle.internal.impldep.org.junit.experimental.categories.Categories.CategoryFilter.include
 import java.util.Properties
 
 val props: Properties = Properties().apply {
