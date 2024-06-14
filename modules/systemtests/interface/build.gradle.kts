@@ -21,13 +21,13 @@ sourceSets {
         java {
             setSrcDirs(listOf("../src-interface"))
         }
+        resources {
+            srcDirs("resources")
+        }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF") {
-        into("META-INF")
-    }
     archiveBaseName.set("systemtests-interfaces")
 }
