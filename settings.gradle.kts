@@ -149,6 +149,8 @@ dependencyResolutionManagement {
                     "log4j-v12-api"
                 )
             )
+            bundle("xstream", listOf("xstream", "xmlpull", "xpp3_min"))
+            bundle("xmlpull", listOf("xmlpull", "xpp3_min"))
         }
     }
 }
