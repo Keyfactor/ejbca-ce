@@ -75,16 +75,10 @@ tasks.jar {
     }
 }
 
-tasks.register<Copy>("copyExtraTestResources") {
-    description = "Copies additional resources required for executing tests to the test build directory."
-    group = JavaBasePlugin.VERIFICATION_GROUP
+tasks.processTestResources {
     from("${rootProject.projectDir}/modules/common/resources"){
         include("log4j-test.xml")
         rename("log4j-test.xml", "log4j.xml")
     }
     into("build/resources/test/")
-}
-
-tasks.compileTestJava {
-    dependsOn("copyExtraTestResources")
 }

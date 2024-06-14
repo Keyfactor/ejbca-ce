@@ -74,15 +74,13 @@ sourceSets {
         }
     }
     val test by getting {
-        java {
-            resources.srcDirs("resources-test")
+        resources {
+            srcDirs("resources-test")
         }
     }
 }
 
-tasks.register<Copy>("copyExtraTestResources") {
-    description = "Copies additional resources required for executing tests to the test build directory."
-    group = JavaBasePlugin.VERIFICATION_GROUP
+tasks.processTestResources {
     from("${rootProject.projectDir}/src/intresources") {
         into("intresources")
     }
@@ -95,10 +93,6 @@ tasks.register<Copy>("copyExtraTestResources") {
         include("certextensions.properties")
     }
     into("build/resources/test/")
-}
-
-tasks.compileTestJava {
-    dependsOn("copyExtraTestResources")
 }
 
 tasks.jar {
