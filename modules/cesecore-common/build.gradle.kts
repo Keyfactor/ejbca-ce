@@ -68,6 +68,7 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
+            resources.srcDirs("resources")
         }
     }
     val test by getting {
@@ -91,9 +92,6 @@ tasks.register<Copy>("copyExtraTestResources") {
         include("profilemappings_enterprise.properties")
         include("certextensions.properties")
     }
-    from("resources/META-INF/services") {
-        into("META-INF/services")
-    }
     into("build/resources/test/")
 }
 
@@ -112,8 +110,5 @@ tasks.jar {
     }
     from("${rootProject.projectDir}/src/intresources") {
         into("intresources")
-    }
-    from("resources/META-INF/services") {
-        into("META-INF/services")
     }
 }
