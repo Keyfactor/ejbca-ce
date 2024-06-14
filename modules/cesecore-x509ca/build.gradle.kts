@@ -13,7 +13,11 @@ dependencies {
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.impl) 
+    compileOnly(libs.cryptotokens.impl)
+    testImplementation(project(":modules:cesecore-entity"))
+    testImplementation(libs.cryptotokens.api)
+    testImplementation(libs.cert.cvc)
+    testImplementation(libs.bundles.xmlpull)
 }
 
 sourceSets {
@@ -22,13 +26,11 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
+            resources.srcDirs("resources")
         }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF/services") {
-        into("META-INF/services")
-    }
 }
