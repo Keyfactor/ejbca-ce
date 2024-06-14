@@ -293,7 +293,8 @@ subprojects {
                 "caa",
                 "cesecore-common",
                 "cesecore-ejb",
-                "cesecore-ejb-interface"
+                "cesecore-ejb-interface",
+                "cesecore-entity"
             )
         ) {
             plugins.apply("java")
