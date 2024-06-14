@@ -26,7 +26,9 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
-            resources.srcDirs("resources")
+            resources {
+                srcDirs("resources")
+            }
         }
     }
 }

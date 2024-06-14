@@ -25,12 +25,12 @@ sourceSets {
         java {
             setSrcDirs(listOf("src"))
         }
+        resources {
+            srcDirs("resources")
+        }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF/services") {
-        into("META-INF/services")
-    }
 }

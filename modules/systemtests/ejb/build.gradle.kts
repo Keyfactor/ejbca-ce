@@ -40,13 +40,13 @@ sourceSets {
             exclude("org/ejbca/ui/web/rest/api/resource/RestResourceSystemTestBase.java")
 			exclude("com/widget/WidgetCustomExtension.java")
         }
+        resources {
+            srcDirs("resources")
+        }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF") {
-        into("META-INF")
-    }
     archiveBaseName.set("systemtests-ejb")
 }
