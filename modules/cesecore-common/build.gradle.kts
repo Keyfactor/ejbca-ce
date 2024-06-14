@@ -97,7 +97,7 @@ tasks.register<Copy>("copyExtraTestResources") {
     into("build/resources/test/")
 }
 
-tasks.withType<Test>().configureEach {
+tasks.compileTestJava {
     dependsOn("copyExtraTestResources")
 }
 
