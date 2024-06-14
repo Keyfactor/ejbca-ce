@@ -54,11 +54,6 @@ sourceSets {
             setSrcDirs(listOf("src"))
         }
     }
-    val test by getting {
-        java {
-            resources.srcDirs("src-test")
-        }
-    }
 }
 
 tasks.systemTest {
@@ -67,6 +62,14 @@ tasks.systemTest {
         excludeTestsMatching("DatabaseSchemaSystemTest")
         excludeTestsMatching("OcspMonitoringToolSystemTest")
     }
+}
+
+tasks.processTestResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from(sourceSets["test"].allSource){
+        include("**/test.xml")
+    }
+    into("${layout.buildDirectory}/resources/test/")
 }
 
 tasks.jar {
