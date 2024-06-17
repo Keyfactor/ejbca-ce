@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.web.rest.api.resource.validator;
+package org.ejbca.ui.web.rest.api.validator;
 
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
 import org.junit.Test;
