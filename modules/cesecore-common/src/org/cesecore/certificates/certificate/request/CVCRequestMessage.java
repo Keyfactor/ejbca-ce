@@ -77,8 +77,7 @@ public class CVCRequestMessage implements RequestMessage {
     private List<Certificate> additionalCaCertificates = new ArrayList<>();
   
     private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
-    
-    
+        
     /**
      * Constructs a new empty message handler object.
      */
