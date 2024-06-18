@@ -539,6 +539,14 @@ table.edit tr td {
 	width: 35%;
 	text-align: right;
 }
+.editColumnEE1 {
+	width: 35%;
+	text-align: right;
+}
+.editColumnEE2 {
+	width: 65%;
+	text-align: left;
+}
 .editColumnSystem1 {
 	width: 35%;
 	text-align: left;
