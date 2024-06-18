@@ -55,7 +55,6 @@
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
         <path location="${mod.ejbca-rest-common.lib}"/>
-		<path refid="lib.test.powermock.classpath"/>
 	</path>
 
 	<path id="test.classpath">
