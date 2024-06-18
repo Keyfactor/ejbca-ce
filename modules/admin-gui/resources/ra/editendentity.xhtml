@@ -37,13 +37,12 @@
 		
 		<h:form id="editendentity" enctype="multipart/form-data">
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2">
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1" 
+				columnClasses="editColumnEE1,editColumnEE2">
 				<h:outputLabel 
 					value="#{web.text.ENDENTITYPROFILE}"
 					style="font-weight:bold; font-size:1.2em;" />
-					
 			<h:panelGroup id="endEntityProfile">
 					<h:selectOneMenu value="#{resourceBean.selectedEeProfileId}"
 						disabled="#{!resourceBean.allowedToEditEndEntity}">
@@ -67,13 +66,16 @@
 						disabled="#{!resourceBean.allowedToEditEndEntity}">
 						<f:selectItems value="#{resourceBean.availableEeStatus}" />
 					</h:selectOneMenu>
+					&nbsp;&nbsp;&nbsp;
+			<h:commandButton id="buttonSaveStatus" value="#{web.text.SAVE}"
+						action="#{resourceBean.editUser}" />					
 			</h:panelGroup>
 			</h:panelGrid>
 
 		    <!-- ********** Main ******************** -->
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2">
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2">
 				<h:outputLabel 
 					value="#{web.text.USERNAME}"
 					style="font-weight:bold; font-size:1.2em;" />
@@ -160,7 +162,7 @@
 			</h:panelGroup>	
 				
 			<h:panelGroup>
-					<h:panelGrid columns="3">
+					<h:panelGrid columns="3" style="width: auto;">
 						<h:selectOneRadio id="maxLoginAttemptsSpecifiedRadio"
 							value="#{resourceBean.maxLoginAttemptsStatus}"
 							readonly="#{!resourceBean.allowedToEditEndEntity or !resourceBean.maxFailedLoginAttemptsModifiable}">
@@ -189,15 +191,14 @@
 			
 			
 				<h:inputText id="eeRemainingLoginAttemptsText"
-							value="#{resourceBean.maxLoginAttempts}" size="5" maxlength="255"
+							value="#{resourceBean.remainingLoginAttempts}" size="5" maxlength="255"
 							title="#{web.text.FORMAT_INTEGER}"
-							disabled="#{resourceBean.maxLoginAttemptsStatus eq 'unlimited'}"
+							disabled="true"
 							readonly="#{!resourceBean.allowedToEditEndEntity or !resourceBean.maxFailedLoginAttemptsModifiable}" />
 
 				<h:selectBooleanCheckbox
 							id="checkBoxResetMaxLoginAttempts"
-							value="#{resourceBean.resetMaxLoginAttempts}"
-							disabled="true"/>
+							value="#{resourceBean.resetMaxLoginAttempts}"/>
 						<h:outputLabel for="checkBoxResetMaxLoginAttempts" value="#{web.text.RESETLOGINATTEMPTS}" />
 							
 			</h:panelGroup>
@@ -254,14 +255,13 @@
 			</h:panelGroup>
 
 
-
 			</h:panelGrid>
 			
 			<!-- ********** Subject DN ******************** -->
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2">
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2">
 				<h:outputLabel value="#{web.text.CERT_SUBJECTDN_ATTRIBUTES}"
 					style="font-weight:bold; font-size:1.2em;" />
 
@@ -330,9 +330,9 @@
 			
 			<!-- ********** Subject Alternative Name ******************** -->
 
- 			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2"
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2"
 				rendered="#{resourceBean.profileHasSubjectAltNameFields}">
 				<h:outputLabel value="#{web.text.SUBJECTALTNAMES}"
 					style="font-weight:bold; font-size:1.2em;" />
@@ -516,9 +516,9 @@
 
 			<!-- ********** Subject Directory Attributes ******************** -->
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2"
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2"
 				rendered="#{resourceBean.profileHasSubjectDirAttrFields}">
 				<h:outputLabel value="#{web.text.SUBJECTDIRATTRIBUTES}"
 					style="font-weight:bold; font-size:1.2em;" />
@@ -564,9 +564,9 @@
 
 	    <!-- ********** Main Certificate Data ******************** -->
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2">
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2">
 				<h:outputLabel value="#{web.text.MAINCERTIFICATEDATA}"
 					style="font-weight:bold; font-size:1.2em;" />
 				<h:panelGroup />
@@ -599,16 +599,16 @@
 					<h:selectOneMenu value="#{resourceBean.selectedTokenId}"
 						disabled="#{!resourceBean.allowedToEditEndEntity}">
 						<f:selectItems value="#{resourceBean.availableTokens}" />
-<!-- 						<f:ajax render="editendentity:useKeyRecovery" listener="#{resourceBean.keyRecoveryCheckboxStatusUpdate()}"/>
- -->					</h:selectOneMenu>
+ 						<f:ajax render="editendentity:useKeyRecovery" listener="#{resourceBean.keyRecoveryCheckboxStatusUpdate()}"/>
+					</h:selectOneMenu>
 				</h:panelGroup>
 			</h:panelGrid>
 
 			<!-- ********** Other certificate data ******************** -->
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2"
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2"
 				rendered="#{resourceBean.renderOtherCertDataSection}">
 				<h:outputLabel value="#{web.text.OTHERCERTIFICATEDATA}"
 					style="font-weight:bold; font-size:1.2em;" />
@@ -828,9 +828,9 @@
 
 			<!-- ********** Other data ******************** -->
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2"
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2"
 				rendered="#{resourceBean.renderOtherDataSection}">
 				<h:outputLabel value="#{web.text.OTHERDATA}"
 					style="font-weight:bold; font-size:1.2em;" />
@@ -847,7 +847,7 @@
 					<h:selectOneMenu
 						id="allowedRequests"
 						value="#{resourceBean.numberOfRequests}"
-						disabled="#{!resourceBean.allowedToAddEndEntity}">
+						disabled="#{!resourceBean.allowedToEditEndEntity}">
 						<f:selectItems value="#{resourceBean.allowedRequests}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
@@ -863,8 +863,8 @@
 				</h:panelGroup>
 				<h:panelGroup rendered="#{resourceBean.useKeyRecovery}">
 					<h:selectBooleanCheckbox id="useKeyRecovery"
-						value="#{resourceBean.keyRecovery}"
-						disabled="#{resourceBean.keyRecoveryRequired}" />
+						value="#{resourceBean.keyRecoveryCheckboxStatus.left}"
+						disabled="#{resourceBean.keyRecoveryCheckboxStatus.right}" />
 					<h:outputLabel value="#{web.text.ACTIVATE}" for="useKeyRecovery" />
 				</h:panelGroup>
 
@@ -874,7 +874,7 @@
 				</h:panelGroup>
 				<h:panelGroup id="useIssuanceRevocationReason" rendered="#{resourceBean.useIssuanceRevocationReason}">
 					<h:selectOneMenu value="#{resourceBean.revocationStatus}"
-						disabled="#{!resourceBean.allowedToAddEndEntity || resourceBean.issuanceRevocationReasonDisabled}">
+						disabled="#{!resourceBean.allowedToEditEndEntity || resourceBean.issuanceRevocationReasonDisabled}">
 						<f:selectItems value="#{resourceBean.issuanceRevocationReasons}" />
 					</h:selectOneMenu>
 				</h:panelGroup>
@@ -906,9 +906,9 @@
 
 			<!-- ********** CSR ******************** -->
 
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2"
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2"
 				rendered="#{resourceBean.renderCSRSection}">
 				<h:outputLabel value="#{web.text.CERTIFICATEREQUESTDATA}"
 					style="font-weight:bold; font-size:1.2em;" />
@@ -940,9 +940,9 @@
 
 			<!-- ********** Form buttons ******************** -->
 			
-			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3"
-				cellpadding="3" border="0" width="100%" rowClasses="Row1"
-				columnClasses="editColumnSystem1,editColumn2">
+			<h:panelGrid columns="2" styleClass="edit-top" cellspacing="2"
+				cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+				columnClasses="editColumnEE1,editColumnEE2">
 				<h:panelGroup />
 
 				<h:panelGroup>
