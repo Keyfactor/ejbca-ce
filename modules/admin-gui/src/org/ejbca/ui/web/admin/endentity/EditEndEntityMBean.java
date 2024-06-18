@@ -1,3 +1,15 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
 import java.io.IOException;
@@ -25,6 +37,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -53,7 +66,6 @@ import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
-import org.ejbca.ui.web.admin.rainterface.EditEndEntityBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
@@ -69,91 +81,10 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
 
     private static final long serialVersionUID = 1L;
 
-    static final String ACTION = "action";
-    static final String ACTION_EDITUSER = "edituser";
-    static final String ACTION_CHANGEPROFILE = "changeprofile";
+    private static final Logger log = Logger.getLogger(EditEndEntityMBean.class);
 
-    static final String BUTTON_SAVE = "buttonedituser";
-    static final String BUTTON_CLOSE = "buttonclose";
-
-    static final String TEXTFIELD_NEWUSERNAME = "textfieldnewusername";
-    static final String TEXTFIELD_PASSWORD = "textfieldpassword";
-    static final String TEXTFIELD_CONFIRMPASSWORD = "textfieldconfirmpassword";
-    static final String TEXTFIELD_SUBJECTDN = "textfieldsubjectdn";
-    static final String TEXTFIELD_SUBJECTALTNAME = "textfieldsubjectaltname";
-    static final String TEXTFIELD_SUBJECTDIRATTR = "textfieldsubjectdirattr";
-    static final String TEXTFIELD_EMAIL = "textfieldemail";
-    static final String TEXTFIELD_EMAILDOMAIN = "textfieldemaildomain";
-    static final String TEXTFIELD_UPNNAME = "textfieldupnnamne";
-    static final String TEXTFIELD_STARTTIME = "textfieldstarttime";
-    static final String TEXTFIELD_ENDTIME = "textfieldendtime";
-    static final String TEXTFIELD_CARDNUMBER = "textfieldcardnumber";
-    static final String TEXTFIELD_MAXFAILEDLOGINS = "textfieldmaxfailedlogins";
-    static final String TEXTFIELD_CERTSERIALNUMBER = "textfieldcertserialnumber";
-    static final String TEXTFIELD_NCANAME = "psd2ncaname";
-    static final String TEXTFIELD_NCAID = "psd2ncaid";
-    static final String TEXTFIELD_CABFORGANIZATIONIDENTIFIER = "cabforgident";
-
-    static final String TEXTAREA_EXTENSIONDATA = "textareaextensiondata";
-    static final String TEXTAREA_NC_PERMITTED = "textarencpermitted"; // Name Constraints
-    static final String TEXTAREA_NC_EXCLUDED = "textarencexcluded";
-
-    static final String SELECT_ENDENTITYPROFILE = "selectendentityprofile";
-    static final String SELECT_CERTIFICATEPROFILE = "selectcertificateprofile";
-    static final String SELECT_TOKEN = "selecttoken";
-    static final String SELECT_USERNAME = "selectusername";
-    static final String SELECT_PASSWORD = "selectpassword";
-    static final String SELECT_CONFIRMPASSWORD = "selectconfirmpassword";
-    static final String SELECT_SUBJECTDN = "selectsubjectdn";
-    static final String SELECT_SUBJECTALTNAME = "selectsubjectaltname";
-    static final String SELECT_SUBJECTDIRATTR = "selectsubjectdirattr";
-    static final String SELECT_EMAILDOMAIN = "selectemaildomain";
-    static final String SELECT_CHANGE_STATUS = "selectchangestatus";
-    static final String SELECT_CA = "selectca";
-    static final String SELECT_ALLOWEDREQUESTS = "selectallowedrequests";
-    static final String SELECT_ISSUANCEREVOCATIONREASON = "selectissuancerevocationreason";
-    static final String SELECT_PSD2_PSPROLE = "selectpsd2psprole";
-
-    static final String CHECKBOX_CLEARTEXTPASSWORD = "checkboxcleartextpassword";
-    static final String CHECKBOX_SUBJECTDN = "checkboxsubjectdn";
-    static final String CHECKBOX_SUBJECTALTNAME = "checkboxsubjectaltname";
-    static final String CHECKBOX_SUBJECTDIRATTR = "checkboxsubjectdirattr";
-    static final String CHECKBOX_KEYRECOVERABLE = "checkboxkeyrecoverable";
-    static final String CHECKBOX_SENDNOTIFICATION = "checkboxsendnotification";
-    static final String CHECKBOX_PRINT = "checkboxprint";
-
-    static final String CHECKBOX_REGENERATEPASSWD = "checkboxregeneratepasswd";
-
-    static final String CHECKBOX_REQUIRED_USERNAME = "checkboxrequiredusername";
-    static final String CHECKBOX_REQUIRED_PASSWORD = "checkboxrequiredpassword";
-    static final String CHECKBOX_REQUIRED_CARDNUMBER = "checkboxrequiredcardnumber";
-    static final String CHECKBOX_REQUIRED_CLEARTEXTPASSWORD = "checkboxrequiredcleartextpassword";
-    static final String CHECKBOX_REQUIRED_SUBJECTDN = "checkboxrequiredsubjectdn";
-    static final String CHECKBOX_REQUIRED_SUBJECTALTNAME = "checkboxrequiredsubjectaltname";
-    static final String CHECKBOX_REQUIRED_SUBJECTDIRATTR = "checkboxrequiredsubjectdirattr";
-    static final String CHECKBOX_REQUIRED_EMAIL = "checkboxrequiredemail";
-    static final String CHECKBOX_REQUIRED_KEYRECOVERABLE = "checkboxrequiredkeyrecoverable";
-    static final String CHECKBOX_REQUIRED_STARTTIME = "checkboxrequiredstarttime";
-    static final String CHECKBOX_REQUIRED_ENDTIME = "checkboxrequiredendtime";
-    static final String CHECKBOX_REQUIRED_CERTSERIALNUMBER = "checkboxrequiredcertserialnumber";
-    static final String CHECKBOX_REQUIRED_NC_PERMITTED = "checkboxrequiredncpermitted";
-    static final String CHECKBOX_REQUIRED_NC_EXCLUDED = "checkboxrequiredncexcluded";
-    static final String CHECKBOX_REQUIRED_EXTENSIONDATA = "checkboxrequiredextensiondata";
-
-    static final String CHECKBOX_RESETLOGINATTEMPTS = "checkboxresetloginattempts";
-    static final String CHECKBOX_UNLIMITEDLOGINATTEMPTS = "checkboxunlimitedloginattempts";
-
-    static final String RADIO_MAXFAILEDLOGINS = "radiomaxfailedlogins";
-    static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
-    static final String RADIO_MAXFAILEDLOGINS_VAL_SPECIFIED = "specified";
-
-    static final String CHECKBOX_VALUE = "true";
-
-    static final String USER_PARAMETER = "username";
-    static final String SUBJECTDN_PARAMETER = "subjectdnparameter";
-
-    static final String HIDDEN_USERNAME = "hiddenusername";
-    static final String HIDDEN_PROFILE = "hiddenprofile";
+    
+    private static final String USER_PARAMETER = "username";
 
     private String userName = null;
     private String eePassword = null;
@@ -161,7 +92,7 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     private String selectedPassword = null;
     private List<String> selectPasswordList = new ArrayList<>();
 
-    private String maxLoginAttempts;
+    private String maxLoginAttempts = StringUtils.EMPTY;
     private String maxLoginAttemptsStatus;
     private boolean resetMaxLoginAttempts;
     private boolean useClearTextPasswordStorage;
@@ -210,12 +141,14 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     private boolean sendNotification;
     private boolean usePrinting;
     private boolean useKeyRecovery = false;
-    private boolean keyRecovery = false;
+    private MutablePair<Boolean, Boolean> keyRecoveryCheckboxStatus = new MutablePair<>();
+
 
     String approvalmessage = null;
 
     private EjbcaWebBean ejbcaWebBean;
     private RAInterfaceBean raBean;
+    GlobalConfiguration globalConfiguration = null;
 
     @EJB
     CaSessionLocal caSession;
@@ -246,7 +179,8 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     // Initialize environment.
     private void initData() throws Exception {
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-
+        
+        userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
         ejbcaWebBean = getEjbcaWebBean();
         raBean = SessionBeans.getRaBean(request);
         raBean.initialize(ejbcaWebBean);
@@ -256,17 +190,20 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
         eeProfileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.EDIT_END_ENTITY).keySet()
                 .toArray(new String[0]);
 
-        GlobalConfiguration globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
+        globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
                 AccessRulesConstants.REGULAR_EDITENDENTITY);
 
+        initializeData();
+
+    }
+    
+    private void initializeData() throws EndEntityException, EndEntityProfileNotFoundException, AuthorizationDeniedException {
         if (eeProfileNames == null || eeProfileNames.length == 0) {
             throw new EndEntityException(getEjbcaWebBean().getText("NOTAUTHORIZEDTOCREATEENDENTITY"));
         } else {
             this.setSelectedEeProfileId(raBean.getEndEntityProfileId(eeProfileNames[0]));
             this.eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
         }
-
-        userName = java.net.URLDecoder.decode(request.getParameter(USER_PARAMETER), StandardCharsets.UTF_8);
 
         if (StringUtils.isNotBlank(userName)) {
             userData = raBean.findUserForEdit(userName);
@@ -275,46 +212,9 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
                 eeStatus = userData.getStatus();
                 selectedEeProfileId = userData.getEndEntityProfileId();
                 eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
-                useClearTextPasswordStorage = (eeProfile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || userData.getClearTextPassword());
-
-                maxLoginAttempts = eeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1") ? "-1"
-                        : eeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0);
-                maxLoginAttemptsStatus = eeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1") ? "unlimited" : "specified";
-
-                if (eeProfile.getUse(EndEntityProfile.EMAIL, 0) && (userData.getEmail() != null && !userData.getEmail().equals(StringUtils.EMPTY))) {
-                    emailName = userData.getEmail().substring(0, userData.getEmail().indexOf('@'));
-                    emailDomain = userData.getEmail().substring(userData.getEmail().indexOf('@') + 1);
-
-                }
-
-                emailOptions = eeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
-
-                /* Main Certificate Data */
-                this.selectedCertProfileId = userData.getCertificateProfileId();
-                this.selectedCaId = userData.getCAId();
-                this.selectedTokenId = userData.getTokenType();
-                this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery() && eeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
-                this.keyRecovery = userData.getKeyRecoverable();
-
-                if (eeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
-                    String defaultnrofrequests = eeProfile.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
-                    if (defaultnrofrequests == null) {
-                        defaultnrofrequests = "1";
-                    }
-                    ExtendedInformation ei = userData.getExtendedInformation();
-                    String counter = ei != null ? ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER) : null;
-                    if (counter == null) {
-                        counter = defaultnrofrequests;
-                    }
-
-                    this.numberOfRequests = Integer.parseInt(counter);
-                }
                 
-                if (eeProfile.getPredefinedPassword() != null) {
-                    selectedPassword = eeProfile.getPredefinedPassword().trim();
-                    selectPasswordList.add(eeProfile.getPredefinedPassword().trim());
-                }
-
+                initTheRest();
+                
             } else {
                 throw new EndEntityException(ejbcaWebBean.getText("ENDENTITYDOESNTEXIST"));
             }
@@ -322,43 +222,86 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
         } else {
             throw new EndEntityException(ejbcaWebBean.getText("YOUMUSTSPECIFYUSERNAME"));
         }
+        
+        initSubjectData();
 
-        composeSubjectDnFieldsAndData();
-        composeSubjectAltNameFieldAndData();
-        composeSubjectDirAttrFieldsAndData();
 
     }
 
-    public String actionChangeEndEntityProfile(AjaxBehaviorEvent event) throws EndEntityProfileNotFoundException {
-
-        eeProfileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.EDIT_END_ENTITY).keySet()
-                .toArray(new String[0]);
-
-        this.setSelectedEeProfileId(raBean.getEndEntityProfileId(eeProfileNames[0]));
-        this.eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
-        userData.setEndEntityProfileId(selectedEeProfileId);
-
+    private void initSubjectData() {
         composeSubjectDnFieldsAndData();
         composeSubjectAltNameFieldAndData();
         composeSubjectDirAttrFieldsAndData();
+    }
 
+    private void initTheRest() {
+        useClearTextPasswordStorage = (eeProfile.isRequired(EndEntityProfile.CLEARTEXTPASSWORD, 0) || userData.getClearTextPassword());
+
+        ExtendedInformation maxei = userData.getExtendedInformation();
+        if (maxei != null) {
+            maxLoginAttempts = String.valueOf(maxei.getMaxLoginAttempts());
+        }
+
+
+        maxLoginAttemptsStatus = maxLoginAttempts.equals("-1") ? "unlimited" : "specified";
+
+        if (eeProfile.getUse(EndEntityProfile.EMAIL, 0) && (userData.getEmail() != null && !userData.getEmail().equals(StringUtils.EMPTY))) {
+            emailName = userData.getEmail().substring(0, userData.getEmail().indexOf('@'));
+            emailDomain = userData.getEmail().substring(userData.getEmail().indexOf('@') + 1);
+
+        }
+
+        emailOptions = eeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
+
+        /* Main Certificate Data */
+        this.selectedCertProfileId = userData.getCertificateProfileId();
+        this.selectedCaId = userData.getCAId();
+        this.selectedTokenId = userData.getTokenType();
+        this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery() && eeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
+
+        this.keyRecoveryCheckboxStatus.setLeft(userData.getKeyRecoverable());
+        this.keyRecoveryCheckboxStatus.setRight(eeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE, 0));
+
+        if (eeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+            String defaultnrofrequests = eeProfile.getValue(EndEntityProfile.ALLOWEDREQUESTS, 0);
+            if (defaultnrofrequests == null) {
+                defaultnrofrequests = "1";
+            }
+            ExtendedInformation ei = userData.getExtendedInformation();
+            String counter = ei != null ? ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER) : null;
+            if (counter == null) {
+                counter = defaultnrofrequests;
+            }
+
+            this.numberOfRequests = Integer.parseInt(counter);
+        }
+
+        if (eeProfile.getPredefinedPassword() != null) {
+            selectedPassword = eeProfile.getPredefinedPassword().trim();
+            selectPasswordList.add(eeProfile.getPredefinedPassword().trim());
+        }
+        
+    }
+
+    public String actionChangeEndEntityProfile(AjaxBehaviorEvent event) throws Exception {
+        
+        eeProfileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.EDIT_END_ENTITY).keySet()
+                .toArray(new String[0]);
+        
+        eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+        userData.setEndEntityProfileId(selectedEeProfileId);
+        
+        initTheRest();
+        initSubjectData();
         return "editendentity";
     }
 
-    public int getRemainingLoginAttemps() {
+    public String getRemainingLoginAttemps() {
         if ((userData.getExtendedInformation() != null) && (userData.getExtendedInformation().getRemainingLoginAttempts() != -1)) {
-            return userData.getExtendedInformation().getRemainingLoginAttempts();
+            return String.valueOf(userData.getExtendedInformation().getRemainingLoginAttempts());
         } else {
-            return -1;
+            return StringUtils.EMPTY;
         }
-    }
-
-    public boolean isKeyRecovery() {
-        return keyRecovery;
-    }
-
-    public void setKeyRecovery(boolean keyRecovery) {
-        this.keyRecovery = keyRecovery;
     }
 
     public boolean isMaxFailedLoginAttemptsModifiable() {
@@ -489,6 +432,9 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     }
 
     public String getMaxLoginAttempts() {
+        if (maxLoginAttempts.equals("-1")) {
+            return StringUtils.EMPTY;
+        } 
         return maxLoginAttempts;
     }
 
@@ -511,6 +457,14 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     public void setResetMaxLoginAttempts(boolean resetMaxLoginAttempts) {
         this.resetMaxLoginAttempts = resetMaxLoginAttempts;
     }
+    
+    public String getRemainingLoginAttempts() {
+        if((userData.getExtendedInformation() != null) && (userData.getExtendedInformation().getRemainingLoginAttempts() != -1)) {
+            return String.valueOf(userData.getExtendedInformation().getRemainingLoginAttempts());
+        }
+        return StringUtils.EMPTY;
+    }
+    
 
     public boolean isUseBatchGenerationPassword() {
         return eeProfile.getUse(EndEntityProfile.CLEARTEXTPASSWORD, 0);
@@ -1294,9 +1248,42 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
         return userData.getExtendedInformation().getKeyStoreAlgorithmSubType();
     }
 
-    public void saveUser() {
+    public void keyRecoveryCheckboxStatusUpdate() {
+
+        boolean keyRecoveryCheckBoxDisabled = false;
+        boolean keyRecoveryCheckBoxChecked = false;
+
+        if (getSelectedTokenId() == SecConst.TOKEN_SOFT_BROWSERGEN) {
+            keyRecoveryCheckBoxChecked = false;
+            keyRecoveryCheckBoxDisabled = true;
+        } else {
+            if (eeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE, 0)) {
+                keyRecoveryCheckBoxDisabled = true;
+            } else {
+                keyRecoveryCheckBoxDisabled = false;
+            }
+
+            if (eeProfile.getValue(EndEntityProfile.KEYRECOVERABLE, 0).equals(EndEntityProfile.TRUE)
+                    || eeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE, 0)) {
+                keyRecoveryCheckBoxChecked = true;
+
+            } else {
+                keyRecoveryCheckBoxChecked = false;
+            }
+        }
+        
+        this.keyRecoveryCheckboxStatus.setLeft(keyRecoveryCheckBoxChecked);
+        this.keyRecoveryCheckboxStatus.setRight(keyRecoveryCheckBoxDisabled);
 
     }
+    
+    public MutablePair<Boolean, Boolean> getKeyRecoveryCheckboxStatus() {
+        return keyRecoveryCheckboxStatus;
+    }
+
+    public void setKeyRecoveryCheckboxStatus(MutablePair<Boolean, Boolean> keyRecoveryCheckboxStatus) {
+        this.keyRecoveryCheckboxStatus = keyRecoveryCheckboxStatus;
+    }    
 
     private boolean doesPasswordAndConfirmationMatch() {
         if (!eeProfile.useAutoGeneratedPasswd() && (eeProfile.isPasswordModifiable())) {
@@ -1531,10 +1518,9 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
             newUserView.setPassword(null);
         }
 
-        if (selectedPassword != null) {
-            if (!selectedPassword.equals("")) {
+        if (selectedPassword != null &&  (!selectedPassword.equals(""))) {
                 newUserView.setPassword(selectedPassword);
-            }
+            
         }
 
         newUserView.setClearTextPassword(useClearTextPasswordStorage);
@@ -1562,17 +1548,17 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
         if (ei == null) {
             ei = new ExtendedInformation();
         }
-
-        if (maxLoginAttempts != null) {
-            ei.setMaxLoginAttempts(Integer.parseInt(maxLoginAttempts));
-            newUserView.setExtendedInformation(ei);
+        
+        if(maxLoginAttempts.equals(StringUtils.EMPTY) || maxLoginAttemptsStatus.equals("unlimited")) {
+            maxLoginAttempts = "-1";
         }
+        
+        ei.setMaxLoginAttempts(Integer.parseInt(maxLoginAttempts));
+        newUserView.setExtendedInformation(ei);
 
-        if (extensionData != null) {
-            // Save the new value if the profile allows it
-            if (eeProfile.getUseExtensiondata()) {
+        if (extensionData != null &&  (eeProfile.getUseExtensiondata())) {
                 setExtensionData(extensionData);
-            }
+            
         }
 
         if (resetMaxLoginAttempts) {
@@ -1611,26 +1597,30 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
         newUserView = checkAndSetSubjectAltName(newUserView);
         newUserView = checkAndSetSubjectDirName(newUserView);
 
-        ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(numberOfRequests));
-        newUserView.setExtendedInformation(ei);
+        if (eeProfile.getUse(EndEntityProfile.ALLOWEDREQUESTS, 0)) {
+            ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(numberOfRequests));
+            newUserView.setExtendedInformation(ei);
+        }
 
-        newUserView.setKeyRecoverable(keyRecovery);
+        newUserView.setKeyRecoverable(keyRecoveryCheckboxStatus.left);
         newUserView.setSendNotification(sendNotification);
         newUserView.setPrintUserData(usePrinting);
         newUserView = checkAndSetMainCertificateData(newUserView);
 
         // Issuance revocation reason, what state a newly issued certificate will have
         // If it's not modifyable don't even try to modify it
-        String fieldValue = String.valueOf(revocationStatus);
+        if (eeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0)) {
+            String fieldValue = String.valueOf(revocationStatus);
 
-        if ((eeProfile.getUse(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0))
-                && (!eeProfile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0))) {
-            fieldValue = eeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+            if (!eeProfile.isModifyable(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0)) {
+                fieldValue = eeProfile.getValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0);
+            }
+            if (fieldValue != null) {
+                ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, fieldValue);
+                newUserView.setExtendedInformation(ei);
+            }
         }
-        if (fieldValue != null) {
-            ei.setCustomData(ExtendedInformation.CUSTOM_REVOCATIONREASON, fieldValue);
-            newUserView.setExtendedInformation(ei);
-        }
+        
 
         if (validityStartTime != null) {
             validityStartTime = validityStartTime.trim();

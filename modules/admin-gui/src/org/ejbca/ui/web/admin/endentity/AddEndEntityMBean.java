@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -326,7 +327,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     public void setMaxLoginAttemptsStatus(String maxLoginAttemptsStatus) {
         this.maxLoginAttemptsStatus = maxLoginAttemptsStatus;
     }
-
+    
     public void setUseClearTextPasswordStorage(boolean useClearTextPasswordStorage) {
         this.useClearTextPasswordStorage = useClearTextPasswordStorage;
     }
@@ -919,7 +920,7 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     }
     
     public String encodeUserName(final String userName) throws UnsupportedEncodingException {
-        return java.net.URLEncoder.encode(userName, "UTF-8");
+        return java.net.URLEncoder.encode(userName, StandardCharsets.UTF_8);
     }
     
     public String getAddedUserCN(final UserView addedUser) {
