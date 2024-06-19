@@ -38,7 +38,7 @@
         </fileset>
        <fileset dir="${ejbca.home}/lib/jee">
            <include name="jakarta.jakartaee-api*.jar"/>
-           <include name="jaxb-api*.jar"/>
+           <include name="jakarta.xml.bind-api*.jar"/>
            <include name="jakarta.xml.ws-api*.jar"/>
            <include name="javax.jws-api*.jar"/>
         </fileset>
