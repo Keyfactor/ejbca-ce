@@ -135,6 +135,10 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
                 }
                 break;
             }
+            default: {
+                log.info("Key method is invalid: " + keyMethod + ". Allowed values are: FILE, URL or TEXT.");
+                return CommandResult.FUNCTIONAL_FAILURE;
+            }
         }
         if (saveGlobalConfig()) {
             log.info("Public key successfuly added to Trusted OAuth Provider with label " + label + "!");
