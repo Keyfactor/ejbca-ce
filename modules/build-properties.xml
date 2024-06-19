@@ -384,7 +384,7 @@
 
 	<path id="lib.jee.classpath">
 		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jakartaee-api*.jar"/>
-		<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.bind-api-*.jar"/>
 	</path>
 	
 	<path id="lib.jaxws-rs.classpath"><fileset dir="${ejbca.home}/lib/jee/soapclient" includes="jaxws-rt-*.jar"/></path>
@@ -498,14 +498,14 @@
         	<include name="jandex*.jar"/>
         	<include name="jakarta.activation*.jar"/>
         	<include name="jakarta.persistence*.jar"/>
-            <include name="jaxb-api*.jar"/>
+            <include name="jakarta.xml.bind-api*.jar"/>
         	<include name="jaxb-runtime*.jar"/>
 <!--            <include name="jboss-logging-*.jar"/>-->
             <include name="jboss-transaction-api*.jar"/>
         	<include name="stax-ex*.jar"/>
         	<include name="txw2*.jar"/>
         </fileset>
-	<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
+	<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.bind-*.jar"/>
 	</path>
 
 	<path id="lib.clientToolBox.classpath">
