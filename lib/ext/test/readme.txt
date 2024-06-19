@@ -1,2 +1,3 @@
 "Project";                      "Library Name";                                 "License type(s)";      "License text";                 "Source";                                                           "Comment";
 "EasyMock";                     "easymock-5.2.0";                               "ALv2";                 "LICENSE-APACHE-2.0";           "https://easymock.org/";                                             "Not needed for running CESeCore. Used to create mocks for unit testing purposes.";
+"Objenesis";                    "objenesis-3.3.jar";                          	"ALv2";                 "LICENSE-APACHE-2.0";           "https://github.com/easymock/objenesis";                             "Not needed for running CESeCore. Needed for class mocking.";
