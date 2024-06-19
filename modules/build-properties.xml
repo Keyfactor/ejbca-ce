@@ -233,6 +233,7 @@
 		<!-- TODO To support legacy references, use lib.test.classpath instead of lib.easymock.classpath -->
 		<fileset dir="${ejbca.home}/lib/ext/test">
 			<include name="easymock-*.jar"/>
+			<include name="objenesis-*.jar"/>
 		</fileset>
 	</path>
 
