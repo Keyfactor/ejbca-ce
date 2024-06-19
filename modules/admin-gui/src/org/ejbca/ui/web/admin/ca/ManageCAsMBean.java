@@ -84,10 +84,10 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 
 /**
- * 
+ *
  * JSF MBean backing the manage ca page.
  *
- * 
+ *
  */
 @Named
 @ViewScoped
@@ -260,13 +260,14 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public Map<Integer, String> getListOfCas() {
         final Map<Integer, String> caMap = new LinkedHashMap<>();
-        for (final String nameofca : caNames.keySet()) {
-            int caId = caNames.get(nameofca);
+        for (final String caName : caNames.keySet()) {
+            int caId = caNames.get(caName);
             int caStatus = caBean.getCAStatusNoAuth(caId);
+            String statusText = getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus));
 
-            String nameandstatus = nameofca + ", (" + getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus)) + ")";
+            String nameAndStatus = caName + " (" + statusText + ")";
             if (caSession.authorizedToCANoLogging(getAdmin(), caId)) {
-                caMap.put(caId, nameandstatus);
+                caMap.put(caId, nameAndStatus);
             }
         }
         return caMap;
@@ -470,18 +471,18 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         return EditCaUtil.MANAGE_CA_NAV;
     }
-    
-    private boolean removeCA(final int caId) throws AuthorizationDeniedException{     
+
+    private boolean removeCA(final int caId) throws AuthorizationDeniedException{
         final boolean caIdIsPresent = endEntityManagementSession.checkForCAId(caId) ||
                 certificateProfileSessionLocal.existsCAIdInCertificateProfiles(caId) ||
                 endEntityProfileSession.existsCAInEndEntityProfiles(caId) ||
-                isCaIdInUseByRoleOrRoleMember(caId);   
+                isCaIdInUseByRoleOrRoleMember(caId);
         if (!caIdIsPresent) {
             caSession.removeCA(getEjbcaWebBean().getAdminObject(), caId);
         }
         return !caIdIsPresent;
     }
-    
+
     private boolean isCaIdInUseByRoleOrRoleMember(final int caId) {
         for (final Role role : roleDataSession.getAllRoles()) {
             if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caId))) {
@@ -523,14 +524,14 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String createAuthCertSignRequest() {
         if (selectedCaId != 0) {
-            
+
             int selectedCaType;
             try {
                 selectedCaType = caSession.getCAInfo(getAdmin(), selectedCaId).getCAType();
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException("Admin is not authorized to get ca type!", e);
             }
-            
+
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaType", selectedCaType);
