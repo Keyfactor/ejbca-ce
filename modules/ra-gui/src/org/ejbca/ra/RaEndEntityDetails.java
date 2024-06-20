@@ -252,7 +252,14 @@ public class RaEndEntityDetails implements Serializable {
      * @return String with principals separated by ,
      */
     public String getSshPrincipalsPretty() {
-        String principals = getSshPrincipals().replace(":", ", ");
+        String principals = getSshPrincipals();
+        for (String ipv6: this.extendedInformation.getSshPrincipalsIpv6()) {
+            principals = principals.replace(ipv6, ipv6.replace(":", "_"));
+        }
+        principals = principals.replace(":", ", ");
+        for (String ipv6: this.extendedInformation.getSshPrincipalsIpv6()) {
+            principals = principals.replace(ipv6.replace(":", "_"), ipv6);
+        }
         if (StringUtils.endsWith(principals, ", ")) {
             principals = principals.substring(0, principals.length() - 2);
         }
