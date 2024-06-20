@@ -64,9 +64,6 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyCreationException;
 
-/**
- *
- */
 public class LegacyKeyStoreTools {
     private static final Logger log = Logger.getLogger(LegacyKeyStoreTools.class);
 

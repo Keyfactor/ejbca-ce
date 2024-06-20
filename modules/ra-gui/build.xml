@@ -32,6 +32,7 @@
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 	    <path refid="lib.snakeyaml.classpath"/>
+		<path refid="lib.cryptotokens.classpath" />
 	</path>
 
 	<path id="test.classpath">
@@ -76,7 +77,7 @@
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${ra-gui.build-test.dir}">
-					<include name="**/*Test.class" />
+					<include name="**/*UnitTest.class" />
 				</fileset>
 			</batchtest>
 			<jvmarg line="${tests.jvmargs}"/>

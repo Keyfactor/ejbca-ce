@@ -1,5 +1,9 @@
 apiVersion: apps/v1
+{{- if eq (int .Values.replicaCount) 1 }}
 kind: Deployment
+{{- else }}
+kind: StatefulSet
+{{- end }}
 metadata:
   name: {{ include "ejbca.fullname" . }}
   labels:

@@ -1974,35 +1974,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Persist ("Publish") the CA certificates to the local CertificateData database.
         publishCACertificate(admin, certificates, null, ca.getSubjectDN());
         
-        if(cainfo instanceof ProxyCaInfo) {
-            log.info("Creating empty template of EST configuration for proxy ca");
-            createEmptyEstConfigForProxyCa(admin, (ProxyCaInfo) cainfo);
-        }
-        
-    }
-
-    private void createEmptyEstConfigForProxyCa(AuthenticationToken admin, ProxyCaInfo cainfo) throws AuthorizationDeniedException {
-        EstConfiguration estConfiguration = 
-                (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
-        
-        String estConfigAlias = cainfo.getEstConfigAlias();
-        if(estConfiguration.getAliasList().contains(estConfigAlias)) {
-            // may happen if we had CA with same subjectDn beforehand and deleted
-            // otherwise CA creation would have failed
-            log.info("Removing preexisitng EST alias named: " + estConfigAlias);
-            estConfiguration.removeAlias(estConfigAlias);
-            globalConfigurationSession.saveConfiguration(admin, estConfiguration);
-        }
-        
-        estConfiguration.addAlias(estConfigAlias); // initializes to default values
-        estConfiguration.setDefaultCAID(estConfigAlias, cainfo.getSubjectDN().hashCode()); // proxy ca id
-        // username and password are empty + client certificate is not required
-        // hence all authentication will fail in RA mode(default EST mode)
-        estConfiguration.setCert(estConfigAlias, false);
-        estConfiguration.setSupportProxyCa(estConfigAlias, true);
-        
-        globalConfigurationSession.saveConfiguration(admin, estConfiguration);
-        
     }
 
     @Override
