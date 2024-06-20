@@ -172,4 +172,33 @@ public class SshRequestMessageTest {
         req = new SshRequestMessage("", "", ei);
         assertEquals("critical options mismatch at request message", criticals, req.getCriticalOptions());
     }
+    
+    @Test
+    public void testIPv6() {
+        List<String> principals = new ArrayList<>();
+        principals.add("onePrincipal");
+        principals.add("twoPrincipal");
+        principals.add("198.172.9.18");
+        principals.add("ab:cd:ef::gh");
+        principals.add("ab:cd:ef:ee:gh");
+        principals.add("::1");
+        SshRequestMessage req = new SshRequestMessage("".getBytes(), "", principals, null, null, "CommentedToo");
+        
+        EndEntityInformation userData = new EndEntityInformation();
+        req.populateEndEntityData(userData, certProfile);
+        
+        assertEquals("SAN mismatch", "dnsName=PRINCIPAL:onePrincipal:twoPrincipal:198.172.9.18:ab:cd:ef::gh:ab:cd:ef:ee:gh:::1:COMMENT:CommentedToo", userData.getSubjectAltName());
+        
+        userData.setSubjectAltName(null);
+        ExtendedInformation ei = new ExtendedInformation();
+        List<String> ipV6s = new ArrayList<>();
+        ipV6s.add("ab:cd:ef::gh");
+        ipV6s.add("ab:cd:ef:ee:gh");
+        ipV6s.add("::1");
+        ei.setSshPrincipalsIpv6(ipV6s);
+        req = new SshRequestMessage("", "dnsName=PRINCIPAL:onePrincipal:twoPrincipal:198.172.9.18:ab:cd:ef::gh:ab:cd:ef:ee:gh:::1:COMMENT:CommentedToo", ei);
+        assertEquals("principal mismatch", principals, req.getPrincipals());
+        assertEquals("Comment mismatch", "CommentedToo", req.getComment());
+    }
+    
 }

@@ -82,6 +82,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     
     public static final String SSH_CERTIFICATE_CRITICAL_OPTIONS = "ssh_critical_options";
     public static final String SSH_CERTIFICATE_EXTENSIONS = "ssh_extensions";
+    public static final String SSH_PRINCIPALS_IPV6 = "ssh_principals_ipv6";
 
     /**
      * Identifier for Custom data holding a end time when the users certificate should be valid extInfo.setCustomData(EndEntityProfile.STARTTIME, "");
@@ -923,6 +924,19 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
             }
             setSshCustomData(SSH_CERTIFICATE_EXTENSIONS, sshExtensionData);
         }
+    }
+    
+    public List<String> getSshPrincipalsIpv6() {
+        Object entry = data.get(CUSTOM_SSH_DATA + SSH_PRINCIPALS_IPV6);
+        if(entry!=null) {
+            return (List<String>) data.get(CUSTOM_SSH_DATA + SSH_PRINCIPALS_IPV6);
+        } else {
+            return new ArrayList<String>();
+        }
+    }
+
+    public void setSshPrincipalsIpv6(List<String> ipv6Principals) {
+        setSshCustomData(SSH_PRINCIPALS_IPV6, ipv6Principals);
     }
 
 }
