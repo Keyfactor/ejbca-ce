@@ -2468,18 +2468,6 @@
                     <h:outputText styleClass="smallHelp" value="#{web.text.UPSTREAM_CA_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:outputLabel for="textFieldTemplate" value="#{web.text.TEMPLATE}"/>
-                </h:panelGroup>
-                <h:panelGroup>
-                    <h:inputText id="textFieldTemplate" name="certificateAuthority" size="25" maxlength="225"
-                                 value="#{editCAsMBean.caInfoDto.upstreamTemplate}" title="#{web.text.TEMPLATE}"
-                                 rendered="#{editCAsMBean.editCA and editCAsMBean.hasEditRight}">
-                        <f:ajax/>
-                    </h:inputText>
-                    <h:outputText rendered="#{not (editCAsMBean.editCA and editCAsMBean.hasEditRight)}"
-                                  value="#{editCAsMBean.caInfoDto.upstreamTemplate}"/>
-                </h:panelGroup>
-                <h:panelGroup>
                     <h:outputLabel for="textAreaSans" value="#{web.text.SANS}"/>
                 </h:panelGroup>
                 <h:panelGroup>
