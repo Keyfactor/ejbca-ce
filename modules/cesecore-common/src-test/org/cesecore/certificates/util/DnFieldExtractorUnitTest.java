@@ -34,14 +34,15 @@ public class DnFieldExtractorUnitTest {
     	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
     	assertEquals("DN=", comp);
     	String dn = "name=tomas,street=a street, role=Test Role, pseudonym=pseudo,cn=Tomas Gustavsson,o=PrimeKey,organizationidentifier=12345,"
-    	        + "L=Stockholm,dc=PrimeKey,DC=com,description=Test DN,vid=FFF1,pid=8000,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023";
+                + "L=Stockholm,dc=PrimeKey,DC=com,description=Test DN,vid=FFF1,pid=8000,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023,"
+                + "legalEntityIdentifier=MCTest1,markType=Prior Use Mark,wordMark=MarkCertTest,priorUseMarkSourceURL=https://markcerts.example.com";
     	// uniqueIdentifier should be a ASN.1 BITSTRING, see X.520 6.2.7, but that is too advanced for customers so they just assume a normal UTF8String
     	// CertificationID is specified in TR03145-5, Note that the certification ID is issued by the certification authority and has the following notation:
     	// BSI-K-TR-"four digit number"-"year as four digit"
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
         if (DnComponents.enterpriseMappingsExist()) {
-            assertEquals(36, i.size());
+            assertEquals(37, i.size());
         } else {
             assertEquals(32, i.size());
         }
@@ -93,6 +94,12 @@ public class DnFieldExtractorUnitTest {
         assertEquals("UNIQUEIDENTIFIER=N62892", fieldstr);
         fieldstr = extractor.getFieldString(DNFieldExtractor.CERTIFICATIONID);
         assertEquals("CERTIFICATIONID=BSI-K-TR-1234-2023", fieldstr);
+        final String lei = extractor.getField(DNFieldExtractor.LEGALENTITYIDENTIFIER, 0);
+        if (DnComponents.enterpriseMappingsExist()) {
+            assertEquals("MCTest1", lei);
+        } else {
+            assertEquals("", lei);
+        }
     	boolean illegal = extractor.isIllegal();
     	assertFalse(illegal);
     	boolean other = extractor.existsOther();
