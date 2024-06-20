@@ -281,7 +281,7 @@
 
 	<!-- If using antcall you must use inheritrefs="true" in order for not having to call some setup every time -->
 	<target name="runone-internal" depends="build, assert-appserverrunning-ocsp">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=LoggingStressTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=LoggingStressSystemTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
 		<property name="test.runoneexclude" value=""/>
 		<fail message="'test.runoneexclude' is not set. Example -Dtest.runoneclude=none" unless="test.runoneexclude" />
 		<fail message="'reports.dir' is not set." unless="reports.dir" />
@@ -319,7 +319,7 @@
 		<!-- Workaround for tests using BatchMakeP12 -->
 	</target>
 
-	<condition property="p11exclude" value="" else="**/*PKCS11*Test.class **/*Pkcs11*Test.class">
+	<condition property="p11exclude" value="" else="**/*PKCS11*SystemTest.class **/*Pkcs11*SystemTest.class">
 		<isset property="test.includep11"/>
 	</condition>
 	<!-- =================================
@@ -347,58 +347,58 @@
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${systemtests.build.test.dir}" includes="org/ejbca/core/ejb/ca/caadmin/CAsTest.class"/>
+				<fileset dir="${systemtests.build.test.dir}" includes="org/ejbca/core/ejb/ca/caadmin/CAsSystemTest.class"/>
 			</batchtest>
-			<!-- Tests that require CAsTest to setup CAs -->
+			<!-- Tests that require CAsSystemTest to setup CAs -->
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${systemtests.build.test.dir}" includes="org/ejbca/core/ejb/ca/sign/SignSessionTest.class"/>
+				<fileset dir="${systemtests.build.test.dir}" includes="org/ejbca/core/ejb/ca/sign/SignSessionSystemTest.class"/>
 			</batchtest>
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${systemtests.build.test.dir}" includes="org/ejbca/core/ejb/ca/caadmin/RemoveCATest.class"/>
+				<fileset dir="${systemtests.build.test.dir}" includes="org/ejbca/core/ejb/ca/caadmin/RemoveCASystemTest.class"/>
 			</batchtest>
 			<!-- Most system tests -->
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
-					<include name="**/*Test.class" />
+					<include name="**/*SystemTest.class" />
 					<!-- optionally include PKCS11 tests, requires PKCS11 emulator -->
 					<exclude name="${p11exclude}" />
 					<!-- Tests that require TestCAs to setup CAs -->
-					<exclude name="org/ejbca/core/ejb/ca/caadmin/CAsTest.class" />
-					<exclude name="org/ejbca/core/ejb/ca/sign/SignSessionTest.class" />
-					<exclude name="org/ejbca/core/ejb/ca/caadmin/RemoveCATest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/caadmin/CAsSystemTest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/SignSessionSystemTest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/caadmin/RemoveCASystemTest.class" />
 					<!-- Tests that take a very long time to complete -->
-					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsTest.class" />
-					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsTest$SignTester.class" />
-					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsTest$1.class" />
-					<exclude name="org/ejbca/core/ejb/log/LoggingStressTest.class" />
-					<exclude name="org/ejbca/core/ejb/log/LoggingStressTest$LogTester.class" />
-					<exclude name="org/ejbca/core/ejb/ra/AddLotsofCertsPerUserTest.class" />
-					<exclude name="org/ejbca/core/ejb/ra/AddLotsofUsersTest.class" />
-					<exclude name="org/ejbca/core/ejb/ra/RaMasterApiStressTest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsSystemTest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsSystemTest$SignTester.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/SignLotsOfCertsSystemTest$1.class" />
+					<exclude name="org/ejbca/core/ejb/log/LoggingStressSystemTest.class" />
+					<exclude name="org/ejbca/core/ejb/log/LoggingStressSystemTest$LogTester.class" />
+					<exclude name="org/ejbca/core/ejb/ra/AddLotsOfCertsPerUserSystemTest.class" />
+					<exclude name="org/ejbca/core/ejb/ra/AddLotsOfUsersSystemTest.class" />
+					<exclude name="org/ejbca/core/ejb/ra/RaMasterApiStressSystemTest.class" />
 					<!-- Tests that require special configuration to work -->
-					<exclude name="org/ejbca/ui/web/pub/AutoEnrollServletTest.class" />	
-					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeMultipleKeyIdRequestTest.class" />
-					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpTest.class" />
-					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpTest$SimpleVerifier.class" />
-					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest.class" />
-					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$1.class" />
-					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfTest$OcspTester.class" />
+					<exclude name="org/ejbca/ui/web/pub/AutoEnrollServletSystemTest.class" />
+					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeMultipleKeyIdRequestSystemTest.class" />
+					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpSystemTest.class" />
+					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpSystemTest$SimpleVerifier.class" />
+					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfSystemTest.class" />
+					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfSystemTest$1.class" />
+					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpPerfSystemTest$OcspTester.class" />
 					<!--
-					<exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />-->
+					<exclude name="org/ejbca/ui/cli/OcspMonitoringToolSystemSystemTest.class" />-->
 					<!-- Tests that are unstable and should be corrected or require special configuration -->
 					<!-- Tests that require unique index in the database to work -->
-					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberTest.class" />
-					<exclude name="org/ejbca/core/protocol/cmp/CrmfRARequestCustomSerialNoTest.class" />
+					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberSystemTest.class" />
+					<exclude name="org/ejbca/core/protocol/cmp/CrmfRARequestCustomSerialNoSystemTest.class" />
 					<!-- Exclude WS, they are run from their own target, runws -->
 					<exclude name="**/protocol/ws/*" />
 					<!-- Exclude profiling test, since we want to run it later -->
-					<exclude name="org/ejbca/core/ejb/ProfilingTest.class" />
+					<exclude name="org/ejbca/core/ejb/ProfilingSystemTest.class" />
 				</fileset>
 			</batchtest>
 			<!-- Run the profiling test last to get stats of all the previous tests -->
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
-					<include name="org/ejbca/core/ejb/ProfilingTest.class" />
+					<include name="org/ejbca/core/ejb/ProfilingSystemTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -417,13 +417,13 @@
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
-					<include name="org/ejbca/core/protocol/scep/ProtocolScepHttpTest.class" />
-					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpTest.class" />
-					<include name="org/ejbca/core/protocol/cmp/CrmfRequestTest.class" />
-					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
-					<include name="org/ejbca/ui/web/pub/WebdistHttpTest.class" />
-					<include name="org/ejbca/ui/web/pub/CertRequestHttpTest.class" />
-					<include name="org/ejbca/ui/web/pub/WebEjbcaHealthCheckTest.class" />
+					<include name="org/ejbca/core/protocol/scep/ProtocolScepHttpSystemTest.class" />
+					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpSystemTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CrmfRequestSystemTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestSystemTest.class" />
+					<include name="org/ejbca/ui/web/pub/WebdistHttpSystemTest.class" />
+					<include name="org/ejbca/ui/web/pub/CertRequestHttpSystemTest.class" />
+					<include name="org/ejbca/ui/web/pub/WebEjbcaHealthCheckSystemTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -442,9 +442,9 @@
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${systemtests.build.test.dir}">
-					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestTest.class" />
-					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestTest.class" />
-					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CrmfRARequestSystemTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CrmfRAPbeRequestSystemTest.class" />
+					<include name="org/ejbca/core/protocol/cmp/CmpRAUnidSystemTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>
@@ -462,7 +462,7 @@
           Run the log stress test
          ================================= -->
 	<target name="runlogstress" description="Run the log stress test (runs for one hour)">
-		<property name="test.runone" value="LoggingStressTest"/>
+		<property name="test.runone" value="LoggingStressSystemTest"/>
 		<antcall target="runone-internal" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -475,16 +475,16 @@
 	</target>
 
 	<target name="runlotsperuser" description="Run system tests that creates lots of users and certificates for each user">
-		<property name="test.runone" value="AddLotsofCertsPerUserTest"/>
+		<property name="test.runone" value="AddLotsOfCertsPerUserSystemTest"/>
 		<antcall target="runone-internal" inheritall="true" inheritrefs="true"/>
 	</target>
 
 	<target name="runlotsofusers" description="Run system tests that creates lots of users">
-		<property name="test.runone" value="AddLotsofUsersTest"/>
+		<property name="test.runone" value="AddLotsOfUsersSystemTest"/>
 	</target>
 
 	<target name="runperf" description="Run system tests that creates lots of certificates">
-		<property name="test.runone" value="SignLotsOfCertsTest"/>
+		<property name="test.runone" value="SignLotsOfCertsSystemTest"/>
 		<antcall target="runone-internal" inheritall="true" inheritrefs="true"/>
 	</target>
 </project>

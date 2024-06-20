@@ -107,6 +107,7 @@
 									   styleClass="#{component.valid?'':'jsAutoFocusError'}">
 							<f:validator validatorId="extendedRequiredValidator"/>
 							<f:attribute name="_required" value="true"/>
+							<f:passThroughAttribute name="autocomplete" value="new-password"/>
 						</h:inputSecret>
 						<h:message for="passwordConfirmField" id="passwordConfirmFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 					</h:panelGroup>

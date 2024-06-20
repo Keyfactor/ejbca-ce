@@ -24,10 +24,6 @@ import org.junit.Before;
 
 import com.keyfactor.util.keys.token.CryptoToken;
 
-/**
- * 
- * @version $Id$
- */
 public abstract class SecurityEventsBase extends RoleUsingTestCase {
 
     public static final String keyAlias = "secretkey";

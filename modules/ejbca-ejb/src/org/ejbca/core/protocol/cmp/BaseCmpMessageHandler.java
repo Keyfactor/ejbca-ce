@@ -20,6 +20,8 @@ import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.List;
 
+import javax.ejb.EJBTransactionRolledbackException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -218,7 +220,8 @@ public class BaseCmpMessageHandler {
 	        provider = cryptoTokenSession.getCryptoToken(signCa.getCAToken().getCryptoTokenId()).getSignProviderName();
 	        return CmpMessageHelper.createSignedErrorMessage(cmpMessage.getHeader(), failInfo,  errmsg, signCachain, signKey, 
 	                signCa.getCAToken().getSignatureAlgorithm(), provider);
-	    } catch (AuthorizationDeniedException | CryptoTokenOfflineException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+	    } catch (AuthorizationDeniedException | CryptoTokenOfflineException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+	            | EJBTransactionRolledbackException e) {
 	        if (LOG.isDebugEnabled()) {
 	            LOG.debug("Could not sign CmpErrorResponseMessage, creating unprotected message. " + e.getMessage());
 	        }

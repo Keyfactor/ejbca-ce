@@ -22,8 +22,8 @@
 	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<property name="reports.base.dir" location="${ejbca.home}/reports/"/>
 	<property name="reports.dir" location="${reports.base.dir}/test"/>		
-	<import file="./test.xmli" />
-	<import file="./docs.xmli" />
+	<import file="./test.xml" />
+	<import file="./docs.xml" />
         <!-- Include the build file which takes care of removed features detection (for options etc). -->
         <import file="./removed.xml" />
         <!-- Include the build file which takes care of deprecation detection (for options etc). -->

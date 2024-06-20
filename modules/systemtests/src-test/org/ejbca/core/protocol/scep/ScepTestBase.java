@@ -100,9 +100,6 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
-/**
- *
- */
 public abstract class ScepTestBase {
     
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ScepTestBase"));

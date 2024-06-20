@@ -97,7 +97,20 @@ public class SshRequestMessage implements RequestMessage {
         
         String[] principalsAndComment = SshCertificateUtils.parsePrincipalsAndComment(subjectAlternateName);
         if (StringUtils.isNotBlank(principalsAndComment[0])){
-            this.principals = Arrays.asList(principalsAndComment[0].split(":"));
+            String allPrincipals = principalsAndComment[0];
+            List<String> ipv6Principals = ei.getSshPrincipalsIpv6();
+            for (String ipv6: ipv6Principals) {
+                allPrincipals = allPrincipals.replace(ipv6, ipv6.replace(":", "_"));
+            }
+            this.principals = Arrays.asList(allPrincipals.split(":"));
+            for (int i=0; i<this.principals.size(); i++) {
+                for (String ipv6: ipv6Principals) {
+                    if (principals.get(i).equals(ipv6.replace(":", "_"))) {
+                        principals.set(i, ipv6);
+                        break;
+                    }
+                }
+            }
         } else {
             this.principals = new ArrayList<>();
         }
@@ -477,6 +490,23 @@ public class SshRequestMessage implements RequestMessage {
         if(getAdditionalExtensions()!=null) {
             userdata.getExtendedInformation().setSshExtensions(getAdditionalExtensions());
         }
+        
+        // add special cases like IPv6 in ExtendedInformation for principal
+        // then do counterpart of the logic during EE profile validation
+        List<String> ipv6Principals = new ArrayList<>();
+        for (String principal: getPrincipals()) {
+            if (principal.contains(":")) {
+                ipv6Principals.add(principal);
+            }
+        }
+        userdata.getExtendedInformation().setSshPrincipalsIpv6(ipv6Principals);
+        
+        // NOTE 1: sourceAddress may also contain IPv6, but there is no validation 
+        // and there is comma-to-colon replacement which works for both IPv4 or IPv6
+        
+        // NOTE 2: during the certificate creation in SshCaImpl, we refer to original data in SshRequestMessage
+        // this formatting is only used for EE profile validation, search EE and certs from UI or REST
+        // to ensure integration with other normal(X509) EJBCA flows
     }
     
 }

@@ -52,10 +52,7 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * System tests for the health check servlet.
- *
- * @version $Id$
  */
-
 public class HealthCheckSystemTest {
     
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HealthCheckTest"));

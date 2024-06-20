@@ -208,7 +208,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         }
         
         // ECA-9716 caInfo == null with self-signed certificates stored in DB before revoking
-        // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity)
+        // an end entity (found in EndEntityManagementSessionSystemTest.testRevokeEndEntity)
         if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
             log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
             AuthenticationToken newAdmin = getOrCreateAuthorizedTokenCreateCrl(admin, caInfo.getName());
@@ -306,7 +306,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 caId = revokedCertificates.get(0).getBaseCertificateData().getIssuerDN().hashCode();
                 caInfo = caSession.getCAInfo(admin, caId);
                 // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking 
-                // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity) 
+                // an end entity (found in EndEntityManagementSessionSystemTest.testRevokeEndEntity)
                 if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
                     log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
                     try {

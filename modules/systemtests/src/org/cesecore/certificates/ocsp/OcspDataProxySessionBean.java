@@ -27,7 +27,7 @@ import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
  * Provide access to EntityManager, and OcspDataSessionLocal methods for convenient call
  * with EjbRemoteHelper in Ocsp related system tests.
  *
- * See OcspDataSessionBeanTest.java
+ * See OcspDataSessionBeanSystemTest.java
  *
  */
 @Stateless

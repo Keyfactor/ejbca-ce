@@ -154,6 +154,7 @@
                     <h:inputSecret id="enrollmentCodeConfirm"
                                    value="#{cc.attrs.raEndEntityBean.enrollmentCodeConfirm}">
                         <f:ajax event="change"/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
                 </h:panelGroup>
 

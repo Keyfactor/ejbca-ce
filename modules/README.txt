@@ -46,88 +46,120 @@ modules/{module-name}/resources   Holds the module's meta-data and templates
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="{module-name}" default="build">
     <description>
-    	Describe the module here...
+        Describe the module here...
     </description>
 
-	<dirname property="module-name.dir" file="${ant.file.{module-name}}"/>
+    <dirname property="module-name.dir" file="${ant.file.{module-name}}"/>
 
-	<import file="${module-name.dir}/../build-helpers.xml"/>
-	
-	<property name="module-name.build.dir" location="${module-name.dir}/build"/>
-	<property name="module-name.build-test.dir" location="${module-name.dir}/build-test"/>
-	<property name="module-name.src.dir" location="${module-name.dir}/src"/>
+    <import file="${module-name.dir}/../build-helpers.xml"/>
 
-	<path id="compile.classpath">
-		<path refid="{reference to class-path(s) defined in build-properties.xml}"/>
-		...
-	</path>
-	
-	<path id="compile-test.classpath">
-		<path refid="compile.classpath"/>
-		<path refid="lib.junit.classpath"/>
-		<path location="${mod.module-name.lib}"/>
-	</path>
-	
-	<path id="test.classpath">
-		<path location="${module-name.build-test.dir}" />
-		<path refid="compile-test.classpath"/>
-	</path>
+    <property name="module-name.build.dir" location="${module-name.dir}/build"/>
+    <property name="module-name.build-test.dir" location="${module-name.dir}/build-test"/>
+    <property name="module-name.src.dir" location="${module-name.dir}/src"/>
+
+    <path id="compile.classpath">
+        <path refid="{reference to class-path(s) defined in build-properties.xml}"/>
+        ...
+    </path>
+
+    <path id="compile-test.classpath">
+        <path refid="compile.classpath"/>
+        <path refid="lib.junit.classpath"/>
+        <path location="${mod.module-name.lib}"/>
+    </path>
+
+    <path id="test.classpath">
+        <path location="${module-name.build-test.dir}" />
+        <path refid="compile-test.classpath"/>
+    </path>
 
     <target name="build" description="Build this module" depends="compile">
-    	<jar ...
-    	</jar>
+        <jar ...
+        </jar>
     </target>
 
     <target name="clean" description="Clean up this module">
-		<delete dir="${module-name.build.dir}" />
-		<delete dir="${module-name.build-test.dir}" />
-		<delete file="{JAR produced by 'build'}" />
+        <delete dir="${module-name.build.dir}" />
+        <delete dir="${module-name.build-test.dir}" />
+        <delete file="{JAR produced by 'build'}" />
     </target>
-	
+
     <target name="compile">
-       	<mkdir dir="${module-name.build.dir}" />
+        <mkdir dir="${module-name.build.dir}" />
         <javac srcdir="${module-name.src.dir}" destdir="${module-name.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
             classpathref="compile.classpath"/>
     </target>
 
     <target name="compile-tests">
-    	<mkdir dir="${module-name.build-test.dir}" />
+        <mkdir dir="${module-name.build-test.dir}" />
         <javac srcdir="${src-test.dir}" destdir="${module-name.build-test.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
             classpathref="compile-test.classpath"/>
         <copy file="${log4j.test.file}" tofile="${module-name.build-test.dir}/log4j.xml" failonerror="true"/>
     </target>
 
-	<target name="test" depends="compile-tests" description="Run tests for this module">
-    	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${module-name.dir}">
-			<classpath>
-        		<path refid="test.classpath"/>
-			</classpath>
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${module-name.build-test.dir}" includes="**/*Test.class">
-					...
-				</fileset>
-			</batchtest>
-		</junit>
-		<antcall target="createreport" inheritall="true" inheritrefs="true"/>
-    	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
+    <target name="test:unit" depends="compile-tests" description="Run unit tests for this module">
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+        <condition property="remoteDebugJvmArgs"
+                   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+                   else="-ea">
+            <istrue value="${remoteDebug}"/>
+        </condition>
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${module-name.dir}" fork="true" forkmode="once">
+            <classpath>
+                <path refid="test.classpath"/>
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${module-name.build-test.dir}" includes="**/*UnitTest.class"/>
+            </batchtest>
+            <jvmarg line="${tests.jvmargs}"/>
+            <jvmarg value="${remoteDebugJvmArgs}"/>
+        </junit>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
     </target>
 
-	<target name="runone" depends="compile-tests">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=NameOfTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
-		<junit printsummary="yes" haltonfailure="no" >
-			<classpath>
-        		<path refid="test.classpath"/>
-			</classpath>
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${module-name.build-test.dir}">
-					<include name="**/${test.runone}.class" />
-				</fileset>
-			</batchtest>
-		</junit>
-		<antcall target="createreport" inheritall="true" inheritrefs="true"/>
-	</target>
-</project>
+    <target name="test:system" depends="compile-tests" description="Run system tests for this module">
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+        <condition property="remoteDebugJvmArgs"
+                   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+                   else="-ea">
+            <istrue value="${remoteDebug}"/>
+        </condition>
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${module-name.dir}" fork="true">
+            <classpath>
+                <path refid="test.classpath"/>
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${module-name.build-test.dir}" includes="**/*SystemTest.class"/>
+            </batchtest>
+            <jvmarg line="${tests.jvmargs}"/>
+            <jvmarg value="${remoteDebugJvmArgs}"/>
+        </junit>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+        <antcall target="showtime" inheritall="true" inheritrefs="true"/>
+    </target>
 
+    <target name="runone" depends="compile-tests">
+        <fail message="'test.runone' is not set. Example -Dtest.runone=TestName . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+        <condition property="remoteDebugJvmArgs"
+                   value="-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=8787"
+                   else="-ea">
+            <istrue value="${remoteDebug}"/>
+        </condition>
+        <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+            <classpath>
+                <path refid="test.classpath"/>
+                <path location="${module-name.build-test.dir}" />
+            </classpath>
+            <formatter type="xml" />
+            <batchtest fork="yes" todir="${reports.dir}">
+                <fileset dir="${module-name.build-test.dir}" includes="**/${test.runone}.class"/>
+            </batchtest>
+            <jvmarg line="${tests.jvmargs}"/>
+            <jvmarg value="${remoteDebugJvmArgs}"/>
+        </junit>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+</project>
