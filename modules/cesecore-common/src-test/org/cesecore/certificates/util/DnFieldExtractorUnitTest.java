@@ -42,7 +42,7 @@ public class DnFieldExtractorUnitTest {
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
         if (DnComponents.enterpriseMappingsExist()) {
-            assertEquals(37, i.size());
+            assertEquals(48, i.size());
         } else {
             assertEquals(32, i.size());
         }
