@@ -112,7 +112,11 @@ public class LogRedactionUtilsUnitTest {
         assertEquals("SubjectDN redaction pattern mismatch", LogRedactionUtils.getSubjectDnRedactionPattern(),
                 "((certificationid=)|(description=)|(jurisdictioncountry=)|(jurisdictionstate=)|(jurisdictionlocality=)|"
                 + "(role=)|(street=)|(pseudonym=)|(telephonenumber=)|(postaladdress=)|(businesscategory=)|(postalcode=)|"
-                + "(unstructuredaddress=)|(unstructuredname=)|(emailaddress=)|(email=)|(dn=)|(uniqueidentifier=)|"
+                + "(unstructuredaddress=)|(unstructuredname=)|"
+                + "(wordmark=)|(priorusemarksourceurl=)|(trademarkidentifier=)|(legalentityidentifier=)|(statuteurl=)|"
+                + "(statutecitation=)|(trademarkofficename=)|(statutelocalityname=)|(statutestateorprovincename=)|"
+                + "(trademarkcountryorregionname=)|(statutecountryname=)|(marktype=)|"
+                + "(emailaddress=)|(email=)|(dn=)|(uniqueidentifier=)|"
                 + "(uid=)|(pid=)|(vid=)|(cn=)|(name=)|(sn=)|(serialnumber=)|(gn=)|(givenname=)|(initials=)|(surname=)|"
                 + "(ou=)|(organizationidentifier=)|(st=)|(dc=)|(c=)).*");
         // include FASC-N only if it's available in the runtime edition
