@@ -231,7 +231,29 @@ public class UserFulfillEndEntityProfileUnitTest {
         profile.doesUserFulfillEndEntityProfile("username","password","OU=DEP1_1,OU=DEP2_2,CN=Some Common Name,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023","null","","",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false,
                 false,false,SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null, certProfileEndUser, null);
-        
+
+        // Test Mark Certificate fields
+        final String markCertDn = "CN=Some Common Name,legalEntityIdentifier=1111111111,markType=Registered Mark,trademarkCountryOrRegionName=XL," +
+                "OU=DEP1_1,trademarkOfficeName=Trademarks Authority,trademarkIdentifier=99999999";
+        try {
+            profile.doesUserFulfillEndEntityProfile("username", "password", markCertDn, "null", "", "",
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null,
+                    certProfileEndUser, null);
+            fail("Inproper check of uniqueIdentifier and CertificationID value.");
+        } catch (EndEntityProfileValidationException e) {
+            log.debug("End Entity Fulfill Profile Test " + (currentSubTest) + " " + e.getMessage() + " = OK");
+        }
+
+        profile.addField(DnComponents.LEGALENTITYIDENTIFIER);
+        profile.addField(DnComponents.MARKTYPE);
+        profile.addField(DnComponents.TRADEMARKCOUNTRYORREGIONNAME);
+        profile.addField(DnComponents.TRADEMARKOFFICENAME);
+        profile.addField(DnComponents.TRADEMARKIDENTIFIER);
+        // Should pass now
+        profile.doesUserFulfillEndEntityProfile("username", "password", markCertDn, "null", "", "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, false, false, false, SecConst.TOKEN_SOFT_BROWSERGEN, TEST_CA_1, null,
+                certProfileEndUser, null);
+
         log.trace("<fulfillSubjectDn");
     }
 

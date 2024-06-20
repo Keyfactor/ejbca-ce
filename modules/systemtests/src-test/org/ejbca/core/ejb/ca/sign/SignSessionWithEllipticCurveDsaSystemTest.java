@@ -281,11 +281,20 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         log.trace("<test15TestBCPKCS10ECDSAWithECDSACA()");
     }
 
-    @Test
-    public void testMatterIoT() throws Exception {
-        log.trace(">testMatterIoT()");
-        final String profileName = "TESTMATTERIOT";
-        final String endEntityName = "TESTMATTERIOT";
+    /**
+     * Issues a certificates and checks the Subject DN ordering.
+     * @param dnComponents The DnComponents.* to allow in the End Entity Profile
+     * @param requestedDn The Subject DN to request in the End Entity.
+     * @param expectedEjbcaOrderDn Expected DN ordering from CertTools.getSubjectDN
+     * @param expectedLdapOrderDn Expected DN ordering when LDAP DN Order is enabled
+     * @param expectedX509OrderDn Expected DN ordering when LDAP DN Order is disabled.
+     * @throws Exception only on test failure
+     */
+    public void performSubjectDnTest(final String[] dnComponents, final String requestedDn,
+            final String expectedEjbcaOrderDn,
+            final String expectedLdapOrderDn, final String expectedX509OrderDn) throws Exception {
+        final String profileName = "TESTSUBJECTDN";
+        final String endEntityName = "TESTSUBJECTDN";
         // Create a standard certificate profile (good enough)
         certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -295,11 +304,9 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         // Create a good end entity profile
         endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
         EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(DnComponents.COUNTRY);
-        profile.addField(DnComponents.ORGANIZATION);
-        profile.addField(DnComponents.COMMONNAME);
-        profile.addField(DnComponents.VID);
-        profile.addField(DnComponents.PID);
+        for (final String dnComponenent : dnComponents) {
+            profile.addField(dnComponenent);
+        }
         profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
         profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
@@ -309,17 +316,17 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         createEndEntity(endEntityName, eeprofile, cprofile, rsacaid);
         try {
     
-            EndEntityInformation user = new EndEntityInformation(endEntityName, "C=SE,O=PrimeKey,CN=Matter DAC,VID=FFF1,PID=8000", rsacaid, null, null,
+            EndEntityInformation user = new EndEntityInformation(endEntityName, requestedDn, rsacaid, null, null,
                     new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
-            log.debug("created user: " + endEntityName + ", foo123, C=SE,O=PrimeKey,CN=Matter DAC,VID=FFF1,PID=8000");
+            log.debug("created user: " + endEntityName + ", foo123, " + requestedDn);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
             String dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are not known by JDK so OIDs displayed
-            assertEquals("Not the expected DN in issued cert", "C=SE, O=PrimeKey, CN=Matter DAC, OID.1.3.6.1.4.1.37244.2.1=FFF1, OID.1.3.6.1.4.1.37244.2.2=8000", dn);
-            assertEquals("Not the expected EJBCA ordered DN in issued cert", "PID=8000,VID=FFF1,CN=Matter DAC,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
+            assertEquals("Not the expected DN in issued cert", expectedLdapOrderDn, dn);
+            assertEquals("Not the expected EJBCA ordered DN in issued cert", expectedEjbcaOrderDn, CertTools.getSubjectDN(cert));
 
             // Change to X509 DN order
             certprof.setUseLdapDnOrder(false);
@@ -329,8 +336,8 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             assertNotNull("Failed to create certificate", cert);
             dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
-            assertEquals("Not the expected DN in issued cert", "OID.1.3.6.1.4.1.37244.2.2=8000, OID.1.3.6.1.4.1.37244.2.1=FFF1, CN=Matter DAC, O=PrimeKey, C=SE", dn);
-            assertEquals("Not the expected EJBCA ordered DN in issued cert", "PID=8000,VID=FFF1,CN=Matter DAC,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
+            assertEquals("Not the expected DN in issued cert", expectedX509OrderDn, dn);
+            assertEquals("Not the expected EJBCA ordered DN in issued cert", expectedEjbcaOrderDn, CertTools.getSubjectDN(cert));
         } finally {
             // Clean up
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
@@ -338,7 +345,45 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             endEntityManagementSession.deleteUser(internalAdmin, endEntityName);
             internalCertStoreSession.removeCertificatesByUsername(endEntityName);
         }
+    }
+
+    @Test
+    public void testMatterIoT() throws Exception {
+        log.trace(">testMatterIoT()");
+        final String[] dnComponents = new String [] {
+                DnComponents.COUNTRY, DnComponents.ORGANIZATION, DnComponents.COMMONNAME, DnComponents.VID, DnComponents.PID
+        };
+        final String requestedDn = "C=SE,O=PrimeKey,CN=Matter DAC,VID=FFF1,PID=8000";
+        final String expectedEjbcaOrderDn = "PID=8000,VID=FFF1,CN=Matter DAC,O=PrimeKey,C=SE";
+        final String expectedLdapOrderDn = "C=SE, O=PrimeKey, CN=Matter DAC, OID.1.3.6.1.4.1.37244.2.1=FFF1, OID.1.3.6.1.4.1.37244.2.2=8000";
+        final String expectedX509OrderDn = "OID.1.3.6.1.4.1.37244.2.2=8000, OID.1.3.6.1.4.1.37244.2.1=FFF1, CN=Matter DAC, O=PrimeKey, C=SE";
+        performSubjectDnTest(dnComponents, requestedDn, expectedEjbcaOrderDn,
+                expectedLdapOrderDn, expectedX509OrderDn);
         log.trace("<testMatterIoT()");
+    }
+
+    @Test
+    public void testMarkCertificate() throws Exception {
+        log.trace(">testMarkCertificate()");
+        final String[] dnComponents = new String [] {
+                DnComponents.COUNTRY, DnComponents.ORGANIZATION, DnComponents.LEGALENTITYIDENTIFIER, DnComponents.MARKTYPE,
+                DnComponents.TRADEMARKCOUNTRYORREGIONNAME, DnComponents.TRADEMARKOFFICENAME, DnComponents.TRADEMARKIDENTIFIER,
+                DnComponents.WORDMARK
+        };
+        final String requestedDn = "C=SE,O=PrimeKey,CN=Mark Certificate Test,legalEntityIdentifier=123456789,markType=Registered Mark,trademarkCountryOrRegionName=Limeland,"
+                + "trademarkOfficeName=Trademark Authority,trademarkIdentifier=10001,wordMark=TheWord";
+        final String expectedEjbcaOrderDn = "wordMark=TheWord,trademarkIdentifier=10001,legalEntityIdentifier=123456789,"
+                + "trademarkOfficeName=Trademark Authority,trademarkCountryOrRegionName=Limeland,markType=Registered Mark,"
+                + "CN=Mark Certificate Test,O=PrimeKey,C=SE";
+        final String expectedLdapOrderDn = "C=SE, O=PrimeKey, CN=Mark Certificate Test, OID.1.3.6.1.4.1.53087.1.13=Registered Mark, "
+                + "OID.1.3.6.1.4.1.53087.1.3=Limeland, OID.1.3.6.1.4.1.53087.1.2=Trademark Authority, OID.1.3.6.1.4.1.53087.1.5=123456789, "
+                + "OID.1.3.6.1.4.1.53087.1.4=10001, OID.1.3.6.1.4.1.53087.1.6=TheWord";
+        final String expectedX509OrderDn = "OID.1.3.6.1.4.1.53087.1.6=TheWord, OID.1.3.6.1.4.1.53087.1.4=10001, OID.1.3.6.1.4.1.53087.1.5=123456789, "
+                + "OID.1.3.6.1.4.1.53087.1.2=Trademark Authority, OID.1.3.6.1.4.1.53087.1.3=Limeland, OID.1.3.6.1.4.1.53087.1.13=Registered Mark, "
+                + "CN=Mark Certificate Test, O=PrimeKey, C=SE";
+        performSubjectDnTest(dnComponents, requestedDn, expectedEjbcaOrderDn,
+                expectedLdapOrderDn, expectedX509OrderDn);
+        log.trace("<testMarkCertificate()");
     }
 
     @Test
