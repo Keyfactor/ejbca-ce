@@ -161,7 +161,7 @@
 	<classpathentry kind="lib" path="lib/jee/jaxws-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.ws-api-4.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javax.xml.soap-api-1.4.0.jar"/>
-	<classpathentry kind="lib" path="lib/jee/javax.ejb-api-3.2.2.jar"/>
+	<classpathentry kind="lib" path="lib/jee/jakarta.ejb-api-4.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/jaxws-rt-2.3.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/streambuffer-1.5.10.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/policy-2.7.10.jar"/>
@@ -226,7 +226,8 @@
 	<classpathentry kind="lib" path="lib/hibernate/istack-commons-runtime-3.0.7.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/FastInfoset-1.2.15.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/byte-buddy-1.10.17.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-5.6.15.Final.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-community-dialects-6.5.2.Final.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-6.5.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-validator-6.2.5.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/easymock-4.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/powermock/cglib-nodep-3.3.0.jar"/>

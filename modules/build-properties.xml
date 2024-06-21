@@ -390,7 +390,7 @@
 	<path id="lib.jaxws-rs.classpath"><fileset dir="${ejbca.home}/lib/jee/soapclient" includes="jaxws-rt-*.jar"/></path>
 	<path id="lib.jaxws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jaxws-api-*.jar"/></path>
 	<path id="lib.jakarta.xml.ws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.ws-api-*.jar"/></path>
-	<path id="lib.javax.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.ejb-api-*.jar"/></path>
+	<path id="lib.jakarta.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.ejb-api-*.jar"/></path>
 	<path id="lib.javax.activaton.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="activation-*.jar"/></path>
 	<path id="lib.javax.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jws-api-*.jar"/></path>
 	<path id="lib.jakarta.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.soap-api-*.jar"/></path>
@@ -492,6 +492,7 @@
             <include name="classmate*.jar"/>
             <include name="dom4j-*.jar"/>
         	<include name="FastInfoset*.jar"/>
+			<include name="hibernate-community-dialects-*.jar"/>
             <include name="hibernate-commons-annotations-*.jar"/>
             <include name="hibernate-core-*.jar"/>
         	<include name="istack-commons-runtime*.jar"/>
