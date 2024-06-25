@@ -223,6 +223,7 @@ include(
     "modules:edition-specific:interface",
     "modules:plugins",
     "modules:ejbca-ejb",
+    "modules:ejbca-ejb-cli",
     "modules:admin-gui",
     "modules:ra-gui",
     "modules:ejbca-ws",
