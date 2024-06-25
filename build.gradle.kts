@@ -295,7 +295,8 @@ subprojects {
                 "cesecore-ejb",
                 "cesecore-ejb-interface",
                 "cesecore-entity",
-                "cesecore-x509ca"
+                "cesecore-x509ca",
+                "ejbca-common"
             )
         ) {
             plugins.apply("java")
