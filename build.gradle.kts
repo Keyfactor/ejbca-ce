@@ -299,7 +299,8 @@ subprojects {
                 "ejbca-common",
                 "ejbca-common-web",
                 "ejbca-ejb",
-                "ejbca-ws"
+                "ejbca-ws",
+                "healthcheck-war"
             )
         ) {
             plugins.apply("java")
