@@ -61,7 +61,6 @@
         <path refid="compile-test.classpath"/>
 		<path location="${ejbca-rest-common.build-test.dir}"/>
         <path refid="lib.jee-client.classpath"/>
-		<path refid="lib.test.powermock.classpath"/>
 	</path>
 
     <target name="clean" description="Clean up this module">
