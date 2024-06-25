@@ -36,6 +36,7 @@ import org.ejbca.util.oauth.OAuthTools;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyType;
 
 /**
  * Adds or removes public keys to/from already existing Trusted OAuth Provider
@@ -219,6 +220,10 @@ public class ManageOauthPublicKeyCommand extends BaseOAuthConfigCommand{
                 if (jwk.getKeyID() != null && isDuplicateKeyId(jwk.getKeyID())) {
                     continue;
                 };
+                // We only support RSA keys
+                if (!jwk.getKeyType().equals(KeyType.RSA)) {
+                    continue;
+                }
                 final PublicKey publicKey = jwk.toRSAKey().toPublicKey();
                 final byte[] encoded = publicKey.getEncoded();
                 oAuthKeyInfo.addPublicKey(jwk.getKeyID(), encoded);
