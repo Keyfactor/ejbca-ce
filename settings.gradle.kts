@@ -94,6 +94,7 @@ dependencyResolutionManagement {
             library("istack-commons-runtime-old", ":istack-commons-runtime:3.0.7")
             library("jakarta.activation-api", ":jakarta.activation-api:2.1.0")
             library("jandex", ":jandex:2.1.3.Final")
+            library("javassist", ":javassist:3.29.2-GA")
             library("javax.persistence-api", ":javax.persistence-api:2.2")
             library("jaxb-api", ":jaxb-api:2.3.1")
             library("jboss-transaction-api_v12_spec", ":jboss-transaction-api_1.2_spec:1.1.1.Final")
@@ -127,7 +128,8 @@ dependencyResolutionManagement {
                     "easymock",
                     "powermock",
                     "cglib",
-                    "objenesis"
+                    "objenesis",
+                    "javassist"
                 )
             )
             bundle("bouncy.castle", listOf("bcprov", "bcpkix", "bctls", "bcutil"))
