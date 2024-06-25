@@ -22,6 +22,10 @@ dependencies {
     compileOnly(libs.jldap)
     compileOnly(libs.jsf)
     compileOnly(libs.x509.common.util)
+    testImplementation(project(":modules:ejbca-entity"))
+    testImplementation(project(":modules:ejbca-ejb"))
+    testImplementation(libs.jsf)
+    testImplementation(libs.jakarta.xml.bind.api)
 }
 
 sourceSets {
