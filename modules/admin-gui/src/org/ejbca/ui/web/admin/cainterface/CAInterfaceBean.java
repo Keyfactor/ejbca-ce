@@ -1373,7 +1373,6 @@ public class CAInterfaceBean implements Serializable {
             .setUsername(ca.getUsername())
             .setPassword(ca.getPassword())
             .setCa(ca.getUpstreamCa())
-            .setTemplate(ca.getUpstreamTemplate())
             .setSans(ca.getSansJson());
         return proxyCaInfoBuilder;
     }
