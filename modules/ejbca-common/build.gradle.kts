@@ -25,6 +25,12 @@ dependencies {
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.jldap)
     compileOnly(libs.x509.common.util)
+    testImplementation(project(":modules:ejbca-ejb-interface"))
+    testImplementation(project(":modules:ejbca-common-web"))
+    testImplementation(libs.cryptotokens.api)
+    testImplementation(libs.cryptotokens.impl)
+    testImplementation(libs.cert.cvc)
+    testImplementation(libs.bundles.xmlpull)
 }
 
 sourceSets {
