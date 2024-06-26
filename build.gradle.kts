@@ -300,7 +300,8 @@ subprojects {
                 "ejbca-common-web",
                 "ejbca-ejb",
                 "ejbca-ws",
-                "healthcheck-war"
+                "healthcheck-war",
+                "msae"
             )
         ) {
             plugins.apply("java")
