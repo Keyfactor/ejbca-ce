@@ -18,6 +18,8 @@ dependencyResolutionManagement {
             library("cert-cvc", ":cert-cvc:1.6.0")
             library("guava", ":guava:33.0.0-jre")
             library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
+            library("log4j-api", ":log4j-api:2.20.0")
+            library("log4j-core", ":log4j-core:2.20.0")
             library("commons-lang", ":commons-lang:2.6")
             library("commons-lang3", ":commons-lang3:3.12.0")
             library("commons-lang3-old", ":commons-lang3:3.2.1")
@@ -31,8 +33,6 @@ dependencyResolutionManagement {
             library("adsddl", ":adsddl:1.9")
             library("javax.jws-api", ":javax.jws-api:1.1")
             library("javax.xml.soap-api", ":javax.xml.soap-api:1.4.0")
-            library("log4j-api", ":log4j-api:2.20.0")
-            library("log4j-core", ":log4j-core:2.20.0")
             library("commons-logging", ":commons-logging:1.2")
             library("commons-codec", ":commons-codec:1.15")
             library("commons-io", ":commons-io:2.11.0")
@@ -100,7 +100,6 @@ dependencyResolutionManagement {
             library("jboss-transaction-api_v12_spec", ":jboss-transaction-api_1.2_spec:1.1.1.Final")
             library("stax-ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
-            //library("slf4j.log4j", ":slf4j-reload4j:1.7.35")
             library("slf4j.api", ":slf4j-api:1.7.35")
             // test dependencies
             library("junit", ":junit:4.13.2")
@@ -153,6 +152,8 @@ dependencyResolutionManagement {
             )
             bundle("xstream", listOf("xstream", "xmlpull", "xpp3_min"))
             bundle("xmlpull", listOf("xmlpull", "xpp3_min"))
+            bundle("log4j", listOf("log4j-api", "log4j-core", "log4j-v12-api"))
+            bundle("jacknji", listOf("jacknji11", "jna"))
         }
     }
 }
@@ -193,6 +194,7 @@ if (edition == "ee") {
         "modules:ejbca-rest-ssh",
         "modules:ejbca-rest-system",
         "modules:ejbca-rest-api",
+        "modules:p11ng-cli",
     )
 }
 
