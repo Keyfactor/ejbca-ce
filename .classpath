@@ -168,7 +168,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-3.1.1.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-3.2.0.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-api-2.1.0.jar" />
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.1.0.jar" />
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.1.0.jar" />
@@ -229,10 +229,8 @@
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-community-dialects-6.5.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-6.5.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-validator-6.2.5.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/easymock-4.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/cglib-nodep-3.3.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/objenesis-3.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/ext/test/powermock/powermock-easymock-2.0.2-full.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/easymock-5.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/ext/test/objenesis-3.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-codec-1.15.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.3.jar"/>

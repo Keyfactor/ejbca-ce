@@ -22,7 +22,6 @@ import java.util.Map;
 /**
  * A utility class for JSF validation.
  *
- * @version $Id$
  */
 public class ValidationHelper {
 
@@ -130,8 +129,8 @@ public class ValidationHelper {
     public static boolean matchConditionalValidation(final FacesContext facesContext, final UIComponent uiComponent) {
         // Check whether explicit validation condition is set
         final Object uiComponentValidationConditionObject = uiComponent.getAttributes().get("validationCondition");
-        if(uiComponentValidationConditionObject != null) {
-            return Boolean.valueOf(uiComponentValidationConditionObject.toString());
+        if (uiComponentValidationConditionObject != null) {
+            return Boolean.parseBoolean(uiComponentValidationConditionObject.toString());
         }
         // Check whether this UIComponent requires for validation by originator trigger
         final Object uiComponentValidationTriggerIdsObject = uiComponent.getAttributes().get("validationTriggerIds");
