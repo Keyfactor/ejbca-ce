@@ -301,7 +301,8 @@ subprojects {
                 "ejbca-ejb",
                 "ejbca-ws",
                 "healthcheck-war",
-                "msae"
+                "msae",
+                "ra-gui"
             )
         ) {
             plugins.apply("java")
