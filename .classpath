@@ -128,20 +128,20 @@
 	<classpathentry kind="lib" path="lib/ext/junit-4.13.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.ws.rs-api-3.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/json-patch-1.13.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-4.7.9.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-api-4.7.9.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-4.7.9.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-spi-4.7.9.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-undertow-4.7.9.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.2.28.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.2.28.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-4.7.9.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-6.2.9.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-api-6.2.9.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-6.2.9.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-core-spi-6.2.9.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-undertow-6.2.9.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-core-2.3.14.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/undertow-servlet-2.3.14.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-jackson2-provider-6.2.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-threads-2.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.12.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.12.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-servlet-api_4.0_spec-2.0.0.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.servlet-api-6.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.6.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration2-2.10.1.jar"/>
@@ -228,7 +228,7 @@
 	<classpathentry kind="lib" path="lib/hibernate/byte-buddy-1.10.17.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-community-dialects-6.5.2.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-6.5.2.Final.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-validator-6.2.5.Final.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-validator-8.0.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/easymock-5.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/objenesis-3.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
