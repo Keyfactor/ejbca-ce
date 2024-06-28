@@ -797,7 +797,6 @@ public class CaInfoDto implements Serializable {
             .setUsername(getUsername())
             .setPassword(getPassword())
             .setCa(getUpstreamCa())
-            .setTemplate(getUpstreamTemplate())
             .setSans(getSansJson())
             .build();
 

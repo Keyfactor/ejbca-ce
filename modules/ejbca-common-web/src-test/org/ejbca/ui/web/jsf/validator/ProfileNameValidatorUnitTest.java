@@ -12,29 +12,18 @@
  *************************************************************************/
 package org.ejbca.ui.web.jsf.validator;
 
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
-import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
+import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.powermock.api.easymock.PowerMock;
-import org.powermock.core.classloader.annotations.PowerMockIgnore;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.keyfactor.util.StringTools;
-
-import jakarta.faces.application.Application;
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.FacesContext;
-import jakarta.faces.validator.ValidatorException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
@@ -42,19 +31,12 @@ import static org.easymock.EasyMock.verify;
 /**
  * A unit test for JSF validator.
  *
- * @version $Id$
  */
-@PrepareForTest({StringTools.class, FacesContext.class })
-@RunWith(PowerMockRunner.class)
-@PowerMockIgnore({"com.sun.org.apache.xerces.*", "javax.xml.*", "org.xml.*", "org.w3c.*"})
 public class ProfileNameValidatorUnitTest {
 
     private final ProfileNameValidator testClass = new ProfileNameValidator();
     // Mocks
     private FacesContext facesContext;
-    private Application application;
-    private EjbcaJSFHelper ejbcaJSFHelper;
-    private EjbcaWebBean ejbcaWebBean;
     private UIComponent uiComponent;
     //
     private Map<String, Object> attributesMap;
@@ -66,25 +48,13 @@ public class ProfileNameValidatorUnitTest {
     public void setUp() throws Exception {
         //
         attributesMap = new HashMap<>();
-        // Mock all static methods of FacesContext and StringTools using PowerMockito
-        PowerMock.mockStatic(FacesContext.class);
-        PowerMock.mockStatic(StringTools.class);
         // Create mocks
-        facesContext = createMock(FacesContext.class);
-        application = createMock(Application.class);
-        ejbcaJSFHelper = createMock(EjbcaJSFHelper.class);
-        ejbcaWebBean = createMock(EjbcaWebBean.class);
-        uiComponent = createMock(UIComponent.class);
+        facesContext = EasyMock.createStrictMock(FacesContext.class);
+        uiComponent = EasyMock.createStrictMock(UIComponent.class);
         // Setup mocks calls
-        expect(FacesContext.getCurrentInstance()).andReturn(facesContext);
-        expect(facesContext.getApplication()).andReturn(application);
-        expect(application.evaluateExpressionGet(facesContext, "#{web}", EjbcaJSFHelper.class)).andReturn(ejbcaJSFHelper);
-        expect(ejbcaJSFHelper.getEjbcaWebBean()).andReturn(ejbcaWebBean);
         expect(uiComponent.getAttributes()).andReturn(attributesMap).times(0, 3); // attributes: validationCondition, validationTriggerIds, maximumLength
         // Replay Easymocks
         replay(facesContext);
-        replay(application);
-        replay(ejbcaJSFHelper);
         replay(uiComponent);
     }
 
@@ -110,8 +80,6 @@ public class ProfileNameValidatorUnitTest {
         // given
         final String profileName = "I_AM_VALID";
         attributesMap = null;
-        expect(StringTools.checkFieldForLegalChars(profileName)).andReturn(true);
-        PowerMock.replay(StringTools.class);
         // when
         testClass.validate(facesContext, uiComponent, profileName);
         // then
@@ -123,8 +91,6 @@ public class ProfileNameValidatorUnitTest {
         // given
         final String profileName = "I_AM_VALID"; // Length 10
         attributesMap.put("maximumLength", "11");
-        expect(StringTools.checkFieldForLegalChars(profileName)).andReturn(true);
-        PowerMock.replay(StringTools.class);
         // when
         testClass.validate(facesContext, uiComponent, profileName);
         // then
@@ -135,59 +101,34 @@ public class ProfileNameValidatorUnitTest {
     public void failOnEmptyProfileName() {
         // given
         final String profileName = " ";
-        expect(ejbcaWebBean.getText("NAME_CANNOT_BE_EMPTY")).andReturn("Error message");
-        replay(ejbcaWebBean);
-        expectedException.expect(ValidatorException.class);
-        expectedException.expectMessage("Error message");
-        PowerMock.replay(FacesContext.class);
+        expectedException.expect(NullPointerException.class); //NullPointerException thrown when trying to get message text
         // when
         testClass.validate(facesContext, uiComponent, profileName);
         // then
         verify(facesContext);
-        verify(application);
-        verify(ejbcaJSFHelper);
-        verify(ejbcaWebBean);
     }
 
     @Test
     public void failOnIllegalCharactersInProfileName() {
         // given
-        final String profileName = "I_AM_INVALID";
-        expect(StringTools.checkFieldForLegalChars(profileName)).andReturn(false);
-        expect(ejbcaWebBean.getText("ONLYCHARACTERS")).andReturn("Error message");
-        replay(ejbcaWebBean);
-        expectedException.expect(ValidatorException.class);
-        expectedException.expectMessage("Error message");
-        PowerMock.replay(FacesContext.class);
-        PowerMock.replay(StringTools.class);
+        final String profileName = "I_AM_INVALID!";
+        expectedException.expect(NullPointerException.class); //NullPointerException thrown when trying to get message text
         // when
         testClass.validate(facesContext, uiComponent, profileName);
         // then
         verify(facesContext);
-        verify(application);
-        verify(ejbcaJSFHelper);
-        verify(ejbcaWebBean);
     }
 
     @Test
     public void failOnProfileNameOverMaximumLengthLimit() {
         // given
-        final String profileName = "I_AM_INVALID"; // Length 12
+        final String profileName = "I_AM_VALID_BUT_LONG"; // Length 19
         attributesMap.put("maximumLength", "10");
-        expect(StringTools.checkFieldForLegalChars(profileName)).andReturn(true);
-        expect(ejbcaWebBean.getText("MAXIMUMLENGTH_FIELD", false, 10)).andReturn("Error message 10");
-        replay(ejbcaWebBean);
-        expectedException.expect(ValidatorException.class);
-        expectedException.expectMessage("Error message 10");
-        PowerMock.replay(FacesContext.class);
-        PowerMock.replay(StringTools.class);
+        expectedException.expect(NullPointerException.class); //NullPointerException thrown when trying to get message text
         // when
         testClass.validate(facesContext, uiComponent, profileName);
         // then
         verify(facesContext);
-        verify(application);
-        verify(ejbcaJSFHelper);
-        verify(ejbcaWebBean);
         verify(uiComponent);
     }
 

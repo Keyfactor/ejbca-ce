@@ -60,7 +60,7 @@
 		<copy file="${log4j.test.file}" tofile="${healthcheck-war.build-test.dir}/log4j.xml" failonerror="true"/>
 	</target>
 
-	<target name="test" depends="compile-tests">
+	<target name="test:unit" depends="compile-tests" description="Run unit tests for this module">
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
 				<path refid="test.classpath"/>
@@ -68,7 +68,7 @@
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${healthcheck-war.build-test.dir}">
-					<include name="**/*Test.class" />
+					<include name="**/*UnitTest.class" />
 				</fileset>
 			</batchtest>
 			<jvmarg line="${tests.jvmargs}"/>

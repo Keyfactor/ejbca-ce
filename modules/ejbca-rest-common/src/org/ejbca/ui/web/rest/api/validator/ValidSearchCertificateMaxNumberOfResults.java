@@ -52,8 +52,8 @@ public @interface ValidSearchCertificateMaxNumberOfResults {
     class Validator implements ConstraintValidator<ValidSearchCertificateMaxNumberOfResults, Integer> {
 
         private static final int MINIMUM_INCLUSIVE = 0;
-        private static final GlobalConfigurationSessionLocal globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
-        private static final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        private GlobalConfigurationSessionLocal globalConfigurationSession;
+        GlobalCesecoreConfiguration globalCesecoreConfiguration;
 
         @Override
         public void initialize(final ValidSearchCertificateMaxNumberOfResults validSearchCertificateMaxNumberOfResults) {
@@ -70,7 +70,7 @@ public @interface ValidSearchCertificateMaxNumberOfResults {
                 return false;
             }
 
-            final int MAXIMUM_EXCLUSIVE = globalCesecoreConfiguration.getMaximumQueryCount();
+            final int MAXIMUM_EXCLUSIVE = getMaximumQueryCount();
             if(value > MAXIMUM_EXCLUSIVE) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchCertificateMaxNumberOfResults.invalid.moreThanMaximum}");
                 return false;
@@ -78,6 +78,15 @@ public @interface ValidSearchCertificateMaxNumberOfResults {
 
             return true;
         }
+
+        private int getMaximumQueryCount() {
+            if (globalCesecoreConfiguration == null) {
+                globalConfigurationSession = new EjbLocalHelper().getGlobalConfigurationSession();
+                globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            }
+            return globalCesecoreConfiguration.getMaximumQueryCount();
+        }
+
     }
 
 }

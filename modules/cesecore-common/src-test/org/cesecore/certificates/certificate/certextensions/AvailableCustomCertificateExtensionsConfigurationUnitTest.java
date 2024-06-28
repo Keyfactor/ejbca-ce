@@ -24,10 +24,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.junit.Test;
 
-
 /**
  * Unit test of {@link AvailableCustomCertificateExtensionsConfiguration}.
- * @see org.cesecore.certificates.certificate.AvailableCustomCertExtensionsConfigTest AvailableCustomCertExtensionsConfigTest (related system test)
+ * @see org.cesecore.certificates.certificate.AvailableCustomCertExtensionsConfigSystemTest AvailableCustomCertExtensionsConfigSystemTest (related system test)
  * @version $Id$
  */
 public class AvailableCustomCertificateExtensionsConfigurationUnitTest {
