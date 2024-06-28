@@ -5,7 +5,7 @@ val props: Properties = Properties().apply {
     if (file(propertiesFilePath).exists()) {
         load(file(propertiesFilePath).inputStream())
     } else {
-        load(file(propertiesFilePath + ".sample").inputStream())
+        load(file("$propertiesFilePath.sample").inputStream())
     }
 }
 
