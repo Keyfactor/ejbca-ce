@@ -14,7 +14,6 @@ package org.ejbca.ui.web.jsf.validator;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.powermock.api.easymock.PowerMock;
 
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.context.ExternalContext;
@@ -32,7 +31,6 @@ import static org.junit.Assert.assertTrue;
 /**
  * A unit test for Validation Helper.
  *
- * @version $Id$
  */
 public class ValidationHelperUnitTest {
 
@@ -49,8 +47,6 @@ public class ValidationHelperUnitTest {
         //
         attributesMap = new HashMap<>();
         requestParameterValuesMap = new HashMap<>();
-        // Mock all static methods of FacesContext using PowerMockito
-        PowerMock.mockStatic(FacesContext.class);
         // Create mocks
         facesContext = createMock(FacesContext.class);
         externalContext = createMock(ExternalContext.class);

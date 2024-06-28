@@ -1359,10 +1359,37 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         
         return;
     }
+    
+    @Test
+    public void testCreateCertificateNonExistingCa() throws Exception {
+        
+        final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        PKCS10CertificationRequest pkcs10CertificationRequest = CertTools.genPKCS10CertificationRequest(
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+                DnComponents.stringToBcX500Name("CN=DUMMY_USER"), 
+                keys.getPublic(), null, keys.getPrivate(), null);
 
+        String caName = "testCreateCertificateNonExistingCa_DUMMY_CA";
+        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder()
+                .certificateAuthorityName(caName)
+                .username("DUMMY_USER")
+                .password("foo123")
+                .certificateProfileName("DUMMY_CP")
+                .endEntityProfileName("DUMMY_EEP")
+                .certificateRequest(CertTools.buildCsr(pkcs10CertificationRequest)).build();
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+        // Send request
+        final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
+        String responseBody = actualResponse.readEntity(String.class);
+        assertTrue(responseBody.contains("CA with name " + caName + " doesn't exist."));
+    }
+    
     private String addAndEnrollEntity(String caDn, String certProfileName, int certProfileId,
                                                             String eeProfileName, int eeProfileId) {
-        
         String userName = "expireSearchTest" + RANDOM.nextLong();
         
         try {

@@ -28,7 +28,7 @@ import org.cesecore.util.SecureXMLDecoder;
 import org.junit.Test;
 
 /**
- * Tests of SecureXMLDecoder that cannot go into SecureXMLDecoderTest (which is part of CESeCore), because they use EJBCA classes.
+ * Tests of SecureXMLDecoder that cannot go into SecureXMLDecoderUnitTest (which is part of CESeCore), because they use EJBCA classes.
  */
 public class SecureXMLDecoderEjbcaUnitTest {
 

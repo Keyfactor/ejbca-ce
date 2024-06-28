@@ -13,6 +13,7 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import jakarta.ejb.EJBTransactionRolledbackException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -218,7 +219,8 @@ public class BaseCmpMessageHandler {
 	        provider = cryptoTokenSession.getCryptoToken(signCa.getCAToken().getCryptoTokenId()).getSignProviderName();
 	        return CmpMessageHelper.createSignedErrorMessage(cmpMessage.getHeader(), failInfo,  errmsg, signCachain, signKey, 
 	                signCa.getCAToken().getSignatureAlgorithm(), provider);
-	    } catch (AuthorizationDeniedException | CryptoTokenOfflineException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
+	    } catch (AuthorizationDeniedException | CryptoTokenOfflineException | InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException 
+	            | EJBTransactionRolledbackException e) {
 	        if (LOG.isDebugEnabled()) {
 	            LOG.debug("Could not sign CmpErrorResponseMessage, creating unprotected message. " + e.getMessage());
 	        }

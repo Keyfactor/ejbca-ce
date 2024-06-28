@@ -17,7 +17,6 @@ import jakarta.validation.ConstraintValidatorContext;
 /**
  * A helper class to manage constraint violation cases.
  *
- * @version $Id: ValidationHelper.java 29436 2018-07-03 11:12:13Z andrey_s_helmes $
  */
 public class ValidationHelper {
 
