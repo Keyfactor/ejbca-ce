@@ -368,7 +368,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         + "cryptotoken/cryptotoken.jsf?cryptoTokenId=";
 
         // Init include health check
-        caInfoDto.setIncludeInHealthCheck(cainfo != null && cainfo.getIncludeInHealthCheck());
+        caInfoDto.setIncludeInHealthCheck(cainfo == null || cainfo.getIncludeInHealthCheck());
 
         // Here we do initialize the sub views.
         if (isEditCA) {
@@ -2325,7 +2325,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setUsername(proxyCaInfo.getUsername());
             caInfoDto.setPassword(proxyCaInfo.getPassword());
             caInfoDto.setUpstreamCa(proxyCaInfo.getUpstreamCertificateAuthority());
-            caInfoDto.setUpstreamTemplate(proxyCaInfo.getTemplate());
             caInfoDto.setSansJson(proxyCaInfo.getSans());
 
             return;

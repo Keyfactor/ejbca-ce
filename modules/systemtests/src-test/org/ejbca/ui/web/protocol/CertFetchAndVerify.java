@@ -43,8 +43,6 @@ import org.junit.Assert;
  * Found CA certificates issued by old CAs that has been renewed are checked. It is checked that the whole chin to the root are in the DB for this certificates.
  * Note that old CA certificates will only be found if there is now newer with same issuer and subject DN.
  * The test is started by calling {@link #doIt(X509Certificate, Set)}
- * 
- *
  */
 public class CertFetchAndVerify {
 	private static final Logger log = Logger.getLogger(CertFetchAndVerify.class);

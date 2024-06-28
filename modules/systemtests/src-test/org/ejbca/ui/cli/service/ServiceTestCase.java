@@ -17,8 +17,6 @@ import org.ejbca.core.ejb.services.ServiceSessionRemote;
 
 /**
  * Common functions for the tests of the service command
- * 
- * @version $Id$
  */
 public class ServiceTestCase {
     
