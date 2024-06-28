@@ -29,5 +29,8 @@ sourceSets {
 
 tasks.jar {
     from(sourceSets["main"].output)
+    from("${rootProject.projectDir}/conf"){
+        include("systemtests.properties")
+    }
     archiveBaseName.set("systemtests-interfaces")
 }

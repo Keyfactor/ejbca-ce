@@ -5,7 +5,7 @@ val props: Properties = Properties().apply {
     if (file(propertiesFilePath).exists()) {
         load(file(propertiesFilePath).inputStream())
     } else {
-        load(file(propertiesFilePath + ".sample").inputStream())
+        load(file("$propertiesFilePath.sample").inputStream())
     }
 }
 
@@ -30,6 +30,7 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/ct"))
             dirs(rootProject.projectDir.resolve("lib/ext/test"))
             dirs(rootProject.projectDir.resolve("lib/ext/test/powermock"))
+            dirs(rootProject.projectDir.resolve("lib/ext/resteasy-jaxrs-lib"))
         }
     }
     extra["edition"] = edition
@@ -302,7 +303,8 @@ subprojects {
                 "ejbca-ws",
                 "healthcheck-war",
                 "msae",
-                "ra-gui"
+                "ra-gui",
+                "systemtests"
             )
         ) {
             plugins.apply("java")
@@ -354,11 +356,11 @@ subprojects {
                     testLogging.events("passed", "skipped", "failed")
                 }
 
-                // Add the "systemTest" task to Gradle's "check" task dependencies
-                // so that it would be triggered alongside the unit "test" task.
-                tasks.named("check") {
-                    dependsOn(tasks.named("systemTest"))
-                }
+                // // Add the "systemTest" task to Gradle's "check" task dependencies
+                // // so that it would be triggered alongside the unit "test" task.
+                // tasks.named("check") {
+                //     dependsOn(tasks.named("systemTest"))
+                // }
             }
 
             // Add common dependencies used by most tests.

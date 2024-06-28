@@ -109,6 +109,25 @@ dependencyResolutionManagement {
             library("cglib", ":cglib-nodep:3.3.0")
             library("hamcrest-core", ":hamcrest-core:1.3")
             library("system-rules", ":system-rules:1.19.0")
+            library("reactive-streams", ":reactive-streams:1.0.3")
+            library("resteasy-client", ":resteasy-client:4.7.9.Final")
+            library("resteasy-client-api", ":resteasy-client-api:4.7.9.Final")
+            library("resteasy-core", ":resteasy-core:4.7.9.Final")
+            library("resteasy-core-spi", ":resteasy-core-spi:4.7.9.Final")
+            library("resteasy-undertow", ":resteasy-undertow:4.7.9.Final")
+            library("undertow-core", ":undertow-core:2.2.28.Final")
+            library("undertow-servlet", ":undertow-servlet:2.2.28.Final")
+            library("xnio-api", ":xnio-api:3.8.12.Final")
+            library("xnio-nio", ":xnio-nio:3.8.12.Final")
+            library("wildfly-common", ":wildfly-common:1.5.4.Final")
+            library("jboss-threads", ":jboss-threads:2.3.3.Final")
+            library("jboss-servlet-api", ":jboss-servlet-api_4.0_spec:2.0.0.Final")
+            library("resteasy-jackson2-provider", ":resteasy-jackson2-provider:4.7.9.Final")
+            library("json-patch", ":json-patch:1.13")
+            library("javax.ws.rs-api", ":javax.ws.rs-api:2.1.1")
+            library("jackson-jaxrs-base", ":jackson-jaxrs-base:2.14.2")
+            library("jackson-jaxrs-json-provider", ":jackson-jaxrs-json-provider:2.14.2")
+            library("jackson-module-jaxb-annotations", ":jackson-module-jaxb-annotations:2.14.2")
             // bundles
             bundle(
                 "test",
@@ -129,6 +148,30 @@ dependencyResolutionManagement {
                     "cglib",
                     "objenesis",
                     "javassist"
+                )
+            )
+            bundle(
+                "resteasy-jaxrs",
+                listOf(
+                    "reactive-streams",
+                    "resteasy-client",
+                    "resteasy-client-api",
+                    "resteasy-core",
+                    "resteasy-core-spi",
+                    "resteasy-undertow",
+                    "undertow-core",
+                    "undertow-servlet",
+                    "xnio-api",
+                    "xnio-nio",
+                    "wildfly-common",
+                    "jboss-threads",
+                    "jboss-servlet-api",
+                    "resteasy-jackson2-provider",
+                    "json-patch",
+                    "javax.ws.rs-api",
+                    "jackson-jaxrs-base",
+                    "jackson-jaxrs-json-provider",
+                    "jackson-module-jaxb-annotations"
                 )
             )
             bundle("bouncy.castle", listOf("bcprov", "bcpkix", "bctls", "bcutil"))
