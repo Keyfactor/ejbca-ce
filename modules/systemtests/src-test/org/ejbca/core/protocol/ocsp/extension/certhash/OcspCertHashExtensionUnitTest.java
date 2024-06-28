@@ -14,14 +14,10 @@ package org.ejbca.core.protocol.ocsp.extension.certhash;
 
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
@@ -48,7 +44,7 @@ import com.keyfactor.util.keys.KeyTools;
  * @version $Id$
  *
  */
-public class OcspCertHashExtensionSystemTest {
+public class OcspCertHashExtensionUnitTest {
 
     @BeforeClass
     public static void beforeClass() {
@@ -63,16 +59,16 @@ public class OcspCertHashExtensionSystemTest {
      * 
      */
     @Test
-    public void testProcess() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException,
-            IllegalStateException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException, OperatorCreationException, CertificateException {
-        OcspCertHashExtension ocspCertHashExtension = new OcspCertHashExtension();
+    public void testProcess() throws NoSuchAlgorithmException, IllegalStateException, InvalidAlgorithmParameterException,
+            OperatorCreationException, CertificateException {
+        org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension ocspCertHashExtension = new org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension();
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate cert = CertTools.genSelfCert("CN=CertHashTest", 365, null, keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         Map<ASN1ObjectIdentifier,Extension> result = ocspCertHashExtension.process(null, null, null, cert, null, null);
-        Extension extension = result.get(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID));
+        Extension extension = result.get(new ASN1ObjectIdentifier(org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension.CERT_HASH_OID));
         ASN1Encodable derSequence = extension.getParsedValue();
         CertHash certHash = CertHash.getInstance(derSequence);
-        assertEquals("Algorithm was not extracted correctly from CertHash", OcspCertHashExtension.SHA256, certHash.getHashAlgorithm().getAlgorithm());
+        assertEquals("Algorithm was not extracted correctly from CertHash", org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension.SHA256, certHash.getHashAlgorithm().getAlgorithm());
         MessageDigest md = MessageDigest.getInstance("SHA256");
         String fingerprint = new String(Hex.encode(md.digest(cert.getEncoded())));
         String certificateHashAsString = new String(Hex.encode(certHash.getCertificateHash()));
