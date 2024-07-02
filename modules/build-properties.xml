@@ -246,19 +246,19 @@
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="reactive-streams-1.*.jar"/>
-			<include name="resteasy-client-4.*.jar"/>
-			<include name="resteasy-client-api-4.*.jar"/>
-			<include name="resteasy-core-4.*.jar"/>
-			<include name="resteasy-core-spi-4.*.jar"/>
-			<include name="resteasy-undertow-4.*.jar"/>
+			<include name="resteasy-client-*.jar"/>
+			<include name="resteasy-client-api-*.jar"/>
+			<include name="resteasy-core-*.jar"/>
+			<include name="resteasy-core-spi-*.jar"/>
+			<include name="resteasy-undertow-*.jar"/>
 			<include name="undertow-core-2.*.jar"/>
 			<include name="undertow-servlet-2.*.jar"/>
 			<include name="xnio-api-3.*.jar"/>
 			<include name="xnio-nio-3.*.jar"/>
 			<include name="wildfly-common-1.*.jar"/>
 			<include name="jboss-threads-2.*.jar"/>
-			<include name="jboss-servlet-api_4.0_spec-2.*.jar"/>
-			<include name="resteasy-jackson2-provider-4.*.jar"/>
+			<include name="jakarta.servlet-api-*.jar"/>
+			<include name="resteasy-jackson2-provider-*.jar"/>
 			<include name="json-patch-1.*.jar"/>
 			<include name="jakarta.ws.rs-api-3.*.jar"/>
 		</fileset>
@@ -469,7 +469,7 @@
 
 	<path id="lib.hibernate.validator">
 		<fileset dir="${ejbca.home}/lib/hibernate">
-			<include name="hibernate-validator-6.2.5.Final.jar"/>
+			<include name="hibernate-validator-*.Final.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib" includes="el-impl-2.2.jar"/>
 	</path>
