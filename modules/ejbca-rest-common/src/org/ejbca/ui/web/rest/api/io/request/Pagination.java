@@ -15,7 +15,8 @@ package org.ejbca.ui.web.rest.api.io.request;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 
 /**
  * A class representing pagination parameters with a page size and a current page.
@@ -23,12 +24,12 @@ import io.swagger.annotations.ApiModelProperty;
 @JsonPropertyOrder({ "page_size", "current_page" })
 public class Pagination {
 
-    @ApiModelProperty(value = "Number of results per page", example = "10")
+    @Schema(description = "Number of results per page", example = "10")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("page_size")
     private int pageSize;
 
-    @ApiModelProperty(value = "Current page number", example = "1")
+    @Schema(description = "Current page number", example = "1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("current_page")
     private int currentPage;

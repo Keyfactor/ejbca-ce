@@ -12,16 +12,17 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A container for end entity extended information
  */
 public class ExtendedInformationRestRequestComponent {
 
-    @ApiModelProperty(value = "For extension_data a certificate extension object identifier (OID), for custom_data a string variable and value see ExtendedInformation class", example = "1.3.6.1.5.5.7.1.24/customdata_STARTTIME")
+    @Schema(description = "For extension_data a certificate extension object identifier (OID), for custom_data a string variable and value see ExtendedInformation class", example = "1.3.6.1.5.5.7.1.24/customdata_STARTTIME")
 	private String name;
-    @ApiModelProperty(value = "OID value", example = "3003020105/2022-12-13 00:00:00")
+    @Schema(description = "OID value", example = "3003020105/2022-12-13 00:00:00")
     private String value;
 
     private ExtendedInformationRestRequestComponent() {}

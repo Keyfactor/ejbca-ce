@@ -197,6 +197,7 @@
 	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-2.2.20.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-2.2.20.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-integration-2.2.20.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs2-jakarta-2.2.20.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-2.2.20.jar"/>
 	<classpathentry kind="lib" path="lib/guava-33.0.0-jre.jar"/>
