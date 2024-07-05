@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.era.RaEndEntitySearchRequestV2;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -45,19 +45,19 @@ import java.util.List;
 @ValidSearchEndEntitiesSearchRestRequestV2
 public class SearchEndEntitiesRestRequestV2 {
 
-    @ApiModelProperty(value = "Maximum number of results", example = "10")
+    @Schema(description = "Maximum number of results", example = "10")
     @ValidSearchEndEntityMaxNumberOfResults
     private Integer maxNumberOfResults;
 
-    @ApiModelProperty(value = "Current page number", example = "1")
+    @Schema(description = "Current page number", example = "1")
     private int currentPage = 1;
-        
-    @ApiModelProperty(value = "A List of search criteria." )
+
+    @Schema(description = "A List of search criteria." )
     @ValidSearchEndEntityCriteriaRestRequestList
     @Valid
     private List<SearchEndEntityCriteriaRestRequest> criteria = new ArrayList<>();
-    
-    @ApiModelProperty(value = "Sort." )
+
+    @Schema(description = "Sort." )
     @ValidSearchEndEntitiesSortRestRequest
     @Valid
     private SearchEndEntitiesSortRestRequest sortOperation;
@@ -77,7 +77,7 @@ public class SearchEndEntitiesRestRequestV2 {
     public void setCriteria(List<SearchEndEntityCriteriaRestRequest> criteria) {
         this.criteria = criteria;
     }
-    
+
     public int getCurrentPage() {
         return currentPage;
     }
@@ -126,7 +126,7 @@ public class SearchEndEntitiesRestRequestV2 {
             this.criteria = criteria;
             return this;
         }
-        
+
         public SearchEndEntitiesRestRequestBuilder sortOperation(final SearchEndEntitiesSortRestRequest sortOperation) {
             this.sortOperation = sortOperation;
             return this;
@@ -164,7 +164,7 @@ public class SearchEndEntitiesRestRequestV2 {
             raEndEntitySearchRequest.setSubjectDnSearchString("");
             raEndEntitySearchRequest.setSubjectAnSearchString("");
             raEndEntitySearchRequest.setUsernameSearchString("");
-            
+
             for(final SearchEndEntityCriteriaRestRequest searchEndEntityCriteriaRestRequest : searchEndEntitiesRestRequest.getCriteria()) {
                 final SearchEndEntityCriteriaRestRequest.CriteriaProperty criteriaProperty = SearchEndEntityCriteriaRestRequest.CriteriaProperty.resolveCriteriaProperty(searchEndEntityCriteriaRestRequest.getProperty());
                 if(criteriaProperty == null) {

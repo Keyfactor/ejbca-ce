@@ -13,8 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest;
@@ -29,7 +28,7 @@ import java.util.EnumSet;
  *
  * @version $Id: SearchCertificateCriteriaRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
-@ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
+@Schema(description = "Use one of allowed values as property(see enum values below).\n" +
         "QUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \n" +
         "SERIAL_NUMBER - multiplicity [0, 1] - is used to search by SerialNr; \n" +
         "SUBJECT_DN - multiplicity [0, 1] - is used to search by SubjectDn; \n" +
@@ -61,19 +60,19 @@ import java.util.EnumSet;
 @ValidSearchCertificateCriteriaRestRequest
 public class SearchCertificateCriteriaRestRequest {
 
-    @ApiModelProperty(value = "A search property", example = "CERTIFICATE_PROFILE",
+    @Schema(description = "A search property", example = "CERTIFICATE_PROFILE",
             allowableValues = "QUERY, SERIAL_NUMBER, USERNAME, SUBJECT_DN, SUBJECT_ALT_NAME, EXTERNAL_ACCOUNT_BINDING_ID, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, EXTERNAL_ACCOUNT_BINDING_ID, CA, STATUS, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE")
     private String property;
 
-    @ApiModelProperty(value = "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA",
+    @Schema(description = "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA",
             example = "ENDUSER")
     private String value;
 
-    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEGINS_WITH' for string value (case sensitive trailing wildcard search.), "
+    @Schema(description = "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEGINS_WITH' for string value (case sensitive trailing wildcard search.), "
         + "'BEFORE' or 'AFTER' for date values",
             example = "EQUAL",
-            allowableValues = "EQUAL, LIKE, BEGINS_WITH, BEFORE, AFTER",
-            dataType = "java.lang.String")
+            allowableValues = {"EQUAL", "LIKE", "BEGINS_WITH", "BEFORE", "AFTER"},
+            type = "string")
     private String operation;
 
     // Internal usage of identifier for EndEntityProfile, CertificateProfile or CAId

@@ -12,13 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource.swagger;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.SwaggerDefinition.Scheme;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -49,18 +50,24 @@ import java.security.cert.CertificateEncodingException;
 /**
  * JAX-RS resource handling CA related requests.
  */
-@Api(tags = {"v1/ca"}, value = "CA REST API")
+@Tag(name = "v1/ca", description = "CA REST API")
 @Path("/v1/ca")
 @Produces(MediaType.APPLICATION_JSON)
-@SwaggerDefinition(basePath = "/ejbca/ejbca-rest-api", schemes = {Scheme.HTTPS})
+@OpenAPIDefinition(servers = @Server(url = "/ejbca/ejbca-rest-api", description = "HTTPS Server"))
 @Stateless
 public class CaRestResourceSwagger extends CaRestResource {
 
     @GET
     @Path("/status")
-    @ApiOperation(value = "Get the status of this REST Resource",
-            notes = "Returns status, API version and EJBCA version.",
-            response = RestResourceStatusRestResponse.class)
+    @Operation(summary = "Get the status of this REST Resource",
+            description = "Returns status, API version and EJBCA version.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = RestResourceStatusRestResponse.class))
+                    )
+            })
     @Override
     public Response status() {
         return super.status();
@@ -70,20 +77,28 @@ public class CaRestResourceSwagger extends CaRestResource {
     @GET
     @Path("/{subject_dn}/certificate/download")
     @Produces(MediaType.WILDCARD)
-    @ApiOperation(value = "Get PEM file with the active CA certificate chain")
+    @Operation(description = "Get PEM file with the active CA certificate chain")
     public Response getCertificateAsPem(@Context HttpServletRequest requestContext,
-                                        @ApiParam(value = "CAs subject DN", required = true) @PathParam("subject_dn") String subjectDn)
+                                        @Parameter(name = "CAs subject DN", required = true) @PathParam("subject_dn") String subjectDn)
             throws AuthorizationDeniedException, CertificateEncodingException, CADoesntExistsException, RestException {
         return super.getCertificateAsPem(requestContext, subjectDn);
     }
 
     @Override
     @GET
-    @ApiOperation(value = "Returns the Response containing the list of CAs with general information per CA as Json",
-            notes = "Returns the Response containing the list of CAs with general information per CA as Json",
-            response = CaInfosRestResponse.class)
+    @Operation(summary = "Returns the Response containing the list of CAs with general information per CA as Json",
+            description = "Returns the Response containing the list of CAs with general information per CA as Json",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CaInfosRestResponse.class))
+                    )
+            })
     public Response listCas(@Context final HttpServletRequest httpServletRequest,
-            @ApiParam(value = "true to get external (i.e. imported) cartificates, false to not get external (i.e. imported) certificates", required = false, defaultValue = "false")
+            @Parameter(description = "true to get external (i.e. imported) cartificates, false to not get external (i.e. imported) certificates",
+                    required = false,
+                    schema = @Schema(type = "boolean", defaultValue = "false", example = "true"))
             @QueryParam("includeExternal") boolean includeExternal
             ) throws AuthorizationDeniedException,
             CADoesntExistsException, RestException {
@@ -93,13 +108,20 @@ public class CaRestResourceSwagger extends CaRestResource {
     @Override
     @GET
     @Path("/{issuer_dn}/getLatestCrl")
-    @ApiOperation(value = "Returns the latest CRL issued by this CA",
-            response = CrlRestResponse.class)
+    @Operation(description = "Returns the latest CRL issued by this CA",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content =  @Content(schema = @Schema(implementation = CrlRestResponse.class))
+                    )
+            })
     public Response getLatestCrl(@Context HttpServletRequest httpServletRequest,
-                                 @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
-                                 @ApiParam(value = "true to get the latest deltaCRL, false to get the latest complete CRL", required = false, defaultValue = "false")
+                                 @Parameter(description = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
+                                 @Parameter(description = "true to get the latest deltaCRL, false to get the latest complete CRL", required = false,
+                                         schema = @Schema(type = "boolean", defaultValue = "false", example = "true"))
                                  @QueryParam("deltaCrl") boolean deltaCrl,
-                                 @ApiParam(value = "the CRL partition index", required = false, defaultValue = "0")
+                                 @Parameter(description = "the CRL partition index", required = false, schema = @Schema(type = "integer", defaultValue = "0"))
                                  @QueryParam("crlPartitionIndex") int crlPartitionIndex
     ) throws AuthorizationDeniedException, RestException, CADoesntExistsException {
         return super.getLatestCrl(httpServletRequest, issuerDn, deltaCrl, crlPartitionIndex);
@@ -109,10 +131,17 @@ public class CaRestResourceSwagger extends CaRestResource {
     @POST
     @Path("/{issuer_dn}/createcrl")
     @Consumes(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Create CRL(main, partition and delta) issued by this CA", response = CreateCrlRestResponse.class)
+    @Operation(description = "Create CRL(main, partition and delta) issued by this CA", responses = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successful operation",
+                    content = @Content(schema = @Schema(implementation = CreateCrlRestResponse.class))
+            )
+    })
     public Response createCrl(@Context HttpServletRequest httpServletRequest,
-                              @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
-                              @ApiParam(value = "true to create the deltaCRL, false to create the base CRL", required = false, defaultValue = "false")
+                              @Parameter(description = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
+                              @Parameter(description = "true to create the deltaCRL, false to create the base CRL", required = false,
+                                      schema = @Schema(type = "boolean", defaultValue = "false", example = "true"))
                               @QueryParam("deltacrl") boolean deltacrl
     ) throws AuthorizationDeniedException, RestException, CADoesntExistsException {
         return super.createCrl(httpServletRequest, issuerDn, deltacrl);
@@ -123,16 +152,15 @@ public class CaRestResourceSwagger extends CaRestResource {
     @Path("/{issuer_dn}/importcrl")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Import a certificate revocation list (CRL) for a CA")
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "CRL file was imported successfully"),
-            @ApiResponse(code = 400, message = "Error while importing CRL file"),
-    }
-    )
+    @Operation(description = "Import a certificate revocation list (CRL) for a CA",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "CRL file was imported successfully"),
+                    @ApiResponse(responseCode = "400", description = "Error while importing CRL file")
+            })
     public Response importCrl(@Context final HttpServletRequest httpServletRequest,
-                              @ApiParam(value = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
-                              @ApiParam("CRL partition index") @DefaultValue("0") @FormParam("crlPartitionIndex") int crlPartitionIndex,
-                              @ApiParam("CRL file in DER format") @FormParam("crlFile") final File crlFile
+                              @Parameter(description = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
+                              @Parameter(description = "CRL partition index") @DefaultValue("0") @FormParam("crlPartitionIndex") int crlPartitionIndex,
+                              @Parameter(description = "CRL file in DER format") @FormParam("crlFile") final File crlFile
     ) throws AuthorizationDeniedException, RestException {
         return super.importCrl(httpServletRequest, issuerDn, crlPartitionIndex, crlFile);
     }

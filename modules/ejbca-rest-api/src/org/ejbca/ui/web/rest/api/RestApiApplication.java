@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api;
 
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.converter.ModelConverters;
-
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
+
 import org.ejbca.util.swagger.SnakeCaseConverter;
 import org.reflections.Reflections;
 
@@ -49,14 +49,14 @@ public class RestApiApplication extends Application {
         resources.add(org.ejbca.ui.web.rest.api.exception.ValidationExceptionMapper.class);
 
         Reflections restResourceDefinitions = new Reflections("org.ejbca.ui.web.rest.api.resource.swagger");
-        Set<Class<?>> restResources = restResourceDefinitions.getTypesAnnotatedWith(SwaggerDefinition.class);
+        Set<Class<?>> restResources = restResourceDefinitions.getTypesAnnotatedWith(OpenAPIDefinition.class);
         resources.addAll(restResources);
 
         if (EjbcaConfiguration.getIsInProductionMode()) {
             log.debug("Swagger is not available in distribution.");
         } else {
-            resources.add(io.swagger.jaxrs.listing.ApiListingResource.class);
-            resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
+            resources.add(io.swagger.v3.jaxrs2.integration.resources.OpenApiResource.class);
+            resources.add(io.swagger.v3.jaxrs2.integration.resources.AcceptHeaderOpenApiResource.class);
         }
         return resources;
     }
