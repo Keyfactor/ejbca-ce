@@ -12,14 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource.swagger;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.SwaggerDefinition.Scheme;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.EjbcaException;
@@ -52,17 +54,16 @@ import java.security.cert.CertificateParsingException;
 /**
  * JAX-RS resource handling Certificate related requests.
  */
-@Api(tags = {"v2/certificate"}, value = "Certificate REST Management API")
+@Tag(name = "v2/certificate", description = "Certificate REST Management API")
 @Path("v2/certificate")
-@SwaggerDefinition(
+@OpenAPIDefinition(
         /* @Info annotation seems to work properly only when it is configured only once. Must not specify it on any other RestResources in this module! */
         info = @Info(
                 title = "EJBCA REST Interface",
                 version = BaseRestResource.RESOURCE_VERSION,
                 description = "API reference documentation."
         ),
-        basePath = "/ejbca/ejbca-rest-api",
-        schemes = {Scheme.HTTPS}
+        servers = @Server(url = "/ejbca/ejbca-rest-api", description = "HTTPS Server")
 )
 @Stateless
 public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 {
@@ -70,9 +71,15 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get the status of this REST Resource",
-            notes = "Returns status, API version and EJBCA version.",
-            response = RestResourceStatusRestResponse.class)
+    @Operation(summary = "Get the status of this REST Resource",
+            description = "Returns status, API version and EJBCA version.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = RestResourceStatusRestResponse.class))
+                    )
+            })
     @Override
     public Response status() {
         return super.status();
@@ -81,11 +88,17 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @GET
     @Path("/count")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get the quantity of rather total issued or active certificates", 
-                    response = CertificateCountResponse.class)
+    @Operation(description = "Get the quantity of rather total issued or active certificates",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CertificateCountResponse.class))
+                    )
+            })
     @Override
     public Response getCertificateCount(@Context HttpServletRequest requestContext,
-                                        @ApiParam(value = "true if an active certificates should be counted only")
+                                        @Parameter(description = "true if an active certificates should be counted only")
                                         @QueryParam("isActive") Boolean isActive
     ) throws AuthorizationDeniedException, RestException {
         return super.getCertificateCount(requestContext, isActive);
@@ -96,14 +109,18 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @Path("/search")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(
-            value = "Searches for certificates confirming given criteria and pagination.",
-            notes = "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model. Use -1 for current_page to get total number of certificate for the request criteria.",
-            response = SearchCertificatesRestResponseV2.class
-    )
+    @Operation(summary = "Searches for certificates confirming given criteria and pagination.",
+            description = "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model. Use -1 for current_page to get total number of certificate for the request criteria.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = SearchCertificatesRestResponseV2.class))
+                    )
+            })
     public Response searchCertificates(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Collection of search criterias and pagination information.") final SearchCertificatesRestRequestV2 searchCertificatesRestRequest
+            @Parameter(description = "Collection of search criterias and pagination information.") final SearchCertificatesRestRequestV2 searchCertificatesRestRequest
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException, CertificateParsingException {
         return super.searchCertificates(requestContext, searchCertificatesRestRequest);
     }
@@ -112,26 +129,32 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     @GET
     @Path("/profile/{profile_name}")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(
-            value = "Get Certificate Profile Info.",
-            response = CertificateProfileInfoRestResponseV2.class)
+    @Operation(description = "Get Certificate Profile Info.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Sucessful operation",
+                            content = @Content(schema = @Schema(implementation = CertificateProfileInfoRestResponseV2.class))
+                    )
+            })
     public Response getCertificateProfileInfo(
             @Context HttpServletRequest requestContext,
             @PathParam("profile_name") String certProfileName
             ) throws AuthorizationDeniedException, RestException {
         return super.getCertificateProfileInfo(requestContext, certProfileName);
     }
-    
+
     @Override
     @PUT
     @Path("/{issuer_dn}/{certificate_serial_number}/keyrecover")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Marks certificate for  key recovery.")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "Certificate marked for key recovery successfully"),
-                            @ApiResponse(code = 500, message = "General error, while trying to mark the certificate for key recovery"),})
+    @Operation(description = "Marks certificate for  key recovery.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Certificate marked for key recovery successfully"),
+            @ApiResponse(responseCode = "500", description = "General error, while trying to mark the certificate for key recovery"),})
     public Response markCertificateForKeyRecovery(@Context HttpServletRequest requestContext,
-            @ApiParam(value = "Subject DN of the issuing CA") @PathParam("issuer_dn") String issuerDN,
-            @ApiParam(value = "Hex serial number (without prefix, e.g. '00')") @PathParam("certificate_serial_number") String certificateSerialNumber)
+                                                  @Parameter(description = "Subject DN of the issuing CA") @PathParam("issuer_dn") String issuerDN,
+                                                  @Parameter(description = "Hex serial number (without prefix, e.g. '00')") @PathParam("certificate_serial_number") String certificateSerialNumber)
             throws CADoesntExistsException, AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException {
         return super.markCertificateForKeyRecovery(requestContext, certificateSerialNumber, issuerDN);
     }
