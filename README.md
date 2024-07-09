@@ -1,7 +1,10 @@
 <!--EJBCA Enterprise icon -->
-<a href="https://www.keyfactor.com/products/ejbca-enterprise/">
-    <img src=".github/images/keyfactor-ejbca-icon.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="50" />
-</a> # EJBCA PKI 
+<h1>
+    <a href="https://www.keyfactor.com/products/ejbca-enterprise/">
+        <img src=".github/images/keyfactor-ejbca-icon.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="45" align="center"/>
+    </a>
+    <span>EJBCA PKI </span>
+</h1>
 
 [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
 
