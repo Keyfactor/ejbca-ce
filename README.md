@@ -1,4 +1,9 @@
-# EJBCA PKI [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
+<!--EJBCA Enterprise icon -->
+<a href="https://www.keyfactor.com/products/ejbca-enterprise/">
+    <img src=".github/images/keyfactor-ejbca-icon.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="50" />
+</a> # EJBCA PKI 
+
+[![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
 
 EJBCA covers all your needs – from certificate management, registration and enrollment to certificate validation. 
 
@@ -25,8 +30,8 @@ In our Community we welcome contributions. The Community software is open source
 * To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab. 
 * If you want to contribute actual bug fixes or proposed enhancements, use the **[Pull requests](../../pulls)** tab.
 * Ask the community for ideas: **[EJBCA Discussions](https://github.com/Keyfactor/ejbca-ce/discussions)**.  
-* Read more in our documentation: **[EJBCA Documentation](https://doc.primekey.com/ejbca)**.
-* See release information: **[EJBCA Release information](https://doc.primekey.com/ejbca/ejbca-release-information)**. 
+* Read more in our documentation: **[EJBCA Documentation](https://docs.keyfactor.com/ejbca/)**.
+* See release information: **[EJBCA Release information](https://docs.keyfactor.com/ejbca/latest/ejbca-release-information)**. 
 * Read more on the open source project website: **[EJBCA website](https://www.ejbca.org/)**.   
 
 ## Commercial Support
@@ -42,20 +47,20 @@ EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICEN
 * [Keyfactor/signserver-ce](https://github.com/Keyfactor/signserver-ce)
 
 Integrations:
-* [Vault PKI Engine](https://github.com/Keyfactor/ejbca-vault-pki-engine)
-* [Cert-manager issuer](https://github.com/Keyfactor/ejbca-cert-manager-issuer)
-* [K8s CSR Signer](https://github.com/Keyfactor/ejbca-k8s-csr-signer)
+* [Keyfactor/Vault PKI Engine](https://github.com/Keyfactor/ejbca-vault-pki-engine)
+* [Keyfactor/Cert-manager issuer](https://github.com/Keyfactor/ejbca-cert-manager-issuer)
+* [Keyfactor/K8s CSR Signer](https://github.com/Keyfactor/ejbca-k8s-csr-signer)
 
 Automation and Containers:
-* [Ansible Playbooks](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks) 
-* [Community Helm Chart](https://github.com/Keyfactor/ejbca-community-helm)
+* [Keyfactor/Ansible Playbooks](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks) 
+* [Keyfactor/Community Helm Chart](https://github.com/Keyfactor/ejbca-community-helm)
 
 
 Clients and Client SDKs:
-* [Java Easy Rest Client](https://github.com/Keyfactor/ejbca-easy-rest-client)
-* [Go Client](https://github.com/Keyfactor/ejbca-go-client)
-* [Go Client SDK](https://github.com/Keyfactor/ejbca-go-client-sdk)
-* [Python Client SDK](https://github.com/Keyfactor/ejbca-python-client-sdk)
-* [Java Client SDK](https://github.com/Keyfactor/ejbca-java-client-sdk)
-* [C# Client SDK](https://github.com/Keyfactor/ejbca-csharp-client-sdk)
+* [Keyfactor/Java Easy Rest Client](https://github.com/Keyfactor/ejbca-easy-rest-client)
+* [Keyfactor/Go Client](https://github.com/Keyfactor/ejbca-go-client)
+* [Keyfactor/Go Client SDK](https://github.com/Keyfactor/ejbca-go-client-sdk)
+* [Keyfactor/Python Client SDK](https://github.com/Keyfactor/ejbca-python-client-sdk)
+* [Keyfactor/Java Client SDK](https://github.com/Keyfactor/ejbca-java-client-sdk)
+* [Keyfactor/C# Client SDK](https://github.com/Keyfactor/ejbca-csharp-client-sdk)
 
