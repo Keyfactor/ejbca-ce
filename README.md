@@ -3,7 +3,7 @@
     <a href="https://www.ejbca.org/">
         <img src=".github/images/community-ejbca-icon.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="45" align="center"/>
     </a>
-    <span>EJBCA PKI </span>
+    <span>EJBCA Community</span>
 </h1>
 
 [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
