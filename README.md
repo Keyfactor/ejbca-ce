@@ -1,7 +1,7 @@
-<!--EJBCA Enterprise icon -->
+<!--EJBCA Community icon -->
 <h1>
-    <a href="https://www.keyfactor.com/products/ejbca-enterprise/">
-        <img src=".github/images/keyfactor-ejbca-icon.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="45" align="center"/>
+    <a href="https://www.ejbca.org/">
+        <img src=".github/images/community-ejbca-icon.png?raw=true)" alt="EJBCA logo" title="EJBCA" height="45" align="center"/>
     </a>
     <span>EJBCA PKI </span>
 </h1>
