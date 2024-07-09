@@ -8,11 +8,11 @@
 
 [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
 
-EJBCA covers all your needs – from certificate management, registration and enrollment to certificate validation. 
+Welcome to EJBCA – the Open Source Certificate Authority (software). EJBCA covers all your needs – from certificate management, registration, and enrollment to certificate validation. 
 
-Welcome to EJBCA – the Open Source Certificate Authority (software). EJBCA is one of the longest running CA software projects, providing time-proven robustness, reliability and flexibitlity. EJBCA is platform independent and can easily be scaled out to match the needs of your PKI requirements, whether you’re setting up a national eID, securing your industrial IoT platform or managing your own internal PKI for Enterprise or DevOps. 
+EJBCA is one of the longest-running CA software projects, providing time-proven robustness, reliability, and flexibility. EJBCA is platform-independent and can easily be scaled out to match the needs of your PKI requirements, whether you’re setting up a national eID, securing your industrial IoT platform, or managing your own internal PKI for Enterprise or DevOps. 
 
-EJBCA is developed in Java and runs on a JVM such as OpenJDK, available on most platforms such as Linux and Windows. 
+EJBCA is developed in Java and runs on a JVM such as OpenJDK, available on most platforms, such as Linux and Windows. 
 
 There are two versions of EJBCA: 
 * **EJBCA Community** (EJBCA CE) - free and open source, OSI Certified Open Source Software
@@ -28,7 +28,7 @@ You can also easily run EJBCA as a container from **[Dockerhub](https://hub.dock
 
 ## Community Support
 
-In our Community we welcome contributions. The Community software is open source and community supported, there is no support SLA, but a helpful best-effort Community.
+The Community software is open source and community supported, there is no support SLA, but a helpful best-effort Community.
 
 * To report a problem or suggest a new feature, use the **[Issues](../../issues)** tab.
 * If you want to contribute to the project, see our **[Contributing guidelines](CONTRIBUTING.md)**.
@@ -69,3 +69,5 @@ EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICEN
 * [Java Client SDK](https://github.com/Keyfactor/ejbca-java-client-sdk)
 * [C# Client SDK](https://github.com/Keyfactor/ejbca-csharp-client-sdk)
 
+### All EJBCA repos
+* [All Keyfactor EJBCA repositories](https://github.com/orgs/Keyfactor/repositories?q=ejbca)
