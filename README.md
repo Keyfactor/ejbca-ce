@@ -49,21 +49,20 @@ EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICEN
 * [Keyfactor/ejbca-cert-cvc](https://github.com/Keyfactor/ejbca-cert-cvc) 
 * [Keyfactor/signserver-ce](https://github.com/Keyfactor/signserver-ce)
 
-Integrations:
-* [Keyfactor/Vault PKI Engine](https://github.com/Keyfactor/ejbca-vault-pki-engine)
-* [Keyfactor/Cert-manager issuer](https://github.com/Keyfactor/ejbca-cert-manager-issuer)
-* [Keyfactor/K8s CSR Signer](https://github.com/Keyfactor/ejbca-k8s-csr-signer)
+### Integrations
+* [Vault PKI Engine](https://github.com/Keyfactor/ejbca-vault-pki-engine)
+* [Cert-manager issuer](https://github.com/Keyfactor/ejbca-cert-manager-issuer)
+* [K8s CSR Signer](https://github.com/Keyfactor/ejbca-k8s-csr-signer)
 
-Automation and Containers:
-* [Keyfactor/Ansible Playbooks](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks) 
-* [Keyfactor/Community Helm Chart](https://github.com/Keyfactor/ejbca-community-helm)
+### Automation and Containers
+* [Ansible Playbooks](https://github.com/Keyfactor/ansible-ejbca-signserver-playbooks) 
+* [Community Helm Chart](https://github.com/Keyfactor/ejbca-community-helm)
 
-
-Clients and Client SDKs:
-* [Keyfactor/Java Easy Rest Client](https://github.com/Keyfactor/ejbca-easy-rest-client)
-* [Keyfactor/Go Client](https://github.com/Keyfactor/ejbca-go-client)
-* [Keyfactor/Go Client SDK](https://github.com/Keyfactor/ejbca-go-client-sdk)
-* [Keyfactor/Python Client SDK](https://github.com/Keyfactor/ejbca-python-client-sdk)
-* [Keyfactor/Java Client SDK](https://github.com/Keyfactor/ejbca-java-client-sdk)
-* [Keyfactor/C# Client SDK](https://github.com/Keyfactor/ejbca-csharp-client-sdk)
+### Clients and Client SDKs
+* [Java Easy Rest Client](https://github.com/Keyfactor/ejbca-easy-rest-client)
+* [Go Client](https://github.com/Keyfactor/ejbca-go-client)
+* [Go Client SDK](https://github.com/Keyfactor/ejbca-go-client-sdk)
+* [Python Client SDK](https://github.com/Keyfactor/ejbca-python-client-sdk)
+* [Java Client SDK](https://github.com/Keyfactor/ejbca-java-client-sdk)
+* [C# Client SDK](https://github.com/Keyfactor/ejbca-csharp-client-sdk)
 
