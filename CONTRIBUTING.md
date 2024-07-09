@@ -26,7 +26,7 @@ You are welcome to send patches, under the LGPLv2.1+ license, as pull requests. 
 * Create a JUnit test case for your change, it may be a simple addition to an existing test. If you do not know how to do this, ask us and we will help you. 
 * If you run into any merge issues, check out this [git tutorial](https://github.com/skills/resolve-merge-conflicts) to help you resolve merge conflicts and other issues.
 
-For more information, refer to the EJBCA documentation on [Getting Started With EJBCA Development](https://doc.primekey.com/ejbca/tutorials-and-guides/modifying-ejbca/getting-started-with-ejbca-development).
+For more information, refer to the EJBCA documentation on [Getting Started With EJBCA Development](https://docs.keyfactor.com/ejbca/latest/getting-started-with-ejbca-development).
 
 #### Self-review
 
