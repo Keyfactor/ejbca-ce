@@ -66,4 +66,4 @@ EJBCA Community is licensed under the LGPL license, please see **[LICENSE](LICEN
 * [C# Client SDK](https://github.com/Keyfactor/ejbca-csharp-client-sdk)
 
 ### All EJBCA repos
-* [All Keyfactor EJBCA repositories](https://github.com/orgs/Keyfactor/repositories?q=ejbca)
+* [All Keyfactor EJBCA repositories](https://github.com/orgs/Keyfactor/repositories?q=ejbca+sort%3Astars)
