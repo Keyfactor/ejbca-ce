@@ -33,8 +33,8 @@ The Community software is open source and community supported, there is no suppo
 * Read more in our documentation: **[EJBCA Documentation](https://docs.keyfactor.com/ejbca/)**.
 * See release information: **[EJBCA Release information](https://docs.keyfactor.com/ejbca/latest/ejbca-release-information)**. 
 * Read more on the open source project website: **[EJBCA website](https://www.ejbca.org/)**.
-* Download options: **[Download EJBCA](https://www.ejbca.org/download)**. 
-* Differences between Community and Enterprise: **[EJBCA Community vs Enterprise](https://www.ejbca.org/community-vs-enterprise/)**. 
+* Check out the download options: **[Download EJBCA](https://www.ejbca.org/download)**. 
+* View differences between Community and Enterprise: **[EJBCA Community vs Enterprise](https://www.ejbca.org/community-vs-enterprise/)**. 
 
 ## Commercial Support
 Commercial support is available for **[EJBCA Enterprise](https://www.keyfactor.com/products/ejbca-enterprise/)**.
