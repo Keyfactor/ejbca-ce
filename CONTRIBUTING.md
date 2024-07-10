@@ -15,7 +15,7 @@ Or you can [start a new discussion](../../discussions/new/choose) and ask your q
 
 If you find a problem with EJBCA, [search if an issue already exists](../../issues).
 
-If a related discussion or issue doesn't exist, you can [open a new issue](../../issues/new). An issue can be converted into a discussion if regarded as one.
+If a related discussion or issue doesn't exist, you can [open a new issue](../../issues/new/choose). An issue can be converted into a discussion if regarded as one.
 
 ### Contribute to the code
 
