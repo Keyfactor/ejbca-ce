@@ -51,36 +51,6 @@ public class SnakeCaseConverter implements ModelConverter
         return null;
     }
 
-
-
-//    @Override
-//    public Property resolveProperty(Type type, ModelConverterContext context, Annotation[] annotations, Iterator<ModelConverter> chain) {
-//        if (chain.hasNext()) {
-//            final ModelConverter converter = chain.next();
-//            return converter.resolveProperty(type, context, annotations, chain);
-//        }
-//        return null;
-//    }
-//
-//    @Override
-//    public Model resolve(Type type, ModelConverterContext context, Iterator<ModelConverter> chain) {
-//        if (chain.hasNext()) {
-//            final ModelConverter converter = chain.next();
-//            final Model model = converter.resolve(type, context, chain);
-//            if (model != null) {
-//                final Map<String, Property> properties = model.getProperties();
-//                final Map<String, Property> newProperties = new LinkedHashMap<>();
-//                for (Entry<String, Property> entry : properties.entrySet()) {
-//                    newProperties.put(toSnakeCase(entry.getKey()), entry.getValue());
-//                }
-//                model.getProperties().clear();
-//                model.setProperties(newProperties);
-//                return model;
-//            }
-//        }
-//        return null;
-//    }
-//
     private static String toSnakeCase(String input) {
         if (input == null) {
             return input;
