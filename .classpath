@@ -193,19 +193,20 @@
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.bind-api-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-collections4-4.4.jar"/>
 	<classpathentry kind="lib" path="lib/snakeyaml-2.0.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/commons-lang3-3.14.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/swagger/reflections-0.9.11.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-2.2.20.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-2.2.20.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-integration-2.2.20.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs2-jakarta-2.2.20.jar"/>
-	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-2.2.20.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-annotations-jakarta-2.2.22.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-core-jakarta-2.2.22.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-integration-jakarta-2.2.22.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-jaxrs2-jakarta-2.2.22.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/swagger-models-jakarta-2.2.22.jar"/>
+	<classpathentry kind="lib" path="lib/ext/swagger/classgraph-4.8.174.jar"/>
 	<classpathentry kind="lib" path="lib/guava-33.0.0-jre.jar"/>
 	<classpathentry kind="lib" path="lib/caffeine-3.1.6.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.14.2.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.14.2.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.14.2.jar"/>
-	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.14.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-dataformat-yaml-2.17.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-core-2.17.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-databind-2.17.2.jar"/>
+	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.17.2.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.7.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.25.3.jar"/>
 	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-1.78.jar"/>
