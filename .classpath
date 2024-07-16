@@ -221,7 +221,7 @@
 	<classpathentry kind="lib" path="lib/hibernate/antlr-2.7.7.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/txw2-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/stax-ex-1.8.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/jaxb-runtime-2.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/jaxb-runtime-4.0.5.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.persistence-api-3.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/javassist-3.29.2-GA.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jandex-2.1.3.Final.jar"/>
