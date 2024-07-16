@@ -24,7 +24,6 @@ public class PKCS11TestRunner extends HardtokenTestRunnerBase {
 
     }
 
-
     @Override
     public String getNamingSuffix() {
         return "pkcs11";

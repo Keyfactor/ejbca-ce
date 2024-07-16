@@ -37,7 +37,7 @@ public enum EjbRemoteHelper {
     /** The EJB used by system tests. */
     public final static String MODULE_TEST = "systemtests-ejb";
     
-    /** The EJB used by system test ProtocolLookupServerHttpTest. */
+    /** The EJB used by system test ProtocolLookupServerHttpSystemTest. */
     public final static String MODULE_UNIDFNR = "unidfnr-ejb";
     
     public final static String MODULE_EDITION_SPECIFIC= "edition-specific-ejb";

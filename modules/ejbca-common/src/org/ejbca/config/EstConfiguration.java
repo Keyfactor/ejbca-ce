@@ -64,6 +64,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String CONFIG_RA_NAMEGENERATIONPREFIX = "ra.namegenerationprefix";
     public static final String CONFIG_RA_NAMEGENERATIONPOSTFIX = "ra.namegenerationpostfix";
     public static final String CONFIG_VENDORCERTIFICATEMODE = "vendorcertificatemode";
+    public static final String CONFIG_KEYFACTOR_TEMPLATE = "keyfactortemplate";
     /**
      * @deprecated since 7.11.0, but remains to allow 100% uptime during upgrades. Use CONFIG_VENDORCAIDS instead
      */
@@ -113,6 +114,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public static final String DEFAULT_CLIENT_AUTHENTICATION_MODULE = "";
     public static final String DEFAULT_SUPPORT_PROXY_CA = "false";
     public static final String DEFAULT_SERVER_KEYGEN_ENABLED = "false";
+    public static final String DEFAULT_KEYFACTOR_TEMPLATE = "";
 
     // This List is used in the command line handling of updating a config value to ensure a correct value.
     public static final List<String> EST_BOOLEAN_KEYS = Arrays.asList(CONFIG_REQCERT, CONFIG_ALLOWUPDATEWITHSAMEKEY);
@@ -171,6 +173,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
             data.put(alias + CONFIG_ALLOWCHANGESUBJECTNAME, DEFAULT_ALLOW_CHANGESUBJECTNAME);
             data.put(alias + CONFIG_SUPPORT_PROXY_CA, DEFAULT_SUPPORT_PROXY_CA);
             data.put(alias + CONFIG_SERVER_KEYGEN_ENABLED, DEFAULT_SERVER_KEYGEN_ENABLED);
+            data.put(alias + CONFIG_KEYFACTOR_TEMPLATE, DEFAULT_KEYFACTOR_TEMPLATE);
         }
     }
 
@@ -272,6 +275,7 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
         keys.add(alias + CONFIG_ALLOWCHANGESUBJECTNAME);
         keys.add(alias + CONFIG_SUPPORT_PROXY_CA);
         keys.add(alias + CONFIG_SERVER_KEYGEN_ENABLED);
+        keys.add(alias + CONFIG_KEYFACTOR_TEMPLATE);
         return keys;
     }
 
@@ -828,6 +832,20 @@ public class EstConfiguration extends ConfigurationBase implements Serializable 
     public void setServerKeyGenerationEnabled(String alias, boolean enableSrvKeyGen) {
         String key = alias + "." + CONFIG_SERVER_KEYGEN_ENABLED;
         setValue(key, Boolean.toString(enableSrvKeyGen), alias);
+    }
+
+    public String getKeyfactorTemplate(String alias) {
+        String key = alias + "." + CONFIG_KEYFACTOR_TEMPLATE;
+        String value = getValue(key, alias);
+        if (value == null) {
+            value = DEFAULT_KEYFACTOR_TEMPLATE;
+        }
+        return value;
+    }
+
+    public void setKeyfactorTemplate(String alias, String template) {
+        String key = alias + "." + CONFIG_KEYFACTOR_TEMPLATE;
+        setValue(key, template, alias);
     }
 
     /**
