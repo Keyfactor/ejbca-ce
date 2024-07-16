@@ -4,7 +4,8 @@
       xmlns:f="jakarta.faces.core"
       xmlns:fn="jakarta.tags.functions"
       xmlns:h="jakarta.faces.html"
-      xmlns:ui="jakarta.faces.facelets">
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:p="http://primefaces.org/ui">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -39,50 +40,74 @@
             <h:outputText value="#{web.text.ESTLISTOFALIASES}"/>
         </h3>
         <h:form id="aliases" rendered="#{web.ejbcaWebBean.runningEnterprise}">
-            <h:dataTable value="#{estConfigMBean.estConfigAliasesSelectItemList}" var="alias" styleClass="grid"
-                         rendered="#{!estConfigMBean.aliasListEmpty}">
-                <h:column>
+            <p:dataTable value="#{estConfigMBean.estConfigAliasesSelectItemList}" var="alias" styleClass="grid"
+                         rendered="#{!estConfigMBean.aliasListEmpty}" rows="50"
+                         paginator="true" paginatorPosition="bottom"
+                         paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                         currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} aliases"
+                         rowsPerPageTemplate="50,100,{ShowAll|'All'}">
+                <p:column style="width: 80%">
                     <f:facet name="header">
                         <h:outputText value="#{web.text.ESTALIAS}"/>
                     </f:facet>
                     <h:outputText value="#{alias}" title="#{alias}"/>
-                </h:column>
-                <h:column>
+                </p:column>
+                <p:column style="width: 5%">
                     <f:facet name="header">
-                        <h:outputText value="#{web.text.ACTIONS}"/>
+                        <h:outputText value="#{web.text.VIEW}"/>
                     </f:facet>
-                    <h:commandButton id="buttonviewalias"
-                                     value="#{web.text.VIEW}"
+                    <p:commandButton id="buttonviewalias"
+                                     icon="pi pi-search" styleClass="rounded-button"
+                                     title="#{web.text.VIEW}"
                                      action="#{estConfigMBean.actionView(alias)}">
                         <f:param name="faces-redirect" value="true"/>
                         <f:param name="mode" value="view"/>
                         <f:param name="alias" value="#{fn:escapeXml(alias)}"/>
-                    </h:commandButton>
-                    <h:commandButton value="#{web.text.EDIT}"
+                    </p:commandButton>
+                </p:column>
+                <p:column style="width: 5%">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.EDIT}"/>
+                    </f:facet>
+                    <p:commandButton icon="pi pi-file-edit" styleClass="rounded-button"
+                                     title="#{web.text.EDIT}"
                                      action="#{estConfigMBean.actionEdit(alias)}"
                                      disabled="#{!estConfigMBean.authorizedToEdit}">
                         <f:param name="faces-redirect" value="true"/>
                         <f:param name="alias" value="#{fn:escapeXml(alias)}"/>
                         <f:param name="mode" value="edit"/>
-                    </h:commandButton>
-                    <h:commandButton value="#{web.text.DELETE}"
+                    </p:commandButton>
+                </p:column>
+                <p:column style="width: 5%">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.DELETE}"/>
+                    </f:facet>
+                    <p:commandButton icon="pi pi-trash" styleClass="rounded-button"
+                                     title="#{web.text.DELETE}"
                                      action="#{estConfigMBean.deleteAlias(alias)}"
                                      disabled="#{!estConfigMBean.authorizedToEdit}"/>
-                    <h:commandButton value="#{web.text.CLONE}" action="#{estConfigMBean.cloneAlias(alias)}"/>
-                </h:column>
-            </h:dataTable>
+                </p:column>
+                <p:column style="width: 5%">
+                    <f:facet name="header">
+                        <h:outputText value="#{web.text.CLONE}"/>
+                    </f:facet>
+                    <p:commandButton icon="pi pi-clone" styleClass="rounded-button"
+                                     title="#{web.text.CLONE}"
+                                     action="#{estConfigMBean.cloneAlias(alias)}"/>
+                </p:column>
+            </p:dataTable>
 
-            <h:panelGrid styleClass="actions margin-top" width="100%" rendered="#{estConfigMBean.authorizedToEdit}">
+            <p:panelGrid columns="1" styleClass="actions margin-top ui-noborder" width="100%" rendered="#{estConfigMBean.authorizedToEdit}">
                 <h:outputText value="#{web.text.EST_ALIASES_NOT_CONFIGURED}"
                               rendered="#{estConfigMBean.aliasListEmpty}"/>
                 <h:panelGroup>
-                    <h:commandButton id="buttonaliasadd" name="buttonaliasadd" action="#{estConfigMBean.addAlias}"
+                    <p:commandButton id="buttonaliasadd" name="buttonaliasadd" action="#{estConfigMBean.addAlias}"
                                      value="#{web.text.ADD}">
                         <f:param name="faces-redirect" value="true"/>
                         <f:param name="mode" value="edit"/>
-                    </h:commandButton>
+                    </p:commandButton>
                 </h:panelGroup>
-            </h:panelGrid>
+            </p:panelGrid>
         </h:form>
     </ui:define>
 </ui:composition>
