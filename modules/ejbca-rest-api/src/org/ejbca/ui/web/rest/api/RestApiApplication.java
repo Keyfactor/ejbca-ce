@@ -56,7 +56,7 @@ public class RestApiApplication extends Application {
             log.debug("Swagger is not available in distribution.");
         } else {
             resources.add(io.swagger.v3.jaxrs2.integration.resources.OpenApiResource.class);
-            resources.add(io.swagger.v3.jaxrs2.integration.resources.AcceptHeaderOpenApiResource.class);
+            resources.add(io.swagger.v3.jaxrs2.SwaggerSerializers.class);
         }
         return resources;
     }
