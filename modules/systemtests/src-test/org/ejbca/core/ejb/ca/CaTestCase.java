@@ -111,8 +111,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * This class represents an abstract class for all tests which require testing
  * CAs.
- * 
- * @version $Id$
  */
 public abstract class CaTestCase extends RoleUsingTestCase {
 
