@@ -1076,6 +1076,7 @@ public class CAInterfaceBean implements Serializable {
                         .setUseCertificateStorage(caInfoDto.isUseCertificateStorage()).setSubjectAltName(caInfoDto.getCaSubjectAltName())
                         .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                         .setCaId(caid)
+						.setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
                         // TODO ECA-9293: SSH, add approvals here
                         .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
@@ -1372,7 +1373,6 @@ public class CAInterfaceBean implements Serializable {
             .setUsername(ca.getUsername())
             .setPassword(ca.getPassword())
             .setCa(ca.getUpstreamCa())
-            .setTemplate(ca.getUpstreamTemplate())
             .setSans(ca.getSansJson());
         return proxyCaInfoBuilder;
     }

@@ -52,8 +52,6 @@ import static org.junit.Assert.assertNull;
 
 /**
  * System test class for CA RemovePublisher command
- *
- * @version $Id$
  */
 public class CaRemovePublisherCommandSystemTest {
 

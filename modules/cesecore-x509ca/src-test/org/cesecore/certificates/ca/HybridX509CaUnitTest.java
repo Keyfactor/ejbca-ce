@@ -152,10 +152,8 @@ public class HybridX509CaUnitTest {
      * Construct a vanilla X509 root CA with an P256 key as primary and Dilithium2 as alternative
      */
     @Test
-    public void testHybridRootCa() throws InvalidAlgorithmParameterException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            InvalidAlgorithmException, CAOfflineException, IllegalValidityException, IllegalNameException, OperatorCreationException,
-            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, CertificateEncodingException,
-            IOException, CertException {
+    public void testHybridRootCa() throws CryptoTokenOfflineException, OperatorCreationException,
+            CertificateEncodingException, IOException, CertException {
 
         X509Certificate caCertificate = (X509Certificate) x509ca.getCertificateChain().get(0);
 

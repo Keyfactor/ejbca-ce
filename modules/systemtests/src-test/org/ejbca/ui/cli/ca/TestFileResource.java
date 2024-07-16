@@ -18,8 +18,6 @@ import java.net.URL;
 // TODO ECA-8963: Extract into a separate module ejbca-unittest, as it is common utility class that can be reused.
 /**
  * This is a help class to locate an input file for a test from classpath.
- *
- * @version $Id$
  */
 public class TestFileResource {
 

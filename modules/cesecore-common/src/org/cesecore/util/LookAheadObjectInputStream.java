@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
  * lookAheadObjectInputStream.setMaxObjects(1);
  * X509Certificate certificate = (X509Certificate) lookAheadObjectInputStream.readObject(); //If serialized object is not of the type X509Certificate SecurityException will be thrown
  * 
- * @see LookAheadObjectInputStreamTest LookAheadObjectInputStreamTest for more examples
+ * @see LookAheadObjectInputStreamUnitTest LookAheadObjectInputStreamUnitTest for more examples
  */
 public class LookAheadObjectInputStream extends ObjectInputStream {
 
