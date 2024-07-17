@@ -218,6 +218,7 @@ if (edition == "ee") {
         "modules:cits:common",
         "modules:cits",
         "modules:configdump:common",
+        "modules:configdump:cli",
         "modules:configdump:ejb",
         "modules:proxy-ca",
         "modules:ssh:common",
