@@ -305,6 +305,7 @@ subprojects {
                 "ra-gui",
                 "systemtests",
                 "acme",
+                "cits",
             )
         ) {
             plugins.apply("java")
