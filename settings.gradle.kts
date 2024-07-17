@@ -103,10 +103,8 @@ dependencyResolutionManagement {
             library("slf4j.api", ":slf4j-api:1.7.35")
             // test dependencies
             library("junit", ":junit:4.13.2")
-            library("easymock", ":easymock:4.3")
-            library("powermock", ":powermock-easymock:2.0.2-full")
-            library("objenesis", ":objenesis:3.0.1")
-            library("cglib", ":cglib-nodep:3.3.0")
+            library("easymock", ":easymock:5.2.0")
+            library("objenesis", ":objenesis:3.3")
             library("hamcrest-core", ":hamcrest-core:1.3")
             library("system-rules", ":system-rules:1.19.0")
             library("reactive-streams", ":reactive-streams:1.0.3")
@@ -142,10 +140,8 @@ dependencyResolutionManagement {
                     "commons-configuration2",
                     "commons-text",
                     "commons-beanutils",
-                    // easymock & powermock
+                    // easymock
                     "easymock",
-                    "powermock",
-                    "cglib",
                     "objenesis",
                     "javassist"
                 )
