@@ -303,7 +303,8 @@ subprojects {
                 "healthcheck-war",
                 "msae",
                 "ra-gui",
-                "systemtests"
+                "systemtests",
+                "acme",
             )
         ) {
             plugins.apply("java")
