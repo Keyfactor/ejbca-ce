@@ -51,13 +51,13 @@ dependencyResolutionManagement {
             library("dnsjava", ":dnsjava:3.5.2")
             library("jackson-core", ":jackson-core:2.14.2")
             library("jackson-databind", ":jackson-databind:2.14.2")
+            library("jackson-annotations", ":jackson-annotations:2.14.2")
             library("jackson-dataformat-yaml", ":jackson-dataformat-yaml:2.14.2")
             library("reflections", ":reflections:0.9.11")
             library("swagger-annotations", ":swagger-annotations:1.6.4")
             library("swagger-core", ":swagger-core:1.6.4")
             library("swagger-jaxrs", ":swagger-jaxrs:1.6.4")
             library("swagger-models", ":swagger-models:1.6.4")
-            library("jackson-annotations", ":jackson-annotations:2.14.2")
             library("jacknji11", ":jacknji11:1.3.1")
             library("p11ng", ":p11ng:0.23.5")
             library("commons-fileupload", ":commons-fileupload:1.5")
@@ -193,6 +193,15 @@ dependencyResolutionManagement {
             bundle("xmlpull", listOf("xmlpull", "xpp3_min"))
             bundle("log4j", listOf("log4j-api", "log4j-core", "log4j-v12-api"))
             bundle("jacknji", listOf("jacknji11", "jna"))
+            bundle(
+                "jackson",
+                listOf(
+                    "jackson-core",
+                    "jackson-databind",
+                    "jackson-annotations",
+                    "jackson-dataformat-yaml"
+                )
+            )
         }
     }
 }
