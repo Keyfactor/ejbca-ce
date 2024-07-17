@@ -29,7 +29,6 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/primefaces"))
             dirs(rootProject.projectDir.resolve("lib/ct"))
             dirs(rootProject.projectDir.resolve("lib/ext/test"))
-            dirs(rootProject.projectDir.resolve("lib/ext/test/powermock"))
             dirs(rootProject.projectDir.resolve("lib/ext/resteasy-jaxrs-lib"))
         }
     }
