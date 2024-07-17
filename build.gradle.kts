@@ -306,6 +306,7 @@ subprojects {
                 "systemtests",
                 "acme",
                 "cits",
+                "configdump",
             )
         ) {
             plugins.apply("java")
