@@ -126,6 +126,8 @@ dependencyResolutionManagement {
             library("jackson-jaxrs-base", ":jackson-jaxrs-base:2.14.2")
             library("jackson-jaxrs-json-provider", ":jackson-jaxrs-json-provider:2.14.2")
             library("jackson-module-jaxb-annotations", ":jackson-module-jaxb-annotations:2.14.2")
+            library("jboss-logging", ":jboss-logging:3.4.1.Final")
+            library("el-impl", ":el-impl:2.2")
             // bundles
             bundle(
                 "test",
@@ -170,7 +172,6 @@ dependencyResolutionManagement {
                     "jackson-module-jaxb-annotations"
                 )
             )
-            bundle("bouncy.castle", listOf("bcprov", "bcpkix", "bctls", "bcutil"))
             bundle(
                 "utils",
                 listOf(
@@ -189,10 +190,6 @@ dependencyResolutionManagement {
                     "log4j-v12-api"
                 )
             )
-            bundle("xstream", listOf("xstream", "xmlpull", "xpp3_min"))
-            bundle("xmlpull", listOf("xmlpull", "xpp3_min"))
-            bundle("log4j", listOf("log4j-api", "log4j-core", "log4j-v12-api"))
-            bundle("jacknji", listOf("jacknji11", "jna"))
             bundle(
                 "jackson",
                 listOf(
@@ -202,6 +199,12 @@ dependencyResolutionManagement {
                     "jackson-dataformat-yaml"
                 )
             )
+            bundle("bouncy.castle", listOf("bcprov", "bcpkix", "bctls", "bcutil"))
+            bundle("xstream", listOf("xstream", "xmlpull", "xpp3_min"))
+            bundle("xmlpull", listOf("xmlpull", "xpp3_min"))
+            bundle("log4j", listOf("log4j-api", "log4j-core", "log4j-v12-api"))
+            bundle("jacknji", listOf("jacknji11", "jna"))
+            bundle("hibernate-validator", listOf("hibernate.validator", "el-impl"))
         }
     }
 }

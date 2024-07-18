@@ -307,6 +307,7 @@ subprojects {
                 "acme",
                 "cits",
                 "configdump",
+                "ejbca-rest-api",
             )
         ) {
             plugins.apply("java")
