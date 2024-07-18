@@ -223,6 +223,7 @@ if (edition == "ee") {
         "modules:peerconnector:ejb",
         "modules:peerconnector:war",
         "modules:peerconnector:rar",
+        "modules:peerconnector:cli",
         "modules:plugins-ee",
         "modules:statedump:ejb",
         "modules:caa",
