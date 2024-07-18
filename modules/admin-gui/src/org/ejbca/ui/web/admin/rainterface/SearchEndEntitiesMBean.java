@@ -410,7 +410,7 @@ public class SearchEndEntitiesMBean extends BaseManagedBean {
 
     public String getViewEndEntityPopupLink(final String username) {
         GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.jsp?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.xhtml?username=" + username;
     }
 
     public String getEditEndEntityPopupLink(final String username) {
