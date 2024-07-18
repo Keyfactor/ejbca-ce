@@ -310,6 +310,7 @@ subprojects {
                 "ejbca-rest-api",
                 "ejbca-ws-cli",
                 "peerconnector",
+                "plugins",
             )
         ) {
             plugins.apply("java")
