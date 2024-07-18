@@ -311,6 +311,7 @@ subprojects {
                 "ejbca-ws-cli",
                 "peerconnector",
                 "plugins",
+                "plugins-ee",
             )
         ) {
             plugins.apply("java")
