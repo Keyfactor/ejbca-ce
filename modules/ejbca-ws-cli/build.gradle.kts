@@ -37,3 +37,10 @@ tasks.jar {
     from(sourceSets["main"].output)
     archiveBaseName.set("ejbca-ws-client")
 }
+
+tasks.processTestResources {
+    from("resources"){
+        include("ejbcawsracli.properties")
+    }
+    into("build/resources/test/")
+}
