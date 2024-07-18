@@ -308,6 +308,7 @@ subprojects {
                 "cits",
                 "configdump",
                 "ejbca-rest-api",
+                "ejbca-ws-cli",
             )
         ) {
             plugins.apply("java")
