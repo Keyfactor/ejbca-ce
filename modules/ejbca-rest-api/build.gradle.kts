@@ -33,6 +33,21 @@ dependencies {
     implementation(libs.swagger.core)
     implementation(libs.swagger.jaxrs)
     implementation(libs.swagger.models)
+    testCompileOnly(libs.cryptotokens.api)
+    testCompileOnly(libs.cryptotokens.impl)
+    testImplementation(project(":modules:cesecore-entity"))
+    testImplementation(project(":modules:systemtests").dependencyProject.sourceSets["test"].output)
+    testImplementation(project(":modules:systemtests:interface"))
+    testImplementation(libs.bundles.jackson)
+    testImplementation(libs.bundles.resteasy.jaxrs)
+    testImplementation(libs.jakarta.xml.bind.api)
+    testImplementation(libs.json.simple)
+    testCompileOnly(project(":modules:ejbca-common-web"))
+    testCompileOnly(project(":modules:systemtests:common"))
+    testRuntimeOnly(project(":modules:ejbca-ws:common"))
+    testRuntimeOnly(libs.bundles.hibernate.validator)
+    testRuntimeOnly(libs.classmate)
+    testRuntimeOnly(libs.jboss.logging)
 }
 
 sourceSets {
@@ -51,4 +66,11 @@ tasks.war {
     from("resources/WEB-INF/ValidationMessages.properties") {
         into("WEB-INF/classes")
     }
+}
+
+tasks.processTestResources {
+    from("resources/WEB-INF") {
+        include("ValidationMessages.properties")
+    }
+    into("build/resources/test/")
 }
