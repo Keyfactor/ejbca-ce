@@ -312,6 +312,7 @@ subprojects {
                 "peerconnector",
                 "plugins",
                 "plugins-ee",
+                "ssh",
             )
         ) {
             plugins.apply("java")
