@@ -309,6 +309,7 @@ subprojects {
                 "configdump",
                 "ejbca-rest-api",
                 "ejbca-ws-cli",
+                "peerconnector",
             )
         ) {
             plugins.apply("java")
