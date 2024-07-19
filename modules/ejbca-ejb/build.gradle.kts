@@ -36,7 +36,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
 		    exclude("org/ejbca/samples/**/*.java")

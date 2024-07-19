@@ -27,7 +27,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
             exclude("org/ejbca/core/protocol/ws/common")
