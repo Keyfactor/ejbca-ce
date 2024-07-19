@@ -314,6 +314,7 @@ subprojects {
                 "plugins-ee",
                 "ssh",
                 "statedump",
+                "ct",
             )
         ) {
             plugins.apply("java")
