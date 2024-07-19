@@ -44,7 +44,7 @@ dependencies {
     implementation(libs.csrfguard.extension.session)
     implementation(libs.csrfguard.jsp.tags)
     implementation(libs.primefaces)
-    testImplementation(libs.jsf)
+    testRuntimeOnly(libs.jsf)
 }
 
 sourceSets {

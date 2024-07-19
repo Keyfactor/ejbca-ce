@@ -17,9 +17,8 @@ dependencies {
     compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl) 
     compileOnly(libs.javax.persistence.api)
-
     testImplementation(project(":modules:cesecore-common").dependencyProject.sourceSets["test"].output)
-    testImplementation(libs.cert.cvc)
+    testRuntimeOnly(libs.cert.cvc)
 }
 
 sourceSets {

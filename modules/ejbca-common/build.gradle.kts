@@ -29,8 +29,8 @@ dependencies {
     testImplementation(project(":modules:ejbca-common-web"))
     testImplementation(libs.cryptotokens.api)
     testImplementation(libs.cryptotokens.impl)
-    testImplementation(libs.cert.cvc)
-    testImplementation(libs.bundles.xmlpull)
+    testRuntimeOnly(libs.cert.cvc)
+    testRuntimeOnly(libs.bundles.xmlpull)
 }
 
 sourceSets {
