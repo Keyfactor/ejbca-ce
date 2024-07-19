@@ -19,6 +19,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -33,6 +34,9 @@ import java.util.List;
 import jakarta.xml.bind.DatatypeConverter;
 
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.crypto.params.Ed25519KeyGenerationParameters;
+import org.bouncycastle.crypto.params.Ed448KeyGenerationParameters;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
@@ -100,8 +104,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			final KeyPairGenerator kpg = KeyPairGenerator.getInstance(keyAlgorithm);
 			if (keyAlgorithm.equals("EC")) {
 			    kpg.initialize(new ECGenParameterSpec(curve));
-			}
-			else {
+			} else if (keyAlgorithm.equals("RSA")) {
 			    kpg.initialize(keySize);
 			}
 			
@@ -453,9 +456,17 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 this.jobData.passWord = "foo123";
                 this.jobData.userName = "WSTESTUSER_REUSE_"+StressTestCommand.this.performanceTest.nextLong();
             }
+            String signAlgorithm = "SHA256WithRSA";
+            if (keys.getPublic().getAlgorithm().equals("ECDSA")) {
+                signAlgorithm = "SHA256withECDSA";
+            } else if(keys.getPublic().getAlgorithm().equalsIgnoreCase("Ed25519")) {
+                signAlgorithm = "ed25519";
+            } else if(keys.getPublic().getAlgorithm().equalsIgnoreCase("Ed448")) {
+                signAlgorithm = "ed448";
+            }
 			try {
                 this.pkcs10 = CertTools.genPKCS10CertificationRequest(
-                        keys.getPublic().getAlgorithm().equals("RSA") ? "SHA1WithRSA" : "SHA256withECDSA", 
+                        signAlgorithm, 
                         DnComponents.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
             } catch (OperatorCreationException e) {
                 getPrintStream().println(e.getLocalizedMessage());
