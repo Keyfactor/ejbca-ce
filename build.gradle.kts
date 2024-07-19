@@ -285,100 +285,67 @@ tasks.withType<JavaCompile>().configureEach {
 subprojects {
     // Add common test configuration to all modules/subprojects containing test sources
     if (file("src-test").exists()) {
-        // The weird `if` statement below is a temporary solution that will allow us to configure test tasks gradually
-        // one module at a time. It should be removed once all modules are configured.
-        if (name in listOf(
-                "ejbca-entity",
-                "admin-gui",
-                "caa",
-                "cesecore-common",
-                "cesecore-ejb",
-                "cesecore-ejb-interface",
-                "cesecore-entity",
-                "cesecore-x509ca",
-                "ejbca-common",
-                "ejbca-common-web",
-                "ejbca-ejb",
-                "ejbca-ws",
-                "healthcheck-war",
-                "msae",
-                "ra-gui",
-                "systemtests",
-                "acme",
-                "cits",
-                "configdump",
-                "ejbca-rest-api",
-                "ejbca-ws-cli",
-                "peerconnector",
-                "plugins",
-                "plugins-ee",
-                "ssh",
-                "statedump",
-                "ct",
-            )
-        ) {
-            plugins.apply("java")
+        plugins.apply("java")
 
-            // Unit tests
-            tasks.withType<Test> {
-                description = "Runs unit tests."
-                maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
-                forkEvery = 100
+        // Unit tests
+        tasks.withType<Test> {
+            description = "Runs unit tests."
+            maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+            forkEvery = 100
+
+            filter {
+                includeTestsMatching("*UnitTest")
+                isFailOnNoMatchingTests = false
+            }
+
+            java {
+                sourceSets["test"].java.srcDirs("src-test")
+                sourceSets["test"].compileClasspath += sourceSets["main"].compileClasspath
+                sourceSets["test"].runtimeClasspath += sourceSets["main"].compileClasspath
+            }
+
+            testLogging.events("passed", "skipped", "failed")
+        }
+
+        // System tests
+        val systemTestsExist = fileTree("src-test").apply {
+            include("**/*SystemTest.java")
+        }.toList().isNotEmpty()
+
+        // We can reduce the number of Gradle tasks and configurations offered by IDEs for test execution
+        // by adding a systemTest task only if the module contains any system test classes.
+        if (systemTestsExist) {
+            tasks.register<Test>("systemTest") {
+                description = "Runs system tests."
+                group = "verification"
+                shouldRunAfter("test")
 
                 filter {
-                    includeTestsMatching("*UnitTest")
+                    includeTestsMatching("*SystemTest")
+                    excludeTestsMatching("*UnitTest")
                     isFailOnNoMatchingTests = false
                 }
 
-                java {
-                    sourceSets["test"].java.srcDirs("src-test")
-                    sourceSets["test"].compileClasspath += sourceSets["main"].compileClasspath
-                    sourceSets["test"].runtimeClasspath += sourceSets["main"].compileClasspath
-                }
+                // Since our system test classes live alongside unit tests in the "src-test" directory,
+                // we can reuse the source configuration of the "test" task.
+                testClassesDirs = sourceSets["test"].output.classesDirs
+                classpath = sourceSets["test"].runtimeClasspath
 
                 testLogging.events("passed", "skipped", "failed")
             }
 
-            // System tests
-            val systemTestsExist = fileTree("src-test").apply {
-                include("**/*SystemTest.java")
-            }.toList().isNotEmpty()
+            // // Add the "systemTest" task to Gradle's "check" task dependencies
+            // // so that it would be triggered alongside the unit "test" task.
+            // tasks.named("check") {
+            //     dependsOn(tasks.named("systemTest"))
+            // }
+        }
 
-            // We can reduce the number of Gradle tasks and configurations offered by IDEs for test execution
-            // by adding a systemTest task only if the module contains any system test classes.
-            if (systemTestsExist) {
-                tasks.register<Test>("systemTest") {
-                    description = "Runs system tests."
-                    group = "verification"
-                    shouldRunAfter("test")
-
-                    filter {
-                        includeTestsMatching("*SystemTest")
-                        excludeTestsMatching("*UnitTest")
-                        isFailOnNoMatchingTests = false
-                    }
-
-                    // Since our system test classes live alongside unit tests in the "src-test" directory,
-                    // we can reuse the source configuration of the "test" task.
-                    testClassesDirs = sourceSets["test"].output.classesDirs
-                    classpath = sourceSets["test"].runtimeClasspath
-
-                    testLogging.events("passed", "skipped", "failed")
-                }
-
-                // // Add the "systemTest" task to Gradle's "check" task dependencies
-                // // so that it would be triggered alongside the unit "test" task.
-                // tasks.named("check") {
-                //     dependsOn(tasks.named("systemTest"))
-                // }
-            }
-
-            // Add common dependencies used by most tests.
-            dependencies {
-                val testImplementation by configurations
-                testImplementation(rootProject.libs.bundles.utils)
-                testImplementation(rootProject.libs.bundles.test)
-            }
+        // Add common dependencies used by most tests.
+        dependencies {
+            val testImplementation by configurations
+            testImplementation(rootProject.libs.bundles.utils)
+            testImplementation(rootProject.libs.bundles.test)
         }
     }
 }
