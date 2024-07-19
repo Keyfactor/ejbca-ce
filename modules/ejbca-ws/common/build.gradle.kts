@@ -14,7 +14,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("../src/org/ejbca/core/protocol/ws/common", "../src/org/ejbca/core/protocol/ws/objects"))
         }

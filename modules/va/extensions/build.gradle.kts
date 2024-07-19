@@ -19,7 +19,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("../src-war/org/ejbca/core/protocol/ocsp", "../src-war/org/ejbca/core/protocol/ocsp/extension"))
         }

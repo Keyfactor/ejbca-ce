@@ -49,7 +49,7 @@ dependencies {
 }
 
 sourceSets {
-    val test by getting {
+    test {
         resources {
             srcDirs("resources")
         }

@@ -48,7 +48,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
             if (project.extra["edition"] == "ce") {
