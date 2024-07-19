@@ -40,8 +40,8 @@ dependencies {
     compileOnly(libs.commons.lang)
     compileOnly(libs.x509.common.util)
 
+    testRuntimeOnly(libs.bundles.xstream)
     testImplementation(libs.bundles.bouncy.castle)
-    testImplementation(libs.bundles.xstream)
 
     if (project.extra["edition"] == "ee") {
         testImplementation(project(":modules:ejbca-entity:cli"))

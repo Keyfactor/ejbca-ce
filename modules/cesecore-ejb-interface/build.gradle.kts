@@ -18,8 +18,8 @@ dependencies {
     compileOnly(libs.x509.common.util)
     compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl)
-    testImplementation(libs.bundles.xmlpull)
-    testImplementation(libs.cert.cvc)
+    testRuntimeOnly(libs.bundles.xmlpull)
+    testRuntimeOnly(libs.cert.cvc)
 }
 
 sourceSets {

@@ -55,10 +55,10 @@ dependencies {
 
     testImplementation(project(":modules:cesecore-entity"))
     testImplementation(project(":modules:cesecore-x509ca"))
-    testImplementation(libs.xpp3.min)
+    testRuntimeOnly(libs.xpp3.min)
 
     if (project.extra["edition"] == "ee") {
-        testImplementation(project(":modules:cesecore-cvcca"))
+        testRuntimeOnly(project(":modules:cesecore-cvcca"))
     }
 }
 
