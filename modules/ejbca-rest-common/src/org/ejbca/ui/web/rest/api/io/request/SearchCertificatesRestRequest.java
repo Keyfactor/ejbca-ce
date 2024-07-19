@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -40,10 +40,10 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest
  */
 public class SearchCertificatesRestRequest implements SearchCertificateCriteriaRequest {
 
-    @ApiModelProperty(value = "Maximum number of results", example = "10")
+    @Schema(description = "Maximum number of results", example = "10")
     @ValidSearchCertificateMaxNumberOfResults
     private Integer maxNumberOfResults;
-    @ApiModelProperty(value = "A List of search criteria." )
+    @Schema(description = "A List of search criteria." )
     @ValidSearchCertificateCriteriaRestRequestList
     @Valid
     private List<SearchCertificateCriteriaRestRequest> criteria = new ArrayList<>();

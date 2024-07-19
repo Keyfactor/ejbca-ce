@@ -21,7 +21,7 @@ public interface SearchCertificateCriteriaRequest {
 
     /**
      * Return the list of search criteria.
-     * 
+     *
      * @return the list of search criteria or an empty list.
      */
     List<SearchCertificateCriteriaRestRequest> getCriteria();

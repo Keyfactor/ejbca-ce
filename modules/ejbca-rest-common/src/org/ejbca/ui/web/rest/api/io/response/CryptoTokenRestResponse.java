@@ -12,7 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class representing information about a crypto token. Is used for REST services' responses.
@@ -21,7 +22,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class CryptoTokenRestResponse {
 
-    @ApiModelProperty(value = "Response message", example = "The crypto token was deactivated successfully.")
+    @Schema(description = "Response message", example = "The crypto token was deactivated successfully.")
     private String message;
 
     private CryptoTokenRestResponse(String message) {
