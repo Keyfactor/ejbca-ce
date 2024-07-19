@@ -11,52 +11,46 @@
  *                                                                       *
  *************************************************************************/
 package org.ejbca.util.swagger;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverter;
+import io.swagger.v3.core.converter.ModelConverterContext;
+import io.swagger.v3.oas.models.media.Schema;
+
+
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import io.swagger.converter.ModelConverter;
-import io.swagger.converter.ModelConverterContext;
-import io.swagger.models.Model;
-import io.swagger.models.properties.Property;
+
+
 
 /**
  * Converter for Swagger to be able to accept input parameters in snake_case format
  *
  */
-public class SnakeCaseConverter implements ModelConverter {
-
+public class SnakeCaseConverter implements ModelConverter
+{
     @Override
-    public Property resolveProperty(Type type, ModelConverterContext context, Annotation[] annotations, Iterator<ModelConverter> chain) {
+    public Schema resolve(AnnotatedType type, ModelConverterContext context, Iterator<ModelConverter> chain) {
         if (chain.hasNext()) {
             final ModelConverter converter = chain.next();
-            return converter.resolveProperty(type, context, annotations, chain);
-        }
-        return null;
-    }
-
-    @Override
-    public Model resolve(Type type, ModelConverterContext context, Iterator<ModelConverter> chain) {
-        if (chain.hasNext()) {
-            final ModelConverter converter = chain.next();
-            final Model model = converter.resolve(type, context, chain);
-            if (model != null) {
-                final Map<String, Property> properties = model.getProperties();
-                final Map<String, Property> newProperties = new LinkedHashMap<>();
-                for (Entry<String, Property> entry : properties.entrySet()) {
-                    newProperties.put(toSnakeCase(entry.getKey()), entry.getValue());
+            final Schema schema = converter.resolve(type, context, chain);
+            if (schema != null) {
+                final Map<String, Schema> properties = schema.getProperties();
+                if (properties != null) {
+                    final Map<String, Schema<?>> newProperties = new LinkedHashMap<>();
+                    for (Map.Entry<String, Schema> entry : properties.entrySet()) {
+                        newProperties.put(toSnakeCase(entry.getKey()), entry.getValue());
+                    }
+                    schema.getProperties().clear();
+                    schema.setProperties(newProperties);
                 }
-                model.getProperties().clear();
-                model.setProperties(newProperties);
-                return model;
+                return schema;
             }
         }
         return null;
     }
-    
+
     private static String toSnakeCase(String input) {
         if (input == null) {
             return input;

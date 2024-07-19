@@ -21,6 +21,16 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.ejb.Stateless;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
@@ -46,11 +56,7 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
-import org.ejbca.ui.web.rest.api.io.request.CertificateRequestRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.EnrollCertificateRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.FinalizeRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.KeyStoreRestRequest;
-import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.*;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateEnrollmentRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.ExpiringCertificatesRestResponse;
@@ -62,27 +68,23 @@ import org.ejbca.ui.web.rest.api.resource.CertificateRestResource;
 
 import com.keyfactor.CesecoreException;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.SwaggerDefinition;
-import io.swagger.annotations.SwaggerDefinition.Scheme;
 
 /**
  * JAX-RS resource handling Certificate related requests.
  */
-@Api(tags = {"v1/certificate"}, value = "Certificate REST Management API")
+@Tag(name = "v1/certificate", description = "Certificate REST Management API")
 @Path("v1/certificate")
-@SwaggerDefinition(
+@OpenAPIDefinition(
         /* @Info annotation seems to work properly only when it is configured only once. Must not specify it on any other RestResources in this module! */
         info = @Info(
                 title = "EJBCA REST Interface",
                 version = BaseRestResource.RESOURCE_VERSION,
                 description = "API reference documentation."
         ),
-        basePath = "/ejbca/ejbca-rest-api",
-        schemes = {Scheme.HTTPS}
+        servers = @Server(
+                url = "/ejbca/ejbca-rest-api",
+                description = "HTTPS Server"
+        )
 )
 @Stateless
 public class CertificateRestResourceSwagger extends CertificateRestResource {
@@ -90,9 +92,15 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @GET
     @Path("/status")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get the status of this REST Resource",
-            notes = "Returns status, API version and EJBCA version.",
-            response = RestResourceStatusRestResponse.class)
+    @Operation(summary = "Get the status of this REST Resource",
+            description = "Returns status, API version and EJBCA version.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = RestResourceStatusRestResponse.class))
+                    )
+            })
     @Override
     public Response status() {
         return super.status();
@@ -102,11 +110,15 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/pkcs10enroll")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enrollment with client generated keys, using CSR subject.",
-            notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR. "
+    @Operation(summary = "Enrollment with client generated keys, using CSR subject.",
+            description = "Enroll for a certificate given a PEM encoded PKCS#10 CSR. "
                     + "\nResponse Format is 'DER' (default when excluded) or 'PKCS7' in base64 encoded PEM format",
-            response = CertificateEnrollmentRestResponse.class,
-            code = 201)
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CertificateEnrollmentRestResponse.class))
+                    )
+            })
     public Response enrollPkcs10Certificate(@Context HttpServletRequest requestContext,
                                             final EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
@@ -117,10 +129,15 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/certificaterequest")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Enrollment with client generated keys for an existing End Entity",
-            notes = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
-            response = CertificateEnrollmentRestResponse.class,
-            code = 201)
+    @Operation(summary = "Enrollment with client generated keys for an existing End Entity",
+            description = "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CertificateEnrollmentRestResponse.class))
+                    )
+            })
     public Response certificateRequest(@Context HttpServletRequest requestContext,
                                        final CertificateRequestRestRequest certificateRequestRestRequest)
             throws RestException, AuthorizationDeniedException, CesecoreException, IOException,
@@ -132,10 +149,15 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/enrollkeystore")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Keystore enrollment",
-            notes = "Creates a keystore for the specified end entity",
-            response = CertificateEnrollmentRestResponse.class,
-            code = 201)
+    @Operation(summary = "Keystore enrollment",
+            description = "Creates a keystore for the specified end entity",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CertificateEnrollmentRestResponse.class))
+                    )
+            })
     public Response enrollKeystore(@Context HttpServletRequest requestContext, KeyStoreRestRequest keyStoreRestRequest)
             throws AuthorizationDeniedException, EjbcaException, KeyStoreException, NoSuchProviderException,
             NoSuchAlgorithmException, CertificateException, IOException, RestException, CADoesntExistsException,
@@ -146,13 +168,19 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @GET
     @Path("/{issuer_dn}/{certificate_serial_number}/revocationstatus")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Checks revocation status of the specified certificate", notes = "Checks revocation status of the specified certificate",
-            response = RevokeStatusRestResponse.class)
+    @Operation(summary = "Checks revocation status of the specified certificate", description = "Checks revocation status of the specified certificate",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = RevokeStatusRestResponse.class))
+                    )
+            })
     public Response revocationStatus(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Subject DN of the issuing CA")
+            @Parameter(description = "Subject DN of the issuing CA")
             @PathParam("issuer_dn") String issuerDn,
-            @ApiParam(value = "hex serial number (without prefix, e.g. '00')")
+            @Parameter(description = "hex serial number (without prefix, e.g. '00')")
             @PathParam("certificate_serial_number") String serialNumber)
             throws AuthorizationDeniedException, RestException, CADoesntExistsException, NotFoundException {
         return super.revocationStatus(requestContext, issuerDn, serialNumber);
@@ -161,28 +189,34 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @PUT
     @Path("/{issuer_dn}/{certificate_serial_number}/revoke")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Revokes the specified certificate",
-                  notes = "Revokes the specified certificate, changes revocation reason for an already revoked certificate, sets invalidity or revocation date",
-                  response = RevokeStatusRestResponse.class)
+    @Operation(summary = "Revokes the specified certificate",
+            description = "Revokes the specified certificate, changes revocation reason for an already revoked certificate, sets invalidity or revocation date",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = RevokeStatusRestResponse.class))
+                    )
+            })
     public Response revokeCertificate(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Subject DN of the issuing CA")
+            @Parameter(description = "Subject DN of the issuing CA")
             @PathParam("issuer_dn") String issuerDN,
-            @ApiParam(value = "Hex serial number (without prefix, e.g. '00')")
+            @Parameter(description = "Hex serial number (without prefix, e.g. '00')")
             @PathParam("certificate_serial_number") String serialNumber,
-            @ApiParam(value = "Valid RFC5280 reason. One of\n" +
+            @Parameter(description = "Valid RFC5280 reason. One of\n" +
                     " NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n" +
                     " CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n" +
                     " CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE \n\n" +
                     " Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.")
             @QueryParam("reason") String reason,
-            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
+            @Parameter(description = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'")
             @QueryParam("date") String date,
-            @ApiParam(value = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'. Will be ignored with revocation reason REMOVE_FROM_CRL")
+            @Parameter(description = "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'. Will be ignored with revocation reason REMOVE_FROM_CRL")
             @QueryParam("invalidity_date") String invalidityDate)
 
             throws AuthorizationDeniedException, RestException, ApprovalException, RevokeBackDateNotAllowedForProfileException,
-            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, CertificateProfileDoesNotExistException, 
+            CADoesntExistsException, AlreadyRevokedException, NoSuchEndEntityException, CertificateProfileDoesNotExistException,
             WaitingForApprovalException {
         return super.revokeCertificate(requestContext, issuerDN, serialNumber, reason, date, invalidityDate);
     }
@@ -190,16 +224,22 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @GET
     @Path("/expire")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get a list of certificates that are about to expire",
-            notes = "List of certificates expiring within specified number of days",
-            response = ExpiringCertificatesRestResponse.class)
+    @Operation(summary = "Get a list of certificates that are about to expire",
+            description = "List of certificates expiring within specified number of days",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = ExpiringCertificatesRestResponse.class))
+                    )
+            })
     public Response getCertificatesAboutToExpire(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Request certificates expiring within this number of days")
+            @Parameter(description = "Request certificates expiring within this number of days")
             @QueryParam("days") long days,
-            @ApiParam(value = "Next offset to display results of, if maxNumberOfResults is exceeded. Starts from 0.")
+            @Parameter(description = "Next offset to display results of, if maxNumberOfResults is exceeded. Starts from 0.")
             @QueryParam("offset") int offset,
-            @ApiParam(value = "Maximum number of certificates to display. If result exceeds this value. Modify 'offset' to retrieve more results")
+            @Parameter(description = "Maximum number of certificates to display. If result exceeds this value. Modify 'offset' to retrieve more results")
             @QueryParam("maxNumberOfResults") int maxNumberOfResults)
             throws AuthorizationDeniedException, CertificateEncodingException, RestException {
         return super.getCertificatesAboutToExpire(requestContext, days, offset, maxNumberOfResults);
@@ -209,15 +249,20 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/{request_id}/finalize")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Finalize enrollment",
-            notes = "Finalizes enrollment after administrator approval using request Id",
-            response = CertificateRestResponse.class,
-            code = 201)
+    @Operation(summary = "Finalize enrollment",
+            description = "Finalizes enrollment after administrator approval using request Id",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "201",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CertificateRestResponse.class))
+                    )
+            })
     public Response finalizeEnrollment(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Approval request id")
+            @Parameter(description = "Approval request id")
             @PathParam("request_id") int requestId,
-            @ApiParam(value = "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'") FinalizeRestRequest request)
+            @Parameter(description = "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'") FinalizeRestRequest request)
             throws AuthorizationDeniedException, RestException, EjbcaException, WaitingForApprovalException,
             KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         return super.finalizeEnrollment(requestContext, requestId, request);
@@ -227,14 +272,19 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Path("/search")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(
-            value = "Searches for certificates confirming given criteria.",
-            notes = "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
-            response = SearchCertificatesRestResponse.class
-    )
+    @Operation(
+            summary = "Searches for certificates confirming given criteria.",
+            description = "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
+            responses = {
+                    @ApiResponse(
+                            responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(array = @ArraySchema(schema = @Schema(implementation = SearchCertificatesRestResponse.class)))
+                    )
+            })
     public Response searchCertificates(
             @Context HttpServletRequest requestContext,
-            @ApiParam(value = "Maximum number of results and collection of search criterias.") final SearchCertificatesRestRequest searchCertificatesRestRequest
+            @Parameter(description = "Maximum number of results and collection of search criterias.") final SearchCertificatesRestRequest searchCertificatesRestRequest
     ) throws AuthorizationDeniedException, RestException, CertificateEncodingException {
         return super.searchCertificates(requestContext, searchCertificatesRestRequest);
     }
