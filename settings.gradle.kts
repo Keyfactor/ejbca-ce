@@ -225,6 +225,7 @@ if (edition == "ee") {
         "modules:peerconnector:rar",
         "modules:peerconnector:cli",
         "modules:plugins-ee",
+        "modules:statedump:cli",
         "modules:statedump:ejb",
         "modules:caa",
         "modules:caa:cli",
