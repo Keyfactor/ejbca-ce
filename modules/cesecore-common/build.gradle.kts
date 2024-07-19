@@ -63,7 +63,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(
                 listOf("src")
@@ -73,7 +73,7 @@ sourceSets {
             }
         }
     }
-    val test by getting {
+    test {
         resources {
             srcDirs("resources-test")
         }

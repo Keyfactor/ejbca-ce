@@ -28,7 +28,7 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             srcDir("../src")
             exclude("org/cesecore/SystemTestsConfiguration.java")
