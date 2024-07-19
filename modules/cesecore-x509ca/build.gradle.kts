@@ -16,8 +16,8 @@ dependencies {
     compileOnly(libs.cryptotokens.impl)
     testImplementation(project(":modules:cesecore-entity"))
     testImplementation(libs.cryptotokens.api)
-    testImplementation(libs.cert.cvc)
     testImplementation(libs.bundles.xmlpull)
+    testRuntimeOnly(libs.cert.cvc)
 }
 
 sourceSets {
