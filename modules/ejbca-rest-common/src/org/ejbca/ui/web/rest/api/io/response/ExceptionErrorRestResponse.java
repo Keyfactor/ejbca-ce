@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class representing the information about an exceptional event triggered by REST resource failure.
@@ -22,9 +22,9 @@ import io.swagger.annotations.ApiModelProperty;
 public class ExceptionErrorRestResponse {
 
     // Have to match HTTP Status codes
-    @ApiModelProperty(value = "Error code", example = "400")
+    @Schema(description = "Error code indicating the type of error", example = "400")
     private int errorCode;
-    @ApiModelProperty(value = "Error code", example = "CA with DN: CN=FakeCA does not exist.")
+    @Schema(description = "Detailed error message", example = "CA with DN: CN=FakeCA does not exist.")
     private String errorMessage;
 
     /**
