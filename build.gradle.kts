@@ -313,6 +313,7 @@ subprojects {
                 "plugins",
                 "plugins-ee",
                 "ssh",
+                "statedump",
             )
         ) {
             plugins.apply("java")
