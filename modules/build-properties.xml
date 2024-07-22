@@ -380,7 +380,7 @@
 	<path id="lib.jaxws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jaxws-api-*.jar"/></path>
 	<path id="lib.jakarta.xml.ws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.ws-api-*.jar"/></path>
 	<path id="lib.jakarta.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.ejb-api-*.jar"/></path>
-	<path id="lib.javax.activaton.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="activation-*.jar"/></path>
+	<path id="lib.jakarta.activation.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.activation-*.jar"/></path>
 	<path id="lib.javax.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jws-api-*.jar"/></path>
 	<path id="lib.jakarta.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.soap-api-*.jar"/></path>
 	<path id="lib.jakarta.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.mail-*.jar"/></path>
@@ -415,7 +415,7 @@
     		<include name="jaxws-api-*.jar"/>
     		<include name="jakarta.xml.ws-api-*.jar"/>
     		<include name="jakarta.jws-api-*.jar"/>
-    		<include name="activation-*.jar"/>
+    		<include name="jakarta.activation-*.jar"/>
     		<include name="jakarta.xml.soap-api-*.jar"/>
     	</fileset>
     </path>
