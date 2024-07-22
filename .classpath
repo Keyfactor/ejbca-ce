@@ -155,7 +155,7 @@
 	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.activation-api-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.enterprise.cdi-api-3.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/jee/activation-1.1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/jakarta.activation-2.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.mail-2.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javax.jws-api-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jaxws-api-2.3.1.jar"/>
