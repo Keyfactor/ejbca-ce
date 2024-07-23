@@ -362,7 +362,7 @@ public class SecureXMLDecoder implements AutoCloseable {
                     case "org.ejbca.core.protocol.acme.storage.AcmeAccountImpl":
                     case "org.signserver.common.CertificateMatchingRule":
                     case "org.signserver.common.AuthorizedClient":
-                    case "org.cesecore.util.SecureXMLDecoderTest$MockObject":
+                    case "org.cesecore.util.SecureXMLDecoderUnitTest$MockObject":
                     case "org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement":
                         try {
                             // EJBCA, SignServer and test classes, so not available in CESeCore.

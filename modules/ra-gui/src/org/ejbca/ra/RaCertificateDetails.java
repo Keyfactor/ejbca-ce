@@ -289,7 +289,12 @@ public class RaCertificateDetails implements Serializable {
         if (certificateData.getType() == CertificateConstants.CERTTYPE_SSH) {
             this.sshKeyId = SshCertificateUtils.getKeyId(certificateData.getSubjectDnNeverNull());
             String[] principalsAndComment = SshCertificateUtils.parsePrincipalsAndComment(certificateData.getSubjectAltNameNeverNull());
-            this.principals = principalsAndComment[0].replace(":", ", ");
+            if (cdw.getCertificate()!=null) {
+                String allPrincipals = ((SshCertificate) cdw.getCertificate()).getPrincipals().toString();
+                this.principals =  allPrincipals.substring(1, allPrincipals.length()-1);
+            } else {
+                this.principals = principalsAndComment[0];
+            }
             this.comment = principalsAndComment[1];
             this.type = SshCertificate.CERTIFICATE_TYPE;
         }

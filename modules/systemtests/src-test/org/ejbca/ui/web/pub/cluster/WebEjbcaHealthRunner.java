@@ -18,8 +18,6 @@ import org.cesecore.WebTestUtils;
 
 /**
  * Tests the EjbcaHealthCheck (servlet) with load.
- * 
- * @version $Id$
  */
 public class WebEjbcaHealthRunner implements Runnable { // NOPMD, this is not a JEE app, only a test
 	
