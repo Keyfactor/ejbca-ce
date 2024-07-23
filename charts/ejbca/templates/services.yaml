@@ -4,6 +4,10 @@ metadata:
   name: {{ include "ejbca.fullname" . }}
   labels:
     {{- include "ejbca.labels" . | nindent 4 }}
+  {{- with .Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 {{- if .Values.services.directHttp.enabled }}
 spec:
   type: {{ .Values.services.directHttp.type }}

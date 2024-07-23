@@ -84,10 +84,7 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
- * Test tool so that tests stop using the batch command. 
- * 
- * @version $Id$
- *
+ * Test tool so that tests stop using the batch command.
  */
 public abstract class BatchCreateTool {
 
