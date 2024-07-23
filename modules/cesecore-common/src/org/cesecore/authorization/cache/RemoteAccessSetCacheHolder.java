@@ -31,7 +31,7 @@ public final class RemoteAccessSetCacheHolder {
     
     private static final Logger log = Logger.getLogger(RemoteAccessSetCacheHolder.class);
 
-    // These fields are also modified by the test RemoteAccessSetCacheHolderTest
+    // These fields are also modified by the test RemoteAccessSetCacheHolderUnitTest
     private static volatile int lastUpdate = -1;
     private static volatile boolean regularUpdateInProgress = false; // not clear caches etc.
     private static final Object checkClearLock = new Object();

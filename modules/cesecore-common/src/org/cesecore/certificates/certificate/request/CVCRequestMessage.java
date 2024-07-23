@@ -77,7 +77,7 @@ public class CVCRequestMessage implements RequestMessage {
     private List<Certificate> additionalCaCertificates = new ArrayList<>();
   
     private List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
-    
+        
     /**
      * Constructs a new empty message handler object.
      */
@@ -130,6 +130,9 @@ public class CVCRequestMessage implements RequestMessage {
 
         PublicKey pk;
 		try {
+            if (cvcert == null) {
+                throw new IllegalArgumentException("Uploaded file is not a valid CSR file");
+            }
 			pk = cvcert.getCertificateBody().getPublicKey();
 		} catch (NoSuchFieldException e) {
 			throw new InvalidKeyException(e);

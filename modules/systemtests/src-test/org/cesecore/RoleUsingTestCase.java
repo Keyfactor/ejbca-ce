@@ -32,8 +32,6 @@ import org.cesecore.util.EjbRemoteHelper;
 /**
  * Base class with two good methods that can be used from other tests that needs to set up access roles. This base class can initialize the role
  * system with a role that have access to creating other roles.
- * 
- * @version $Id$
  */
 public abstract class RoleUsingTestCase {
 

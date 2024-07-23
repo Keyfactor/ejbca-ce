@@ -52,7 +52,6 @@
         <path location="${ejbca-ejb-cli.build-test.dir}"/>
         <path refid="compile.classpath"/>
         <path refid="lib.easymock.classpath"/>
-        <path refid="lib.test.powermock.classpath"/>
         <path refid="lib.junit.classpath"/>
         <path location="${ejbca-ejb-cli.build.dir}"/>
         <path location="${ejbca-ejb-cli.dir}/../dist/systemtests-interfaces.jar"/>

@@ -81,6 +81,19 @@ public class DNFieldExtractor implements Serializable {
     public static final int PID = 108;
     public static final int UNIQUEIDENTIFIER = 62;
     public static final int CERTIFICATIONID = 109;
+    // 110 is reserved
+    public static final int LEGALENTITYIDENTIFIER = 111;
+    public static final int MARKTYPE = 112;
+    public static final int TRADEMARKCOUNTRYORREGIONNAME = 113;
+    public static final int TRADEMARKOFFICENAME = 114;
+    public static final int TRADEMARKIDENTIFIER = 115;
+    public static final int WORDMARK = 116;
+    public static final int STATUTELOCALITYNAME = 117;
+    public static final int STATUTESTATEORPROVINCENAME = 118;
+    public static final int STATUTECOUNTRYNAME = 119;
+    public static final int STATUTECITATION = 120;
+    public static final int STATUTEURL = 121;
+    public static final int PRIORUSEMARKSOURCEURL = 122;
 
     // Subject Alternative Names.
     public static final int OTHERNAME = 16;
