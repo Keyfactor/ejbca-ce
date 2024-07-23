@@ -1613,7 +1613,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (email != null) {
                 final Map<Integer, FieldInstance> map = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME);
                 for (FieldInstance fi : map.values()) {
-                    if (fi.isRfcUseEmail()) {
+                    if (fi.getRfcEmailUsed()) {
                         fi.setValue(email);
                     }
                 }
