@@ -20,10 +20,6 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-/**
- * @version $Id$
- *
- */
 public class ServiceLocatorTestUtils {
 
     /**

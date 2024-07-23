@@ -929,7 +929,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     }
 
     public String getViewEndEntityPopupLink(final String username) {
-        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.jsp?username=" + username;
+        return getEjbcaWebBean().getBaseUrl() + globalConfiguration.getAdminWebPath() + "ra/viewendentity.xhtml?username=" + username;
     }
 
     public String getEditEndEntityPopupLink(final String username) {

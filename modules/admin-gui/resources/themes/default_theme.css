@@ -551,6 +551,18 @@ table.edit tr td {
 	word-wrap: break-word; 
 	word-break: break-all;
 }
+.viewEeColumn1 {
+	width: 50%;
+	text-align: right;
+	word-wrap: break-word; 
+	word-break: break-all;
+}
+.viewEeColumn2 {
+	width: 50%;
+	text-align: left;
+	word-wrap: break-word; 
+	word-break: break-all;
+}
 .editColumnSystem1 {
 	width: 35%;
 	text-align: left;
