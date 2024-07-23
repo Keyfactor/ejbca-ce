@@ -12,19 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.endentity;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
@@ -37,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -64,7 +58,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
@@ -77,12 +70,9 @@ import com.keyfactor.util.certificate.DnComponents;
 
 @Named
 @ViewScoped
-public class EditEndEntityMBean extends BaseManagedBean implements Serializable {
+public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    private static final Logger log = Logger.getLogger(EditEndEntityMBean.class);
-
     
     private static final String USER_PARAMETER = "username";
 
@@ -103,7 +93,6 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     private String[] emailOptions = null;
 
     private EndEntityProfile eeProfile = null;
-    private UserView userData = null;
 
     private List<SubjectDnFieldData> subjectDnFieldDatas;
     private List<SubjectAltNameFieldData> subjectAltNameFieldDatas;
@@ -214,6 +203,7 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
                 eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
                 
                 initTheRest();
+                updateMainCertDataSection();
                 
             } else {
                 throw new EndEntityException(ejbcaWebBean.getText("ENDENTITYDOESNTEXIST"));
@@ -253,12 +243,6 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
 
         emailOptions = eeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
 
-        /* Main Certificate Data */
-        this.selectedCertProfileId = userData.getCertificateProfileId();
-        this.selectedCaId = userData.getCAId();
-        this.selectedTokenId = userData.getTokenType();
-        this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery() && eeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
-
         this.keyRecoveryCheckboxStatus.setLeft(userData.getKeyRecoverable());
         this.keyRecoveryCheckboxStatus.setRight(eeProfile.isRequired(EndEntityProfile.KEYRECOVERABLE, 0));
 
@@ -282,6 +266,14 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
         }
         
     }
+    
+    private void updateMainCertDataSection() {
+        /* Main Certificate Data */
+        this.selectedCertProfileId = userData.getCertificateProfileId();
+        this.selectedCaId = userData.getCAId();
+        this.selectedTokenId = userData.getTokenType();
+        this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery() && eeProfile.getUse(EndEntityProfile.KEYRECOVERABLE, 0);
+    }
 
     public String actionChangeEndEntityProfile(AjaxBehaviorEvent event) throws Exception {
         
@@ -289,8 +281,8 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
                 .toArray(new String[0]);
         
         eeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+        selectedCertProfileId = eeProfile.getDefaultCertificateProfile();
         userData.setEndEntityProfileId(selectedEeProfileId);
-        
         initTheRest();
         initSubjectData();
         return "editendentity";
@@ -690,6 +682,7 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
 
     public List<SelectItem> getAvailableCertProfiles() {
         List<SelectItem> profiles = new ArrayList<>();
+        
         String[] availableCertProfileIds = eeProfile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
 
         for (String profileId : availableCertProfileIds) {
@@ -723,7 +716,7 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
     }
 
     public List<SelectItem> getAvailableCas() {
-
+        
         Map<Integer, List<Integer>> currentAvailableCas = raBean.getCasAvailableToEndEntity(selectedEeProfileId);
         List<SelectItem> availableCasList = new ArrayList<>();
         List<Integer> availableCasToSelectedCertProfile = currentAvailableCas.get(selectedCertProfileId);
@@ -940,92 +933,7 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
         return eeProfile.isPsd2QcStatementUsed();
     }
 
-    /**
-     * Parses certificate extension data from a String of properties in Java 
-     * Properties format and store it in the extended information.
-     *
-     * @param extensionData properties to parse and store.
-     */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public void setExtensionData(final String extensionData) {
-        Properties properties = new Properties();
-        try {
-            properties.load(new StringReader(extensionData));
-        } catch (IOException ex) {
-            // Should not happen as we are only reading from a String.
-            throw new RuntimeException(ex);
-        }
-
-        // Remove old extensiondata
-        Map data = (Map) this.userData.getExtendedInformation().getData();
-        // We have to use an iterator in order to remove an item while iterating, if we try to remove an object from
-        // the map while looping over keys we will get a ConcurrentModificationException
-        Iterator it = data.keySet().iterator();
-        while (it.hasNext()) {
-            Object o = it.next();
-            if (o instanceof String) {
-                String key = (String) o;
-                if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
-                    //it.remove() will delete the item from the map
-                    it.remove();
-                }
-            }
-        }
-
-        // Add new extensiondata
-        for (Object o : properties.keySet()) {
-            if (o instanceof String) {
-                String key = (String) o;
-                data.put(ExtendedInformation.EXTENSIONDATA + key, properties.getProperty(key));
-            }
-        }
-
-        // Updated ExtendedInformation to use the new data
-        this.userData.getExtendedInformation().loadData(data);
-    }
-
-    /**
-     * @return The extension data read from the extended information and 
-     * formatted as in a Properties file.
-     */
-    public String getExtensionData() {
-        final String result;
-        if (this.userData.getExtendedInformation() == null) {
-            result = "";
-        } else {
-            @SuppressWarnings("rawtypes")
-            Map data = (Map) this.userData.getExtendedInformation().getData();
-            Properties properties = new Properties();
-
-            for (Object o : data.keySet()) {
-                if (o instanceof String) {
-                    String key = (String) o;
-                    if (key.startsWith(ExtendedInformation.EXTENSIONDATA)) {
-                        String subKey = key.substring(ExtendedInformation.EXTENSIONDATA.length());
-                        properties.put(subKey, data.get(key));
-                    }
-                }
-
-            }
-
-            // Render the properties and remove the first line created by the Properties class.
-            StringWriter out = new StringWriter();
-            try {
-                properties.store(out, null);
-            } catch (IOException ex) {
-                // Should not happen as we are using a StringWriter
-                throw new RuntimeException(ex);
-            }
-
-            StringBuffer buff = out.getBuffer();
-            String lineSeparator = System.getProperty("line.separator");
-            int firstLineSeparator = buff.indexOf(lineSeparator);
-
-            result = firstLineSeparator >= 0 ? buff.substring(firstLineSeparator + lineSeparator.length()) : buff.toString();
-        }
-        return result;
-    }
-
+    
     public String getPsd2NcaName() {
 
         ExtendedInformation ei = userData.getExtendedInformation();
@@ -1522,12 +1430,22 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
             addNonTranslatedErrorMessage(getEjbcaWebBean().getText("PASSWORDSDOESNTMATCH"));
             return;
         }
-
+        
+        if(statusChangeRequiresPasswordRegen()) {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("PASSWORDMUSTBEREGEN"));
+            return;
+        }
+        
+        if(statusChangedIncorrectly()) {
+            addNonTranslatedErrorMessage(getEjbcaWebBean().getText("ONLYSTATUSCANBESELECTED"));
+            return;
+        }
+        
         userData.setEndEntityProfileId(selectedEeProfileId);
 
         UserView newUserView = new UserView();
         newUserView.setEndEntityProfileId(selectedEeProfileId);
-        newUserView.setUsername(userName);
+        newUserView.setUsername(userData.getUsername());
 
         if (eePassword != null) {
             eePassword = eePassword.trim();
@@ -1752,6 +1670,16 @@ public class EditEndEntityMBean extends BaseManagedBean implements Serializable 
             }
         }
 
+    }
+
+    private boolean statusChangedIncorrectly() {
+        return eeStatus != EndEntityConstants.STATUS_NEW && eeStatus != EndEntityConstants.STATUS_KEYRECOVERY
+                && eeStatus != EndEntityConstants.STATUS_GENERATED && eeStatus != EndEntityConstants.STATUS_HISTORICAL;
+    }
+
+    private boolean statusChangeRequiresPasswordRegen() {
+        return ((eeStatus == EndEntityConstants.STATUS_NEW || eeStatus == EndEntityConstants.STATUS_KEYRECOVERY) && eeStatus != userData.getStatus()
+                && !regeneratePassword && selectedTokenId <= SecConst.TOKEN_SOFT);
     }
 
 }

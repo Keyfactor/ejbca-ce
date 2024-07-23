@@ -540,12 +540,16 @@ table.edit tr td {
 	text-align: right;
 }
 .editColumnEE1 {
-	width: 35%;
+	width: 45%;
 	text-align: right;
+	word-wrap: break-word; 
+	word-break: break-all;
 }
 .editColumnEE2 {
-	width: 65%;
+	width: 55%;
 	text-align: left;
+	word-wrap: break-word; 
+	word-break: break-all;
 }
 .editColumnSystem1 {
 	width: 35%;
