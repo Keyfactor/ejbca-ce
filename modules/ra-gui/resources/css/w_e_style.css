@@ -513,6 +513,7 @@ td.noneCell, td span.noneCell {
     margin-bottom: 5%;
     display: block;
     color: #fff;
+    word-break:break-all;
 }
 
 textarea#keyPairForm\:certificateRequest {

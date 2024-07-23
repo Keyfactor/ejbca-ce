@@ -4,6 +4,10 @@ kind: Service
 apiVersion: v1
 metadata:
   name: {{ include "ejbca.fullname" . }}-nginx
+  {{- with .Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
 spec:
   type: {{ .Values.nginx.service.type }}
   ports:
