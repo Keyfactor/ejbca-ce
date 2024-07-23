@@ -69,9 +69,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.RequestHelper;
-import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
-import org.ejbca.ui.web.admin.rainterface.EditEndEntityBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
@@ -87,11 +85,9 @@ import com.keyfactor.util.certificate.DnComponents;
 */
 @Named
 @ViewScoped
-public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
+public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
-
-    private static final Logger log = Logger.getLogger(AddEndEntityMBean.class);
 
     @EJB
     private AuthorizationSessionLocal authorizationSession;
@@ -148,8 +144,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
     private MutablePair<Boolean, Boolean> keyRecoveryCheckboxStatus = new MutablePair<>();
 
     private String[] profileNames = null; 
-
-    private EditEndEntityBean eeBean;
     
     private EjbcaWebBean ejbcaWebBean;
     private RAInterfaceBean raBean;
@@ -283,7 +277,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         this.emailDomains = selectedEeProfile.getValue(EndEntityProfile.EMAIL, 0).split(EndEntityProfile.SPLITCHAR);
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
         this.emailDomain = setDefaultEmailDomainFromProfile();
-        this.eeBean = new EditEndEntityBean();
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
         this.numberOfRequests = selectedEeProfile.getAllowedRequests();
         this.setSendNotification(selectedEeProfile.getValue(EndEntityProfile.SENDNOTIFICATION,0).equals(EndEntityProfile.TRUE));
@@ -1022,7 +1015,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
         
         this.emailDomain = setDefaultEmailDomainFromProfile();
         this.profileEmail = selectedEeProfile.getValue(EndEntityProfile.EMAIL,0);
-        this.eeBean = new EditEndEntityBean();
         this.cabfOrganizationIdentifier = selectedEeProfile.getCabfOrganizationIdentifier();
 
         this.useKeyRecovery = globalConfiguration.getEnableKeyRecovery()
@@ -1225,11 +1217,10 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 ei = new ExtendedInformation();
                 newUserView.setExtendedInformation(ei);
             }
-            eeBean.setExtendedInformation(ei);
 
             // Save the new value if the profile allows it
             if (selectedEeProfile.getUseExtensiondata()) {
-                eeBean.setExtensionData(getExtensionData());
+                super.setExtensionData(getExtensionData());
             }
         }
         return newUserView;
@@ -1722,7 +1713,6 @@ public class AddEndEntityMBean extends BaseManagedBean implements Serializable {
                 ei = new ExtendedInformation();
                 newUserView.setExtendedInformation(ei);
             }
-            eeBean.setExtendedInformation(ei);
         }
 
         if (StringUtils.isNotBlank(getUserName())) {
