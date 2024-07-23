@@ -87,9 +87,6 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
 
-/**
- *
- */
 public final class OcspTestUtils {
 
     private static final String FOO123_PASSWORD = "foo123";

@@ -59,7 +59,6 @@ import com.keyfactor.util.string.StringConfigurationCache;
 
 /**
  * Base class for crypto tokens handling things that are common for all crypto tokens, hard or soft.
- *
  */
 public abstract class LegacyBaseCryptoToken implements CryptoToken {
 

@@ -2203,10 +2203,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     commentIndex--;
                 }
                 allPrincipals = subjectAlternateName.substring(SshEndEntityProfileFields.SSH_PRINCIPAL.length()+1, commentIndex);
+                for (String ipv6: ei.getSshPrincipalsIpv6()) {
+                    allPrincipals = allPrincipals.replace(ipv6, ipv6.replace(":", "_"));
+                }
                 principals = allPrincipals.split(":");
                 for (final EndEntityProfile.FieldInstance fieldInstance : field.getInstances()) {
                     if(fieldInstance.isRequired() && !fieldInstance.isModifiable() 
-                            && !allPrincipals.contains(fieldInstance.getValue())) {
+                        && (
+                               ( !fieldInstance.getValue().contains(":") && !allPrincipals.contains(fieldInstance.getValue()))
+                            || ( fieldInstance.getValue().contains(":") && !allPrincipals.contains(fieldInstance.getValue().replace(":", "_")))
+                        )
+                      ) {
                         throw new EndEntityProfileValidationException(
                                 "SSH principal does not contain required and un-modifiable value: " + fieldInstance.getValue());
                     }
