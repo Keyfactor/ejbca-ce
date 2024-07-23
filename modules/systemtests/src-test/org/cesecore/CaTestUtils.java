@@ -94,8 +94,6 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Common class for test classes which need to create a CA.
- *
- *
  */
 public abstract class CaTestUtils {
     

@@ -45,11 +45,7 @@ public class MyExtendedCAService extends ExtendedCAService {
 	public static int didrun = 0;
 	
 	@Override
-	public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken,
-			ExtendedCAServiceRequest request)
-	throws ExtendedCAServiceRequestException,
-	IllegalExtendedCAServiceRequestException,
-	ExtendedCAServiceNotActiveException {
+	public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, ExtendedCAServiceRequest request) {
 		didrun++;
 		return new MyExtendedCAServiceResponse();
 	}

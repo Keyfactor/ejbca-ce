@@ -90,21 +90,21 @@
         	encoding="UTF-8" classpathref="test.classpath"/>
     </target>
 	
-	<target name="test" depends="compile-tests" description="Run all tests for this module">
+	<target name="test:unit" depends="compile-tests" description="Run unit tests for this module">
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-ws-cli.dir}">
 			<classpath>
         		<path refid="test.classpath"/>
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-                <fileset dir="${ejbca-ws-cli.build-test.dir}" includes="**/EcaQa*.class"/>
+                <fileset dir="${ejbca-ws-cli.build-test.dir}" includes="**/*UnitTest.class"/>
             </batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
     </target>
 	
 	<target name="runone" depends="compile-tests">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=EcaQa64_PublicWebMenuItems . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=RevokeCertWithMetadataCommandUnitTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>
         		<path refid="test.classpath"/>

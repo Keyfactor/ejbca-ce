@@ -32,6 +32,10 @@ metadata:
       proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     {{- end }}
+    {{- if ne (int .Values.replicaCount) 1 }}
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"
+    {{- end }}
     {{- with .Values.ingress.annotations }}
     {{- toYaml . | nindent 4 }}
     {{- end }}
