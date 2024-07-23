@@ -151,7 +151,7 @@ public class AddOAuthProviderCommand extends BaseOAuthConfigCommand {
         }
         
         // if audience checking isn't explicitly disabled the user must specify an audience
-        boolean audienceCheckDisabled = audienceCheckDisabledString != null && Boolean.getBoolean(audienceCheckDisabledString);
+        boolean audienceCheckDisabled = audienceCheckDisabledString != null && Boolean.valueOf(audienceCheckDisabledString);
         if (audience == null && !audienceCheckDisabled) {
             log.info("Audience check not disabled and no audience set.");
             return CommandResult.CLI_FAILURE;
