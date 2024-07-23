@@ -70,7 +70,7 @@
 	    <path refid="lib.json-simple.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
-		<path refid="lib.jakarta.activation.classpath"/>
+		<path refid="lib.angus.activation.classpath"/>
 		<path refid="lib.jakarta.mail.classpath"/>
 		<path refid="lib.jaxws-api.classpath"/>
 		<path refid="lib.jakarta.xml.soap-api.classpath"/>
