@@ -278,10 +278,6 @@ task<Copy>("deployear") {
     }
 }
 
-tasks.withType<JavaCompile>().configureEach {
-    options.isFork = true
-}
-
 subprojects {
     // Add common test configuration to all modules/subprojects containing test sources
     if (file("src-test").exists()) {
@@ -290,8 +286,6 @@ subprojects {
         // Unit tests
         tasks.withType<Test> {
             description = "Runs unit tests."
-            maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
-            forkEvery = 100
 
             filter {
                 includeTestsMatching("*UnitTest")
@@ -303,8 +297,6 @@ subprojects {
                 sourceSets["test"].compileClasspath += sourceSets["main"].compileClasspath
                 sourceSets["test"].runtimeClasspath += sourceSets["main"].compileClasspath
             }
-
-            testLogging.events("passed", "skipped", "failed")
         }
 
         // System tests
@@ -330,8 +322,6 @@ subprojects {
                 // we can reuse the source configuration of the "test" task.
                 testClassesDirs = sourceSets["test"].output.classesDirs
                 classpath = sourceSets["test"].runtimeClasspath
-
-                testLogging.events("passed", "skipped", "failed")
             }
 
             // // Add the "systemTest" task to Gradle's "check" task dependencies
@@ -347,5 +337,54 @@ subprojects {
             testImplementation(rootProject.libs.bundles.utils)
             testImplementation(rootProject.libs.bundles.test)
         }
+
+        // Configure test tasks to output some basic information about executed tests
+        tasks.withType(Test::class) {
+            doLast {
+                // print module's report location
+                val reportDir = reports.html.outputLocation.get().asFile.absolutePath;
+                val separator = File.separator;
+                logger.lifecycle("'${project.name}' test report: file:${separator}${separator}$reportDir${separator}index.html")
+            }
+            // print a summary derived from all test reports
+            finalizedBy(":summarizeTestResults")
+        }
+    }
+}
+
+// TODO ECA-12541: Replace with an aggregated test report
+tasks.register("summarizeTestResults") {
+    description = "Summarizes the test results of all subprojects."
+    group = "reporting"
+    doLast {
+        val documentBuilderFactory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
+        val documentBuilder = documentBuilderFactory.newDocumentBuilder()
+        val xPathFactory = javax.xml.xpath.XPathFactory.newInstance()
+        val xPath = xPathFactory.newXPath()
+
+        val testResultDirectories = project.subprojects.flatMap {
+            it.fileTree(it.layout.buildDirectory) {
+                include("**/test-results/**/*.xml")
+            }.files
+        }
+
+        var totalExecuted = 0
+        var totalPassed = 0
+        var totalFailed = 0
+        var totalSkipped = 0
+
+        testResultDirectories.forEach { file ->
+            val document = documentBuilder.parse(file)
+            totalExecuted += xPath.compile("count(//testcase)")
+                .evaluate(document, javax.xml.xpath.XPathConstants.NUMBER).toString().toDouble().toInt()
+            totalPassed += xPath.compile("count(//testcase[not(failure) and not(skipped)])")
+                .evaluate(document, javax.xml.xpath.XPathConstants.NUMBER).toString().toDouble().toInt()
+            totalSkipped += xPath.compile("count(//skipped)")
+                .evaluate(document, javax.xml.xpath.XPathConstants.NUMBER).toString().toDouble().toInt()
+            totalFailed += xPath.compile("count(//failure)")
+                .evaluate(document, javax.xml.xpath.XPathConstants.NUMBER).toString().toDouble().toInt()
+        }
+
+        logger.lifecycle("Test summary: $totalExecuted executed, $totalPassed passed, $totalFailed failed, $totalSkipped skipped.")
     }
 }
