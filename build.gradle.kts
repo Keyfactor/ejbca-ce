@@ -357,11 +357,11 @@ subprojects {
 tasks.register("summarizeTestResults") {
     description = "Summarizes the test results of all subprojects."
     group = "reporting"
+
     doLast {
         val documentBuilderFactory = javax.xml.parsers.DocumentBuilderFactory.newInstance()
         val documentBuilder = documentBuilderFactory.newDocumentBuilder()
-        val xPathFactory = javax.xml.xpath.XPathFactory.newInstance()
-        val xPath = xPathFactory.newXPath()
+        val xPath = javax.xml.xpath.XPathFactory.newInstance().newXPath()
 
         val testResultDirectories = project.subprojects.flatMap {
             it.fileTree(it.layout.buildDirectory) {
@@ -376,14 +376,19 @@ tasks.register("summarizeTestResults") {
 
         testResultDirectories.forEach { file ->
             val document = documentBuilder.parse(file)
-            totalExecuted += xPath.compile("count(//testcase)")
-                .evaluate(document, javax.xml.xpath.XPathConstants.NUMBER).toString().toDouble().toInt()
-            totalPassed += xPath.compile("count(//testcase[not(failure) and not(skipped)])")
-                .evaluate(document, javax.xml.xpath.XPathConstants.NUMBER).toString().toDouble().toInt()
-            totalSkipped += xPath.compile("count(//skipped)")
-                .evaluate(document, javax.xml.xpath.XPathConstants.NUMBER).toString().toDouble().toInt()
-            totalFailed += xPath.compile("count(//failure)")
-                .evaluate(document, javax.xml.xpath.XPathConstants.NUMBER).toString().toDouble().toInt()
+            val testCases = xPath.compile("//testcase")
+                .evaluate(document, javax.xml.xpath.XPathConstants.NODESET) as org.w3c.dom.NodeList
+            totalExecuted += testCases.length
+            for (i in 0 until testCases.length) {
+                val testCase = testCases.item(i)
+                val failure = xPath.compile("failure").evaluate(testCase, javax.xml.xpath.XPathConstants.NODE)
+                val skipped = xPath.compile("skipped").evaluate(testCase, javax.xml.xpath.XPathConstants.NODE)
+                when {
+                    failure != null -> totalFailed++
+                    skipped != null -> totalSkipped++
+                    else -> totalPassed++
+                }
+            }
         }
 
         logger.lifecycle("Test summary: $totalExecuted executed, $totalPassed passed, $totalFailed failed, $totalSkipped skipped.")
