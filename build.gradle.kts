@@ -340,6 +340,7 @@ subprojects {
 
         // Configure test tasks to output some basic information about executed tests
         tasks.withType(Test::class) {
+            dependsOn(":cleanAllTestResults")
             doLast {
                 // print module's report location
                 val reportDir = reports.html.outputLocation.get().asFile.absolutePath;
@@ -386,5 +387,17 @@ tasks.register("summarizeTestResults") {
         }
 
         logger.lifecycle("Test summary: $totalExecuted executed, $totalPassed passed, $totalFailed failed, $totalSkipped skipped.")
+    }
+}
+
+tasks.register<Delete>("cleanAllTestResults") {
+    description = "Cleans all test results of all subprojects."
+    group = "reporting"
+    doLast {
+        project.subprojects.forEach { subproject ->
+            val testResultsDir = subproject.layout.buildDirectory.dir("test-results").get().asFile
+            val reportsTestsDir = subproject.layout.buildDirectory.dir("reports/tests").get().asFile
+            delete(testResultsDir, reportsTestsDir)
+        }
     }
 }
