@@ -214,20 +214,23 @@
 			<h:panelGroup rendered="#{resourceBean.useBatchGenerationPassword}">
 				<h:outputLabel id="useInBatchLabel" 
 					value="#{web.text.USEINBATCH}" />
-			</h:panelGroup>	
-				
-			<h:panelGroup rendered="#{resourceBean.useBatchGenerationPassword}">
+			</h:panelGroup>
 
-				<h:selectBooleanCheckbox
-							id="checkBoxUseBatchGenerationPassword"
-							value="#{resourceBean.useClearTextPasswordStorage}"
-							disabled="#{resourceBean.requiredClearTextPasswordStorage}" />
-						<h:outputLabel for="checkBoxUseBatchGenerationPassword" value="#{web.text.USE}" />
-							
-			</h:panelGroup>				
-			
+				<h:panelGroup rendered="#{resourceBean.useBatchGenerationPassword}">
 
-			<h:panelGroup>
+					<h:selectBooleanCheckbox id="checkBoxUseBatchGenerationPassword"
+						value="#{resourceBean.useClearTextPasswordStorage}"
+						disabled="#{resourceBean.requiredClearTextPasswordStorage}">
+						<f:ajax event="change" render="@this"
+							listener="#{resourceBean.checkUseInBatch()}" />
+					</h:selectBooleanCheckbox>
+					<h:outputLabel for="checkBoxUseBatchGenerationPassword"
+						value="#{web.text.USE}" />
+
+				</h:panelGroup>
+
+
+				<h:panelGroup>
 				<h:outputLabel id="emailLabel" 
 					value="#{web.text.EMAIL}" />
 			</h:panelGroup>	
