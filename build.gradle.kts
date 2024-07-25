@@ -58,6 +58,7 @@ dependencies {
     deploy(project(path = ":modules:certificatestore", configuration = "archives"))
     deploy(project(path = ":modules:crlstore", configuration = "archives"))
     deploy(project(path = ":modules:ra-gui", configuration = "archives"))
+    deploy(project(path = ":modules:ejbca-rest-api", configuration = "archives"))
     if (edition == "ee") {
         "earlibanddeploy"(project(path = ":modules:edition-specific-ee", configuration = "archives"))
         deploy(project(path = ":modules:statedump:ejb", configuration = "archives"))
@@ -70,7 +71,6 @@ dependencies {
         deploy(project(path = ":modules:msae", configuration = "archives"))
         deploy(project(path = ":modules:cits", configuration = "archives"))
         deploy(project(path = ":modules:est", configuration = "archives"))
-        deploy(project(path = ":modules:ejbca-rest-api", configuration = "archives"))
         earlib(project(path = ":modules:statedump:common", configuration = "archives"))
         earlib(project(path = ":modules:configdump:common", configuration = "archives"))
         earlib(project(path = ":modules:peerconnector:ra", configuration = "archives"))
@@ -83,10 +83,8 @@ dependencies {
         // When edition is CE we use :modules:edition-specific:ejb as a replacement for :modules:edition-specific-ee
         "earlibanddeploy"(project(path = ":modules:edition-specific:ejb", configuration = "archives"))
     }
-    if (edition == "ee" && !props.getProperty("ejbca.productionmode", "true").toBoolean()) {
-        deploy(":swagger-ui@war")
-    }
     if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
+        deploy(":swagger-ui@war")
         deploy(project(":modules:systemtests:ejb"))
     }
     // External libraries
@@ -201,6 +199,10 @@ tasks.ear {
                     "<!--@ra-gui.war@-->",
                     "<module><web><web-uri>ra-gui.war</web-uri><context-root>/ejbca/ra</context-root></web></module>"
                 )
+                .replace(
+                    "<!--@ejbca-rest-api.war@-->",
+                    "<module><web><web-uri>ejbca-rest-api.war</web-uri><context-root>/ejbca/ejbca-rest-api</context-root></web></module>"
+                )
         }
         if (edition == "ee") {
             filter { line: String ->
@@ -215,10 +217,6 @@ tasks.ear {
                     .replace(
                         "<!--@peerconnector.war@-->",
                         "<module><web><web-uri>peerconnector.war</web-uri><context-root>/ejbca/peer</context-root></web></module>"
-                    )
-                    .replace(
-                        "<!--@ejbca-rest-api.war@-->",
-                        "<module><web><web-uri>ejbca-rest-api.war</web-uri><context-root>/ejbca/ejbca-rest-api</context-root></web></module>"
                     )
                     .replace(
                         "<!--@acme.war@-->",
@@ -237,10 +235,6 @@ tasks.ear {
                         "<module><web><web-uri>ssh.war</web-uri><context-root>/ejbca/ssh</context-root></web></module>"
                     )
                     .replace(
-                        "<!--@swagger-ui.war@-->",
-                        "<module><web><web-uri>swagger-ui.war</web-uri><context-root>/ejbca/swagger-ui</context-root></web></module>"
-                    )
-                    .replace(
                         "<!--@cits.war@-->",
                         "<module><web><web-uri>cits.war</web-uri><context-root>/ejbca/its</context-root></web></module>"
                     )
@@ -249,6 +243,10 @@ tasks.ear {
         if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
             filter { line: String ->
                 line.replace("<!--@ejbca-systemtest-ejb.jar@-->", "<module><ejb>systemtests-ejb.jar</ejb></module>")
+                    .replace(
+                        "<!--@swagger-ui.war@-->",
+                        "<module><web><web-uri>swagger-ui.war</web-uri><context-root>/ejbca/swagger-ui</context-root></web></module>"
+                    )
             }
         }
         include("jboss-deployment-structure.xml")
