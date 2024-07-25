@@ -395,14 +395,22 @@ tasks.register("summarizeTestResults") {
     }
 }
 
-tasks.register<Delete>("cleanAllTestResults") {
-    description = "Cleans all test results of all subprojects."
+tasks.register("cleanAllTestResults") {
+    description = "Cleans test results in all subprojects."
     group = "reporting"
     doLast {
-        project.subprojects.forEach { subproject ->
-            val testResultsDir = subproject.layout.buildDirectory.dir("test-results").get().asFile
-            val reportsTestsDir = subproject.layout.buildDirectory.dir("reports/tests").get().asFile
-            delete(testResultsDir, reportsTestsDir)
+        val isCleanTaskUsed = gradle.startParameter.taskNames.any { it.contains("clean") }
+        if (!isCleanTaskUsed) {
+            project.subprojects.forEach { subproject ->
+                val testResultsDir = subproject.layout.buildDirectory.dir("test-results").get().asFile
+                val testReportsDir = subproject.layout.buildDirectory.dir("reports/tests").get().asFile
+                if (testResultsDir.exists()) {
+                    testResultsDir.deleteRecursively()
+                }
+                if (testReportsDir.exists()) {
+                    testReportsDir.deleteRecursively()
+                }
+            }
         }
     }
 }
