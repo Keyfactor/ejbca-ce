@@ -249,6 +249,10 @@ if (edition == "ee") {
         "modules:ejbca-rest-system",
         "modules:ejbca-rest-api",
         "modules:p11ng-cli",
+        "modules:est",
+        "modules:ct",
+        "modules:cesecore-cvcca",
+        "modules:unidfnr",
     )
 }
 
@@ -284,14 +288,10 @@ include(
     "modules:ra-gui",
     "modules:ejbca-ws",
     "modules:ejbca-rest-common",
-    "modules:ct",
     "modules:va",
     "modules:va:extensions",
     "modules:certificatestore",
     "modules:crlstore",
-    "modules:est",
-    "modules:unidfnr",
-    "modules:cesecore-cvcca",
     "modules:systemtests:interface",
     "modules:systemtests:common",
     "modules:systemtests:ejb",
