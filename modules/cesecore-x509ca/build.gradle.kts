@@ -13,9 +13,9 @@ dependencies {
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.impl)
+    compileOnly(libs.bundles.cryptotokens)
     testImplementation(project(":modules:cesecore-entity"))
-    testImplementation(libs.cryptotokens.api)
+    testImplementation(libs.bundles.cryptotokens)
     testImplementation(libs.bundles.xmlpull)
     testRuntimeOnly(libs.cert.cvc)
 }

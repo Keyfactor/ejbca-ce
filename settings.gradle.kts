@@ -205,6 +205,12 @@ dependencyResolutionManagement {
             bundle("log4j", listOf("log4j-api", "log4j-core", "log4j-v12-api"))
             bundle("jacknji", listOf("jacknji11", "jna"))
             bundle("hibernate-validator", listOf("hibernate.validator", "el-impl"))
+
+            val cryptoTokensLibraries = mutableListOf("cryptotokens-api", "cryptotokens-impl")
+            if (edition == "ee") {
+                cryptoTokensLibraries.add("cryptotokens-impl-ee")
+            }
+            bundle("cryptotokens", cryptoTokensLibraries)
         }
     }
 }
