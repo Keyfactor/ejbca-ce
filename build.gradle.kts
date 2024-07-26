@@ -338,7 +338,6 @@ subprojects {
 
         // Configure test tasks to output some basic information about executed tests
         tasks.withType(Test::class) {
-            dependsOn(":cleanAllTestResults")
             doLast {
                 // print module's report location
                 val reportDir = reports.html.outputLocation.get().asFile.absolutePath;
@@ -361,8 +360,10 @@ tasks.register("summarizeTestResults") {
         val documentBuilder = documentBuilderFactory.newDocumentBuilder()
         val xPath = javax.xml.xpath.XPathFactory.newInstance().newXPath()
 
-        val testResultDirectories = project.subprojects.flatMap {
-            it.fileTree(it.layout.buildDirectory) {
+        val executedTestTasks = gradle.taskGraph.allTasks.filterIsInstance<Test>()
+
+        val testResultDirectories = executedTestTasks.flatMap { testTask ->
+            testTask.project.fileTree(testTask.project.layout.buildDirectory) {
                 include("**/test-results/**/*.xml")
             }.files
         }
@@ -390,25 +391,5 @@ tasks.register("summarizeTestResults") {
         }
 
         logger.lifecycle("Test summary: $totalExecuted executed, $totalPassed passed, $totalFailed failed, $totalSkipped skipped.")
-    }
-}
-
-tasks.register("cleanAllTestResults") {
-    description = "Cleans test results in all subprojects."
-    group = "reporting"
-    doLast {
-        val isCleanTaskUsed = gradle.startParameter.taskNames.any { it.contains("clean") }
-        if (!isCleanTaskUsed) {
-            project.subprojects.forEach { subproject ->
-                val testResultsDir = subproject.layout.buildDirectory.dir("test-results").get().asFile
-                val testReportsDir = subproject.layout.buildDirectory.dir("reports/tests").get().asFile
-                if (testResultsDir.exists()) {
-                    testResultsDir.deleteRecursively()
-                }
-                if (testReportsDir.exists()) {
-                    testReportsDir.deleteRecursively()
-                }
-            }
-        }
     }
 }
