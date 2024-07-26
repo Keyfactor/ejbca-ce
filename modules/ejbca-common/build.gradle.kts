@@ -27,8 +27,7 @@ dependencies {
     compileOnly(libs.x509.common.util)
     testImplementation(project(":modules:ejbca-ejb-interface"))
     testImplementation(project(":modules:ejbca-common-web"))
-    testImplementation(libs.cryptotokens.api)
-    testImplementation(libs.cryptotokens.impl)
+    testImplementation(libs.bundles.cryptotokens)
     testRuntimeOnly(libs.cert.cvc)
     testRuntimeOnly(libs.bundles.xmlpull)
 }

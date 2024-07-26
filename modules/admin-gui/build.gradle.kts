@@ -30,8 +30,7 @@ dependencies {
     compileOnly(libs.snakeyaml)
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.api)
-    compileOnly(libs.cryptotokens.impl)
+    compileOnly(libs.bundles.cryptotokens)
     compileOnly(libs.jldap)
     if (project.extra["edition"] == "ee") {
         compileOnly(project(":modules:peerconnector:common"))
