@@ -37,7 +37,7 @@
 				style="font-weight:bold;" />
 		</h:panelGroup>
 		<h:panelGroup>
-			<f:verbatim>&#xA0;</f:verbatim>
+			<h:outputText>&#xA0;</h:outputText>
 			<h:inputHidden id="workerClassPathSelectHidden"
 				value="#{editService.customWorkerType.autoClassPath}"
 				rendered="#{empty editService.manualCustomItems.workers}" />

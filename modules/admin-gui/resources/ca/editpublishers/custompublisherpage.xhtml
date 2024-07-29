@@ -70,9 +70,9 @@
 				<h:outputLabel value="#{web.text.USE}" rendered="#{editPublisher.customPublisherMBData.renderCustomCheckbox(property)}"/>
 				<h:inputTextarea cols="60" rows="12" value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" disabled="#{editPublisher.readOnly}"
 								 rendered="#{editPublisher.customPublisherMBData.renderCustomOutputTextArea(property)}"/>
-			<f:verbatim rendered="#{editPublisher.renderCustomHelp(property)}">
+			<h:outputText rendered="#{editPublisher.renderCustomHelp(property)}">
 				<br />
-			</f:verbatim>					 
+			</h:outputText>
 			<h:outputText value="#{editPublisher.getCustomHelpText(property)}" styleClass="smallHelp" rendered="#{editPublisher.renderCustomHelp(property)}"/>
 			</h:panelGroup>
 		</c:forEach>

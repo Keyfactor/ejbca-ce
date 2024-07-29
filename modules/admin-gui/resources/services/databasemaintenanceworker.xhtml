@@ -56,8 +56,6 @@
             disabled="#{not editService.hasEditRights}">
             <f:validateLongRange minimum="0"/>
         </h:inputText>
-        <f:verbatim>
-        </f:verbatim>
         <h:selectOneMenu id="databaseMaintenanceDelayUnitSelect"
             value="#{editService.databaseMaintenanceWorkerType.delayTimeUnit}"
             disabled="#{not editService.hasEditRights}">
