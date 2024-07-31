@@ -71,6 +71,7 @@ dependencyResolutionManagement {
             library("kerb-core", ":kerb-core:2.0.3")
             library("kerb-crypto", ":kerb-crypto:2.0.3")
             library("kerby-asn1", ":kerby-asn1:2.0.3")
+            library("keyfactor-commons-cli",":keyfactor-commons-cli:1.0.1")
             library("jsch", ":jsch:0.2.11")
             library("xstream", ":xstream:1.4.20")
             library("xpp3_min", ":xpp3_min:1.1.4c")
@@ -99,6 +100,14 @@ dependencyResolutionManagement {
             library("jboss-transaction-api_v12_spec", ":jboss-transaction-api_1.2_spec:1.1.1.Final")
             library("stax-ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
+            // test
+            library("junit", ":junit:4.13.2")
+            library("easymock",":easymock:5.2.0")
+            library("hamcrest",":hamcrest-core:1.3")
+            library("javassist",":javassist:3.29.2-GA")
+            library("objenesis",":objenesis:3.3")
+            library("slf4j-api",":slf4j-api:1.7.35")
+            library("slf4j-reload4j",":slf4j-reload4j:1.7.35")
         }
     }
 }
