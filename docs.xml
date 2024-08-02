@@ -40,7 +40,7 @@
            <include name="jakarta.jakartaee-api*.jar"/>
            <include name="jakarta.xml.bind-api*.jar"/>
            <include name="jakarta.xml.ws-api*.jar"/>
-           <include name="javax.jws-api*.jar"/>
+           <include name="jakarta.jws-api*.jar"/>
         </fileset>
        <fileset dir="${mod.path}/dist">
            <include name="ejbca-ejb.jar" />
