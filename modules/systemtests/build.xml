@@ -70,8 +70,8 @@
 	    <path refid="lib.json-simple.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.jee-client.classpath"/>
-		<path refid="lib.javax.activaton.classpath"/>
-		<path refid="lib.javax.mail.classpath"/>
+		<path refid="lib.angus.activation.classpath"/>
+		<path refid="lib.jakarta.mail.classpath"/>
 		<path refid="lib.jaxws-api.classpath"/>
 		<path refid="lib.jakarta.xml.soap-api.classpath"/>
         <path refid="systemtests.classpath.nojee"/>
@@ -86,7 +86,7 @@
 	</path>
 
 	<path id="common.classpath">
-	        <path refid="lib.json-simple.classpath"/>
+		<path refid="lib.json-simple.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath" />
 		<path refid="lib.hc.classpath"/>
