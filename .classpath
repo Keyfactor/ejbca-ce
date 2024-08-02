@@ -158,17 +158,16 @@
 	<classpathentry kind="lib" path="lib/jee/angus.activation-2.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.mail-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/javax.jws-api-1.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/jaxws-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.ws-api-4.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/javax.xml.soap-api-1.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/jee/jakarta.xml.soap-api-3.0.2"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.ejb-api-4.0.1.jar"/>
-	<classpathentry kind="lib" path="lib/jee/soapclient/jaxws-rt-2.3.6.jar"/>
+	<classpathentry kind="lib" path="lib/jee/soapclient/jaxws-rt-4.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/streambuffer-1.5.10.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/policy-2.7.10.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-1.5.3.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-3.2.0.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-4.0.0.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-api-2.1.0.jar" />
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.1.0.jar" />
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.1.0.jar" />
