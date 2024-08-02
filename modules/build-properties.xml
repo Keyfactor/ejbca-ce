@@ -385,7 +385,8 @@
 	<path id="lib.jakarta.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.mail-*.jar"/></path>
 
 	<path id="lib.javax.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jakarta.servlet-api-*.jar"/></path>
-	
+
+	<path id="lib.jaxb.core.classpath"><fileset dir="${ejbca.home}/lib/ext/wsgen" includes="jaxb-core-*.jar"/></path>
 	
 	<path id="wsgen.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/wsgen">

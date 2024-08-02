@@ -36,6 +36,7 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
+		<path refid="lib.jaxb.core.classpath"/>
 		<path location="${mod.ejbca-common.lib}" />
 		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<!-- Use by ? -->
