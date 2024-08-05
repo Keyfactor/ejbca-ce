@@ -33,7 +33,8 @@ dependencies {
     implementation(libs.swagger.core)
     implementation(libs.swagger.jaxrs)
     implementation(libs.swagger.models)
-    implementation(libs.swagger.integration)
+    runtimeOnly(libs.swagger.integration)
+    runtimeOnly(libs.classgraph)
 }
 
 sourceSets {
