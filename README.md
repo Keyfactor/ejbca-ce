@@ -11,7 +11,7 @@
 The open-source public key infrastructure (PKI) and certificate authority (CA) software **EJBCA** is one of the longest-running CA software projects. EJBCA is platform-independent and covers all your needs – from certificate enrollment, via certificate management, to certificate validation.
 
 EJBCA is developed in Java and runs on a JVM such as OpenJDK, available on most platforms, such as Linux and Windows. There are two versions of EJBCA:
-* **[EJBCA Community](https://www.ejbca.org/)** (EJBCA CE) - free and open source, OSI Certified Open Source Software, LGPL-licensed subset of SignServer Enterprise
+* **[EJBCA Community](https://www.ejbca.org/)** (EJBCA CE) - free and open source, OSI Certified Open Source Software, LGPL-licensed subset of EJBCA Enterprise
 * **[EJBCA Enterprise](https://www.keyfactor.com/products/ejbca-enterprise/)** (EJBCA EE) - commercial and Common Criteria certified 
 
 OSI Certified is a certification mark of the Open Source Initiative.
