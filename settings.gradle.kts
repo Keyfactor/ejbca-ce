@@ -59,7 +59,7 @@ dependencyResolutionManagement {
             library("swagger-jaxrs-jakarta", ":swagger-jaxrs2-jakarta:2.2.22")
             library("swagger-models-jakarta", ":swagger-models-jakarta:2.2.22")
             library("swagger-integration-jakarta", ":swagger-integration-jakarta:2.2.22")
-            library("classgraph", ":classgraph:4.8.174)
+            library("classgraph", ":classgraph:4.8.174")
             library("jackson-annotations", ":jackson-annotations:2.17.2")
             library("commons-fileupload2", ":commons-fileupload2-jakarta:2.0.0-M1")
             library("commons-fileupload2-core", ":commons-fileupload2-core:2.0.0-M2")
