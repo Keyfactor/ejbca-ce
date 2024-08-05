@@ -35,6 +35,7 @@ dependencies {
     implementation(libs.swagger.models)
     runtimeOnly(libs.swagger.integration)
     runtimeOnly(libs.classgraph)
+    runtimeOnly(libs.javassist)
 }
 
 sourceSets {
