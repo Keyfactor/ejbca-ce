@@ -101,7 +101,6 @@ dependencyResolutionManagement {
             library("jakarta.activation-api", ":jakarta.activation-api:2.1.0")
             library("jandex", ":jandex:2.1.3.Final")
             library("jakarta.persistence-api", ":jakarta.persistence-api:3.1.0")
-            library("jakarta.xml.bind-api", ":jakarta.xml.bind-api:4.0.2")
             library("jboss-transaction-api_v12_spec", ":jboss-transaction-api_1.2_spec:1.1.1.Final")
             library("stax-ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
