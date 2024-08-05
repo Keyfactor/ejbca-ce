@@ -70,7 +70,7 @@ dependencyResolutionManagement {
             library("ctlog", ":ctlog:0.1.7")
             library("commons-beanutils", ":commons-beanutils:1.9.4")
             library("commons-text", ":commons-text:1.10.0")
-            library("activation", ":activation:1.1.1")
+            library("angus.activation", ":angus.activation:2.0.2")
             library("myfaces-api", ":myfaces-api:4.0.2")
             library("kerb4j-server-common", ":kerb4j-server-common:0.1.2")
             library("kerb-core", ":kerb-core:2.0.3")
