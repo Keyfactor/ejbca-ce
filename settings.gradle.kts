@@ -87,6 +87,7 @@ dependencyResolutionManagement {
             library("wsdl4j", ":wsdl4j:1.6.3")
             library("jcip-annotations", ":jcip-annotations:1.0-1")
             library("jna", ":jna:5.12.1")
+            library("javassist", ":javassist:3.29.2-GA")
             // hibernate
             library("antlr", ":antlr:2.7.7")
             library("byte-buddy", ":byte-buddy:1.10.17")
