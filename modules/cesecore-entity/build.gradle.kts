@@ -4,7 +4,6 @@ plugins {
 
 dependencies {
     compileOnly(project(":modules:cesecore-common"))
-    compileOnly(libs.jaxws.api)
     compileOnly(libs.jakarta.xml.ws.api)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)

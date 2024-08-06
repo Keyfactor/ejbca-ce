@@ -17,7 +17,7 @@ dependencies {
     compileOnly(libs.commons.fileupload2.core)
     compileOnly(libs.commons.io)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.x509.common.util)
 }
 
