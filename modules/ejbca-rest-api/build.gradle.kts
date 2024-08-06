@@ -25,7 +25,7 @@ dependencies {
     compileOnly(libs.bcutil)
     compileOnly(libs.commons.fileupload2)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.x509.common.util)
     implementation(libs.commons.lang3.old)
     implementation(libs.reflections)
