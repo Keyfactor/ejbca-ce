@@ -46,7 +46,7 @@
 
 # Database connection URL.
 # This is the URL used to connect to the database, used to configure a new datasource in JBoss.
-# Default: jdbc:h2:~/ejbcadb;DB_CLOSE_DELAY=-1
+# Default: jdbc:h2:~/ejbcadb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca
 #database.url=jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
 #database.url=jdbc:postgresql://127.0.0.1/ejbca
