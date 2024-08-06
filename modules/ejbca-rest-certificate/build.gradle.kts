@@ -18,7 +18,7 @@ dependencies {
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.lang)
     compileOnly(libs.java.ee.api)
-    compileOnly(libs.jaxb.api)
+    compileOnly(libs.jakarta.xml.bind.api)
     compileOnly(libs.jackson.annotations)
     compileOnly(libs.x509.common.util)
 }
