@@ -8,7 +8,7 @@ dependencies {
     compileOnly(project(":modules:cesecore-ejb-interface"))
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:ejbca-ejb-interface"))
-    compileOnly(libs.activation)
+    compileOnly(libs.angus.activation)
     compileOnly(libs.java.ee.api)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
