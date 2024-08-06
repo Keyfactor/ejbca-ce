@@ -52,7 +52,7 @@ dependencies {
     compileOnly(libs.jakarta.activation.api)
     compileOnly(libs.jandex)
     compileOnly(libs.jakarta.persistence.api)
-    compileOnly(libs.jaxb.api)
+    compileOnly(libs.jakarta.xml.bind.api)
     compileOnly(libs.jaxb.runtime)
     compileOnly(libs.jboss.transaction.api.v12.spec)
     compileOnly(libs.stax.ex)
