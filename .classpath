@@ -157,7 +157,7 @@
 	<classpathentry kind="lib" path="lib/jee/jakarta.enterprise.cdi-api-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/angus.activation-2.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.mail-2.0.3.jar"/>
-	<classpathentry kind="lib" path="lib/jee/javax.jws-api-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jee/jakarta.jws-api-3.0.0.jar.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.ws-api-4.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.soap-api-3.0.2"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.ejb-api-4.0.1.jar"/>
