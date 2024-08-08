@@ -33,7 +33,7 @@ public class QueryCriteriaTest {
     private static Logger log = Logger.getLogger(QueryCriteriaTest.class);
 
 	private static final String BAD_QUERY_GENERATED = "Invalid query generated.";
-	private static final String BAD_QUERY_PARAMTERS = "Invalid paramter values stored in query.";
+	private static final String BAD_QUERY_PARAMTERS = "Invalid parameter values stored in query.";
 	private static final String DUMMY_VALUE_STR1 = "dummyValue1";
 	private static final String DUMMY_VALUE_STR2 = "dummyValue2";
 	private static final int DUMMY_VALUE_INT1 = 01234;
