@@ -1960,7 +1960,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         for (CertificateDataWrapper cdw : certificateDataWrappers) {
             final Certificate currentCert = cdw.getCertificate();
 
-            if (latest == null || CertTools.getNotBefore(currentCert).after(CertTools.getNotBefore(latest.getCertificate()))) {
+            if (latest == null
+                || (currentCert != null && CertTools.getNotBefore(currentCert).after(CertTools.getNotBefore(latest.getCertificate())))) {
                 latest = cdw;
             }
         }
