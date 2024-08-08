@@ -198,9 +198,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
 
     /**
-     * Get the certificate that was attached to the CMP request in it's extraCert filed.
+     * Get the certificate that was attached to the CMP request in it's extraCert field.
      *
-     * @return The certificate that was attached to the CMP request in it's extraCert filed
+     * @return The certificate that was attached to the CMP request in it's extraCert field
      */
     public Certificate getExtraCert() {
         return extraCert;
@@ -267,7 +267,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         List<X509Certificate> extraCertPath = getExtraCerts(msg);
         // The extraCert should itself be an end entity certificate, if there are more than one cert, find the end entity one
         if (extraCertPath != null && extraCertPath.size() > 1) {
-            // find the fist non CA certificate and assume this is the end entity extraCert
+            // find the first non CA certificate and assume this is the end entity extraCert
             for (X509Certificate cert : extraCertPath) {
                 if (!CertTools.isCA(cert)) {
                     extraCert = cert;

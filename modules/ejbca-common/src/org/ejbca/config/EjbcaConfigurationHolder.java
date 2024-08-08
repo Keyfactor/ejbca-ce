@@ -54,8 +54,6 @@ import org.cesecore.config.ConfigurationHolder;
  * to be able to parse values containing ${property}
  * 
  * See in-line comments below for the sources added to the configuration.
- * 
- * @version $Id$
  */
 public final class EjbcaConfigurationHolder {
 
@@ -197,7 +195,6 @@ public final class EjbcaConfigurationHolder {
      */
     public static Properties getAsProperties() {
         final Properties properties = new Properties();
-        @SuppressWarnings("unchecked")
         final Iterator<String> i = instance().getKeys();
         while (i.hasNext()) {
             final String key = i.next();
@@ -350,6 +347,7 @@ public final class EjbcaConfigurationHolder {
                 @Override
                 public void onEvent(ConfigurationBuilderEvent event) {
                     log.info("Loaded external configuration file: " + ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource()).getFileHandler().getFile().getAbsolutePath());
+                    logReloadedConfiguration(event);
                 }
             }
         );
@@ -359,6 +357,24 @@ public final class EjbcaConfigurationHolder {
         
         final PropertiesConfiguration config = builder.getConfiguration();
         return config;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static void logReloadedConfiguration(ConfigurationBuilderEvent event) {
+        if (log.isDebugEnabled()) {
+            final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource());                         
+            final String file = builder.getFileHandler().getFile().getAbsolutePath();
+            try {
+                final PropertiesConfiguration properties = builder.getConfiguration();
+                final Iterator<String> it = properties.getKeys();
+                while(it.hasNext()) {
+                    final String key = it.next();
+                    log.debug("Reloaded property '" + key + "' = '" + properties.getString(key) + "'");
+                }
+            } catch (ConfigurationException e) {
+                log.error("Failed to reload external configuration file: '" + file + "'");
+            }
+        }
     }
     
     private static class InternalPeriodicReloadingTrigger
