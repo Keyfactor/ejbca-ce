@@ -225,7 +225,7 @@ public abstract class BaseManagedBean implements Serializable {
     }
 
     /**
-     * Performs a redirect with the given parameters names and paramter values.
+     * Performs a redirect with the given parameters names and parameter values.
      *
      * @param url                    URL (without query string)
      * @param parameterKeysAndValues Alternating names and values. These are escaped.
