@@ -186,8 +186,8 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/commons-io-2.16.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
-	<classpathentry kind="lib" path="lib/ext/slf4j-api-1.7.35.jar"/>
-	<classpathentry kind="lib" path="lib/ext/slf4j-reload4j-1.7.35.jar"/>
+	<classpathentry kind="lib" path="lib/ext/slf4j-api-2.0.15.jar"/>
+	<classpathentry kind="lib" path="lib/ext/slf4j-reload4j-2.0.15.jar"/>
 	<classpathentry kind="lib" path="lib/jee/myfaces-api-4.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-lang-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.xml.bind-api-4.0.2.jar"/>
