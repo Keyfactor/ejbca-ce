@@ -39,7 +39,7 @@ public class TimeMatch extends BasicMatch {
 
     /** Represents the column names in (log,) UserData and ApprovalData tables. */
     private static final String[] MATCH_WITH_SQLNAMES = {
-        "", "", "timeCreated", "timeModified", "requestdate", "expiredate"
+        "", "", "timeCreated", "timeModified", "requestDate", "expireDate"
     };
 
     private final int matchwith;
