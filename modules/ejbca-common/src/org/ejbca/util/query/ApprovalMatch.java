@@ -35,10 +35,9 @@ public class ApprovalMatch extends BasicMatch {
     public static final int MATCH_WITH_STATUS                        = 7; 
     public static final int MATCH_WITH_REMAININGAPPROVALS            = 8;
 
-    /** These refer to column names in the database and are used for native SQL querying.
-     * Only endEntityProfileId MUST be in camel case as per current ORM definitions. */
+    /** These refer to column names in the database and are used for native SQL querying. */
     private static final String[] MATCH_WITH_SQLNAMES = {
-        "id", "approvalid", "approvaltype", "endEntityProfileId", "caid", "reqadmincertissuerdn", "reqadmincertsn", "status", "remainingapprovals"
+        "id", "approvalId", "approvalType", "endEntityProfileId", "cAId", "reqAdminCertIssuerDn", "reqAdminCertSn", "status", "remainingApprovals"
     };
 
     private int matchwith;
