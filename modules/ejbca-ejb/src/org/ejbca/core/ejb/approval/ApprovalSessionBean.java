@@ -479,15 +479,15 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 // No additional filtering
             } else if (!includeExpired) {
                 // Do not include expired requests
-                queryWrapper.add("expiredate >=? AND ", new Date().getTime());
+                queryWrapper.add("expireDate >=? AND ", new Date().getTime());
             } else if (includeExpired) {
-                queryWrapper.add("expiredate <? AND ", new Date().getTime());
+                queryWrapper.add("expireDate <? AND ", new Date().getTime());
             } else if (expiresBefore != null) {
                 // Only include expired requests
-                queryWrapper.add("expiredate <? AND ", new Date().getTime());
+                queryWrapper.add("expireDate <? AND ", new Date().getTime());
             }
             if (expiresBefore != null) {
-                queryWrapper.add("expiredate <? AND ", expiresBefore.getTime());
+                queryWrapper.add("expireDate <? AND ", expiresBefore.getTime());
             }
             // "STATUS_APPROVED" means that the request is still waiting to be executed by the requester
             queryWrapper.add(
@@ -498,7 +498,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     (includeExpired ? ", " + ApprovalDataVO.STATUS_EXPIRED + ", " + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED : "") +
                 "))"
             );
-            orderByString = "ORDER BY requestdate ASC"; // oldest first
+            orderByString = "ORDER BY requestDate ASC"; // oldest first
             first = false;
         }
         if (includeProcessed) {
@@ -507,16 +507,16 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
             queryWrapper.add("status IN (" + ApprovalDataVO.STATUS_EXECUTED + ", " + ApprovalDataVO.STATUS_EXECUTIONDENIED + ", "
                     + ApprovalDataVO.STATUS_EXECUTIONFAILED + ", " + ApprovalDataVO.STATUS_REJECTED + ")");
-            orderByString = "ORDER BY requestdate DESC"; // most recently created first
+            orderByString = "ORDER BY requestDate DESC"; // most recently created first
             first = false;
         }
         queryWrapper.add(")");
         
         if (startDate != null) {
-            queryWrapper.add(" AND requestdate >=? ", startDate.getTime());
+            queryWrapper.add(" AND requestDate >=? ", startDate.getTime());
         }
         if (endDate != null) {
-            queryWrapper.add(" AND requestdate <? ", endDate.getTime());
+            queryWrapper.add(" AND requestDate <? ", endDate.getTime());
         }
         if (subjectDn != null) {
             queryWrapper.add(" AND subjectDn LIKE '%' || ? || '%'", subjectDn);
@@ -525,7 +525,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             queryWrapper.add(" AND email LIKE '%' || ? || '%'", email);
         }
 
-        queryWrapper.add(" AND approvaltype NOT IN (" + ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN + ")"); // Excluding approval that are not related to RA
+        queryWrapper.add(" AND approvalType NOT IN (" + ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN + ")"); // Excluding approval that are not related to RA
 
         final List<ApprovalDataVO> ret = queryInternal(queryWrapper, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString,
                 orderByString);
