@@ -21,7 +21,7 @@ dependencies {
     compileOnly(libs.jackson.core)
     compileOnly(libs.jackson.databind)
     compileOnly(libs.swagger.annotations)
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.jakarta.xml.bind.api)
     compileOnly(libs.x509.common.util)
 }

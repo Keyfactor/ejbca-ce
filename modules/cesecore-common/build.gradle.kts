@@ -4,10 +4,9 @@ plugins {
 
 dependencies {
     compileOnly(libs.adsddl)
-    compileOnly(libs.java.ee.api)
-    compileOnly(libs.javax.jws.api)
-    compileOnly(libs.javax.xml.soap.api)
-    compileOnly(libs.jaxws.api)
+    compileOnly(libs.jakartaee.api)
+    compileOnly(libs.jakarta.jws.api)
+    compileOnly(libs.jakarta.xml.soap.api)
     compileOnly(libs.jakarta.xml.ws.api)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
