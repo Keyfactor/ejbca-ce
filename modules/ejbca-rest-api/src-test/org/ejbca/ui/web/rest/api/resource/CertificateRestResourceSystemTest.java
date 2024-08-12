@@ -1780,12 +1780,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private X509CRL getLatestCrl(final boolean delta) throws Exception {
         final String orderedIssuerDn = DnComponents.stringToBCDNString(testIssuerDn);
         final String deltaCrlParameter = (delta) ? "?deltacrl=true" : "";
+
         // get the created CRL
-        final Response getLatestCrlResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/getLatestCrl" + deltaCrlParameter).request().get();
-        assertEquals("Failed to retrieve latest CRL", 200, getLatestCrlResponse.getStatus());
-        final Object latestCrlDer = getLatestCrlResponse.readEntity(Map.class).get("crl");
-        assertNotNull("Response does not contain a CRL", latestCrlDer);
-        return CertTools.getCRLfromByteArray(Base64.decode(latestCrlDer.toString().getBytes()));
+        final Response latestCRLResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/getLatestCrl" + deltaCrlParameter).request().get();
+        assertEquals("Failed to retrieve latest CRL", 200, latestCRLResponse.getStatus());
+
+        final JSONObject latestCRLResponseAsJSON = (JSONObject) jsonParser.parse(latestCRLResponse.readEntity(String.class));
+        final Object latestCRL = latestCRLResponseAsJSON.get("crl");
+        assertNotNull("Response does not contain a CRL", latestCRL);
+
+        return CertTools.getCRLfromByteArray(Base64.decode(latestCRL.toString().getBytes()));
     }
 
     /**
