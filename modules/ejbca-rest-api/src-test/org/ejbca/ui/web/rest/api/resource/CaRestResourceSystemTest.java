@@ -20,23 +20,23 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
-import java.util.Map;
 import java.util.Random;
+import java.util.List;
+import java.util.ArrayList;
 
+import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.EntityPart;
+import jakarta.ws.rs.core.GenericEntity;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.StringBody;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -154,12 +154,12 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertEquals(Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
         assertProperJsonStatusResponse(expectedStatus, expectedVersion, expectedRevision, actualJsonString);
-    }    
+    }
 
     /**
      * Disables REST and then runs a simple REST access test which will expect status 403 when
      * service is disabled by configuration.
-     * @throws Exception 
+     * @throws Exception
      */
     @Test
     public void shouldRestrictAccessToRestResourceIfProtocolDisabled() throws Exception {
@@ -196,7 +196,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":0"));
-        
+
         // with delta
         responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
@@ -205,7 +205,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":2"));
     }
-    
+
     @Test
     public void testCreateCrlWithDeltaCrl() throws Exception {
         log.error("testCreateCrlWithDeltaCrl");
@@ -216,7 +216,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":0"));
-        
+
         // with delta
         responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
@@ -224,12 +224,12 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":{\"partition_5\":1,"));
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":2"));
-        
+
         // suspend two partition
         X509CAInfo cainfo = (X509CAInfo) caSession.getCAInfo(INTERNAL_ADMIN_TOKEN, TEST_ISSUER_DN2.hashCode());
         cainfo.setSuspendedCrlPartitions(2);
         caAdminSession.editCA(INTERNAL_ADMIN_TOKEN, cainfo);
-        
+
         // with delta
         responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
@@ -238,11 +238,11 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":3"));
     }
-    
+
     @Test
     public void testCreateCrlNoPartition() throws Exception {
         log.error("testCreateCrlNoPartition");
-        
+
         // first we generate base CRL without delta
         String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=false");
         assertTrue(responseBody, ("\"all_success\":true"));
@@ -250,8 +250,8 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_partition_crl_versions\":null"));
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":0")); // did not generate
-        
-        
+
+
         // with delta
         responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=true");
         assertTrue(responseBody, ("\"all_success\":true"));
@@ -260,29 +260,31 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertTrue(responseBody, ("\"latest_crl_version\":1"));
         assertTrue(responseBody, ("\"latest_delta_crl_version\":2")); // generated over base version
     }
-    
+
     @Test
     public void testCreateCrlInvalidIssuer() throws Exception {
         log.error("testCreateCrlInvalidIssuer");
-        
+
         WebTarget request = newRequest("/v1/ca/" + encodeUrl("CN=InvalidCa") + "/createcrl?deltacrl=false");
         Response actualResponse = request.request().post(null);
         String responseBody = actualResponse.readEntity(String.class);
         log.error("responseBody: " + responseBody);
         actualResponse.close();
         assertEquals(400, actualResponse.getStatus());
-        
+
     }
 
     @Test
     public void crlImportShouldReturnBadRequestOnNonExistingCa() throws Exception {
-        // given
+        // given: an invalid CA CN
         final String issuerDn = "CN=InvalidCa";
-        // when
-        final WebTarget request = newRequest(getImportCrlPath(issuerDn));
-        final Response actualResponse = request.request().post(null);
-        final String actualJsonString = actualResponse.readEntity(String.class);
-        actualResponse.close();
+
+        // when: importing CRL into a CA that doesn't exist.
+        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlPartitionIndex().build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(issuerDn));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        final String actualJsonString = crlImportResponse.readEntity(String.class);
+
         // then
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
                 "CA with DN: " + issuerDn + " does not exist.", actualJsonString);
@@ -291,28 +293,29 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     @Test
     public void crlImportShouldReturnBadRequestOnMissingFile() throws Exception {
         // when
-        final WebTarget request = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
-        final Response actualResponse = request.request().post(null);
-        final String actualJsonString = actualResponse.readEntity(String.class);
-        actualResponse.close();
+        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlPartitionIndex().build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        final String actualJsonString = crlImportResponse.readEntity(String.class);
+
         // then
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
-                "No file uploaded.", actualJsonString);
+                "No CRL file uploaded.", actualJsonString);
     }
 
     @Test
     public void crlImportShouldReturnBadRequestOnIncorrectFileFormFieldName() throws Exception {
         // given
-        File fileToUpload = new File(CRL_FILENAME);
-        fileToUpload.createNewFile();
-        MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
-        entityBuilder.addBinaryBody("invalidFormFieldName", fileToUpload, ContentType.DEFAULT_BINARY, CRL_FILENAME);
-        HttpEntity entity = entityBuilder.build();
-        // when
-        final HttpPost post = new HttpPost(getBaseUrl() + getImportCrlPath(TEST_ISSUER_DN1));
-        post.setEntity(entity);
-        final HttpResponse response = getHttpClient(true).execute(post);
-        final String actualJsonString = EntityUtils.toString(response.getEntity());
+        createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl");
+        final X509CRL x509Crl = getLatestCrl(TEST_ISSUER_DN1);
+        CaTestUtils.removeCrlByIssuerDn(TEST_ISSUER_DN1);
+        assertNull(getLatestCrl(TEST_ISSUER_DN1));
+
+        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl, "invalidFormFieldName").withCrlPartitionIndex().build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        final String actualJsonString = crlImportResponse.readEntity(String.class);
+
         // then
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
                 "No CRL file uploaded.", actualJsonString);
@@ -320,60 +323,44 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
     @Test
     public void crlImportShouldReturnBadRequestOnInvalidPartitionIndex() throws Exception {
-        // given
-        String negativeCrlPartitionIndex = "-1";
-        String nonNumericCrlPartitionIndex = "one";
+        // given: with invalid partition indexes, and valid crl file.
         String decimalCrlPartitionIndex = "3.14";
 
-        HttpEntity negativeCrlPartitionIndexEntity = MultipartEntityBuilder.create()
-                .addPart("crlPartitionIndex", new StringBody(negativeCrlPartitionIndex, ContentType.MULTIPART_FORM_DATA))
-                .build();
-        HttpEntity nonNumericCrlPartitionIndexEntity = MultipartEntityBuilder.create()
-                .addPart("crlPartitionIndex", new StringBody(nonNumericCrlPartitionIndex, ContentType.MULTIPART_FORM_DATA))
-                .build();
-        HttpEntity decimalCrlPartitionIndexEntity = MultipartEntityBuilder.create()
-                .addPart("crlPartitionIndex", new StringBody(decimalCrlPartitionIndex, ContentType.MULTIPART_FORM_DATA))
-                .build();
+        createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl");
+        final X509CRL x509Crl = getLatestCrl(TEST_ISSUER_DN1);
+        CaTestUtils.removeCrlByIssuerDn(TEST_ISSUER_DN1);
+        assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
-        // when negativeCrlPartitionIndex
-        final HttpPost post = new HttpPost(getBaseUrl() + getImportCrlPath(TEST_ISSUER_DN1));
-        post.setEntity(negativeCrlPartitionIndexEntity);
-        HttpResponse response = getHttpClient(true).execute(post);
-        String actualJsonString = EntityUtils.toString(response.getEntity());
-        // then
+        // when: negative number
+        Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("-1").build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        String actualJsonString = crlImportResponse.readEntity(String.class);
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
-                "Invalid CRL partition index: " + negativeCrlPartitionIndex + ", should be 0 or greater.", actualJsonString);
+                "Invalid CRL partition index: Partition index should be a number of 0 or greater.", actualJsonString);
 
-        // when nonNumericCrlPartitionIndex
-        post.setEntity(nonNumericCrlPartitionIndexEntity);
-        response = getHttpClient(true).execute(post);
-        actualJsonString = EntityUtils.toString(response.getEntity());
-        // then
+        // when: non-numeric number
+        crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("one").build();
+        crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        actualJsonString = crlImportResponse.readEntity(String.class);
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
-                "Invalid CRL partition index: " + nonNumericCrlPartitionIndex + ", should be 0 or greater.", actualJsonString);
+                "Invalid CRL partition index: Partition index should be a number of 0 or greater.", actualJsonString);
 
         // when decimalCrlPartitionIndex
-        post.setEntity(decimalCrlPartitionIndexEntity);
-        response = getHttpClient(true).execute(post);
-        actualJsonString = EntityUtils.toString(response.getEntity());
-        // then
+        crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("1.3").build();
+        crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        actualJsonString = crlImportResponse.readEntity(String.class);
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
-                "Invalid CRL partition index: " + decimalCrlPartitionIndex + ", should be 0 or greater.", actualJsonString);
+                "Invalid CRL partition index: Partition index should be a number of 0 or greater.", actualJsonString);
     }
 
     @Test
     public void crlImportShouldReturnBadRequestOnInvalidFileContent() throws Exception {
-        // given
-        File fileToUpload = new File(CRL_FILENAME);
-        fileToUpload.createNewFile(); // empty file
-        MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
-        entityBuilder.addBinaryBody("crlFile", fileToUpload, ContentType.DEFAULT_BINARY, CRL_FILENAME);
-        HttpEntity entity = entityBuilder.build();
-        // when
-        final HttpPost post = new HttpPost(getBaseUrl() + getImportCrlPath(TEST_ISSUER_DN1));
-        post.setEntity(entity);
-        final HttpResponse response = getHttpClient(true).execute(post);
-        final String actualJsonString = EntityUtils.toString(response.getEntity());
+        // given: that we have invalid file contents and import
+        final Entity crlImportRequestEntity = new CrlImportBuilder().withEmptyCrlFile().withCrlPartitionIndex().build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        final String actualJsonString = crlImportResponse.readEntity(String.class);
         // then
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
                 "Could not parse CRL. It must be in DER format.", actualJsonString);
@@ -381,15 +368,16 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
     @Test
     public void crlImportShouldReturnBadRequestWhenFileIsIssuedByAnotherCa() throws Exception {
-        // given a CRL issued by CA "A"
+        // given: we create a CRL issued by CA "A"
         createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl");
-        final X509CRL x509Crl = getLatestCrl(TEST_ISSUER_DN2);
-        final HttpEntity entity = prepareCrlImportEntity(x509Crl);
-        // when uploading the CRL to CA "B"
-        final HttpPost post = new HttpPost(getBaseUrl() + getImportCrlPath(TEST_ISSUER_DN1));
-        post.setEntity(entity);
-        final HttpResponse response = getHttpClient(true).execute(post);
-        final String actualJsonString = EntityUtils.toString(response.getEntity());
+        final X509CRL x509CrlForOtherCA = getLatestCrl(TEST_ISSUER_DN2);
+
+        // when: we try importing the CRL to CA "B"
+        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509CrlForOtherCA).withCrlPartitionIndex().build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        final String actualJsonString = crlImportResponse.readEntity(String.class);
+
         // then
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
                 "CRL is not issued by " + TEST_ISSUER_DN1, actualJsonString);
@@ -397,36 +385,38 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
     @Test
     public void crlImportShouldReturnBadRequestWhenUploadingAnOldCrl() throws Exception {
-        // given
+        // given: we create multiple CRL's
         createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl"); // CRL #1 - will attempt to upload again
-        final X509CRL x509Crl = getLatestCrl(TEST_ISSUER_DN1);
-        final HttpEntity entity = prepareCrlImportEntity(x509Crl);
+        final X509CRL oldX509Crl = getLatestCrl(TEST_ISSUER_DN1);
         createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl"); // CRL #2 - latest in DB
-        // when
-        final HttpPost post = new HttpPost(getBaseUrl() + getImportCrlPath(TEST_ISSUER_DN1));
-        post.setEntity(entity);
-        final HttpResponse response = getHttpClient(true).execute(post);
-        final String actualJsonString = EntityUtils.toString(response.getEntity());
+
+        // when: we try to import old CRL
+        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(oldX509Crl).withCrlPartitionIndex().build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+
         // then
+        final String actualJsonString = crlImportResponse.readEntity(String.class);
+        assertEquals("Bad Request was expected", Status.BAD_REQUEST.getStatusCode(), crlImportResponse.getStatus());
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
                 "CRL #1 or higher is already in the database.", actualJsonString);
     }
 
     @Test
     public void crlImportShouldCreateANewCrl() throws Exception {
-        // given
-        // create a CRL, store it to a file for the import test and delete the existing one from DB
+        // given: we create a CRL, store it to a file for the import test and delete the existing one from DB
         createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl");
         final X509CRL x509Crl = getLatestCrl(TEST_ISSUER_DN1);
         CaTestUtils.removeCrlByIssuerDn(TEST_ISSUER_DN1);
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
-        final HttpEntity entity = prepareCrlImportEntity(x509Crl);
-        // when
-        final HttpPost post = new HttpPost(getBaseUrl() + getImportCrlPath(TEST_ISSUER_DN1));
-        post.setEntity(entity);
-        final HttpResponse response = getHttpClient(true).execute(post);
+
+        // when: we import previously created CRL file
+        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withCrlPartitionIndex().build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+
         // then
-        assertEquals("CRL import failed", Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+        assertEquals("CRL import failed", Status.OK.getStatusCode(), crlImportResponse.getStatus());
         assertNotNull("New CRL was not returned by API /getLatestCrl", getLatestCrl(TEST_ISSUER_DN1));
     }
 
@@ -434,42 +424,75 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     public void crlImportShouldCreateCrlInSpecificPartition() throws Exception {
         // given
         int crlPartitionIndex = 2;
+
         // create a CRL, store it to a file for the import test and delete the existing one from DB
         createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl");
         final X509CRL x509Crl = getLatestCrl(TEST_ISSUER_DN1);
         CaTestUtils.removeCrlByIssuerDn(TEST_ISSUER_DN1);
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
-        final HttpEntity entity = prepareCrlImportEntity(x509Crl, crlPartitionIndex);
-        // when
-        final HttpPost post = new HttpPost(getBaseUrl() + getImportCrlPath(TEST_ISSUER_DN1));
-        post.setEntity(entity);
-        final HttpResponse response = getHttpClient(true).execute(post);
+
+        // when: we import previously created CRL file
+        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withCrlPartitionIndex(crlPartitionIndex).build();
+        System.out.println("---- " + crlImportRequestEntity.toString());
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+
         // then
-        assertEquals("CRL import failed", Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+        assertEquals("CRL import failed", Status.OK.getStatusCode(), crlImportResponse.getStatus());
         assertNotNull("New CRL was not returned by API /getLatestCrl", getLatestCrl(TEST_ISSUER_DN1, false, crlPartitionIndex));
     }
 
-    /**
-     * Prepares multipart form entity with parts for CRL file and crlPartitionIndex.
-     * @param x509Crl Certificate revocation list
-     * @param crlPartitionIndex CRL partition index
-     * @return Multipart form entity
-     */
-    private HttpEntity prepareCrlImportEntity(X509CRL x509Crl, int crlPartitionIndex) throws Exception {
-        Files.write(Paths.get(CRL_FILENAME), x509Crl.getEncoded());
-        MultipartEntityBuilder entityBuilder = MultipartEntityBuilder.create();
-        entityBuilder.addBinaryBody("crlFile", new File(CRL_FILENAME), ContentType.DEFAULT_BINARY, CRL_FILENAME);
-        entityBuilder.addPart("crlPartitionIndex", new StringBody(String.valueOf(crlPartitionIndex), ContentType.MULTIPART_FORM_DATA));
-        return entityBuilder.build();
-    }
+    public static class CrlImportBuilder {
+        private EntityPart crlPartitionIndexEP;
+        private EntityPart crlFileEP;
 
-    /**
-     * Prepares multipart form entity with parts for CRL file and crlPartitionIndex = 0.
-     * @param x509Crl Certificate revocation list
-     * @return Multipart form entity
-     */
-    private HttpEntity prepareCrlImportEntity(X509CRL x509Crl) throws Exception {
-        return prepareCrlImportEntity(x509Crl, CertificateConstants.NO_CRL_PARTITION);
+        public CrlImportBuilder() {}
+
+        public CrlImportBuilder withCrlPartitionIndex(final int crlPartitionIndex) throws IOException {
+            this.crlPartitionIndexEP = EntityPart.withName("crlPartitionIndex").content((Integer) crlPartitionIndex, Integer.class).build();
+            return this;
+        }
+
+        public CrlImportBuilder withCrlPartitionIndex() throws IOException {
+            return this.withCrlPartitionIndex(0);
+        }
+
+        public CrlImportBuilder withInvalidCrlPartitionIndex(final String invalidCrlPartitionIndex) throws IOException {
+            this.crlPartitionIndexEP = EntityPart.withName("crlPartitionIndex").content(invalidCrlPartitionIndex).build();
+            return this;
+        }
+
+        public CrlImportBuilder withCrlFile(final X509CRL crlFile) throws CRLException, IOException {
+            return withCrlFile(crlFile, "crlFile");
+        }
+
+        public CrlImportBuilder withCrlFile(final X509CRL crlFile, final String fieldName) throws CRLException, IOException {
+            Files.write(Paths.get(CRL_FILENAME), crlFile.getEncoded());
+            this.crlFileEP = EntityPart.withName(fieldName).fileName(CRL_FILENAME).content(new File(CRL_FILENAME)).build();
+            return this;
+        }
+
+        public CrlImportBuilder withEmptyCrlFile() throws CRLException, IOException {
+            File fileToUpload = new File(CRL_FILENAME);
+            fileToUpload.createNewFile();
+            Files.write(Paths.get(CRL_FILENAME), "".getBytes());
+            this.crlFileEP = EntityPart.withName("crlFile").fileName(CRL_FILENAME).content(new File(CRL_FILENAME)).build();
+            return this;
+        }
+
+        public Entity build(){
+            final List<EntityPart> entityParts = new ArrayList<>();
+
+            if (crlFileEP != null) {
+                entityParts.add(crlFileEP);
+            }
+
+            if (crlPartitionIndexEP != null) {
+                entityParts.add(crlPartitionIndexEP);
+            }
+            final GenericEntity<List<EntityPart>> genericEntity = new GenericEntity<>(entityParts){};
+            return Entity.entity(genericEntity, MediaType.MULTIPART_FORM_DATA);
+        }
     }
 
     /**
