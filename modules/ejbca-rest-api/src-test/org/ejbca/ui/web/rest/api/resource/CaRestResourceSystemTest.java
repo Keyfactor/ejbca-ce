@@ -45,6 +45,8 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -478,11 +480,17 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
      * @return X509CRL certificate revocation list
      */
     private X509CRL getLatestCrl(String issuerDn, boolean deltaCrl, int crlPartitionIndex) throws Exception {
+        final JSONParser jsonParser = new JSONParser();
+
         final WebTarget latestCrlRequest = newRequest("/v1/ca/" + encodeUrl(issuerDn) +
                 "/getLatestCrl?deltaCrl=" + deltaCrl + "&crlPartitionIndex=" + crlPartitionIndex);
-        final Response latestCrlResponse = latestCrlRequest.request().get();
-        final Object latestCrlDer = latestCrlResponse.readEntity(Map.class).get("crl");
-        return latestCrlDer == null ? null : CertTools.getCRLfromByteArray(Base64.decode(latestCrlDer.toString().getBytes()));
+
+        final Response latestCRLResponse = latestCrlRequest.request().get();
+        final JSONObject latestCRLResponseAsJSON = (JSONObject) jsonParser.parse(latestCRLResponse.readEntity(String.class));
+
+        final Object latestCRL = latestCRLResponseAsJSON.get("crl");
+
+        return latestCRL == null ? null : CertTools.getCRLfromByteArray(Base64.decode(latestCRL.toString().getBytes()));
     }
 
     /**
