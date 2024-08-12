@@ -1552,17 +1552,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (int size : SIZES_RSA) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + size, AlgorithmConstants.KEYALGORITHM_RSA + " " + size));
         }
-        try {
-            final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) || AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()));
-            final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
-            Arrays.sort(keys);
-            for (final String name : keys) {
-                availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " " + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(name))));
-            }
-        } catch (AuthorizationDeniedException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Ignoring exception " + e.getMessage());
-            }
+        final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap();
+        final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+        Arrays.sort(keys);
+        for (final String name : keys) {
+            availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " " + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(name))));
         }
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmConstants.KEYALGORITHM_ED448));
