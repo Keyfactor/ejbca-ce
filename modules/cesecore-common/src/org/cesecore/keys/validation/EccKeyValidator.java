@@ -75,7 +75,7 @@ public class EccKeyValidator extends KeyValidatorBase {
     public void init() {
         super.init();
         if (null == data.get(CURVES)) {
-            setCurves(new ArrayList<String>());
+            setCurves(new ArrayList<>());
         }
         if (data.get(USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE) == null) {
             setUseFullPublicKeyValidationRoutine(true);
@@ -112,7 +112,7 @@ public class EccKeyValidator extends KeyValidatorBase {
         curves.setHasMultipleValues(true);
         curves.setRequired(true);
         uiModel.add(curves);
-        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE, isUseFullPublicKeyValidationRoutine()) {
+        uiModel.add(new DynamicUiProperty<>(Boolean.class, USE_FULL_PUBLIC_KEY_VALIDATION_ROUTINE, isUseFullPublicKeyValidationRoutine()) {
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
