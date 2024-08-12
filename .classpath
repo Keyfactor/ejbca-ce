@@ -126,7 +126,7 @@
 	<classpathentry kind="lib" path="lib/jacknji11-1.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/ext/hamcrest-core-1.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-4.13.2.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.ws.rs-api-3.1.0.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.ws.rs-api-4.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/json-patch-1.13.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-6.2.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-client-api-6.2.9.Final.jar"/>
