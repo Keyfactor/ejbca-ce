@@ -103,12 +103,12 @@ public class EccKeyValidator extends KeyValidatorBase {
             }
         });
         uiModel.add(settingsTemplate);
-        final DynamicUiProperty<String> curves = new DynamicUiProperty<String>(String.class, CURVES, getCurvesAsString(), 
-                new ArrayList<>(AlgorithmTools.getFlatNamedEcCurvesMap(false).keySet())) {
+        final DynamicUiProperty<String> curves = new DynamicUiProperty<>(String.class, CURVES, getCurvesAsString(),
+                new ArrayList<>(AlgorithmTools.getFlatNamedEcCurvesMap().keySet())) {
                     @Override
                     public boolean isDisabled() { return isCurvesDisabled(); }
         };
-        curves.setLabels(AlgorithmTools.getFlatNamedEcCurvesMap(false));
+        curves.setLabels(AlgorithmTools.getFlatNamedEcCurvesMap());
         curves.setHasMultipleValues(true);
         curves.setRequired(true);
         uiModel.add(curves);
