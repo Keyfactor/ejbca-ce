@@ -280,7 +280,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         final String issuerDn = "CN=InvalidCa";
 
         // when: importing CRL into a CA that doesn't exist.
-        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlPartitionIndex().build();
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(issuerDn));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -293,7 +293,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     @Test
     public void crlImportShouldReturnBadRequestOnMissingFile() throws Exception {
         // when
-        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlPartitionIndex().build();
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -311,7 +311,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         CaTestUtils.removeCrlByIssuerDn(TEST_ISSUER_DN1);
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
-        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl, "invalidFormFieldName").withCrlPartitionIndex().build();
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl, "invalidFormFieldName").withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -332,7 +332,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
         // when: negative number
-        Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("-1").build();
+        Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("-1").build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -340,14 +340,14 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
                 "Invalid CRL partition index: Partition index should be a number of 0 or greater.", actualJsonString);
 
         // when: non-numeric number
-        crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("one").build();
+        crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("one").build();
         crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         actualJsonString = crlImportResponse.readEntity(String.class);
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
                 "Invalid CRL partition index: Partition index should be a number of 0 or greater.", actualJsonString);
 
         // when decimalCrlPartitionIndex
-        crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("1.3").build();
+        crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("1.3").build();
         crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         actualJsonString = crlImportResponse.readEntity(String.class);
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
@@ -357,13 +357,25 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     @Test
     public void crlImportShouldReturnBadRequestOnInvalidFileContent() throws Exception {
         // given: that we have invalid file contents and import
-        final Entity crlImportRequestEntity = new CrlImportBuilder().withEmptyCrlFile().withCrlPartitionIndex().build();
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFileContent("invalid").withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
         // then
         assertProperJsonExceptionErrorResponse(Status.BAD_REQUEST.getStatusCode(),
-                "Could not parse CRL. It must be in DER format.", actualJsonString);
+                "Error while importing CRL: java.io.IOException: malformed PEM data: no header found", actualJsonString);
+    }
+
+    @Test
+    public void crlImportShouldReturnExceptionWithEmptyFileContent() throws Exception {
+        // given: that we have an empty file contents and import
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withEmptyCrlFile().withCrlPartitionIndex().build();
+        final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
+        final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
+        final String actualJsonString = crlImportResponse.readEntity(String.class);
+        // then
+        assertProperJsonExceptionErrorResponse(Status.INTERNAL_SERVER_ERROR.getStatusCode(),
+                "General failure.", actualJsonString);
     }
 
     @Test
@@ -373,7 +385,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         final X509CRL x509CrlForOtherCA = getLatestCrl(TEST_ISSUER_DN2);
 
         // when: we try importing the CRL to CA "B"
-        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509CrlForOtherCA).withCrlPartitionIndex().build();
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509CrlForOtherCA).withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -391,7 +403,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl"); // CRL #2 - latest in DB
 
         // when: we try to import old CRL
-        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(oldX509Crl).withCrlPartitionIndex().build();
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(oldX509Crl).withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
 
@@ -411,7 +423,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
         // when: we import previously created CRL file
-        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withCrlPartitionIndex().build();
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
 
@@ -432,7 +444,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
         // when: we import previously created CRL file
-        final Entity crlImportRequestEntity = new CrlImportBuilder().withCrlFile(x509Crl).withCrlPartitionIndex(crlPartitionIndex).build();
+        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withCrlPartitionIndex(crlPartitionIndex).build();
         System.out.println("---- " + crlImportRequestEntity.toString());
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
@@ -442,41 +454,45 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNotNull("New CRL was not returned by API /getLatestCrl", getLatestCrl(TEST_ISSUER_DN1, false, crlPartitionIndex));
     }
 
-    public static class CrlImportBuilder {
+    public static class CrlImportEntityBuilder {
         private EntityPart crlPartitionIndexEP;
         private EntityPart crlFileEP;
 
-        public CrlImportBuilder() {}
+        public CrlImportEntityBuilder() {}
 
-        public CrlImportBuilder withCrlPartitionIndex(final int crlPartitionIndex) throws IOException {
+        public CrlImportEntityBuilder withCrlPartitionIndex(final int crlPartitionIndex) throws IOException {
             this.crlPartitionIndexEP = EntityPart.withName("crlPartitionIndex").content((Integer) crlPartitionIndex, Integer.class).build();
             return this;
         }
 
-        public CrlImportBuilder withCrlPartitionIndex() throws IOException {
+        public CrlImportEntityBuilder withCrlPartitionIndex() throws IOException {
             return this.withCrlPartitionIndex(0);
         }
 
-        public CrlImportBuilder withInvalidCrlPartitionIndex(final String invalidCrlPartitionIndex) throws IOException {
+        public CrlImportEntityBuilder withInvalidCrlPartitionIndex(final String invalidCrlPartitionIndex) throws IOException {
             this.crlPartitionIndexEP = EntityPart.withName("crlPartitionIndex").content(invalidCrlPartitionIndex).build();
             return this;
         }
 
-        public CrlImportBuilder withCrlFile(final X509CRL crlFile) throws CRLException, IOException {
+        public CrlImportEntityBuilder withCrlFile(final X509CRL crlFile) throws CRLException, IOException {
             return withCrlFile(crlFile, "crlFile");
         }
 
-        public CrlImportBuilder withCrlFile(final X509CRL crlFile, final String fieldName) throws CRLException, IOException {
+        public CrlImportEntityBuilder withCrlFile(final X509CRL crlFile, final String fieldName) throws CRLException, IOException {
             Files.write(Paths.get(CRL_FILENAME), crlFile.getEncoded());
             this.crlFileEP = EntityPart.withName(fieldName).fileName(CRL_FILENAME).content(new File(CRL_FILENAME)).build();
             return this;
         }
 
-        public CrlImportBuilder withEmptyCrlFile() throws CRLException, IOException {
-            File fileToUpload = new File(CRL_FILENAME);
-            fileToUpload.createNewFile();
-            Files.write(Paths.get(CRL_FILENAME), "".getBytes());
-            this.crlFileEP = EntityPart.withName("crlFile").fileName(CRL_FILENAME).content(new File(CRL_FILENAME)).build();
+        public CrlImportEntityBuilder withEmptyCrlFile() throws CRLException, IOException {
+            return this.withCrlFileContent("");
+        }
+
+        public CrlImportEntityBuilder withCrlFileContent(final String content) throws IOException {
+            Files.write(Paths.get(CRL_FILENAME), content.getBytes());
+            this.crlFileEP = EntityPart.withName("crlFile").fileName(CRL_FILENAME)
+                    .content(new File(CRL_FILENAME))
+                    .mediaType(MediaType.MULTIPART_FORM_DATA).build();
             return this;
         }
 
