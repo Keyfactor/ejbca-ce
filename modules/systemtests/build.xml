@@ -36,6 +36,7 @@
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.ldap.classpath"/>
 		<path refid="lib.xstream.classpath"/>
+		<path refid="lib.jaxb.core.classpath"/>
 		<path location="${mod.ejbca-common.lib}" />
 		<path location="${mod.ejbca-ws-client-gen.lib}" />
 		<!-- Use by ? -->
@@ -72,7 +73,7 @@
 		<path refid="lib.jee-client.classpath"/>
 		<path refid="lib.angus.activation.classpath"/>
 		<path refid="lib.jakarta.mail.classpath"/>
-		<path refid="lib.jaxws-api.classpath"/>
+		<path refid="lib.jakarta.xml.ws-api.classpath"/>
 		<path refid="lib.jakarta.xml.soap-api.classpath"/>
         <path refid="systemtests.classpath.nojee"/>
 		<path location="${mod.cesecore-x509ca.lib}"/>

@@ -5,7 +5,7 @@ plugins {
 dependencies {
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:cesecore-common"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.jaxb.runtime)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
