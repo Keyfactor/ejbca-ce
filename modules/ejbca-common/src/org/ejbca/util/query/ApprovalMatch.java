@@ -37,7 +37,7 @@ public class ApprovalMatch extends BasicMatch {
 
     /** These refer to column names in the database and are used for native SQL querying. */
     private static final String[] MATCH_WITH_SQLNAMES = {
-        "id", "approvalId", "approvalType", "endEntityProfileId", "cAId", "reqAdminCertIssuerDn", "reqAdminCertSn", "status", "remainingApprovals"
+        "id", "approvalid", "approvaltype", "endEntityProfileId", "caid", "reqadmincertissuerdn", "reqadmincertsn", "status", "remainingapprovals"
     };
 
     private int matchwith;
