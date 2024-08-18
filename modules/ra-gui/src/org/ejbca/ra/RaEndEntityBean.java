@@ -58,16 +58,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -214,6 +205,35 @@ public class RaEndEntityBean implements Serializable {
         }
     }
 
+    protected boolean isEmpty(final String s) {
+        return s == null && s.trim().length() == 0 || s.trim().equalsIgnoreCase("EMPTY");
+    }
+
+    protected int compareOptionStrings(final String a, final String b) {
+        if (isEmpty(a) && isEmpty(b)) {
+            return 0;
+        }
+        if (isEmpty(a)) {
+            return -1;
+        }
+        if (isEmpty(b)) {
+            return 1;
+        }
+        return a.compareToIgnoreCase(b) == 0 ?
+                0 :
+                a.compareToIgnoreCase(b);
+    }
+
+    protected Comparator<Map.Entry<Integer, String>> getEntityComparator() {
+        return (a, b) -> compareOptionStrings(a.getValue(), b.getValue());
+    }
+
+    protected Map<Integer, String> getOptionMap(final Map<Integer, String> map) {
+        Map<Integer, String> optionMap = new LinkedHashMap<>();
+        map.entrySet().stream().sorted(getEntityComparator()).forEach(e -> optionMap.put(e.getKey(), e.getValue()));
+        return optionMap;
+    }
+
     private void reload() {
         if (username != null) {
             final EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
@@ -229,10 +249,10 @@ public class RaEndEntityBean implements Serializable {
                 authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
                 authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
                 authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
-                endEntityProfiles = authorizedEndEntityProfiles.getIdMap()
+                endEntityProfiles = getOptionMap(authorizedEndEntityProfiles.getIdMap()
                         .entrySet()
                         .stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getName()));
+                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getName())));
 
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
