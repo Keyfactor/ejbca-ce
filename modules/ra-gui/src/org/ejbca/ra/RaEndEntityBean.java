@@ -1286,8 +1286,8 @@ public class RaEndEntityBean implements Serializable {
      */
     public Map<Integer, String> getCertificateProfiles() {
         List<Integer> availableCpIds = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCertificateProfileIds();
-        return availableCpIds.stream()
-                .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName()));
+        return getOptionMap(availableCpIds.stream()
+                .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName())));
     }
     
     /**
