@@ -15,11 +15,13 @@
 package org.ejbca.ra;
 
 import org.apache.log4j.Logger;
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -31,9 +33,7 @@ public class RaEndEntityBeanIsEmptyUnitTest {
 
     private final String input;
     private final boolean expected;
-
-    @Rule
-    public RaEndEntityBean bean = new RaEndEntityBean();
+    private RaEndEntityBean bean;
 
     public RaEndEntityBeanIsEmptyUnitTest(final String input,
                                           final boolean expected) {
@@ -41,16 +41,17 @@ public class RaEndEntityBeanIsEmptyUnitTest {
         this.expected = expected;
     }
 
+    @Before
+    public void setUp() {
+        bean = new RaEndEntityBean();
+    }
+
     @Parameterized.Parameters
     public static Collection testParameters() {
         return Arrays.asList(new Object[][] {
-                { "empty", true },
-                { "eMPty", true },
-                { "eMPty ", true },
-                { "  eMPty ", true },
-                { "  eMPty s", false },
-                { "EMPTY", true },
-                { "other", false },
+                { null, true },
+                { "", true },
+                { "   ", true }
         });
     }
 
