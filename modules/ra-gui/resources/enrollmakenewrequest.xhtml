@@ -312,7 +312,7 @@
                         <h:outputText value="#{msg.enroll_provide_request_info}" />
                     </h2>
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.requestInfoRendered}">
-						<h:panelGroup id="subjectDNSection" layout="block">
+						<h:panelGroup id="subjectDNSection" layout="block" styleClass="internal-frame">
 							<h3>
 								<h:outputText value="#{msg.enroll_required_subject_dn_attributes}" rendered="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances.size() gt 0}"/>
 							</h3>
@@ -590,7 +590,7 @@
 							</fieldset>
 						</h:panelGroup>
 						
-						<h:panelGroup id="nameConstraintSection" layout="block" styleClass="pure-control-group" 
+						<h:panelGroup id="nameConstraintSection" layout="block" styleClass="internal-frame" 
 									rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() or 
 													enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}">
 							
@@ -872,6 +872,7 @@
 					
 					<h:panelGroup layout="block" styleClass="internal-frame" id="sshCertificateDataGroup">
 						
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="sshKeyId" value="#{msg.enroll_ssh_key_id} *" />
 							<h:inputText id="sshKeyId" value="#{enrollMakeNewRequestBean.sshKeyId}" 
@@ -888,12 +889,13 @@
 								autocomplete="off">
 							</h:inputText>
 						</h:panelGroup>
+						</h:panelGroup>
 						
-						<h:panelGroup id="sshPrincipalsSection" layout="block">
+						<h:panelGroup id="sshPrincipalsSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.sshPrincipals.size() gt 0}">
 						    <h3>
-						        <h:outputText value="#{msg.enroll_ssh_principals}" rendered="#{enrollMakeNewRequestBean.sshPrincipals.size() gt 0}"/>
+						        <h:outputText value="#{msg.enroll_ssh_principals}" />
 						    </h3>
-						    <h:panelGroup layout="block" styleClass="internal-frame-with-left-margin"  rendered="#{enrollMakeNewRequestBean.sshPrincipals.size() gt 0}">
+						    <h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						        <ui:repeat id="sshPrincipal"
 						            value="#{enrollMakeNewRequestBean.sshPrincipals}"
 						            var="instance"
@@ -924,6 +926,8 @@
 						        </ui:repeat>
 						    </h:panelGroup>
 						</h:panelGroup>
+						
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="criticalOptionsSourceAddress" value="#{msg.enroll_ssh_critical_source_address}" 
@@ -980,6 +984,9 @@
 										value="#{enrollMakeNewRequestBean.sshAdditionalExtensions}">
 	                                 </h:inputTextarea>
 	                    </h:panelGroup> -->
+						
+						</h:panelGroup>
+						
 					</h:panelGroup>
 					
 				</h:panelGroup>
@@ -1092,10 +1099,12 @@
 						</h:commandButton>
 						<h:panelGroup 
 						    id="editValidityPanel"
-						    styleClass="pure-control-group">
+						    layout="block" styleClass="internal-frame">
 						    <h3>
                                 <h:outputText value="#{msg.enroll_custom_values}" rendered="#{enrollMakeNewRequestBean.setCustomValidity}" />
                             </h3>
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
+							<h:panelGroup layout="block" styleClass="pure-control-group">
 						    <h:outputLabel 
 						        for="validityField" 
 						        value="#{msg.enroll_set_validity}"
@@ -1109,12 +1118,15 @@
 						        value="#{enrollMakeNewRequestBean.validity}">
 						        <f:ajax event="keyup" render=":requestInfoForm:enrollButtons validityFieldHelpText" execute="@this" /> 
 						    </h:inputText>
+							<br />
 						    <h:outputText 
 						        id="validityFieldHelpText" 
 						        for="validityField"
-						        styleClass="showErrorMessage"
+						        styleClass="ra-outputText ra-MakeRequest"
 						        rendered="#{enrollMakeNewRequestBean.setCustomValidity}"
 						        value="#{enrollMakeNewRequestBean.validityHelpMessage}" />
+							</h:panelGroup>
+							</h:panelGroup>
 						</h:panelGroup>
 						
 						<h:panelGroup 
