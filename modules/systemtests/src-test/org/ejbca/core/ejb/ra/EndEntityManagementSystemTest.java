@@ -179,7 +179,7 @@ public class EndEntityManagementSystemTest extends CaTestCase {
             params.add(EjbcaEventTypes.RA_EDITENDENTITY.toString());
             List<? extends AuditLogEntry> auditLogsGenerated = ejbcaAuditorSession.selectAuditLog(
                     admin, IntegrityProtectedDevice.class.getSimpleName(), 0, 100,
-                    "a.timeStamp >= ?0 AND a.eventType = ?1", "a.timeStamp DESC", params);
+                    "a.timeStamp >= ?1 AND a.eventType = ?2", "a.timeStamp DESC", params);
 
             final String redactedSanChange = "subjectAltName=" + LogRedactionUtils.REDACTED_CONTENT + " -> " + LogRedactionUtils.REDACTED_CONTENT;
             assertEquals("Only one AuditLog should be returned", 1, auditLogsGenerated.size());
