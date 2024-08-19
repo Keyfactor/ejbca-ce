@@ -15,11 +15,13 @@
 package org.ejbca.ra;
 
 import org.apache.log4j.Logger;
-import org.junit.Rule;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import java.util.Arrays;
+import java.util.Collection;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -32,30 +34,45 @@ public class RaEndEntityBeanCompareOptionStringsUnitTest {
     private final String first;
     private final String second;
     private final ExpectedCompareResult expectedCompareResult;
+    private RaEndEntityBean bean;
 
     public static enum ExpectedCompareResult {
-        EQUAL,
-        LESS_THAN,
-        GREATER_THAN
-    }
+        EQUAL("0"),
+        LESS_THAN("a negative number"),
+        GREATER_THAN("a positive number");
 
-    @Rule
-    public RaEndEntityBean bean = new RaEndEntityBean();
+        private final String description;
+
+        ExpectedCompareResult(final String description) {
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return description;
+        }
+
+    }
 
     public RaEndEntityBeanCompareOptionStringsUnitTest(final String first,
                                                        final String second,
-                                                       final CompareResult expectedCompareResult) {
+                                                       final ExpectedCompareResult expectedCompareResult) {
         this.first = first;
         this.second = second;
         this.expectedCompareResult = expectedCompareResult;
+    }
+
+    @Before
+    public void setUp() {
+        bean = new RaEndEntityBean();
     }
 
     @Parameterized.Parameters
     public static Collection testParameters() {
         return Arrays.asList(new Object[][] {
                 { "EMPTY", "EMPTY", ExpectedCompareResult.EQUAL },
-                { "EMPTY", "abc", ExpectedCompareResult.LESS_THAN },
-                { "EMPTY", "Def", ExpectedCompareResult.LESS_THAN },
+                { "EMPTY", "abc", ExpectedCompareResult.GREATER_THAN },
+                { "EMPTY", "fgh", ExpectedCompareResult.LESS_THAN },
                 { "Def", "abc", ExpectedCompareResult.GREATER_THAN },
                 { "Abc", "abc", ExpectedCompareResult.LESS_THAN }
         });
@@ -63,16 +80,17 @@ public class RaEndEntityBeanCompareOptionStringsUnitTest {
 
     @Test
     public void testCompareOptionStrings() {
-        var actual = bean.compareOptionStrings(first, second);
+        int actual = bean.compareOptionStrings(first, second);
+        String msg = "\nfirst = " + first + ",\nsecond = " + second + ",\nactual = " + actual + ",\nexpected " + expectedCompareResult;
         switch (expectedCompareResult) {
             case EQUAL:
-                assertEquals(0, actual);
+                assertEquals(msg, 0, actual);
                 break;
             case LESS_THAN:
-                assertTrue(actual < 0);
+                assertTrue(msg, actual < 0);
                 break;
             case GREATER_THAN:
-                assertTrue(actual > 0);
+                assertTrue(msg, actual > 0);
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + expectedCompareResult);

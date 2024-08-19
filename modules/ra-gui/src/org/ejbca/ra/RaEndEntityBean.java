@@ -206,7 +206,7 @@ public class RaEndEntityBean implements Serializable {
     }
 
     protected boolean isEmpty(final String s) {
-        return s == null && s.trim().length() == 0 || s.trim().equalsIgnoreCase("EMPTY");
+        return s == null || s.trim().length() == 0;
     }
 
     protected int compareOptionStrings(final String a, final String b) {
@@ -219,9 +219,8 @@ public class RaEndEntityBean implements Serializable {
         if (isEmpty(b)) {
             return 1;
         }
-        return a.compareToIgnoreCase(b) == 0 ?
-                0 :
-                a.compareToIgnoreCase(b);
+        int c = a.compareToIgnoreCase(b);
+        return c == 0 ? a.compareTo(b) : c;
     }
 
     protected Comparator<Map.Entry<Integer, String>> getEntityComparator() {
