@@ -993,6 +993,6 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         params.add(event);
 
         return ejbcaAuditorSession.selectAuditLog(intadmin, DEVICE_NAME, 0, 100,
-                                                  "a.timeStamp >= ?0 AND a.eventType = ?1", "a.timeStamp DESC", params);
+                                                  "a.timeStamp >= ?1 AND a.eventType = ?2", "a.timeStamp DESC", params);
     }
 }
