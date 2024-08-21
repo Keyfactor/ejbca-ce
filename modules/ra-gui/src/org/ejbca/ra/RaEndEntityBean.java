@@ -205,31 +205,11 @@ public class RaEndEntityBean implements Serializable {
         }
     }
 
-    protected boolean isEmpty(final String s) {
-        return s == null || s.trim().length() == 0;
-    }
-
-    protected int compareOptionStrings(final String a, final String b) {
-        if (isEmpty(a) && isEmpty(b)) {
-            return 0;
-        }
-        if (isEmpty(a)) {
-            return -1;
-        }
-        if (isEmpty(b)) {
-            return 1;
-        }
-        int c = a.compareToIgnoreCase(b);
-        return c == 0 ? a.compareTo(b) : c;
-    }
-
-    protected Comparator<Map.Entry<Integer, String>> getEntityComparator() {
-        return (a, b) -> compareOptionStrings(a.getValue(), b.getValue());
-    }
-
     protected Map<Integer, String> getOptionMap(final Map<Integer, String> map) {
         Map<Integer, String> optionMap = new LinkedHashMap<>();
-        map.entrySet().stream().sorted(getEntityComparator()).forEach(e -> optionMap.put(e.getKey(), e.getValue()));
+        map.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(String.CASE_INSENSITIVE_ORDER))
+                .forEach(e -> optionMap.put(e.getKey(), e.getValue()));
         return optionMap;
     }
 
