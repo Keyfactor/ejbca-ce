@@ -148,26 +148,29 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     private RAInterfaceBean raBean;
     
     // Authentication check and audit log page access request
-    @PostConstruct    
-    public void initialize() throws Exception {
-        
-        if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
-        }
-        
-        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        
-        ejbcaWebBean = getEjbcaWebBean();
-        
-        globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
-                AccessRulesConstants.REGULAR_CREATEENDENTITY);
-        
+    @PostConstruct
+    public void initialize() throws EndEntityException {
 
-        raBean = SessionBeans.getRaBean(request);
-        raBean.initialize(ejbcaWebBean);
-        
-        RequestHelper.setDefaultCharacterEncoding(request);
-        initUserData();
+        try {
+            if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+                throw new AuthorizationDeniedException("You are not authorized to view this page.");
+            }
+
+            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+
+            ejbcaWebBean = getEjbcaWebBean();
+
+            globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
+                    AccessRulesConstants.REGULAR_CREATEENDENTITY);
+
+            raBean = SessionBeans.getRaBean(request);
+            raBean.initialize(ejbcaWebBean);
+
+            RequestHelper.setDefaultCharacterEncoding(request);
+            initUserData();
+        } catch (Exception e) {
+            throw new EndEntityException("Error while initializing the class " + this.getClass().getCanonicalName(), e);
+        }
     }
 
     public String getSelectedSubjectAltName() {

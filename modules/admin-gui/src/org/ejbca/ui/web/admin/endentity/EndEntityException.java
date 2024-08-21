@@ -15,7 +15,7 @@ package org.ejbca.ui.web.admin.endentity;
 /**
  * Exception class used when error happens in end entity creation (admin web)
  */
-public class EndEntityException extends Exception {
+public class EndEntityException extends RuntimeException {
     
     private static final long serialVersionUID = 1L;
 
