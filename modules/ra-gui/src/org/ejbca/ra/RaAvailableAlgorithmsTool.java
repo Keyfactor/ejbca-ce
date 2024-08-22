@@ -57,7 +57,7 @@ public class RaAvailableAlgorithmsTool {
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final Set<String> ecChoices = new HashSet<>();
                 if (certificateProfile.getAvailableEcCurvesAsList().contains(CertificateProfile.ANY_EC_CURVE)) {
-                    for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap(false).keySet()) {
+                    for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap().keySet()) {
                         if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
                             continue;
                         }
