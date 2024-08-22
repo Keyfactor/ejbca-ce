@@ -436,10 +436,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_EC) ||
                     certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECDSA)    ) {
                 ret.add(new SelectItem(CertificateProfile.ANY_EC_CURVE, getEjbcaWebBean().getText("AVAILABLEECDSABYBITS")));
-                namedEcCurvesMap.putAll(AlgorithmTools.getOnlyNamedEcCurvesMap(false));
+                namedEcCurvesMap.putAll(AlgorithmTools.getOnlyNamedEcCurvesMap());
             }
             if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-                namedEcCurvesMap.putAll(AlgorithmTools.getNamedGostCurvesMap(false));
+                namedEcCurvesMap.putAll(AlgorithmTools.getNamedGostCurvesMap());
             }
             final String[] keys = namedEcCurvesMap.keySet().toArray(new String[0]);
             Arrays.sort(keys);
