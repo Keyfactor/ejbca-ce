@@ -2,9 +2,9 @@
 apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
-  name: {{ include "ejbca-community-helm.fullname" . }}
+  name: {{ include "ejbca.fullname" . }}
   labels:
-    {{- include "ejbca-community-helm.labels" . | nindent 4 }}
+    {{- include "ejbca.labels" . | nindent 4 }}
 spec:
 {{- if .Values.podDisruptionBudget.minAvailable }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
@@ -13,5 +13,5 @@ spec:
   maxUnavailable: {{ .Values.podDisruptionBudget.maxUnavailable }}
 {{- end }}
   selector:
-    matchLabels: {{- include "ejbca-community-helm.selectorLabels" . | nindent 6 }}
+    matchLabels: {{- include "ejbca.selectorLabels" . | nindent 6 }}
 {{- end }}
