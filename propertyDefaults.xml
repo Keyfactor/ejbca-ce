@@ -129,19 +129,19 @@
 	<property name="certstore.enabled" value="true" />
 	<property name="certstore.contextroot" value="/ejbca/publicweb/certificates" />	
 
-	<!-- set hibernate dialect -->
-	<!-- <condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>
+	<!-- Set hibernate dialect except for Mariadb/MySQL since they have separate dialects, but can't be separated by database.name.
+		Hibernate 6 can choose the dialect automatically, so we don't need to specify it for MariaDB/MySQL. It should be possible to
+		let Hibernate choose in the case of all of the database types, but that would first need more testing. -->
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.DerbyDialect"><equals arg1="${database.name}" arg2="derby"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"><equals arg1="${database.name}" arg2="hsqldb"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"><equals arg1="${database.name}" arg2="h2"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.community.dialect.InformixDialect"><equals arg1="${database.name}" arg2="informix"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.community.dialect.IngresDialect"><equals arg1="${database.name}" arg2="ingres"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect"><equals arg1="${database.name}" arg2="mssql"/></condition>
-	<condition property="hibernate.dialect" value="org.hibernate.dialect.MariaDBDialect"><equals arg1="${database.name}" arg2="mysql"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"><equals arg1="${database.name}" arg2="oracle"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"><equals arg1="${database.name}" arg2="postgres"/></condition>
 	<condition property="hibernate.dialect" value="org.hibernate.dialect.SybaseDialect"><equals arg1="${database.name}" arg2="sybase"/></condition>
-	<fail unless="hibernate.dialect" message="Unsupported database type '${database.name}'."/> -->
 
 	<!-- We use a valid connection sql to make JBoss auto-recreate destroyed database connections. This SQL is different on DB2 and Oracle -->
 	<condition property="database.valid.connection.sql" value="select 1 from sysibm.sysdummy1"><equals arg1="${database.name}" arg2="db2"/></condition>
