@@ -273,7 +273,7 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
             params.add(EjbcaEventTypes.CA_SIGNCMS.toString());
             List<? extends AuditLogEntry> auditLogsGenerated = ejbcaAuditorSession.selectAuditLog(
                     admin, DEVICE_NAME, 0, 100,
-                    "a.timeStamp >= ?0 AND a.eventType = ?1", "a.timeStamp DESC", params);
+                    "a.timeStamp >= ?1 AND a.eventType = ?2", "a.timeStamp DESC", params);
 
             assertEquals("Only one AuditLog should be returned", 1, auditLogsGenerated.size());
             assertTrue("Should not contain subjectDN", !auditLogsGenerated.get(0).getMapAdditionalDetails().toString().contains(suppliedDn));
