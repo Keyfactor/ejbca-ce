@@ -1915,34 +1915,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-
-            // Counting the number of non normal CRLData rows
-            final Query query = entityManager.createQuery("SELECT count(*) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
-            final long countOfRowsToBeNormalized = (long) query.getSingleResult();            
-            
-            final long startDataNormalization = System.currentTimeMillis();
-            
-            // Check whether it is an MSSQL database. If yes, don't normalize in chunks
-            final String dbType = DatabaseConfiguration.getDatabaseName();
-            if (MSSQL.equals(dbType)) {
-                upgradeSession.fixPartitionedCrls(0, true);
-            } else {
-                // Normalization for non-MSSQL databases is done in chunks in case number of rows are huge in CRLData table.
-                // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
-                // See ECA-10712 for more info.
-                for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
-                    upgradeSession.fixPartitionedCrls(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE, false);
-                    
-                }
-                // Do fix the remaining if any
-                final Query normalizeData = entityManager.createQuery(
-                        "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
-                log.debug("Executing SQL query: " + normalizeData);
-                normalizeData.executeUpdate();
-                log.info("Successfully normalized " + countOfRowsToBeNormalized + " rows in CRLData. Completed in "
-                        + (System.currentTimeMillis() - startDataNormalization) + " ms.");
-            }
-            
+            upgradeSession.fixPartitionedCrls();
             fixPartitionedCrlIndexes();
         } catch (AuthorizationDeniedException | UpgradeFailedException e) {
             log.error(e);
@@ -2187,6 +2160,38 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     /**
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes and the release of the metadata locks on CRLData.
+     */
+    @Override
+    public void fixPartitionedCrls() throws UpgradeFailedException {
+        // Counting the number of non normal CRLData rows
+        final Query query = entityManager.createQuery("SELECT count(*) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
+        final long countOfRowsToBeNormalized = (long) query.getSingleResult();
+
+        final long startDataNormalization = System.currentTimeMillis();
+
+        // Check whether it is an MSSQL database. If yes, don't normalize in chunks
+        final String dbType = DatabaseConfiguration.getDatabaseName();
+        if (MSSQL.equals(dbType)) {
+            fixPartitionedCrls2(0, true);
+        } else {
+            // Normalization for non-MSSQL databases is done in chunks in case number of rows are huge in CRLData table.
+            // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
+            // See ECA-10712 for more info.
+            for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
+                fixPartitionedCrls2(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE, false);
+            }
+            // Do fix the remaining if any
+            final Query normalizeData = entityManager.createQuery(
+                    "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
+            log.debug("Executing SQL query: " + normalizeData);
+            normalizeData.executeUpdate();
+            log.info("Successfully normalized " + countOfRowsToBeNormalized + " rows in CRLData. Completed in "
+                    + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+        }
+    }
+
+    /**
      * Try to update the database to make it possible to use 'Partitioned CRLs' on existing installations using
      * default database indexes by modifying the <code>CRLData</code> table.
      *
@@ -2194,15 +2199,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * <code>(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)</code> and
      * <code>(issuerDN, crlPartitionIndex, cRLNumber)</code>. See ECA-8680 for more details.
      *
-     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
-     *
      * @return true if migration should be considered complete and the <code>lastPostUpgradedToVersion</code>
      * value in the database should be incremented.
      * @throws UpgradeFailedException if upgrade fails
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Override
-    public void fixPartitionedCrls(final int limit, final boolean isMSSQL) throws UpgradeFailedException {
+    private void fixPartitionedCrls2(final int limit, final boolean isMSSQL) throws UpgradeFailedException {
         try {
             // Do the whole normalization at once in the case of MSSQL
             if (isMSSQL) {
