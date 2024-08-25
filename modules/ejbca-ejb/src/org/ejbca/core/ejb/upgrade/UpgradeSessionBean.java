@@ -285,7 +285,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return getGlobalUpgradeConfiguration().getPostUpgradeStarted();
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public boolean setPostUpgradeStarted(final long startTimeMs) {
         final GlobalUpgradeConfiguration globalUpgradeConfiguration = getGlobalUpgradeConfiguration();
@@ -724,7 +723,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     private boolean postMigrateDatabase781() {
         log.info("Starting post upgrade to 7.8.1");
         List<?> ids;
@@ -759,7 +757,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     private boolean postMigrateDatabase830() {
         log.info("Starting post upgrade to 8.3.0");
        
@@ -787,7 +784,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *  from the AcmeAuthorizationData rawData into the separate DB columns for indexing.
      */
     @SuppressWarnings("unchecked")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     private boolean postMigrateDatabase710() {
         log.info("Starting post upgrade to 7.10.0");
         
@@ -1121,7 +1117,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase624() throws UpgradeFailedException {
         // Check if there the default responder has been set. If not, try setting it using the old value.
@@ -1145,7 +1140,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Access rules have also been added for read only rights to parts of the GUI.
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase640() throws UpgradeFailedException {
         //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
@@ -1166,7 +1160,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase642() throws UpgradeFailedException {
         addReadOnlyRules642();
@@ -1182,7 +1175,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase651() throws UpgradeFailedException {
         CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
@@ -1224,7 +1216,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase660() throws UpgradeFailedException {
         log.debug("migrateDatabase660: Upgrading roles with approval rules");
@@ -1380,7 +1371,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase680() throws UpgradeFailedException {
         log.debug("migrateDatabase680: Upgrading roles, rules and role members.");
@@ -1561,7 +1551,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Upgrading System configuration and certificate profiles with CT log label system
      */
     @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6101() throws UpgradeFailedException {
         log.debug("migrateDatabase6100: Upgrading CT logs");
@@ -1661,7 +1650,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * on remote RA instances. All should be allowed by default to not cause any regressions. The rules are
      * only relevant for RA Peer connector roles.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6110() throws UpgradeFailedException {
         log.debug("migrateDatabase6110: Adding new rules for protocol access on remote RA instances.");
@@ -1711,7 +1699,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws InternalKeyBindingNameInUseException 
      * 
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6120() {
         log.debug("migrateDatabase6120: Importing OCSP extensions from ocsp.properties file and UnidFnr trust dir (if available)");
@@ -1725,7 +1712,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * migrateDatabase6110) on remote RA instances. Should be allowed by default to not cause any regressions. 
      * This rules is only relevant for RA Peer connector roles.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6140() throws UpgradeFailedException {
         log.debug("migrateDatabase6140: Adding new rule for SCEP protocol access on remote RA instances.");
@@ -1748,7 +1734,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * All the CCE will get a new required flag with the default value set to true.
      *  
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6150() throws UpgradeFailedException {
         log.debug("migrateDatabase6150: Adding new field (required) for custom certificate extensions.");
@@ -2255,7 +2240,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Replaces a database index. Called by {@link #fixPartitionedCrlIndexes}.
      * Runs in a new transaction because the queries will fail if the index does not exist.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IndexUpgradeResult upgradeIndex(final String oldIndexName, final String tableName, final String createIndexQuery) {
         try {
@@ -2399,7 +2383,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * @throws UpgradeFailedException if upgrade fails
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase781() throws UpgradeFailedException {
         final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
