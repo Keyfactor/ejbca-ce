@@ -475,7 +475,7 @@
 
 	<path id="lib.jpa.classpath">
         <fileset dir="${ejbca.home}/lib/hibernate">
-            <include name="antlr-*.jar"/>
+            <include name="antlr4-runtime-*.jar"/>
         	<include name="byte-buddy*.jar"/>
             <include name="classmate*.jar"/>
             <include name="dom4j-*.jar"/>
@@ -489,7 +489,6 @@
         	<include name="jakarta.persistence*.jar"/>
             <include name="jakarta.xml.bind-api*.jar"/>
         	<include name="jaxb-runtime*.jar"/>
-<!--            <include name="jboss-logging-*.jar"/>-->
             <include name="jboss-transaction-api*.jar"/>
         	<include name="stax-ex*.jar"/>
         	<include name="txw2*.jar"/>
