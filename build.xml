@@ -8,6 +8,7 @@
 	
     <!-- set global properties for this build -->
     <property name="tmp" value="${ejbca.home}/tmp" />
+	<property name="eardd.src" value="${tmp}/ear" />
     <property name="lib" value="${ejbca.home}/lib" />
     <property name="dist.dir" location="${ejbca.home}/dist" />
 	
@@ -188,7 +189,6 @@
 	</macrodef>
 
     <target name="condition.pluginIsJarBased">
-		<property file="${ejbca.plugin.property.file}"/>
         <condition property="pluginIsJarBased">
             <not>
 				<isset property="plugin.ejbca.ant.file"/>
@@ -199,8 +199,8 @@
     <target name="build-one-plugin" depends="condition.pluginIsJarBased, include-plugin-from-jar, build-one-plugin-from-source" />
 
   <target name="include-plugin-from-jar" if="pluginIsJarBased">
-	<property file="${ejbca.plugin.property.file}"/>
-	<fail message="File '${ejbca.plugin.property.file}' lacks a property setting for 'plugin.ejbca.lib.dir'!">
+    <loadproperties srcfile="${tmp}/plugin.properties"/>
+    <fail message="Property 'plugin.ejbca.lib.dir' is missing!">
             <condition>
                 <not>
                     <isset property="plugin.ejbca.lib.dir"/>
@@ -216,8 +216,7 @@
 
   <target name="build-one-plugin-from-source" unless="pluginIsJarBased">
 		<echo message="Plugin Ant build file = ${plugin.ejbca.ant.file}"/>
-		<echo message="Plugin properties:" />
-		<echoproperties prefix="plugin.ejbca"/>
+	    <loadproperties srcfile="${tmp}/plugin.properties"/>
 		<fail message="Property 'plugin.ejbca.ant.file' is missing!">
 			<condition>
 				<not>
@@ -250,12 +249,7 @@
 		<mkdir dir="${ejbca.plugin.tmp.path}"/>
 		<dirname property="plugin.ejbca.ant.dirname" file="${plugin.ejbca.ant.file}"/>
 		<basename property="plugin.ejbca.ant.basename" file="${plugin.ejbca.ant.file}"/>
-      <echo message="!!!!! (1) ${plugin.ejbca.ant.file}" />
-	  <echo message="!!!!! (1) ${plugin.ejbca.ant.basename}" />
-	  <echo message="!!!!! (1) ${plugin.ejbca.ant.dirname}" />
-      <echo message="!!!!! (1) ${plugin.ejbca.ant.target}" />
-	  <echo message="!!!!! (1) ejbca.plugin.conf.path = ${ejbca.plugin.conf.path}" />
-	  <echo message="!!!!! (1) ejbca.tmp.path = ${ejbca.plugin.tmp.path}" />
+
 		<ant antfile="${plugin.ejbca.ant.basename}"
 			 dir="${plugin.ejbca.ant.dirname}"
 			 inheritAll="false"
@@ -267,95 +261,20 @@
 			<property name="ejbca.hibernate"  value="${hibernate.dialect}"/>
 			<property name="ejbca.gen.path"   value="${ejbca.plugin.gen.path}"/>
 			<property name="ejbca.tmp.path"   value="${ejbca.plugin.tmp.path}"/>
-			<property name="ejbca.home"       value="{ejbca.home}"/>
+			<property name="ejbca.home"       value="${ejbca.home}"/>
 		</ant>
-	    <echo message="!!!!! Ant-call succeeded?" />
-<!--
-	    <script language="javascript"> <![CDATA[
-	        var antcall = project.createTask ("ant");
-
-	        // The minimum configuration: a path to an "ant" build file
-	        antcall.setAntfile (project.getProperty ("plugin.ejbca.ant.file"));
-
-	        // Check for possible non-default "ant" target
-	        var build_target = project.getProperty ("plugin.ejbca.ant.target");
-	        if (build_target != null) {
-	            antcall.setTarget (build_target);
-	        }
-
-	        // Check for possible custom properties
-			var properties = project.getProperties ();
-		    var keys = properties.keys ();
-		    while (keys.hasMoreElements ()) {
-	        var key = keys.nextElement ();
-		        if (key.startsWith ("plugin.ejbca.ant.custom.")) {
-		            var custom_prop = antcall.createProperty ();
-		            custom_prop.setName (key);
-		            custom_prop.setValue (properties.get (key));
-		        }
-		    }
-	    	
-            // The class-path to it all
-		    var myref = new org.apache.tools.ant.taskdefs.Ant.Reference ();
-		    myref.setRefId ("ejbca.plugin.classpath");
-	        var prop = antcall.createProperty ();
-	        prop.setName ("ejbca.classpath");
-	        prop.setRefid (myref);
-
-           // The full path to "application.xml"
-	        prop = antcall.createProperty ();
-	        prop.setName ("ejbca.app.xml");
-	        prop.setValue (project.getProperty ("eardd.src") + "/META-INF/application.xml");
-
-			// The database type in case the plugin wants to extend etc.
-	    	prop = antcall.createProperty ();
-		    prop.setName ("ejbca.dbtype");
-		    prop.setValue (project.getProperty ("database.name"));
-	    	
-			// The datasource for using with persistence.xml (hibernate)
-	    	prop = antcall.createProperty ();
-		    prop.setName ("ejbca.datasource");
-		    prop.setValue (project.getProperty ("datasource.jndi-name-prefix") + project.getProperty ("datasource.jndi-name"));
-
-			// The hibernate dialect in case the plugin wants to use hibernate.
-			prop = antcall.createProperty ();
-		    prop.setName ("ejbca.hibernate");
-		    prop.setValue (project.getProperty ("hibernate.dialect"));
-
-			// The path to generate code to
-			prop = antcall.createProperty ();
-		    prop.setName ("ejbca.gen.path");
-		    prop.setValue (project.getProperty ("ejbca.plugin.gen.path"));
-
-	    	// A path to use as you like
-			prop = antcall.createProperty ();
-		    prop.setName ("ejbca.tmp.path");
-		    prop.setValue (project.getProperty ("ejbca.plugin.tmp.path"));
-
-			// The path to the EJBCA install directory
-			prop = antcall.createProperty ();
-		    prop.setName ("ejbca.home");
-    		prop.setValue (project.getProperty ("ejbca.home"));
-
-
-	    	// Remove all properties the plugin doesn't need...
-			antcall.setInheritAll (false);
-	        antcall.setInheritRefs (false);
-		    antcall.perform ();
-	]]> </script>
--->
     </target>
 
 	<target name="plugin-bootstrap-build" if="ejbca.plugin.collection">
 	    <!-- Called once immediately before "ejbca.ear" creation if there are any plugins to build -->
 		<echo message="Plugins found!"/>
     	<mkdir dir="${ejbca.plugin.gen.path}/lib"/>
-
-		<echo message="!!!!! (100) ejbca.plugin.collection  = ${ejbca.plugin.collection}" />
-		<echo message="!!!!! (101) ejbca.plugin.conf.path   = ${ejbca.plugin.conf.path}" />
-
-		<delete file="plugin.properties"/>
-		<echoproperties destfile="plugin.properties" prefix="plugin.ejbca.ant.custom " />
+		<delete file="${tmp}/plugin.properties"/>
+		<echoproperties destfile="${tmp}/plugin.properties">
+			<propertyset>
+				<propertyref prefix="plugin.ejbca.ant.custom"/>
+			</propertyset>
+		</echoproperties>
 		<apply executable="ant" dir="${ejbca.plugin.conf.path}">
 			<arg value="-f"/>
 			<arg value="${ant.file}"/>
@@ -365,30 +284,6 @@
 				<include name="*.properties"/>
 			</fileset>
 		</apply>
-		<delete file="plugin.properties"/>
-        <!--
-		<script language="javascript"> <![CDATA[
-			var path = project.getProperty ("ejbca.plugin.collection");
-
-			// Build one plugin at a time
-			while (path != null) {
-				var i = path.indexOf (java.io.File.pathSeparatorChar);
-				var plugin_file = path;
-				if (i > 0) {
-					plugin_file = path.substring (0, i);
-					path = path.substring (i + 1);
-				} else {
-					path = null;
-				}
-				var antcall = project.createTask ("antcall");
-				antcall.setTarget ("build-one-plugin");
-				var prop = antcall.createParam ();
-				prop.setName ("ejbca.plugin.property.file");
-				prop.setValue (plugin_file);
-				antcall.perform ();
-			}
-	]]> </script>
-		-->
     </target>
     
 	<target name="va_replacings_in_application.xml">
@@ -431,7 +326,6 @@
         </condition>
         <echo message="in-test-mode: ${in-test-mode}"/>
 	    <property name="caear" value="${dist.dir}/ejbca.ear" />
-		<property name="eardd.src" value="${tmp}/ear" />
 		<!-- Make sure we have an application.xml since we want to specify base URLs. Configure enabled modules. -->
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" overwrite="true" flatten="true" failonerror="true"/>
