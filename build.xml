@@ -215,36 +215,62 @@
   </target>
 
   <target name="build-one-plugin-from-source" unless="pluginIsJarBased">
-        <echo message="Processing plugin file: '${ejbca.plugin.property.file}'"/>
-        <property file="${ejbca.plugin.property.file}"/>
-        <fail message="File '${ejbca.plugin.property.file}' lacks a property setting for 'plugin.ejbca.ant.file'!">
-            <condition>
-                <not>
-                    <isset property="plugin.ejbca.ant.file"/>
-                </not>
-            </condition>
-        </fail>
-        <path id="ejbca.plugin.classpath">
-            <fileset dir="${lib}">
-                <include name="*.jar"/>
-            </fileset>
-            <fileset dir="${ejbca.home}/modules/dist">
-                <include name="*.jar"/>
-            </fileset>
-            <fileset dir="${dist.dir}">
-                <include name="*.jar"/>
-            </fileset>
-            <path refid="lib.ejbca-common-web.classpath"/>
-            <path refid="lib.log4j.classpath"/>
-            <path refid="lib.servlet.classpath"/>
-            <path refid="lib.commons-lang.classpath"/>
-            <path refid="lib.commons-fileupload.classpath"/>
-            <path refid="lib.jee.classpath"/>
-            <path refid="lib.bouncycastle.classpath"/>
-            <path refid="lib.ldap.classpath"/>
-        </path>
-    	<delete dir="${ejbca.plugin.tmp.path}"/>
-    	<mkdir dir="${ejbca.plugin.tmp.path}"/>
+		<echo message="Plugin Ant build file = ${plugin.ejbca.ant.file}"/>
+		<echo message="Plugin properties:" />
+		<echoproperties prefix="plugin.ejbca"/>
+		<fail message="Property 'plugin.ejbca.ant.file' is missing!">
+			<condition>
+				<not>
+					<isset property="plugin.ejbca.ant.file"/>
+				</not>
+			</condition>
+		</fail>
+
+		<path id="ejbca.plugin.classpath">
+			<fileset dir="${lib}">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${ejbca.home}/modules/dist">
+				<include name="*.jar"/>
+			</fileset>
+			<fileset dir="${dist.dir}">
+				<include name="*.jar"/>
+			</fileset>
+			<path refid="lib.ejbca-common-web.classpath"/>
+			<path refid="lib.log4j.classpath"/>
+			<path refid="lib.servlet.classpath"/>
+			<path refid="lib.commons-lang.classpath"/>
+			<path refid="lib.commons-fileupload.classpath"/>
+			<path refid="lib.jee.classpath"/>
+			<path refid="lib.bouncycastle.classpath"/>
+			<path refid="lib.ldap.classpath"/>
+		</path>
+		<echo message="ejbca.plugin.tmp.path = ${ejbca.plugin.tmp.path}"/>
+		<delete dir="${ejbca.plugin.tmp.path}"/>
+		<mkdir dir="${ejbca.plugin.tmp.path}"/>
+		<dirname property="plugin.ejbca.ant.dirname" file="${plugin.ejbca.ant.file}"/>
+		<basename property="plugin.ejbca.ant.basename" file="${plugin.ejbca.ant.file}"/>
+      <echo message="!!!!! (1) ${plugin.ejbca.ant.file}" />
+	  <echo message="!!!!! (1) ${plugin.ejbca.ant.basename}" />
+	  <echo message="!!!!! (1) ${plugin.ejbca.ant.dirname}" />
+      <echo message="!!!!! (1) ${plugin.ejbca.ant.target}" />
+	  <echo message="!!!!! (1) ejbca.plugin.conf.path = ${ejbca.plugin.conf.path}" />
+	  <echo message="!!!!! (1) ejbca.tmp.path = ${ejbca.plugin.tmp.path}" />
+		<ant antfile="${plugin.ejbca.ant.basename}"
+			 dir="${plugin.ejbca.ant.dirname}"
+			 inheritAll="false"
+			 inheritRefs="false">
+			<property name="ejbca.classpath"  refid="ejbca.plugin.classpath"/>
+			<property name="ejbca.app.xml"    value="${eardd.src}/META-INF/application.xml"/>
+			<property name="ejbca.dbtype"     value="${database.name}"/>
+			<property name="ejbca.datasource" value="${datasource.jndi-name-prefix}${datasource.jndi-name}"/>
+			<property name="ejbca.hibernate"  value="${hibernate.dialect}"/>
+			<property name="ejbca.gen.path"   value="${ejbca.plugin.gen.path}"/>
+			<property name="ejbca.tmp.path"   value="${ejbca.plugin.tmp.path}"/>
+			<property name="ejbca.home"       value="{ejbca.home}"/>
+		</ant>
+	    <echo message="!!!!! Ant-call succeeded?" />
+<!--
 	    <script language="javascript"> <![CDATA[
 	        var antcall = project.createTask ("ant");
 
@@ -317,33 +343,52 @@
 	        antcall.setInheritRefs (false);
 		    antcall.perform ();
 	]]> </script>
+-->
     </target>
 
-    <target name="plugin-bootstrap-build" if="ejbca.plugin.collection">
+	<target name="plugin-bootstrap-build" if="ejbca.plugin.collection">
 	    <!-- Called once immediately before "ejbca.ear" creation if there are any plugins to build -->
 		<echo message="Plugins found!"/>
     	<mkdir dir="${ejbca.plugin.gen.path}/lib"/>
-        <script language="javascript"> <![CDATA[
-		    var path = project.getProperty ("ejbca.plugin.collection");
 
-        	// Build one plugin at a time
-        	while (path != null) {
-		        var i = path.indexOf (java.io.File.pathSeparatorChar);
-		        var plugin_file = path;
-		        if (i > 0) {
-		            plugin_file = path.substring (0, i);
-		            path = path.substring (i + 1);
-		        } else {
-		            path = null;
-		        }
-		        var antcall = project.createTask ("antcall");
-		        antcall.setTarget ("build-one-plugin");
-		        var prop = antcall.createParam ();
-		        prop.setName ("ejbca.plugin.property.file");
-		        prop.setValue (plugin_file);
-		        antcall.perform ();
-		    }
-    ]]> </script>
+		<echo message="!!!!! (100) ejbca.plugin.collection  = ${ejbca.plugin.collection}" />
+		<echo message="!!!!! (101) ejbca.plugin.conf.path   = ${ejbca.plugin.conf.path}" />
+
+		<delete file="plugin.properties"/>
+		<echoproperties destfile="plugin.properties" prefix="plugin.ejbca.ant.custom " />
+		<apply executable="ant" dir="${ejbca.plugin.conf.path}">
+			<arg value="-f"/>
+			<arg value="${ant.file}"/>
+			<arg value="build-one-plugin"/>
+			<arg value="-propertyfile"/>
+			<fileset id="plugin.property.files" dir="${ejbca.plugin.conf.path}">
+				<include name="*.properties"/>
+			</fileset>
+		</apply>
+		<delete file="plugin.properties"/>
+        <!--
+		<script language="javascript"> <![CDATA[
+			var path = project.getProperty ("ejbca.plugin.collection");
+
+			// Build one plugin at a time
+			while (path != null) {
+				var i = path.indexOf (java.io.File.pathSeparatorChar);
+				var plugin_file = path;
+				if (i > 0) {
+					plugin_file = path.substring (0, i);
+					path = path.substring (i + 1);
+				} else {
+					path = null;
+				}
+				var antcall = project.createTask ("antcall");
+				antcall.setTarget ("build-one-plugin");
+				var prop = antcall.createParam ();
+				prop.setName ("ejbca.plugin.property.file");
+				prop.setValue (plugin_file);
+				antcall.perform ();
+			}
+	]]> </script>
+		-->
     </target>
     
 	<target name="va_replacings_in_application.xml">
