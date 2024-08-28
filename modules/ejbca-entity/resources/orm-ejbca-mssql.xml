@@ -14,11 +14,11 @@
  *************************************************************************/
 
  -->
-<entity-mappings version="2.1"
+<entity-mappings version="3.1"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://jakarta.ee/xml/ns/persistence/orm"
     xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence/orm
-                        https://jakarta.ee/xml/ns/persistence/orm_2_1.xsd">
+        https://jakarta.ee/xml/ns/persistence/orm_3_1.xsd">
 
     <!-- 
          This file contains mappings specific to MS SQL.
