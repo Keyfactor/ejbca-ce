@@ -27,7 +27,7 @@
          int:     INTEGER
          long:    BIGINT
          String:  VARCHAR(256)
-         CLOB:    TEXT
+         CLOB:    VARCHAR(max)
          Object:  IMAGE
    
          Notes:
