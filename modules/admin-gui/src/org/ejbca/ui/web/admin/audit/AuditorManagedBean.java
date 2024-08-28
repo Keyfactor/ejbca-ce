@@ -429,25 +429,25 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
             }
             switch (Condition.valueOf(condition.getCondition())) {
             case EQUALS:
-                whereClause.append("a.").append(condition.getColumn()).append(" = ?").append(i); break;
+                whereClause.append("a.").append(condition.getColumn()).append(" = ?").append(i+1); break;
             case NOT_EQUALS:
-                whereClause.append("a.").append(condition.getColumn()).append(" != ?").append(i); break;
+                whereClause.append("a.").append(condition.getColumn()).append(" != ?").append(i+1); break;
             case CONTAINS:
-                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i+1);
                 conditionValue = "%" + conditionValue + "%";
                 break;
             case ENDS_WITH:
-                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i+1);
                 conditionValue = "%" + conditionValue;
                 break;
             case STARTS_WITH:
-                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i+1);
                 conditionValue = conditionValue + "%";
                 break;
             case GREATER_THAN:
-                whereClause.append("a.").append(condition.getColumn()).append(" > ?").append(i); break;
+                whereClause.append("a.").append(condition.getColumn()).append(" > ?").append(i+1); break;
             case LESS_THAN:
-                whereClause.append("a.").append(condition.getColumn()).append(" < ?").append(i); break;
+                whereClause.append("a.").append(condition.getColumn()).append(" < ?").append(i+1); break;
             default:
                 throw new IllegalArgumentException(errorMessage);    
             }

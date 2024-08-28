@@ -106,7 +106,7 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
         final List<Object> params = new ArrayList<Object>();
         params.add(EventTypes.ACCESS_CONTROL.toString());
         List<? extends AuditLogEntry> entries = 
-                ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 1, "a.eventType != ?0", "a.timeStamp DESC", params);
+                ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 1, "a.eventType != ?1", "a.timeStamp DESC", params);
         
         assertEquals("Authtoken was not trimmed where subject is too big.", 
                 entries.get(0).getAuthToken(), "[trimmed] " + upn.substring(0, 235));
@@ -125,16 +125,16 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
         ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, null, null, null);
         ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "", "", null);
         // Select without order
-        ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "a.eventType != ?0", null, params);
-        ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "a.eventType != ?0", "", params);
+        ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "a.eventType != ?1", null, params);
+        ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "a.eventType != ?1", "", params);
         // Select without where
         ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, null, "a.timeStamp DESC", null);
         ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "", "a.timeStamp DESC", null);
         // Select with both where and order
-        ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "a.eventType != ?0", "a.timeStamp DESC", params);
+        ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "a.eventType != ?1", "a.timeStamp DESC", params);
         // Select with both multiple where and order
         params.add("superadmin");  // searchDetail2 is mapped to username
-        ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "a.eventType != ?0 AND a.searchDetail2 != ?1", "a.timeStamp DESC", params);
+        ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, "a.eventType != ?1 AND a.searchDetail2 != ?2", "a.timeStamp DESC", params);
         LOG.trace("<testHappyPaths");
     }
     
@@ -168,12 +168,12 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
         assertBadWhereFailure(" ", null);
         assertBadWhereFailure("1=1; drop database ejbca;", null);
         // Assert parameter mismatch leads to failure
-        assertBadWhereFailure("a.eventType != ?0", null);
+        assertBadWhereFailure("a.eventType != ?1", null);
         final List<Object> params = new ArrayList<Object>();
-        assertBadWhereFailure("a.eventType != ?0", params);
+        assertBadWhereFailure("a.eventType != ?1", params);
         params.add(EventTypes.ACCESS_CONTROL.toString());
         params.add(EventTypes.ACCESS_CONTROL.toString());
-        assertBadWhereFailure("a.eventType != ?0", params);
+        assertBadWhereFailure("a.eventType != ?1", params);
         LOG.trace("<testBadWhere");
     }
 
