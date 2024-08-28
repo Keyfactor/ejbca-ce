@@ -15,19 +15,19 @@
 
  version: $Id: persistence-ds-template.xml 21822 2015-09-10 14:07:46Z jeklund $
  -->
-<persistence version="3.0"
+<persistence version="3.1"
     xmlns="https://jakarta.ee/xml/ns/persistence"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
-                        https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+        https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd">
 
-	<!-- 
+    <!--
 		The OCSP monitoring tool DOES NOT need write access to any of the databases.
-		Use a user with pure read-access for these connections (except for a test PU).
-		
-		More Hibernate-specific options, tuning and dialect can be found at
-		http://docs.jboss.org/hibernate/stable/core/reference/en/html/configuration-optional.html
-	-->
+        Use a user with pure read-access for these connections (except for a test PU).
+
+        More Hibernate-specific options, tuning and dialect can be found at
+        http://docs.jboss.org/hibernate/stable/core/reference/en/html/configuration-optional.html
+    -->
     <!-- JUnit test run by "ant test:ctb" expects this PU to exist -->
     <persistence-unit name="ca" transaction-type="RESOURCE_LOCAL">
         <class>org.cesecore.certificates.certificate.CertificateData</class>
