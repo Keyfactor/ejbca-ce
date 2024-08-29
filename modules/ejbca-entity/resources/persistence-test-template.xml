@@ -18,11 +18,11 @@
 <!--
 	JPA configuration used to validate the current JPA classes to an existing database.
 -->
-<persistence version="2.1"
+<persistence version="3.1"
     xmlns="https://jakarta.ee/xml/ns/persistence"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
-                        https://jakarta.ee/xml/ns/persistence/persistence_2_1.xsd">
+        https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd">
 
     <persistence-unit name="ejbca-pu" transaction-type="RESOURCE_LOCAL">
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>

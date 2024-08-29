@@ -57,9 +57,9 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
         // JPQL doesn't support inner joins that uses subqueries.
         @NamedNativeQuery(name = OcspResponseData.FIND_EXPIRING_OCPS_DATA_BY_CAID,
                           query = "SELECT * FROM OcspResponseData ocsp INNER JOIN (" +
-                                  "     SELECT serialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
+                                  "     SELECT serialNumber as maxSerialNumber, MAX(producedAt) as maximumProducedAt FROM OcspResponseData GROUP BY serialNumber" +
                                   ") maxProducedAtTable " +
-                                  "ON ocsp.serialNumber = maxProducedAtTable.serialNumber AND ocsp.producedAt = maxProducedAtTable.maximumProducedAt " +
+                                  "ON ocsp.serialNumber = maxProducedAtTable.maxSerialNumber AND ocsp.producedAt = maxProducedAtTable.maximumProducedAt " +
                                   "WHERE cAId = :caId AND ocsp.nextUpdate <= :expirationDate",
                           resultSetMapping = "OcspResponseData"),
 
