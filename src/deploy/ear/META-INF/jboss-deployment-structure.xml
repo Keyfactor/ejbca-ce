@@ -1,25 +1,28 @@
 <jboss-deployment-structure>
     <ear-subdeployments-isolated>true</ear-subdeployments-isolated>
-  
+
     <deployment>
 
-        <!-- Make sun/security/pkcs11/wrapper and sun/security/action exported, so we don't need to edit 
-        modules/system/layers/base/sun/jdk/main/module.xml.
-        pkcs11/wrapper is needed for HSM support and security/action is needed for CMP TCP (which is deprecated but still used) -->
+        <!--
+         Make sun/security/pkcs11, sun/security/pkcs11/wrapper and sun/security/action exported dependencies,
+         so we don't need to edit modules/system/layers/base/sun/jdk/main/module.xml.
+         pkcs11 and pkcs11/wrapper are necessary for HSM support and security/action is needed for CMP TCP (which is deprecated but still used)
+         -->
         <dependencies>
             <system export="true">
                 <paths>
+                    <path name="sun/security/pkcs11"/>
                     <path name="sun/security/pkcs11/wrapper"/>
                     <path name="sun/security/action"/>
                 </paths>
             </system>
-        </dependencies> 
+        </dependencies>
         <!-- Using Oracle JDK and JBoss 7 signature verification on crypto providers do not work unless we specify to use-physical-code-source. 
         See https://issues.jboss.org/browse/WFLY-5 -->
         <resources>
             <resource-root path="lib/bcprov-jdk18on-1.78.jar" use-physical-code-source="true"/>
         </resources>
     </deployment>
-  
+
 </jboss-deployment-structure>
 
