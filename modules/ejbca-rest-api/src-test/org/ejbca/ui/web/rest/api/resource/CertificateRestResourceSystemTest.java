@@ -20,10 +20,9 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.EntityPart;
+import jakarta.ws.rs.core.GenericEntity;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
@@ -107,7 +106,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -1780,12 +1778,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private X509CRL getLatestCrl(final boolean delta) throws Exception {
         final String orderedIssuerDn = DnComponents.stringToBCDNString(testIssuerDn);
         final String deltaCrlParameter = (delta) ? "?deltacrl=true" : "";
+
         // get the created CRL
-        final Response getLatestCrlResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/getLatestCrl" + deltaCrlParameter).request().get();
-        assertEquals("Failed to retrieve latest CRL", 200, getLatestCrlResponse.getStatus());
-        final Object latestCrlDer = getLatestCrlResponse.readEntity(Map.class).get("crl");
-        assertNotNull("Response does not contain a CRL", latestCrlDer);
-        return CertTools.getCRLfromByteArray(Base64.decode(latestCrlDer.toString().getBytes()));
+        final Response latestCRLResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/getLatestCrl" + deltaCrlParameter).request().get();
+        assertEquals("Failed to retrieve latest CRL", 200, latestCRLResponse.getStatus());
+
+        final JSONObject latestCRLResponseAsJSON = (JSONObject) jsonParser.parse(latestCRLResponse.readEntity(String.class));
+        final Object latestCRL = latestCRLResponseAsJSON.get("crl");
+        assertNotNull("Response does not contain a CRL", latestCRL);
+
+        return CertTools.getCRLfromByteArray(Base64.decode(latestCRL.toString().getBytes()));
     }
 
     /**
@@ -1830,12 +1832,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      */
     private void importCrl(X509CRL crl) throws Exception {
         Files.write(Paths.get(CRL_FILENAME), crl.getEncoded());
-        final MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-        entity.addBinaryBody("crlFile", new File(CRL_FILENAME), ContentType.DEFAULT_BINARY, CRL_FILENAME);
-        final HttpPost request = new HttpPost(getBaseUrl() + "/v1/ca/" + DnComponents.stringToBCDNString(testIssuerDn) + "/importcrl");
-        request.setEntity(entity.build());
-        final HttpResponse response = getHttpClient(true).execute(request);
-        assertEquals("CRL import failed", Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+        final EntityPart fileEP = EntityPart.withName("crlFile").fileName(CRL_FILENAME).content(new File(CRL_FILENAME)).build();
+        final EntityPart crlPartitionIndexEP = EntityPart.withName("crlPartitionIndex").content(0, Integer.class).build();
+        final List<EntityPart> entityParts = Arrays.asList(fileEP, crlPartitionIndexEP);
+
+        final Entity requestEntity = Entity.entity(new GenericEntity<>(entityParts){}, MediaType.MULTIPART_FORM_DATA);
+
+        final WebTarget crlImportRequest = newRequest("/v1/ca/" + DnComponents.stringToBCDNString(testIssuerDn) + "/importcrl");
+        final Response crlImportResponse = crlImportRequest.request().post(requestEntity);
+
+        assertEquals("CRL import failed", Response.Status.OK.getStatusCode(), crlImportResponse.getStatus());
         Files.deleteIfExists(Paths.get(CRL_FILENAME));
     }
 
