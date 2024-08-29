@@ -16,14 +16,19 @@ val dialectMap = mapOf(
     "informix" to "org.hibernate.community.dialect.InformixDialect",
     "ingres" to "org.hibernate.community.dialect.IngresDialect",
     "mssql" to "org.hibernate.dialect.SQLServerDialect",
-    "mysql" to "org.hibernate.dialect.MySQLDialect",
     "oracle" to "org.hibernate.dialect.OracleDialect",
     "postgres" to "org.hibernate.dialect.PostgreSQLDialect",
     "sybase" to "org.hibernate.dialect.SybaseDialect"
 )
-val dialect = dialectMap[props.getProperty("database.name", "mysql")]
-        ?: throw IllegalArgumentException("Unsupported database type ${props.getProperty("database.name")}")
-props.setProperty("hibernate.dialect", dialect)
+
+val databaseName = props.getProperty("database.name", "mysql")
+val dialect = dialectMap[databaseName]
+
+if (dialect != null) {
+    props.setProperty("hibernate.dialect", dialect)
+} else if (databaseName != "mysql") {
+    throw IllegalArgumentException("Unsupported database type $databaseName")
+}
 
 plugins {
     java
@@ -58,10 +63,11 @@ tasks.jar {
         rename("persistence-ds-template.xml", "persistence.xml")
         into("META-INF")
         filter { line: String ->
+            val hibernateDialect = props.getProperty("hibernate.dialect", "")
             line.replace("\${datasource.jndi-name-prefix}", "java:/")
                 .replace("\${datasource.jndi-name}", props.getProperty("datasource.jndi-name", "EjbcaDS"))
                 .replace("\${database.name}", props.getProperty("database.name", "mysql"))
-                .replace("\${hibernate.dialect}", props.getProperty("hibernate.dialect"))
+                .replace("\${hibernate.dialect}", hibernateDialect)
         }
     }
 }
