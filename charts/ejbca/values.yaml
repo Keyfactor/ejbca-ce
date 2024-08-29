@@ -164,7 +164,7 @@ services:
 # Recommended for cluster internal communications
 # Requires proxyHttp service to be enabled
 nginx:
-  image: nginx:1.27.0
+  image: nginx:1.27.1
   enabled: false
   initializeWithSelfSignedTls: false
   host: "ejbcahost"
