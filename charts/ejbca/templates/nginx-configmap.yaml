@@ -29,10 +29,13 @@ data:
       server {
         listen 80;
 
-        server_name {{ .Values.nginx.host | default "ejbcahost" | quote }};
+        server_name {{ .Values.nginx.host }};
 
         location / {
           proxy_pass http://localhost:8081;
+          proxy_redirect ejbca/adminweb https://{{ .Values.nginx.host }}/ejbca/adminweb;
+          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/adminweb https://{{ .Values.nginx.host }}/ejbca/adminweb;
+          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/ra https://{{ .Values.nginx.host }}/ejbca/ra;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "Upgrade";
           proxy_set_header Host $host;
@@ -62,7 +65,8 @@ data:
 
         location / {
           proxy_pass http://localhost:8082;
-          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/adminweb/ https://{{ .Values.nginx.host }}/ejbca/adminweb/;
+          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/adminweb https://{{ .Values.nginx.host }}/ejbca/adminweb;
+          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/ra https://{{ .Values.nginx.host }}/ejbca/ra;
           proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -81,6 +85,9 @@ data:
 
         location / {
           proxy_pass http://localhost:8081;
+          proxy_redirect ejbca/adminweb https://{{ $i }}/ejbca/adminweb;
+          proxy_redirect http://{{ $i }}/ejbca/adminweb https://{{ $i }}/ejbca/adminweb;
+          proxy_redirect http://{{ $i }}/ejbca/ra https://{{ $i }}/ejbca/ra;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "Upgrade";
           proxy_set_header Host $host;
@@ -100,7 +107,8 @@ data:
 
         location / {
           proxy_pass http://localhost:8082;
-          proxy_redirect http://{{ $i }}/ejbca/adminweb/ https://{{ $i }}/ejbca/adminweb/;
+          proxy_redirect http://{{ $i }}/ejbca/adminweb https://{{ $i }}/ejbca/adminweb;
+          proxy_redirect http://{{ $i }}/ejbca/ra https://{{ $i }}/ejbca/ra;
           proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";

@@ -60,7 +60,6 @@ spec:
 {{- end }}
 ---
 # Conditional Pod index based access - use case: UI Access or Manually selecting Closer Instance
-# NOTE: 
 {{- if ne (int .Values.replicaCount) 1 }}
 {{- if and .Values.nginx.enabled .Values.nginx.loadBalancerAccess.enableReplicaSpecificAccess }}
 {{- range $i := until (int .Values.replicaCount) }}
