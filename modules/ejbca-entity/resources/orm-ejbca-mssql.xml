@@ -27,7 +27,7 @@
          int:     INTEGER
          long:    BIGINT
          String:  VARCHAR(256)
-         CLOB:    TEXT
+         CLOB:    VARCHAR(max)
          Object:  IMAGE
    
          Notes:
@@ -42,7 +42,7 @@
     		<basic fetch="EAGER" name="producedAt" ><column name="producedAt" column-definition="BIGINT" nullable="false"/></basic>
     		<basic fetch="EAGER" name="nextUpdate"><column name="nextUpdate" column-definition="BIGINT"/></basic>
     		<basic fetch="EAGER" name="ocspResponse"><column name="ocspResponse" column-definition="IMAGE"/></basic>
-    		<basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+    		<basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
     	</attributes>
     </entity>    
@@ -50,7 +50,7 @@
         <attributes>
             <id name="nonce"><column name="nonce" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="timeExpires"><column name="timeExpires" column-definition="BIGINT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -58,8 +58,8 @@
         <attributes>
             <id name="accountId"><column name="accountId" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="currentKeyId"><column name="currentKeyId" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -69,8 +69,8 @@
             <basic fetch="EAGER" name="accountId"><column name="accountId" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(256)" nullable="true"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -79,8 +79,8 @@
             <id name="challengeId"><column name="challengeId" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="authorizationId"><column name="authorizationId" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="type"><column name="type" column-definition="VARCHAR(20)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -93,8 +93,8 @@
             <basic fetch="EAGER" name="identifierType"><column name="identifierType" column-definition="VARCHAR(20)"/></basic>
             <basic fetch="EAGER" name="expires"><column name="expires" column-definition="BIGINT"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="VARCHAR(20)"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -113,7 +113,7 @@
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="INTEGER" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
-            <basic fetch="EAGER" name="zzzBase64Cert"><column name="base64Cert" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzBase64Cert"><column name="base64Cert" column-definition="VARCHAR(max)"/><lob/></basic>
             <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="tag"><column name="tag" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="INTEGER" nullable="false"/></basic>
@@ -123,8 +123,8 @@
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="VARCHAR(256)" nullable="true"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
             <transient name="base64Cert"/>
@@ -148,7 +148,7 @@
             <basic fetch="EAGER" name="revocationDate"><column name="revocationDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="revocationReason"><column name="revocationReason" column-definition="INTEGER" nullable="false"/></basic>
             <!-- We need to allow this field to be null in external OCSP responder mode and it's easier if the tables look the same! -->
-            <basic fetch="EAGER" name="zzzBase64Cert"><column name="base64Cert" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzBase64Cert"><column name="base64Cert" column-definition="VARCHAR(max)"/><lob/></basic>
             <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="tag"><column name="tag" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="INTEGER" nullable="false"/></basic>
@@ -158,8 +158,8 @@
             <basic fetch="EAGER" name="subjectKeyId"><column name="subjectKeyId" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="accountBindingId"><column name="accountBindingId" column-definition="VARCHAR(256)" nullable="true"/></basic>
             <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR(2000)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzCertificateRequest"><column name="certificateRequest" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
             <transient name="base64Cert"/>
@@ -170,9 +170,9 @@
     <entity class="org.cesecore.certificates.certificate.Base64CertData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(256)"/></id>
-            <basic fetch="EAGER" name="base64Cert"><column name="base64Cert" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="certificateRequest"><column name="certificateRequest" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="base64Cert"><column name="base64Cert" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="certificateRequest"><column name="certificateRequest" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -186,8 +186,8 @@
             <basic fetch="EAGER" name="thisUpdate"><column name="thisUpdate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="nextUpdate"><column name="nextUpdate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="deltaCRLIndicator"><column name="deltaCRLIndicator" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="base64Crl"><column name="base64Crl" column-definition="TEXT" nullable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="base64Crl"><column name="base64Crl" column-definition="VARCHAR(max)" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -197,9 +197,9 @@
             <basic fetch="EAGER" name="tokenName"><column name="tokenName" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="lastUpdate"><column name="lastUpdate" column-definition="BIGINT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="tokenProps"><column name="tokenProps" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="tokenData"><column name="tokenData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="tokenProps"><column name="tokenProps" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="tokenData"><column name="tokenData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -210,7 +210,7 @@
             <basic fetch="EAGER" name="accessRuleName"><column name="accessRule" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="state"><column name="rule_" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="recursiveBool"><column name="isRecursive" column-definition="BIT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <basic fetch="EAGER" name="adminGroupDataPrimaryKey"><column name="AdminGroupData_accessRules" column-definition="INTEGER"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <transient name="recursiveInt"/>
@@ -221,7 +221,7 @@
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="accessTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -233,7 +233,7 @@
             <basic fetch="EAGER" name="matchType"><column name="matchType" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="matchValue"><column name="matchValue" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="adminGroupDataPrimaryKey"><column name="AdminGroupData_adminEntities" column-definition="INTEGER"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
@@ -251,7 +251,7 @@
             <basic fetch="EAGER" name="tokenMatchValueColumn"><column name="tokenMatchValue" column-definition="VARCHAR(2000)" nullable="true"/></basic>
             <basic fetch="EAGER" name="roleId"><column name="roleId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="descriptionColumn"><column name="description" column-definition="VARCHAR(256)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
             <transient name="rowProtection"/>
@@ -263,8 +263,8 @@
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="roleName"><column name="roleName" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="nameSpaceColumn"><column name="nameSpace" column-definition="VARCHAR(256)" nullable="true"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -273,7 +273,7 @@
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="roleName"><column name="adminGroupName" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -291,8 +291,8 @@
             <basic fetch="EAGER" name="customId"><column name="customId" column-definition="VARCHAR(256)" nullable="true" updatable="false"/></basic>
             <basic fetch="EAGER" name="searchDetail1"><column name="searchDetail1" column-definition="VARCHAR(256)" nullable="true" updatable="false"/></basic>
             <basic fetch="EAGER" name="searchDetail2"><column name="searchDetail2" column-definition="VARCHAR(256)" nullable="true" updatable="false"/></basic>
-            <basic fetch="EAGER" name="additionalDetails"><column name="additionalDetails" column-definition="TEXT" nullable="true" updatable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="additionalDetails"><column name="additionalDetails" column-definition="VARCHAR(max)" nullable="true" updatable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -304,8 +304,8 @@
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="expireTime"><column name="expireTime" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="BIGINT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="TEXT" nullable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(max)" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -314,7 +314,7 @@
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="certificateProfileName"><column name="certificateProfileName" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="IMAGE" nullable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -328,14 +328,14 @@
             <basic fetch="EAGER" name="reqadmincertissuerdn"><column name="reqAdminCertIssuerDn" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="reqadmincertsn"><column name="reqAdminCertSn" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="approvaldata"><column name="approvalData" column-definition="TEXT" nullable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="requestdata"><column name="requestData" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="approvaldata"><column name="approvalData" column-definition="VARCHAR(max)" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="requestdata"><column name="requestData" column-definition="VARCHAR(max)" nullable="false"/><lob/></basic>
             <basic fetch="EAGER" name="requestdate"><column name="requestDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="expiredate"><column name="expireDate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="remainingapprovals"><column name="remainingApprovals" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="subjectDn"><column name="subjectDn" column-definition="VARCHAR(400)"/></basic>
             <basic fetch="EAGER" name="email"><column name="email" column-definition="VARCHAR(256)"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -345,8 +345,8 @@
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="TEXT"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(max)"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -365,8 +365,8 @@
             <basic fetch="EAGER" name="publishType"><column name="publishType" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="publisherId"><column name="publisherId" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="volatileData"><column name="volatileData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="volatileData"><column name="volatileData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -376,9 +376,9 @@
             <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="timestamp"><column name="timestamp" column-definition="BIGINT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="userDataVO"><column name="userDataVO" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="userDataVO"><column name="userDataVO" column-definition="VARCHAR(max)" nullable="false"/><lob/></basic>
             <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -391,11 +391,11 @@
         	</embedded-id>
             <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="markedAsRecoverableBool"><column name="markedAsRecoverable" column-definition="BIT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="keyData"><column name="keyData" column-definition="TEXT" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="keyData"><column name="keyData" column-definition="VARCHAR(max)" nullable="false"/><lob/></basic>
             <basic fetch="EAGER" name="cryptoTokenId"><column name="cryptoTokenId" column-definition="INTEGER DEFAULT 0" nullable="false"/></basic>
             <basic fetch="EAGER" name="keyAlias"><column name="keyAlias" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="publicKeyId"><column name="publicKeyId" column-definition="VARCHAR(256)"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <transient name="markedAsRecoverableInt"/>
         </attributes>
@@ -407,7 +407,7 @@
             <basic fetch="EAGER" name="value"><column name="value" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -428,10 +428,10 @@
             <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="hardTokenIssuerId"><column name="hardTokenIssuerId" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="zzzExtendedInformationData"><column name="extendedInformationData" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzExtendedInformationData"><column name="extendedInformationData" column-definition="VARCHAR(max)"/><lob/></basic>
             <basic fetch="EAGER" name="keyStorePassword"><column name="keyStorePassword" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="cardNumber"><column name="cardNumber" column-definition="VARCHAR(256)"/></basic>
-            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="zzzRowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
             <!-- Required by Oracle + Hibernate ORA-24816 work-around -->
             <transient name="extendedInformationData"/>
@@ -442,7 +442,7 @@
         <attributes>
             <id name="id"><column name="id" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="IMAGE" nullable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -451,7 +451,7 @@
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="profileName"><column name="profileName" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="IMAGE" nullable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -460,8 +460,8 @@
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="profileType"><column name="profileType" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="profileName"><column name="profileName" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -469,7 +469,7 @@
         <attributes>
             <id name="configurationId"><column name="configurationId" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="IMAGE" nullable="false"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -478,8 +478,8 @@
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -487,10 +487,10 @@
         <attributes>
             <id name="id"><column name="id" column-definition="INTEGER"/></id>
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(max)"/><lob/></basic>
             <basic fetch="EAGER" name="nextRunTimeStamp"><column name="nextRunTimeStamp" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="runTimeStamp"><column name="runTimeStamp" column-definition="BIGINT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -503,9 +503,9 @@
             <basic fetch="EAGER" name="certificateId"><column name="certificateId" column-definition="VARCHAR(256)" nullable="true"/></basic>
             <basic fetch="EAGER" name="cryptoTokenId"><column name="cryptoTokenId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="keyPairAlias"><column name="keyPairAlias" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR(max)"/><lob/></basic>
             <basic fetch="EAGER" name="lastUpdate"><column name="lastUpdate" column-definition="BIGINT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -515,8 +515,8 @@
             <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(256)" nullable="false"/></basic>
             <basic fetch="EAGER" name="connectorState"><column name="connectorState" column-definition="INTEGER" nullable="false"/></basic>
      	    <basic fetch="EAGER" name="url"><column name="url" column-definition="VARCHAR(256)" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -526,8 +526,8 @@
             <basic fetch="EAGER" name="logId"><column name="logId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR(256)" nullable="false"/></basic>
      	    <basic fetch="EAGER" name="certificateExpirationDate"><column name="certificateExpirationDate" column-definition="BIGINT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="data"><column name="data" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
@@ -535,8 +535,8 @@
         <attributes>
             <id name="serialNumberAndCaId"><column name="serialNumberAndCaId" column-definition="VARCHAR(256)"/></id>
             <basic fetch="EAGER" name="startTime"><column name="startTime" column-definition="BIGINT" nullable="false"/></basic>
-            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="TEXT"/><lob/></basic>
-            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="TEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="rawData"><column name="rawData" column-definition="VARCHAR(max)"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="VARCHAR(max)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
