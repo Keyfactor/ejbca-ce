@@ -43,8 +43,6 @@
 							value="#{acmeAliasConfigMBean.currentAliasStr}" required="true" 
 							requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" 
 							disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
-							    <f:validateRegex pattern="^([\w\-\_]{0,250})$" />
-			                    <f:validator validatorId="legalCharsValidator" />
 			                    <f:converter converterId="trimConverter"/>
 						</h:inputText>
 						<h:message for="name"/>					
