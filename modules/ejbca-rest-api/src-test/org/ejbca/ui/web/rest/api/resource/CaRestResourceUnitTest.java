@@ -123,6 +123,7 @@ public class CaRestResourceUnitTest {
                 .request();
         final Response actualResponse = request.get();
         final String actualJsonString = actualResponse.readEntity(String.class);
+        System.out.println("actualJsonString:\n" + actualJsonString);
         // then
         assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
         assertJsonContentType(actualResponse);
@@ -142,6 +143,7 @@ public class CaRestResourceUnitTest {
                 .request();
         final Response actualResponse = request.get();
         final String actualJsonString = actualResponse.readEntity(String.class);
+        System.out.println("actualJsonString:\n" + actualJsonString);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONArray actualCertificateAuthorities = (JSONArray) actualJsonObject.get(JSON_PROPERTY_CERTIFICATE_AUTHORITIES);
         // then
