@@ -48,7 +48,7 @@ dependencyResolutionManagement {
             library("csrfguard-extension-session", ":csrfguard-extension-session:4.3.0-jakarta")
             library("csrfguard-jsp-tags", ":csrfguard-jsp-tags:4.3.0-jakarta")
             library("primefaces", ":primefaces:14.0.0-jakarta")
-            library("dnsjava", ":dnsjava:3.5.2")
+            library("dnsjava", ":dnsjava:3.6.1")
             library("jackson-core", ":jackson-core:2.17.2")
             library("jackson-databind", ":jackson-databind:2.17.2")
             library("jackson-dataformat-yaml", ":jackson-dataformat-yaml:2.17.2")
