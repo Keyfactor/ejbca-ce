@@ -17,7 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;

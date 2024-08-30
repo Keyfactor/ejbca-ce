@@ -14,7 +14,7 @@ package org.cesecore.keys.token;
 
 import java.security.PrivateKey;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.keys.util.PublicKeyWrapper;
 

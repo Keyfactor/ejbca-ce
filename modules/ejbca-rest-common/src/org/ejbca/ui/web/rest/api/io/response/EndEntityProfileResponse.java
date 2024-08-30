@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.core.model.era.RaEndEntityProfileResponse;
 
 import java.util.List;
@@ -22,15 +22,15 @@ import java.util.List;
  */
 public class EndEntityProfileResponse {
 
-    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
+    @Schema(description = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    @ApiModelProperty(value = "List of available Certificate Authorities (CAs)", example = "[\"ExampleCA\"]")
+    @Schema(description = "List of available Certificate Authorities (CAs)", example = "[\"ExampleCA\"]")
     private List<String> availableCAs;
-    @ApiModelProperty(value = "List of available Certificate Profiles", example = "[\"ENDUSER\"]")
+    @Schema(description = "List of available Certificate Profiles", example = "[\"ENDUSER\"]")
     private List<String> availableCertificateProfiles;
-    @ApiModelProperty(value = "List of Subject DN Attributes", example = "[\"CN\"]")
+    @Schema(description = "List of Subject DN Attributes", example = "[\"CN\"]")
     private List<String> subjectDistinguishedNameFields;
-    @ApiModelProperty(value = "List of Subject Alternative Name fields", example = "[\"RFC822NAME\"]")
+    @Schema(description = "List of Subject Alternative Name fields", example = "[\"RFC822NAME\"]")
     private List<String> subjectAlternativeNameFields;
 
     public EndEntityProfileResponse() {

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Local interface for UpgradeSession.
@@ -83,7 +83,7 @@ public interface UpgradeSessionLocal  extends UpgradeSession{
     /** For internal user from UpgradeSessionBean only */
     void migrateDatabase830() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
-    void fixPartitionedCrls(final int limit, final boolean isMSSQL) throws UpgradeFailedException;
+    void fixPartitionedCrls() throws UpgradeFailedException;
     /** For internal user from UpgradeSessionBean only */
     IndexUpgradeResult upgradeIndex(final String oldIndexName, final String tableName, final String createIndexQuery);
     

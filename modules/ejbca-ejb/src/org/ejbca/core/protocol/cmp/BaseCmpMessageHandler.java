@@ -13,14 +13,13 @@
 
 package org.ejbca.core.protocol.cmp;
 
+import jakarta.ejb.EJBTransactionRolledbackException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.util.List;
-
-import javax.ejb.EJBTransactionRolledbackException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;

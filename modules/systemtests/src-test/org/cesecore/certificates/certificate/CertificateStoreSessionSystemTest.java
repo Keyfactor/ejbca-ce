@@ -35,7 +35,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.EJBTransactionRolledbackException;
+import jakarta.ejb.EJBTransactionRolledbackException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;

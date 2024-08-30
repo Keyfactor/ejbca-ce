@@ -31,10 +31,10 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.util.SelectItemComparator;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
