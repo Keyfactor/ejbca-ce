@@ -264,8 +264,8 @@
 			<include name="jakarta.ws.rs-api-3.*.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
-			<include name="jackson-jaxrs-base-2.*.jar"/>
-			<include name="jackson-jaxrs-json-provider-2.*.jar"/>
+			<include name="jackson-jakarta-rs-base-2.*.jar"/>
+			<include name="jackson-jakarta-rs-json-provider-2.*.jar"/>
 			<include name="jackson-module-jaxb-annotations-2.*.jar"/>
 		</fileset>
 	</path>
