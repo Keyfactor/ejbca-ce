@@ -14,7 +14,7 @@ package org.ejbca.core.protocol.est;
 
 import java.security.cert.X509Certificate;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;

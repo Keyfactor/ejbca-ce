@@ -736,21 +736,21 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         Query q1 = new Query(Query.TYPE_APPROVALQUERY);
         q1.add(ApprovalMatch.MATCH_WITH_APPROVALTYPE, BasicMatch.MATCH_TYPE_EQUALS, "" + req1.getApprovalType());
 
-        List<ApprovalDataVO> result = approvalSessionProxyRemote.query(q1, 0, 3, "cAId=" + caid,
+        List<ApprovalDataVO> result = approvalSessionProxyRemote.query(q1, 0, 3, "caid=" + caid,
                 "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
         assertTrue("Result size " + result.size(), result.size() >= 2 && result.size() <= 3);
 
-        result = approvalSessionProxyRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
+        result = approvalSessionProxyRemote.query(q1, 1, 3, "caid=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
         assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);
 
-        result = approvalSessionProxyRemote.query(q1, 0, 1, "cAId=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
+        result = approvalSessionProxyRemote.query(q1, 0, 1, "caid=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
         assertEquals("Result size " + result.size(), 1, result.size());
 
         Query q2 = new Query(Query.TYPE_APPROVALQUERY);
         q2.add(ApprovalMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, "" + ApprovalDataVO.STATUS_WAITINGFORAPPROVAL, Query.CONNECTOR_AND);
         q2.add(ApprovalMatch.MATCH_WITH_REQUESTADMINCERTSERIALNUMBER, BasicMatch.MATCH_TYPE_EQUALS, reqadmincert.getSerialNumber().toString(16));
 
-        result = approvalSessionProxyRemote.query(q1, 1, 3, "cAId=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
+        result = approvalSessionProxyRemote.query(q1, 1, 3, "caid=" + caid, "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
         assertTrue("Result size " + result.size(), result.size() >= 1 && result.size() <= 3);
 
         log.trace("<testQuery");
@@ -788,7 +788,7 @@ public class ApprovalSessionSystemTest extends CaTestCase {
             null,
             0,
             99,
-            "cAId=" + caid,
+            "caid=" + caid,
             "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")"
         );
         assertEquals("Result size should be 1.", 1, result.size());
@@ -812,7 +812,7 @@ public class ApprovalSessionSystemTest extends CaTestCase {
                 expiredQuery,
                 0,
                 3,
-                "cAId=" + caid,
+                "caid=" + caid,
                 "(endEntityProfileId=" + EndEntityConstants.EMPTY_END_ENTITY_PROFILE + ")");
         assertTrue("At least one expired query was not returned.", result.size() > 0);
         log.trace("<testExpiredQuery");
@@ -993,6 +993,6 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         params.add(event);
 
         return ejbcaAuditorSession.selectAuditLog(intadmin, DEVICE_NAME, 0, 100,
-                                                  "a.timeStamp >= ?0 AND a.eventType = ?1", "a.timeStamp DESC", params);
+                                                  "a.timeStamp >= ?1 AND a.eventType = ?2", "a.timeStamp DESC", params);
     }
 }

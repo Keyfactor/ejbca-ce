@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Local interface for UpgradeSession.

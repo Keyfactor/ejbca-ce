@@ -25,12 +25,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.ejbca.ui.web.RequestHelper;
@@ -259,10 +259,10 @@ public class RemoteVerifyServlet extends HttpServlet {
     /**
      * Allows for checking status of.
      *
-     * @param req javax.servlet.http.HttpServletRequest
-     * @param res javax.servlet.http.HttpServletResponse
+     * @param req jakarta.servlet.http.HttpServletRequest
+     * @param res jakarta.servlet.http.HttpServletResponse
      *
-     * @exception javax.servlet.ServletException The exception description.
+     * @exception jakarta.servlet.ServletException The exception description.
      */
     protected void doGet(HttpServletRequest req, HttpServletResponse res)
         throws ServletException, IOException {
@@ -529,7 +529,7 @@ public class RemoteVerifyServlet extends HttpServlet {
      *
      * @param config DOCUMENT ME!
      *
-     * @exception javax.servlet.ServletException The exception description.
+     * @exception jakarta.servlet.ServletException The exception description.
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);

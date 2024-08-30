@@ -17,7 +17,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.crl.RevocationReasons;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.Collection;

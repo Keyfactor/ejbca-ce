@@ -13,9 +13,28 @@
 
 package org.cesecore.keys.validation;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
@@ -46,33 +65,16 @@ import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import java.io.Serializable;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Handles management of key validators.
  *
  * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyValidatorSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyValidatorSessionRemote {
 
@@ -384,7 +386,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-
+    
     @Override
     public Map<String, Integer> getKeyValidatorNameToIdMap() {
         final HashMap<String, Integer> result = new HashMap<>();
@@ -416,6 +418,28 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     }
                     CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
+                    final String subjectAltName = endEntityInformation.getSubjectAltName();
+                    final List<String> dnsNames = new ArrayList<>();
+                    for (String split : subjectAltName.toLowerCase(Locale.ROOT).split(",")) {
+                        if (split.trim().startsWith(DnComponents.DNS.toLowerCase())) {
+                            dnsNames.add(split.trim().substring(DnComponents.DNS.length() + 1));
+                        }
+                    }
+                    //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
+                    if (certificateProfile.getAllowExtensionOverride() && requestMessage != null) {
+                        Extensions extensions = requestMessage.getRequestExtensions();
+                        if (extensions != null) {
+                            Extension extension = extensions.getExtension(Extension.subjectAlternativeName);
+                            if (extension != null) {
+                                String extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
+                                for (String split : extendedSubjectAltName.toLowerCase(Locale.ROOT).split(",")) {
+                                    if (split.trim().startsWith(DnComponents.DNS.toLowerCase())) {
+                                        dnsNames.add(split.trim().substring(DnComponents.DNS.length() + 1));
+                                    }
+                                }
+                            }
+                        }
+                    }
 
 					final List<String> dnsNames = new ArrayList<>();
 
@@ -697,7 +721,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-
+    
     @Override
     public long getNumberOfValidators() {
         return profileSession.getNumberOfProfileByType(Validator.TYPE_NAME);

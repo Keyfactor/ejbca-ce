@@ -21,9 +21,9 @@ import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.util.HttpTools;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Validator;
-import javax.ws.rs.core.Response;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Validator;
+import jakarta.ws.rs.core.Response;
 import java.security.cert.X509Certificate;
 
 /**
@@ -69,7 +69,7 @@ public abstract class BaseRestResource {
             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Missing request context");
         }
 
-        final X509Certificate[] certificates = (X509Certificate[]) requestContext.getAttribute("javax.servlet.request.X509Certificate");
+        final X509Certificate[] certificates = (X509Certificate[]) requestContext.getAttribute("jakarta.servlet.request.X509Certificate");
         final X509Certificate certificate = certificates != null ? certificates[0] : null;
         final String oauthBearerToken = HttpTools.extractBearerAuthorization(requestContext.getHeader(HttpTools.AUTHORIZATION_HEADER));
 

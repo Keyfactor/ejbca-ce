@@ -246,21 +246,22 @@
 	<path id="lib.resteasy-jaxrs.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/resteasy-jaxrs-lib">
 			<include name="reactive-streams-1.*.jar"/>
-			<include name="resteasy-client-4.*.jar"/>
-			<include name="resteasy-client-api-4.*.jar"/>
-			<include name="resteasy-core-4.*.jar"/>
-			<include name="resteasy-core-spi-4.*.jar"/>
-			<include name="resteasy-undertow-4.*.jar"/>
+			<include name="resteasy-client-*.jar"/>
+			<include name="resteasy-client-api-*.jar"/>
+			<include name="resteasy-core-*.jar"/>
+			<include name="resteasy-core-spi-*.jar"/>
+			<include name="resteasy-undertow-*.jar"/>
 			<include name="undertow-core-2.*.jar"/>
 			<include name="undertow-servlet-2.*.jar"/>
 			<include name="xnio-api-3.*.jar"/>
 			<include name="xnio-nio-3.*.jar"/>
 			<include name="wildfly-common-1.*.jar"/>
 			<include name="jboss-threads-2.*.jar"/>
-			<include name="jboss-servlet-api_4.0_spec-2.*.jar"/>
-			<include name="resteasy-jackson2-provider-4.*.jar"/>
+			<include name="jakarta.servlet-api-*.jar"/>
+			<include name="resteasy-jackson2-provider-*.jar"/>
+			<include name="resteasy-multipart-provider-*.jar"/>
 			<include name="json-patch-1.*.jar"/>
-			<include name="javax.ws.rs-api-2.*.jar"/>
+			<include name="jakarta.ws.rs-api-3.*.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib/ext/jackson2">
 			<include name="jackson-jaxrs-base-2.*.jar"/>
@@ -313,6 +314,8 @@
 	<path id="lib.commons-config.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-configuration2-*.jar"/></path>
 	<path id="lib.commons-collections4.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-collections4-*.jar"/></path>
 	<path id="lib.commons-logging.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-logging*.jar"/></path>
+	<path id="lib.commons-fileupload2.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload2-jakarta-*.jar"/></path>
+	<path id="lib.commons-fileupload2-core.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload2-core-*.jar"/></path>
 	<path id="lib.commons-fileupload.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-fileupload-*.jar"/></path>
 	<path id="lib.hc.classpath"><fileset dir="${ejbca.home}/lib" includes="httpcore-*.jar httpclient-*.jar httpmime-*.jar"/></path>
 	<path id="lib.commons-io.classpath"><fileset dir="${ejbca.home}/lib" includes="commons-io-*.jar"/></path>
@@ -329,7 +332,7 @@
 
 
 	<path id="lib.x509-common-util.classpath"><fileset dir="${ejbca.home}/lib" includes="x509-common-util*.jar"/></path> 
-	<path id="lib.cryptotokens.classpath"><fileset dir="${ejbca.home}/lib" includes="cryptotokens*.jar"/></path> 
+	<path id="lib.cryptotokens.classpath"><fileset dir="${ejbca.home}/lib" includes="cryptotokens-*.jar"/></path>
 	<path id="lib.p11ng.classpath"><fileset dir="${ejbca.home}/lib" includes="p11ng-*.jar"/></path> 
 	
 	
@@ -370,36 +373,37 @@
 	</path>
 
 	<path id="lib.jee.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-8.*.jar"/>
-		<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jakartaee-api*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.bind-api-*.jar"/>
 	</path>
 	
 	<path id="lib.jaxws-rs.classpath"><fileset dir="${ejbca.home}/lib/jee/soapclient" includes="jaxws-rt-*.jar"/></path>
-	<path id="lib.jaxws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jaxws-api-*.jar"/></path>
-	<path id="lib.javax.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.ejb-api-*.jar"/></path>
-	<path id="lib.javax.activaton.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="activation-*.jar"/></path>
-	<path id="lib.javax.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.jws-api-*.jar"/></path>
-	<path id="lib.javax.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.xml.soap-api-*.jar"/></path>
-	<path id="lib.javax.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="javax.mail-*.jar"/></path>
+	<path id="lib.jakarta.xml.ws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.ws-api-*.jar"/></path>
+	<path id="lib.jakarta.ejb-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.ejb-api-*.jar"/></path>
+	<path id="lib.angus.activation.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="angus.activation-*.jar"/></path>
+	<path id="lib.jakarta.jws-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jws-api-*.jar"/></path>
+	<path id="lib.jakarta.xml.soap-api.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.soap-api-*.jar"/></path>
+	<path id="lib.jakarta.mail.classpath"><fileset dir="${ejbca.home}/lib/jee" includes="jakarta.mail-*.jar"/></path>
 
-	<path id="lib.javax.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="javax.servlet-api-*.jar"/></path>
-	
+	<path id="lib.jakarta.servlet.classpath"><fileset dir="${ejbca.home}/lib/ext" includes="jakarta.servlet-api-*.jar"/></path>
+
+	<path id="lib.jaxb.core.classpath"><fileset dir="${ejbca.home}/lib/ext/wsgen" includes="jaxb-core-*.jar"/></path>
 	
 	<path id="wsgen.classpath">
 		<fileset dir="${ejbca.home}/lib/ext/wsgen">
 			<include name="*.jar"/>
 		</fileset>
-		<path refid="lib.jaxws-api.classpath"/>
+		<path refid="lib.jakarta.xml.ws-api.classpath"/>
 		<path refid="lib.jaxws-rs.classpath"/>
-		<path refid="lib.javax.jws-api.classpath"/>
-		<path refid="lib.javax.xml.soap-api.classpath"/>
+		<path refid="lib.jakarta.jws-api.classpath"/>
+		<path refid="lib.jakarta.xml.soap-api.classpath"/>
 		<path refid="soapclient.classpath"/>
 	</path>
 
     <!-- Client jars needed din order to run a WS client on Java 9 and later where the WS stack is not part of the SDK -->
     <path id="soapclient.classpath">
         <fileset dir="${ejbca.home}/lib/jee">
-            <include name="javaee-api*.jar"/>
+            <include name="jakarta.jakartaee-api*.jar"/>
         </fileset>
         <fileset dir="${ejbca.home}/lib/jee/soapclient">
             <include name="*.jar"/>
@@ -409,10 +413,10 @@
        	</fileset>
 
     	<fileset dir="${ejbca.home}/lib/jee">
-    		<include name="jaxws-api-*.jar"/>
-    		<include name="javax.jws-api-*.jar"/>
-    		<include name="activation-*.jar"/>
-    		<include name="javax.xml.soap-api-*.jar"/>
+    		<include name="jakarta.xml.ws-api-*.jar"/>
+    		<include name="jakarta.jws-api-*.jar"/>
+    		<include name="angus.activation-*.jar"/>
+    		<include name="jakarta.xml.soap-api-*.jar"/>
     	</fileset>
     </path>
 
@@ -421,7 +425,7 @@
 	</path>
 
 	<path id="lib.servlet.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jakartaee-api-*.jar"/>
 	</path>
 
 	<path id="lib.jsf.classpath">
@@ -429,7 +433,7 @@
 	</path>
 	
 	<path id="lib.jsp.classpath">
-		<fileset dir="${ejbca.home}/lib/jee" includes="javaee-api-7.0-*.jar"/>
+		<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.jakartaee-api-*.jar"/>
 	</path>
 	
 	<path id="lib.cesecore-common.classpath"><fileset file="${mod.cesecore-common.lib}"/></path>
@@ -465,7 +469,7 @@
 
 	<path id="lib.hibernate.validator">
 		<fileset dir="${ejbca.home}/lib/hibernate">
-			<include name="hibernate-validator-6.2.5.Final.jar"/>
+			<include name="hibernate-validator-*.Final.jar"/>
 		</fileset>
 		<fileset dir="${ejbca.home}/lib" includes="el-impl-2.2.jar"/>
 	</path>
@@ -477,20 +481,21 @@
             <include name="classmate*.jar"/>
             <include name="dom4j-*.jar"/>
         	<include name="FastInfoset*.jar"/>
+			<include name="hibernate-community-dialects-*.jar"/>
             <include name="hibernate-commons-annotations-*.jar"/>
             <include name="hibernate-core-*.jar"/>
         	<include name="istack-commons-runtime*.jar"/>
         	<include name="jandex*.jar"/>
-        	<include name="javax.activation*.jar"/>
-        	<include name="javax.persistence*.jar"/>
-            <include name="jaxb-api*.jar"/>
+        	<include name="jakarta.activation*.jar"/>
+        	<include name="jakarta.persistence*.jar"/>
+            <include name="jakarta.xml.bind-api*.jar"/>
         	<include name="jaxb-runtime*.jar"/>
 <!--            <include name="jboss-logging-*.jar"/>-->
             <include name="jboss-transaction-api*.jar"/>
         	<include name="stax-ex*.jar"/>
         	<include name="txw2*.jar"/>
         </fileset>
-	<fileset dir="${ejbca.home}/lib/jee" includes="jaxb-api-*.jar"/>
+	<fileset dir="${ejbca.home}/lib/jee" includes="jakarta.xml.bind-*.jar"/>
 	</path>
 
 	<path id="lib.clientToolBox.classpath">

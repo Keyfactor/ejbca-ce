@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.approval;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;

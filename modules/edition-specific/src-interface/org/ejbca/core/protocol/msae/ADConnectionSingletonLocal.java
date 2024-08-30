@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.msae;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
 import javax.naming.directory.SearchControls;

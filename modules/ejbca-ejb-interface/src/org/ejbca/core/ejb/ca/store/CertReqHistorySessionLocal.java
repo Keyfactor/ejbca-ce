@@ -16,7 +16,7 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.List;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;

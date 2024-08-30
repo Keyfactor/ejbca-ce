@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @see KeyStoreCreateSession

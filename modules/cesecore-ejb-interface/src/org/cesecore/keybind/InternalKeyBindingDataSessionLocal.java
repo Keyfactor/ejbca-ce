@@ -15,7 +15,7 @@ package org.cesecore.keybind;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Create Read Update Delete (CRUD) interface for InternalKeyBindingData.
