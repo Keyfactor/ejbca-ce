@@ -33,7 +33,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.config.OAuthConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
@@ -71,10 +70,10 @@ import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
@@ -98,7 +97,7 @@ import java.util.Set;
  * Contains methods that are used by both the EjbcaWS, the Ejbca WS tests and by RAMasterApiSessionBean.
  * For instance, methods to convert between EndEntityInformation and UserDataWO.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EjbcaWSHelperSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EjbcaWSHelperSessionBean implements EjbcaWSHelperSessionLocal, EjbcaWSHelperSessionRemote {
 

@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.Part;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;

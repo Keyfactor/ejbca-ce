@@ -41,18 +41,18 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang.StringUtils;
@@ -97,7 +97,6 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -164,7 +163,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * releases.
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote {
 

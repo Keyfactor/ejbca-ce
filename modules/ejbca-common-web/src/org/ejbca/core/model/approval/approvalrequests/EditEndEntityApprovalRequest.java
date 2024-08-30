@@ -18,7 +18,7 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;

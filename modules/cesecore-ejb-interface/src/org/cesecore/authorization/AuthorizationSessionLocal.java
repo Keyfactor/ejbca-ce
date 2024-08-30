@@ -14,8 +14,8 @@ package org.cesecore.authorization;
 
 import java.util.HashMap;
 
-import javax.ejb.Local;
-import javax.ejb.Timer;
+import jakarta.ejb.Local;
+import jakarta.ejb.Timer;
 
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
