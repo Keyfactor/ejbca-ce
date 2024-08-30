@@ -14,7 +14,7 @@ package org.ejbca.core.protocol.acme;
 
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Test proxy for AcmeAccountDataSession

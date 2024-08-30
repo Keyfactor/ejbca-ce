@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -275,7 +275,7 @@
 				<h:selectManyListbox id="fieldsInLdapDn"
 									value="#{editPublisher.ldapPublisherMBData.useFieldInLdapDN}" disabledClass="#{editPublisher.readOnly}" styleClass="select-list" size="10"
 									rendered="#{not editPublisher.ldapPublisherMBData.useCustomDnOrder}"
-									required="true" requiredMessage="#{web.text.MUSTSELECTATLEASTONEFIELD}" converter="javax.faces.Integer">
+									required="true" requiredMessage="#{web.text.MUSTSELECTATLEASTONEFIELD}" converter="jakarta.faces.Integer">
 					<f:selectItems value="#{editPublisher.ldapPublisherMBData.ldapPublisherLocationFieldsFromCertificateDN}" />
 				</h:selectManyListbox>
 				<h:inputText id="fieldsInLdapDnCustomOrder" size="45" value="#{editPublisher.ldapPublisherMBData.fieldsInLdapDnCustomOrder}"

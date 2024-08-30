@@ -26,9 +26,9 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Set;
 
-import javax.activation.DataSource;
-import javax.mail.Multipart;
-import javax.mail.internet.MimeMultipart;
+import jakarta.activation.DataSource;
+import jakarta.mail.Multipart;
+import jakarta.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
@@ -51,7 +51,7 @@ public class CertFetchAndVerify {
 		this.cf = CertificateFactory.getInstance("X.509");
 	}
 	/**
-	 * One could think that the class javax.activation.URLDataSource should be usable when connection to a server to retrieve a multipart
+	 * One could think that the class jakarta.activation.URLDataSource should be usable when connection to a server to retrieve a multipart
 	 * message, but it is not. URLDataSource makes two connections when a message is received.
 	 *
 	 */

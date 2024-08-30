@@ -12,8 +12,8 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca;
 
-import javax.ejb.ApplicationException;
-import javax.xml.ws.WebFault;
+import jakarta.ejb.ApplicationException;
+import jakarta.xml.ws.WebFault;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;

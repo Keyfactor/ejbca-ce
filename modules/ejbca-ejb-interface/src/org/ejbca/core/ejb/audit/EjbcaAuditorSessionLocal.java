@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.audit;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @see EjbcaAuditorSession

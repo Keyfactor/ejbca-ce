@@ -14,8 +14,8 @@ package org.cesecore.util;
 
 import java.util.List;
 
-import javax.persistence.NonUniqueResultException;
-import javax.persistence.Query;
+import jakarta.persistence.NonUniqueResultException;
+import jakarta.persistence.Query;
 
 /**
  * Helper class to cope with Hibernates JPA 1.0 Provider implementation.

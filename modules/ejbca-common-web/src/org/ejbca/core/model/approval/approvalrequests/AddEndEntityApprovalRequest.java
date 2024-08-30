@@ -19,8 +19,8 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.EJBException;
-import javax.persistence.PersistenceException;
+import jakarta.ejb.EJBException;
+import jakarta.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;

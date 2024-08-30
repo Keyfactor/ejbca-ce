@@ -33,8 +33,8 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.FinderException;
-import javax.ejb.ObjectNotFoundException;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;

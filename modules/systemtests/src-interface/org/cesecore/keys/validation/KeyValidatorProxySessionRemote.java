@@ -13,7 +13,7 @@
 
 package org.cesecore.keys.validation;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 

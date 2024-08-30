@@ -12,11 +12,12 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CertificateCountResponse {
 
-	@ApiModelProperty(value = "The quantity of issued or active certificates", example = "1054")
+	@Schema(description = "The quantity of issued or active certificates", example = "1054")
 	private Long count;
 
 	public CertificateCountResponse(Long count) {

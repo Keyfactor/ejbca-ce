@@ -20,12 +20,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.TreeMap;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.Application;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.Application;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ValueChangeEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -355,7 +355,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
     /** Returns the list of available CAs, only including the actually present CAs.
      * 
-     * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
+     * @return List<jakarta.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
      */
     public List<SelectItem> getAvailableCAs() {
         List<SelectItem> availableCANames = new ArrayList<>();
@@ -375,7 +375,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
     /** Returns the list of available CAs, also including the special option 'Any CA'.
      * 
-     * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
+     * @return List<jakarta.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
      */
     public List<SelectItem> getAvailableCAsWithAnyOption() {
         List<SelectItem> availableCANames = new ArrayList<>();
@@ -387,7 +387,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 
     /** Returns the list of available external X509 CAs, also including the special option 'Any CA'.
      * 
-     * @return List<javax.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
+     * @return List<jakarta.faces.model.SelectItem>(String, String) of CA id's (as String) and CA names
      */
     public List<SelectItem> getAvailableExternalX509CAsWithAnyOption() {
         final List<SelectItem> availableCANames = new ArrayList<>();

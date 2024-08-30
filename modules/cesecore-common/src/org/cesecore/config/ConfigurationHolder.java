@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
+import jakarta.enterprise.concurrent.ManagedScheduledExecutorService;
 
 import org.apache.commons.configuration2.CompositeConfiguration;
 import org.apache.commons.configuration2.Configuration;
@@ -56,8 +56,6 @@ import org.apache.log4j.Logger;
  * ConfigurationHolder.getExpandedString("my.conf.property.key", "default value"); to be able to parse values containing ${property}
  *
  * See in-line comments below for the sources added to the configuration.
- *
- * @version $Id$
  */
 public final class ConfigurationHolder {
 
@@ -463,9 +461,8 @@ public final class ConfigurationHolder {
                 @SuppressWarnings("unchecked")
                 @Override
                 public void onEvent(ConfigurationBuilderEvent event) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Loaded external configuration file: " + ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource()).getFileHandler().getFile().getAbsolutePath());
-                    }
+                    log.info("Loaded external configuration file: " + ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource()).getFileHandler().getFile().getAbsolutePath());
+                    logReloadedConfiguration(event);
                 }
             }
         );
@@ -475,6 +472,24 @@ public final class ConfigurationHolder {
         
         final PropertiesConfiguration config = builder.getConfiguration();
         return config;
+    }
+    
+    @SuppressWarnings("unchecked")
+    private static void logReloadedConfiguration(ConfigurationBuilderEvent event) {
+        if (log.isDebugEnabled()) {
+            final ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration> builder = ((ReloadingFileBasedConfigurationBuilder<PropertiesConfiguration>) event.getSource());                         
+            final String file = builder.getFileHandler().getFile().getAbsolutePath();
+            try {
+                final PropertiesConfiguration properties = builder.getConfiguration();
+                final Iterator<String> it = properties.getKeys();
+                while(it.hasNext()) {
+                    final String key = it.next();
+                    log.debug("Reloaded property '" + key + "' = '" + properties.getString(key) + "'");
+                }
+            } catch (ConfigurationException e) {
+                log.error("Failed to reload external configuration file: '" + file + "'");
+            }
+        }
     }
     
     private static class InternalPeriodicReloadingTrigger

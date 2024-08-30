@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.acme;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.ejbca.acme.AcmeAccountData;
 

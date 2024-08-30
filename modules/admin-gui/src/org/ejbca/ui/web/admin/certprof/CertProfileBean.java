@@ -50,12 +50,12 @@ import org.ejbca.cvc.AccessRightAuthTerm;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
-import javax.annotation.PostConstruct;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -436,10 +436,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_EC) ||
                     certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECDSA)    ) {
                 ret.add(new SelectItem(CertificateProfile.ANY_EC_CURVE, getEjbcaWebBean().getText("AVAILABLEECDSABYBITS")));
-                namedEcCurvesMap.putAll(AlgorithmTools.getOnlyNamedEcCurvesMap(false));
+                namedEcCurvesMap.putAll(AlgorithmTools.getOnlyNamedEcCurvesMap());
             }
             if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-                namedEcCurvesMap.putAll(AlgorithmTools.getNamedGostCurvesMap(false));
+                namedEcCurvesMap.putAll(AlgorithmTools.getNamedGostCurvesMap());
             }
             final String[] keys = namedEcCurvesMap.keySet().toArray(new String[0]);
             Arrays.sort(keys);

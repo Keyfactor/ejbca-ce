@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.crl;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -78,7 +78,7 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
      * @param crloverlaptime A new delta CRL is created if the current one expires within the crloverlaptime given in milliseconds
      *       
      * @return true if a Delta CRL was created
-     * @throws javax.ejb.EJBException if communication or system error occurs
+     * @throws jakarta.ejb.EJBException if communication or system error occurs
      */
     boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long crloverlaptime)
             throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
@@ -102,7 +102,7 @@ public interface PublishingCrlSessionLocal extends PublishingCrlSession {
      * @return fingerprint (primary key) of the generated CRL or null if
      *            generation failed
      * @throws AuthorizationDeniedException
-     * @throws javax.ejb.EJBException if a communications- or system error occurs
+     * @throws jakarta.ejb.EJBException if a communications- or system error occurs
      */
     byte[] internalCreateDeltaCRL(AuthenticationToken admin, CA ca, int crlPartitionIndex, CRLInfo lastBaseCrlInfo)
             throws CryptoTokenOfflineException, CAOfflineException, AuthorizationDeniedException;

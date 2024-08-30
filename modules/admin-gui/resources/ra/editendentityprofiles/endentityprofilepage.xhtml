@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:pt="http://xmlns.jcp.org/jsf/passthrough">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets"
+    xmlns:pt="jakarta.faces.passthrough">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -19,8 +19,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-     
-     @version $Id$
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -1141,7 +1139,7 @@
                                     id="availableCertProfilesList"
                                     value="#{endEntityProfileMBean.allCertificateProfiles}" />
                                 <f:converter
-                                    converterId="javax.faces.Integer" />
+                                    converterId="jakarta.faces.Integer" />
                             </h:selectManyListbox>
                         </h:panelGroup>
                     </h:panelGrid>
@@ -1177,7 +1175,7 @@
                             <f:selectItems id="availableCAList"
                                 value="#{endEntityProfileMBean.allCasWithAnyCaOption}" />
                             <f:converter
-                                converterId="javax.faces.Integer" />
+                                converterId="jakarta.faces.Integer" />
                         </h:selectManyListbox>
                     </h:panelGroup>
                 </h:panelGrid>
@@ -1211,7 +1209,7 @@
                             <f:selectItems id="availableTokenList"
                                 value="#{endEntityProfileMBean.allTokenTypes}" />
                             <f:converter
-                                converterId="javax.faces.Integer" />
+                                converterId="jakarta.faces.Integer" />
                         </h:selectManyListbox>
                     </h:panelGroup>
                 </h:panelGrid>

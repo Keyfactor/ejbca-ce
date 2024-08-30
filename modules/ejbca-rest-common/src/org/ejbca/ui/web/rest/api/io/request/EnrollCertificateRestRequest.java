@@ -13,7 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import com.keyfactor.util.CertTools;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
 /**
@@ -21,24 +21,24 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
  *
  */
 public class EnrollCertificateRestRequest {
-    @ApiModelProperty(value = "Certificate request", example = "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
+    @Schema(description = "Certificate request", example = "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     private String certificateRequest;
-    @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
+    @Schema(description = "Certificate profile name", example = "ENDUSER")
     private String certificateProfileName;
-    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
+    @Schema(description = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
+    @Schema(description = "Certificate Authority (CA) name", example = "ExampleCA")
     private String certificateAuthorityName;
-    @ApiModelProperty(value = "Username", example = "JohnDoe")
+    @Schema(description = "Username", example = "JohnDoe")
     private String username;
-    @ApiModelProperty(value = "Password", example = "foo123")
+    @Schema(description = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Account Binding ID", example = "1234567890")
+    @Schema(description = "Account Binding ID", example = "1234567890")
     private String accountBindingId;
     private boolean includeChain;
-    @ApiModelProperty(value = "Email", example = "john.doe@example.com")
+    @Schema(description = "Email", example = "john.doe@example.com")
     private String email;
-    @ApiModelProperty(value = "Response Format (DER format is default)", example = "DER")
+    @Schema(description = "Response Format (DER format is default)", example = "DER")
     private String responseFormat ="DER";
 
     public EnrollCertificateRestRequest() {
