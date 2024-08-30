@@ -20,9 +20,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CAConstants;

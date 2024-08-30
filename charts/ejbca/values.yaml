@@ -2,12 +2,6 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 ejbca:
-  # Application edition: "ee" or "ce" (default: ee)
-  #edition: ce
-
-  # Application variant: not set for full EJBCA, "ra" or "va" (default: not set)
-  #variant: ra
-
   importEjbcaConfFiles: false
   #ejbcaConfFilesSecret: ejbca-conf
 
@@ -97,6 +91,11 @@ ejbca:
   #     secretKeyRef:
   #       name: ejbca-smtp-secrets
   #       key: smtp_password
+
+  #envFrom:
+  #  - secretRef:
+  #      name: configdump-secrets
+
   # Extra init containers to be added to the deployment
   initContainers: []
   # Extra sidecar containers to be added to the deployment
@@ -107,12 +106,16 @@ ejbca:
   volumeMounts: []
 
 replicaCount: 1
+
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+updateStrategy: {}
+#  type: RollingUpdate
+#  rollingUpdate: {}
+
 image:
-  # Components of the image pull path can be overridden in case the image is retrieved from a private registry.
-  # Path format: registry/repository/imageName:tag
-  #registry: example.com
-  #repository: keyfactor
-  #name: ejbca-ee
+  # Application variant: not set for full EJBCA, "ra" or "va"
+  #variant: ra
+  repository: keyfactor/ejbca-ce
   tag: latest
   pullPolicy: IfNotPresent
 imagePullSecrets: []
@@ -126,9 +129,12 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+podLabels: {}
 podAnnotations: {}
 podSecurityContext: {}
 # fsGroup: 2000
+# Annotations to add to the service EJBCA and nginx
+serviceAnnotations: {}
 
 securityContext: {}
 # capabilities:
@@ -192,10 +198,6 @@ ingress:
     nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
     ## Verification depth of the client certificates chain
     nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
-    ## Configure sticky sessions if using more than one replica
-    #nginx.ingress.kubernetes.io/affinity: "cookie"
-    #nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"
-    #nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
   hosts: []
   #- host: ""
   #  paths:
@@ -203,12 +205,52 @@ ingress:
   #      pathType: Prefix
   tls: []
 resources: {}
+# https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 5
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+  behavior: {}
+  # scaleDown:
+  #   stabilizationWindowSeconds: 300
+  #   policies:
+  #   - type: Percent
+  #     value: 100
+  #     periodSeconds: 15
+  # scaleUp:
+  #   stabilizationWindowSeconds: 0
+  #   policies:
+  #   - type: Percent
+  #     value: 100
+  #     periodSeconds: 15
+  #   - type: Pods
+  #     value: 4
+  #     periodSeconds: 15
+  #   selectPolicy: Max
+
+# https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+podDisruptionBudget:
+  create: false
+  minAvailable: 1
+  maxUnavailable: ""
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
 nodeSelector: {}
-tolerations: []
 affinity: {}
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+tolerations: []
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+topologySpreadConstraints: []
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
+priorityClassName: ""
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/
+schedulerName: ""
+
+# https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
+terminationGracePeriodSeconds: ""

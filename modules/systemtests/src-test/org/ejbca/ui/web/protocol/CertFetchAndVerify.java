@@ -26,9 +26,9 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Set;
 
-import javax.activation.DataSource;
-import javax.mail.Multipart;
-import javax.mail.internet.MimeMultipart;
+import jakarta.activation.DataSource;
+import jakarta.mail.Multipart;
+import jakarta.mail.internet.MimeMultipart;
 
 import org.apache.log4j.Logger;
 import org.cesecore.SystemTestsConfiguration;
@@ -43,8 +43,6 @@ import org.junit.Assert;
  * Found CA certificates issued by old CAs that has been renewed are checked. It is checked that the whole chin to the root are in the DB for this certificates.
  * Note that old CA certificates will only be found if there is now newer with same issuer and subject DN.
  * The test is started by calling {@link #doIt(X509Certificate, Set)}
- * 
- *
  */
 public class CertFetchAndVerify {
 	private static final Logger log = Logger.getLogger(CertFetchAndVerify.class);
@@ -53,7 +51,7 @@ public class CertFetchAndVerify {
 		this.cf = CertificateFactory.getInstance("X.509");
 	}
 	/**
-	 * One could think that the class javax.activation.URLDataSource should be usable when connection to a server to retrieve a multipart
+	 * One could think that the class jakarta.activation.URLDataSource should be usable when connection to a server to retrieve a multipart
 	 * message, but it is not. URLDataSource makes two connections when a message is received.
 	 *
 	 */

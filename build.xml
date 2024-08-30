@@ -22,8 +22,8 @@
 	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<property name="reports.base.dir" location="${ejbca.home}/reports/"/>
 	<property name="reports.dir" location="${reports.base.dir}/test"/>		
-	<import file="./test.xmli" />
-	<import file="./docs.xmli" />
+	<import file="./test.xml" />
+	<import file="./docs.xml" />
         <!-- Include the build file which takes care of removed features detection (for options etc). -->
         <import file="./removed.xml" />
         <!-- Include the build file which takes care of deprecation detection (for options etc). -->
@@ -547,7 +547,7 @@
     		<!-- Add other specific files we need in META-INF -->
             <zipfileset prefix="META-INF" dir="${eardd.src}/META-INF" includes="log4j.xml"/>
     		<!-- Specify that we will use a specific WS implementation -->
-            <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
+            <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="jakarta.xml.soap.SAAJMetaFactory"/>
         	<!-- Add application server specific XML files -->
             <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="jboss-deployment-structure.xml"/>
         	<!-- The place where to find plugins -->
@@ -1013,6 +1013,7 @@
 				<exclude name=".github/" />
 				<exclude name="OWNERS" />
 				<exclude name="OWNERS_ALIASES" />
+                <exclude name="src/package/" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />

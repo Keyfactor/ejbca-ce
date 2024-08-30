@@ -9,7 +9,7 @@ dependencies {
     compileOnly(project(":modules:cesecore-common"))
     compileOnly(project(":modules:cesecore-ejb-interface"))
     compileOnly(project(":modules:cesecore-entity"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.jaxb.runtime)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
@@ -20,6 +20,7 @@ dependencies {
     compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl)
 }
 

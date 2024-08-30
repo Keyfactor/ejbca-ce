@@ -40,22 +40,22 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.component.html.HtmlSelectOneMenu;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.ComponentSystemEvent;
-import javax.faces.model.SelectItem;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.Part;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.component.html.HtmlSelectOneMenu;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.event.ComponentSystemEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
@@ -1613,7 +1613,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
             if (email != null) {
                 final Map<Integer, FieldInstance> map = subjectAlternativeName.getFieldInstancesMap().get(DnComponents.RFC822NAME);
                 for (FieldInstance fi : map.values()) {
-                    if (fi.isRfcUseEmail()) {
+                    if (fi.getRfcEmailUsed()) {
                         fi.setValue(email);
                     }
                 }
@@ -1800,10 +1800,13 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 PKCS10RequestMessage pkcs10RequestMessage = (PKCS10RequestMessage) certRequest;
                 PublicKey alternativePublicKey = pkcs10RequestMessage.getAlternativePublicKey();
                 if (alternativePublicKey != null) {
-                    final String alternativeKeyAlgorithm = AlgorithmTools.getKeySpecification(alternativePublicKey);
-                    final String alternativeKeySpecification = AlgorithmTools.getKeyAlgorithm(alternativePublicKey);
+                    final String alternativeKeyAlgorithm = AlgorithmTools.getKeyAlgorithm(alternativePublicKey);
+                    final String alternativeKeySpecification = AlgorithmTools.getKeySpecification(alternativePublicKey);
                     alternativeAlgorithmFromCsrUiRepresentation = getAlgorithmUiRepresentationString(alternativeKeyAlgorithm,
                             alternativeKeySpecification);
+                }
+                else {
+                    alternativeAlgorithmFromCsrUiRepresentation = null;
                 }
             }
             publicKeyModulus = KeyTools.getKeyModulus(publicKey);

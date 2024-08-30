@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Bridge for local EJB calls that we only want to expose to in test deployments.

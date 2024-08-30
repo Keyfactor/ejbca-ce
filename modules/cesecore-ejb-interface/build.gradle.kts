@@ -5,7 +5,7 @@ plugins {
 dependencies {
     compileOnly(project(":modules:cesecore-common"))
     compileOnly(project(":modules:cesecore-entity"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
@@ -16,6 +16,7 @@ dependencies {
     compileOnly(libs.commons.io)
     compileOnly(libs.commons.configuration2)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl)
 }
 

@@ -14,7 +14,7 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 /** 
  * Value object holding a Name and Id pair, for example for a CA or a end entity- or certificate profile.

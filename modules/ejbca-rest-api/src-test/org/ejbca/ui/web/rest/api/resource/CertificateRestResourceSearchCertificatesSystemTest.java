@@ -15,7 +15,6 @@ package org.ejbca.ui.web.rest.api.resource;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertEqualJsonPropertyAsLong;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -33,9 +32,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;

@@ -1,0 +1,232 @@
+<?xml version="1.0"?>
+
+<project name="doc" default="doc" basedir=".">
+
+    <description>
+        Build documentation - XDocs and Javadoc.
+    </description>
+
+    <!-- Initialization properties -->
+    <property name="project.name" value="ejbca"/>
+    <property name="docs.tools.dest"    location="tmp/docs-tools"/>
+    <property name="docs.dist"    location="doc/dist"/>
+    <property name="docs.dest"    location="tmp/htdocs/docs"/>
+    <property name="docs.nojs.dest"    location="tmp/htdocs/docsnojs"/>
+    <property name="docs.dest.ws" location="tmp/htdocs/docs/ws"/>
+    <property name="docs.dest.rest" location="tmp/htdocs/docs/rest"/>
+    <property name="docs.dest.acme" location="tmp/htdocs/docs/acme"/>
+    <property name="docs.dest.logtypes" location="tmp/htdocs/docs/logtypes"/>
+    <property name="jdocs.ws.tmp" location="tmp/jdocswstmp"/>
+    <property name="client.ws.class" value="EjbcaWS"/>
+    <property name="es.iface.dir" location="modules/edition-specific/src-interface/org/ejbca/core/protocol/ws/objects"/>
+    <property name="ws.objects.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/objects"/>
+    <property name="ws.common.dir" location="modules/ejbca-ws/src/org/ejbca/core/protocol/ws/common"/>
+    <property name="ws.master.file" location="${ws.common.dir}/EjbcaWS.java"/>
+   	<property file="src/doc.properties"/>
+    <property name="confluence.url"  value="none" />
+    <property name="confluence.port"  value="-1" />
+    <path id="jdoc.classpath">
+       <fileset dir="${dist.dir}">
+           <include name="ejbca-common.jar"/>
+        </fileset>  
+       <fileset dir="${ejbca.home}/lib">
+           <include name="bcprov*.jar"/>
+           <include name="bcpkix*.jar"/>
+           <include name="bctls*.jar"/>
+           <include name="x509-common-util*.jar"/> 
+           <include name="cryptotokens-*.jar"/> 
+        </fileset>
+       <fileset dir="${ejbca.home}/lib/jee">
+           <include name="jakarta.jakartaee-api*.jar"/>
+           <include name="jakarta.xml.bind-api*.jar"/>
+           <include name="jakarta.xml.ws-api*.jar"/>
+           <include name="jakarta.jws-api*.jar"/>
+        </fileset>
+       <fileset dir="${mod.path}/dist">
+           <include name="ejbca-ejb.jar" />
+           <include name="cesecore-common.jar"/>
+           <include name="cesecore-entity.jar"/>
+           <include name="cesecore-ejb-interface.jar"/>
+        </fileset>
+    </path>
+    
+    <!-- =================================================================== -->
+    <!-- Build doc part                                                                                                                             -->
+    <!-- =================================================================== -->
+	 <target name="doc.war" if="doc.war.enabled">
+	    <copy file="${jquery.file}" todir="${docs.dist}/assets/js"/>
+    	<antcall target="doc" inheritall="true" inheritrefs="true"/>  	
+    	<war destfile="${dist.dir}/doc.war" webxml="${ejbca.home}/src/publicweb/empty_webxml.xml">
+            <fileset dir="${docs.dest}" />
+        </war>  
+    </target>
+	
+    <target name="doc-build-tool">
+    	<mkdir dir="${docs.tools.dest}"/>
+    	<javac srcdir="${ejbca.home}/modules/ejbca-common/src/" destdir="${docs.tools.dest}" debug="on" includeantruntime="no" encoding="UTF-8"
+			includes="org/ejbca/util/JAXWSDocAndConvTools.java"/>
+    </target>
+
+    <condition property="mod.rest-api.exists">
+        <available file="${mod.ejbca-rest-api.path}/build.xml" />
+    </condition>
+    
+    <condition property="mod.rest-cryptotoken.exists">
+        <available file="${mod.ejbca-rest-cryptotoken.path}/build.xml" />
+    </condition>
+    
+    <condition property="mod.rest-camanagement.exists">
+        <available file="${mod.ejbca-rest-camanagement.path}/build.xml" />
+    </condition>
+
+    <condition property="mod.acme.exists">
+        <available file="${mod.acme.path}/build.xml" />
+    </condition>
+
+    <condition property="update.from.confluence" value="true" else="false">
+        <istrue value="${doc.update}"/>
+    </condition>
+    
+	<target name="doc-confluence">
+		<antcall target="doc-confluence-from-server" inheritall="true" inheritrefs="true"/>
+		<antcall target="doc-confluence-copy-local" inheritall="true" inheritrefs="true"/>
+	</target>
+	
+	<target name="doc-confluence-from-server" if="${update.from.confluence}">
+	    <copy file="${jquery.file}" todir="${docs.dist}/assets/js"/>
+	    <delete dir="${docs.dest}" />
+	    <mkdir dir="${docs.dest}"/>
+	    
+        <condition property="connected.to.confluence" value="true" else="false">
+            <and>
+                <istrue value="${doc.update}"/>          
+                <isreachable url="http://${confluence.url}:${confluence.port}/" timeout="10"/>
+            </and>  
+        </condition>    
+        <fail message="Could not contact Confluence Server at http://${confluence.url}:${confluence.port}/. doc.update=${doc.update}">
+			<condition>
+	       		<isfalse value="${connected.to.confluence}"/>
+	       	</condition>
+		</fail>
+		<echo message="Pulling documentation from Confluence Server"/>
+		<!-- Perform a REST call to Confluence - only runs if -Ddoc.update is set and Confluence can be contacted -->
+		<!-- The values here are described in doc.properties -->
+		<get src="http://${confluence.url}:${confluence.port}/rest/scroll-html/1.0/sync-export?exportSchemeId=${confluence.export.schemed.id}&amp;rootPageId=${confluence.root.page.id}&amp;versionId=${confluence.version}" 
+			dest="${docs.dest}/export.zip" 
+			username="${confluence.username}"
+			password="${confluence.password}"
+			/>
+		<unzip src="${docs.dest}/export.zip" dest="${docs.dest}">
+		    <patternset>
+        		<exclude name="**/jquery.min.js"/>
+    		</patternset>
+		</unzip>
+		<delete file="${docs.dest}/export.zip"/>
+		<copy file="${docs.dist}/assets/js/jquery.min.js/" todir="${docs.dest}/assets/js"/>
+	</target>
+	
+	<target name="doc-confluence-copy-local" unless="${update.from.confluence}">
+		<!-- Do not update from Confluence, instead copy in a placeholder file (if no documentation currently exists). -->
+		<echo message="Using local documentation, if any. Set -Ddoc.update=true if you wish to update documentation from Confluence."/>		
+		<mkdir dir="${docs.dest}"/>
+		<copy todir="${docs.dest}">
+        	<fileset dir="${docs.dist}" includes="**/*"/>
+        </copy>
+	</target>
+
+	<target name="doc-external-deps" unless="docs.external-deps-satfisfied">
+		<antcall target="ejbca-common.jar" inheritall="true" inheritrefs="true"/>
+	</target>
+        
+    <target name="doc" depends="doc-build-tool, doc-external-deps, doc-confluence, doc-rest, doc-acme" description="Build EJBCA inline ear file docs. Set -Ddoc.update=true to update documentation from PrimeKey's Confluence Server.">
+        <echo message="WS=${ws.objects.dir}"/>
+        <mkdir dir="${jdocs.ws.tmp}"/>
+        <mkdir dir="${docs.dest.ws}"/>
+	    <javadoc destdir="${docs.dest.ws}"
+	             author="true"
+	             version="true"
+	             Package="false"
+	             Use="false"
+	             nodeprecated="true"
+	             nodeprecatedlist="true"
+	    	     classpathref="jdoc.classpath"
+	             windowtitle="EJBCA WS">
+	        <packageset dir="${jdocs.ws.tmp}"/>
+	        <fileset dir="modules/cesecore-common/src" defaultexcludes="yes">
+	          <include name="**/AlgorithmConstants.java"/>
+	        </fileset>
+	        <fileset dir="${es.iface.dir}" defaultexcludes="yes">
+	          <include name="**/*ConstantsWS.java"/>
+	        </fileset>
+	        <fileset dir="${ws.common.dir}" defaultexcludes="yes">
+	          <include name="**/CertificateHelper.java"/>
+	          <include name="**/KeyStoreHelper.java"/>
+	        </fileset>
+	       <link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
+	      <doctitle><![CDATA[<h1>EJBCA WS Support</h1>]]></doctitle>
+	      <bottom><![CDATA[<i>2019 PrimeKey Solutions AB.</i>]]></bottom>
+	    </javadoc>
+        <mkdir dir="${docs.dest.logtypes}"/>
+	    <javadoc destdir="${docs.dest.logtypes}"
+	             author="false"
+	             notree="true"
+	             nohelp="true"
+	             version="false"
+	             Package="false"
+	             Use="false"
+	             nodeprecated="true"
+	             nodeprecatedlist="true"
+	    	     classpathref="jdoc.classpath"
+	             windowtitle="EJBCA and CESeCore Audit Log types">
+	        <fileset dir="modules/cesecore-common/src" defaultexcludes="yes">
+	          <include name="org/cesecore/audit/enums/*Types.java"/>
+	          <include name="org/cesecore/audit/enums/EventStatus.java"/>
+	        </fileset>
+	        <fileset dir="modules/ejbca-ejb-interface/src" defaultexcludes="yes">
+	          <include name="org/ejbca/core/ejb/audit/enums/*Types.java"/>
+	        </fileset>
+	       <link offline="true" href="http://docs.oracle.com/javase/7/docs/api/" packagelistLoc="${env.JAVA_HOME}/docs/api"/>
+	      <doctitle><![CDATA[<h1>EJBCA and CESeCore Audit Log types</h1>]]></doctitle>
+	      <bottom><![CDATA[<i>2019 PrimeKey Solutions AB.</i>]]></bottom>
+	    </javadoc>
+
+        <condition property="jquery.dir.exists" else="false"><available file="${docs.dest.ws}/jquery" type="dir" /></condition>
+        <echo message="Folder found: ${jquery.dir.exists}" />
+        <antcall target="replace-jquery" inheritall="true" inheritrefs="true" />
+        <echo message="Local documentation is now available in file://${docs.dest}/index.html"/>
+    </target>
+
+    <target name="replace-jquery" if="${jquery.dir.exists}">
+        <delete file="${docs.dest.ws}/jquery/jquery-3.3.1.js" />
+        <delete file="${docs.dest.ws}/jquery/external/jquery/jquery.js" />
+        <delete file="${docs.dest.logtypes}/jquery/jquery-3.3.1.js" />
+        <delete file="${docs.dest.logtypes}/jquery/external/jquery/jquery.js" />
+        <copy file="${jquery.file}" todir="${docs.dest.ws}/jquery" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.ws}/jquery/external/jquery/" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.logtypes}/jquery" failonerror="false"/>
+        <copy file="${jquery.file}" todir="${docs.dest.logtypes}/jquery/external/jquery/" failonerror="false"/>
+        <replace dir="${docs.dest.ws}" value="jquery.min.js">
+          <replacetoken>jquery-3.3.1.js</replacetoken>
+        </replace>
+        <replace dir="${docs.dest.logtypes}" value="jquery.min.js">
+          <replacetoken>jquery-3.3.1.js</replacetoken>
+        </replace>
+    </target>
+
+    <target name="doc-rest" if="${mod.rest-api.exists}">
+        <mkdir dir="${docs.dest.rest}"/>
+        <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/openapi-generator-cli-7.7.0.jar" fork="true">
+            <arg line="generate -i ${mod.ejbca-rest-api.path}/resources/openapi.json -g html2 -o ${docs.dest.rest}
+            -t ${ejbca.home}/modules/ejbca-rest-common/htmlDocsTemplate"/>
+        </java>
+    </target>
+    
+    <target name="doc-acme" if="${mod.acme.exists}">
+        <mkdir dir="${docs.dest.acme}"/>
+        <java dir="${ejbca.home}" jar="${ejbca.home}/lib/ext/swagger docs/openapi-generator-cli-7.7.0.jar" fork="true">
+            <arg line="generate -i ${mod.acme.path}/resources/openapi.json -g html2 -o ${docs.dest.acme}
+            -t ${ejbca.home}/modules/ejbca-rest-common/htmlDocsTemplate"/>
+        </java>
+    </target>
+    
+</project>

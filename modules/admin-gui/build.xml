@@ -22,7 +22,7 @@
 		<path refid="lib.jsf.classpath"/>
 		<path refid="lib.jsp.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
-		<path refid="lib.commons-fileupload.classpath"/>
+		<path refid="lib.commons-fileupload2.classpath"/>
 		<path refid="lib.commons-config.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
@@ -34,6 +34,7 @@
 		<path refid="lib.snakeyaml.classpath"/>
 		<path refid="lib.nimbus-jose-jwt.classpath"/>
 		<path refid="lib.primefaces.classpath"/>
+		<path refid="lib.ldap.classpath"/>
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
@@ -68,9 +69,9 @@
 	
     <target name="build" description="Build this module" depends="compile">
         <war destfile="${mod.admin-gui.war}" webxml="${admin-gui.resources.dir}/WEB-INF/web.xml" basedir="${admin-gui.build.dir}" excludes="WEB-INF/web.xml">
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-4.3.0.jar"/>
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-extension-session-4.3.0.jar"/>
-        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-jsp-tags-4.3.0.jar"/>
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-4.3.0-jakarta.jar"/>
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-extension-session-4.3.0-jakarta.jar"/>
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib" includes="csrfguard-jsp-tags-4.3.0-jakarta.jar"/>
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/primefaces" includes="primefaces-*.jar"/>
         	<fileset dir="${admin-gui.resources.dir}" excludes="languages/*"/>
         </war>

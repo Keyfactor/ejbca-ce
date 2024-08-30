@@ -27,13 +27,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -844,7 +844,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     }
 
     public List<SelectItem> getAvailableKeyUsages() {
-        List<SelectItem> ret = new ArrayList<SelectItem>(Arrays.asList(
+        List<SelectItem> ret = new ArrayList<>(Arrays.asList(
                 new SelectItem(null, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU")),
                 new SelectItem(KeyPairTemplate.SIGN, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_SIGN")),
                 new SelectItem(KeyPairTemplate.ENCRYPT, EjbcaJSFHelper.getBean().getText().get("CRYPTOTOKEN_KPM_KU_ENC"))));
@@ -1552,17 +1552,11 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (int size : SIZES_RSA) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + size, AlgorithmConstants.KEYALGORITHM_RSA + " " + size));
         }
-        try {
-            final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap(PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()) || AzureCryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType()));
-            final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
-            Arrays.sort(keys);
-            for (final String name : keys) {
-                availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " " + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(name))));
-            }
-        } catch (AuthorizationDeniedException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("Ignoring exception " + e.getMessage());
-            }
+        final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap();
+        final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
+        Arrays.sort(keys);
+        for (final String name : keys) {
+            availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " " + StringTools.getAsStringWithSeparator(" / ", namedEcCurvesMap.get(name))));
         }
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
         availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmConstants.KEYALGORITHM_ED448));
@@ -1823,13 +1817,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     public void testKeyPair() {
         final KeyPairGuiInfo keyPairGuiInfo = keyPairGuiList.getRowData();
         final String alias = keyPairGuiInfo.getAlias();
-        final String keyUsage = keyPairGuiInfo.getKeyUsage();
-        final String messageString;
-        if (keyUsage == null) {
-            messageString = "Keypair with alias " + alias + " tested successfully.";
-        } else {
-            messageString = "Keypair with alias " + alias + getKeyUsageInfoMessage(keyUsage);
-        }
+        final String messageString = getKeyUsageInfoMessage(keyPairGuiInfo.getKeyUsage(), alias);
         try {
             cryptoTokenManagementSession.testKeyPair(getAdmin(), getCurrentCryptoTokenId(), alias);
             super.addNonTranslatedInfoMessage(messageString);
@@ -1841,14 +1829,18 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
     /**
      * Provides additional GUI message info for testKeyPair() 
      * @param keyUsage the key usage fetched from KeyPairGuiInfo
+     * @param keyAlias the name/alias of the key (pair)
      * @return user friendly String with key usage for a key pair.
      */
-    private String getKeyUsageInfoMessage(String keyUsage) {
-        String keyUsageInfoMessageString = "";
-        if (keyUsage.equals("SIGN") || (keyUsage.equals("SIGN_ENCRYPT"))){
-            keyUsageInfoMessageString = " tested successfully using signing and verification operations.";
-        } else if (keyUsage.equals("ENCRYPT")){
-            keyUsageInfoMessageString = " tested successfully using encryption and decryption operations.";
+    private String getKeyUsageInfoMessage(final String keyUsage, final String keyAlias) {
+        String keyUsageInfoMessageString = "Keypair";
+        if (keyAlias != null) {
+            keyUsageInfoMessageString += " with alias " + keyAlias;
+        }
+        if (keyUsage != null && keyUsage.equals("ENCRYPT")) {
+            keyUsageInfoMessageString += " tested successfully using encryption and decryption operations.";
+        } else {
+            keyUsageInfoMessageString += " tested successfully using signing and verification operations.";
         }
         return keyUsageInfoMessageString;
     }

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * JEE5 Lookup helper implementation for optional (enterprise edition) EJBs.

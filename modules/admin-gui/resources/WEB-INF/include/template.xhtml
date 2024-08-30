@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets"
     xmlns:p="http://primefaces.org/ui">
     <ui:remove>
     <!--
@@ -19,8 +19,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-
-     version: $Id$
      -->
     </ui:remove>
     <ui:remove>
@@ -83,7 +81,7 @@
         	<p:menuitem id="caEditvalidators" value="#{web.text.NAV_VALIDATORS}" url="#{adminMenuBean.adminWebUrl}ca/editvalidators/editvalidators.xhtml" rendered="#{adminMenuBean.authorizedToViewValidators}"/>
         </p:submenu>
         <p:submenu id="mainRaFunctions" label="#{web.text.NAV_RAFUNCTIONS}" icon="pi pi-fw pi-users" rendered="#{adminMenuBean.authorizedToViewRAHeader}">	
-			<p:menuitem id="raAddendentity" url="#{adminMenuBean.adminWebUrl}ra/addendentity.jsp" rendered="#{adminMenuBean.authorizedToCreateEndEntity}" value="#{web.text.NAV_ADDENDENTITY}"/>
+			<p:menuitem id="raAddendentity" url="#{adminMenuBean.adminWebUrl}ra/addendentity.xhtml" rendered="#{adminMenuBean.authorizedToCreateEndEntity}" value="#{web.text.NAV_ADDENDENTITY}"/>
        		<p:menuitem id="raEditendentityprofiles" url="#{adminMenuBean.adminWebUrl}ra/editendentityprofiles/editendentityprofiles.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntityProfiles}" value="#{web.text.NAV_ENDENTITYPROFILES}"/>
        		<p:menuitem id="raListendentities" url="#{adminMenuBean.adminWebUrl}ra/searchendentities.xhtml" rendered="#{adminMenuBean.authorizedToViewEndEntity}" value="#{web.text.NAV_SEARCHENDENTITIES}"/>
        		<p:menuitem id="raEdituserdatasources" url="#{adminMenuBean.adminWebUrl}ra/edituserdatasources/userdatasourcespage.xhtml" rendered="#{adminMenuBean.authorizedToEditUserDataSources}" value="#{web.text.NAV_USERDATASOURCES}"/>         

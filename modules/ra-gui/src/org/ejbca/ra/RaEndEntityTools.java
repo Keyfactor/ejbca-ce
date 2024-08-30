@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.faces.component.UIComponent;
+import jakarta.faces.component.UIComponent;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;

@@ -46,8 +46,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 import javax.xml.namespace.QName;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.BindingProvider;
+import jakarta.xml.ws.handler.MessageContext;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
@@ -363,25 +363,6 @@ public class OAuthSystemTest {
         exceptionRule.expectMessage("Authentication failed using OAuth Bearer Token");
         EjbcaWS ejbcaWSPort = getEjbcaWS(expiredToken);
         ejbcaWSPort.getAvailableCAs();
-    }
-
-    @Test
-    public void testJspPage() throws IOException {
-        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/addendentity.jsp");
-        final HttpURLConnection connection = doGetRequest(url, token);
-        assertEquals("Response code was not 200", 200, connection.getResponseCode());
-        String response = getResponse(connection.getInputStream());
-        assertTrue("Search End Entities page should be accessible. Actual response was: " + response, response.contains("<h1>Add End Entity</h1>"));
-    }
-
-    @Test
-    public void testJspPageWithExpiredToken() throws IOException {
-        final URL url = new URL(HTTP_REQ_PATH + "/adminweb/ra/addendentity.jsp");
-        final HttpURLConnection connection = doGetRequest(url, expiredToken);
-        assertEquals("Response code was not 200", 200, connection.getResponseCode());
-        String response = getResponse(connection.getInputStream());
-        assertTrue("Authentication should fail. Actual response was: " + response, response.contains("Authorization Denied"));
-
     }
 
     @Test

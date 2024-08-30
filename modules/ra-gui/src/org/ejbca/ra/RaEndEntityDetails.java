@@ -33,9 +33,9 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -252,7 +252,14 @@ public class RaEndEntityDetails implements Serializable {
      * @return String with principals separated by ,
      */
     public String getSshPrincipalsPretty() {
-        String principals = getSshPrincipals().replace(":", ", ");
+        String principals = getSshPrincipals();
+        for (String ipv6: this.extendedInformation.getSshPrincipalsIpv6()) {
+            principals = principals.replace(ipv6, ipv6.replace(":", "_"));
+        }
+        principals = principals.replace(":", ", ");
+        for (String ipv6: this.extendedInformation.getSshPrincipalsIpv6()) {
+            principals = principals.replace(ipv6.replace(":", "_"), ipv6);
+        }
         if (StringUtils.endsWith(principals, ", ")) {
             principals = principals.substring(0, principals.length() - 2);
         }

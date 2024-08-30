@@ -14,7 +14,7 @@ package org.ejbca.ui.web.admin.audit;
 
 import java.util.List;
 
-import javax.faces.model.SelectItem;
+import jakarta.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.cesecore.audit.AuditLogEntry;

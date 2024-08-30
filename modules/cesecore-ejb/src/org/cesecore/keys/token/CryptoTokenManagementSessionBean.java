@@ -27,7 +27,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -46,10 +45,10 @@ import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -78,9 +77,9 @@ import java.util.Set;
 
 /**
  * @see CryptoTokenManagementSession
- * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenManagementSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSessionLocal, CryptoTokenManagementSessionRemote {
 
@@ -709,26 +708,6 @@ public class CryptoTokenManagementSessionBean implements CryptoTokenManagementSe
                 }
             }
         } else {
-            if (oldAutoActivationPin != null) {
-                // If we have an old auto-activation pin we will compare the "current" with this value to avoid deactivating the token
-                if (!oldAutoActivationPin.equals(new String(currentAuthenticationCode))) {
-                    final String msg = "Supplied PIN did not match auto-activation PIN.";
-                    log.info(msg);
-                    throw new CryptoTokenAuthenticationFailedException(msg);
-                } else {
-                    log.debug("Successfully verified the PIN for non-soft CryptoToken by comparing supplied PIN to auto-activation PIN.");
-                }
-            } else {
-                // If we don't have an auto-activation pin to compare the supplied PIN to, we need to verify the supplied
-                // PIN can be used in a de-activation/activation cycle.
-                final boolean wasInactive = !isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
-                cryptoToken.deactivate();
-                cryptoToken.activate(currentAuthenticationCode);
-                if (wasInactive) {
-                    // Note that there is a small glitch here where the token was active, but we have no other options to verify the pin
-                    cryptoToken.deactivate();
-                }
-            }
             if (newAuthenticationCode == null) {
                 cryptoTokenProperties.remove(CryptoToken.AUTOACTIVATE_PIN_PROPERTY);
             } else {

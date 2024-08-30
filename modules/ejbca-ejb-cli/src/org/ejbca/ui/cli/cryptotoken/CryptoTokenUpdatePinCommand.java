@@ -13,6 +13,7 @@
 package org.ejbca.ui.cli.cryptotoken;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.util.Arrays;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -38,9 +39,9 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
     private static final String SWITCH_REMOVE_AUTO_KEY = "--remove";
     private static final String OLD_PIN_KEY = "--oldpin";
     private static final String NEW_PIN_KEY = "--newpin";
-
+    private static final String TOKEN_TYPE_SOFT = "SoftCryptoToken";
     {
-        registerParameter(new Parameter(OLD_PIN_KEY, "Pin", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+        registerParameter(new Parameter(OLD_PIN_KEY, "Pin", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The old pin. Set as \"null\" to prompt"));
         registerParameter(new Parameter(NEW_PIN_KEY, "Pin", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The new pin. Set as \"null\" to prompt"));
@@ -57,14 +58,34 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
 
     @Override
     public CommandResult executeCommand(Integer cryptoTokenId, ParameterContainer parameters) throws AuthorizationDeniedException, CryptoTokenOfflineException {
+        final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        final String tokenType = cryptoTokenManagementSession.getCryptoTokenInfo(getAdmin(), cryptoTokenId.intValue()).getType();
+        final String cliMessageEnterOldPin = "Enter old CryptoToken password: ";
+        final String cliMessageEnterNewPin = "Enter new CryptoToken password: ";
+        final String cliMessageConfirmNewPin = "Confirm new CryptoToken password: ";
+        final boolean isSoftToken = TOKEN_TYPE_SOFT.equals(tokenType);
         final boolean updateOnly = parameters.containsKey(SWITCH_UPDATE_ONLY_KEY);
         final boolean removeAuto = parameters.containsKey(SWITCH_REMOVE_AUTO_KEY);
-
-        final char[] currentAuthenticationCode = getAuthenticationCode(parameters.get(OLD_PIN_KEY));
-        final char[] newAuthenticationCode = removeAuto ? null : getAuthenticationCode(parameters.get(NEW_PIN_KEY));
+        final char[] currentAuthenticationCode;
+        if (isSoftToken) {
+            if (parameters.get(OLD_PIN_KEY) == null) {
+                getLogger().info("For soft tokens, the old pin must always be provided.");
+            }
+            currentAuthenticationCode = getAuthenticationCode(parameters.get(OLD_PIN_KEY), cliMessageEnterOldPin);
+        } else {
+            currentAuthenticationCode = null;
+        }
+        // Get the new pin, unless we intend to remove the auto-activation in which case we will set it to null.  
+        final char[] newAuthenticationCode = removeAuto ? null : getAuthenticationCode(parameters.get(NEW_PIN_KEY), cliMessageEnterNewPin);
+        // If we intend to set a new pin, prompt twice (unless the '--newpin' argument was used) allowing the user to confirm the new pin, 
+        // thus making it harder to accidently locking oneself out in case of a typo.
+        if (parameters.get(NEW_PIN_KEY) == null && !removeAuto) {
+            if (!Arrays.areEqual(getAuthenticationCode(parameters.get(NEW_PIN_KEY), cliMessageConfirmNewPin), newAuthenticationCode)) {
+                getLogger().info("The passwords do not match.");
+                return CommandResult.CLI_FAILURE;
+            }            
+        }
         try {
-            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-                    .getRemoteSession(CryptoTokenManagementSessionRemote.class);
             boolean result = cryptoTokenManagementSession.updatePin(getAdmin(), cryptoTokenId.intValue(), currentAuthenticationCode,
                     newAuthenticationCode, updateOnly);
             if (result) {
@@ -93,12 +114,11 @@ public class CryptoTokenUpdatePinCommand extends BaseCryptoTokenCommand {
     public String getFullHelpText() {
         return getCommandDescription()
                 + " For soft CryptoTokens the underlying keystore's pin will be modified and this requires the current activation PIN."
-                + " For PKCS#11 CryptoTokens this will only modify the auto-activation pin and requires the current (auto-activation or) activation PIN.";
+                + " For PKCS#11 CryptoTokens this will only modify the auto-activation pin.";
     }
 
     @Override
     protected Logger getLogger() {
         return log;
     }
-
 }

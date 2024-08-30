@@ -18,9 +18,9 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import org.bouncycastle.util.Properties;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -52,14 +52,9 @@ public class KeyStore extends TokenCertificateResponseWS {
 	 * @param rawKeystoreData the raw keystore data.
 	 * @param password the password.
 	 */
-    public KeyStore(byte[] rawKeystoreData, String password) {
-        try {
-            Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
-            keystoreData = Base64.encode(rawKeystoreData);
-        } finally {
-            Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
-        }
-    }
+	public KeyStore(byte[] rawKeystoreData, String password) {
+	    keystoreData = Base64.encode(rawKeystoreData);
+	}
 	
 	public KeyStore(java.security.KeyStore keystore, String password) throws KeyStoreException, NoSuchAlgorithmException, IOException, CertificateException {
 	    try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {

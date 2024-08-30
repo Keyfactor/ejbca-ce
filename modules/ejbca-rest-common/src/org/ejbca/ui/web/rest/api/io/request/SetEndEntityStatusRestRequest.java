@@ -12,28 +12,27 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.ui.web.rest.api.validator.ValidEndEntityStatusRestRequest;
 
 /**
  * JSON input for editing of end entity.
  */
-@ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
+@Schema(description = "Use one of allowed values as property(see enum values below).\n" +
         "Available TOKEN - USERGENERATED, P12, BCFKS, JKS, PEM; \n" +
         "Available STATUS - NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n"
 )
 @ValidEndEntityStatusRestRequest
 public class SetEndEntityStatusRestRequest {
 
-    @ApiModelProperty(value = "Password", example = "foo123")
+    @Schema(description = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Token type property", example = "USERGENERATED",
+    @Schema(description = "Token type property", example = "USERGENERATED",
             allowableValues = "USERGENERATED, P12, BCFKS, JKS, PEM"
     )
     private String token;
-    @ApiModelProperty(value = "End entity status property", example = "NEW",
+    @Schema(description = "End entity status property", example = "NEW",
             allowableValues = "NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL"
     )
     private String status;

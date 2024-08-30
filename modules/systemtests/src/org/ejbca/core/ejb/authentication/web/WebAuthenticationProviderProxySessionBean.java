@@ -12,20 +12,19 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.jndi.JndiConstants;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "WebAuthenticationProviderProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class WebAuthenticationProviderProxySessionBean implements WebAuthenticationProviderProxySessionRemote {
 

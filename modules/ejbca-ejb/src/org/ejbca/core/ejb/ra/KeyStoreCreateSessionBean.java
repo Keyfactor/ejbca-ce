@@ -26,10 +26,10 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Properties;
@@ -54,7 +54,6 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
@@ -86,7 +85,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * Class that has helper methods to generate tokens for users in ejbca.
  */
 
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyStoreCreateSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, KeyStoreCreateSessionRemote {
     
@@ -118,11 +117,11 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification, final String keyAlgorithm)
             throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
-        return generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm, null);
+        return generateOrKeyRecoverTokenAsByteArray(authenticationToken, username, password, keySpecification, keyAlgorithm, null, null);
     }
 
     @Override
-    public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification, final String keyAlgorithm, final String alternativeKeyAlgorithm)
+    public byte[] generateOrKeyRecoverTokenAsByteArray(final AuthenticationToken authenticationToken, final String username, final String password, final String keySpecification,  final String keyAlgorithm, final String alternativeKeySpecification, final String alternativeKeyAlgorithm)
             throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException { 
         // Check if user exists.
         final EndEntityInformation endEntity = endEntityAccessSession.findUser(authenticationToken, username);
@@ -166,7 +165,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             log.debug("reusecertificate: " + reuseCertificate);
         }
         try {
-            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm, alternativeKeyAlgorithm, null,
+            final KeyStore keyStore = generateOrKeyRecoverToken(authenticationToken, username, password, caId, keySpecification, keyAlgorithm,  alternativeKeySpecification, alternativeKeyAlgorithm, null,
                     null, SecConst.TOKEN_SOFT_P12, loadKeys, saveKeys, reuseCertificate, endEntityProfileId);
             return KeyStoreTools.getAsByteArray(keyStore, password);
         } catch (AuthLoginException | AuthStatusException e) { // Is handled as EjbcaException at caller (EjbcaWS).
@@ -189,18 +188,18 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        return generateOrKeyRecoverTokenAsByteArray(administrator, username, password, caid, keyspec, keyalg, null, keystoreType, loadkeys, savekeys, reusecertificate, endEntityProfileId) ;
+        return generateOrKeyRecoverTokenAsByteArray(administrator, username, password, caid, keyspec, keyalg, null, null, keystoreType, loadkeys, savekeys, reusecertificate, endEntityProfileId) ;
     }
     
     @Override
     public byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
-            String keyalg, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
+            String keyalg, String alternativeKeySpec, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, alternativeKeyalg, null, null, keystoreType, loadkeys,
+        KeyStore keyStore = generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, alternativeKeySpec, alternativeKeyalg, null, null, keystoreType, loadkeys,
                 savekeys,
                 reusecertificate, endEntityProfileId);
         return KeyStoreTools.getAsByteArray(keyStore, password);
@@ -216,13 +215,13 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        return generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, notBefore, notAfter, keystoreType, loadkeys,
+        return generateOrKeyRecoverToken(administrator, username, password, caid, keyspec, keyalg, null, null, notBefore, notAfter, keystoreType, loadkeys,
                 savekeys, reusecertificate, endEntityProfileId);
     }
     
     @Override
     public KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid,
-            String keyspec, String keyalg, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
+            String keyspec, String keyalg, String altKeyspec, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
             boolean reusecertificate,
             int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
@@ -295,7 +294,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             // generate new keys.
             rsaKeys = KeyTools.genKeys(keyspec, keyalg);
             if (altKeyalg != null) {
-                altKeys = KeyTools.genKeys(keyspec, altKeyalg);
+                altKeys = KeyTools.genKeys(altKeyspec, altKeyalg);
             }
         }
         X509Certificate cert = null;
@@ -329,13 +328,13 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException, NoSuchEndEntityException,
             CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
-        return generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(administrator, username, password, caid, keyspec, keyalg, null, notBefore,
+        return generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(administrator, username, password, caid, keyspec, keyalg, null, null, notBefore,
                 notAfter, keystoreType, loadkeys, savekeys, reusecertificate, endEntityProfileId);
     }
     
     @Override
     public KeyStore generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(AuthenticationToken administrator, String username, String password, int caid,
-            String keyspec, String keyalg, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
+            String keyspec, String keyalg, String altKeyspec, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys,
             boolean reusecertificate,
             int endEntityProfileId)
             throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
@@ -408,7 +407,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             // generate new keys.
             rsaKeys = KeyTools.genKeys(keyspec, keyalg);
             if (altKeyalg != null) {
-                altKeys = KeyTools.genKeys(keyspec, altKeyalg);
+                altKeys = KeyTools.genKeys(altKeyspec, altKeyalg);
             }
         }
         X509Certificate cert = null;

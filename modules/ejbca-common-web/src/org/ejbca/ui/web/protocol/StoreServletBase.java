@@ -18,12 +18,12 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJB;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.ejb.EJB;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -39,7 +39,7 @@ import org.ejbca.util.HTMLTools;
  */
 public abstract class StoreServletBase extends HttpServlet {
 
-    private static final String SPACE = "|" + StringUtils.repeat("&nbsp;", 5);
+    protected static final String SPACE = "|" + StringUtils.repeat("&nbsp;", 5);
     
 	private static final long serialVersionUID = 1L;
 
@@ -238,22 +238,7 @@ public abstract class StoreServletBase extends HttpServlet {
 		return false;
 	}
 	
-	private void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, String url) {
-        
-	    for (X509Certificate cert : certs) {
-            // Escape the URL as it might be unsafe
-            printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
-            
-            pw.println();
-            
-            final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
-            
-            if (ArrayUtils.isEmpty(issuedCerts)) {
-                continue;
-            }
-            printInfo(issuedCerts, SPACE + indent, pw, url);
-        }
-	}
+
 
     /**
      * Print info and download URL of a certificate or CRL.
@@ -330,4 +315,6 @@ public abstract class StoreServletBase extends HttpServlet {
 			println();
 		}
 	}
+	
+	protected abstract void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, String url);
 }

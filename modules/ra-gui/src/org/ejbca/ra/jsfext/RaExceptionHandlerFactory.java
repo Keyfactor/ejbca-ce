@@ -17,16 +17,16 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.EJBException;
-import javax.el.ELException;
-import javax.faces.FacesException;
-import javax.faces.application.ViewExpiredException;
-import javax.faces.context.ExceptionHandler;
-import javax.faces.context.ExceptionHandlerFactory;
-import javax.faces.context.ExceptionHandlerWrapper;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ExceptionQueuedEvent;
+import jakarta.ejb.EJBException;
+import jakarta.el.ELException;
+import jakarta.faces.FacesException;
+import jakarta.faces.application.ViewExpiredException;
+import jakarta.faces.context.ExceptionHandler;
+import jakarta.faces.context.ExceptionHandlerFactory;
+import jakarta.faces.context.ExceptionHandlerWrapper;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ExceptionQueuedEvent;
 
 import org.apache.log4j.Logger;
 

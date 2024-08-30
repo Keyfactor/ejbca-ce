@@ -14,8 +14,8 @@ dependencies {
     compileOnly(project(":modules:edition-specific:interface"))
     compileOnly(libs.ejbca.ws.client.gen)
     compileOnly(libs.caffeine)
-    compileOnly(libs.java.ee.api)
-    compileOnly(libs.jaxws.api)
+    compileOnly(libs.jakartaee.api)
+    compileOnly(libs.jakarta.xml.ws.api)
     compileOnly(libs.jaxb.runtime)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
@@ -30,6 +30,7 @@ dependencies {
     compileOnly(libs.commons.collections4)
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl)
 }
 

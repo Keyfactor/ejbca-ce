@@ -19,10 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;

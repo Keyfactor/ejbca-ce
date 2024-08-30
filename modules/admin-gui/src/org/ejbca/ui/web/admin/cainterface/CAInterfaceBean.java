@@ -35,7 +35,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -1076,6 +1076,7 @@ public class CAInterfaceBean implements Serializable {
                         .setUseCertificateStorage(caInfoDto.isUseCertificateStorage()).setSubjectAltName(caInfoDto.getCaSubjectAltName())
                         .setAcceptRevocationNonExistingEntry(caInfoDto.isAcceptRevocationsNonExistingEntry())
                         .setCaId(caid)
+						.setIncludeInHealthCheck(caInfoDto.isIncludeInHealthCheck())
                         // TODO ECA-9293: SSH, add approvals here
                         .setApprovals(new HashMap<>());
                 cainfo = sshCAInfoBuilder.buildForUpdate();
@@ -1372,7 +1373,6 @@ public class CAInterfaceBean implements Serializable {
             .setUsername(ca.getUsername())
             .setPassword(ca.getPassword())
             .setCa(ca.getUpstreamCa())
-            .setTemplate(ca.getUpstreamTemplate())
             .setSans(ca.getSansJson());
         return proxyCaInfoBuilder;
     }

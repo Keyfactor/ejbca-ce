@@ -15,8 +15,8 @@ package org.ejbca.core.ejb.ca.publisher;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ejb.CreateException;
-import javax.ejb.Local;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;

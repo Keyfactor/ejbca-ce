@@ -48,17 +48,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.DependsOn;
-import javax.ejb.EJB;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -3279,7 +3279,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
             final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification,
-                keyAlgorithm, null);
+                keyAlgorithm, null, null);
         return generateOrKeyRecoverTokenV2(authenticationToken, request);
     }
 
@@ -3966,6 +3966,20 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 14) {
                 try {
                     return raMasterApi.selfRenewCertificate(renewCertificateData);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 18) {
+                try {
+                    return raMasterApi.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

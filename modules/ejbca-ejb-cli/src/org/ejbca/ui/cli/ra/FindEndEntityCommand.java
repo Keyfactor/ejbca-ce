@@ -52,7 +52,7 @@ public class FindEndEntityCommand extends BaseRaCommand {
 
     {
         registerParameter(new Parameter(USERNAME_KEY, "Username", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
-                "Username for the end entity to delete."));
+                "Username for the end entity to find."));
     }
 
     @Override

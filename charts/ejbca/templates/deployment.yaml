@@ -1,5 +1,9 @@
 apiVersion: apps/v1
+{{- if eq (int .Values.replicaCount) 1 }}
 kind: Deployment
+{{- else }}
+kind: StatefulSet
+{{- end }}
 metadata:
   name: {{ include "ejbca.fullname" . }}
   labels:
@@ -7,6 +11,10 @@ metadata:
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- if .Values.updateStrategy }}
+  strategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:
@@ -19,6 +27,9 @@ spec:
       {{- end }}
       labels:
         {{- include "ejbca.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
@@ -33,9 +44,13 @@ spec:
         - name: {{ .Chart.Name }}-init
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: {{- include "ejbca.imagePath" . }}
+          image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
+          {{- if hasKey .Values.ejbca "envFrom" }}
+          envFrom:
+            {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
+          {{- end }}
           command:
             - "/bin/sh"
             - "-c"
@@ -94,7 +109,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: {{ include "ejbca.imagePath" . }}
+          image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
             {{- if .Values.services.proxyAJP.enabled }}
@@ -105,6 +120,10 @@ spec:
             - name: PROXY_HTTP_BIND
               value: {{ .Values.services.proxyHttp.bindIP }}
             {{- end }}
+          {{- if hasKey .Values.ejbca "envFrom" }}
+          envFrom:
+            {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
+          {{- end }}
           {{- if or (not .Values.ejbca.importEjbcaConfFiles) (hasKey .Values.ejbca "superadminPasswordOverride") }}
           lifecycle:
             postStart:
@@ -288,4 +307,17 @@ spec:
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.schedulerName }}
+      schedulerName: {{ .Values.schedulerName | quote }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- end }}

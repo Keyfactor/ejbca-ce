@@ -46,25 +46,25 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ra.RaEndEntityDetails.Callbacks;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.annotation.ManagedProperty;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.annotation.ManagedProperty;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.util.Comparator;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
@@ -214,6 +214,14 @@ public class RaEndEntityBean implements Serializable {
         }
     }
 
+    protected Map<Integer, String> getOptionMap(final Map<Integer, String> map) {
+        Map<Integer, String> optionMap = new LinkedHashMap<>();
+        map.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue(String.CASE_INSENSITIVE_ORDER))
+                .forEach(e -> optionMap.put(e.getKey(), e.getValue()));
+        return optionMap;
+    }
+
     private void reload() {
         if (username != null) {
             final EndEntityInformation endEntityInformation = raMasterApiProxyBean.searchUser(raAuthenticationBean.getAuthenticationToken(), username);
@@ -229,10 +237,10 @@ public class RaEndEntityBean implements Serializable {
                 authorizedEndEntityProfiles = raMasterApiProxyBean.getAuthorizedEndEntityProfiles(raAuthenticationBean.getAuthenticationToken(), AccessRulesConstants.CREATE_END_ENTITY);
                 authorizedCertificateProfiles = raMasterApiProxyBean.getAllAuthorizedCertificateProfiles(raAuthenticationBean.getAuthenticationToken());
                 authorizedCAInfos = raMasterApiProxyBean.getAuthorizedCAInfos(raAuthenticationBean.getAuthenticationToken());
-                endEntityProfiles = authorizedEndEntityProfiles.getIdMap()
+                endEntityProfiles = getOptionMap(authorizedEndEntityProfiles.getIdMap()
                         .entrySet()
                         .stream()
-                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getName()));
+                        .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getName())));
 
                 eepId = raEndEntityDetails.getEndEntityInformation().getEndEntityProfileId();
                 cpId = raEndEntityDetails.getEndEntityInformation().getCertificateProfileId();
@@ -1267,8 +1275,8 @@ public class RaEndEntityBean implements Serializable {
      */
     public Map<Integer, String> getCertificateProfiles() {
         List<Integer> availableCpIds = authorizedEndEntityProfiles.get(eepId).getValue().getAvailableCertificateProfileIds();
-        return availableCpIds.stream()
-                .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName()));
+        return getOptionMap(availableCpIds.stream()
+                .collect(Collectors.toMap(cpId -> cpId, cpId -> authorizedCertificateProfiles.getIdMap().get(cpId).getName())));
     }
     
     /**
