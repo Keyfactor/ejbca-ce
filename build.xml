@@ -214,9 +214,9 @@
      </copy>
   </target>
 
-  <target name="build-one-plugin-from-source" unless="pluginIsJarBased">
+	<target name="pre-build-one-plugin-from-source">
 		<echo message="Plugin Ant build file = ${plugin.ejbca.ant.file}"/>
-	    <loadproperties srcfile="${tmp}/plugin.properties"/>
+		<loadproperties srcfile="${tmp}/plugin.properties"/>
 		<fail message="Property 'plugin.ejbca.ant.file' is missing!">
 			<condition>
 				<not>
@@ -249,7 +249,26 @@
 		<mkdir dir="${ejbca.plugin.tmp.path}"/>
 		<dirname property="plugin.ejbca.ant.dirname" file="${plugin.ejbca.ant.file}"/>
 		<basename property="plugin.ejbca.ant.basename" file="${plugin.ejbca.ant.file}"/>
+	</target>
 
+	<target name="build-one-plugin-from-source-target-specified" if="plugin.ejbca.ant.target">
+		<ant antfile="${plugin.ejbca.ant.basename}"
+			 dir="${plugin.ejbca.ant.dirname}"
+			 inheritAll="false"
+			 inheritRefs="false"
+			 target="${plugin.ejbca.ant.target}">
+			<property name="ejbca.classpath"  refid="ejbca.plugin.classpath"/>
+			<property name="ejbca.app.xml"    value="${eardd.src}/META-INF/application.xml"/>
+			<property name="ejbca.dbtype"     value="${database.name}"/>
+			<property name="ejbca.datasource" value="${datasource.jndi-name-prefix}${datasource.jndi-name}"/>
+			<property name="ejbca.hibernate"  value="${hibernate.dialect}"/>
+			<property name="ejbca.gen.path"   value="${ejbca.plugin.gen.path}"/>
+			<property name="ejbca.tmp.path"   value="${ejbca.plugin.tmp.path}"/>
+			<property name="ejbca.home"       value="${ejbca.home}"/>
+		</ant>
+	</target>
+
+	<target name="build-one-plugin-from-source-target-not-specified" unless="plugin.ejbca.ant.target">
 		<ant antfile="${plugin.ejbca.ant.basename}"
 			 dir="${plugin.ejbca.ant.dirname}"
 			 inheritAll="false"
@@ -263,12 +282,14 @@
 			<property name="ejbca.tmp.path"   value="${ejbca.plugin.tmp.path}"/>
 			<property name="ejbca.home"       value="${ejbca.home}"/>
 		</ant>
-    </target>
+	</target>
+
+    <target name="build-one-plugin-from-source" depends="pre-build-one-plugin-from-source,build-one-plugin-from-source-target-specified,build-one-plugin-from-source-target-not-specified" unless="pluginIsJarBased"/>
 
 	<target name="plugin-bootstrap-build" if="ejbca.plugin.collection">
 	    <!-- Called once immediately before "ejbca.ear" creation if there are any plugins to build -->
 		<echo message="Plugins found!"/>
-    	<mkdir dir="${ejbca.plugin.gen.path}/lib"/>
+		<mkdir dir="${ejbca.plugin.gen.path}/lib"/>
 		<delete file="${tmp}/plugin.properties"/>
 		<echoproperties destfile="${tmp}/plugin.properties">
 			<propertyset>
@@ -278,6 +299,7 @@
 		<apply executable="ant" dir="${ejbca.plugin.conf.path}">
 			<arg value="-f"/>
 			<arg value="${ant.file}"/>
+			<arg value="-Dejbca.home=${ejbca.home}"/>
 			<arg value="build-one-plugin"/>
 			<arg value="-propertyfile"/>
 			<fileset id="plugin.property.files" dir="${ejbca.plugin.conf.path}">
@@ -285,7 +307,7 @@
 			</fileset>
 		</apply>
     </target>
-    
+
 	<target name="va_replacings_in_application.xml">
 		<war-replacement-in-module
 			replacement-tag="!--@status.war@-->"
