@@ -20,6 +20,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.ws.rs.core.EntityPart;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -32,7 +33,6 @@ import org.ejbca.ui.web.rest.api.resource.CaRestResource;
 import jakarta.ejb.Stateless;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.FormParam;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
@@ -45,6 +45,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 
 /**
@@ -159,9 +160,9 @@ public class CaRestResourceSwagger extends CaRestResource {
             })
     public Response importCrl(@Context final HttpServletRequest httpServletRequest,
                               @Parameter(description = "the CRL issuers DN (CAs subject DN)", required = true) @PathParam("issuer_dn") String issuerDn,
-                              @Parameter(description = "CRL partition index") @DefaultValue("0") @FormParam("crlPartitionIndex") int crlPartitionIndex,
-                              @Parameter(description = "CRL file in DER format") @FormParam("crlFile") final File crlFile
+                              @Parameter(description = "CRL partition index", schema = @Schema(type = "integer", defaultValue = "0")) @FormParam("crlPartitionIndex") EntityPart crlPartitionIndexEP,
+                              @Parameter(description = "CRL file in DER format", schema = @Schema(type="string", format="binary")) @FormParam("crlFile") final EntityPart crlFileEP
     ) throws AuthorizationDeniedException, RestException {
-        return super.importCrl(httpServletRequest, issuerDn, crlPartitionIndex, crlFile);
+        return super.importCrl(httpServletRequest, issuerDn, crlPartitionIndexEP, crlFileEP);
     }
 }

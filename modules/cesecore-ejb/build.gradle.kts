@@ -56,6 +56,13 @@ dependencies {
     compileOnly(libs.jboss.transaction.api.v12.spec)
     compileOnly(libs.stax.ex)
     compileOnly(libs.txw2)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.hamcrest)
+    testImplementation(libs.easymock)
+    testImplementation(libs.commons.text)
+    testImplementation(libs.commons.beanutils)
+
 }
 
 sourceSets {
@@ -64,6 +71,13 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
+        }
+    }
+    val test by getting {
+        java {
+            setSrcDirs(listOf("src-test"))
+            compileClasspath += main.compileClasspath
+            runtimeClasspath += main.compileClasspath
         }
     }
 }
