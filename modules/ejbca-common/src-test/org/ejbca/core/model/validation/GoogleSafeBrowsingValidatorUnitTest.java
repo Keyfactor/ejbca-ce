@@ -52,7 +52,7 @@ public class GoogleSafeBrowsingValidatorUnitTest {
         expectLastCall();
         replay(mockHttpClient, mockHttpResponse, mockStatusLine);
         final GoogleSafeBrowsingValidator validator = new GoogleSafeBrowsingValidator(() -> mockHttpClient);
-        final Map.Entry<Boolean, List<String>> result = validator.validate(null, "primekey.com");
+        final Map.Entry<Boolean, List<String>> result = validator.validate(null, null, "primekey.com");
         verify(mockHttpClient, mockHttpResponse, mockStatusLine);
         assertTrue("A good domain should pass validation.", result.getKey());
         assertEquals(1, result.getValue().size());
@@ -89,7 +89,7 @@ public class GoogleSafeBrowsingValidatorUnitTest {
         expectLastCall();
         replay(mockHttpClient, mockHttpResponse, mockStatusLine);
         final GoogleSafeBrowsingValidator validator = new GoogleSafeBrowsingValidator(() -> mockHttpClient);
-        final Map.Entry<Boolean, List<String>> result = validator.validate(null, "primekey.com", "g00gle.com");
+        final Map.Entry<Boolean, List<String>> result = validator.validate(null, null, "primekey.com", "g00gle.com");
         verify(mockHttpClient, mockHttpResponse, mockStatusLine);
         assertFalse("A phishing domain should not pass validation.", result.getKey());
         assertEquals("One validation message per domain name should be produced", 2, result.getValue().size());
@@ -103,7 +103,7 @@ public class GoogleSafeBrowsingValidatorUnitTest {
         expectLastCall();
         replay(mockHttpClient);
         final GoogleSafeBrowsingValidator validator = new GoogleSafeBrowsingValidator(() -> mockHttpClient);
-        final Map.Entry<Boolean, List<String>> result = validator.validate(null, "primekey.com");
+        final Map.Entry<Boolean, List<String>> result = validator.validate(null, null, "primekey.com");
         verify(mockHttpClient);
         assertFalse("Validation should not pass when a network error occurs.", result.getKey());
         assertEquals(1, result.getValue().size());
@@ -125,7 +125,7 @@ public class GoogleSafeBrowsingValidatorUnitTest {
         expectLastCall();
         replay(mockHttpClient, mockHttpResponse, mockStatusLine);
         final GoogleSafeBrowsingValidator validator = new GoogleSafeBrowsingValidator(() -> mockHttpClient);
-        final Map.Entry<Boolean, List<String>> result = validator.validate(null, "primekey.com");
+        final Map.Entry<Boolean, List<String>> result = validator.validate(null, null, "primekey.com");
         verify(mockHttpClient, mockHttpResponse, mockStatusLine);
         assertFalse("Validation should not pass if Google returns 404.", result.getKey());
         assertEquals(1, result.getValue().size());
