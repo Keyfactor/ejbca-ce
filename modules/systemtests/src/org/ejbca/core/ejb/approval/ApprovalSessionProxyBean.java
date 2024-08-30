@@ -15,25 +15,23 @@ package org.ejbca.core.ejb.approval;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalSessionProxyRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ApprovalSessionProxyBean implements ApprovalSessionProxyRemote {
 

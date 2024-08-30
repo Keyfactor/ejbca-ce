@@ -12,20 +12,21 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input representation of crypto token key generation request through REST API.
  */
 public class CryptoTokenKeyGenerationRestRequest {
 
-    @ApiModelProperty(value = "Key pair aliasof the key pair to be generated, must not already exist", example = "signKey")
+    @Schema(description = "Key pair aliasof the key pair to be generated, must not already exist", example = "signKey")
     private String keyPairAlias;
-    @ApiModelProperty(value = "Key algorithm, required for some algorithms, RSA, not required for others like EC or Dilithium", example = "RSA")
+    @Schema(description = "Key algorithm, required for some algorithms, RSA, not required for others like EC or Dilithium", example = "RSA")
     private String keyAlg;
-    @ApiModelProperty(value = "Key specification, key size, curve or name, must be supported by the underlying crypto token, like 4096 for RSA or secp256r1 for EC", example = "4096")
+    @Schema(description = "Key specification, key size, curve or name, must be supported by the underlying crypto token, like 4096 for RSA or secp256r1 for EC", example = "4096")
     private String keySpec;
-    @ApiModelProperty(value = "Optional key usage, affects some crypto tokens (PKCS#11 NG) but not most others. Values SIGN, ENCRYPT, SIGN_ENCRYPT", example="SIGN")
+    @Schema(description = "Optional key usage, affects some crypto tokens (PKCS#11 NG) but not most others. Values SIGN, ENCRYPT, SIGN_ENCRYPT", example="SIGN")
     private String keyUsage;
     
     public CryptoTokenKeyGenerationRestRequest() {}

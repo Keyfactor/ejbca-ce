@@ -39,11 +39,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 
-
-/**
- * @version $Id$
- *
- */
 public abstract class SignSessionCommon extends CaTestCase{
 
     private static final Logger log = Logger.getLogger(SignSessionCommon.class);

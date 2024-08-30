@@ -1,9 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets"
+    xmlns:p="http://primefaces.org/ui">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -18,8 +19,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-     
-     $Id$
      -->
 </ui:remove>
 
@@ -35,81 +34,81 @@
 			</h2>
 		</h:panelGroup>
 		<h:form id="defaultmypreferences">
-		
-            <h:panelGrid id="config" width="100%" styleClass="action" columns="2" border="0" cellspacing="3" cellpadding="3" rowClasses="Row0,Row1" columnClasses="myPreferencesColumn, myPreferencesColumn">
+
+            <p:panelGrid id="config" width="100%" styleClass="action" columns="2" border="0" cellspacing="3" cellpadding="3" rowClasses="Row0,Row1" columnClasses="myPreferencesColumn, myPreferencesColumn">
                 <h:panelGroup>
                     &nbsp;
                 </h:panelGroup>
                 <h:panelGroup>
                     &nbsp;
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
-                    <h3><h:outputLabel value="#{web.text.PREFEREDLANGUAGE}"/></h3>
-                    <h:outputLabel styleClass="help" value="#{web.text.PREFEREDLANGUAGE_HELP}"/>
-                </h:panelGroup>    
+                    <h3><p:outputLabel value="#{web.text.PREFEREDLANGUAGE}"/></h3>
+                    <p:outputLabel styleClass="help" value="#{web.text.PREFEREDLANGUAGE_HELP}"/>
+                </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectOneMenu id="preferredLanguage" value="#{myPreferencesMBean.adminPreference.preferedLanguage}" converter="javax.faces.Integer">
+                    <p:selectOneMenu id="preferredLanguage" value="#{myPreferencesMBean.adminPreference.preferedLanguage}" converter="jakarta.faces.Integer">
 	                    <f:selectItems value="#{myPreferencesMBean.availableLanguages}"/>
-	                </h:selectOneMenu>
+	                </p:selectOneMenu>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
-                    <h3><h:outputLabel value="#{web.text.SECONDARYLANGUAGE}"/></h3>
-                    <h:outputLabel styleClass="help" value="#{web.text.SECONDARYLANGUAGE_HELP}"/>
+                    <h3><p:outputLabel value="#{web.text.SECONDARYLANGUAGE}"/></h3>
+                    <p:outputLabel styleClass="help" value="#{web.text.SECONDARYLANGUAGE_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectOneMenu id="secondaryLanguage" value="#{myPreferencesMBean.adminPreference.secondaryLanguage}" converter="javax.faces.Integer">
+                    <p:selectOneMenu id="secondaryLanguage" value="#{myPreferencesMBean.adminPreference.secondaryLanguage}" converter="jakarta.faces.Integer">
                         <f:selectItems value="#{myPreferencesMBean.availableLanguages}"/>
-                    </h:selectOneMenu>
+                    </p:selectOneMenu>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
-                    <h3><h:outputLabel value="#{web.text.THEME}"/></h3>
-                    <h:outputLabel styleClass="help" value="#{web.text.THEME_HELP}"/>
+                    <h3><p:outputLabel value="#{web.text.THEME}"/></h3>
+                    <p:outputLabel styleClass="help" value="#{web.text.THEME_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectOneMenu id="theme" value="#{myPreferencesMBean.adminPreference.theme}">
+                    <p:selectOneMenu id="theme" value="#{myPreferencesMBean.adminPreference.theme}">
                         <f:selectItems value="#{myPreferencesMBean.availableThemes}"/>
-                    </h:selectOneMenu>
+                    </p:selectOneMenu>
                 </h:panelGroup>
-                 
+
                 <h:panelGroup>
-                    <h3><h:outputLabel value="#{web.text.NUMBEROFRECORDSPERPAGE}"/></h3>
-                    <h:outputLabel styleClass="help" value="#{web.text.NUMBEROFRECORDSPERPAGE_HELP}"/>
+                    <h3><p:outputLabel value="#{web.text.NUMBEROFRECORDSPERPAGE}"/></h3>
+                    <p:outputLabel styleClass="help" value="#{web.text.NUMBEROFRECORDSPERPAGE_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectOneMenu id="entriesPerPage" value="#{myPreferencesMBean.adminPreference.entriesPerPage}">
+                    <p:selectOneMenu id="entriesPerPage" value="#{myPreferencesMBean.adminPreference.entriesPerPage}">
                         <f:selectItems value="#{myPreferencesMBean.possibleEntriesPerPage}"/>
-                    </h:selectOneMenu>
+                    </p:selectOneMenu>
                 </h:panelGroup>
-                
+
                 <h:panelGroup>
-                    <h3><h:outputLabel value="#{web.text.CASTATUSONHOMEPAGE}"/></h3>
-                    <h:outputLabel styleClass="help" value="#{web.text.CASTATUSONHOMEPAGE_HELP}"/>
-                </h:panelGroup>
-                <h:panelGroup>
-                    <h:selectBooleanCheckbox id="frontpageCaStatus" value="#{myPreferencesMBean.adminPreference.frontpageCaStatus}"/>
-                    <h:outputLabel value="#{web.text.SHOW}"/>
-                </h:panelGroup>
-                
-                <h:panelGroup>
-                    <h3><h:outputLabel value="#{web.text.PUBLISHERQUEUESTATUSON}"/></h3>
-                    <h:outputLabel styleClass="help" value="#{web.text.PUBLISHERQUEUESTATUSON_HELP}"/>
+                    <h3><p:outputLabel value="#{web.text.CASTATUSONHOMEPAGE}"/></h3>
+                    <p:outputLabel styleClass="help" value="#{web.text.CASTATUSONHOMEPAGE_HELP}"/>
                 </h:panelGroup>
                 <h:panelGroup>
-                    <h:selectBooleanCheckbox id="frontpagePublisherQueueStatus" value="#{myPreferencesMBean.adminPreference.frontpagePublisherQueueStatus}"/>
-                    <h:outputLabel value="#{web.text.SHOW}"/>
+                    <p:selectBooleanCheckbox id="frontpageCaStatus" value="#{myPreferencesMBean.adminPreference.frontpageCaStatus}"/>
+                    <p:outputLabel value="#{web.text.SHOW}"/>
                 </h:panelGroup>
-                
+
+                <h:panelGroup>
+                    <h3><p:outputLabel value="#{web.text.PUBLISHERQUEUESTATUSON}"/></h3>
+                    <p:outputLabel styleClass="help" value="#{web.text.PUBLISHERQUEUESTATUSON_HELP}"/>
+                </h:panelGroup>
+                <h:panelGroup>
+                    <p:selectBooleanCheckbox id="frontpagePublisherQueueStatus" value="#{myPreferencesMBean.adminPreference.frontpagePublisherQueueStatus}"/>
+                    <p:outputLabel value="#{web.text.SHOW}"/>
+                </h:panelGroup>
+
                 <h:panelGroup>&nbsp;</h:panelGroup>
                 <h:panelGroup>
-                    <h:commandButton value="#{web.text.SAVE}" action="#{myPreferencesMBean.save}"/>
-                    <h:commandButton value="#{web.text.CANCEL}" action="#{myPreferencesMBean.cancel}" immediate="true"/>
+                    <p:commandButton value="#{web.text.SAVE}" action="#{myPreferencesMBean.save}"/>
+                    <p:commandButton value="#{web.text.CANCEL}" action="#{myPreferencesMBean.cancel}" immediate="true"/>
                 </h:panelGroup>
-            </h:panelGrid>
+            </p:panelGrid>
 		</h:form>
-		
+
 	</ui:define>
 </ui:composition>
 </html>

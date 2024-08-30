@@ -14,8 +14,8 @@ package org.ejbca.core.ejb.ra;
 
 import java.util.Objects;
 
-import javax.transaction.Status;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.transaction.Status;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 /**
  * Used for storing information in the JPA transaction, in the Registry resource.

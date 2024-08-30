@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.crl;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 @Local
 public interface ImportCrlSessionLocal extends ImportCrlSession {

@@ -1,4 +1,4 @@
-# Used by RaMasterApiTest
+# Used by RaMasterApiSystemTest
 modules/caa/src/org/ejbca/core/model/validation/CaaValidator.java
 modules/caa/src/org/ejbca/core/model/validation/ValidatorUtil.java
 modules/caa/src/org/ejbca/core/model/validation/iodeftypes/Assessment.java

@@ -1,10 +1,10 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets"
+    xmlns:c="jakarta.tags.core">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -19,8 +19,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-     
-     $Id$
      -->
 </ui:remove>
 <body>
@@ -62,17 +60,19 @@
 							 size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
 							 rendered="#{editPublisher.customPublisherMBData.renderCustomTextInput(property)}"/>
 				<h:inputSecret value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
-							   autocomplete="off" size="45" maxlength="255" disabled="#{editPublisher.readOnly}" 
+							   size="45" maxlength="255" disabled="#{editPublisher.readOnly}"
 							   rendered="#{editPublisher.customPublisherMBData.renderCustomInputPassword(property)}"
-							   redisplay="true"/>
+							   redisplay="true">
+					<f:passThroughAttribute name="autocomplete" value="new-password"/>
+				</h:inputSecret>
 				<h:selectBooleanCheckbox  value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" 
 										  disabled="#{editPublisher.readOnly}" rendered="#{editPublisher.customPublisherMBData.renderCustomCheckbox(property)}"/> 
 				<h:outputLabel value="#{web.text.USE}" rendered="#{editPublisher.customPublisherMBData.renderCustomCheckbox(property)}"/>
 				<h:inputTextarea cols="60" rows="12" value="#{editPublisher.customPublisherMBData.customPublisherPropertyValues[property.name]}" disabled="#{editPublisher.readOnly}"
 								 rendered="#{editPublisher.customPublisherMBData.renderCustomOutputTextArea(property)}"/>
-			<f:verbatim rendered="#{editPublisher.renderCustomHelp(property)}">
+			<h:outputText rendered="#{editPublisher.renderCustomHelp(property)}">
 				<br />
-			</f:verbatim>					 
+			</h:outputText>
 			<h:outputText value="#{editPublisher.getCustomHelpText(property)}" styleClass="smallHelp" rendered="#{editPublisher.renderCustomHelp(property)}"/>
 			</h:panelGroup>
 		</c:forEach>

@@ -1,4 +1,4 @@
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="jakarta.tags.core" prefix="c" %>
 <%@ taglib uri="https://owasp.org/www-project-csrfguard/Owasp.CsrfGuard.tld" prefix="csrf" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <%
@@ -6,7 +6,7 @@
 %>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.jsf.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.raadmin.validators.RegexFieldValidator, org.cesecore.certificates.endentity.EndEntityConstants,
-                 javax.ejb.CreateException, java.io.Serializable, org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation,
+                 jakarta.ejb.CreateException, java.io.Serializable, org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation,
                  java.math.BigInteger,org.ejbca.core.model.SecConst,com.keyfactor.util.StringTools, org.ejbca.ui.web.ParameterException,com.keyfactor.util.certificate.DnComponents,org.apache.commons.lang.time.DateUtils, org.apache.commons.lang.StringUtils, org.cesecore.certificates.endentity.ExtendedInformation,org.cesecore.certificates.crl.RevokedCertInfo,com.keyfactor.ErrorCode,org.ejbca.core.model.authorization.AccessRulesConstants,
                  org.cesecore.certificates.certificate.certextensions.standard.NameConstraint, org.cesecore.certificates.certificate.certextensions.standard.QcStatement, org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier, org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement, org.ejbca.util.HTMLTools,com.keyfactor.util.CertTools" %>
 <html> 
@@ -1064,7 +1064,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" autocomplete="off" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
+             <input type="password" autocomplete="new-password" name="<%= TEXTFIELD_PASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
            <% } %>
  
         </td>
@@ -1097,7 +1097,7 @@ function checkUseInBatch(){
                 %>
            </select>
            <% }else{ %> 
-             <input type="password" autocomplete="off" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
+             <input type="password" autocomplete="new-password" name="<%= TEXTFIELD_CONFIRMPASSWORD %>" size="20" maxlength="255" tabindex="<%=tabindex++%>" value=''>
            <% } %>
         </td>
 	<td>&nbsp;</td> 

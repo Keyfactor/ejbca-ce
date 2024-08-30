@@ -13,7 +13,7 @@
 
 package org.cesecore.keys.validation;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 import com.keyfactor.CesecoreException;
 

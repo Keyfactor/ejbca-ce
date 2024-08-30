@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.approval;
 
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.profiles.ProfileData;
 

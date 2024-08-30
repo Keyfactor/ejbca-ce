@@ -75,15 +75,15 @@ import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -205,6 +205,14 @@ public class CertificateRestResource extends BaseRestResource {
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
             final EnrollPkcs10CertificateRequest requestData = CertificateRequestRestRequest.converter().toEnrollPkcs10CertificateRequest(certificateRequestRestRequest);
+            
+            // local call as the CA should normally be present as external CA in RA
+            String caName = requestData.getCertificateAuthorityName();
+            // seems to be only way to read from cache without instantiating the CA related objects
+            if (!caSessionLocal.getCAIdToNameMap().values().contains(caName)) {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA with name " + caName + " doesn't exist.");
+            }
+            
             final byte[] certificateBytes = raMasterApi.processCertificateRequest(authenticationToken, requestData.getUsername(), requestData.getPassword(),
                     requestData.getCertificateRequest(), CertificateConstants.CERT_REQ_TYPE_PKCS10, null, "CERTIFICATE");
 

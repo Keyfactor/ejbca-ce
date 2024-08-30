@@ -4,10 +4,10 @@ Define the EJBCA deployment parameters
 {{- define "ejbca.ejbcaDeploymentParameters" -}}
 {{- if .Values.ejbca.useEphemeralH2Database }}
 - name: DATABASE_JDBC_URL
-  value: "jdbc:h2:mem:ejbcadb;DB_CLOSE_DELAY=-1"
+  value: "jdbc:h2:mem:ejbcadb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE"
 {{- else if .Values.ejbca.useH2Persistence }}
 - name: DATABASE_JDBC_URL
-  value: "jdbc:h2:/mnt/persistent/ejbcadb;DB_CLOSE_DELAY=-1"
+  value: "jdbc:h2:/mnt/persistent/ejbcadb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE"
 {{- end }}
 {{- if hasKey .Values.ejbca "env" }}
 {{- range $key, $value := .Values.ejbca.env }}
@@ -109,47 +109,15 @@ Create the name of the service account to use
 {{- end }}
 {{- end }}
 
-
 {{/*
-Compose the container image path in format: registry/repository/imageName:tag
+Append the application variant to enterprise edition repository paths
 */}}
-{{- define "ejbca.imagePath" -}}
-{{- $registry := .Values.image.registry }}
+{{- define "ejbca.imageRepository" -}}
+{{- $variant := .Values.image.variant | default "" }}
 {{- $repository := .Values.image.repository }}
-{{- $imageName := .Values.image.name }}
-{{- $tag := .Values.image.tag | default .Chart.AppVersion }}
-{{- $edition := .Values.ejbca.edition | default "ee" }}
-{{- $variant := .Values.ejbca.variant | default "" }}
-{{- $registryDict := dict "ee" "keyfactor.jfrog.io" "ce" "docker.io" }}
-{{- $repositoryDict := dict "ee" "dev-oci/ejbca/ejbca/images" "ce" "keyfactor" }}
-{{- /* registry */ -}}
-{{- if eq $registry nil }}
-  {{- $registry = get $registryDict $edition }}
+{{- if and (hasSuffix "/ejbca-ee" $repository) (or (eq $variant "ra") (eq $variant "va")) }}
+{{- printf "%s-%s" $repository $variant }}
 {{- else }}
-  {{- $registry =  trimAll "/" $registry }}
+{{- print $repository }}
 {{- end }}
-{{- /* repository */ -}}
-{{- if eq $repository nil }}
-  {{- $repository = get $repositoryDict $edition }}
-{{- else }}
-  {{- $repository = trimAll "/" $repository }}
-{{- end }}
-{{- /* imageName */ -}}
-{{- if eq $imageName nil }}
-  {{- if eq $edition "ce" }}
-    {{- $imageName = "ejbca-ce" }}
-  {{- else if or (eq $variant "ra") (eq $variant "va") (eq $variant "proxy-ca") }}
-    {{- $imageName = printf "ejbca-ee-%s" $variant }}
-  {{- else }}
-    {{- $imageName = "ejbca-ee" }}
-  {{- end }}
-{{- end }}
-{{- /* add path seperator slashes depending on which comonents are used */ -}}
-{{- if $registry }}
-  {{- $registry = printf "%s/" $registry }}
-{{- end }}
-{{- if and $repository $imageName}}
-  {{- $repository = printf "%s/" $repository }}
-{{- end }}
-{{- printf "%s%s%s:%s" $registry $repository $imageName $tag }}
 {{- end }}

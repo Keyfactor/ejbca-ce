@@ -26,16 +26,16 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipInputStream;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -84,10 +84,10 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 
 /**
- * 
+ *
  * JSF MBean backing the manage ca page.
  *
- * 
+ *
  */
 @Named
 @ViewScoped
@@ -260,13 +260,14 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public Map<Integer, String> getListOfCas() {
         final Map<Integer, String> caMap = new LinkedHashMap<>();
-        for (final String nameofca : caNames.keySet()) {
-            int caId = caNames.get(nameofca);
+        for (final String caName : caNames.keySet()) {
+            int caId = caNames.get(caName);
             int caStatus = caBean.getCAStatusNoAuth(caId);
+            String statusText = getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus));
 
-            String nameandstatus = nameofca + ", (" + getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus)) + ")";
+            String nameAndStatus = caName + " (" + statusText + ")";
             if (caSession.authorizedToCANoLogging(getAdmin(), caId)) {
-                caMap.put(caId, nameandstatus);
+                caMap.put(caId, nameAndStatus);
             }
         }
         return caMap;
@@ -470,18 +471,18 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         }
         return EditCaUtil.MANAGE_CA_NAV;
     }
-    
-    private boolean removeCA(final int caId) throws AuthorizationDeniedException{     
+
+    private boolean removeCA(final int caId) throws AuthorizationDeniedException{
         final boolean caIdIsPresent = endEntityManagementSession.checkForCAId(caId) ||
                 certificateProfileSessionLocal.existsCAIdInCertificateProfiles(caId) ||
                 endEntityProfileSession.existsCAInEndEntityProfiles(caId) ||
-                isCaIdInUseByRoleOrRoleMember(caId);   
+                isCaIdInUseByRoleOrRoleMember(caId);
         if (!caIdIsPresent) {
             caSession.removeCA(getEjbcaWebBean().getAdminObject(), caId);
         }
         return !caIdIsPresent;
     }
-    
+
     private boolean isCaIdInUseByRoleOrRoleMember(final int caId) {
         for (final Role role : roleDataSession.getAllRoles()) {
             if (role.getAccessRules().containsKey(AccessRulesHelper.normalizeResource(StandardRules.CAACCESS.resource() + caId))) {
@@ -523,14 +524,14 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String createAuthCertSignRequest() {
         if (selectedCaId != 0) {
-            
+
             int selectedCaType;
             try {
                 selectedCaType = caSession.getCAInfo(getAdmin(), selectedCaId).getCAType();
             } catch (AuthorizationDeniedException e) {
                 throw new IllegalStateException("Admin is not authorized to get ca type!", e);
             }
-            
+
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaType", selectedCaType);

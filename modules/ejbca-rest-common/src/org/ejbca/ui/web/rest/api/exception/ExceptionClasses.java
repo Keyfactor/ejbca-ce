@@ -25,6 +25,7 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.SelfApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.keyrecovery.KeyRecoveryNotAvailableException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -43,6 +44,7 @@ public enum ExceptionClasses {
     // 400
     ApprovalRequestExecutionException(ApprovalRequestExecutionException.class),
     ApprovalRequestExpiredException(ApprovalRequestExpiredException.class),
+    KeyRecoveryNotAvailableException(KeyRecoveryNotAvailableException.class),
     RoleExistsException(RoleExistsException.class),
     // 403
     AuthenticationFailedException(AuthenticationFailedException.class),

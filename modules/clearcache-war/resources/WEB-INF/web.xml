@@ -13,14 +13,14 @@
  *                                                                       *
  *************************************************************************/
 
- version: $Id$
+
  -->
-<web-app version="3.1" id="ecc_web_1"
+<web-app version="6.0" id="ecc_web_1"
     metadata-complete="false"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-                        http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd">
+    xmlns="https://jakarta.ee/xml/ns/jakartaee"
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+        https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd">
 
     <display-name>Clear Caches Servlet</display-name>
     <servlet>

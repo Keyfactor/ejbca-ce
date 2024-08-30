@@ -17,12 +17,13 @@ dependencies {
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.json.simple)
     compileOnly(libs.junit)
     compileOnly(libs.commons.lang)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl)
 }
 

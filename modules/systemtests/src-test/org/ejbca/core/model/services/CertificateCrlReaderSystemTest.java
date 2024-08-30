@@ -85,14 +85,12 @@ import com.keyfactor.util.keys.token.CryptoToken;
 
 /**
  * System test for the CertificateCrlReader Worker.
- * 
- * @version $Id$
  */
 public class CertificateCrlReaderSystemTest {
 
     private static final Logger log = Logger.getLogger(CertificateCrlReaderSystemTest.class);
 
-    private static final AuthenticationToken ADMIN_AUTHENTICATION_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserPasswordExpireTest"));
+    private static final AuthenticationToken ADMIN_AUTHENTICATION_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserPasswordExpireSystemTest"));
     private static final String ISSUER_DN = "CN=certificateCrlReaderSystemTest";
     private static final String END_ENTITY_USER = "CertificateCrlReaderSystemTestUser";
     private static final String END_ENTITY_SUBJECT_DN = "CN=" + END_ENTITY_USER;

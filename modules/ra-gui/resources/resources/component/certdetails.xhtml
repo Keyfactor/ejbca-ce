@@ -1,12 +1,11 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:fn="http://java.sun.com/jsp/jstl/functions"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:composite="http://xmlns.jcp.org/jsf/composite">
+      xmlns:f="jakarta.faces.core"
+      xmlns:fn="jakarta.tags.functions"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:composite="jakarta.faces.composite">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -21,8 +20,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-
-     version: $Id$
      -->
 </ui:remove>
 <f:view locale="#{raLocaleBean.locale}" encoding="UTF-8">
@@ -362,10 +359,10 @@
                     <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
                     <h:outputLabel for="passwordField" value="#{msg.enroll_password_new}"
                                    styleClass="#{cc.attrs.styleLabel}"/>
-                    <h:inputSecret id="passwordField" value="#{cc.attrs.raCertificateDetails.password}"
-                                   autocomplete="off">
+                    <h:inputSecret id="passwordField" value="#{cc.attrs.raCertificateDetails.password}">
                         <f:validator validatorId="extendedRequiredValidator"/>
                         <f:attribute name="_required" value="true"/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
                     <h:message for="passwordField" id="passwordFieldMessage" styleClass="showErrorMessage"/>
                 </h:panelGroup>
@@ -373,10 +370,10 @@
                     <h:outputLabel for="passwordConfirmField" value="#{msg.enroll_confirm_password}"
                                    styleClass="#{cc.attrs.styleLabel}"/>
                     <h:inputSecret id="passwordConfirmField" binding="#{raSearchCertsBean.confirmPasswordComponent}"
-                                   value="#{cc.attrs.raCertificateDetails.confirmPassword}"
-                                   autocomplete="off">
+                                   value="#{cc.attrs.raCertificateDetails.confirmPassword}">
                         <f:validator validatorId="extendedRequiredValidator"/>
                         <f:attribute name="_required" value="true"/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
                     <h:message for="passwordConfirmField" id="passwordConfirmFieldMessage"
                                styleClass="showErrorMessage"/>

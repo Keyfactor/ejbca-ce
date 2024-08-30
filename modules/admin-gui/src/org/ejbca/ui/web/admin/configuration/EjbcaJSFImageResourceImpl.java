@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 /**
  * Class used to retrieve EJBCA image resources in JSF views

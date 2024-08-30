@@ -16,7 +16,7 @@ package org.ejbca.core.protocol.cmp;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -153,7 +153,7 @@ public class P10CrMessageHandler extends BaseCmpMessageHandler implements ICmpMe
         }
         if (result == null) {
             // ECA-6435 Overwrite the EE DN with the request DN fails here, independent from CertificateProile.setAllowDnOverride, 
-            // if the request DN does not contain the VCs DN component to extract, but fails anyway (see VendorAuthenticationTest.test3GPPModeWithUserFromVendorCertUIDOrRequestFullDN()).
+            // if the request DN does not contain the VCs DN component to extract, but fails anyway (see VendorAuthenticationSystemTest.test3GPPModeWithUserFromVendorCertUIDOrRequestFullDN()).
             result = getEndEntityByDn(dn);
         }
         return result;
