@@ -1,4 +1,4 @@
-import java.util.Properties
+import java.util.*
 
 val props: Properties = Properties().apply {
     val propertiesFilePath = "conf/ejbca.properties"
@@ -28,6 +28,7 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/ext/swagger"))
             dirs(rootProject.projectDir.resolve("lib/primefaces"))
             dirs(rootProject.projectDir.resolve("lib/ct"))
+            dirs(rootProject.projectDir.resolve("lib/ext/test"))
         }
     }
     extra["edition"] = edition
