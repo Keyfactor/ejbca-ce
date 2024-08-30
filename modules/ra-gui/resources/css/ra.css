@@ -459,12 +459,3 @@ input[type="file"]:focus {
     }
 
 }
-
-@media (min-width: 64.0104em) {
-
-    #requestTemplateForm\:selectRequestTemplateOuterPanel .internal-frame fieldset > .pure-control-group:nth-child(1),
-    #requestTemplateForm\:selectRequestTemplateOuterPanel .internal-frame fieldset > .pure-control-group:nth-child(2) {
-        margin-bottom: -1.7em;
-    }
-
-}
