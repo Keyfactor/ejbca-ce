@@ -25,7 +25,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
  */
 public interface KeyfactorEnroller {
 
-    X509Certificate enrollCertificate(ProxyCaInfo keyFactorCa, PKCS10RequestMessage csr) throws CertificateCreateException;
+    X509Certificate enrollCertificate(ProxyCaInfo keyFactorCa, PKCS10RequestMessage csr, String keyfactorTemplate) throws CertificateCreateException;
 
     ProxyCaCertificateInfo searchCertificate(ProxyCaInfo keyFactorCa, X509Certificate clientCertificate) throws CertificateCreateException;
 

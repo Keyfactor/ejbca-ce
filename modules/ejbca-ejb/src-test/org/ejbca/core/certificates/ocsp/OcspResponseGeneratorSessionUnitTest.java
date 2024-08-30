@@ -36,8 +36,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Properties;
 
-import javax.ejb.Timer;
-import javax.ejb.TimerService;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerService;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;

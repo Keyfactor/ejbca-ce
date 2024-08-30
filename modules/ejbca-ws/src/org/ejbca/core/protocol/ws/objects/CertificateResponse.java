@@ -15,7 +15,7 @@ package org.ejbca.core.protocol.ws.objects;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;

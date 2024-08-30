@@ -1,10 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+	  xmlns:f="jakarta.faces.core"
+	  xmlns:h="jakarta.faces.html"
+	  xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -44,8 +43,6 @@
 							value="#{acmeAliasConfigMBean.currentAliasStr}" required="true" 
 							requiredMessage="#{web.text.YOUAREREQUIRED} #{web.text.NAME}" size="40" maxlength="255" title="#{web.text.FORMAT_ID_STR}" 
 							disabled="#{!acmeAliasConfigMBean.currentAliasEditMode}">
-							    <f:validateRegex pattern="^([\w\-\_]{0,250})$" />
-			                    <f:validator validatorId="legalCharsValidator" />
 			                    <f:converter converterId="trimConverter"/>
 						</h:inputText>
 						<h:message for="name"/>					

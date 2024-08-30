@@ -26,7 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.Part;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -729,12 +729,14 @@ public class SystemConfigurationOAuthKeyManager extends OAuthKeyManager {
             OAuth2AuthenticationToken oauth2token = (OAuth2AuthenticationToken) getAdminToken();
             oauthKeyEditor.loadIntoEditor(oauthKey, oauthKey.getLabel());
             oauthKeyEditor.stopEditing();
-            final Collection<OAuthPublicKey> publicKeys = oauthKey.getKeys().values();
-            for (OAuthPublicKey key : publicKeys) {
-                String oauthKeyToBeRemovedString = Base64.toBase64String(CertTools.generateSHA256Fingerprint(key.getPublicKeyBytes()));
-                if (oauth2token.getPublicKeyBase64Fingerprint().equals(oauthKeyToBeRemovedString)) {
-                    systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_PUBLICKEYREMOVALNOTPOSSIBLE");
-                    return;
+            if (oauthKey != null && oauthKey.getKeys() != null) {
+                final Collection<OAuthPublicKey> publicKeys = oauthKey.getKeys().values();
+                for (OAuthPublicKey key : publicKeys) {
+                    String oauthKeyToBeRemovedString = Base64.toBase64String(CertTools.generateSHA256Fingerprint(key.getPublicKeyBytes()));
+                    if (oauth2token.getPublicKeyBase64Fingerprint().equals(oauthKeyToBeRemovedString)) {
+                        systemConfigurationHelper.addErrorMessage("OAUTHKEYTAB_PUBLICKEYREMOVALNOTPOSSIBLE");
+                        return;
+                    }
                 }
             }
         }

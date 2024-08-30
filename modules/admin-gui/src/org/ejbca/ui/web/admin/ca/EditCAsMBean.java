@@ -42,20 +42,20 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.FacesException;
-import javax.faces.component.UIInput;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.Part;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.FacesException;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -368,7 +368,7 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         + "cryptotoken/cryptotoken.jsf?cryptoTokenId=";
 
         // Init include health check
-        caInfoDto.setIncludeInHealthCheck(cainfo != null && cainfo.getIncludeInHealthCheck());
+        caInfoDto.setIncludeInHealthCheck(cainfo == null || cainfo.getIncludeInHealthCheck());
 
         // Here we do initialize the sub views.
         if (isEditCA) {
@@ -2325,7 +2325,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
             caInfoDto.setUsername(proxyCaInfo.getUsername());
             caInfoDto.setPassword(proxyCaInfo.getPassword());
             caInfoDto.setUpstreamCa(proxyCaInfo.getUpstreamCertificateAuthority());
-            caInfoDto.setUpstreamTemplate(proxyCaInfo.getTemplate());
             caInfoDto.setSansJson(proxyCaInfo.getSans());
 
             return;

@@ -16,6 +16,8 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -26,8 +28,6 @@ import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
-
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 public interface KecCache {
 
@@ -62,6 +62,6 @@ public interface KecCache {
      * Clears the cache, called from {@link #ClearCacheSessionBean}
      */
     default void flushKecCache() {
-        throw new UnsupportedOperationException("KEC cache methods are only supported in EJBCA Enterprise");
+        // Do nothing on systems that do not have a KEC cache
     }
 }

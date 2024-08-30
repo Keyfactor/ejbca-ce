@@ -16,11 +16,11 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.application.ViewExpiredException;
-import javax.faces.context.FacesContext;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.faces.application.ViewExpiredException;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.era.RaMasterBackendUnavailableException;
@@ -77,12 +77,12 @@ public class RaErrorBean implements Serializable {
         }
         // Render error caught by web.xml error-page definition
         if (httpErrorCode==null) {
-            final Object httpErrorCodeObject = requestMap.get("javax.servlet.error.status_code");
+            final Object httpErrorCodeObject = requestMap.get("jakarta.servlet.error.status_code");
             if (httpErrorCodeObject!=null && httpErrorCodeObject instanceof Integer) {
                 httpErrorCode = (Integer) httpErrorCodeObject;
                 if (log.isDebugEnabled()) {
-                    final String httpErrorUri = String.valueOf(requestMap.get("javax.servlet.error.request_uri"));
-                    final String httpErrorMsg = String.valueOf(requestMap.get("javax.servlet.error.message"));
+                    final String httpErrorUri = String.valueOf(requestMap.get("jakarta.servlet.error.request_uri"));
+                    final String httpErrorMsg = String.valueOf(requestMap.get("jakarta.servlet.error.message"));
                     log.debug("Client got HTTP error " + httpErrorCode + " when trying to access '" + httpErrorUri + "'. Message was: " + httpErrorMsg);
                 }
             }

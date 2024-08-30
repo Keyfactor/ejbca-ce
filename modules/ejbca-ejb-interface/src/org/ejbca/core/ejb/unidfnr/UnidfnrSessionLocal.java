@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.unidfnr;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * 
@@ -37,7 +37,7 @@ public interface UnidfnrSessionLocal extends UnidfnrSession {
     String fetchUnidFnrData(final String serialNumber);
     
     /**
-     * This method is used by ProtocolLookupServerHttpTest
+     * This method is used by ProtocolLookupServerHttpSystemTest
      * @param unid id of the object to remove from UnidFnrData table
      * 
      */

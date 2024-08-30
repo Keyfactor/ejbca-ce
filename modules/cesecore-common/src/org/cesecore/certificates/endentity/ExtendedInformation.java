@@ -82,6 +82,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     
     public static final String SSH_CERTIFICATE_CRITICAL_OPTIONS = "ssh_critical_options";
     public static final String SSH_CERTIFICATE_EXTENSIONS = "ssh_extensions";
+    public static final String SSH_PRINCIPALS_IPV6 = "ssh_principals_ipv6";
 
     /**
      * Identifier for Custom data holding a end time when the users certificate should be valid extInfo.setCustomData(EndEntityProfile.STARTTIME, "");
@@ -132,6 +133,8 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     private static final String KEYSTORE_ALGORITHM_SUBTYPE = "KEYSTORE_ALGORITHM_SUBTYPE";
     private static final String KEYSTORE_ALGORITHM_TYPE = "KEYSTORE_ALGORITHM_TYPE";
     private static final String KEYSTORE_ALTERNATIVE_KEY_ALGORITHM  = "KEYSTORE_ALTERNATIVE_KEY_ALGORITHM";
+    private static final String KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION  = "KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION";
+    
 
     /** The ID of the approval request that was submitted to create the end entity */
     private static final String ADD_EE_APPROVAL_REQUEST_ID = "ADD_EE_APPROVAL_REQUEST_ID";
@@ -199,8 +202,16 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return (String) data.get(KEYSTORE_ALTERNATIVE_KEY_ALGORITHM);
     }
 
-    public void setKeyStoreAlternateKeyAlgorithm(String keyStoreAlternateKeyAlgorithm){
+    public void setKeyStoreAlternativeKeyAlgorithm(String keyStoreAlternateKeyAlgorithm){
         data.put(KEYSTORE_ALTERNATIVE_KEY_ALGORITHM, keyStoreAlternateKeyAlgorithm);
+    }
+
+    public String getKeyStoreAlternativeKeySpecification(){
+        return (String) data.get(KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION);
+    }
+
+    public void setKeyStoreAlternativeKeySpecification(String keyStoreAlternativeKeySpecification){
+        data.put(KEYSTORE_ALTERNATIVE_KEY_SPECIFICATION, keyStoreAlternativeKeySpecification);
     }
     
     /** @return The certificate request in binary asn.1 form if it was provided during user enrollment request, null otherwise.*/
@@ -923,6 +934,19 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
             }
             setSshCustomData(SSH_CERTIFICATE_EXTENSIONS, sshExtensionData);
         }
+    }
+    
+    public List<String> getSshPrincipalsIpv6() {
+        Object entry = data.get(CUSTOM_SSH_DATA + SSH_PRINCIPALS_IPV6);
+        if(entry!=null) {
+            return (List<String>) data.get(CUSTOM_SSH_DATA + SSH_PRINCIPALS_IPV6);
+        } else {
+            return new ArrayList<String>();
+        }
+    }
+
+    public void setSshPrincipalsIpv6(List<String> ipv6Principals) {
+        setSshCustomData(SSH_PRINCIPALS_IPV6, ipv6Principals);
     }
 
 }

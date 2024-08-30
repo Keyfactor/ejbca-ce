@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -149,6 +149,10 @@ public interface InternalCertificateStoreSessionRemote {
     
     void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username,
             BigInteger serialNumber, int status, Date revocationDate, int reasonCode, String caFingerprint)  throws AuthorizationDeniedException;
+
+    void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username,
+            BigInteger serialNumber, int status, Date revocationDate, int reasonCode, String caFingerprint, Date invalidityDate)
+            throws AuthorizationDeniedException;
 
     /** @return a raw CertificateData row */
     CertificateData getCertificateData(String fingerprint);

@@ -18,12 +18,13 @@ dependencies {
     implementation(libs.bcprov)
     implementation(libs.bctls)
     implementation(libs.bcutil)
-    implementation(libs.java.ee.api)
+    implementation(libs.jakartaee.api)
     implementation(libs.json.simple)
     implementation(libs.junit)
     compileOnly(libs.commons.lang)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
+    compileOnly(libs.cryptotokens.impl)
 }
 
 sourceSets {

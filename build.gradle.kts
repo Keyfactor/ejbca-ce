@@ -1,7 +1,12 @@
-import java.util.Properties
+import java.util.*
 
 val props: Properties = Properties().apply {
-    load(file("conf/ejbca.properties").inputStream())
+    val propertiesFilePath = "conf/ejbca.properties"
+    if (file(propertiesFilePath).exists()) {
+        load(file(propertiesFilePath).inputStream())
+    } else {
+        load(file(propertiesFilePath + ".sample").inputStream())
+    }
 }
 
 // Specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
@@ -23,6 +28,7 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/ext/swagger"))
             dirs(rootProject.projectDir.resolve("lib/primefaces"))
             dirs(rootProject.projectDir.resolve("lib/ct"))
+            dirs(rootProject.projectDir.resolve("lib/ext/test"))
         }
     }
     extra["edition"] = edition
@@ -95,6 +101,8 @@ dependencies {
     earlib(libs.commons.codec)
     earlib(libs.commons.collections4)
     earlib(libs.commons.configuration2)
+    earlib(libs.commons.fileupload2)
+    earlib(libs.commons.fileupload2.core)
     earlib(libs.commons.fileupload)
     earlib(libs.commons.io)
     earlib(libs.commons.lang)
@@ -117,6 +125,7 @@ dependencies {
     earlib(libs.kerby.asn1)
     earlib(libs.kerb.crypto)
     earlib(libs.x509.common.util)
+    earlib(libs.cryptotokens.api)
     earlib(libs.cryptotokens.impl)
     earlib(libs.jacknji11)
     earlib(libs.log4j.v12.api)
@@ -139,6 +148,7 @@ dependencies {
         earlib(libs.dnsjava)
         earlib(libs.protobuf.java)
         earlib(libs.p11ng)
+        earlib(libs.cryptotokens.impl)
     }
     // Internal modules packaged as libraries
     earlib(project(path = ":modules:cesecore-common", configuration = "archives"))

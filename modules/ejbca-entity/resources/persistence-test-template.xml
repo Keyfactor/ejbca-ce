@@ -18,11 +18,11 @@
 <!--
 	JPA configuration used to validate the current JPA classes to an existing database.
 -->
-<persistence version="2.1"
-    xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+<persistence version="3.1"
+    xmlns="https://jakarta.ee/xml/ns/persistence"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
-                        http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+        https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd">
 
     <persistence-unit name="ejbca-pu" transaction-type="RESOURCE_LOCAL">
         <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
@@ -82,7 +82,7 @@
         <class>org.cesecore.certificates.crl.CRLData</class>
         <class>org.cesecore.keys.token.CryptoTokenData</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
@@ -99,7 +99,7 @@
         <class>org.cesecore.certificates.crl.CRLData</class>
         <class>org.cesecore.keys.token.CryptoTokenData</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
