@@ -230,12 +230,11 @@
 				</h:panelGroup>
 
 
-				<h:panelGroup>
-				<h:outputLabel id="emailLabel" 
-					value="#{web.text.EMAIL}" />
-			</h:panelGroup>	
-				
-			<h:panelGroup>
+				<h:panelGroup rendered="#{resourceBean.useEmail}">
+					<h:outputLabel id="emailLabel" value="#{web.text.EMAIL}" />
+				</h:panelGroup>
+
+				<h:panelGroup rendered="#{resourceBean.useEmail}">
 				<h:inputText id="eeEmailName"
 							value="#{resourceBean.emailName}" size="15" maxlength="255"
 							title="#{web.text.FORMAT_DOMAINNAME}"
