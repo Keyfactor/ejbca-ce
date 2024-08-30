@@ -49,8 +49,8 @@
 	</path>
 
 	<path id="compile-test.classpath">
-        <path refid="lib.resteasy-jaxrs.classpath"/>
 		<path refid="compile.classpath"/>
+        <path refid="lib.resteasy-jaxrs.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path location="${ejbca-rest-api.build.dir}/WEB-INF/classes"/>
 		<path refid="lib.p11ng.classpath" />
