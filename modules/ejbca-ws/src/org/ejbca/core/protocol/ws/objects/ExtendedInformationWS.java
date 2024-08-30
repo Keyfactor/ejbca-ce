@@ -14,7 +14,7 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * Class used to represent extended information in userdata in the WebService API.

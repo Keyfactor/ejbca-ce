@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.ws;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 import java.security.cert.X509Certificate;
 
 @Remote

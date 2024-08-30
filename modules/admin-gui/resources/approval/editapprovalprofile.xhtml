@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
   	<!--
     /*************************************************************************
@@ -18,8 +18,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-
-     version: $Id$
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -167,11 +165,11 @@
                                         <f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/>
                                     </h:inputTextarea>
                                     <h:inputText id="inputLong" disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" size="6">
-                                    	<f:converter converterId="javax.faces.Long"/>
+                                    	<f:converter converterId="jakarta.faces.Long"/>
                                        	<f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/>
                                     </h:inputText>
                                     <h:inputText label="The number is not formatted properly!" id="inputInteger" disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" size="6" >
-                                       	<f:converter converterId="javax.faces.Integer" />
+                                       	<f:converter converterId="jakarta.faces.Integer" />
                                        	<f:validator validatorId="#{property.validatorType ? 'null':'dummyValidator'}"/>
                                     </h:inputText>
                                     <h:inputText id="inputUrl" disabled="#{approvalProfilesMBean.viewOnly}" rendered="#{property.type.simpleName eq 'UrlString'}" value="#{property.value.value}" size="50">

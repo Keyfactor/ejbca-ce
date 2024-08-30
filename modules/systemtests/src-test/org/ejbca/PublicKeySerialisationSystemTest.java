@@ -17,7 +17,7 @@ import static org.junit.Assert.fail;
 import java.io.EOFException;
 import java.io.StreamCorruptedException;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.BeforeClass;

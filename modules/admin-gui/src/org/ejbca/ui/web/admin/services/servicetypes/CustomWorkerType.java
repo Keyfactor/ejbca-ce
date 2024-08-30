@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.CustomServiceWorkerProperty;

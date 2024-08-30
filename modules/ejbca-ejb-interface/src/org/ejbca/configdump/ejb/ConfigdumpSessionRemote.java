@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.configdump.ejb;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @version $Id$

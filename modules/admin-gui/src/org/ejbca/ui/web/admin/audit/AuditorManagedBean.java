@@ -26,13 +26,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ActionEvent;
-import javax.faces.model.SelectItem;
-import javax.inject.Named;
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ActionEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Named;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditDevicesConfig;
@@ -429,25 +429,25 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
             }
             switch (Condition.valueOf(condition.getCondition())) {
             case EQUALS:
-                whereClause.append("a.").append(condition.getColumn()).append(" = ?").append(i); break;
+                whereClause.append("a.").append(condition.getColumn()).append(" = ?").append(i+1); break;
             case NOT_EQUALS:
-                whereClause.append("a.").append(condition.getColumn()).append(" != ?").append(i); break;
+                whereClause.append("a.").append(condition.getColumn()).append(" != ?").append(i+1); break;
             case CONTAINS:
-                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i+1);
                 conditionValue = "%" + conditionValue + "%";
                 break;
             case ENDS_WITH:
-                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i+1);
                 conditionValue = "%" + conditionValue;
                 break;
             case STARTS_WITH:
-                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i);
+                whereClause.append("a.").append(condition.getColumn()).append(" LIKE ?").append(i+1);
                 conditionValue = conditionValue + "%";
                 break;
             case GREATER_THAN:
-                whereClause.append("a.").append(condition.getColumn()).append(" > ?").append(i); break;
+                whereClause.append("a.").append(condition.getColumn()).append(" > ?").append(i+1); break;
             case LESS_THAN:
-                whereClause.append("a.").append(condition.getColumn()).append(" < ?").append(i); break;
+                whereClause.append("a.").append(condition.getColumn()).append(" < ?").append(i+1); break;
             default:
                 throw new IllegalArgumentException(errorMessage);    
             }
@@ -574,7 +574,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	 * 
 	 * Example: "#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}"
 	 * 
-	 * TODO: Use javax.faces.model.DataModel instead
+	 * TODO: Use jakarta.faces.model.DataModel instead
 	 * 
 	 * @return a fake "Map" where the get(Map) returns the length of the output-formatted Map
 	 */

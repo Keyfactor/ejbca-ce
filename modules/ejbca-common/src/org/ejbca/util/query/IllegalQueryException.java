@@ -13,7 +13,7 @@
  
 package org.ejbca.util.query;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 /**
  * An exception thrown if Query structure is illegal.

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.audit.audit;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * Error during export of secure audit log events.
