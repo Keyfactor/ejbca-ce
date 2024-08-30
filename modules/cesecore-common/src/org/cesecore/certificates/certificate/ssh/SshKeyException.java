@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.ssh;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 /**
  * Thrown to mark any unresolvable issues with SSH keys.

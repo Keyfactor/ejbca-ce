@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.ui.web.protocol.DateNotValidException;

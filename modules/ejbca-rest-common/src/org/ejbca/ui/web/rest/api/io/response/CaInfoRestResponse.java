@@ -16,7 +16,8 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -30,17 +31,17 @@ import com.keyfactor.util.CertTools;
  */
 public class CaInfoRestResponse {
 
-    @ApiModelProperty(value = "CA identifier", example = "12345678")
+    @Schema(description = "CA identifier", example = "12345678")
     private Integer id;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
+    @Schema(description = "Certificate Authority (CA) name", example = "ExampleCA")
     private String name;
-    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
+    @Schema(description = "Subject Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String subjectDn;
-    @ApiModelProperty(value = "Issuer Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
+    @Schema(description = "Issuer Distinguished Name", example = "CN=ExampleCA,O=Sample,C=SE")
     private String issuerDn;
-    @ApiModelProperty(value = "Expiration date", example = "2038-01-19T03:14:07Z")
+    @Schema(description = "Expiration date", example = "2038-01-19T03:14:07Z")
     private Date expirationDate;
-    @ApiModelProperty(value = "Is external (whether CA certificate was imported)", example = "true")
+    @Schema(description = "Is external (whether CA certificate was imported)", example = "true")
     private boolean external;
 
     /**

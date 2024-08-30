@@ -20,9 +20,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Set;
 
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
@@ -31,7 +31,6 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.UsernameAccessMatchValue;
 
@@ -42,11 +41,10 @@ import com.keyfactor.util.keys.KeyTools;
 
 /**
  * @see SimpleAuthenticationProvider
- * 
- * @version $Id$
+ *
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SimpleAuthenticationProviderSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class SimpleAuthenticationProviderSessionBean implements SimpleAuthenticationProviderSessionRemote, SimpleAuthenticationProviderSessionLocal {
 

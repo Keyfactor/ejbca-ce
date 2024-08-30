@@ -1,10 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -19,8 +18,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-
-     version: $Id$
      -->
 </ui:remove>
 
@@ -2352,7 +2349,7 @@
                     disabled="#{certProfileBean.viewOnly}"
                     value="#{certProfileBean.certificateProfile.usedCertificateExtensions}"
                     size="#{certProfileBean.availableCertificateExtensionsAvailableSize}"
-                    converter="javax.faces.Integer">
+                    converter="jakarta.faces.Integer">
                     <f:selectItems
                         value="#{certProfileBean.availableCertificateExtensionsAvailable}" />
                 </h:selectManyListbox>
@@ -2469,7 +2466,7 @@
                 <h:selectOneMenu id="selectcvcsigntermdvtype"
                     value="#{certProfileBean.certificateProfile.CVCSignTermDVType}"
                     rendered="#{certProfileBean.cvcAvailable and certProfileBean.cvcTerminalTypeSt}"
-                    converter="javax.faces.Integer"
+                    converter="jakarta.faces.Integer"
                     disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
                         value="#{certProfileBean.cvcSignTermDVTypeAvailable}" />
@@ -2529,7 +2526,7 @@
                         rendered="#{certProfileBean.cvcTerminalTypeAt}"
                         enabledClass="cvcoption_at"
                         value="#{certProfileBean.cvcLongAccessRights}"
-                        size="8" converter="javax.faces.Integer"
+                        size="8" converter="jakarta.faces.Integer"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:selectItems
                             value="#{certProfileBean.cvcAccessRightsAtAvailable}" />
@@ -2579,7 +2576,7 @@
                 <h:column>
                     <h:selectOneMenu id="approvalProfile"
                         value="#{requestItem.approvalProfileId}"
-                        converter="javax.faces.Integer"
+                        converter="jakarta.faces.Integer"
                         disabled="#{certProfileBean.viewOnly}">
                         <f:selectItems
                             value="#{certProfileBean.availableApprovalProfiles}" />
@@ -2705,7 +2702,7 @@
                         id="selectsubjectdnsubset"
                         value="#{certProfileBean.certificateProfile.subjectDNSubSet}"
                         size="10"
-                        converter="javax.faces.Integer">
+                        converter="jakarta.faces.Integer">
                         <f:selectItems
                             value="#{certProfileBean.subjectDNSubSetAvailable}" />
                     </h:selectManyListbox>
@@ -2736,7 +2733,7 @@
                         disabled="#{certProfileBean.viewOnly}"
                         id="selectsubjectaltnamesubset"
                         value="#{certProfileBean.certificateProfile.subjectAltNameSubSet}"
-                        size="6" converter="javax.faces.Integer">
+                        size="6" converter="jakarta.faces.Integer">
                         <f:selectItems
                             value="#{certProfileBean.subjectAltNameSubSetAvailable}" />
                     </h:selectManyListbox>
@@ -2748,7 +2745,7 @@
                     id="selectavailablecas"
                     value="#{certProfileBean.certificateProfile.availableCAs}"
                     size="#{certProfileBean.availableCAsAvailableSize}"
-                    converter="javax.faces.Integer"
+                    converter="jakarta.faces.Integer"
                     style="min-width: 280px;"
                     disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems
@@ -2764,7 +2761,7 @@
                     id="selectavailablepublishers"
                     value="#{certProfileBean.certificateProfile.publisherList}"
                     size="#{certProfileBean.publisherListAvailableSize}"
-                    converter="javax.faces.Integer"
+                    converter="jakarta.faces.Integer"
                     style="min-width: 280px;"
                     disabled="#{certProfileBean.viewOnly}">
                     <f:selectItems

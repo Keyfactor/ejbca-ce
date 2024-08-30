@@ -14,9 +14,9 @@ package org.ejbca.ui.web.rest.api.Assert;
 
 import static org.junit.Assert.assertEquals;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.Response;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

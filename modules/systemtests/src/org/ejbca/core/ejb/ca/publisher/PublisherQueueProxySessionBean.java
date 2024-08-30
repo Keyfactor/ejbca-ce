@@ -14,16 +14,15 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Collection;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
@@ -31,9 +30,8 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileInformation;
 /**
  * Contains proxy and test cleanup methods.
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherQueueProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublisherQueueProxySessionBean implements PublisherQueueProxySessionRemote {
 

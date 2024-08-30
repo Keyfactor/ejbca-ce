@@ -14,6 +14,9 @@
 package org.ejbca.ui.web.rest.api.resource;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -24,18 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.ws.rs.core.EntityPart;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
 
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
@@ -199,62 +200,57 @@ public class CaRestResource extends BaseRestResource {
         return Response.ok(response).build();
     }
 
-    public Response importCrl(final HttpServletRequest httpServletRequest, String issuerDn, int crlPartitionIndex, final File crlFile)
+    public Response importCrl(final HttpServletRequest httpServletRequest, String issuerDn, final EntityPart crlPartitionIndexEP, final EntityPart crlFileEP)
             throws AuthorizationDeniedException, RestException {
         final AuthenticationToken admin = getAdmin(httpServletRequest, false);
+
         issuerDn = issuerDn.trim();
         final CAInfo cainfo = caSession.getCAInfo(admin, issuerDn.hashCode());
+
         if (cainfo == null) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA with DN: " + issuerDn + " does not exist.");
         }
+
         try {
-            // FormParam annotations in resource definition class are just for Swagger - the default JavaEE rest library has
-            // no support for multipart data parameters, so we need to parse them ourselves.
-            final DiskFileItemFactory fileItemFactory = new DiskFileItemFactory();
-            final ServletFileUpload upload = new ServletFileUpload(fileItemFactory);
-            upload.setSizeMax(MAX_CRL_FILE_SIZE);
-            // Upload consists of at least 6 DiskFileItems, at least 5 (or 6 with crlPartitionIndex) form fields and 1 data stream.
-            upload.setFileCountMax(10);
-            final List<FileItem> requestItems = upload.parseRequest(httpServletRequest);
-            FileItem uploadedFile = null;
-            for (final FileItem item : requestItems) {
-                if (item.isFormField() && "crlPartitionIndex".equals(item.getFieldName())) {
-                    if (item.getString().matches("\\d+")) {
-                        crlPartitionIndex = Integer.parseInt(item.getString());
-                    } else {
-                        throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Invalid CRL partition index: " +
-                                item.getString() + ", should be 0 or greater.");
-                    }
-                } else if ("crlFile".equals(item.getFieldName())) {
-                    uploadedFile = item;
-                }
+            final int crlPartitionIndex = Integer.parseInt(crlPartitionIndexEP.getContent(String.class));
+            final File crlFile = crlFileEP == null? null : crlFileEP.getContent(File.class);
+
+            if (crlPartitionIndex < 0) {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(),
+                                        "Invalid CRL partition index: Partition index should be a number of 0 or greater.");
             }
-            if (uploadedFile == null) {
+
+            if (crlFile == null) {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No CRL file uploaded.");
             }
-            final X509CRL x509crl = CertTools.getCRLfromByteArray(uploadedFile.get());
+
+            final byte[] crlFileBytes = FileUtils.readFileToByteArray(crlFile);
+            final X509CRL x509crl = CertTools.getCRLfromByteArray(crlFileBytes);
+
             if (x509crl == null) {
-                throw new RestException(Status.BAD_REQUEST.getStatusCode(),
-                        "Could not parse CRL. It must be in DER format.");
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Could not parse CRL. It must be in DER format.");
             } else if (!StringUtils.equals(cainfo.getSubjectDN(), CertTools.getIssuerDN(x509crl))) {
-                throw new RestException(Status.BAD_REQUEST.getStatusCode(),
-                        "CRL is not issued by " + issuerDn);
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CRL is not issued by " + issuerDn);
             } else {
                 final int uploadedCrlNumber = CrlExtensions.getCrlNumber(x509crl).intValue();
                 final boolean isDeltaCrl = CrlExtensions.getDeltaCRLIndicator(x509crl).intValue() != -1;
+
                 if (uploadedCrlNumber <= crlStoreSession.getLastCRLNumber(issuerDn, crlPartitionIndex, isDeltaCrl)) {
                     throw new RestException(Status.BAD_REQUEST.getStatusCode(),
                             "CRL #" + uploadedCrlNumber + " or higher is already in the database.");
                 }
-                importCrlSession.importCrl(admin, cainfo, uploadedFile.get(), crlPartitionIndex);
+
+                importCrlSession.importCrl(admin, cainfo, crlFileBytes, crlPartitionIndex);
                 return Response.status(Status.OK).build();
             }
-        } catch (final FileUploadException e) {
-            log.info("Error uploading CRL file", e);
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No file uploaded.");
+        } catch (NumberFormatException e) {
+            throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Invalid CRL partition index: Partition index should be a number of 0 or greater.");
         } catch (CrlImportException | CrlStoreException | CRLException | AuthorizationDeniedException e) {
             log.info("Error importing CRL:", e);
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Error while importing CRL: " + e.getMessage());
+        } catch (IOException e) {
+            log.info("Error uploading CRL file", e);
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "No file uploaded.");
         }
     }
 }
