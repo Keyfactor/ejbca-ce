@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -418,45 +419,23 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     }
                     CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
-                    final String subjectAltName = endEntityInformation.getSubjectAltName();
+
                     final List<String> dnsNames = new ArrayList<>();
-                    for (String split : subjectAltName.toLowerCase(Locale.ROOT).split(",")) {
-                        if (split.trim().startsWith(DnComponents.DNS.toLowerCase())) {
-                            dnsNames.add(split.trim().substring(DnComponents.DNS.length() + 1));
+
+                    if (certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId())) {
+                        dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
+                    } else {
+                        dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
+                        if (certificateProfile.getAllowExtensionOverride()
+                                && requestMessage != null
+                                && requestMessage.getRequestExtensions() != null
+                                && requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName)!= null) {
+                            var extension = requestMessage.getRequestExtensions()
+                                    .getExtension(Extension.subjectAlternativeName);
+                            var extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
+                            dnsNames.addAll(findAllDNSInSubject(extendedSubjectAltName));
                         }
                     }
-                    //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
-                    if (certificateProfile.getAllowExtensionOverride() && requestMessage != null) {
-                        Extensions extensions = requestMessage.getRequestExtensions();
-                        if (extensions != null) {
-                            Extension extension = extensions.getExtension(Extension.subjectAlternativeName);
-                            if (extension != null) {
-                                String extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
-                                for (String split : extendedSubjectAltName.toLowerCase(Locale.ROOT).split(",")) {
-                                    if (split.trim().startsWith(DnComponents.DNS.toLowerCase())) {
-                                        dnsNames.add(split.trim().substring(DnComponents.DNS.length() + 1));
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-					final List<String> dnsNames = new ArrayList<>();
-
-					if (certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId())) {
-						dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
-					} else {
-						dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
-						if (certificateProfile.getAllowExtensionOverride()
-								&& requestMessage != null
-								&& requestMessage.getRequestExtensions() != null
-								&& requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName)!= null) {
-							var extension = requestMessage.getRequestExtensions()
-									.getExtension(Extension.subjectAlternativeName);
-							var extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
-							dnsNames.addAll(findAllDNSInSubject(extendedSubjectAltName));
-						}
-					}
 
                     ValidationRequestParameters validationRequestParameters = new ValidationRequestParameters();
                     validationRequestParameters.setCertificateProfile(certificateProfile);
