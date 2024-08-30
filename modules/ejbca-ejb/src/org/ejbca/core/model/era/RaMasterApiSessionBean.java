@@ -1511,6 +1511,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 case "EQUAL":
                     query.setParameter("username", usernameSearchString.toUpperCase());
                     break;
+                case "LIKE":
+                    query.setParameter("username", "%" + usernameSearchString.toUpperCase() + "%");
+                    break;
                 case "BEGINS_WITH":
                     query.setParameter("username", usernameSearchString + "%");
                     break;
