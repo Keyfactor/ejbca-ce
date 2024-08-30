@@ -21,15 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.context.FacesContext;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.log4j.Logger;
@@ -68,6 +59,15 @@ import org.ietf.ldap.LDAPDN;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 @Named
 @ViewScoped
@@ -538,6 +538,10 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
 
     public boolean isEmailRequired() {
         return eeProfile.isRequired(EndEntityProfile.EMAIL, 0);
+    }
+    
+    public boolean isUseEmail() {
+        return eeProfile.getUse(EndEntityProfile.EMAIL,0);
     }
 
     private void composeSubjectDnFieldsAndData() {
