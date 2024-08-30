@@ -64,7 +64,7 @@ public class DomainBlacklistCacheUnitTest {
         assertEquals("Description is not what we set", "foobar", deserializedValidator.getDescription());
         assertEquals("Domain validator blacklist hash is wrong.", validatorBlacklistHash, deserializedValidator.getBlacklistSha256());
         assertEquals("Domain validator blacklist update date is wrong.", validatorUpdateDate, deserializedValidator.getBlacklistDate());
-        assertFalse("Domain should be in blacklist" , deserializedValidator.validate(null, "cachetesting.example.net").getKey());
+        assertFalse("Domain should be in blacklist" , deserializedValidator.validate(null, null, "cachetesting.example.net").getKey());
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
     }
 }

@@ -13,32 +13,13 @@
 
 package org.cesecore.keys.validation;
 
-import java.io.Serializable;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -65,9 +46,26 @@ import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
+import javax.ejb.EJB;
+import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * Handles management of key validators.
@@ -386,7 +384,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-    
+
     @Override
     public Map<String, Integer> getKeyValidatorNameToIdMap() {
         final HashMap<String, Integer> result = new HashMap<>();
@@ -399,7 +397,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
     @Override
     public List<ValidationResult> validateDnsNames(final AuthenticationToken authenticationToken, final IssuancePhase phase,
             final CA ca, final EndEntityInformation endEntityInformation, final RequestMessage requestMessage) throws ValidationException {
-        final List<ValidationResult> allResults = new ArrayList<>(); 
+        final List<ValidationResult> allResults = new ArrayList<>();
         if (!CollectionUtils.isEmpty(ca.getValidators())) {
             Validator baseValidator;
             DnsNameValidator validator;
@@ -418,30 +416,29 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     }
                     CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
-                    final String subjectAltName = endEntityInformation.getSubjectAltName();
-                    final List<String> dnsNames = new ArrayList<>();
-                    for (String split : subjectAltName.toLowerCase(Locale.ROOT).split(",")) {
-                        if (split.trim().startsWith(DnComponents.DNS.toLowerCase())) {
-                            dnsNames.add(split.trim().substring(DnComponents.DNS.length() + 1));
-                        }
-                    }
-                    //If the certificate profile allows extension override, there may be SANs mixed in among the extensions in the request message
-                    if (certificateProfile.getAllowExtensionOverride() && requestMessage != null) {
-                        Extensions extensions = requestMessage.getRequestExtensions();
-                        if (extensions != null) {
-                            Extension extension = extensions.getExtension(Extension.subjectAlternativeName);
-                            if (extension != null) {
-                                String extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
-                                for (String split : extendedSubjectAltName.toLowerCase(Locale.ROOT).split(",")) {
-                                    if (split.trim().startsWith(DnComponents.DNS.toLowerCase())) {
-                                        dnsNames.add(split.trim().substring(DnComponents.DNS.length() + 1));
-                                    }
-                                }
-                            }
-                        }
-                    }
 
-                    final Entry<Boolean, List<String>> result = validator.validate(executorService, dnsNames.toArray(new String[dnsNames.size()]));
+					final List<String> dnsNames = new ArrayList<>();
+
+					if (certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId())) {
+						dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
+					} else {
+						dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
+						if (certificateProfile.getAllowExtensionOverride()
+								&& requestMessage != null
+								&& requestMessage.getRequestExtensions() != null
+								&& requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName)!= null) {
+							var extension = requestMessage.getRequestExtensions()
+									.getExtension(Extension.subjectAlternativeName);
+							var extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
+							dnsNames.addAll(findAllDNSInSubject(extendedSubjectAltName));
+						}
+					}
+
+                    ValidationRequestParameters validationRequestParameters = new ValidationRequestParameters();
+                    validationRequestParameters.setCertificateProfile(certificateProfile);
+
+                    final Entry<Boolean, List<String>> result = validator.validate(executorService, validationRequestParameters,
+                            dnsNames.toArray(new String[dnsNames.size()]));
                     final boolean successful = result.getKey();
                     for (final String message : result.getValue()) {
                         allResults.add(new ValidationResult(message, successful));
@@ -474,6 +471,23 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return allResults;
     }
+
+	protected static List<String> findAllEmailDomainsInSubject(String subject) {
+		return Arrays.stream(subject.trim().split(","))
+				.map(s -> s.trim().split("="))
+				.filter(mapEntry -> DnComponents.RFC822NAME.equalsIgnoreCase(mapEntry[0]))
+				.map(mapEntry -> mapEntry[1].split("@"))
+				.map(emailParts -> emailParts[1])
+				.collect(Collectors.toList());
+	}
+
+    protected static List<String> findAllDNSInSubject(String subject) {
+		return Arrays.stream(subject.split(","))
+				.map(s -> s.trim().split("="))
+				.filter(mapEntry -> DnComponents.DNS.equalsIgnoreCase(mapEntry[0]))
+				.map(mapEntry -> mapEntry[1])
+				.collect(Collectors.toList());
+	}
 
     @Override
     public boolean validatePublicKey(final AuthenticationToken admin, final CA ca, EndEntityInformation endEntityInformation,
@@ -683,7 +697,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-    
+
     @Override
     public long getNumberOfValidators() {
         return profileSession.getNumberOfProfileByType(Validator.TYPE_NAME);

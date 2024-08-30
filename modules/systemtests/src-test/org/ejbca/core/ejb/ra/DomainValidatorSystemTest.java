@@ -130,7 +130,7 @@ public class DomainValidatorSystemTest extends CaTestCase {
         log.info("created root certificate profile id: " + rootCertificateProfileId);
         
         // create end entity cert profile
-        endEntityCertprofile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        endEntityCertprofile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
         endEntityCertprofile.setUseLdapDnOrder(false);
         endEntityCertificateProfileId = certProfileSession.addCertificateProfile(admin, TEST_EEV_CERT_PROFILE_EE, endEntityCertprofile);
         log.info("created end entity certificate profile id: " + endEntityCertificateProfileId);
