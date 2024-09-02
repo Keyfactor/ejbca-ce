@@ -79,7 +79,6 @@ dependencyResolutionManagement {
             library("jsch", ":jsch:0.2.11")
             library("xstream", ":xstream:1.4.20")
             library("xpp3_min", ":xpp3_min:1.1.4c")
-            library("junit", ":junit:4.13.2")
             library("istack-commons-runtime", ":istack-commons-runtime:3.0.11")
             library("saaj-impl", ":saaj-impl:3.0.0")
             library("streambuffer", ":streambuffer:2.1.0")
@@ -87,9 +86,8 @@ dependencyResolutionManagement {
             library("wsdl4j", ":wsdl4j:1.6.3")
             library("jcip-annotations", ":jcip-annotations:1.0-1")
             library("jna", ":jna:5.12.1")
-            library("javassist", ":javassist:3.29.2-GA")
             // hibernate
-            library("antlr4-runtime", ":antlr:4.13.0")
+            library("antlr4-runtime", ":antlr4-runtime:4.13.0")
             library("byte-buddy", ":byte-buddy:1.14.15")
             library("classmate", ":classmate:1.5.1")
             library("dom4j", ":dom4j:2.1.3")
@@ -100,7 +98,7 @@ dependencyResolutionManagement {
             library("hibernate-validator", ":hibernate-validator:8.0.1.Final")
             library("istack-commons-runtime-old", ":istack-commons-runtime:3.0.7")
             library("jakarta.activation-api", ":jakarta.activation-api:2.1.0")
-            library("jandex", ":jandex:3.1.2.Final")
+            library("jandex", ":jandex:3.1.2")
             library("jakarta.persistence-api", ":jakarta.persistence-api:3.1.0")
             library("jboss-logging", ":jboss-logging:3.6.0.Final")
             library("jboss-transaction-api_v12_spec", ":jboss-transaction-api_1.2_spec:1.1.1.Final")
@@ -114,8 +112,8 @@ dependencyResolutionManagement {
             library("hamcrest",":hamcrest-core:1.3")
             library("javassist",":javassist:3.29.2-GA")
             library("objenesis",":objenesis:3.3")
-            library("slf4j-api",":slf4j-api:1.7.35")
-            library("slf4j-reload4j",":slf4j-reload4j:1.7.35")
+            library("slf4j-api",":slf4j-api:2.0.16")
+            library("slf4j-reload4j",":slf4j-reload4j:2.0.16")
         }
     }
 }
