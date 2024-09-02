@@ -41,6 +41,7 @@
 						<h:outputText value="#{msg.enroll_select_request_template}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						<fieldset>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
                                 rendered="#{enrollMakeNewRequestBean.selectEndEntityProfileRendered}">
@@ -56,6 +57,7 @@
 								<h:outputText rendered="#{empty enrollMakeNewRequestBean.availableEndEntityProfileSelectItems}"
 									value="#{msg.enroll_no_available_certificate_types}" />
 								<h:outputText id="endEntityProfileDescription"
+									rendered="#{!empty enrollMakeNewRequestBean.endEntityProfile.description}"
 								    styleClass="pure-u-lg-1-3" value="#{enrollMakeNewRequestBean.endEntityProfile.description}"/>
 							</h:panelGroup>
 
@@ -73,6 +75,7 @@
                                 <h:outputText rendered="#{empty enrollMakeNewRequestBean.availableCertificateProfileSelectItems}"
                                     value="#{msg.enroll_no_available_certificate_subtypes}" />
                                 <h:outputText id="certificateProfileDescription"
+									rendered="#{!empty enrollMakeNewRequestBean.certificateProfile.description}"
                                     styleClass="pure-u-lg-1-3" value="#{enrollMakeNewRequestBean.certificateProfile.description}"/>
 							</h:panelGroup>
 
@@ -106,6 +109,7 @@
                                 </h:panelGroup>
 							</h:panelGroup>
 						</fieldset>
+						</h:panelGroup>
 
                         <fieldset>
                             <h:commandButton id="applyRequestTemplateButton"
@@ -133,11 +137,11 @@
 						<h:outputText value="#{msg.enroll_upload_csr}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{!enrollMakeNewRequestBean.uploadCsrDoneRendered}">
+						<h:panelGroup layout="block" styleClass="pure-control-group">
 						<h:inputFile id="certificateUploadInput" 
 							value="#{enrollMakeNewRequestBean.uploadFile}" size="20" 
 							onchange="document.getElementById('keyPairForm:updateCsrInfoFields').click();"/>
-						
-						<br/>
+						</h:panelGroup>
 						
 						<h:commandButton id="updateCsrInfoFields" value="invisible import button" style="display:none"
 							action="#{enrollMakeNewRequestBean.actionUpdateCsrInfoFields}"/>
@@ -224,12 +228,11 @@
 						<h:outputText value="#{msg.enroll_upload_ssh_public_key}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:panelGroup layout="block" styleClass="pure-control-group">
 						<h:inputFile id="sshPubKeyUploadInput" 
 							value="#{enrollMakeNewRequestBean.uploadFile}" size="20" 
 							onchange="document.getElementById('sshPubKeyForm:updateSshKeyInfoFields').click();"/>
-						
-						<br/>
-						<br/>
+						</h:panelGroup>
 						
 						<h:inputTextarea id="sshPubKeyRequest" 
 							styleClass="fineprintMono jsAutoFocusLast" style="line-height: 100%;"
@@ -265,6 +268,7 @@
 						<h:outputText value="#{msg.enroll_select_key_algorithm}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="selectAlgorithmOneMenu" value="#{msg.enroll_key_algorithm}" />
 							<h:selectOneMenu id="selectAlgorithmOneMenu" styleClass="jsAutoFocusLast"
@@ -273,6 +277,7 @@
 								<f:selectItems value="#{enrollMakeNewRequestBean.availableAlgorithmSelectItems}" />
 								<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
 							</h:selectOneMenu>
+						</h:panelGroup>
 						</h:panelGroup>
 						<fieldset>
 							<h:commandButton id="applyAlgorithmButton"
@@ -289,6 +294,7 @@
 						<h:outputText value="#{msg.enroll_select_token_type}"/>
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="selectTokenOneMenu" value="#{msg.enroll_token}" />
 							<h:selectOneMenu id="selectTokenOneMenu" styleClass="jsAutoFocusLast"
@@ -296,6 +302,7 @@
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableTokenTypesSelectItems}" />
 									<f:ajax event="change" execute="@this" render=":globalMessages :requestInfoForm:requestPreviewOuterPanel @form"/>
 							</h:selectOneMenu>
+						</h:panelGroup>
 						</h:panelGroup>
 					</h:panelGroup>
 				</h:panelGroup>
@@ -307,7 +314,7 @@
                         <h:outputText value="#{msg.enroll_provide_request_info}" />
                     </h2>
 					<h:panelGroup layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.requestInfoRendered}">
-						<h:panelGroup id="subjectDNSection" layout="block">
+						<h:panelGroup id="subjectDNSection" layout="block" styleClass="internal-frame">
 							<h3>
 								<h:outputText value="#{msg.enroll_required_subject_dn_attributes}" rendered="#{enrollMakeNewRequestBean.subjectDn.requiredFieldInstances.size() gt 0}"/>
 							</h3>
@@ -585,17 +592,19 @@
 							</fieldset>
 						</h:panelGroup>
 						
-						<h:panelGroup id="nameConstraintSection" layout="block" styleClass="pure-control-group" 
+						<h:panelGroup id="nameConstraintSection" layout="block" styleClass="internal-frame" 
 									rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() or 
 													enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}">
 							
 							<h3>
-								<h:outputText value="#{msg.enroll_name_constraint_attributes}" rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}"/>
+								<h:outputText value="#{msg.enroll_name_constraint_attributes}" rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() or 
+																											enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}"/>
 							</h3>
-							<h:panelGroup layout="block" styleClass="pure-control-group" 
+
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin" 
 										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}">
 							
-							<h:panelGroup rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}" >
+							<h:panelGroup layout="block" styleClass="pure-control-group">
 									<h:outputLabel for="nameConstraintPermitted"
 										value="#{msg.enroll_name_constraint_permitted}"
 										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() and 
@@ -604,7 +613,7 @@
 										value="#{msg.enroll_name_constraint_permitted} *"
 										rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered() and 
 														enrollMakeNewRequestBean.isNameConstraintPermittedRequired()}" />
-									<h:inputTextarea id="nameConstraintPermitted" rows="4" cols="38"
+									<h:inputTextarea id="nameConstraintPermitted" rows="4" cols="35"
 											value="#{enrollMakeNewRequestBean.nameConstraintPermitted}"
                                         rendered="#{enrollMakeNewRequestBean.isNameConstraintPermittedRendered()}" 
                                         required="#{enrollMakeNewRequestBean.isNameConstraintPermittedRequired()}"
@@ -615,10 +624,10 @@
                             
                             </h:panelGroup>
                             
-                            <h:panelGroup layout="block" styleClass="pure-control-group" 
+                            <h:panelGroup layout="block" styleClass="internal-frame-with-left-margin" 
 										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}">
                             
-                            <h:panelGroup rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}" >
+                            <h:panelGroup layout="block" styleClass="pure-control-group">
 									<h:outputLabel for="nameConstraintExcluded"
 										value="#{msg.enroll_name_constraint_excluded}"
 										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered() and 
@@ -627,7 +636,7 @@
 										value="#{msg.enroll_name_constraint_excluded} *"
 										rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered() and 
 														enrollMakeNewRequestBean.isNameConstraintExcludedRequired()}" />
-									<h:inputTextarea id="nameConstraintExcluded" rows="4" cols="38"
+									<h:inputTextarea id="nameConstraintExcluded" rows="4" cols="35"
 											value="#{enrollMakeNewRequestBean.nameConstraintExcluded}"
                                         rendered="#{enrollMakeNewRequestBean.isNameConstraintExcludedRendered()}" 
                                         required="#{enrollMakeNewRequestBean.isNameConstraintExcludedRequired()}"
@@ -637,6 +646,7 @@
                             </h:panelGroup>
                             
                             </h:panelGroup>
+
                        	</h:panelGroup>
 							
 						<h:panelGroup id="subjectDirectoryAttributeSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.subjectDirectoryAttributesRendered}">
@@ -734,6 +744,7 @@
 							<h3>
 								<h:outputText value="#{msg.enroll_other_cert_data}" />
 							</h3>
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.renderCertExtensionDataField}">
 								<h:outputLabel for="certExtensionDataField" value="#{msg.enroll_cert_extension_data}"/>
 								<h:inputTextarea id="certExtensionDataField" value="#{enrollMakeNewRequestBean.extensionData}">
@@ -798,17 +809,20 @@
 									<f:selectItems value="#{enrollMakeNewRequestBean.availableRevocationReasons}"/>
 								</h:selectOneMenu>
 							</h:panelGroup>
+							</h:panelGroup>
 						</h:panelGroup>
 						<h:panelGroup id="otherDataSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.renderOtherData}">
 							<h3>
 								<h:outputText value="#{msg.enroll_other_data}" />
 							</h3>
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}">
 								<h:outputLabel for="keyRecoveryCheckbox" value="#{msg.component_eedetails_field_keyrecoverable}"/>
 								<h:selectBooleanCheckbox id="keyRecoveryCheckbox" value="#{enrollMakeNewRequestBean.keyRecoverableUse}" 
 										rendered="#{enrollMakeNewRequestBean.useKeyRecoverable}" disabled="#{enrollMakeNewRequestBean.keyRecoveryRequired}">
                             	    <f:ajax execute="@this" render=":requestInfoForm:requestPreviewOuterPanel" />
                             	</h:selectBooleanCheckbox>
+						    </h:panelGroup>
 						    </h:panelGroup>
 						</h:panelGroup>
                         <fieldset>
@@ -828,6 +842,7 @@
 						<h:outputText value="#{msg.enroll_provide_external_account}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						<h:panelGroup layout="block" styleClass="pure-control-group" id="accountBindingIdGroup">
 							<h:outputLabel for="accountBindingId" value="#{msg.enroll_EAB} *" />
 							<h:inputText id="accountBindingId" value="#{enrollMakeNewRequestBean.accountBindingId}" 
@@ -848,6 +863,7 @@
 							</h:panelGroup>
 							<h:message for="accountBindingId" id="accountBindingIdMessage" styleClass="validationErrorMessage showErrorMessage"/>
 						</h:panelGroup>
+						</h:panelGroup>
 					</h:panelGroup>
 				</h:panelGroup>
 
@@ -858,6 +874,7 @@
 					
 					<h:panelGroup layout="block" styleClass="internal-frame" id="sshCertificateDataGroup">
 						
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="sshKeyId" value="#{msg.enroll_ssh_key_id} *" />
 							<h:inputText id="sshKeyId" value="#{enrollMakeNewRequestBean.sshKeyId}" 
@@ -874,12 +891,13 @@
 								autocomplete="off">
 							</h:inputText>
 						</h:panelGroup>
+						</h:panelGroup>
 						
-						<h:panelGroup id="sshPrincipalsSection" layout="block">
+						<h:panelGroup id="sshPrincipalsSection" layout="block" styleClass="internal-frame" rendered="#{enrollMakeNewRequestBean.sshPrincipals.size() gt 0}">
 						    <h3>
-						        <h:outputText value="#{msg.enroll_ssh_principals}" rendered="#{enrollMakeNewRequestBean.sshPrincipals.size() gt 0}"/>
+						        <h:outputText value="#{msg.enroll_ssh_principals}" />
 						    </h3>
-						    <h:panelGroup layout="block" styleClass="internal-frame-with-left-margin"  rendered="#{enrollMakeNewRequestBean.sshPrincipals.size() gt 0}">
+						    <h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						        <ui:repeat id="sshPrincipal"
 						            value="#{enrollMakeNewRequestBean.sshPrincipals}"
 						            var="instance"
@@ -910,6 +928,8 @@
 						        </ui:repeat>
 						    </h:panelGroup>
 						</h:panelGroup>
+						
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						
 						<h:panelGroup layout="block" styleClass="pure-control-group">
 							<h:outputLabel for="criticalOptionsSourceAddress" value="#{msg.enroll_ssh_critical_source_address}" 
@@ -966,6 +986,9 @@
 										value="#{enrollMakeNewRequestBean.sshAdditionalExtensions}">
 	                                 </h:inputTextarea>
 	                    </h:panelGroup> -->
+						
+						</h:panelGroup>
+						
 					</h:panelGroup>
 					
 				</h:panelGroup>
@@ -976,12 +999,14 @@
 						<h:outputText value="#{msg.enroll_other_data}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						<h:panelGroup layout="block" styleClass="pure-control-group" id="otherDataGroup">
 							<h:outputLabel for="sendNotification" value="#{msg.enroll_notification}" />
 							<h:selectBooleanCheckbox id="sendNotification" disabled="#{enrollMakeNewRequestBean.sendNotificationDisabled}"
 													 value="#{enrollMakeNewRequestBean.sendNotification}" >
 								<f:ajax event="change" render="emailBlock"></f:ajax>
 							</h:selectBooleanCheckbox>
+						</h:panelGroup>
 						</h:panelGroup>
 					</h:panelGroup>
 				</h:panelGroup>
@@ -991,6 +1016,7 @@
 						<h:outputText value="#{msg.enroll_provide_user_credentials}" />
 					</h2>
 					<h:panelGroup layout="block" styleClass="internal-frame">
+						<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
 						<fieldset>
 							<h:panelGroup layout="block" styleClass="pure-control-group"
 								rendered="#{enrollMakeNewRequestBean.usernameRendered}">
@@ -1041,6 +1067,7 @@
 								<h:message for="emailField" id="emailFieldMessage" styleClass="validationErrorMessage showErrorMessage"/>
 							</h:panelGroup>
 						</fieldset>
+						</h:panelGroup>
 						<h:inputHidden id="userCredentialsMessageInput" binding="#{enrollMakeNewRequestBean.userCredentialsMessagesComponent}"/>
 						<h:message for="userCredentialsMessageInput" id="userCredentialsMessage" errorClass="showErrorMessage"/>
 					</h:panelGroup>
@@ -1074,10 +1101,12 @@
 						</h:commandButton>
 						<h:panelGroup 
 						    id="editValidityPanel"
-						    styleClass="pure-control-group">
+						    layout="block" styleClass="internal-frame">
 						    <h3>
                                 <h:outputText value="#{msg.enroll_custom_values}" rendered="#{enrollMakeNewRequestBean.setCustomValidity}" />
                             </h3>
+							<h:panelGroup layout="block" styleClass="internal-frame-with-left-margin">
+							<h:panelGroup layout="block" styleClass="pure-control-group">
 						    <h:outputLabel 
 						        for="validityField" 
 						        value="#{msg.enroll_set_validity}"
@@ -1091,12 +1120,15 @@
 						        value="#{enrollMakeNewRequestBean.validity}">
 						        <f:ajax event="keyup" render=":requestInfoForm:enrollButtons validityFieldHelpText" execute="@this" /> 
 						    </h:inputText>
+							<br />
 						    <h:outputText 
 						        id="validityFieldHelpText" 
 						        for="validityField"
-						        styleClass="showErrorMessage"
+						        styleClass="ra-outputText ra-MakeRequest"
 						        rendered="#{enrollMakeNewRequestBean.setCustomValidity}"
 						        value="#{enrollMakeNewRequestBean.validityHelpMessage}" />
+							</h:panelGroup>
+							</h:panelGroup>
 						</h:panelGroup>
 						
 						<h:panelGroup 
