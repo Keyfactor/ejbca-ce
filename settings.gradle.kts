@@ -111,8 +111,8 @@ dependencyResolutionManagement {
             library("hamcrest",":hamcrest-core:1.3")
             library("javassist",":javassist:3.29.2-GA")
             library("objenesis",":objenesis:3.3")
-            library("slf4j-api",":slf4j-api:1.7.35")
-            library("slf4j-reload4j",":slf4j-reload4j:1.7.35")
+            library("slf4j-api",":slf4j-api:2.0.16")
+            library("slf4j-reload4j",":slf4j-reload4j:2.0.16")
         }
     }
 }
