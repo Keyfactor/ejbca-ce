@@ -88,7 +88,6 @@ h1, h2, h3, h4, p, span {
 
 .content-body h3 {
     color: #fff;
-    font-weight: lighter;
     width: 90%;
     margin: 2% 0 2% 1.5%;
 }
@@ -630,6 +629,7 @@ textarea#enrollWithRequestIdForm\:certificateRequest {
     font-weight: bold;
 }
 
+#detailsForm > span.pure-u-1:nth-of-type(2) > .subjects > span > label,
 #detailsForm > span.pure-u-1:nth-of-type(2) > .subjects > label {
     margin-left: 2.5% !important;
     font-weight: bold;
@@ -1758,6 +1758,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
         margin: 0;
     }
 
+    #detailsForm .subjects > span > label:not(.pure-u-lg-1),
     #detailsForm > span.pure-u-1:nth-of-type(2) > label:not(.pure-u-lg-1), #detailsForm .subjects > label:not(.pure-u-lg-1) {
         width: 30.8%;
     }
@@ -1822,7 +1823,7 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
     #requestInfoForm\:generateP12,
     #requestInfoForm\:generateBcfks,
     #requestInfoForm\:generateJks {
-        width: auto;
+        width: auto !important;
     }
 
     .infoMessage {
@@ -2173,27 +2174,25 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
         width: 83%;
     }
 
+    #contentForm\:modifiedAfter,
+    #contentForm\:modifiedBefore,
     #contentForm\:issuedAfter,
     #contentForm\:issuedBefore,
     #contentForm\:expiresAfter,
     #contentForm\:expiresBefore,
     #contentForm\:revokedAfter,
     #contentForm\:revokedBefore {
-        width: 119%;
+        width: 116%;
+        min-width: 116%;
         font-size: 95%;
     }
 
     #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) {
-        width: 24%;
-    }
-
-    #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group #contentForm\:modifiedAfter,
-    #contentForm\:more > span.pure-g > div.pure-u-1:nth-of-type(2) > .pure-control-group #contentForm\:modifiedBefore {
-        width: 152%;
+        width: 25%;
     }
 
     #contentForm\:endEntititesMoreInputs {
-        width: 20% !important;
+        width: 25% !important;
     }
 
     #detailsForm > span.pure-u-1:nth-of-type(2) > label {
@@ -2438,6 +2437,13 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
     .parentCriteriaDropdown,
     .parentCriteriaCheckbox {
         width: 22%;
+    }
+
+    #contentForm\:parentCriteriaEepId select,
+    #contentForm\:parentCriteriaCpId select,
+    #contentForm\:parentCriteriaCaId select,
+    #contentForm\:parentCriteriaStatus select {
+        width: 100% !important;
     }
 
     /*
