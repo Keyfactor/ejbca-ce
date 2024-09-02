@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.validator;
 
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificateCriteriaRestRequest;
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.junit.Test;
 
 import jakarta.validation.ConstraintViolation;
@@ -29,7 +30,8 @@ import static org.junit.Assert.assertEquals;
  */
 public class ValidSearchCertificateCriteriaRestRequestUnitTest {
 
-    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    private static final Validator validator = Validation.byDefaultProvider().configure().
+        messageInterpolator(new ParameterMessageInterpolator()).buildValidatorFactory().getValidator();
 
     @Test
     public void validationShouldFailOnNullProperty() {
