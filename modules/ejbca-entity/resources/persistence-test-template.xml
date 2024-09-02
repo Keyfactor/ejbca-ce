@@ -61,7 +61,6 @@
         <class>org.ejbca.acme.AcmeAuthorizationData</class>
         <class>org.ejbca.acme.AcmeChallengeData</class>
         <properties>
-            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
             <property name="hibernate.connection.driver_class" value="${database.driver}"/>
             <property name="hibernate.connection.username" value="${database.username}"/>
@@ -82,7 +81,6 @@
         <class>org.cesecore.certificates.crl.CRLData</class>
         <class>org.cesecore.keys.token.CryptoTokenData</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
@@ -99,7 +97,6 @@
         <class>org.cesecore.certificates.crl.CRLData</class>
         <class>org.cesecore.keys.token.CryptoTokenData</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
