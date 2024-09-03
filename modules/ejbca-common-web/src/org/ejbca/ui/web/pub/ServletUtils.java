@@ -14,7 +14,7 @@
  
 package org.ejbca.ui.web.pub;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 

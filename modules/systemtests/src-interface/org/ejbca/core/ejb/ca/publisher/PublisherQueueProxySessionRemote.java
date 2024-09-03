@@ -14,8 +14,8 @@ package org.ejbca.core.ejb.ca.publisher;
 
 import java.util.Collection;
 
-import javax.ejb.CreateException;
-import javax.ejb.Remote;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.ca.publisher.BasePublisher;

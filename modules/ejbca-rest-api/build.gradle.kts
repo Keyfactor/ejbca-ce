@@ -23,9 +23,9 @@ dependencies {
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
     compileOnly(libs.bcutil)
-    compileOnly(libs.commons.fileupload)
+    compileOnly(libs.commons.fileupload2)
     compileOnly(libs.log4j.v12.api)
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.x509.common.util)
     implementation(libs.commons.lang3.old)
     implementation(libs.reflections)
@@ -33,6 +33,9 @@ dependencies {
     implementation(libs.swagger.core)
     implementation(libs.swagger.jaxrs)
     implementation(libs.swagger.models)
+    runtimeOnly(libs.swagger.integration)
+    runtimeOnly(libs.classgraph)
+    runtimeOnly(libs.javassist)
 }
 
 sourceSets {

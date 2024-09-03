@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @version $Id$

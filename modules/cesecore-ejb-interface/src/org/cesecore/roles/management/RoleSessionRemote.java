@@ -14,7 +14,7 @@ package org.cesecore.roles.management;
 
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.roles.Role;

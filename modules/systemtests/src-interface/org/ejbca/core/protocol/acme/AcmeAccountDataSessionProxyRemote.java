@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;

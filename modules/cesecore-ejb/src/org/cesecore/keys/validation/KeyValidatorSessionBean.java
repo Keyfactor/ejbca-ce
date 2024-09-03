@@ -16,6 +16,10 @@ package org.cesecore.keys.validation;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
@@ -41,15 +45,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 import java.io.Serializable;
 import java.security.PublicKey;
 import java.security.cert.CertificateException;
@@ -72,7 +71,7 @@ import java.util.stream.Collectors;
  *
  * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "KeyValidatorSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyValidatorSessionRemote {
 
@@ -417,22 +416,22 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
 
-					final List<String> dnsNames = new ArrayList<>();
+                    final List<String> dnsNames = new ArrayList<>();
 
-					if (certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId())) {
-						dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
-					} else {
-						dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
-						if (certificateProfile.getAllowExtensionOverride()
-								&& requestMessage != null
-								&& requestMessage.getRequestExtensions() != null
-								&& requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName)!= null) {
-							var extension = requestMessage.getRequestExtensions()
-									.getExtension(Extension.subjectAlternativeName);
-							var extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
-							dnsNames.addAll(findAllDNSInSubject(extendedSubjectAltName));
-						}
-					}
+                    if (certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId())) {
+                        dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
+                    } else {
+                        dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
+                        if (certificateProfile.getAllowExtensionOverride()
+                                && requestMessage != null
+                                && requestMessage.getRequestExtensions() != null
+                                && requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName)!= null) {
+                            var extension = requestMessage.getRequestExtensions()
+                                    .getExtension(Extension.subjectAlternativeName);
+                            var extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
+                            dnsNames.addAll(findAllDNSInSubject(extendedSubjectAltName));
+                        }
+                    }
 
                     ValidationRequestParameters validationRequestParameters = new ValidationRequestParameters();
                     validationRequestParameters.setCertificateProfile(certificateProfile);

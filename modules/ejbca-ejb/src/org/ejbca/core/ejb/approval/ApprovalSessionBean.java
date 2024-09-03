@@ -26,16 +26,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -51,7 +51,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.member.RoleMemberSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ProfileID;
@@ -101,7 +100,7 @@ import com.keyfactor.util.CryptoProviderTools;
 /**
  * Keeps track of approval requests and their approval or rejects.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ApprovalSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessionRemote {
 
@@ -480,15 +479,15 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 // No additional filtering
             } else if (!includeExpired) {
                 // Do not include expired requests
-                queryWrapper.add("expireDate >=? AND ", new Date().getTime());
+                queryWrapper.add("expiredate >=? AND ", new Date().getTime());
             } else if (includeExpired) {
-                queryWrapper.add("expireDate <? AND ", new Date().getTime());
+                queryWrapper.add("expiredate <? AND ", new Date().getTime());
             } else if (expiresBefore != null) {
                 // Only include expired requests
-                queryWrapper.add("expireDate <? AND ", new Date().getTime());
+                queryWrapper.add("expiredate <? AND ", new Date().getTime());
             }
             if (expiresBefore != null) {
-                queryWrapper.add("expireDate <? AND ", expiresBefore.getTime());
+                queryWrapper.add("expiredate <? AND ", expiresBefore.getTime());
             }
             // "STATUS_APPROVED" means that the request is still waiting to be executed by the requester
             queryWrapper.add(
@@ -499,7 +498,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     (includeExpired ? ", " + ApprovalDataVO.STATUS_EXPIRED + ", " + ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED : "") +
                 "))"
             );
-            orderByString = "ORDER BY requestDate ASC"; // oldest first
+            orderByString = "ORDER BY requestdate ASC"; // oldest first
             first = false;
         }
         if (includeProcessed) {
@@ -508,16 +507,16 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
             queryWrapper.add("status IN (" + ApprovalDataVO.STATUS_EXECUTED + ", " + ApprovalDataVO.STATUS_EXECUTIONDENIED + ", "
                     + ApprovalDataVO.STATUS_EXECUTIONFAILED + ", " + ApprovalDataVO.STATUS_REJECTED + ")");
-            orderByString = "ORDER BY requestDate DESC"; // most recently created first
+            orderByString = "ORDER BY requestdate DESC"; // most recently created first
             first = false;
         }
         queryWrapper.add(")");
         
         if (startDate != null) {
-            queryWrapper.add(" AND requestDate >=? ", startDate.getTime());
+            queryWrapper.add(" AND requestdate >=? ", startDate.getTime());
         }
         if (endDate != null) {
-            queryWrapper.add(" AND requestDate <? ", endDate.getTime());
+            queryWrapper.add(" AND requestdate <? ", endDate.getTime());
         }
         if (subjectDn != null) {
             queryWrapper.add(" AND subjectDn LIKE '%' || ? || '%'", subjectDn);
@@ -526,7 +525,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             queryWrapper.add(" AND email LIKE '%' || ? || '%'", email);
         }
 
-        queryWrapper.add(" AND approvalType NOT IN (" + ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN + ")"); // Excluding approval that are not related to RA
+        queryWrapper.add(" AND approvaltype NOT IN (" + ApprovalDataVO.APPROVALTYPE_ACTIVATECATOKEN + ")"); // Excluding approval that are not related to RA
 
         final List<ApprovalDataVO> ret = queryInternal(queryWrapper, index, numberofrows, caAuthorizationString, endEntityProfileAuthorizationString,
                 orderByString);
@@ -538,7 +537,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             String endEntityProfileAuthorizationString, final String orderByString) {
         log.trace(">queryInternal()");
         if (StringUtils.isNotEmpty(caAuthorizationString)) {
-            queryWrapper.add(" AND " + caAuthorizationString);
+            queryWrapper.add(" AND " + caAuthorizationString.toLowerCase());
         }
         if (StringUtils.isNotEmpty(endEntityProfileAuthorizationString)) {
             queryWrapper.add(" AND " + endEntityProfileAuthorizationString);
@@ -977,7 +976,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
          * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
          * where the first value is the value and the second is the row.
          */
-        final javax.persistence.Query query = entityManager.createQuery("SELECT id FROM ApprovalData WHERE " + queryWrapper.getQueryString());
+        final jakarta.persistence.Query query = entityManager.createQuery("SELECT id FROM ApprovalData WHERE " + queryWrapper.getQueryString());
         for (int i = 0; i < queryWrapper.getValues().size(); i++) {
             query.setParameter(i + 1, queryWrapper.getValues().get(i));
         }

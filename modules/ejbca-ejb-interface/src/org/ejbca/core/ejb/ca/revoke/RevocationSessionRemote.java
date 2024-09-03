@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.ca.revoke;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @version $Id$

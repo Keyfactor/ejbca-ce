@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.crl;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -79,7 +79,7 @@ public interface PublishingCrlProxySessionRemote {
      *            A new delta CRL is created if the current one expires within
      *            the crloverlaptime given in milliseconds
      * @return true if a Delta CRL was created
-     * @throws javax.ejb.EJBException if communication or system error occurs
+     * @throws jakarta.ejb.EJBException if communication or system error occurs
      */
     boolean createDeltaCrlConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException;
 
