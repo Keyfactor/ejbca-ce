@@ -18,8 +18,8 @@ import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Locale;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Transient;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.Transient;
 
 import org.apache.commons.lang.ClassUtils;
 import org.apache.log4j.Logger;

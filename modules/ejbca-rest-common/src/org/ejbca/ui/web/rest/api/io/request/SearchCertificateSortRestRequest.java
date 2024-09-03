@@ -12,20 +12,20 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+
 
 /**
  * JSON input for certificate search containing a single order by clause.
  * <br/>
- * 
+ *
  * The content of this class should be valid.
- * 
+ *
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateSortRestRequest
  */
-@ApiModel(description = "Use one of allowed values as property and operation.\n" +
+@Schema(description = "Use one of allowed values as property and operation.\n" +
         "Available properties" +
         "USERNAME \n" +
         "ISSUER_DN \n" +
@@ -48,14 +48,14 @@ import io.swagger.annotations.ApiModelProperty;
 @ValidSearchCertificateCriteriaRestRequest
 public class SearchCertificateSortRestRequest {
 
-    @ApiModelProperty(value = "Sorted by",
-            allowableValues = "USERNAME, ISSUER_DN, SUBJECT_DN, EXTERNAL_ACCOUNT_BINDING_ID, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, STATUS, TAG, TYPE, UPDATE_TIME, ISSUED_DATE, EXPIRE_DATE, REVOCATION_DATE",
-            dataType = "java.lang.String")
+    @Schema(description = "Sorted by",
+            allowableValues = {"USERNAME", "ISSUER_DN", "SUBJECT_DN", "EXTERNAL_ACCOUNT_BINDING_ID", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "STATUS", "TAG", "TYPE", "UPDATE_TIME", "ISSUED_DATE", "EXPIRE_DATE", "REVOCATION_DATE"},
+            type = "string")
     private String property;
 
-    @ApiModelProperty(value = "Sort ascending or descending. 'ASC' for ascending, 'DESC' for descending.",
-            allowableValues = "ASC, DESC",
-            dataType = "java.lang.String")
+    @Schema(description = "Sort ascending or descending. 'ASC' for ascending, 'DESC' for descending.",
+            allowableValues = {"ASC", "DESC"},
+            type = "string")
     private String operation;
 
     public SearchCertificateSortRestRequest() {

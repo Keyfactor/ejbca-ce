@@ -12,11 +12,11 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.convert.Converter;
-import javax.faces.convert.ConverterException;
-import javax.faces.convert.FacesConverter;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.convert.Converter;
+import jakarta.faces.convert.ConverterException;
+import jakarta.faces.convert.FacesConverter;
 
 /**
  * Handles conversions of radio buttons from the UI. Radio buttons will generally be handled in the UI as encoded strings, so this converter simply 

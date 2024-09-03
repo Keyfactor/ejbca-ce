@@ -33,8 +33,8 @@
 		<path refid="lib.commons-text.classpath"/>
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="soapclient.classpath" />
-		<path refid="lib.jaxws-api.classpath"/>
-		<path refid="lib.javax.jws-api.classpath"/>
+		<path refid="lib.jakarta.xml.ws-api.classpath"/>
+		<path refid="lib.jakarta.jws-api.classpath"/>
 		<path location="${mod.cesecore-entity.lib}"/>
 		<path location="${mod.cesecore-ejb-interface.lib}"/>
 		<path location="${mod.ejbca-ws.lib}"/>

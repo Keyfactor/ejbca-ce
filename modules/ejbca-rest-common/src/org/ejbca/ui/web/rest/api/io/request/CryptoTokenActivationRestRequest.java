@@ -12,7 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input representation of crypto token activation request through REST API.
@@ -21,7 +22,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class CryptoTokenActivationRestRequest {
 
-    @ApiModelProperty(value = "Activation Code", example = "foo123")
+    @Schema(description = "Activation Code", example = "foo123")
     private String activationCode;
     
     public CryptoTokenActivationRestRequest() {}

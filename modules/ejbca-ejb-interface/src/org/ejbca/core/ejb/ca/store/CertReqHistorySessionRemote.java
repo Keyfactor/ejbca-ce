@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.store;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Remote interface for CertificateStoreSession.

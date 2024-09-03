@@ -15,6 +15,7 @@ package org.ejbca.ui.web.rest.api.io.request;
 import java.util.Date;
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -22,7 +23,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidAddEndEntityRestRequest;
 
-import io.swagger.annotations.ApiModelProperty;
 
 /**
  * JSON input for registration of end entity.
@@ -30,29 +30,29 @@ import io.swagger.annotations.ApiModelProperty;
 @ValidAddEndEntityRestRequest
 public class AddEndEntityRestRequest {
 
-    @ApiModelProperty(value = "Username", example = "JohnDoe")
-	private String username;
-    @ApiModelProperty(value = "Password", example = "foo123")
+    @Schema(description = "Username", example = "JohnDoe")
+    private String username;
+    @Schema(description = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
+    @Schema(description = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
     private String subjectDn;
-    @ApiModelProperty(value = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
+    @Schema(description = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
     private String subjectAltName;
-    @ApiModelProperty(value = "Email", example = "john.doe@example.com")
+    @Schema(description = "Email", example = "john.doe@example.com")
     private String email;
     private List<ExtendedInformationRestRequestComponent> extensionData;
     private List<ExtendedInformationRestRequestComponent> customData;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
+    @Schema(description = "Certificate Authority (CA) name", example = "ExampleCA")
     private String caName;
-    @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
+    @Schema(description = "Certificate profile name", example = "ENDUSER")
     private String certificateProfileName;
-    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
+    @Schema(description = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfileName;
-    @ApiModelProperty(value = "Token type property", allowableValues = "USERGENERATED, P12, JKS, PEM", example = "P12")
+    @Schema(description = "Token type property", allowableValues = "USERGENERATED, P12, JKS, PEM", example = "P12")
     private String token;
-    @ApiModelProperty(value = "Account Binding ID", example = "1234567890", required=false)
+    @Schema(description = "Account Binding ID", example = "1234567890", required=false)
     private String accountBindingId;
-    @ApiModelProperty(value = "Key recoverable or not", example = "false", required=false)
+    @Schema(description = "Key recoverable or not", example = "false", required=false)
     private Boolean keyRecoverable;
     
     /** default constructor needed for serialization */

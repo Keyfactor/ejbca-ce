@@ -18,8 +18,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.model.SelectItem;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.util.DNFieldExtractor;

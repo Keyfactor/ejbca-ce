@@ -26,10 +26,10 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
@@ -43,7 +43,6 @@ import org.cesecore.certificates.crl.CrlImportException;
 import org.cesecore.certificates.crl.CrlStoreException;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.util.cert.CrlExtensions;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -54,7 +53,7 @@ import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ImportCrlSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ImportCrlSessionBean implements ImportCrlSessionLocal, ImportCrlSessionRemote {
 

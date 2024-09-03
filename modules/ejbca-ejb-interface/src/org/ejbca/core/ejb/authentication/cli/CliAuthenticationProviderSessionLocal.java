@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationProvider;
 

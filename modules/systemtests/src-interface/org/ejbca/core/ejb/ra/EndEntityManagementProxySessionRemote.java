@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.approval.ApprovalException;

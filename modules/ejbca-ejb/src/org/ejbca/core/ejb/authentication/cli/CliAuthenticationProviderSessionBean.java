@@ -20,11 +20,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -35,7 +35,6 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -51,10 +50,9 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
  * CliAuthenticationTokenReferenceRegistry to register tokens so that they are single use only, and in order to avoid sending passwords or password
  * hashes in cleartext over remote connections.
  * 
- * @version $Id$
- * 
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CliAuthenticationProviderSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CliAuthenticationProviderSessionBean implements CliAuthenticationProviderSessionLocal, CliAuthenticationProviderSessionRemote {
 

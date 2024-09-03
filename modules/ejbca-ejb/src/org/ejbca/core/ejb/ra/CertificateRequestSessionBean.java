@@ -30,12 +30,12 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
@@ -78,7 +78,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
@@ -107,7 +106,7 @@ import org.ejbca.cvc.exception.ParseException;
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateRequestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CertificateRequestSessionBean implements CertificateRequestSessionRemote, CertificateRequestSessionLocal {
 

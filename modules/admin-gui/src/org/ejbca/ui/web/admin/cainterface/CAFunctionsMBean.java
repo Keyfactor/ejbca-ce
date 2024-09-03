@@ -31,11 +31,11 @@ import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import javax.ejb.EJB;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.http.Part;
+import jakarta.ejb.EJB;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
