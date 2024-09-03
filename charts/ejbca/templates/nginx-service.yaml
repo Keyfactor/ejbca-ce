@@ -1,4 +1,6 @@
- # Configuration for NGINX meant for cluster internal communication
+# Configuration for NGINX meant for 
+# ClusterIP -> cluster internal communication
+# LoadBalancer -> external access
 {{- if .Values.nginx.enabled }}
 kind: Service
 apiVersion: v1
@@ -27,4 +29,97 @@ spec:
       protocol: TCP
   selector:
     {{- include "ejbca.selectorLabels" . | nindent 4 }}
+{{- end }}
+---
+# Conditional Client IP based sticky session - use case: UI Access 
+{{- if ne (int .Values.replicaCount) 1 }}
+{{- if and .Values.nginx.enabled .Values.nginx.loadBalancerAccess.enableStickySessionClientIp }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ejbca.fullname" . }}-nginx-sticky-session-client-ip
+  {{- with .Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: "LoadBalancer"
+  sessionAffinity: "ClientIP"
+  ports:
+    - name: nginx-http
+      port: {{ .Values.nginx.service.httpPort }}
+      targetPort: nginx-http
+      protocol: TCP
+    - name: nginx-https
+      port: {{ .Values.nginx.service.httpsPort }}
+      targetPort: nginx-https
+      protocol: TCP
+  selector:
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
+{{- end }}
+{{- end }}
+---
+# Conditional Pod index based access - use case: UI Access or Manually selecting Closer Instance
+{{- if ne (int .Values.replicaCount) 1 }}
+{{- if and .Values.nginx.enabled .Values.nginx.loadBalancerAccess.enableReplicaSpecificAccess }}
+{{- range $i := until (int .Values.replicaCount) }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ejbca.fullname" $ }}-nginx-load-balancer-{{ . }}
+  {{- with $.Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: "LoadBalancer"
+  ports:
+    - name: nginx-http
+      port: {{ $.Values.nginx.service.httpPort }}
+      targetPort: nginx-http
+      protocol: TCP
+    - name: nginx-https
+      port: {{ $.Values.nginx.service.httpsPort }}
+      targetPort: nginx-https
+      protocol: TCP
+  selector:
+    {{- include "ejbca.selectorLabels" $ | nindent 4 }}
+    statefulset.kubernetes.io/pod-name: {{ include "ejbca.fullname" $ }}-{{ . }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
+---
+# Headless service cluster internal access - use case: peering
+{{- if ne (int .Values.replicaCount) 1 }}
+{{- if .Values.nginx.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ejbca.fullname" . }}-nginx-headless
+  {{- with .Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: nginx-http
+      port: {{ .Values.nginx.service.httpPort }}
+      {{- if eq .Values.nginx.service.type "NodePort" }}
+      nodePort: {{ .Values.nginx.service.httpPort }}
+      {{- end }}
+      targetPort: nginx-http
+      protocol: TCP
+    - name: nginx-https
+      port: {{ .Values.nginx.service.httpsPort }}
+      {{- if eq .Values.nginx.service.type "NodePort" }}
+      nodePort: {{ .Values.nginx.service.httpsPort }}
+      {{- end }}
+      targetPort: nginx-https
+      protocol: TCP
+  selector:
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
+{{- end }}
 {{- end }}
