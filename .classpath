@@ -139,8 +139,8 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-multipart-provider-6.2.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-threads-2.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.12.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.12.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.16.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.16.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.servlet-api-6.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
