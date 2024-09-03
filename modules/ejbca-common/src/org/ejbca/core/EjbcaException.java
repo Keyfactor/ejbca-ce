@@ -13,7 +13,7 @@
  
 package org.ejbca.core;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;

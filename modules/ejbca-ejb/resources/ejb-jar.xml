@@ -15,11 +15,11 @@
 
  version: $Id: persistence-ds-template.xml 21822 2015-09-10 14:07:46Z jeklund $
  -->
-<ejb-jar version="3.1"
-    xmlns="http://java.sun.com/xml/ns/javaee" 
+<ejb-jar version="4.0"
+    xmlns="https://jakarta.ee/xml/ns/jakartaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-                        http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd">
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+        https://jakarta.ee/xml/ns/jakartaee/ejb-jar_4_0.xsd">
     <enterprise-beans>
         <!-- Populate JNDI to allow use of JEE5 local Enterprise Edition EJB lookup from publishers and services -->
         <session>

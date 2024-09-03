@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.acme;
 
-import javax.ejb.EJBTransactionRolledbackException;
+import jakarta.ejb.EJBTransactionRolledbackException;
 
 /**
  * Database implementation of ACME replay nonce storage.

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets">
     <ui:remove>
     <!--
     /*************************************************************************
@@ -18,7 +18,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-
      -->
     </ui:remove>
     <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -142,7 +141,7 @@
         <ui:define name="modal">
             <h:form id="modal">
                 <ui:remove><!-- Manually add viewstate due to https://java.net/jira/browse/JAVASERVERFACES_SPEC_PUBLIC-790 --></ui:remove>
-                <h:outputText escape="false" value="&lt;input name='javax.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
+                <h:outputText escape="false" value="&lt;input name='jakarta.faces.ViewState' type='hidden' value='#{facesContext.application.stateManager.getViewState(facesContext)}'/&gt;"/>
 
                 <h:panelGroup id="delete" rendered="#{roleMembersBean.renderDeleteRoleMember}">
                     <h2><h:outputText value="#{web.text.ROLEMEMBERS_DELETE_TITLE}"/></h2>

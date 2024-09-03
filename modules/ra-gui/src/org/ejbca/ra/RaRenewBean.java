@@ -25,15 +25,15 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
-import javax.ejb.EJB;
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ComponentSystemEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -312,7 +312,7 @@ public class RaRenewBean implements Serializable {
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final Set<String> ecChoices = new HashSet<>();
                 if (availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE)) {
-                    for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap(false).keySet()) {
+                    for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap().keySet()) {
                         if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
                             continue;
                         }

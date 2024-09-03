@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * Thrown in case an upgrade routine fails. Should trigger rollback. 

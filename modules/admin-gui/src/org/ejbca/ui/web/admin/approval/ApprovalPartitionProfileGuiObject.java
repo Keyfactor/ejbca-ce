@@ -16,8 +16,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
 
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
