@@ -603,7 +603,7 @@ public class EditEndEntityMBean extends EndEntityBaseManagedBean implements Seri
             final boolean modifiable = eeProfile.isModifyable(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean required = eeProfile.isRequired(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean isRFC822Name = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME);
-            final boolean useDataFromEmailFieldCheckBoxValue = EndEntityProfile.isFieldOfType(fieldType, DnComponents.RFC822NAME) && eeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);;
+            final boolean useDataFromEmailFieldCheckBoxValue = EndEntityProfile.isFieldOfType(fieldType, DnComponents.RFC822NAME) && eeProfile.getUse(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean copyDataFromCN = eeProfile.getCopy(fieldData[EndEntityProfile.FIELDTYPE], fieldData[EndEntityProfile.NUMBER]);
             final boolean isDnsName = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.DNSNAME);
             final boolean isUpn = EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.UPN);
