@@ -214,7 +214,7 @@
      </copy>
   </target>
 
-	<target name="pre-build-one-plugin-from-source">
+	<target name="pre-build-one-plugin-from-source" if="plugin.ejbca.ant.file">
 		<echo message="Plugin Ant build file = ${plugin.ejbca.ant.file}"/>
 		<loadproperties srcfile="${tmp}/plugin.properties"/>
 		<fail message="Property 'plugin.ejbca.ant.file' is missing!">
@@ -251,7 +251,7 @@
 		<basename property="plugin.ejbca.ant.basename" file="${plugin.ejbca.ant.file}"/>
 	</target>
 
-	<target name="build-one-plugin-from-source-target-specified" if="plugin.ejbca.ant.target">
+	<target name="build-one-plugin-from-source-target-specified" if="plugin.ejbca.ant.file,plugin.ejbca.ant.target">
 		<ant antfile="${plugin.ejbca.ant.basename}"
 			 dir="${plugin.ejbca.ant.dirname}"
 			 inheritAll="false"
@@ -268,7 +268,7 @@
 		</ant>
 	</target>
 
-	<target name="build-one-plugin-from-source-target-not-specified" unless="plugin.ejbca.ant.target">
+	<target name="build-one-plugin-from-source-target-not-specified" if="plugin.ejbca.ant.file" unless="plugin.ejbca.ant.target">
 		<ant antfile="${plugin.ejbca.ant.basename}"
 			 dir="${plugin.ejbca.ant.dirname}"
 			 inheritAll="false"
