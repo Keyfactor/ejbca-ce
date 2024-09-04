@@ -75,7 +75,7 @@ dependencyResolutionManagement {
             library("kerb-core", ":kerb-core:2.0.3")
             library("kerb-crypto", ":kerb-crypto:2.0.3")
             library("kerby-asn1", ":kerby-asn1:2.0.3")
-            library("keyfactor-commons-cli",":keyfactor-commons-cli:1.0.1")
+            library("keyfactor-commons-cli",":keyfactor-commons-cli:2.0.0")
             library("jsch", ":jsch:0.2.11")
             library("xstream", ":xstream:1.4.20")
             library("xpp3_min", ":xpp3_min:1.1.4c")
