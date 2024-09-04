@@ -251,7 +251,7 @@
 		<basename property="plugin.ejbca.ant.basename" file="${plugin.ejbca.ant.file}"/>
 	</target>
 
-	<target name="build-one-plugin-from-source-target-specified" if="plugin.ejbca.ant.file,plugin.ejbca.ant.target">
+	<target name="build-one-plugin-from-source-target-specified" if="plugin.ejbca.ant.target" unless="pluginIsJarBased">
 		<ant antfile="${plugin.ejbca.ant.basename}"
 			 dir="${plugin.ejbca.ant.dirname}"
 			 inheritAll="false"
