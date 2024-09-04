@@ -5,6 +5,9 @@ kind: ConfigMap
 metadata:
   name: {{ include "ejbca.fullname" . }}-nginx-config
 data:
+  {{- if .Values.nginx.externalConfiguration }}
+  nginx.conf: {{- tpl (.Values.nginx.externalConfiguration | toYaml | indent 1) . }}
+  {{- else }}
   nginx.conf: |
     user  nginx;
     worker_processes  1;
@@ -29,7 +32,10 @@ data:
         server_name {{ .Values.nginx.host }};
 
         location / {
-          proxy_pass http://{{ include "ejbca.fullname" . }}:8081;
+          proxy_pass http://localhost:8081;
+          proxy_redirect ejbca/adminweb https://{{ .Values.nginx.host }}/ejbca/adminweb;
+          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/adminweb https://{{ .Values.nginx.host }}/ejbca/adminweb;
+          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/ra https://{{ .Values.nginx.host }}/ejbca/ra;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "Upgrade";
           proxy_set_header Host $host;
@@ -39,16 +45,28 @@ data:
 
       server {
         listen 443 ssl;
-        ssl_verify_client optional;
 
         server_name {{ .Values.nginx.host }};
 
-        ssl_certificate /etc/nginx/ssl/pem/{{ .Values.nginx.host }}.pem;
-        ssl_certificate_key /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-Key.pem;
-        ssl_client_certificate /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-CA.pem;
+        {{- if and .Values.nginx.initializeWithSelfSignedTls (not .Values.nginx.mountInternalNginxCert) }}
+
+          ssl_certificate /etc/nginx/ssl/pem/{{ .Values.nginx.host }}.pem;
+          ssl_certificate_key /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-Key.pem;
+
+        {{- else }}
+        
+          ssl_verify_client optional;
+
+          ssl_certificate /etc/nginx/ssl/pem/{{ .Values.nginx.host }}.pem;
+          ssl_certificate_key /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-Key.pem;
+          ssl_client_certificate /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-CA.pem;
+
+        {{end}}
 
         location / {
-          proxy_pass http://{{ include "ejbca.fullname" . }}:8082;
+          proxy_pass http://localhost:8082;
+          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/adminweb https://{{ .Values.nginx.host }}/ejbca/adminweb;
+          proxy_redirect http://{{ .Values.nginx.host }}/ejbca/ra https://{{ .Values.nginx.host }}/ejbca/ra;
           proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
           proxy_set_header Upgrade $http_upgrade;
           proxy_set_header Connection "upgrade";
@@ -57,5 +75,50 @@ data:
         }
       }
 
+      {{- if .Values.nginx.additionalHosts }}
+      {{- range $i := .Values.nginx.additionalHosts }}
+
+      server {
+        listen 80;
+
+        server_name {{ $i }};
+
+        location / {
+          proxy_pass http://localhost:8081;
+          proxy_redirect ejbca/adminweb https://{{ $i }}/ejbca/adminweb;
+          proxy_redirect http://{{ $i }}/ejbca/adminweb https://{{ $i }}/ejbca/adminweb;
+          proxy_redirect http://{{ $i }}/ejbca/ra https://{{ $i }}/ejbca/ra;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "Upgrade";
+          proxy_set_header Host $host;
+          proxy_http_version 1.1;
+        }
+      }
+
+      server {
+        listen 443 ssl;
+        server_name {{ $i }};
+        
+        ssl_verify_client optional;
+
+        ssl_certificate /etc/nginx/ssl/pem/{{ $i }}.pem;
+        ssl_certificate_key /etc/nginx/ssl/pem/{{ $i }}-Key.pem;
+        ssl_client_certificate /etc/nginx/ssl/pem/{{ $i }}-CA.pem;
+
+        location / {
+          proxy_pass http://localhost:8082;
+          proxy_redirect http://{{ $i }}/ejbca/adminweb https://{{ $i }}/ejbca/adminweb;
+          proxy_redirect http://{{ $i }}/ejbca/ra https://{{ $i }}/ejbca/ra;
+          proxy_set_header SSL_CLIENT_CERT $ssl_client_cert;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection "upgrade";
+          proxy_set_header Host $host;
+          proxy_http_version 1.1;
+        }
+      }
+      {{end}}
+      {{end}}
+
     }
+  {{- end }}
 {{- end }}
