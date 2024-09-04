@@ -168,7 +168,7 @@ import com.keyfactor.util.certificate.DnComponents;
 public class EndEntityManagementSessionBean implements EndEntityManagementSessionLocal, EndEntityManagementSessionRemote {
     private static final Logger log = Logger.getLogger(EndEntityManagementSessionBean.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    public static final String INVALID_SYMBOLS_INUSERNAME = "Only characters, numbers, whitespace, comma, period, ', _, @, *, -, :, /, =, (, ), and vertical bar are allowed in Username";
+    public static final String INVALID_SYMBOLS_INUSERNAME = "Only characters, numbers, whitespace, comma, period, ', _, @, *, -, :, /, =, (, ), +, &, and vertical bar are allowed in Username";
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
