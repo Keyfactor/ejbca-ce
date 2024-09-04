@@ -139,8 +139,8 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/resteasy-multipart-provider-6.2.9.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jboss-threads-2.3.3.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/wildfly-common-1.5.4.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.12.Final.jar"/>
-	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.12.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-api-3.8.16.Final.jar"/>
+	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/xnio-nio-3.8.16.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/reactive-streams-1.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.servlet-api-6.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
@@ -152,8 +152,8 @@
 	<classpathentry kind="lib" path="lib/kerby-asn1-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/kerb-crypto-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/jsch-0.2.11.jar"/>
-	<classpathentry kind="lib" path="lib/dnsjava-3.5.2.jar"/>
-	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/dnsjava-3.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/keyfactor-commons-cli-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jakarta.activation-api-2.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.enterprise.cdi-api-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/angus.activation-2.0.2.jar"/>
@@ -169,9 +169,9 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
 	<classpathentry kind="lib" path="lib/x509-common-util-4.0.0.jar" sourcepath="/x509-common-util"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-api-2.2.0.jar" />
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.2.0.jar" />
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.2.0.jar" />
+	<classpathentry kind="lib" path="lib/cryptotokens-api-2.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.2.0.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-14.0.0-jakarta.jar"/>
 	<classpathentry kind="lib" path="lib/p11ng-0.24.0.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="JBOSS7_HOME/bin/client/jboss-client.jar"/>
