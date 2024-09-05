@@ -19,12 +19,12 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 import com.keyfactor.util.StringTools;
 
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.validator.FacesValidator;
-import javax.faces.validator.Validator;
-import javax.faces.validator.ValidatorException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.validator.FacesValidator;
+import jakarta.faces.validator.Validator;
+import jakarta.faces.validator.ValidatorException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -41,7 +41,7 @@ public class CrlDistributionPointUrlValidator implements Validator<Object> {
             return;
         } else if (!(o instanceof String)) {
             log.warn("Wrong type passed to validator");
-            throw makeException(uiComponent);
+            throwException(uiComponent);
         }
         final String urlValue = (String) o;
         if (StringUtils.isEmpty(urlValue)) {
@@ -63,7 +63,7 @@ public class CrlDistributionPointUrlValidator implements Validator<Object> {
             if (log.isDebugEnabled()) {
                 log.debug("CDP URL \"" + url + "\" is missing the colon!");
             }
-            throw makeException(uiComponent);
+            throwException(uiComponent);
         } else {
             try {
                 new URI(url.toString());
@@ -71,16 +71,21 @@ public class CrlDistributionPointUrlValidator implements Validator<Object> {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid syntax of CDP URL \"" + url + "\": " + e.getMessage(), e);
                 }
-                throw makeException(uiComponent);
+                throwException(uiComponent);
             }
         }
     }
 
-    public ValidatorException makeException(final UIComponent uiComponent) {
+    protected String lookupErrorMessage(final UIComponent uiComponent) {
         String msg = (String) uiComponent.getAttributes().get("errorMessage");
         if (StringUtils.isEmpty(msg)) {
             msg = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDURL");
         }
+        return msg;
+    }
+
+    protected final void throwException(final UIComponent uiComponent) {
+        final String msg = lookupErrorMessage(uiComponent);
         throw new ValidatorException(new FacesMessage(FacesMessage.SEVERITY_ERROR, msg, null));
     }
 }

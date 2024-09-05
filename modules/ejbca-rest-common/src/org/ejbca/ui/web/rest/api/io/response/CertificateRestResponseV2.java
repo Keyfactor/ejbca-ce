@@ -12,97 +12,98 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class representing general information about a certificate and its CertificateData 
  * for the usage as REST response.
  */
-@JsonPropertyOrder({ "fingerprint", "cAFingerprint", "certificateProfileId", "endEntityProfileId", 
+@JsonPropertyOrder({ "fingerprint", "cAFingerprint", "certificateProfileId", "endEntityProfileId",
     "expireDate", "issuerDN", "notBefore", "revocationDate", "revocationReason", "serialNumber", 
     "status", "subjectAltName", "subjectDN", "subjectKeyId", "tag", "type", "updateTime", "username", 
     "certificate", "certificateRequest", "crlPartitionIndex", "invalidityDate" })
 public class CertificateRestResponseV2 {
 
-    @ApiModelProperty(value = "Certificate fingerprint", example = "123abc456def789ghi123klm456nop789qrs123t")
+    @Schema(description = "Certificate fingerprint", example = "123abc456def789ghi123klm456nop789qrs123t")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("fingerprint") // ECA-11791
     private String fingerprint;
 
-    @ApiModelProperty(value = "Certificate Authority fingerprint", example = "abc123def456ghi789klm123nop456qrs789tvx1")
+    @Schema(description = "Certificate Authority fingerprint", example = "abc123def456ghi789klm123nop456qrs789tvx1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("cAFingerprint") // ECA-11791
     private String caFingerprint;
 
-    @ApiModelProperty(value = "Issuer Distinguished Name", example = "CN=ExampleCA")
+    @Schema(description = "Issuer Distinguished Name", example = "CN=ExampleCA")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("issuerDN") // ECA-11791
     private String issuerDN;
 
-    @ApiModelProperty(value = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
+    @Schema(description = "Subject Distinguished Name", example = "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("subjectDN") // ECA-11791
     private String subjectDN;
 
-    @ApiModelProperty(value = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
+    @Schema(description = "Subject Alternative Name (SAN)", example = "rfc822Name=john.doe@example.com")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("subjectAltName") // ECA-11791
     private String subjectAltName;
 
-    @ApiModelProperty(value = "Subject Key Identifier", example = "z123abc456def789ghi123klm456nop789qrs123")
+    @Schema(description = "Subject Key Identifier", example = "z123abc456def789ghi123klm456nop789qrs123")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("subjectKeyId") // ECA-11791
     private String subjectKeyId;
 
-    @ApiModelProperty(value = "Certificate Profile Identifier", example = "1")
+    @Schema(description = "Certificate Profile Identifier", example = "1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("certificateProfileId") // ECA-11791
     private Integer certificateProfileId;
 
-    @ApiModelProperty(value = "End Entity Profile Identifier", example = "1")
+    @Schema(description = "End Entity Profile Identifier", example = "1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("endEntityProfileId") // ECA-11791
     private Integer endEntityProfileId;
     
-    @ApiModelProperty(value = "Certificate Profile Name", example = "ENDUSER")
+    @Schema(description = "Certificate Profile Name", example = "ENDUSER")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("certificateProfile") // ECA-11791
     private String certificateProfile;
 
-    @ApiModelProperty(value = "End Entity Profile Name", example = "EMPTY")
+    @Schema(description = "End Entity Profile Name", example = "EMPTY")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonProperty("endEntityProfile") // ECA-11791
     private String endEntityProfile;
 
-    @ApiModelProperty(value = "Date at which certificate became valid", example = "1659952800011")
+    @Schema(description = "Date at which certificate became valid", example = "1659952800011")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("notBefore") // ECA-11791
     private Long notBefore;
 
-    @ApiModelProperty(value = "Date after which certificate should be considered expired", example = "2147483647000")
+    @Schema(description = "Date after which certificate should be considered expired", example = "2147483647000")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("expireDate") // ECA-11791
     private Long expireDate;
 
-    @ApiModelProperty(value = "Revocation date", example = "-1")
+    @Schema(description = "Revocation date", example = "-1")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("revocationDate") // ECA-11791
     private Long revocationDate = -1L;
 
-    @ApiModelProperty(value = "Revocation reason", example = "-1", allowableValues = "-1, 0, 1, 2, 3, 4, 5, 6, 8, 9, 10")
+    @Schema(description = "Revocation reason", example = "-1", allowableValues = "-1, 0, 1, 2, 3, 4, 5, 6, 8, 9, 10")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("revocationReason") // ECA-11791
     private Integer revocationReason = -1;
 
-    @ApiModelProperty(value = "Hex Serial Number", example = "1234567890ABCDEF")
+    @Schema(description = "Hex Serial Number", example = "1234567890ABCDEF")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("serialNumber") // ECA-11791
     private String serialNumber;
 
-    @ApiModelProperty(value = "Certificate status", example = "20")
+    @Schema(description = "Certificate status", example = "20")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("status") // ECA-11791
     private Integer status;
@@ -115,33 +116,33 @@ public class CertificateRestResponseV2 {
     @JsonProperty("type") // ECA-11791
     private Integer type;
 
-    @ApiModelProperty(value = "Update time", example = "1659967133000")
+    @Schema(description = "Update time", example = "1659967133000")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("udpateTime") // ECA-11791
     private Long updateTime;
 
-    @ApiModelProperty(value = "Username", example = "JohnDoe")
+    @Schema(description = "Username", example = "JohnDoe")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("username") // ECA-11791
     private String username;
 
-    @ApiModelProperty(value = "Base64 encoded certificate", example = "TUlJR...t2A==")
+    @Schema(description = "Base64 encoded certificate", example = "TUlJR...t2A==")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("base64Cert") // ECA-11791
     private byte[] certificate;
 
-    @ApiModelProperty(value = "Certificate request", example = "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
+    @Schema(description = "Certificate request", example = "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("certificateRequest") // ECA-11791
     private String certificateRequest;
 
-    @ApiModelProperty(value = "CRL partition index", example = "1")
+    @Schema(description = "CRL partition index", example = "1")
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("crlPartitionIndex") // ECA-11791
     private Integer crlPartitionIndex;
 
-    @ApiModelProperty(value = "Invalidity date", example = "-1")
+    @Schema(description = "Invalidity date", example = "-1")
     private Long invalidityDate;
 
     private CertificateRestResponseV2(final CertificateRestResponseBuilderV2 builder) {

@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.rest;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * 
