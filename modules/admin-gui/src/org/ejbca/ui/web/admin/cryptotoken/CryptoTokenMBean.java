@@ -27,13 +27,13 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import javax.ejb.EJBException;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
+import jakarta.ejb.EJBException;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.commons.lang3.StringUtils;

@@ -12,7 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class representing general information about crl.
@@ -21,9 +22,9 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class CrlRestResponse {
 
-    @ApiModelProperty(value = "Certificate Revocation List (CRL)", example = "MIIEV...SqQPE")
+    @Schema(description = "Certificate Revocation List (CRL)", example = "MIIEV...SqQPE")
     private byte[] crl;
-    @ApiModelProperty(value = "Response format", example = "DER")
+    @Schema(description = "Response format", example = "DER")
     private String responseFormat;
 
     private CrlRestResponse(byte[] certificate, String responseFormat) {

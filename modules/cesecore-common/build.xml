@@ -33,8 +33,8 @@
 		<path refid="lib.adsddl.classpath"/>
         <path refid="lib.hc.classpath"/> <!-- Apache http client for Azure crypto token -->
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- For parsing JWK keys in KeyTools -->
-		<path refid="lib.jaxws-api.classpath"/>
-		<path refid="lib.javax.ejb-api.classpath"/>
+		<path refid="lib.jakarta.xml.ws-api.classpath"/>
+		<path refid="lib.jakarta.ejb-api.classpath"/>
         <path location="${mod.cesecore-x509ca.lib}"/>
 		<path refid="lib.x509-common-util.classpath"/>
 		<path refid="lib.cryptotokens.classpath"/>

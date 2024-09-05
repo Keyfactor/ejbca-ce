@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.configdump;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * @version $Id$

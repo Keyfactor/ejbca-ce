@@ -15,27 +15,25 @@ package org.ejbca.core.ejb.upgrade;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.AdminGroupData;
 import org.cesecore.roles.RoleExistsException;
 
 /**
  * SSB helping with setup from tests of upgrade functionality.
  * 
- * @version $Id$
  */
 @SuppressWarnings("deprecation")
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeTestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class UpgradeTestSessionBean implements UpgradeTestSessionRemote {
 

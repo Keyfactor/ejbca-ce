@@ -15,7 +15,7 @@ package org.cesecore.certificates.ca;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 import java.util.List;
 import java.util.Map;
 
@@ -61,20 +61,20 @@ public interface CaSessionLocal extends CaSession {
     CAData findByIdOrThrow(final Integer cAId) throws CADoesntExistsException;
     
     /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
+     * @throws jakarta.persistence.NonUniqueResultException if more than one entity with the name exists
      * @return the found entity instance or null if the entity does not exist
      */
     CAData findByName(final String name);
 
     /**
      * @throws CADoesntExistsException if the entity does not exist
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
+     * @throws jakarta.persistence.NonUniqueResultException if more than one entity with the name exists
      * @return the found entity instance
      */
     CAData findByNameOrThrow(final String name) throws CADoesntExistsException;
     
     /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the subjectDN exists
+     * @throws jakarta.persistence.NonUniqueResultException if more than one entity with the subjectDN exists
      * @return the found entity instance or null if the entity does not exist
      */
     CAData findBySubjectDN(String subjectDN);

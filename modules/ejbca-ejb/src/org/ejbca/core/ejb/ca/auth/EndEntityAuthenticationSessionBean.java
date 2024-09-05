@@ -30,7 +30,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -49,13 +48,13 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
 import java.util.Collection;
@@ -67,7 +66,7 @@ import java.util.Map;
  * Authenticates users towards a user database.
  * @see EndEntityAuthenticationSession
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityAuthenticationSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticationSessionLocal, EndEntityAuthenticationSessionRemote {
     private static final Logger log = Logger.getLogger(EndEntityAuthenticationSessionBean.class);

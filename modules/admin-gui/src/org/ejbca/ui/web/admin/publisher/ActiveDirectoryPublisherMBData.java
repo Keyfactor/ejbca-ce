@@ -18,7 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.faces.model.SelectItem;
+import jakarta.faces.model.SelectItem;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ca.publisher.ActiveDirectoryPublisher;

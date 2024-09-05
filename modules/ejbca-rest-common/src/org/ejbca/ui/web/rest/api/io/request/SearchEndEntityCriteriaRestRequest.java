@@ -13,8 +13,7 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequest;
 
@@ -27,7 +26,7 @@ import java.util.EnumSet;
  *
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequest
  */
-@ApiModel(description = "Use one of allowed values as property(see enum values below).\n" +
+@Schema(description = "Use one of allowed values as property(see enum values below).\n" +
 		"QUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username; \n" +
         "Available STATUS - multiplicity [0, 9] - values are: NEW, FAILED, " +
         "INITIALIZED, INPROCESS, GENERATED, REVOKED, " +
@@ -38,18 +37,18 @@ import java.util.EnumSet;
 @ValidSearchEndEntityCriteriaRestRequest
 public class SearchEndEntityCriteriaRestRequest {
 
-    @ApiModelProperty(value = "A search property",
-            allowableValues = "QUERY, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA, STATUS, MODIFIED_BEFORE, MODIFIED_AFTER"
+    @Schema(description = "A search property",
+            allowableValues = {"QUERY", "END_ENTITY_PROFILE", "CERTIFICATE_PROFILE", "CA", "STATUS", "MODIFIED_BEFORE", "MODIFIED_AFTER"}
     )
     private String property;
 
-    @ApiModelProperty(value = "A search value. This could be string value, an appropriate string name of End Entity Profile or Certificate Profile or CA",
+    @Schema(description = "A search value. This could be string value, an appropriate string name of End Entity Profile or Certificate Profile or CA",
             example = "exampleUsername")
     private String value;
 
-    @ApiModelProperty(value = "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",
-            allowableValues = "EQUAL, LIKE",
-            dataType = "java.lang.String")
+    @Schema(description = "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",
+            allowableValues = {"EQUAL", "LIKE"},
+            type = "string")
     private String operation;
 
     // Internal usage of identifier for EndEntityProfile, CertificateProfile or CAId
@@ -118,7 +117,7 @@ public class SearchEndEntityCriteriaRestRequest {
             }
             return null;
         }
-        
+
         /**
          * The subset of criteria properties that expect String input for SearchEndEntityCriteriaRestRequest.value.
          *

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Remote interface for CreateCRLSession

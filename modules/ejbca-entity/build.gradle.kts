@@ -1,4 +1,3 @@
-import org.apache.tools.ant.filters.ReplaceTokens
 import java.util.Properties
 
 val props: Properties = Properties().apply {
@@ -14,11 +13,11 @@ val dialectMap = mapOf(
     "derby" to "org.hibernate.dialect.DerbyDialect",
     "hsqldb" to "org.hibernate.dialect.HSQLDialect",
     "h2" to "org.hibernate.dialect.H2Dialect",
-    "informix" to "org.hibernate.dialect.InformixDialect",
-    "ingres" to "org.hibernate.dialect.IngresDialect",
-    "mssql" to "org.hibernate.dialect.SQLServer2008Dialect",
-    "mysql" to "org.hibernate.dialect.MySQL5InnoDBDialect",
-    "oracle" to "org.hibernate.dialect.Oracle10gDialect",
+    "informix" to "org.hibernate.community.dialect.InformixDialect",
+    "ingres" to "org.hibernate.community.dialect.IngresDialect",
+    "mssql" to "org.hibernate.dialect.SQLServerDialect",
+    "mysql" to "org.hibernate.dialect.MySQLDialect",
+    "oracle" to "org.hibernate.dialect.OracleDialect",
     "postgres" to "org.hibernate.dialect.PostgreSQLDialect",
     "sybase" to "org.hibernate.dialect.SybaseDialect"
 )
@@ -34,7 +33,7 @@ dependencies {
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:cesecore-common"))
     compileOnly(project(":modules:cesecore-entity"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.commons.lang)
     compileOnly(libs.x509.common.util)

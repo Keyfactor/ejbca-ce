@@ -171,8 +171,11 @@ services:
 # Recommended for cluster internal communications
 # Requires proxyHttp service to be enabled
 nginx:
+  image: nginx:1.27.1
   enabled: false
-  host: ""
+  initializeWithSelfSignedTls: false
+  host: "ejbcahost"
+  externalConfiguration:
   # Server TLS credential for cluster internal communication
   mountInternalNginxCert: false
   #secretInternalNginxCert: "internal-nginx-credential-secret-ca"
@@ -181,6 +184,12 @@ nginx:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
+  # only relevant if multiple replicas
+  loadBalancerAccess:
+    enableStickySessionClientIp: false
+    # create a load balancer service for each Pod with separate IP address
+    enableReplicaSpecificAccess: false
+  additionalHosts:
 
 # External communication from cluster
 # Requires proxyAJP or proxyHttp service to be enabled for adminweb access

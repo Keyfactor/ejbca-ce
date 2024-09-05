@@ -36,7 +36,7 @@ public interface EjbcaAuditorSession {
      * @param device Must be "IntegrityProtectedLogDevice" for now.
      * @param firstResult first entry in result set
      * @param maxResults number of results to return. '0' means no limit.
-     * @param whereClause corresponds to JPQL where statement. E.g. " a.columnSomething = ?0 AND a.columnSomethingElse > ?1 ..."
+     * @param whereClause corresponds to JPQL where statement. E.g. " a.columnSomething = ?1 AND a.columnSomethingElse > ?2 ..."
      * @param orderClause corresponds to JPQL order statement. E.g. " a.columnSomething ASC"
      * @param parameters Array of parameters in the order they appear in the whereClause
      * @return result of the executed query

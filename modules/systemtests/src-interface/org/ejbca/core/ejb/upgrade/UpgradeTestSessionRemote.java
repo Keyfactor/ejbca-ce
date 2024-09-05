@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.upgrade;
 
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;

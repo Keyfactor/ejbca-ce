@@ -13,11 +13,11 @@
 
 package org.ejbca.ui.web.admin.approval;
 
-import javax.enterprise.context.RequestScoped;
-import javax.faces.application.Application;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.application.Application;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Bean to set the right Approve Request Data when calling the approveaction.jsf page

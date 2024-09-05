@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.services.intervals;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.services.BaseInterval;

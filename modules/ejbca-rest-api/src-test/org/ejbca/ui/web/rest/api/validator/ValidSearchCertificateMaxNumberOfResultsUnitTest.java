@@ -17,7 +17,7 @@ import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidatorContext;
 
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.createNiceMock;

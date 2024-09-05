@@ -13,8 +13,8 @@
 
 package org.ejbca.core.ejb;
 
-import javax.ejb.DependsOn;
-import javax.ejb.Singleton;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.Singleton;
 
 import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 
