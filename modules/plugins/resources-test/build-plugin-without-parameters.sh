@@ -7,6 +7,6 @@ then
   exit 1
 fi
 
-pushd $EJBCA_HOME
+pushd "$EJBCA_HOME" || exit
 ant clean build
-popd
+popd || exit
