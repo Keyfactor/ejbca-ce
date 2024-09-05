@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.certificate.ssh.SshKeyException;
 import org.cesecore.certificates.certificate.ssh.SshKeyFactory;
@@ -28,8 +28,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.ws.rs.core.Response;
+import jakarta.xml.bind.DatatypeConverter;
+
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 /**
  * A class representing the input for SSH certificate request REST method.
@@ -37,31 +39,31 @@ import javax.xml.bind.DatatypeConverter;
 @ValidSshCertificateRestRequest
 public class SshCertificateRequestRestRequest {
 
-    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
+    @Schema(description = "End Entity profile name", example = "ExampleEEP")
     private String endEntityProfile;
-    @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
+    @Schema(description = "Certificate profile name", example = "ENDUSER")
     private String certificateProfile;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
+    @Schema(description = "Certificate Authority (CA) name", example = "ExampleCA")
     private String certificateAuthority;
-    @ApiModelProperty(value = "SSH Key Identifier", example = "ski-02")
+    @Schema(description = "SSH Key Identifier", example = "ski-02")
     private String keyId;
-    @ApiModelProperty(value = "Comment", example = "Yellow fish under blue water")
+    @Schema(description = "Comment", example = "Yellow fish under blue water")
     private String comment;
-    @ApiModelProperty(value = "Public Key", example = "ssh-rsa AAA...EWj")
+    @Schema(description = "Public Key", example = "ssh-rsa AAA...EWj")
     private String publicKey;
-    @ApiModelProperty(value = "Valid principals", example = "[\"Wishman\", \"Bradman\"]")
+    @Schema(description = "Valid principals", example = "[\"Wishman\", \"Bradman\"]")
     private List<String> principals;
-    @ApiModelProperty(value = "Critical options")
+    @Schema(description = "Critical options")
     private SshCriticalOptions criticalOptions;
-    @ApiModelProperty(hidden = true) // Support in future
+    @Schema(accessMode = READ_ONLY) // Support in future
     private Map<String, byte[]> additionalExtensions;
-    @ApiModelProperty(value = "Username", example = "JohnDoe")
+    @Schema(description = "Username", example = "JohnDoe")
     private String username;
-    @ApiModelProperty(value = "Password", example = "foo123")
+    @Schema(description = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Valid notBefore date", example = "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'")
+    @Schema(description = "Valid notBefore date", example = "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'")
     private String notBefore;
-    @ApiModelProperty(value = "Valid notAfter date", example = "ISO 8601 Date string, eg. '2024-06-15T14:07:09Z'")
+    @Schema(description = "Valid notAfter date", example = "ISO 8601 Date string, eg. '2024-06-15T14:07:09Z'")
     private String notAfter;
 
     public SshCertificateRequestRestRequest() {

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;

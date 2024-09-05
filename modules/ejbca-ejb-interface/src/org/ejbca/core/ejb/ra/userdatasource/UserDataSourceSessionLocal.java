@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.ra.userdatasource;
 
 import java.util.Map;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * Local interface for UserDataSourceSession.

@@ -18,12 +18,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -35,7 +35,6 @@ import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -47,9 +46,8 @@ import org.ejbca.core.model.validation.PublicKeyBlacklistEntryCache;
 /**
  * Handles management of public key blacklist entries.
  * 
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "BlacklistSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class BlacklistSessionBean implements BlacklistSessionLocal, BlacklistSessionRemote {
 

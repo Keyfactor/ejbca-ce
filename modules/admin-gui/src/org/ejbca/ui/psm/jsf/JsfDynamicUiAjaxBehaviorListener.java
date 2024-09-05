@@ -14,10 +14,10 @@ package org.ejbca.ui.psm.jsf;
 
 import java.io.Serializable;
 
-import javax.faces.component.UIInput;
-import javax.faces.event.AbortProcessingException;
-import javax.faces.event.AjaxBehaviorEvent;
-import javax.faces.event.AjaxBehaviorListener;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.event.AbortProcessingException;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.event.AjaxBehaviorListener;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.ui.DynamicUiActionCallback;

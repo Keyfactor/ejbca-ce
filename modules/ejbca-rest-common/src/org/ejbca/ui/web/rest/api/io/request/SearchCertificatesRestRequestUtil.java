@@ -17,7 +17,7 @@ import static org.ejbca.ui.web.rest.api.config.JsonDateSerializer.DATE_FORMAT_IS
 import java.text.ParseException;
 import java.util.Date;
 
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response;
 
 import org.ejbca.ui.web.rest.api.exception.RestException;
 

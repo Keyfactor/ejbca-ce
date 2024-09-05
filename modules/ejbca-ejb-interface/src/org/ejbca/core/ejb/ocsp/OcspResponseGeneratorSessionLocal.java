@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.ocsp;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 
 /**

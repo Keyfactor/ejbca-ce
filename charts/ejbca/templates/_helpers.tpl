@@ -4,10 +4,10 @@ Define the EJBCA deployment parameters
 {{- define "ejbca.ejbcaDeploymentParameters" -}}
 {{- if .Values.ejbca.useEphemeralH2Database }}
 - name: DATABASE_JDBC_URL
-  value: "jdbc:h2:mem:ejbcadb;DB_CLOSE_DELAY=-1"
+  value: "jdbc:h2:mem:ejbcadb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE"
 {{- else if .Values.ejbca.useH2Persistence }}
 - name: DATABASE_JDBC_URL
-  value: "jdbc:h2:/mnt/persistent/ejbcadb;DB_CLOSE_DELAY=-1"
+  value: "jdbc:h2:/mnt/persistent/ejbcadb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE"
 {{- end }}
 {{- if hasKey .Values.ejbca "env" }}
 {{- range $key, $value := .Values.ejbca.env }}

@@ -14,7 +14,7 @@ package org.cesecore.audit.log;
 
 import java.util.Map;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;

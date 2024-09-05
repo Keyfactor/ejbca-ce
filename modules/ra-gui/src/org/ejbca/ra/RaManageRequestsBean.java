@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;

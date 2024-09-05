@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli.exception;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 /**
  * This exception is thrown if authentication fails during the authorization phase of a CliAuthenticationToken

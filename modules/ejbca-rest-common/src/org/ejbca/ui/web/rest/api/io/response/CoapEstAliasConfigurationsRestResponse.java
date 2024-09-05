@@ -13,7 +13,8 @@
 
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ import java.util.List;
  */
 public class CoapEstAliasConfigurationsRestResponse {
 
-    @ApiModelProperty(value = "Aliases", example = "")
+    @Schema(description = "Aliases", example = "")
     private List<CoapEstAliasConfigurationRestResponse> aliases;
 
     public CoapEstAliasConfigurationsRestResponse() {}

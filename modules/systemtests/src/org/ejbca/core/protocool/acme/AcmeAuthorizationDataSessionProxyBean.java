@@ -12,22 +12,20 @@
  *************************************************************************/
 package org.ejbca.core.protocool.acme;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.acme.AcmeAuthorizationData;
 import org.ejbca.core.protocol.acme.AcmeAuthorization;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionLocal;
 import org.ejbca.core.protocol.acme.AcmeAuthorizationDataSessionProxyRemote;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AcmeAuthorizationDataSessionProxyRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AcmeAuthorizationDataSessionProxyBean implements AcmeAuthorizationDataSessionProxyRemote {
 

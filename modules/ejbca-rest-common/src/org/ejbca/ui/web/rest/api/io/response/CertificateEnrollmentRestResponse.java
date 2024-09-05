@@ -14,7 +14,8 @@ package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.keyfactor.util.CertTools;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -28,17 +29,17 @@ public class CertificateEnrollmentRestResponse {
 
 	private static final String DER_RESPONSE_FORMAT = "DER";
 
-	@ApiModelProperty(value = "Certificate", example = "MIIDXzCCA...eW1Zro0=")
+	@Schema(description = "Certificate", example = "MIIDXzCCA...eW1Zro0=")
 	private final byte[] certificate;
 
-	@ApiModelProperty(value = "Hex Serial Number", example = "1234567890ABCDEF")
+	@Schema(description = "Hex Serial Number", example = "1234567890ABCDEF")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final String serialNumber;
 
-	@ApiModelProperty(value = "Response format", example = "DER")
+	@Schema(description = "Response format", example = "DER")
 	private final String responseFormat;
 
-	@ApiModelProperty(value = "CA Certificate chain", example = "[\"MII123efg...345xyz0=\"]")
+	@Schema(description = "CA Certificate chain", example = "[\"MII123efg...345xyz0=\"]")
 	private final List<byte[]> certificateChain;
 
 	private CertificateEnrollmentRestResponse(final CertificateRestResponseBuilder builder) {

@@ -29,16 +29,16 @@ import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import javax.ejb.Asynchronous;
-import javax.ejb.CreateException;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -61,7 +61,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.common.exception.ReferencesToItemExistException;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.EjbRemoteHelper;
@@ -97,7 +96,7 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * Handles management of Publishers.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublisherSessionBean implements PublisherSessionLocal, PublisherSessionRemote {
 
