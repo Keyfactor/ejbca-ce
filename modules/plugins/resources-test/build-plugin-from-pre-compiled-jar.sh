@@ -16,9 +16,31 @@ mkdir /tmp/plugin
 cp lib/ext/test/easymock*.jar /tmp/plugin/
 
 # create a properties file for the external JAR plugin
+rm -rf conf/plugins/test-jar-plugin.properties
 echo "plugin.ejbca.lib.dir=/tmp/plugin/" > conf/plugins/test-jar-plugin.properties
 
 # build
 ant clean build
 
-popd
+# clean up
+rm -rf conf/plugins/test-jar-plugin.properties
+rm -rf /tmp/plugin
+
+# Verify that the easymock jar is included in the .ear-file
+unzip -l dist/ejbca.ear|grep easymock
+
+if [ $? -eq 0 ];
+then
+  echo ""
+  echo ""
+  echo "SUCCESS: The plugin is included in ejbca.ear"
+  echo ""
+  echo ""
+else
+  echo ""
+  echo ""
+  echo "FAILURE: The plugin is NOT included in ejbca.ear"
+  echo ""
+  echo ""
+  exit 1
+fi
