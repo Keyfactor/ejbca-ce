@@ -73,13 +73,6 @@ sourceSets {
             )
         }
     }
-    val test by getting {
-        java {
-            setSrcDirs(listOf("src-test"))
-            compileClasspath += main.compileClasspath
-            runtimeClasspath += main.compileClasspath
-        }
-    }
 }
 
 tasks.jar {
