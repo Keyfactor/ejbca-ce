@@ -103,7 +103,7 @@ public class SubjectDnFieldData extends SubjectFieldData {
     }
 
     @Override
-    protected String getFieldValueToSave(UserView userView, int[] fieldData) throws AddEndEntityException {
+    protected String getFieldValueToSave(UserView userView, int[] fieldData) throws EndEntityException {
         String fieldValueToSave = StringUtils.EMPTY;
         fieldValueToSave = LDAPDN.escapeRDN(DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldData[EndEntityProfile.FIELDTYPE]),
                 DNFieldExtractor.TYPE_SUBJECTDN) + fieldValueToSave);
@@ -111,9 +111,9 @@ public class SubjectDnFieldData extends SubjectFieldData {
     }
 
     @Override
-    protected void validateFieldValue(String fieldValueToSave, int[] fieldData) throws AddEndEntityException {
+    protected void validateFieldValue(String fieldValueToSave, int[] fieldData) throws EndEntityException {
         if (!isEmailAndUsesEmailFieldData.left && isModifiable() && StringUtils.isNotBlank(fieldValueToSave) && !AddEndEntityUtil.isValidDNField(fieldValueToSave)) {
-            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
+            throw new EndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
         }
 
     }
