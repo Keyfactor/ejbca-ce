@@ -22,6 +22,9 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntitiesSortRestRequest
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequestList;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityMaxNumberOfResults;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Response;
 import java.text.ParseException;
@@ -43,6 +46,7 @@ import java.util.List;
  *
  */
 @ValidSearchEndEntitiesSearchRestRequestV2
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class SearchEndEntitiesRestRequestV2 {
 
     @Schema(description = "Maximum number of results", example = "10")
