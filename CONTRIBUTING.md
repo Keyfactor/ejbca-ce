@@ -34,6 +34,12 @@ Don't forget to self-review. Please follow these simple guidelines:
 * Keep the patch limited, only change the parts related to your patch. 
 * Do not change other lines, such as whitespace, adding line breaks to Java doc, etc. It will make it very hard for us to review the patch.
 
+#### Testing
+
+Please execute the test suite corresponding to the module you have made changes in. Available unit and system test suites, as well as run instructions can be listed by running the command 'ant -p' from the EJBCA root directory. If you implement new functionality which isn't already covered by unit tests, please create them under the src-test/ directory of the module(s) modified. Example:
+
+* Run all unit tests: ant test:runsa
+* Run individual test: ant test:runone -Dtest.runone=ClassName
 
 #### Your pull request is merged
 
