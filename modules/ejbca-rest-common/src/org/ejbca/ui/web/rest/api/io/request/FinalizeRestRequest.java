@@ -13,11 +13,15 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input representation of finalize enrollment
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class FinalizeRestRequest {
 
     @Schema(description = "Response format", example = "P12", allowableValues = "P12, BCFKS, JKS, DER")
