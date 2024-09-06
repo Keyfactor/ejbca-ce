@@ -21,6 +21,9 @@ import org.ejbca.core.protocol.ssh.SshRequestMessage;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSshCertificateRestRequest;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import java.io.IOException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
@@ -37,6 +40,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
  * A class representing the input for SSH certificate request REST method.
  */
 @ValidSshCertificateRestRequest
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class SshCertificateRequestRestRequest {
 
     @Schema(description = "End Entity profile name", example = "ExampleEEP")
