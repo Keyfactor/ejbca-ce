@@ -227,7 +227,7 @@ public class SshCertificateRequestRestRequest {
                     criticalOptionsMsg.put("force-command", forceCommand);
                 }
                 String sourceAddress = criticalOptionsRequest.getSourceAddress();
-                if (StringUtils.isNotBlank(forceCommand)) {
+                if (StringUtils.isNotBlank(sourceAddress)) {
                     criticalOptionsMsg.put("source-address", sourceAddress);
                 }
             }
