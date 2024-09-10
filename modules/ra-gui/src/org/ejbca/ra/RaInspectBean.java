@@ -69,9 +69,13 @@ public class RaInspectBean implements Serializable {
     }
 
     public void processFile() {
-        if (checkFileSize(uploadedFile.getSize())) {
-            final byte[] uploadedFileBytes = getBytesFromPart(uploadedFile);
-            inspect(uploadedFileBytes);
+        if (uploadedFile != null) {
+            if (checkFileSize(uploadedFile.getSize())) {
+            	final byte[] uploadedFileBytes = getBytesFromPart(uploadedFile);
+            	inspect(uploadedFileBytes);
+            }
+        } else {
+            checkFileSize(0);
         }
     }
 
