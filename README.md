@@ -6,6 +6,7 @@
     <span>EJBCA Community</span>
 </h1>
 
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9419/badge)](https://www.bestpractices.dev/projects/9419)
 [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
 
 The open-source public key infrastructure (PKI) and certificate authority (CA) software **EJBCA** is one of the longest-running CA software projects. EJBCA is platform-independent and covers all your needs – from certificate enrollment, via certificate management, to certificate validation.
