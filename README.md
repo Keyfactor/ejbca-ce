@@ -6,26 +6,13 @@
     <span>EJBCA Community</span>
 </h1>
 
+[![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9419/badge)](https://www.bestpractices.dev/projects/9419)
 [![GitHub All Releases](https://img.shields.io/github/downloads/Keyfactor/ejbca-ce/total.svg)](https://github.com/Keyfactor/ejbca-ce/releases/latest)
 [![Latest Release](https://img.shields.io/github/v/release/Keyfactor/ejbca-ce?include_prereleases)](https://github.com/Keyfactor/ejbca-ce/releases/latest)
 [![License](https://img.shields.io/badge/License-LGPL-blue)](https://github.com/Keyfactor/ejbca-ce/blob/main/LICENSE)
-[![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9419/badge)](https://www.bestpractices.dev/projects/9419)
-
-![GitHub repo size](https://img.shields.io/github/repo-size/Keyfactor/ejbca-ce?style=plastic)
-![GitHub language count](https://img.shields.io/github/languages/count/Keyfactor/ejbca-ce?style=plastic)
-![GitHub top language](https://img.shields.io/github/languages/top/Keyfactor/ejbca-ce?style=plastic)
-![GitHub last commit](https://img.shields.io/github/last-commit/Keyfactor/ejbca-ce?color=red&style=plastic)
-
-![GitHub stars](https://img.shields.io/github/stars/Keyfactor/ejbca-ce?style=social)
-![GitHub forks](https://img.shields.io/github/forks/Keyfactor/ejbca-ce?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/Keyfactor/ejbca-ce?style=social)
-![GitHub followers](https://img.shields.io/github/followers/Keyfactor?style=social)
-
-<p>
-<a href="https://x.com/KeyfactorComm"><img src="https://img.shields.io/badge/twitter-%231DA1F2.svg?&style=for-the-badge&logo=twitter&logoColor=white" height=25></a> 
-<a href="https://YouTube.com/@KeyfactorCommunity"><img src="https://img.shields.io/badge/-YouTube-red?&style=for-the-badge&logo=youtube&logoColor=white" height=25></a>
-</p>
+[![GitHub stars](https://img.shields.io/github/stars/Keyfactor/ejbca-ce?style=social)](https://github.com/Keyfactor/ejbca-ce/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Keyfactor/ejbca-ce?style=social)](https://github.com/Keyfactor/ejbca-ce/forks)
 
 The open-source public key infrastructure (PKI) and certificate authority (CA) software **EJBCA** is one of the longest-running CA software projects. EJBCA is platform-independent and covers all your needs – from certificate enrollment, via certificate management, to certificate validation.
 
