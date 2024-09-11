@@ -133,7 +133,6 @@ public class CAInterfaceBean implements Serializable {
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private PublisherSessionLocal publishersession;
     private KeyValidatorSessionLocal keyValidatorSession;
-
     private SignSession signsession;
 
     private boolean initialized;
@@ -150,23 +149,27 @@ public class CAInterfaceBean implements Serializable {
     // Public methods
     public void initialize(final EjbcaWebBean ejbcawebbean) {
         if (!initialized) {
-          certificatesession = ejbLocalHelper.getCertificateStoreSession();
-          certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
-          cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
-          caadminsession = ejbLocalHelper.getCaAdminSession();
-          casession = ejbLocalHelper.getCaSession();
-          authorizationSession = ejbLocalHelper.getAuthorizationSession();
-          signsession = ejbLocalHelper.getSignSession();
-          publishersession = ejbLocalHelper.getPublisherSession();
-          certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-          keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
-          authenticationToken = ejbcawebbean.getAdminObject();
-          this.ejbcawebbean = ejbcawebbean;
-          initialized =true;
+          forceInitialization(ejbcawebbean);
         } else {
             log.debug("=initialize(): already initialized");
         }
         log.trace("<initialize()");
+    }
+
+    public void forceInitialization(final EjbcaWebBean ejbcawebbean) {
+        certificatesession = ejbLocalHelper.getCertificateStoreSession();
+        certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
+        cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
+        caadminsession = ejbLocalHelper.getCaAdminSession();
+        casession = ejbLocalHelper.getCaSession();
+        authorizationSession = ejbLocalHelper.getAuthorizationSession();
+        signsession = ejbLocalHelper.getSignSession();
+        publishersession = ejbLocalHelper.getPublisherSession();
+        certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+        keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
+        authenticationToken = ejbcawebbean.getAdminObject();
+        this.ejbcawebbean = ejbcawebbean;
+        initialized = true;
     }
 
     public CertificateView[] getCACertificates(int caid) {
