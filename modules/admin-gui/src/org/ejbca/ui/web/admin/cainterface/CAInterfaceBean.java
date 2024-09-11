@@ -140,7 +140,7 @@ public class CAInterfaceBean implements Serializable {
     private CAInfo cainfo;
     private EjbcaWebBean ejbcawebbean;
     /** The certification request in binary format */
-    private transient byte[] request;
+    private byte[] request;
     private Certificate processedcert;
 
 	/** Creates a new instance of CaInterfaceBean */
