@@ -90,6 +90,8 @@ public class RsaKeyValidator extends KeyValidatorBase {
 
     protected static final String PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS = "publicKeyModulusDontAllowRocaWeakKeys";
 
+    protected static final String PUBLIC_KEY_MODULUS_DONT_ALLOW_CLOSE_PRIMES = "publicKeyModulusDontAllowClosePrimes";
+
     protected static final String PUBLIC_KEY_MODULUS_MIN_FACTOR = "publicKeyModulusMinFactor";
 
     protected static final String PUBLIC_KEY_MODULUS_MIN = "publicKeyModulusMin";
@@ -152,7 +154,60 @@ public class RsaKeyValidator extends KeyValidatorBase {
         }
         return false;
     }
-
+    
+    /**
+     * Check public key modulus for close primes using Fermat's Factorization Method
+     * https://fermatattack.secvuln.info/
+     * @param n Is the modulus to test
+     * @return closePrimesFound true if close primes found 
+     */
+    protected static final boolean testClosePrimes(final BigInteger n) {
+        //An RSA modulus is the product of two primes. Primes has only 1 and itself as factors: 
+        //n = pq 
+        //The modulus 'n' is an odd, positive integer and thus equal to a difference of squares of integers:
+        //n = a^2 - b^2
+        //n = (a + b)(a - b)
+        //Prime 'p' will be: (a + b)
+        //Prime 'q' will be: (a - b)
+        BigInteger a;
+        BigInteger b;
+        BigInteger a_toThePowerOfTwo;
+        BigInteger b_toThePowerOfTwo;
+        BigInteger b_verifyPerfectSquare;
+        boolean closePrimesFound = false;
+        a = n.sqrt();
+        //Check if 'a' is a perfect square and thus both our primes p and q
+        if (a.pow(2).compareTo(n) == 0){
+            closePrimesFound = true;
+            log.debug("RSA key validation failed. RSA modulus " + n + " is the product of close primes.");
+            return closePrimesFound;
+        }
+        //Try starting with an integer 'a' from the ceil of the square root of 'n'. BigInteger.sqrt() returns the floor, so we add 1.
+        //Given n = a²-b², then 'a' can never be less than the square root of 'n'.
+        a = n.sqrt().add(BigInteger.ONE);
+        //We calculate our 'a²' 
+        a_toThePowerOfTwo = a.pow(2);
+        //Try by creating 'b²', an integer value we call 'b_toThePowerOfTwo' based on our current 'a'. If n = a² - b², then b² = a² - n 
+        b_toThePowerOfTwo = a_toThePowerOfTwo.subtract(n);
+        int rounds = 0;
+        for(rounds = 1; rounds < 100; rounds++) {
+            //The square root of 'b_toThePowerOfTwo' is our 'b' to test
+            b = b_toThePowerOfTwo.sqrt();
+            //We want to verify that 'b' is a perfect square...
+            b_verifyPerfectSquare = b.multiply(b);
+            if (b_verifyPerfectSquare.compareTo(b_toThePowerOfTwo) == 0){
+                closePrimesFound = true;
+                log.debug("RSA key validation failed. RSA modulus close primes found in " + rounds + " rounds using Fermat Factorization: n = " 
+                        + n + " p = " + a.add(b) + " q = " + a.subtract(b));
+                break;
+            }
+            //Increase 'a' by 1 and re-calculate 'b_toThePowerOfTwo' for next round
+            a = a.add(BigInteger.ONE);
+            a_toThePowerOfTwo = a.pow(2);
+            b_toThePowerOfTwo = (a_toThePowerOfTwo.subtract(n));
+        }        
+        return closePrimesFound;
+    }
 
     /**
      * Public constructor needed for deserialization.
@@ -185,6 +240,9 @@ public class RsaKeyValidator extends KeyValidatorBase {
         }
         if (null == data.get(PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS)) {
             setPublicKeyModulusDontAllowRocaWeakKeys(true);
+        }
+        if (null == data.get(PUBLIC_KEY_MODULUS_DONT_ALLOW_CLOSE_PRIMES)) {
+            setPublicKeyModulusDontAllowClosePrimes(false);
         }
     }
 
@@ -237,6 +295,10 @@ public class RsaKeyValidator extends KeyValidatorBase {
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
         uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS, isPublicKeyModulusDontAllowRocaWeakKeys()) {
+            @Override
+            public boolean isDisabled() { return isPropertyDisabled(); }
+        });
+        uiModel.add(new DynamicUiProperty<Boolean>(Boolean.class, PUBLIC_KEY_MODULUS_DONT_ALLOW_CLOSE_PRIMES, isPublicKeyModulusDontAllowClosePrimes()) {
             @Override
             public boolean isDisabled() { return isPropertyDisabled(); }
         });
@@ -333,6 +395,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
 
         // Not strictly a requirement according to the Baseline Requirements, but there is no reason to allow ROCA weak keys
         setPublicKeyModulusDontAllowRocaWeakKeys(true);
+        setPublicKeyModulusDontAllowClosePrimes(true);
     }
 
     @SuppressWarnings("unchecked")
@@ -464,6 +527,15 @@ public class RsaKeyValidator extends KeyValidatorBase {
 
     public void setPublicKeyModulusDontAllowRocaWeakKeys(boolean allowed) {
         data.put(PUBLIC_KEY_MODULUS_DONT_ALLOW_ROCA_WEAK_KEYS, allowed);
+    }
+
+    public boolean isPublicKeyModulusDontAllowClosePrimes() {
+        Boolean ret = (Boolean) data.get(PUBLIC_KEY_MODULUS_DONT_ALLOW_CLOSE_PRIMES);
+        return ret != null ? ret : false;
+    }
+
+    public void setPublicKeyModulusDontAllowClosePrimes(boolean allowed) {
+        data.put(PUBLIC_KEY_MODULUS_DONT_ALLOW_CLOSE_PRIMES, allowed);
     }
 
     public Integer getPublicKeyModulusMinFactor() {
@@ -664,6 +736,13 @@ public class RsaKeyValidator extends KeyValidatorBase {
                 messages.add("Invalid: RSA public key modulus is a weak key according to CVE-2017-15361.");
             } else {
                 log.trace("isPublicKeyModulusDontAllowRocaWeakKeys passed");
+            }
+        }
+        if (isPublicKeyModulusDontAllowClosePrimes()) {
+            if (testClosePrimes(publicKeyModulus)) {
+                messages.add("Invalid: RSA public key modulus from close primes detected.");
+            } else {
+                log.trace("isPublicKeyModulusDontAllowClosePrimes passed");
             }
         }
         if (null != getPublicKeyModulusMinFactor()) {
