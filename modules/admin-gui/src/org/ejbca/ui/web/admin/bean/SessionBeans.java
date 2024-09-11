@@ -64,13 +64,15 @@ public class SessionBeans {
         final HttpSession httpSession = httpServletRequest.getSession(true);
         synchronized (httpSession) {
             CAInterfaceBean caBean = (CAInterfaceBean) httpSession.getAttribute(SESSION.CA_INTERFACE_BEAN);
+            if (caBean == null) {
                 caBean = getBeanInstance(CAInterfaceBean.class);
-                try {
-                    caBean.initialize(getEjbcaWebBean(httpServletRequest));
-                } catch (Exception e) {
-                    throw new ServletException("Error initializing CACertReqServlet");
-                }
-                httpSession.setAttribute(SESSION.CA_INTERFACE_BEAN, caBean);
+            }
+            try {
+                caBean.forceInitialization(getEjbcaWebBean(httpServletRequest));
+            } catch (Exception e) {
+                throw new ServletException("Error initializing CACertReqServlet");
+            }
+            httpSession.setAttribute(SESSION.CA_INTERFACE_BEAN, caBean);
             return caBean;
         }
     }
@@ -86,13 +88,15 @@ public class SessionBeans {
         final HttpSession httpSession = httpServletRequest.getSession(true);
         synchronized (httpSession) {
             RAInterfaceBean raBean = (RAInterfaceBean) httpSession.getAttribute(SESSION.RA_INTERFACE_BEAN);
+            if (raBean == null) {
                 raBean = getBeanInstance(RAInterfaceBean.class);
-                try {
-                    raBean.initialize(getEjbcaWebBean(httpServletRequest));
-                } catch (Exception e) {
-                    throw new ServletException("Cannot initialize RAInterfaceBean", e);
-                }
-                httpSession.setAttribute(SESSION.RA_INTERFACE_BEAN, raBean);
+            }
+            try {
+                raBean.forceInitialization(getEjbcaWebBean(httpServletRequest));
+            } catch (Exception e) {
+                throw new ServletException("Cannot initialize RAInterfaceBean", e);
+            }
+            httpSession.setAttribute(SESSION.RA_INTERFACE_BEAN, raBean);
             return raBean;
         }
     }
