@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;

@@ -99,6 +99,8 @@ dependencies {
     earlib(libs.commons.codec)
     earlib(libs.commons.collections4)
     earlib(libs.commons.configuration2)
+    earlib(libs.commons.fileupload2)
+    earlib(libs.commons.fileupload2.core)
     earlib(libs.commons.fileupload)
     earlib(libs.commons.io)
     earlib(libs.commons.lang)

@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.config;
 
 import java.util.Properties;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @version $Id$

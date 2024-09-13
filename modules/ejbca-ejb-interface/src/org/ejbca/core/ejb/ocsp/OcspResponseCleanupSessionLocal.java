@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ocsp;
 
-import javax.ejb.Local;
-import javax.ejb.Timer;
+import jakarta.ejb.Local;
+import jakarta.ejb.Timer;
 
 /**
  * Local interface for OcspResponseCleanupSession

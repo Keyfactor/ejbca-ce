@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -18,7 +18,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-     $Id$
      -->
 </ui:remove>
 
@@ -160,10 +159,10 @@
 	                            	<f:converter converterId="stringConverter"/>
 	                            </h:inputTextarea>
 					   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
-				                   <f:converter converterId="javax.faces.Long"/>
+				                   <f:converter converterId="jakarta.faces.Long"/>
 					   			</h:inputText>
 					   			<h:inputText disabled="true" rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
-				                   <f:converter converterId="javax.faces.Integer"/>
+				                   <f:converter converterId="jakarta.faces.Integer"/>
 					   			</h:inputText>
 				   				<h:selectBooleanCheckbox disabled="true" rendered="#{property.type.simpleName eq 'Boolean'}" value="#{property.value}"/>
 				   			</h:panelGroup>
@@ -218,12 +217,12 @@
 						   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 						   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 						   				rendered="#{property.type.simpleName eq 'Long'}" value="#{property.value}" style="text-align: right;" >
-					                   <f:converter converterId="javax.faces.Long"/>
+					                   <f:converter converterId="jakarta.faces.Long"/>
 						   			</h:inputText>
 						   			<h:inputText disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 						   				|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 
 						   				rendered="#{property.type.simpleName eq 'Integer'}" value="#{property.value}" style="text-align: right;" size="6">
-					                   <f:converter converterId="javax.faces.Integer"/>
+					                   <f:converter converterId="jakarta.faces.Integer"/>
 						   			</h:inputText>
 					   				<h:selectBooleanCheckbox disabled="#{!approvalActionManagedBean.canApprovePartition(partition)
 					   					|| approvalActionManagedBean.isPropertyReadOnly(property.name)}" 

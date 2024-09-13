@@ -12,7 +12,7 @@
  *************************************************************************/ 
 package org.cesecore.certificates.ca;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;

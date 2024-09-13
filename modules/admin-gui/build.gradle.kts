@@ -14,7 +14,7 @@ dependencies {
     compileOnly(project(":modules:ejbca-ejb-interface"))
     compileOnly(project(":modules:ejbca-entity"))
     compileOnly(project(":modules:edition-specific:interface"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
@@ -43,7 +43,7 @@ dependencies {
     implementation(libs.csrfguard.extension.session)
     implementation(libs.csrfguard.jsp.tags)
     implementation(libs.primefaces)
-    testRuntimeOnly(libs.jsf)
+    testRuntimeOnly(libs.myfaces.api)
 }
 
 sourceSets {

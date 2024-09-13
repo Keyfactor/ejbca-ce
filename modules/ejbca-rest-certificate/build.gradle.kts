@@ -17,8 +17,8 @@ dependencies {
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.lang)
-    compileOnly(libs.java.ee.api)
-    compileOnly(libs.jaxb.api)
+    compileOnly(libs.jakartaee.api)
+    compileOnly(libs.jakarta.xml.bind.api)
     compileOnly(libs.jackson.annotations)
     compileOnly(libs.x509.common.util)
 }

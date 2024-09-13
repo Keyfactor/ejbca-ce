@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;

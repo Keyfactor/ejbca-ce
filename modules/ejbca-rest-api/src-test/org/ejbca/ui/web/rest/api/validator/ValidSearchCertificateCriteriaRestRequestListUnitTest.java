@@ -20,7 +20,7 @@ import org.ejbca.ui.web.rest.api.resource.builder.SearchCertificatesRestRequestT
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

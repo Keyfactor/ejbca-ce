@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.cesecore.authorization;
 
-import javax.ejb.ApplicationException;
-import javax.xml.ws.WebFault;
+import jakarta.ejb.ApplicationException;
+import jakarta.xml.ws.WebFault;
 
 /**
  * An exception thrown when admin is not authorized to a resource.

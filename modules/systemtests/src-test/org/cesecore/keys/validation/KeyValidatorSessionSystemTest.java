@@ -553,7 +553,7 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         final String certificateProfileName = "testValidateDnsNamesFromEndEntity";
         final String endEntityProfileName = "testValidateDnsNamesFromEndEntity";
         try {
-            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
             certificateProfile.setAllowExtensionOverride(false);
             int certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
             EndEntityProfile endEntityProfile = new EndEntityProfile();
@@ -626,7 +626,7 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         final String certificateProfileName = "testValidateDnsNamesFromRequest";
         final String endEntityProfileName = "testValidateDnsNamesFromRequest";
         try {
-            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SERVER);
             certificateProfile.setAllowExtensionOverride(true);
             int certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
             EndEntityProfile endEntityProfile = new EndEntityProfile();
@@ -675,7 +675,79 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         }
         log.trace("<testValidateDnsNamesFromRequest()");
     }
-    
+
+    /**
+     * This test uses a mock DnsNameValidator to verify that emails are properly sourced.
+     */
+    @Test
+    public void testValidateSmimeFromEndEntity() throws Exception {
+        log.trace(">testValidateSmimeFromEndEntity()");
+        final String eeDomain = "foo.com";
+        final String requestDomain = "bar.com";
+        final String eeSan = "rfc822name=test1@" + eeDomain;
+        final String requestSan = "rfc822name=test2@" + requestDomain;
+        DnsNameValidator keyValidator = new DnsNameValidatorMock("testValidateSmimeFromEndEntity", eeDomain);
+        keyValidator.setAllCertificateProfileIds(true);
+        List<Integer> conflicts = keyValidatorProxySession.getConflictingKeyValidatorIds(keyValidator);
+        for (Integer id : conflicts) {
+            removeKeyValidatorsIfExist(id);
+        }
+        int validatorId = addValidator(keyValidator);
+        keyValidator.setProfileId(validatorId);
+        final String username = "testValidateSmimeFromEndEntity";
+        final String certificateProfileName = "testValidateSmimeFromEndEntity";
+        final String endEntityProfileName = "testValidateSmimeFromEndEntity";
+        try {
+            CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certificateProfile.setAllowExtensionOverride(false);
+            int certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, certificateProfileName, certificateProfile);
+            EndEntityProfile endEntityProfile = new EndEntityProfile();
+            endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+            endEntityProfile.addField(DnComponents.RFC822NAME);
+            endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+            int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(internalAdmin, endEntityProfileName, endEntityProfile);
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username, "CN=" + username, testCA.getCAId(), eeSan, null,
+                    EndEntityTypes.ENDUSER.toEndEntityType(), endEntityProfileId, certificateProfileId, SecConst.TOKEN_SOFT_P12, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSessionRemote.addUser(internalAdmin, endEntityInformation, false);
+            KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            X500Name x509dn = DnComponents.stringToBcX500Name("CN=" + username);
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+            altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            GeneralNames san = DnComponents.getGeneralNamesFromAltName(requestSan);
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
+            extgen.addExtension(Extension.subjectAlternativeName, false, san);
+            Extensions exts = extgen.generate();
+            altnameattr.add(new DERSet(exts));
+            v.add(new DERSequence(altnameattr));
+            DERSet attributes = new DERSet(v);
+            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, x509dn,
+                    keyPair.getPublic(), attributes, keyPair.getPrivate(), BouncyCastleProvider.PROVIDER_NAME);
+            PKCS10RequestMessage requestMessage = new PKCS10RequestMessage(new JcaPKCS10CertificationRequest(req));
+            setKeyValidatorsForCa(testCA, validatorId);
+            try {
+                keyValidatorProxySession.validateDnsNames(internalAdmin, IssuancePhase.DATA_VALIDATION, testCA, endEntityInformation, requestMessage);
+            } catch(ValidationException e) {
+                throw e;
+            } catch (Exception e) {
+                fail(e.getMessage());
+            }
+        } finally {
+            CaTestUtils.removeCa(internalAdmin, testCA.getCAInfo());
+            keyValidatorProxySession.removeKeyValidator(internalAdmin, validatorId);
+            try {
+                endEntityManagementSessionRemote.deleteUser(internalAdmin, username);
+            } catch(NoSuchEndEntityException e) {
+                // NOPMD: Ignore.
+            }
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, endEntityProfileName);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, certificateProfileName);
+        }
+        log.trace("<testValidateSmimeFromEndEntity()");
+    }
+
     /**
      * Test of the cache of validators. This test depends on cache time of 1 second being used.
      */

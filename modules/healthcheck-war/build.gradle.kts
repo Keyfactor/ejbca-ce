@@ -9,7 +9,7 @@ dependencies {
     compileOnly(project(":modules:cesecore-entity"))
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:ejbca-ejb-interface"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.commons.lang)
     compileOnly(libs.json.simple)
     compileOnly(libs.commons.lang3)
