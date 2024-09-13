@@ -13,7 +13,7 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
-import javax.faces.model.SelectItem;
+import jakarta.faces.model.SelectItem;
 
 /**
  * An extension to the SelectItem class that is sortable.

@@ -68,7 +68,7 @@ public class SubjectDirAttrFieldData extends SubjectFieldData {
     }
 
     @Override
-    protected String getFieldValueToSave(UserView userView, int[] fieldData) throws AddEndEntityException {
+    protected String getFieldValueToSave(UserView userView, int[] fieldData) throws EndEntityException {
         if(StringUtils.isNotBlank(getFieldValue())) {
             validateFieldValue(getFieldValue(), fieldData); // Do a validation before adding EE
         }
@@ -76,7 +76,7 @@ public class SubjectDirAttrFieldData extends SubjectFieldData {
     }
 
     @Override
-    protected void validateFieldValue(String fieldValueToSave, int[] fieldData) throws AddEndEntityException {
+    protected void validateFieldValue(String fieldValueToSave, int[] fieldData) throws EndEntityException {
         if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.GENDER)) {
             validateGender(fieldValueToSave);
         }
@@ -85,15 +85,15 @@ public class SubjectDirAttrFieldData extends SubjectFieldData {
         }
     }
 
-    private void validateGender(String fieldValue) throws AddEndEntityException {
+    private void validateGender(String fieldValue) throws EndEntityException {
         if (!AddEndEntityUtil.isValidGender(fieldValue)) {
-            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYMORFINGENDERFIELD") + " " + getLabel());
+            throw new EndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYMORFINGENDERFIELD") + " " + getLabel());
         }
     }
     
-    private void validateDOB(String fieldValueToSave) throws AddEndEntityException {
+    private void validateDOB(String fieldValueToSave) throws EndEntityException {
         if (!AddEndEntityUtil.isValidDateOfBirth(fieldValueToSave)) {
-            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDDATEOFBIRTH") + " " + getLabel());
+            throw new EndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDDATEOFBIRTH") + " " + getLabel());
         }
     }
 

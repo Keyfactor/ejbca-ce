@@ -12,16 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.era.RaEndEntitySearchRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequestList;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityMaxNumberOfResults;
 
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,14 +39,14 @@ import java.util.List;
  */
 public class SearchEndEntitiesRestRequest {
 
-    @ApiModelProperty(value = "Maximum number of results", example = "10")
+    @Schema(description = "Maximum number of results", example = "10")
     @ValidSearchEndEntityMaxNumberOfResults
     private Integer maxNumberOfResults;
 
-    @ApiModelProperty(value = "Current page number", example = "0")
+    @Schema(description = "Current page number", example = "0")
     private int currentPage;
-    
-    @ApiModelProperty(value = "A List of search criteria." )
+
+    @Schema(description = "A List of search criteria." )
     @ValidSearchEndEntityCriteriaRestRequestList
     @Valid
     private List<SearchEndEntityCriteriaRestRequest> criteria = new ArrayList<>();
@@ -58,7 +58,7 @@ public class SearchEndEntitiesRestRequest {
     public void setMaxNumberOfResults(Integer maxNumberOfResults) {
         this.maxNumberOfResults = maxNumberOfResults;
     }
-    
+
     public int getCurrentPage() {
         return currentPage;
     }
@@ -96,7 +96,7 @@ public class SearchEndEntitiesRestRequest {
             this.maxNumberOfResults = maxNumberOfResults;
             return this;
         }
-        
+
         public SearchEndEntitiesRestRequestBuilder currentPage(final Integer currentPage) {
             this.currentPage = currentPage;
             return this;

@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.acme;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Remote interface for AcmeAccountDataSession

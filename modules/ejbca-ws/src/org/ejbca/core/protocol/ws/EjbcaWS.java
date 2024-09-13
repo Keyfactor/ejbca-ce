@@ -36,19 +36,19 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.ws.Action;
-import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.Action;
+import jakarta.xml.ws.WebServiceContext;
+import jakarta.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -246,7 +246,7 @@ public class EjbcaWS implements IEjbcaWS {
         final MessageContext msgContext = wsContext.getMessageContext();
         final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
         
-        final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("jakarta.servlet.request.X509Certificate");
         final X509Certificate certificate = certificates != null ? certificates[0] : null;
         final String oauthBearerToken = HttpTools.extractBearerAuthorization(request.getHeader(HttpTools.AUTHORIZATION_HEADER));
 

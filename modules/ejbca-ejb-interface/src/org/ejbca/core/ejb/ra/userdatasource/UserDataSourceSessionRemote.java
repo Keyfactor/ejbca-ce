@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.userdatasource;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Remote interface for UserDataSourceSession.

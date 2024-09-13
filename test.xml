@@ -17,6 +17,7 @@
     	<antcall target="optional-test-plugins-ee-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-acme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-rest-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-caa-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-ssh-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-cits-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -61,7 +62,7 @@
         <antcall target="optional-test-rest-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-configdump-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-ct" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optional-test-caa" inheritall="true" inheritrefs="true"/>
+    	<antcall target="optional-test-caa-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-cits-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-peerconnector-unit" inheritall="true" inheritrefs="true"/>
@@ -123,8 +124,11 @@
         <ant antfile="build.xml" dir="modules/ejbca-rest-api" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="caa.exists"><available file="modules/caa/build.xml" /></condition>
-    <target name="optional-test-caa" if="${caa.exists}">
+    <target name="optional-test-caa-unit" if="${caa.exists}">
         <ant antfile="build.xml" dir="modules/caa" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="optional-test-caa-system" if="${caa.exists}">
+        <ant antfile="build.xml" dir="modules/caa" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
     <condition property="ssh.exists"><available file="modules/ssh/build.xml" /></condition>
     <target name="optional-test-ssh-unit" if="${ssh.exists}">
@@ -473,6 +477,11 @@
 
     <target name="test:unit:caa" description="run all JUnit tests for caa." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/caa" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:caa" description="run all System tests for caa." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/caa" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 

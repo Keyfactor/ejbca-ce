@@ -24,14 +24,14 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ServiceLoader;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.FacesMessage;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ValueChangeEvent;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.inject.Inject;
-import javax.inject.Named;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ValueChangeEvent;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationSessionLocal;
