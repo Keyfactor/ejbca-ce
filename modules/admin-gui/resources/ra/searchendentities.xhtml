@@ -200,14 +200,17 @@
 				rowsPerPageTemplate="5,10,{ShowAll|'All'}"
 				rows="10"
 				selection="#{searchEndEntitiesMBean.selectedResults}"
+				selectionRowMode="add"
 				rowKey="#{searchResult.username}"
 				allowUnsorting="true" 
 				sortMode="single"
 				disabledTextSelection="false">
 				<p:ajax event="toggleSelect" update="results:selectionActionButtons" />
 				<p:ajax event="rowSelect" update="results:selectionActionButtons" />
+				<p:ajax event="rowSelectCheckbox" update="results:selectionActionButtons" />
 				<p:ajax event="rowUnselect" update="results:selectionActionButtons" />
-                <p:column selectionBox="true" style="width:16px;text-align:center"/>
+				<p:ajax event="rowUnselectCheckbox" update="results:selectionActionButtons" />
+				<p:column selectionBox="true" style="width:16px;text-align:center"/>
                 <p:column headerText="#{web.text.USERNAME_ABBR}">
 					<h:outputText value="#{searchResult.username}" />
 				</p:column>
