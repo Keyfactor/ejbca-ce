@@ -15,20 +15,17 @@ package org.ejbca;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.PublicKey;
 
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-
-import org.cesecore.jndi.JndiConstants;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
- * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublicKeySerialisationSystemTestSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 public class PublicKeySerialisationSystemTestSessionBean implements PublicKeySerialisationSystemTestSessionRemote {
 

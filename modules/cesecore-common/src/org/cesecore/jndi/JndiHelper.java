@@ -23,8 +23,7 @@ import org.apache.log4j.Logger;
  * The sole purpose of this class is to standardize mapping in JNDI of our Stateless Session Beans.
  * 
  * Use like this:
- * <at>Stateless(mappedName=(JndiConstants.APP_JNDI_PREFIX + RemoteInterfaceClass.class.getSimpleName()))
- * 
+ *
  */
 public abstract class JndiHelper {
 

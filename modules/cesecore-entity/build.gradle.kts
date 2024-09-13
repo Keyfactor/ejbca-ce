@@ -4,7 +4,7 @@ plugins {
 
 dependencies {
     compileOnly(project(":modules:cesecore-common"))
-    compileOnly(libs.jaxws.api)
+    compileOnly(libs.jakarta.xml.ws.api)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
@@ -15,7 +15,7 @@ dependencies {
     compileOnly(libs.commons.configuration2)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
-    compileOnly(libs.javax.persistence.api)
+    compileOnly(libs.jakarta.persistence.api)
     testImplementation(project(":modules:cesecore-common").dependencyProject.sourceSets["test"].output)
     testRuntimeOnly(libs.cert.cvc)
 }

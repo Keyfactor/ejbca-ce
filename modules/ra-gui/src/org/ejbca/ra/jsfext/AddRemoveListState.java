@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.faces.model.SelectItem;
+import jakarta.faces.model.SelectItem;
 
 /**
  * Backing state for the addremovelist.xhtml component, which is a list with an "Enabled" and an "Available" list that items may be moved between.

@@ -12,11 +12,12 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CoapEstServerKeygenRestResponse {
 
-    @ApiModelProperty
+    @Schema
     private byte[] enrolledCertificatePrivatekey;
 
     public CoapEstServerKeygenRestResponse(byte[] enrolledCertificatePrivatekey) {

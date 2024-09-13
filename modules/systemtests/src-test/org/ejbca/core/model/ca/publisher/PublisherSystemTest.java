@@ -399,7 +399,7 @@ public class PublisherSystemTest extends RoleUsingTestCase {
 			params.add(startTime);
 			params.add(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE.toString());
 			List<? extends AuditLogEntry> auditLogsGenerated = ejbcaAuditorSession.selectAuditLog(admin, IntegrityProtectedDevice.class.getSimpleName(), 0, 100,
-																								  "a.timeStamp >= ?0 AND a.eventType = ?1", "a.timeStamp DESC", params);
+																								  "a.timeStamp >= ?1 AND a.eventType = ?2", "a.timeStamp DESC", params);
 
 			assertEquals("Only one AuditLog should be returned", 1, auditLogsGenerated.size());
 

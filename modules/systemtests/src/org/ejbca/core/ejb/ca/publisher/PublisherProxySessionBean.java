@@ -12,17 +12,16 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.publisher;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
@@ -31,11 +30,10 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import java.util.Map;
 
 /**
- * @version $Id$
  *
  */
 
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublisherProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class PublisherProxySessionBean implements PublisherProxySessionRemote {
 

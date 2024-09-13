@@ -12,15 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class representing the input for critical options in SSH certificate request REST method.
  */
 public class SshCriticalOptions {
-    @ApiModelProperty(value = "force-command", example = "./init.sh")
+    @Schema(description = "force-command", example = "./init.sh")
     String forceCommand;
-    @ApiModelProperty(value = "source-address", example = "1.2.3.0/24,1.10.10.1/32")
+    @Schema(description = "source-address", example = "1.2.3.0/24,1.10.10.1/32")
     String sourceAddress;
 
     public SshCriticalOptions() {

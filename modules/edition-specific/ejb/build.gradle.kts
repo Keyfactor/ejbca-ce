@@ -10,7 +10,7 @@ dependencies {
     compileOnly(project(":modules:ejbca-ejb-interface"))
     compileOnly(project(":modules:ejbca-entity"))
     compileOnly(project(":modules:edition-specific:interface"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.x509.common.util)
     compileOnly(libs.bundles.cryptotokens)
 }

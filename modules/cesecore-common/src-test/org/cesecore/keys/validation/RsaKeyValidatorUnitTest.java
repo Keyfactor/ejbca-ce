@@ -38,6 +38,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests RSA key validator functions, see {@link RsaKeyValidator}.
@@ -369,6 +370,7 @@ public class RsaKeyValidatorUnitTest {
         List<String> bitLengths = new ArrayList<>();
         bitLengths.add(Integer.toString(modulus.bitLength()));
         keyValidator.setBitLengths(bitLengths);
+        keyValidator.setPublicKeyModulusDontAllowClosePrimes(false);
         List<String> messages = keyValidator.validate(publicKey, null);
         log.trace("Key validation error messages: " + messages);
         Assert.assertTrue("Key validation should have been successful.", messages.isEmpty());
@@ -488,6 +490,7 @@ public class RsaKeyValidatorUnitTest {
         bitLengths.add("2048");
         bitLengths.add("2050"); // The positive sample ROCA cert is 2050 bits
         keyValidator.setBitLengths(bitLengths);
+        keyValidator.setPublicKeyModulusDontAllowClosePrimes(false);
         List<String> messages = keyValidator.validate(noroca.getPublicKey(), null);
         log.trace("Key validation error messages: " + messages);
         assertEquals("Key validation should have been successful: "+messages, 0, messages.size());
@@ -508,6 +511,87 @@ public class RsaKeyValidatorUnitTest {
 
         log.trace("<testRocaWeakKeys()");
 
+    }
+    
+    /**
+     * Tests public key modulus for close primes vulnerability.
+     * Close primes expected not found in public key modulus.
+     * @throws Exception
+     */
+    @Test
+    public void test04ClosePrimesVulnerabilityExpectNotFoundInPublicKey() throws Exception{
+        log.trace(">test04ClosePrimesVulnerabilityExpectNotFoundInPublicKey()");
+        // Given
+        // A valid modulus from a valid public key extracted from the noRocaCert certificate used in previous tests
+        final String modulusNoClosePrimes = "105003467046593454352683938240292328205912882700809092403379043610929156939171312301804108647669125604"
+                + "9236869084916382921991484666296419264424098541486132035493327283855499759787264494221234528815777431092176571559477"
+                + "88591842311514058951402543187594309637097123004507084482521049525100106193027001852383387657";
+        RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+                "rsa-parameter-validation-test-11", "Description", null, -1, null, -1, -1, new Integer[] {});
+        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.getOption());
+        keyValidator.setPublicKeyModulusDontAllowClosePrimes(true);
+        List<String> bitLengths = new ArrayList<>();
+        bitLengths.add("1024");
+        bitLengths.add("2048");
+        keyValidator.setBitLengths(bitLengths);
+        X509Certificate certWithValidKey = CertTools.getCertfromByteArray(noRocaCert, X509Certificate.class);
+        // We extract the valid public key from a valid certificate 
+        final PublicKey validPublicKey = certWithValidKey.getPublicKey();
+        final RSAPublicKey rsaPublicKey = (RSAPublicKey) validPublicKey;
+        final BigInteger validModulus = rsaPublicKey.getModulus();
+        // Make sure we use the above valid modulus and not anyone computed from close primes
+        assertEquals(validModulus.toString(), modulusNoClosePrimes);
+        // When
+        List <String> messages_validPublicKey = keyValidator.validate(validPublicKey, null);
+        // Then
+        assertEquals("Close primes vulnerability should not have been fond. Returned List should have been empty.", 0, messages_validPublicKey.size());
+        log.trace("<test04ClosePrimesVulnerabilityExpectNotFoundInPublicKey()");        
+    }
+
+    /**
+     * Tests public key modulus for close primes vulnerability.
+     * Close primes expected found in public key modulus.
+     * @throws Exception
+     */
+    @Test
+    public void test05ClosePrimesVulnerabilityExpectFoundInPublicKeys() throws Exception{
+        log.trace(">test05ClosePrimesVulnerabilityExpectFoundInPublicKeys()");
+        // Given
+        final String VALIDATION_FAILED_MESSAGE = "Invalid: RSA public key modulus from close primes detected.";
+        // Two vulnerable modulus...
+        final String modulusClosePrimesString_1 = "66511"; 
+        final String modulusClosePrimesString_2 = "130924909";   
+        //The modulus n66511 is calculated from the primes p293 and q227 so we can expect a=293 (260+33) and b=227 (260-33) since n = a²-b² or n = (a+b)(a-b)
+        //The modulus n130924909 is calculated from the primes p11777 and q11117
+        final String exponentString = "7";//Random odd number for exponent 
+        final KeyFactory keyFactory = KeyFactory.getInstance(AlgorithmConstants.KEYALGORITHM_RSA, BouncyCastleProvider.PROVIDER_NAME);
+        org.bouncycastle.util.Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
+        final BigInteger modulus_closePrimes_1 = new BigInteger(modulusClosePrimesString_1);
+        final BigInteger modulus_closePrimes_2 = new BigInteger(modulusClosePrimesString_2);
+        final BigInteger exponent = new BigInteger(exponentString);
+        RsaKeyValidator keyValidator = (RsaKeyValidator) ValidatorTestUtil.createKeyValidator(RsaKeyValidator.class,
+                "rsa-parameter-validation-test-11", "Description", null, -1, null, -1, -1, new Integer[] {});
+        keyValidator.setSettingsTemplate(KeyValidatorSettingsTemplate.USE_CAB_FORUM_SETTINGS.getOption());
+        keyValidator.setPublicKeyModulusDontAllowClosePrimes(true);
+        final PublicKey invalidPublicKey_1 = keyFactory.generatePublic(new RSAPublicKeySpec(modulus_closePrimes_1, exponent));
+        final PublicKey invalidPublicKey_2 = keyFactory.generatePublic(new RSAPublicKeySpec(modulus_closePrimes_2, exponent));
+        List<String> bitLengths = new ArrayList<>();
+        bitLengths.add("1024");
+        bitLengths.add("2048");
+        bitLengths.add(Integer.toString(BigInteger.valueOf(66511).bitLength()));
+        bitLengths.add(Integer.toString(BigInteger.valueOf(130924909).bitLength()));
+        keyValidator.setBitLengths(bitLengths);
+        // When
+        List <String> messages_invalidPublicKey_1 = keyValidator.validate(invalidPublicKey_1, null);
+        // Then
+        assertEquals("Close primes vulnerability should have been found. Returned List should include 1 element.", 1, messages_invalidPublicKey_1.size());
+        assertTrue("The message returned was not the expected message: " + messages_invalidPublicKey_1.get(0), messages_invalidPublicKey_1.get(0).contains(VALIDATION_FAILED_MESSAGE));
+        // When
+        List <String> messages_invalidPublicKey_2 = keyValidator.validate(invalidPublicKey_2, null);
+        // Then
+        assertEquals("Close primes vulnerability should have been found. Returned List should include 1 element.", 1, messages_invalidPublicKey_2.size());
+        assertTrue("The message returned was not the expected message: " + messages_invalidPublicKey_2.get(0), messages_invalidPublicKey_2.get(0).contains(VALIDATION_FAILED_MESSAGE));
+        log.trace("<test05ClosePrimesVulnerabilityExpectFoundInPublicKeys()");        
     }
 
     private void profileHasSmallerFactor(final int factor, final BigInteger... modulus) {

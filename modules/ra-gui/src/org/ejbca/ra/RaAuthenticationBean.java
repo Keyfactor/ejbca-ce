@@ -19,15 +19,15 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Set;
 
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSessionEvent;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.ws.rs.core.UriBuilder;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;

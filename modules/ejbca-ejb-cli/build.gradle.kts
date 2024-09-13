@@ -18,7 +18,7 @@ dependencies {
     compileOnly(libs.commons.lang)
     compileOnly(libs.commons.lang3)
     compileOnly(libs.bundles.cryptotokens)
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.keyfactor.commons.cli)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.nimbus.jose.jwt)

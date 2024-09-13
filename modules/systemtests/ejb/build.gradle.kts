@@ -18,7 +18,7 @@ dependencies {
     implementation(libs.bcprov)
     implementation(libs.bctls)
     implementation(libs.bcutil)
-    implementation(libs.java.ee.api)
+    implementation(libs.jakartaee.api)
     implementation(libs.json.simple)
     implementation(libs.junit)
     compileOnly(libs.commons.lang)

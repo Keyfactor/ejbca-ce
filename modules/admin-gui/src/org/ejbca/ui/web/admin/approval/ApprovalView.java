@@ -16,7 +16,7 @@ package org.ejbca.ui.web.admin.approval;
 import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
