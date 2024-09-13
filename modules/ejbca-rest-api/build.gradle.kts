@@ -46,10 +46,10 @@ dependencies {
     testImplementation(project(":modules:systemtests:interface"))
     testImplementation(libs.bundles.jackson)
     testImplementation(libs.bundles.resteasy.jaxrs)
+    testImplementation(libs.bundles.hibernate.validator)
     testImplementation(libs.jakarta.xml.bind.api)
     testImplementation(libs.json.simple)
     testRuntimeOnly(project(":modules:ejbca-ws:common"))
-    testRuntimeOnly(libs.bundles.hibernate.validator)
     testRuntimeOnly(libs.classmate)
     testRuntimeOnly(libs.jboss.logging)
 }
