@@ -15,24 +15,23 @@
 
  version: $Id: persistence-ds-template.xml 21822 2015-09-10 14:07:46Z jeklund $
  -->
-<persistence version="2.1"
-    xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+<persistence version="3.1"
+    xmlns="https://jakarta.ee/xml/ns/persistence"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
-                        http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+        https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd">
 
-	<!-- 
+    <!--
 		The OCSP monitoring tool DOES NOT need write access to any of the databases.
-		Use a user with pure read-access for these connections (except for a test PU).
-		
-		More Hibernate-specific options, tuning and dialect can be found at
-		http://docs.jboss.org/hibernate/stable/core/reference/en/html/configuration-optional.html
-	-->
+        Use a user with pure read-access for these connections (except for a test PU).
+
+        More Hibernate-specific options, tuning and dialect can be found at
+        http://docs.jboss.org/hibernate/stable/core/reference/en/html/configuration-optional.html
+    -->
     <!-- JUnit test run by "ant test:ctb" expects this PU to exist -->
     <persistence-unit name="ca" transaction-type="RESOURCE_LOCAL">
         <class>org.cesecore.certificates.certificate.CertificateData</class>
         <properties>
-<!--        <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/> -->
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
@@ -45,7 +44,6 @@
     <persistence-unit name="ocsp1" transaction-type="RESOURCE_LOCAL">
         <class>org.cesecore.certificates.certificate.CertificateData</class>
         <properties>
-<!--        <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/> -->
             <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>
@@ -58,7 +56,6 @@
     <persistence-unit name="oracle" transaction-type="RESOURCE_LOCAL">
         <class>org.cesecore.certificates.certificate.CertificateData</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect"/>
             <property name="hibernate.connection.driver_class" value="oracle.jdbc.driver.OracleDriver"/>
             <property name="hibernate.connection.username" value="ejbca"/>
             <property name="hibernate.connection.password" value="ejbca"/>

@@ -13,7 +13,7 @@
  *************************************************************************/
 package org.cesecore.authorization.cache;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authorization.access.AuthorizationCacheReloadListener;
 

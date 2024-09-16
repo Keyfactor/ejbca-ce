@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.authorization;
 
 import java.util.Map;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @see AuthorizationSystemSession

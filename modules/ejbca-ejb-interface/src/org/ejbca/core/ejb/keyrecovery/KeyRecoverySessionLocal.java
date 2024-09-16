@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.keyrecovery;
 import java.security.cert.X509Certificate;
 import java.util.List;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;

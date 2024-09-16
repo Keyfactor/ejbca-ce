@@ -18,9 +18,9 @@ import java.math.BigInteger;
 import java.net.URLEncoder;
 import java.security.cert.Certificate;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.model.ra.NotFoundException;

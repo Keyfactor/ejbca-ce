@@ -23,8 +23,8 @@ import java.util.regex.Pattern;
  */
 public final class AddEndEntityUtil {
     
-    private static final String LEGAL_DN_CHARS_REGEX = "^[^~?`!|%$;^&{}\0\r\t\n\\\\\"]*$"; // Excluding disallowed DN characters 
-    private static final String USERNAME_CHARS_REGEX = "^[^%$~;`\"?!^#&{}\n\t\r\0\\\\]*$"; // Excluding disallowed username characters
+    private static final String LEGAL_DN_CHARS_REGEX = "^[^~?`!|%$;^&{}\0\r\t\n\\\\\"]*$"; // Excluding disallowed DN characters
+    private static final String USERNAME_CHARS_REGEX = "^[^%$~;`\"?!^#{}\n\t\r\0\\\\]*$"; // Excluding disallowed username characters
     private static final String OID_REGEX = "^([0-2])((\\.0)|(\\.[1-9][0-9]*))*$";
     private static final String EMAIL_REGEX = "[\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff0-9_.\\-@+']+";
     private static final String IPV4_REGEX =

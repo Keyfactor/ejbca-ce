@@ -15,7 +15,7 @@ package org.ejbca.ui.psm.jsf;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-import javax.faces.component.html.HtmlInputText;
+import jakarta.faces.component.html.HtmlInputText;
 
 import org.apache.log4j.Logger;
 import org.cesecore.util.ui.DynamicUiComponent;

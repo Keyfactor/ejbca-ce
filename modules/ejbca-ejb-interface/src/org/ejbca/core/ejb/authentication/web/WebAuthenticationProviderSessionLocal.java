@@ -14,7 +14,7 @@ package org.ejbca.core.ejb.authentication.web;
 
 import java.security.cert.X509Certificate;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.TokenExpiredException;

@@ -43,7 +43,7 @@ public class EndEntityInformation implements Serializable {
 
     private static final Logger log = Logger.getLogger(EndEntityInformation.class);
 
-    public static final String VALID_USERNAME_REGEX = "[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\.\\*\\,\\-:\\/\\'\\=\\(\\)\\|.]";
+    public static final String VALID_USERNAME_REGEX = "[^\\u0041-\\u005a\\u0061-\\u007a\\u00a1-\\ud7ff\\ue000-\\uffff_ 0-9@\\&\\+\\.\\*\\,\\-:\\/\\'\\=\\(\\)\\|.]";
 
     /**
      * Determines if a de-serialized file is compatible with this class.

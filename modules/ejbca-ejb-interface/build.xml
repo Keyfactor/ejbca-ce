@@ -19,7 +19,7 @@
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
-		<path refid="lib.jaxws-api.classpath"/>
+		<path refid="lib.jakarta.xml.ws-api.classpath"/>
 		<path location="${mod.ejbca-entity.lib}" />
 		<path location="${mod.ejbca-ws-cli.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
