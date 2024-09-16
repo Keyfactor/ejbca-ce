@@ -18,7 +18,7 @@ OSI Certified is a certification mark of the Open Source Initiative.
 
 ## Get started 
 
-To get started with **EJBCA Community**, clone **[ejbca-ce](https://github.com/Keyfactor/ejbca-ce)** and install it, see **[EJBCA Installation](https://doc.primekey.com/ejbca/ejbca-installation)**. 
+To get started with **EJBCA Community**, clone **[ejbca-ce](https://github.com/Keyfactor/ejbca-ce)** and install it, see **[EJBCA Installation](https://docs.keyfactor.com/ejbca/latest/ejbca-installation)**. 
 
 You can also easily run EJBCA as a container from **[Dockerhub](https://hub.docker.com/r/keyfactor/ejbca-ce)**.
 

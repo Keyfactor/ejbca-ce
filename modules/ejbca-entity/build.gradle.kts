@@ -8,22 +8,6 @@ val props: Properties = Properties().apply {
         load(file(propertiesFilePath + ".sample").inputStream())
     }
 }
-val dialectMap = mapOf(
-    "db2" to "org.hibernate.dialect.DB2Dialect",
-    "derby" to "org.hibernate.dialect.DerbyDialect",
-    "hsqldb" to "org.hibernate.dialect.HSQLDialect",
-    "h2" to "org.hibernate.dialect.H2Dialect",
-    "informix" to "org.hibernate.community.dialect.InformixDialect",
-    "ingres" to "org.hibernate.community.dialect.IngresDialect",
-    "mssql" to "org.hibernate.dialect.SQLServerDialect",
-    "mysql" to "org.hibernate.dialect.MySQLDialect",
-    "oracle" to "org.hibernate.dialect.OracleDialect",
-    "postgres" to "org.hibernate.dialect.PostgreSQLDialect",
-    "sybase" to "org.hibernate.dialect.SybaseDialect"
-)
-val dialect = dialectMap[props.getProperty("database.name", "mysql")]
-        ?: throw IllegalArgumentException("Unsupported database type ${props.getProperty("database.name")}")
-props.setProperty("hibernate.dialect", dialect)
 
 plugins {
     java
@@ -61,7 +45,6 @@ tasks.jar {
             line.replace("\${datasource.jndi-name-prefix}", "java:/")
                 .replace("\${datasource.jndi-name}", props.getProperty("datasource.jndi-name", "EjbcaDS"))
                 .replace("\${database.name}", props.getProperty("database.name", "mysql"))
-                .replace("\${hibernate.dialect}", props.getProperty("hibernate.dialect"))
         }
     }
 }

@@ -449,16 +449,15 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         // Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
                         // We want thorough logging in order to trouble shoot though
                         final String message = validator.getLogMessage(false, messages);
-                        log.info(EventTypes.VALIDATOR_VALIDATION_FAILED + ";" + EventStatus.FAILURE + ";" + ModuleTypes.VALIDATOR + ";" + ServiceTypes.CORE + ";msg=" + message);
+                        auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
+                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), Map.of("msg", message));
                         final int index = validator.getFailedAction();
                         performValidationFailedActions(index, message, validatorType);
                     } else {
                         // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
                         final String message = validator.getLogMessage(true, messages);
-                        final Map<String, Object> details = new LinkedHashMap<>();
-                        details.put("msg", message);
                         auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
-                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
+                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), Map.of("msg", message));
                     }
 
                 }
