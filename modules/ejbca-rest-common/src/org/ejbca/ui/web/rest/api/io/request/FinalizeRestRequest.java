@@ -12,20 +12,21 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input representation of finalize enrollment
  */
 public class FinalizeRestRequest {
 
-    @ApiModelProperty(value = "Response format", example = "P12", allowableValues = "P12, BCFKS, JKS, DER")
+    @Schema(description = "Response format", example = "P12", allowableValues = "P12, BCFKS, JKS, DER")
     private String responseFormat;
-    @ApiModelProperty(value = "Password", example = "foo123")
+    @Schema(description = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Key algorithm", example = "RSA")
+    @Schema(description = "Key algorithm", example = "RSA")
     private String keyAlg;
-    @ApiModelProperty(value = "Key specification", example = "4096")
+    @Schema(description = "Key specification", example = "4096")
     private String keySpec;
     
     public FinalizeRestRequest() {}

@@ -20,10 +20,10 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Named;
-import javax.servlet.http.Part;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;

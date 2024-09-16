@@ -18,11 +18,11 @@
 <!--
 	JPA configuration used from ejbca-db-cli.
 -->
-<persistence version="2.1"
-    xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+<persistence version="3.1"
+    xmlns="https://jakarta.ee/xml/ns/persistence"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
-                        http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+    xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+        https://jakarta.ee/xml/ns/persistence/persistence_3_1.xsd">
     <!--
         Persistence unit for validating and reading an EJBCA database.
     -->
@@ -64,7 +64,6 @@
         <class>org.ejbca.acme.AcmeChallengeData</class>
         <class>org.ejbca.acme.AcmeOrderData</class>
         <properties>
-            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
             <property name="hibernate.connection.driver_class" value="${database.driver}"/>
             <property name="hibernate.connection.username" value="${database.username}"/>
@@ -113,7 +112,6 @@
         <class>org.ejbca.acme.AcmeChallengeData</class>
         <class>org.ejbca.acme.AcmeOrderData</class>
         <properties>
-            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
             <property name="hibernate.connection.driver_class" value="${database.driver}"/>
             <property name="hibernate.connection.username" value="${database.username}"/>
@@ -138,7 +136,6 @@
         <mapping-file>META-INF/orm-ejbca-mysql.xml</mapping-file>
         <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
         <properties>
-            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
             <property name="hibernate.connection.url" value="${database.url}"/>
             <property name="hibernate.connection.driver_class" value="${database.driver}"/>
             <property name="hibernate.connection.username" value="${database.username}"/>

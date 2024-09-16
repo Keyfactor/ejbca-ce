@@ -18,15 +18,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
-import javax.persistence.TypedQuery;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
+import jakarta.persistence.TypedQuery;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -41,7 +41,6 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ValueExtractor;
 
@@ -52,7 +51,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * SignSessionBean.
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlStoreSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessionRemote {
 

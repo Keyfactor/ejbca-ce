@@ -15,9 +15,9 @@ package org.ejbca.ui.web.jsf.validator;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.faces.component.UIComponent;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -35,7 +35,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -133,7 +133,6 @@ public class CAInterfaceBean implements Serializable {
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private PublisherSessionLocal publishersession;
     private KeyValidatorSessionLocal keyValidatorSession;
-
     private SignSession signsession;
 
     private boolean initialized;
@@ -141,7 +140,7 @@ public class CAInterfaceBean implements Serializable {
     private CAInfo cainfo;
     private EjbcaWebBean ejbcawebbean;
     /** The certification request in binary format */
-    private transient byte[] request;
+    private byte[] request;
     private Certificate processedcert;
 
 	/** Creates a new instance of CaInterfaceBean */
@@ -150,23 +149,27 @@ public class CAInterfaceBean implements Serializable {
     // Public methods
     public void initialize(final EjbcaWebBean ejbcawebbean) {
         if (!initialized) {
-          certificatesession = ejbLocalHelper.getCertificateStoreSession();
-          certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
-          cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
-          caadminsession = ejbLocalHelper.getCaAdminSession();
-          casession = ejbLocalHelper.getCaSession();
-          authorizationSession = ejbLocalHelper.getAuthorizationSession();
-          signsession = ejbLocalHelper.getSignSession();
-          publishersession = ejbLocalHelper.getPublisherSession();
-          certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-          keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
-          authenticationToken = ejbcawebbean.getAdminObject();
-          this.ejbcawebbean = ejbcawebbean;
-          initialized =true;
+          forceInitialization(ejbcawebbean);
         } else {
             log.debug("=initialize(): already initialized");
         }
         log.trace("<initialize()");
+    }
+
+    public void forceInitialization(final EjbcaWebBean ejbcawebbean) {
+        certificatesession = ejbLocalHelper.getCertificateStoreSession();
+        certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
+        cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
+        caadminsession = ejbLocalHelper.getCaAdminSession();
+        casession = ejbLocalHelper.getCaSession();
+        authorizationSession = ejbLocalHelper.getAuthorizationSession();
+        signsession = ejbLocalHelper.getSignSession();
+        publishersession = ejbLocalHelper.getPublisherSession();
+        certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+        keyValidatorSession = ejbLocalHelper.getKeyValidatorSession();
+        authenticationToken = ejbcawebbean.getAdminObject();
+        this.ejbcawebbean = ejbcawebbean;
+        initialized = true;
     }
 
     public CertificateView[] getCACertificates(int caid) {

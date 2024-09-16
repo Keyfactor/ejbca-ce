@@ -25,16 +25,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.transaction.TransactionSynchronizationRegistry;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.TransactionSynchronizationRegistry;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -52,7 +52,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -76,7 +75,7 @@ import com.keyfactor.util.certificate.DnComponents;
 /**
  * An {@link EndEntityInformation} Data Access Object (DAO).
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityAccessSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, EndEntityAccessSessionRemote {
 
@@ -438,7 +437,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public long countByCaId(int caId) {
-        final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.caId=:caId");
+        final jakarta.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.caId=:caId");
         query.setParameter("caId", caId);
         return (Long) query.getSingleResult(); // Always returns a result
     }
@@ -446,7 +445,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public long countByCertificateProfileId(int certificateProfileId) {
-        final javax.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
+        final jakarta.persistence.Query query = entityManager.createQuery("SELECT COUNT(a) FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
         query.setParameter("certificateProfileId", certificateProfileId);
         return (Long) query.getSingleResult(); // Always returns a result
     }
@@ -457,7 +456,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatusWithLimit(): " + status);
         }
-        final javax.persistence.Query query = entityManager
+        final jakarta.persistence.Query query = entityManager
                 .createQuery("SELECT a FROM UserData a WHERE a.status=:status AND (clearPassword IS NOT NULL)");
         query.setParameter("status", status);
         query.setMaxResults(getGlobalCesecoreConfiguration().getMaximumQueryCount());
@@ -499,7 +498,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isDebugEnabled()) {
             log.debug("generated query: " + LogRedactionUtils.getRedactedMessage(sqlquery));
         }
-            final javax.persistence.Query dbQuery = entityManager.createQuery("SELECT a FROM UserData a WHERE " + sqlquery);
+            final jakarta.persistence.Query dbQuery = entityManager.createQuery("SELECT a FROM UserData a WHERE " + sqlquery);
             if (fetchsize > 0) {
                 dbQuery.setMaxResults(fetchsize);
             }
@@ -536,7 +535,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 			return List.of();
 		}
 
-		javax.persistence.Query dbQuery = entityManager.createNativeQuery(USER_DATA_NATIVE_QUERY +
+		jakarta.persistence.Query dbQuery = entityManager.createNativeQuery(USER_DATA_NATIVE_QUERY +
                 " WHERE " + userDataQuery.getWhereValue(), UserData.class);
 		if (fetchSize > 0) {
 			dbQuery.setMaxResults(fetchSize);
@@ -725,7 +724,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isTraceEnabled()) {
             log.trace(">checkForCertificateProfileId("+certificateprofileid+")");
         }
-        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
+        final jakarta.persistence.Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
         query.setParameter("certificateProfileId", certificateprofileid);
 
         List<String> result = new ArrayList<>();

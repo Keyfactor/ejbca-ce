@@ -13,18 +13,20 @@
 package org.ejbca.ui.web.rest.api.validator;
 
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.junit.Test;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
 public class ValidAddEndEntityRestRequestUnitTest {
 
-    private static final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
+    private static final Validator validator = Validation.byDefaultProvider().configure().
+        messageInterpolator(new ParameterMessageInterpolator()).buildValidatorFactory().getValidator();
 
     @Test
     public void errorUsername() {

@@ -14,7 +14,7 @@ package org.ejbca.core.ejb;
 
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @see org.ejbca.core.ProfilingStatsAccessSessionBean

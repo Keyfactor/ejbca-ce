@@ -10,7 +10,7 @@ dependencies {
     compileOnly(project(":modules:ejbca-common"))
     compileOnly(project(":modules:ejbca-entity"))
     compileOnly(project(":modules:ejbca-ws:common"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.commons.lang)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)

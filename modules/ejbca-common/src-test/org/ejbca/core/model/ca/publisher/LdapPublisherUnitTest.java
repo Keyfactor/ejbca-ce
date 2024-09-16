@@ -42,8 +42,14 @@ public class LdapPublisherUnitTest {
         publ.setBaseDN("O=org");
         publ.setUseFieldInLdapDN(Arrays.asList(DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.OU));
         assertEquals("Wrong DN with fields={UID} ", "UID=abc,CN=name,OU=devs,O=org", publ.constructLDAPDN("CN=name,UID=abc,givenName=john,OU=devs", "C=SE"));
-        // Multiple DN components of the same type is not supported
-        //assertEquals("Wrong DN with fields={UID} ", "UID=abc,CN=name1,CN=name2,OU=devs,O=org", publ.constructLDAPDN("CN=name1,CN=name2,UID=abc,givenName=john,OU=devs", "O=org"));
+    }
+
+    @Test
+    public void constructLdapDnMultipleSameType() {
+        final LdapPublisher publ = new LdapPublisher();
+        publ.setBaseDN("O=org");
+        publ.setUseFieldInLdapDN(Arrays.asList(DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.OU));
+        assertEquals("Wrong DN with fields={UID} ", "UID=abc,CN=name1,CN=name2,OU=devs,OU=ejbca,O=org", publ.constructLDAPDN("CN=name1,CN=name2,UID=abc,givenName=john,OU=devs,OU=ejbca", "O=org"));
     }
 
     @Test
@@ -53,8 +59,15 @@ public class LdapPublisherUnitTest {
         publ.setUseCustomDnOrder(true);
         publ.setUseFieldInLdapDN(Arrays.asList(DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.OU));
         assertEquals("Wrong DN with fields={UID} ", "CN=name,UID=abc,OU=devs,O=org", publ.constructLDAPDN("CN=name,UID=abc,givenName=john,OU=devs", "C=SE"));
-        // Multiple DN components of the same type is not supported
-        //assertEquals("Wrong DN with fields={UID} ", "CN=name1,CN=name2,UID=abc,OU=devs,O=org", publ.constructLDAPDN("CN=name1,CN=name2,UID=abc,givenName=john,OU=devs", "O=org"));
+    }
+
+    @Test
+    public void constructLdapDnMultipleSameTypeCustomOrder() {
+        final LdapPublisher publ = new LdapPublisher();
+        publ.setBaseDN("O=org");
+        publ.setUseCustomDnOrder(true);
+        publ.setUseFieldInLdapDN(Arrays.asList(DNFieldExtractor.CN, DNFieldExtractor.UID, DNFieldExtractor.OU));
+        assertEquals("Wrong DN with fields={UID} ", "CN=name1,CN=name2,UID=abc,OU=devs,OU=ejbca,O=org", publ.constructLDAPDN("CN=name1,CN=name2,OU=devs,OU=ejbca,UID=abc,givenName=john", "O=org"));
     }
     
 }
