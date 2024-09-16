@@ -13,6 +13,9 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -20,6 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * @version $Id: KeyStoreRestRequest.java 29481 2018-07-09 08:06:14Z henriks $
  *
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class KeyStoreRestRequest {
 
     @Schema(description = "Username", example = "JohnDoe")
