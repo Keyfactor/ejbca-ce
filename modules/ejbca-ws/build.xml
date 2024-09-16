@@ -25,8 +25,8 @@
         <path refid="lib.log4j.classpath"/>
         <path refid="lib.commons-lang.classpath"/>
         <path refid="lib.cert-cvc.classpath"/>
-        <path refid="lib.jaxws-api.classpath"/>
-        <path refid="lib.javax.jws-api.classpath"/>
+        <path refid="lib.jakarta.xml.ws-api.classpath"/>
+        <path refid="lib.jakarta.jws-api.classpath"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path refid="lib.x509-common-util.classpath"/>
@@ -51,7 +51,7 @@
         <path refid="lib.ejbca-common.classpath"/>
         <path refid="lib.jee.classpath"/>
         <path refid="lib.bouncycastle.classpath"/>
-        <path refid="lib.jaxws-api.classpath"/>
+        <path refid="lib.jakarta.xml.ws-api.classpath"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
         <path refid="lib.x509-common-util.classpath"/>
@@ -69,6 +69,7 @@
         <path refid="lib.servlet.classpath"/>
         <path refid="lib.ejbca-common-web.classpath"/>
         <path refid="lib.x509-common-util.classpath"/>
+        <path refid="lib.cryptotokens.classpath"/>
         <path refid="wsgen.classpath"/>
     </path>
 

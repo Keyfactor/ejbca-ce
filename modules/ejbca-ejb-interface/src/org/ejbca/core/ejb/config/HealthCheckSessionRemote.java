@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @version $Id$

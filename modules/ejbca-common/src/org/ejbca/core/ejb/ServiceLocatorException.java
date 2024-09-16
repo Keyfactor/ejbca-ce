@@ -14,7 +14,7 @@
  
 package org.ejbca.core.ejb;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 /**
  * Exception related to resource localization.

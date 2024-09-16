@@ -14,7 +14,7 @@ package org.cesecore.audit.impl.queued;
 
 import java.util.Date;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.audit.Auditable;
 import org.cesecore.audit.log.AuditLogResetException;

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
-import javax.xml.ws.WebFault;
+import jakarta.xml.ws.WebFault;
 
 import org.cesecore.NonSensitiveException;
 

@@ -24,7 +24,7 @@ import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;

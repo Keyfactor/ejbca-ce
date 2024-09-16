@@ -16,7 +16,7 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.List;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.ca.store.CertReqHistory;

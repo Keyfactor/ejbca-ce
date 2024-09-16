@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.est;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 
 @Remote

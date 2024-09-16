@@ -13,21 +13,21 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import com.keyfactor.util.CertTools;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 
 /**
  * A class representing the input for certificate request REST method.
  */
 public class CertificateRequestRestRequest {
-    @ApiModelProperty(value = "Certificate request", example = "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
+    @Schema(description = "Certificate request", example = "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     private String certificateRequest;
-    @ApiModelProperty(value = "Username", example = "JohnDoe")
+    @Schema(description = "Username", example = "JohnDoe")
     private String username;
-    @ApiModelProperty(value = "Password", example = "foo123")
+    @Schema(description = "Password", example = "foo123")
     private String password;
     private boolean includeChain;
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
+    @Schema(description = "Certificate Authority (CA) name", example = "ExampleCA")
     private String certificateAuthorityName;
     
     public CertificateRequestRestRequest() {
