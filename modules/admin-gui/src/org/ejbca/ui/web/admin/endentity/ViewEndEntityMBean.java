@@ -109,11 +109,15 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
 
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws Exception {
-        if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+    public void initialize() throws EndEntityException {
+        try {
+            if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+                throw new AuthorizationDeniedException("You are not authorized to view this page.");
+            }
+            initData();
+        } catch (Exception e) {
+            throw new EndEntityException("Error while initializing the class " + this.getClass().getCanonicalName(), e);
         }
-        initData();
     }
 
     /**

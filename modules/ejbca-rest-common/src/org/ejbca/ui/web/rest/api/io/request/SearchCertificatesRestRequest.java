@@ -159,6 +159,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                     case USERNAME: {
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setUsernameSearchExact(true);
+                            raCertificateSearchRequest.setUsernameSearchOperation("EQUAL");
                         }
                         raCertificateSearchRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
@@ -169,6 +170,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                             raCertificateSearchRequest.setSubjectDnSearchExact(true);
                             raCertificateSearchRequest.setSubjectAnSearchExact(true);
                             raCertificateSearchRequest.setUsernameSearchExact(true);
+                            raCertificateSearchRequest.setUsernameSearchOperation("EQUAL");
                             raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
                         }
                         raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
