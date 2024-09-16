@@ -20,6 +20,9 @@ import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResults;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import jakarta.validation.Valid;
 import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -36,8 +39,8 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResults
  *
- * @version $Id: SearchCertificatesRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class SearchCertificatesRestRequest implements SearchCertificateCriteriaRequest {
 
     @Schema(description = "Maximum number of results", example = "10")
