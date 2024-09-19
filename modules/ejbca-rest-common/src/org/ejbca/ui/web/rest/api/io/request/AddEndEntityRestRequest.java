@@ -23,11 +23,15 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidAddEndEntityRestRequest;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 
 /**
  * JSON input for registration of end entity.
  */
 @ValidAddEndEntityRestRequest
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class AddEndEntityRestRequest {
 
     @Schema(description = "Username", example = "JohnDoe")

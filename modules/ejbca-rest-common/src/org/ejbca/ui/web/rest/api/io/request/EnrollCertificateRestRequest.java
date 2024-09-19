@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.keyfactor.util.CertTools;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
@@ -20,6 +22,7 @@ import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
  * A class representing the input for certificate enrollment REST method.
  *
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class EnrollCertificateRestRequest {
     @Schema(description = "Certificate request", example = "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----")
     private String certificateRequest;
