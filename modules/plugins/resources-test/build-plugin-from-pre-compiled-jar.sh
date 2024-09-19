@@ -34,3 +34,5 @@ else
   printf "\n%s\n" "FAILURE: The plugin is NOT included in ejbca.ear"
   exit 1
 fi
+
+popd
