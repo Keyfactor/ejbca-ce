@@ -13,29 +13,13 @@
 
 package org.cesecore.keys.validation;
 
-import java.io.Serializable;
-import java.security.PublicKey;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
-
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
@@ -61,14 +45,28 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.profiles.ProfileData;
 import org.cesecore.profiles.ProfileSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
 
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
+import java.io.Serializable;
+import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 /**
  * Handles management of key validators.
@@ -387,7 +385,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-    
+
     @Override
     public Map<String, Integer> getKeyValidatorNameToIdMap() {
         final HashMap<String, Integer> result = new HashMap<>();
@@ -417,23 +415,28 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             phase.getIndex() != validator.getPhase()) {
                         continue;
                     }
-                    CertificateProfile certificateProfile = certificateProfileSession
+                    final CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
 
-                    final List<String> dnsNames = new ArrayList<>();
-
-                    if (certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId())) {
+                    final Set<String> dnsNames = new TreeSet<>();
+                    final boolean isEmailProtection = certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId());
+                    
+                    if (isEmailProtection) {
                         dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
                     } else {
                         dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
-                        if (certificateProfile.getAllowExtensionOverride()
-                                && requestMessage != null
-                                && requestMessage.getRequestExtensions() != null
-                                && requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName)!= null) {
-                            var extension = requestMessage.getRequestExtensions()
-                                    .getExtension(Extension.subjectAlternativeName);
-                            var extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
-                            dnsNames.addAll(findAllDNSInSubject(extendedSubjectAltName));
+                    }
+                    
+                    if (certificateProfile.getAllowExtensionOverride() && requestMessage != null && requestMessage.getRequestExtensions() != null) {
+                        var extension = requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName);
+                        if (extension != null) {
+                            var san = DnComponents.getAltNameStringFromExtension(extension);
+                            
+                            if (isEmailProtection) {
+                                dnsNames.addAll(findAllEmailDomainsInSubject(san));
+                            } else {
+                                dnsNames.addAll(findAllDNSInSubject(san));
+                            }
                         }
                     }
 
@@ -453,18 +456,16 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         // Validation has failed. Not security event as such, since it will break issuance and not cause anything important to happen.
                         // We want thorough logging in order to trouble shoot though
                         final String message = validator.getLogMessage(false, messages);
-                        log.info(EventTypes.VALIDATOR_VALIDATION_FAILED + ";" + EventStatus.FAILURE + ";" + ModuleTypes.VALIDATOR + ";" + ServiceTypes.CORE + ";msg=" + message);
+                        auditSession.log(EventTypes.VALIDATOR_VALIDATION_FAILED, EventStatus.FAILURE, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
+                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), Map.of("msg", message));
                         final int index = validator.getFailedAction();
                         performValidationFailedActions(index, message, validatorType);
                     } else {
-                        // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
+                        // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor.
                         final String message = validator.getLogMessage(true, messages);
-                        final Map<String, Object> details = new LinkedHashMap<>();
-                        details.put("msg", message);
                         auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
-                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
+                                authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), Map.of("msg", message));
                     }
-
                 }
             }
         } else {
@@ -475,7 +476,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         return allResults;
     }
 
-	protected static List<String> findAllEmailDomainsInSubject(String subject) {
+    protected static List<String> findAllEmailDomainsInSubject(String subject) {
 		return Arrays.stream(subject.trim().split(","))
 				.map(s -> s.trim().split("="))
 				.filter(mapEntry -> DnComponents.RFC822NAME.equalsIgnoreCase(mapEntry[0]))
@@ -700,7 +701,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         return result;
     }
-    
+
     @Override
     public long getNumberOfValidators() {
         return profileSession.getNumberOfProfileByType(Validator.TYPE_NAME);
