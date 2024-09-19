@@ -266,7 +266,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
     }
 
     @Override
-    protected String getFieldValueToSave(UserView userView, int[] fieldData) throws AddEndEntityException {
+    protected String getFieldValueToSave(UserView userView, int[] fieldData) throws EndEntityException {
 
         String fieldValueToSave = StringUtils.EMPTY;
 
@@ -279,7 +279,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
                 }
             } else if (StringUtils.isNotBlank(rfcName) && StringUtils.isNotBlank(rfcDomain)) {
                 if(!AddEndEntityUtil.isValidDNField(rfcName) || !AddEndEntityUtil.isValidDNField(rfcDomain)) {
-                    throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
+                    throw new EndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("ONLYCHARACTERS") + " " + getLabel());
                 }                
                 fieldValueToSave = rfcName + "@" + rfcDomain;
             }
@@ -304,7 +304,7 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
     }
 
     @Override
-    protected void validateFieldValue(final String fieldValueToSave, final int[] fieldData) throws AddEndEntityException {
+    protected void validateFieldValue(final String fieldValueToSave, final int[] fieldData) throws EndEntityException {
 
         if (EndEntityProfile.isFieldOfType(fieldData[EndEntityProfile.FIELDTYPE], DnComponents.IPADDRESS)) {
             validateIPAddrValue(fieldValueToSave);
@@ -317,9 +317,9 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
 
     }
 
-    private void validateOid(String fieldValueToSave) throws AddEndEntityException {
+    private void validateOid(String fieldValueToSave) throws EndEntityException {
         if (!AddEndEntityUtil.isValidOID(fieldValueToSave)) {
-            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDOID") + " " + getLabel());
+            throw new EndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDOID") + " " + getLabel());
         }
     }
 
@@ -330,9 +330,9 @@ public class SubjectAltNameFieldData extends SubjectFieldData {
         return fieldValueToSave;
     }
 
-    private void validateIPAddrValue(final String ipAddress) throws AddEndEntityException {
+    private void validateIPAddrValue(final String ipAddress) throws EndEntityException {
         if (!AddEndEntityUtil.isValidIPv4(ipAddress) && !AddEndEntityUtil.isValidIPv6(ipAddress)) {
-            throw new AddEndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDIPADDRESS") + " " + getLabel());
+            throw new EndEntityException(EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("INVALIDIPADDRESS") + " " + getLabel());
         }
     }
 }

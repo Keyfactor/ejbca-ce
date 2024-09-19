@@ -15,10 +15,14 @@ package org.ejbca.ui.web.rest.api.io.request;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.ui.web.rest.api.validator.ValidEndEntityRevocationRestRequest;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 /**
  * JSON input representation of end entity revocation request through REST API.
  */
 @ValidEndEntityRevocationRestRequest
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 @Schema(description = "End Entity revocation request. Available reason codes: \n" +
         " 0 - Unspecified,\n" +
         " 1 - Key Compromise,\n" +

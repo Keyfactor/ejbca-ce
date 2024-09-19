@@ -39,7 +39,7 @@ dependencies {
     compileOnly(libs.cryptotokens.api)
     compileOnly(libs.cryptotokens.impl)
     // hibernate
-    compileOnly(libs.antlr)
+    compileOnly(libs.antlr4.runtime)
     compileOnly(libs.byte.buddy)
     compileOnly(libs.classmate)
     compileOnly(libs.fastInfoset)
@@ -70,13 +70,6 @@ sourceSets {
             setSrcDirs(
                 listOf("src")
             )
-        }
-    }
-    val test by getting {
-        java {
-            setSrcDirs(listOf("src-test"))
-            compileClasspath += main.compileClasspath
-            runtimeClasspath += main.compileClasspath
         }
     }
 }

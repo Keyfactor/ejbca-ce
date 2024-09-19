@@ -126,7 +126,7 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
 
     @Override
     public String getLogMessage(final boolean successful, final List<String> messages) {
-        return null;
+        return "";
     }
 
 }
