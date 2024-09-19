@@ -105,7 +105,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
             final String raCertsPath = this.cmpConfiguration.getRACertPath(this.confAlias);
             final List<X509Certificate> racerts = getRaCerts(raCertsPath);
             if (racerts.isEmpty()) {
-                log.info("No certificate files were found in " + raCertsPath);
+                log.info("No RA certificate was found in " + raCertsPath);
             }
             for (final X509Certificate cert : racerts) {
                 if (log.isDebugEnabled()) {
