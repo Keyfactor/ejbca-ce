@@ -93,8 +93,10 @@ spec:
               nginx -g "daemon off;"
           {{- end }}
           ports:
+          {{- if .Values.nginx.service.httpPort }}
           - name: nginx-http
             containerPort: 80
+          {{- end }}
           - name: nginx-https
             containerPort: 443
           startupProbe:
@@ -154,9 +156,11 @@ spec:
           {{- end }}
           ports:
             {{- if .Values.services.directHttp.enabled }}
+            {{- if .Values.services.directHttp.httpPort }}
             - name: http
               containerPort: 8080
               protocol: TCP
+            {{- end }}
             - name: https
               containerPort: 8443
               protocol: TCP
@@ -167,9 +171,11 @@ spec:
               protocol: TCP
             {{- end }}
             {{- if .Values.services.proxyHttp.enabled }}
+            {{- if .Values.services.proxyHttp.httpPort }}
             - name: proxy-http
               containerPort: 8081
               protocol: TCP
+            {{- end }}
             - name: proxy-https
               containerPort: 8082
               protocol: TCP
