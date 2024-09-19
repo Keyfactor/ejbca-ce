@@ -26,6 +26,7 @@ data:
       sendfile        on;
       keepalive_timeout  65;
 
+      {{- if .Values.nginx.service.httpPort }}
       server {
         listen 80;
 
@@ -42,6 +43,7 @@ data:
           proxy_http_version 1.1;
         }
       }
+      {{- end }}
 
       server {
         listen 443 ssl;
@@ -78,6 +80,7 @@ data:
       {{- if .Values.nginx.additionalHosts }}
       {{- range $i := .Values.nginx.additionalHosts }}
 
+      {{- if $.Values.nginx.service.httpPort }}
       server {
         listen 80;
 
@@ -94,6 +97,7 @@ data:
           proxy_http_version 1.1;
         }
       }
+      {{- end }}
 
       server {
         listen 443 ssl;
