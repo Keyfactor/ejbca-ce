@@ -12,13 +12,12 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.ca.validators;
 
-import jakarta.faces.application.FacesMessage;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+
 import jakarta.faces.component.UIComponent;
 import jakarta.faces.validator.FacesValidator;
 import jakarta.faces.validator.Validator;
 import jakarta.faces.validator.ValidatorException;
-
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
 /**
  * Validator used for validating CRL DP URLs with partition number placeholders (edit ca page).
@@ -32,10 +31,12 @@ public class PartitionedCrlUrlValidator extends CrlDistributionPointUrlValidator
     protected void checkUrl(final UIComponent uiComponent, final String url) throws ValidatorException {
         super.checkUrl(uiComponent, url);
         if (url.indexOf('*') == -1) {
-            final String message = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PARTITIONEDCRLS_WITHOUT_ASTERISK");
-            FacesMessage msg = new FacesMessage(message, null);
-            msg.setSeverity(FacesMessage.SEVERITY_ERROR);
-            throw new ValidatorException(msg);
+            throwException(uiComponent);
         }
+    }
+
+    @Override
+    protected String lookupErrorMessage(final UIComponent uiComponent) {
+        return EjbcaJSFHelper.getBean().getEjbcaWebBean().getText("PARTITIONEDCRLS_WITHOUT_ASTERISK");
     }
 }
