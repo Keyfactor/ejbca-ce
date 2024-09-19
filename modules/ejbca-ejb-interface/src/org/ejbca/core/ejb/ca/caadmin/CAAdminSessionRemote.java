@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 @Remote
 public interface CAAdminSessionRemote extends CAAdminSession {

@@ -12,16 +12,21 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input representation of crypto token activation request through REST API.
  * @version $Id: CryptoTokenActivationRestRequest.java 32242 2019-04-30 15:30:51Z henriks $
  *
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class CryptoTokenActivationRestRequest {
 
-    @ApiModelProperty(value = "Activation Code", example = "foo123")
+    @Schema(description = "Activation Code", example = "foo123")
     private String activationCode;
     
     public CryptoTokenActivationRestRequest() {}

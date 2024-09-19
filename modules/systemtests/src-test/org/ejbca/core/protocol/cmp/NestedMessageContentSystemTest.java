@@ -414,7 +414,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
             CertificateException, CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException, EndEntityProfileValidationException, CouldNotRemoveEndEntityException,
-            WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, javax.ejb.ObjectNotFoundException,
+            WaitingForApprovalException, NoSuchEndEntityException, ObjectNotFoundException, jakarta.ejb.ObjectNotFoundException,
             InvalidCmpProtectionException, CMPException {
         Collection<Certificate> certs = this.certificateStoreSession.findCertificatesBySubjectAndIssuer(SUBJECT_DN.toString(), this.issuerDN);
         log.debug("Found " + certs.size() + " certificates for userDN \"" + SUBJECT_DN + "\"");

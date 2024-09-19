@@ -159,8 +159,8 @@ public class KeyRecoverySystemTest extends CaTestCase {
         parameters.add("%KEYRECOVERY%");
         List<? extends AuditLogEntry> auditLogsGenerated = 
                 ejbcaAuditorSession.selectAuditLog(internalAdmin, DEVICE_NAME, 0, 1000, 
-                        "a.timeStamp > ?0" +
-                        " and a.eventType LIKE ?1", null, parameters);
+                        "a.timeStamp > ?1" +
+                        " and a.eventType LIKE ?2", null, parameters);
         
         boolean foundPii = false; 
         StringBuilder matchString = new StringBuilder();
