@@ -13,6 +13,9 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 
@@ -21,6 +24,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * by CoAP Proxy
  *
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class CoapEstEnrollRestRequest {
 
     @Schema(description = "Certificate Request", example = "MIIDXzCCA...eW1Zro0=")

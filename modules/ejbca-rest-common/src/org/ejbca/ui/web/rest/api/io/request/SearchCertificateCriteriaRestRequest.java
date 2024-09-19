@@ -26,7 +26,6 @@ import java.util.EnumSet;
  *
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest
  *
- * @version $Id: SearchCertificateCriteriaRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
 @Schema(description = "Use one of allowed values as property(see enum values below).\n" +
         "QUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \n" +
