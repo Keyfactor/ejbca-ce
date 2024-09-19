@@ -41,7 +41,7 @@ public class EndEntityManagementSessionBeanUnitTest {
 
     @Test
     public void isUsernameValidPlus() {
-        assertFalse("Username with plus is a invalid", EndEntityManagementSessionBean.isUsernameValid("Some+username"));
+        assertTrue("Username with plus is a valid one", EndEntityManagementSessionBean.isUsernameValid("Some+username"));
     }
 
     @Test
@@ -51,7 +51,7 @@ public class EndEntityManagementSessionBeanUnitTest {
 
     @Test
     public void isUsernameValidAmpersand() {
-        assertFalse("Username with Ampersand is a invalid", EndEntityManagementSessionBean.isUsernameValid("Some&username"));
+        assertTrue("Username with Ampersand is a valid one", EndEntityManagementSessionBean.isUsernameValid("Some&username"));
     }
 
     @Test

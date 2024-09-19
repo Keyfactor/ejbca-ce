@@ -15,7 +15,7 @@ Or you can [start a new discussion](../../discussions/new/choose) and ask your q
 
 If you find a problem with EJBCA, [search if an issue already exists](../../issues).
 
-If a related discussion or issue doesn't exist, you can [open a new issue](../../issues/new). An issue can be converted into a discussion if regarded as one.
+If a related discussion or issue doesn't exist, you can [open a new issue](../../issues/new/choose). An issue can be converted into a discussion if regarded as one.
 
 ### Contribute to the code
 
@@ -26,7 +26,7 @@ You are welcome to send patches, under the LGPLv2.1+ license, as pull requests. 
 * Create a JUnit test case for your change, it may be a simple addition to an existing test. If you do not know how to do this, ask us and we will help you. 
 * If you run into any merge issues, check out this [git tutorial](https://github.com/skills/resolve-merge-conflicts) to help you resolve merge conflicts and other issues.
 
-For more information, refer to the EJBCA documentation on [Getting Started With EJBCA Development](https://doc.primekey.com/ejbca/tutorials-and-guides/modifying-ejbca/getting-started-with-ejbca-development).
+For more information, refer to the EJBCA documentation on [Getting Started With EJBCA Development](https://docs.keyfactor.com/ejbca/latest/getting-started-with-ejbca-development).
 
 #### Self-review
 
@@ -34,6 +34,12 @@ Don't forget to self-review. Please follow these simple guidelines:
 * Keep the patch limited, only change the parts related to your patch. 
 * Do not change other lines, such as whitespace, adding line breaks to Java doc, etc. It will make it very hard for us to review the patch.
 
+#### Testing
+
+Please execute the test suite corresponding to the module you have made changes in. Available unit and system test suites, as well as run instructions can be listed by running the command 'ant -p' from the EJBCA root directory. If you implement new functionality which isn't already covered by unit tests, please create them under the src-test/ directory of the module(s) modified. Example:
+
+* Run all unit tests: ant test:runsa
+* Run individual test: ant test:runone -Dtest.runone=ClassName
 
 #### Your pull request is merged
 

@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 
-import javax.faces.convert.ConverterException;
+import jakarta.faces.convert.ConverterException;
 
 import org.junit.Test;
 

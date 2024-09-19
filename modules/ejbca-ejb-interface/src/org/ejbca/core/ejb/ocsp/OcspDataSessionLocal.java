@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ocsp;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.oscp.OcspResponseData;
 

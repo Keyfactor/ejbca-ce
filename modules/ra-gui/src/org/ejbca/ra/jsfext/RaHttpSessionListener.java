@@ -12,9 +12,9 @@
  *************************************************************************/
 package org.ejbca.ra.jsfext;
 
-import javax.servlet.annotation.WebListener;
-import javax.servlet.http.HttpSessionEvent;
-import javax.servlet.http.HttpSessionListener;
+import jakarta.servlet.annotation.WebListener;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 
 import org.apache.log4j.Logger;
 import org.ejbca.ra.RaAuthenticationBean;

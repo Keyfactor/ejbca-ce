@@ -41,6 +41,7 @@
 		<path refid="lib.nimbus-jose-jwt.classpath"/> <!-- needed by KeyTools -->
 		<path refid="lib.x509-common-util.classpath" />
 		<path refid="lib.cryptotokens.classpath"/>
+		<path refid="lib.jaxb.core.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -62,7 +63,6 @@
 		<path refid="lib.x509-common-util.classpath" />
 		<path refid="lib.cryptotokens.classpath"/>
 	</path>
-
 
 	<path id="test.classpath">
 		<path refid="clientToolBox.lib.classpath"/>

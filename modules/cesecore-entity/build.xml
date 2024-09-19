@@ -21,7 +21,7 @@
 		<path refid="lib.commons-logging.classpath" />
 		<path refid="lib.commons-lang.classpath" />
 		<path refid="lib.commons-config.classpath" />
-		<path refid="lib.jaxws-api.classpath"/>
+		<path refid="lib.jakarta.xml.ws-api.classpath"/>
 		<path location="${cesecore-entity.dir}/../cesecore-common/dist/cesecore-common.jar" />
 		<path refid="lib.x509-common-util.classpath" />
 		<path refid="lib.cryptotokens.classpath"/>
