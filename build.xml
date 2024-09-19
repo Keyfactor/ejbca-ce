@@ -547,7 +547,7 @@
     		<!-- Add other specific files we need in META-INF -->
             <zipfileset prefix="META-INF" dir="${eardd.src}/META-INF" includes="log4j.xml"/>
     		<!-- Specify that we will use a specific WS implementation -->
-            <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
+            <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="jakarta.xml.soap.SAAJMetaFactory"/>
         	<!-- Add application server specific XML files -->
             <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="jboss-deployment-structure.xml"/>
         	<!-- The place where to find plugins -->

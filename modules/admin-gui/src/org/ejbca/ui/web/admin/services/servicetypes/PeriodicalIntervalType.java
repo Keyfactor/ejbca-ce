@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.faces.model.SelectItem;
+import jakarta.faces.model.SelectItem;
 
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;

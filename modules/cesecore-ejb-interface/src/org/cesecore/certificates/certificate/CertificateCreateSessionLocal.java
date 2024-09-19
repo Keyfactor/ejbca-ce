@@ -15,7 +15,7 @@ package org.cesecore.certificates.certificate;
 import java.security.PublicKey;
 import java.util.Date;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.its.ITSCertificate;

@@ -14,7 +14,7 @@ package org.cesecore.certificates.certificatetransparency;
 
 import java.util.concurrent.ExecutorService;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * @version $Id$

@@ -1,0 +1,3940 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "description": "API reference documentation.",
+    "title": "EJBCA REST Interface",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "/ejbca/ejbca-rest-api"
+    }
+  ],
+  "tags": [
+    {
+      "name": "v1/ca_management"
+    },
+    {
+      "name": "v1/ca"
+    },
+    {
+      "name": "v1/certificate"
+    },
+    {
+      "name": "v2/certificate"
+    },
+    {
+      "name": "v1/configdump"
+    },
+    {
+      "name": "v1/cryptotoken"
+    },
+    {
+      "name": "v1/endentity"
+    },
+    {
+      "name": "v2/endentity"
+    },
+    {
+      "name": "v1/ssh"
+    },
+    {
+      "name": "v1/system"
+    }
+  ],
+  "paths": {
+    "/v1/ca_management/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v1/ca_management"
+        ]
+      }
+    },
+    "/v1/ca_management/{ca_name}/deactivate": {
+      "put": {
+        "description": "Deactivates CA with given name",
+        "operationId": "deactivate",
+        "parameters": [
+          {
+            "description": "Name of the CA to deactivate",
+            "in": "path",
+            "name": "ca_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {},
+            "description": "CA deactivated"
+          }
+        },
+        "summary": "Deactivate a CA",
+        "tags": [
+          "v1/ca_management"
+        ]
+      }
+    },
+    "/v1/ca_management/{ca_name}/activate": {
+      "put": {
+        "description": "Activates CA with given name",
+        "operationId": "activate",
+        "parameters": [
+          {
+            "description": "Name of the CA to activate",
+            "in": "path",
+            "name": "ca_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {},
+            "description": "CA activated"
+          }
+        },
+        "summary": "Activate a CA",
+        "tags": [
+          "v1/ca_management"
+        ]
+      }
+    },
+    "/v1/ca/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_1",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v1/ca"
+        ]
+      }
+    },
+    "/v1/ca/{subject_dn}/certificate/download": {
+      "get": {
+        "operationId": "getCertificateAsPem",
+        "parameters": [
+          {
+            "description": "CAs subject DN",
+            "in": "path",
+            "name": "subject_dn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get PEM file with the active CA certificate chain",
+        "tags": [
+          "v1/ca"
+        ]
+      }
+    },
+    "/v1/ca/{issuer_dn}/getLatestCrl": {
+      "get": {
+        "operationId": "getLatestCrl",
+        "parameters": [
+          {
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "in": "path",
+            "name": "issuer_dn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "true to get the latest deltaCRL, false to get the latest complete CRL",
+            "in": "query",
+            "name": "deltaCrl",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "the CRL partition index",
+            "in": "query",
+            "name": "crlPartitionIndex",
+            "schema": {
+              "default": 0,
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrlRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Returns the latest CRL issued by this CA",
+        "tags": [
+          "v1/ca"
+        ]
+      }
+    },
+    "/v1/ca": {
+      "get": {
+        "description": "Returns the Response containing the list of CAs with general information per CA as Json",
+        "operationId": "listCas",
+        "parameters": [
+          {
+            "description": "true to get external (i.e. imported) cartificates, false to not get external (i.e. imported) certificates",
+            "in": "query",
+            "name": "includeExternal",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaInfosRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Returns the Response containing the list of CAs with general information per CA as Json",
+        "tags": [
+          "v1/ca"
+        ]
+      }
+    },
+    "/v1/ca/{issuer_dn}/createcrl": {
+      "post": {
+        "operationId": "createCrl",
+        "parameters": [
+          {
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "in": "path",
+            "name": "issuer_dn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "true to create the deltaCRL, false to create the base CRL",
+            "in": "query",
+            "name": "deltacrl",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateCrlRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Create CRL(main, partition and delta) issued by this CA",
+        "tags": [
+          "v1/ca"
+        ]
+      }
+    },
+    "/v1/ca/{issuer_dn}/importcrl": {
+      "post": {
+        "operationId": "importCrl",
+        "parameters": [
+          {
+            "description": "the CRL issuers DN (CAs subject DN)",
+            "in": "path",
+            "name": "issuer_dn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/importCrl_request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {},
+            "description": "CRL file was imported successfully"
+          },
+          "400": {
+            "content": {},
+            "description": "Error while importing CRL file"
+          }
+        },
+        "summary": "Import a certificate revocation list (CRL) for a CA",
+        "tags": [
+          "v1/ca"
+        ]
+      }
+    },
+    "/v1/certificate/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_2",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v1/certificate"
+        ]
+      }
+    },
+    "/v1/certificate/expire": {
+      "get": {
+        "description": "List of certificates expiring within specified number of days",
+        "operationId": "getCertificatesAboutToExpire",
+        "parameters": [
+          {
+            "description": "Request certificates expiring within this number of days",
+            "in": "query",
+            "name": "days",
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Next offset to display results of, if maxNumberOfResults is exceeded. Starts from 0.",
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Maximum number of certificates to display. If result exceeds this value. Modify 'offset' to retrieve more results",
+            "in": "query",
+            "name": "maxNumberOfResults",
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExpiringCertificatesRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get a list of certificates that are about to expire",
+        "tags": [
+          "v1/certificate"
+        ]
+      }
+    },
+    "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revoke": {
+      "put": {
+        "description": "Revokes the specified certificate, changes revocation reason for an already revoked certificate, sets invalidity or revocation date",
+        "operationId": "revokeCertificate",
+        "parameters": [
+          {
+            "description": "Subject DN of the issuing CA",
+            "in": "path",
+            "name": "issuer_dn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hex serial number (without prefix, e.g. '00')",
+            "in": "path",
+            "name": "certificate_serial_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Valid RFC5280 reason. One of\n NOT_REVOKED, UNSPECIFIED ,KEY_COMPROMISE,\n CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,\n CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE \n\n Only KEY_COMPROMISE is allowed for new revocation reason if revocation reason is to be changed.",
+            "in": "query",
+            "name": "reason",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'",
+            "in": "query",
+            "name": "date",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "ISO 8601 Date string, eg. '2018-06-15T14:07:09Z'. Will be ignored with revocation reason REMOVE_FROM_CRL",
+            "in": "query",
+            "name": "invalidity_date",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Revokes the specified certificate",
+        "tags": [
+          "v1/certificate"
+        ]
+      }
+    },
+    "/v1/certificate/search": {
+      "post": {
+        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequest model.",
+        "operationId": "searchCertificates",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchCertificatesRestRequest"
+              }
+            }
+          },
+          "description": "Maximum number of results and collection of search criterias.",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchCertificatesRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Searches for certificates confirming given criteria.",
+        "tags": [
+          "v1/certificate"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/certificate/pkcs10enroll": {
+      "post": {
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR. \nResponse Format is 'DER' (default when excluded) or 'PKCS7' in base64 encoded PEM format",
+        "operationId": "enrollPkcs10Certificate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrollCertificateRestRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateEnrollmentRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Enrollment with client generated keys, using CSR subject.",
+        "tags": [
+          "v1/certificate"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/certificate/{request_id}/finalize": {
+      "post": {
+        "description": "Finalizes enrollment after administrator approval using request Id",
+        "operationId": "finalizeEnrollment",
+        "parameters": [
+          {
+            "description": "Approval request id",
+            "in": "path",
+            "name": "request_id",
+            "required": true,
+            "schema": {
+              "format": "int32",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinalizeRestRequest"
+              }
+            }
+          },
+          "description": "responseFormat must be one of 'P12', 'BCFKS', 'JKS', 'DER'",
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Finalize enrollment",
+        "tags": [
+          "v1/certificate"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/certificate/enrollkeystore": {
+      "post": {
+        "description": "Creates a keystore for the specified end entity",
+        "operationId": "enrollKeystore",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeyStoreRestRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateEnrollmentRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Keystore enrollment",
+        "tags": [
+          "v1/certificate"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/certificate/{issuer_dn}/{certificate_serial_number}/revocationstatus": {
+      "get": {
+        "description": "Checks revocation status of the specified certificate",
+        "operationId": "revocationStatus",
+        "parameters": [
+          {
+            "description": "Subject DN of the issuing CA",
+            "in": "path",
+            "name": "issuer_dn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "hex serial number (without prefix, e.g. '00')",
+            "in": "path",
+            "name": "certificate_serial_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevokeStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Checks revocation status of the specified certificate",
+        "tags": [
+          "v1/certificate"
+        ]
+      }
+    },
+    "/v1/certificate/certificaterequest": {
+      "post": {
+        "description": "Enroll for a certificate given a PEM encoded PKCS#10 CSR.",
+        "operationId": "certificateRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CertificateRequestRestRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateEnrollmentRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Enrollment with client generated keys for an existing End Entity",
+        "tags": [
+          "v1/certificate"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v2/certificate/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_3",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v2/certificate"
+        ]
+      }
+    },
+    "/v2/certificate/{issuer_dn}/{certificate_serial_number}/keyrecover": {
+      "put": {
+        "operationId": "markCertificateForKeyRecovery",
+        "parameters": [
+          {
+            "description": "Subject DN of the issuing CA",
+            "in": "path",
+            "name": "issuer_dn",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Hex serial number (without prefix, e.g. '00')",
+            "in": "path",
+            "name": "certificate_serial_number",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {},
+            "description": "Certificate marked for key recovery successfully"
+          },
+          "500": {
+            "content": {},
+            "description": "General error, while trying to mark the certificate for key recovery"
+          }
+        },
+        "summary": "Marks certificate for  key recovery.",
+        "tags": [
+          "v2/certificate"
+        ]
+      }
+    },
+    "/v2/certificate/profile/{profile_name}": {
+      "get": {
+        "operationId": "getCertificateProfileInfo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "profile_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateProfileInfoRestResponseV2"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get Certificate Profile Info.",
+        "tags": [
+          "v2/certificate"
+        ]
+      }
+    },
+    "/v2/certificate/search": {
+      "post": {
+        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchCertificateCriteriaRestRequestV2 model. Use -1 for current_page to get total number of certificate for the request criteria.",
+        "operationId": "searchCertificates_1",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchCertificatesRestRequestV2"
+              }
+            }
+          },
+          "description": "Collection of search criterias and pagination information.",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchCertificatesRestResponseV2"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Searches for certificates confirming given criteria and pagination.",
+        "tags": [
+          "v2/certificate"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v2/certificate/count": {
+      "get": {
+        "operationId": "getCertificateCount",
+        "parameters": [
+          {
+            "description": "true if an active certificates should be counted only",
+            "in": "query",
+            "name": "isActive",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateCountResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the quantity of rather total issued or active certificates",
+        "tags": [
+          "v2/certificate"
+        ]
+      }
+    },
+    "/v1/configdump/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_4",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v1/configdump"
+        ]
+      }
+    },
+    "/v1/configdump/{type}/{setting}": {
+      "get": {
+        "description": "Returns the configdump data in JSON.",
+        "operationId": "getJsonConfigdumpForTypeAndSetting",
+        "parameters": [
+          {
+            "description": "Configuration type to export.\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
+            "in": "path",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Individual configuration name to export",
+            "in": "path",
+            "name": "setting",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Print a warning instead of aborting and throwing an exception on errors.",
+            "in": "query",
+            "name": "ignoreerrors",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Also include fields having the default value.",
+            "in": "query",
+            "name": "defaults",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "format": "byte",
+                    "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the configuration for a type and setting in JSON.",
+        "tags": [
+          "v1/configdump"
+        ]
+      }
+    },
+    "/v1/configdump/configdump.zip": {
+      "get": {
+        "description": "Returns a zip archive of YAML files.",
+        "operationId": "getZipExport",
+        "parameters": [
+          {
+            "description": "Print a warning instead of aborting and throwing an exception on errors.",
+            "in": "query",
+            "name": "ignoreerrors",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Also include fields having the default value.",
+            "in": "query",
+            "name": "defaults",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Enables export of external CAs (i.e. CAs where there's only a certificate and nothing else)",
+            "in": "query",
+            "name": "externalcas",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Names of items/types to include in the export. The syntax is identical to that of exclude. For items of types that aren't listed, everything is included.",
+            "explode": true,
+            "in": "query",
+            "name": "include",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "form"
+          },
+          {
+            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
+            "explode": true,
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "items": {
+                    "format": "byte",
+                    "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the configuration as a ZIP file.",
+        "tags": [
+          "v1/configdump"
+        ]
+      },
+      "post": {
+        "operationId": "postZipImport",
+        "parameters": [
+          {
+            "description": "Expand variables by replacing references in form ${VARIABLE_NAME} with values of matching environment variables, e.g. VARIABLE_NAME.",
+            "in": "query",
+            "name": "expand",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/postZipImport_request"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigdumpResults"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Put the configuration as a ZIP file.",
+        "tags": [
+          "v1/configdump"
+        ]
+      }
+    },
+    "/v1/configdump": {
+      "get": {
+        "description": "Returns the configdump data in JSON.",
+        "operationId": "getJsonConfigdump",
+        "parameters": [
+          {
+            "description": "Print a warning instead of aborting and throwing an exception on errors.",
+            "in": "query",
+            "name": "ignoreerrors",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Also include fields having the default value.",
+            "in": "query",
+            "name": "defaults",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Enables export of external CAs (i.e. CAs where there's only a certificate and nothing else)",
+            "in": "query",
+            "name": "externalcas",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Names of items/types to include in the export. The syntax is identical to that of exclude. For items of types that aren't listed, everything is included.",
+            "explode": true,
+            "in": "query",
+            "name": "include",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "form"
+          },
+          {
+            "description": "Names of items/types to exclude in the export, separated by semicolon. Type and name is separated by a colon, and wildcards \"\\*\" are allowed. Both are case-insensitive. E.g. exclude=\"\\*:Example CA;cryptotoken:Example\\*;systemconfiguration:\\*\".\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities, CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
+            "explode": true,
+            "in": "query",
+            "name": "exclude",
+            "schema": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "style": "form"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "format": "byte",
+                    "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the configuration in JSON.",
+        "tags": [
+          "v1/configdump"
+        ]
+      },
+      "post": {
+        "operationId": "postJsonImport",
+        "parameters": [
+          {
+            "description": "Add to warnings instead of aborting on errors.",
+            "in": "query",
+            "name": "ignoreerrors",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Generate initial certificate for CAs on import",
+            "in": "query",
+            "name": "initialize",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Continue on errors. Default is to abort.",
+            "in": "query",
+            "name": "continue",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "How to handle already existing configuration. Options are abort,skip,yes",
+            "in": "query",
+            "name": "overwrite",
+            "schema": {
+              "default": "abort",
+              "enum": [
+                "yes",
+                "skip",
+                "abort"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "How to resolve missing references. Options are abort,skip,default",
+            "in": "query",
+            "name": "resolve",
+            "schema": {
+              "default": "abort",
+              "enum": [
+                "abort",
+                "skip",
+                "useDefault"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "description": "Expand variables by replacing references in form ${VARIABLE_NAME} with values of matching environment variables, e.g. VARIABLE_NAME.",
+            "in": "query",
+            "name": "expand",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "JSON data in configdump format",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfigdumpResults"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Put the configuration in JSON.",
+        "tags": [
+          "v1/configdump"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/configdump/{type}": {
+      "get": {
+        "description": "Returns the configdump data in JSON.",
+        "operationId": "getJsonConfigdumpForType",
+        "parameters": [
+          {
+            "description": "Configuration type to export.\n\nSupported types are: ACMECONFIG/acme-config, AUTOENROLLMENTCONFIG/autoenrollment-config, CA/certification-authorities,  CRYPTOTOKEN/crypto-tokens, PUBLISHER/publishers, APPROVALPROFILE/approval-profiles, CERTPROFILE/certificate-profiles, EEPROFILE/end-entity-profiles, SERVICE/services, ROLE/admin-roles, KEYBINDING/internal-key-bindings, ADMINPREFS/admin-preferences, OCSPCONFIG/ocsp-configuration, PEERCONNECTOR/peer-connectors, SCEPCONFIG/scep-config, CMPCONFIG/cmp-config, ESTCONFIG/est-config, VALIDATOR/validators, CTLOG/ct-logs, EXTENDEDKEYUSAGE/extended-key-usage, CERTEXTENSION/custom-certificate-extensions,  OAUTHKEY/trusted-oauth-providers, AVAILABLEPROTOCOLS/available-protocols",
+            "in": "path",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Print a warning instead of aborting and throwing an exception on errors.",
+            "in": "query",
+            "name": "ignoreerrors",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Also include fields having the default value.",
+            "in": "query",
+            "name": "defaults",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Enables export of external CAs (i.e. CAs where there's only a certificate and nothing else)",
+            "in": "query",
+            "name": "externalcas",
+            "schema": {
+              "default": false,
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "format": "byte",
+                    "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                    "type": "string"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the configuration for type in JSON.",
+        "tags": [
+          "v1/configdump"
+        ]
+      }
+    },
+    "/v1/cryptotoken/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_5",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v1/cryptotoken"
+        ]
+      }
+    },
+    "/v1/cryptotoken/{cryptotoken_name}/deactivate": {
+      "put": {
+        "description": "Deactivates Crypto Token given name",
+        "operationId": "deactivate_1",
+        "parameters": [
+          {
+            "description": "Name of the token to deactivate",
+            "in": "path",
+            "name": "cryptotoken_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Deactivate a Crypto Token",
+        "tags": [
+          "v1/cryptotoken"
+        ]
+      }
+    },
+    "/v1/cryptotoken/{cryptotoken_name}/activate": {
+      "put": {
+        "description": "Activates Crypto Token given name and activation code",
+        "operationId": "activate_1",
+        "parameters": [
+          {
+            "description": "Name of the token to activate",
+            "in": "path",
+            "name": "cryptotoken_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/CryptoTokenActivationRestRequest"
+              }
+            }
+          },
+          "description": "activation code",
+          "required": false
+        },
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Activate a Crypto Token",
+        "tags": [
+          "v1/cryptotoken"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/cryptotoken/{cryptotoken_name}/generatekeys": {
+      "post": {
+        "description": "Generates a key pair given crypto token name, key pair alias, key algorithm and key specification, i.e. RSA 4096 or ECDSA secp256r1.",
+        "operationId": "generateKeys",
+        "parameters": [
+          {
+            "description": "Name of the token to generate keys for",
+            "in": "path",
+            "name": "cryptotoken_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "*/*": {
+              "schema": {
+                "$ref": "#/components/schemas/CryptoTokenKeyGenerationRestRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Generate keys",
+        "tags": [
+          "v1/cryptotoken"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/cryptotoken/{cryptotoken_name}/{key_pair_alias}/removekeys": {
+      "post": {
+        "description": "Remove a key pair given crypto token name and key pair alias to be removed.",
+        "operationId": "removeKeys",
+        "parameters": [
+          {
+            "description": "Name of the token to remove keys for.",
+            "in": "path",
+            "name": "cryptotoken_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Alias for the key to be removed from the crypto token.",
+            "in": "path",
+            "name": "key_pair_alias",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Remove keys",
+        "tags": [
+          "v1/cryptotoken"
+        ]
+      }
+    },
+    "/v1/endentity": {
+      "post": {
+        "description": "Register new end entity based on provided registration data",
+        "operationId": "add",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddEndEntityRestRequest"
+              }
+            }
+          },
+          "description": "request",
+          "required": false
+        },
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Add new end entity, if it does not exist",
+        "tags": [
+          "v1/endentity"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/endentity/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_6",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v1/endentity"
+        ]
+      }
+    },
+    "/v1/endentity/{endentity_name}": {
+      "delete": {
+        "description": "Deletes specified end entity and keeps certificate information untouched, if end entity does not exist success is still returned",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "description": "Name of the end entity",
+            "in": "path",
+            "name": "endentity_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Deletes end entity",
+        "tags": [
+          "v1/endentity"
+        ]
+      }
+    },
+    "/v1/endentity/search": {
+      "post": {
+        "description": "Insert as many search criteria as needed. A reference about allowed values for criteria could be found below, under SearchEndEntityCriteriaRestRequest model.",
+        "operationId": "search",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchEndEntitiesRestRequest"
+              }
+            }
+          },
+          "description": "Maximum number of results and collection of search criterias.",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchEndEntitiesRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Searches for end entity confirming given criteria.",
+        "tags": [
+          "v1/endentity"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/endentity/{endentity_name}/setstatus": {
+      "post": {
+        "description": "Edit status, password and token type of related end entity",
+        "operationId": "setstatus",
+        "parameters": [
+          {
+            "description": "Name of the end entity to edit status for",
+            "in": "path",
+            "name": "endentity_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetEndEntityStatusRestRequest"
+              }
+            }
+          },
+          "description": "request",
+          "required": false
+        },
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Edits end entity setting new status",
+        "tags": [
+          "v1/endentity"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/endentity/{endentity_name}/revoke": {
+      "put": {
+        "description": "Revokes all certificates associated with given end entity name with specified reason code (see RFC 5280 Section 5.3.1), and optionally deletes the end entity",
+        "operationId": "revoke",
+        "parameters": [
+          {
+            "description": "Name of the end entity",
+            "in": "path",
+            "name": "endentity_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EndEntityRevocationRestRequest"
+              }
+            }
+          },
+          "description": "request",
+          "required": false
+        },
+        "responses": {
+          "default": {
+            "content": {},
+            "description": "successful operation"
+          }
+        },
+        "summary": "Revokes all end entity certificates",
+        "tags": [
+          "v1/endentity"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v2/endentity/profile/{endentity_profile_name}": {
+      "get": {
+        "description": "Returns End Entity Profile configurations: List of available CAs, list of available Certificate Profiles.",
+        "operationId": "profile",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "endentity_profile_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EndEntityProfileResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get End Entity Profile content",
+        "tags": [
+          "v2/endentity"
+        ]
+      }
+    },
+    "/v2/endentity/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_7",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v2/endentity"
+        ]
+      }
+    },
+    "/v2/endentity/profiles/authorized": {
+      "get": {
+        "description": "Returns list of all authorized end entity profiles for the current admin token",
+        "operationId": "getAuthorizedEndEntityProfiles",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthorizedEEPsRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "List of authorized end entity profiles for the current admin.",
+        "tags": [
+          "v2/endentity"
+        ]
+      }
+    },
+    "/v2/endentity/search": {
+      "post": {
+        "description": "Insert as many search criteria as needed and optionally a sorting criteria. A reference about allowed values for criteria could be found below, under SearchEndEntityCriteriaRestRequestV2 model.",
+        "operationId": "sortedSearch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchEndEntitiesRestRequestV2"
+              }
+            }
+          },
+          "description": "Maximum number of results and collection of search criterias.",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchEndEntitiesRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Searches and sorts for end entity conforming given criteria.",
+        "tags": [
+          "v2/endentity"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/ssh/status": {
+      "get": {
+        "description": "Returns status, API version and EJBCA version.",
+        "operationId": "status_8",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestResourceStatusRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Get the status of this REST Resource",
+        "tags": [
+          "v1/ssh"
+        ]
+      }
+    },
+    "/v1/ssh/certificaterequest": {
+      "post": {
+        "description": "Enroll for a ssh certificate.",
+        "operationId": "sshCertificateRequest",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SshCertificateRequestRestRequest"
+              }
+            }
+          },
+          "required": false
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SshCertificateRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Enrollment with public key",
+        "tags": [
+          "v1/ssh"
+        ],
+        "x-codegen-request-body-name": "body"
+      }
+    },
+    "/v1/ssh/{ca_name}/pubkey": {
+      "get": {
+        "description": "Retrieves a CA's public key in SSH format.",
+        "operationId": "pubkey",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "ca_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SshPublicKeyRestResponse"
+                }
+              }
+            },
+            "description": "successful operation"
+          }
+        },
+        "summary": "Retrieves a CA's public key in SSH format.",
+        "tags": [
+          "v1/ssh"
+        ]
+      }
+    },
+    "/v1/system/service/{service_name}/run": {
+      "put": {
+        "description": "Run service with the provided name",
+        "operationId": "runServiceNoTimer",
+        "parameters": [
+          {
+            "description": "Name of the service to run",
+            "in": "path",
+            "name": "service_name",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {},
+            "description": "OK Successful request"
+          }
+        },
+        "summary": "Runs a specified service",
+        "tags": [
+          "v1/system"
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "RestResourceStatusRestResponse": {
+        "example": {
+          "version": "1.0",
+          "status": "OK",
+          "revision": "EJBCA 1.0.0 Enterprise"
+        },
+        "properties": {
+          "status": {
+            "description": "Status",
+            "example": "OK",
+            "type": "string"
+          },
+          "version": {
+            "description": "Resource version",
+            "example": "1.0",
+            "type": "string"
+          },
+          "revision": {
+            "description": "Application revision",
+            "example": "EJBCA 1.0.0 Enterprise",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CrlRestResponse": {
+        "example": {
+          "response_format": "DER",
+          "crl": "MIIEV...SqQPE"
+        },
+        "properties": {
+          "crl": {
+            "description": "Certificate Revocation List (CRL)",
+            "example": "MIIEV...SqQPE",
+            "items": {
+              "format": "byte",
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "response_format": {
+            "description": "Response format",
+            "example": "DER",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CaInfoRestResponse": {
+        "example": {
+          "issuer_dn": "CN=ExampleCA,O=Sample,C=SE",
+          "external": true,
+          "subject_dn": "CN=ExampleCA,O=Sample,C=SE",
+          "name": "ExampleCA",
+          "id": 12345678,
+          "expiration_date": "2038-01-19T03:14:07Z"
+        },
+        "properties": {
+          "id": {
+            "description": "CA identifier",
+            "example": 12345678,
+            "format": "int32",
+            "type": "integer"
+          },
+          "name": {
+            "description": "Certificate Authority (CA) name",
+            "example": "ExampleCA",
+            "type": "string"
+          },
+          "subject_dn": {
+            "description": "Subject Distinguished Name",
+            "example": "CN=ExampleCA,O=Sample,C=SE",
+            "type": "string"
+          },
+          "issuer_dn": {
+            "description": "Issuer Distinguished Name",
+            "example": "CN=ExampleCA,O=Sample,C=SE",
+            "type": "string"
+          },
+          "expiration_date": {
+            "description": "Expiration date",
+            "example": "2038-01-19T03:14:07Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "external": {
+            "description": "Is external (whether CA certificate was imported)",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "CaInfosRestResponse": {
+        "example": {
+          "certificate_authorities": [
+            {
+              "issuer_dn": "CN=ExampleCA,O=Sample,C=SE",
+              "external": true,
+              "subject_dn": "CN=ExampleCA,O=Sample,C=SE",
+              "name": "ExampleCA",
+              "id": 12345678,
+              "expiration_date": "2038-01-19T03:14:07Z"
+            },
+            {
+              "issuer_dn": "CN=ExampleCA,O=Sample,C=SE",
+              "external": true,
+              "subject_dn": "CN=ExampleCA,O=Sample,C=SE",
+              "name": "ExampleCA",
+              "id": 12345678,
+              "expiration_date": "2038-01-19T03:14:07Z"
+            }
+          ]
+        },
+        "properties": {
+          "certificate_authorities": {
+            "items": {
+              "$ref": "#/components/schemas/CaInfoRestResponse"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CreateCrlRestResponse": {
+        "example": {
+          "issuer_dn": "CN=ExampleCA",
+          "latest_partition_crl_versions": {
+            "key": 0
+          },
+          "all_success": true,
+          "latest_partition_delta_crl_versions": {
+            "key": 6
+          },
+          "latest_delta_crl_version": 5,
+          "latest_crl_version": 10
+        },
+        "properties": {
+          "issuer_dn": {
+            "description": "Issuer Distinguished Name",
+            "example": "CN=ExampleCA",
+            "type": "string"
+          },
+          "latest_crl_version": {
+            "description": "Latest base CRL version",
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          },
+          "latest_delta_crl_version": {
+            "description": "Latest delta CRL version",
+            "example": 5,
+            "format": "int32",
+            "type": "integer"
+          },
+          "latest_partition_crl_versions": {
+            "additionalProperties": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "latest_partition_delta_crl_versions": {
+            "additionalProperties": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "object"
+          },
+          "all_success": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "CertificateRestResponse": {
+        "example": {
+          "response_format": "DER",
+          "certificate": "MIIDXzCCA...eW1Zro0=",
+          "certificate_profile": "ENDUSER",
+          "serial_number": "1234567890ABCDEF",
+          "end_entity_profile": "ExampleEEP",
+          "certificate_chain": "[\"ABC123efg...345xyz0=\"]"
+        },
+        "properties": {
+          "certificate": {
+            "description": "Certificate",
+            "example": "MIIDXzCCA...eW1Zro0=",
+            "items": {
+              "format": "byte",
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "serial_number": {
+            "description": "Hex Serial Number",
+            "example": "1234567890ABCDEF",
+            "type": "string"
+          },
+          "response_format": {
+            "description": "Response format",
+            "example": "DER",
+            "type": "string"
+          },
+          "certificate_chain": {
+            "description": "Certificate chain",
+            "example": "[\"ABC123efg...345xyz0=\"]",
+            "items": {
+              "items": {
+                "format": "byte",
+                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "certificate_profile": {
+            "description": "Certificate profile name",
+            "example": "ENDUSER",
+            "type": "string"
+          },
+          "end_entity_profile": {
+            "description": "End Entity profile name",
+            "example": "ExampleEEP",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CertificatesRestResponse": {
+        "example": {
+          "certificates": [
+            {
+              "response_format": "DER",
+              "certificate": "MIIDXzCCA...eW1Zro0=",
+              "certificate_profile": "ENDUSER",
+              "serial_number": "1234567890ABCDEF",
+              "end_entity_profile": "ExampleEEP",
+              "certificate_chain": "[\"ABC123efg...345xyz0=\"]"
+            },
+            {
+              "response_format": "DER",
+              "certificate": "MIIDXzCCA...eW1Zro0=",
+              "certificate_profile": "ENDUSER",
+              "serial_number": "1234567890ABCDEF",
+              "end_entity_profile": "ExampleEEP",
+              "certificate_chain": "[\"ABC123efg...345xyz0=\"]"
+            }
+          ]
+        },
+        "properties": {
+          "certificates": {
+            "items": {
+              "$ref": "#/components/schemas/CertificateRestResponse"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ExpiringCertificatesRestResponse": {
+        "example": {
+          "pagination_rest_response_component": {
+            "more_results": true,
+            "number_of_results": 6,
+            "next_offset": 0
+          },
+          "certificates_rest_response": {
+            "certificates": [
+              {
+                "response_format": "DER",
+                "certificate": "MIIDXzCCA...eW1Zro0=",
+                "certificate_profile": "ENDUSER",
+                "serial_number": "1234567890ABCDEF",
+                "end_entity_profile": "ExampleEEP",
+                "certificate_chain": "[\"ABC123efg...345xyz0=\"]"
+              },
+              {
+                "response_format": "DER",
+                "certificate": "MIIDXzCCA...eW1Zro0=",
+                "certificate_profile": "ENDUSER",
+                "serial_number": "1234567890ABCDEF",
+                "end_entity_profile": "ExampleEEP",
+                "certificate_chain": "[\"ABC123efg...345xyz0=\"]"
+              }
+            ]
+          }
+        },
+        "properties": {
+          "pagination_rest_response_component": {
+            "$ref": "#/components/schemas/PaginationRestResponseComponent"
+          },
+          "certificates_rest_response": {
+            "$ref": "#/components/schemas/CertificatesRestResponse"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationRestResponseComponent": {
+        "example": {
+          "more_results": true,
+          "number_of_results": 6,
+          "next_offset": 0
+        },
+        "properties": {
+          "more_results": {
+            "type": "boolean"
+          },
+          "next_offset": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "number_of_results": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "RevokeStatusRestResponse": {
+        "example": {
+          "issuer_dn": "CN=ExampleCA",
+          "revocation_reason": "KEY_COMPROMISE",
+          "revocation_date": "1970-01-01T00:00:00Z",
+          "serial_number": "1234567890ABCDEF",
+          "message": "Successfully revoked",
+          "revoked": true,
+          "invalidity_date": "1970-01-01T00:00:00Z"
+        },
+        "properties": {
+          "issuer_dn": {
+            "description": "Issuer Distinguished Name",
+            "example": "CN=ExampleCA",
+            "type": "string"
+          },
+          "serial_number": {
+            "description": "Hex Serial Number",
+            "example": "1234567890ABCDEF",
+            "type": "string"
+          },
+          "revocation_reason": {
+            "description": "RFC5280 revokation reason",
+            "example": "KEY_COMPROMISE",
+            "type": "string"
+          },
+          "revocation_date": {
+            "description": "Revokation date",
+            "example": "1970-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "invalidity_date": {
+            "description": "Invalidity date",
+            "example": "1970-01-01T00:00:00Z",
+            "format": "date-time",
+            "type": "string"
+          },
+          "message": {
+            "description": "Message",
+            "example": "Successfully revoked",
+            "type": "string"
+          },
+          "revoked": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SearchCertificatesRestResponse": {
+        "example": {
+          "certificates": [
+            {
+              "response_format": "DER",
+              "certificate": "MIIDXzCCA...eW1Zro0=",
+              "certificate_profile": "ENDUSER",
+              "serial_number": "1234567890ABCDEF",
+              "end_entity_profile": "ExampleEEP",
+              "certificate_chain": "[\"ABC123efg...345xyz0=\"]"
+            },
+            {
+              "response_format": "DER",
+              "certificate": "MIIDXzCCA...eW1Zro0=",
+              "certificate_profile": "ENDUSER",
+              "serial_number": "1234567890ABCDEF",
+              "end_entity_profile": "ExampleEEP",
+              "certificate_chain": "[\"ABC123efg...345xyz0=\"]"
+            }
+          ],
+          "more_results": true
+        },
+        "properties": {
+          "certificates": {
+            "items": {
+              "$ref": "#/components/schemas/CertificateRestResponse"
+            },
+            "type": "array"
+          },
+          "more_results": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SearchCertificateCriteriaRestRequest": {
+        "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username or SerialNr; \nSERIAL_NUMBER - multiplicity [0, 1] - is used to search by SerialNr; \nSUBJECT_DN - multiplicity [0, 1] - is used to search by SubjectDn; \nSUBJECT_ALT_NAME - multiplicity [0, 1] - is used to search by SubjectAn; \nUSERNAME - multiplicity [0, 1] - is used to search by Username; \nEXTERNAL_ACCOUNT_BINDING_ID - multiplicity [0, 1] - is used to search by Account Binding Id; \nAvailable STATUS - multiplicity [0, 12] - values are: CERT_ACTIVE, CERT_REVOKED, REVOCATION_REASON_UNSPECIFIED, REVOCATION_REASON_KEYCOMPROMISE, REVOCATION_REASON_CACOMPROMISE, REVOCATION_REASON_AFFILIATIONCHANGED, REVOCATION_REASON_SUPERSEDED, REVOCATION_REASON_CESSATIONOFOPERATION, REVOCATION_REASON_CERTIFICATEHOLD, REVOCATION_REASON_REMOVEFROMCRL, REVOCATION_REASON_PRIVILEGESWITHDRAWN, REVOCATION_REASON_AACOMPROMISE;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \nISSUED_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nISSUED_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nEXPIRE_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nREVOCATION_DATE 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string. \nUPDATE_TIME 'BEFORE' - multiplicity [0, 1] - ISO 8601 Date string; \nUPDATE_TIME 'AFTER' - multiplicity [0, 1] - ISO 8601 Date string; \n",
+        "example": {
+          "property": "CERTIFICATE_PROFILE",
+          "value": "ENDUSER",
+          "operation": "EQUAL"
+        },
+        "properties": {
+          "property": {
+            "description": "A search property",
+            "enum": [
+              "QUERY",
+              "SERIAL_NUMBER",
+              "USERNAME",
+              "SUBJECT_DN",
+              "SUBJECT_ALT_NAME",
+              "EXTERNAL_ACCOUNT_BINDING_ID",
+              "END_ENTITY_PROFILE",
+              "CERTIFICATE_PROFILE",
+              "EXTERNAL_ACCOUNT_BINDING_ID",
+              "CA",
+              "STATUS",
+              "ISSUED_DATE",
+              "EXPIRE_DATE",
+              "REVOCATION_DATE"
+            ],
+            "example": "CERTIFICATE_PROFILE",
+            "type": "string"
+          },
+          "value": {
+            "description": "A search value. This could be sting value, ISO 8601 Date string, an appropriate string name of End Entity Profile or Certificate Profile or CA",
+            "example": "ENDUSER",
+            "type": "string"
+          },
+          "operation": {
+            "description": "An operation for property on inserted value. 'EQUAL' for string, 'LIKE' for string value ('QUERY'), 'BEGINS_WITH' for string value (case sensitive trailing wildcard search.), 'BEFORE' or 'AFTER' for date values",
+            "enum": [
+              "EQUAL",
+              "LIKE",
+              "BEGINS_WITH",
+              "BEFORE",
+              "AFTER"
+            ],
+            "example": "EQUAL",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SearchCertificatesRestRequest": {
+        "example": {
+          "criteria": [
+            {
+              "property": "CERTIFICATE_PROFILE",
+              "value": "ENDUSER",
+              "operation": "EQUAL"
+            },
+            {
+              "property": "CERTIFICATE_PROFILE",
+              "value": "ENDUSER",
+              "operation": "EQUAL"
+            }
+          ],
+          "max_number_of_results": 10
+        },
+        "properties": {
+          "max_number_of_results": {
+            "description": "Maximum number of results",
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          },
+          "criteria": {
+            "description": "A List of search criteria.",
+            "items": {
+              "$ref": "#/components/schemas/SearchCertificateCriteriaRestRequest"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CertificateEnrollmentRestResponse": {
+        "example": {
+          "response_format": "DER",
+          "certificate": "MIIDXzCCA...eW1Zro0=",
+          "serial_number": "1234567890ABCDEF",
+          "certificate_chain": "[\"MII123efg...345xyz0=\"]"
+        },
+        "properties": {
+          "certificate": {
+            "description": "Certificate",
+            "example": "MIIDXzCCA...eW1Zro0=",
+            "items": {
+              "format": "byte",
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "serial_number": {
+            "description": "Hex Serial Number",
+            "example": "1234567890ABCDEF",
+            "type": "string"
+          },
+          "response_format": {
+            "description": "Response format",
+            "example": "DER",
+            "type": "string"
+          },
+          "certificate_chain": {
+            "description": "CA Certificate chain",
+            "example": "[\"MII123efg...345xyz0=\"]",
+            "items": {
+              "items": {
+                "format": "byte",
+                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "EnrollCertificateRestRequest": {
+        "example": {
+          "password": "foo123",
+          "account_binding_id": "1234567890",
+          "end_entity_profile_name": "ExampleEEP",
+          "response_format": "DER",
+          "certificate_authority_name": "ExampleCA",
+          "include_chain": true,
+          "certificate_request": "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+          "certificate_profile_name": "ENDUSER",
+          "email": "john.doe@example.com",
+          "username": "JohnDoe"
+        },
+        "properties": {
+          "certificate_request": {
+            "description": "Certificate request",
+            "example": "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+            "type": "string"
+          },
+          "certificate_profile_name": {
+            "description": "Certificate profile name",
+            "example": "ENDUSER",
+            "type": "string"
+          },
+          "end_entity_profile_name": {
+            "description": "End Entity profile name",
+            "example": "ExampleEEP",
+            "type": "string"
+          },
+          "certificate_authority_name": {
+            "description": "Certificate Authority (CA) name",
+            "example": "ExampleCA",
+            "type": "string"
+          },
+          "username": {
+            "description": "Username",
+            "example": "JohnDoe",
+            "type": "string"
+          },
+          "password": {
+            "description": "Password",
+            "example": "foo123",
+            "type": "string"
+          },
+          "account_binding_id": {
+            "description": "Account Binding ID",
+            "example": "1234567890",
+            "type": "string"
+          },
+          "include_chain": {
+            "type": "boolean"
+          },
+          "email": {
+            "description": "Email",
+            "example": "john.doe@example.com",
+            "type": "string"
+          },
+          "response_format": {
+            "description": "Response Format (DER format is default)",
+            "example": "DER",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FinalizeRestRequest": {
+        "example": {
+          "password": "foo123",
+          "response_format": "P12",
+          "key_alg": "RSA",
+          "key_spec": "4096"
+        },
+        "properties": {
+          "response_format": {
+            "description": "Response format",
+            "enum": [
+              "P12",
+              "BCFKS",
+              "JKS",
+              "DER"
+            ],
+            "example": "P12",
+            "type": "string"
+          },
+          "password": {
+            "description": "Password",
+            "example": "foo123",
+            "type": "string"
+          },
+          "key_alg": {
+            "description": "Key algorithm",
+            "example": "RSA",
+            "type": "string"
+          },
+          "key_spec": {
+            "description": "Key specification",
+            "example": "4096",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "KeyStoreRestRequest": {
+        "example": {
+          "password": "foo123",
+          "key_alg": "RSA",
+          "key_spec": "4096",
+          "username": "JohnDoe"
+        },
+        "properties": {
+          "username": {
+            "description": "Username",
+            "example": "JohnDoe",
+            "type": "string"
+          },
+          "password": {
+            "description": "Password",
+            "example": "foo123",
+            "type": "string"
+          },
+          "key_alg": {
+            "description": "Key algorithm used for enrollment",
+            "example": "RSA",
+            "type": "string"
+          },
+          "key_spec": {
+            "description": "Key specification to use",
+            "example": "4096",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CertificateRequestRestRequest": {
+        "example": {
+          "password": "foo123",
+          "certificate_authority_name": "ExampleCA",
+          "include_chain": true,
+          "certificate_request": "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+          "username": "JohnDoe"
+        },
+        "properties": {
+          "certificate_request": {
+            "description": "Certificate request",
+            "example": "MIICh...V8shQ== OR -----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+            "type": "string"
+          },
+          "username": {
+            "description": "Username",
+            "example": "JohnDoe",
+            "type": "string"
+          },
+          "password": {
+            "description": "Password",
+            "example": "foo123",
+            "type": "string"
+          },
+          "include_chain": {
+            "type": "boolean"
+          },
+          "certificate_authority_name": {
+            "description": "Certificate Authority (CA) name",
+            "example": "ExampleCA",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CertificateProfileInfoRestResponseV2": {
+        "example": {
+          "available_key_algs": [
+            "available_key_algs",
+            "available_key_algs"
+          ],
+          "certificate_profile_id": 0,
+          "available_cas": [
+            "available_cas",
+            "available_cas"
+          ],
+          "available_bit_lenghts": [
+            6,
+            6
+          ],
+          "available_ecdsa_curves": [
+            "available_ecdsa_curves",
+            "available_ecdsa_curves"
+          ]
+        },
+        "properties": {
+          "certificate_profile_id": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "available_key_algs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "available_bit_lenghts": {
+            "items": {
+              "format": "int32",
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "available_ecdsa_curves": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "available_cas": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CertificateRestResponseV2": {
+        "example": {
+          "issuer_dn": "CN=ExampleCA",
+          "not_before": 1659952800011,
+          "certificate_profile": "ENDUSER",
+          "subject_alt_name": "rfc822Name=john.doe@example.com",
+          "crl_partition_index": 1,
+          "serial_number": "1234567890ABCDEF",
+          "end_entity_profile_id": 1,
+          "type": 0,
+          "certificate_request": "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+          "udpate_time": 1659967133000,
+          "c_afingerprint": "abc123def456ghi789klm123nop456qrs789tvx1",
+          "subject_key_id": "z123abc456def789ghi123klm456nop789qrs123",
+          "expire_date": 2147483647000,
+          "subject_dn": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+          "certificate_profile_id": 1,
+          "fingerprint": "123abc456def789ghi123klm456nop789qrs123t",
+          "revocation_reason": -1,
+          "revocation_date": -1,
+          "tag": "tag",
+          "end_entity_profile": "EMPTY",
+          "base64_cert": "TUlJR...t2A==",
+          "invalidity_date": -1,
+          "status": 20,
+          "username": "JohnDoe"
+        },
+        "properties": {
+          "fingerprint": {
+            "description": "Certificate fingerprint",
+            "example": "123abc456def789ghi123klm456nop789qrs123t",
+            "readOnly": true,
+            "type": "string"
+          },
+          "c_afingerprint": {
+            "description": "Certificate Authority fingerprint",
+            "example": "abc123def456ghi789klm123nop456qrs789tvx1",
+            "readOnly": true,
+            "type": "string"
+          },
+          "certificate_profile_id": {
+            "description": "Certificate Profile Identifier",
+            "example": 1,
+            "format": "int32",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "end_entity_profile_id": {
+            "description": "End Entity Profile Identifier",
+            "example": 1,
+            "format": "int32",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "expire_date": {
+            "description": "Date after which certificate should be considered expired",
+            "example": 2147483647000,
+            "format": "int64",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "issuer_dn": {
+            "description": "Issuer Distinguished Name",
+            "example": "CN=ExampleCA",
+            "readOnly": true,
+            "type": "string"
+          },
+          "not_before": {
+            "description": "Date at which certificate became valid",
+            "example": 1659952800011,
+            "format": "int64",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "revocation_date": {
+            "description": "Revocation date",
+            "example": -1,
+            "format": "int64",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "revocation_reason": {
+            "description": "Revocation reason",
+            "enum": [
+              -1,
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              8,
+              9,
+              10
+            ],
+            "example": -1,
+            "format": "int32",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "serial_number": {
+            "description": "Hex Serial Number",
+            "example": "1234567890ABCDEF",
+            "readOnly": true,
+            "type": "string"
+          },
+          "status": {
+            "description": "Certificate status",
+            "example": 20,
+            "format": "int32",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "subject_alt_name": {
+            "description": "Subject Alternative Name (SAN)",
+            "example": "rfc822Name=john.doe@example.com",
+            "readOnly": true,
+            "type": "string"
+          },
+          "subject_dn": {
+            "description": "Subject Distinguished Name",
+            "example": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+            "readOnly": true,
+            "type": "string"
+          },
+          "subject_key_id": {
+            "description": "Subject Key Identifier",
+            "example": "z123abc456def789ghi123klm456nop789qrs123",
+            "readOnly": true,
+            "type": "string"
+          },
+          "tag": {
+            "readOnly": true,
+            "type": "string"
+          },
+          "type": {
+            "format": "int32",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "udpate_time": {
+            "description": "Update time",
+            "example": 1659967133000,
+            "format": "int64",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "username": {
+            "description": "Username",
+            "example": "JohnDoe",
+            "readOnly": true,
+            "type": "string"
+          },
+          "base64_cert": {
+            "description": "Base64 encoded certificate",
+            "example": "TUlJR...t2A==",
+            "items": {
+              "format": "byte",
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+              "type": "string"
+            },
+            "readOnly": true,
+            "type": "array"
+          },
+          "certificate_request": {
+            "description": "Certificate request",
+            "example": "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+            "readOnly": true,
+            "type": "string"
+          },
+          "crl_partition_index": {
+            "description": "CRL partition index",
+            "example": 1,
+            "format": "int32",
+            "readOnly": true,
+            "type": "integer"
+          },
+          "invalidity_date": {
+            "description": "Invalidity date",
+            "example": -1,
+            "format": "int64",
+            "type": "integer"
+          },
+          "certificate_profile": {
+            "description": "Certificate Profile Name",
+            "example": "ENDUSER",
+            "readOnly": true,
+            "type": "string"
+          },
+          "end_entity_profile": {
+            "description": "End Entity Profile Name",
+            "example": "EMPTY",
+            "readOnly": true,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PaginationSummary": {
+        "example": {
+          "total_certs": 5,
+          "current_page": 1,
+          "page_size": 6
+        },
+        "properties": {
+          "page_size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "current_page": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "total_certs": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SearchCertificatesRestResponseV2": {
+        "example": {
+          "pagination_summary": {
+            "total_certs": 5,
+            "current_page": 1,
+            "page_size": 6
+          },
+          "certificates": [
+            {
+              "issuer_dn": "CN=ExampleCA",
+              "not_before": 1659952800011,
+              "certificate_profile": "ENDUSER",
+              "subject_alt_name": "rfc822Name=john.doe@example.com",
+              "crl_partition_index": 1,
+              "serial_number": "1234567890ABCDEF",
+              "end_entity_profile_id": 1,
+              "type": 0,
+              "certificate_request": "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+              "udpate_time": 1659967133000,
+              "c_afingerprint": "abc123def456ghi789klm123nop456qrs789tvx1",
+              "subject_key_id": "z123abc456def789ghi123klm456nop789qrs123",
+              "expire_date": 2147483647000,
+              "subject_dn": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+              "certificate_profile_id": 1,
+              "fingerprint": "123abc456def789ghi123klm456nop789qrs123t",
+              "revocation_reason": -1,
+              "revocation_date": -1,
+              "tag": "tag",
+              "end_entity_profile": "EMPTY",
+              "base64_cert": "TUlJR...t2A==",
+              "invalidity_date": -1,
+              "status": 20,
+              "username": "JohnDoe"
+            },
+            {
+              "issuer_dn": "CN=ExampleCA",
+              "not_before": 1659952800011,
+              "certificate_profile": "ENDUSER",
+              "subject_alt_name": "rfc822Name=john.doe@example.com",
+              "crl_partition_index": 1,
+              "serial_number": "1234567890ABCDEF",
+              "end_entity_profile_id": 1,
+              "type": 0,
+              "certificate_request": "-----BEGIN CERTIFICATE REQUEST-----\nMIICh...V8shQ==\n-----END CERTIFICATE REQUEST-----",
+              "udpate_time": 1659967133000,
+              "c_afingerprint": "abc123def456ghi789klm123nop456qrs789tvx1",
+              "subject_key_id": "z123abc456def789ghi123klm456nop789qrs123",
+              "expire_date": 2147483647000,
+              "subject_dn": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+              "certificate_profile_id": 1,
+              "fingerprint": "123abc456def789ghi123klm456nop789qrs123t",
+              "revocation_reason": -1,
+              "revocation_date": -1,
+              "tag": "tag",
+              "end_entity_profile": "EMPTY",
+              "base64_cert": "TUlJR...t2A==",
+              "invalidity_date": -1,
+              "status": 20,
+              "username": "JohnDoe"
+            }
+          ]
+        },
+        "properties": {
+          "certificates": {
+            "items": {
+              "$ref": "#/components/schemas/CertificateRestResponseV2"
+            },
+            "type": "array"
+          },
+          "pagination_summary": {
+            "$ref": "#/components/schemas/PaginationSummary"
+          }
+        },
+        "type": "object"
+      },
+      "Pagination": {
+        "example": {
+          "current_page": 1,
+          "page_size": 10
+        },
+        "properties": {
+          "page_size": {
+            "description": "Number of results per page",
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          },
+          "current_page": {
+            "description": "Current page number",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "SearchCertificateSortRestRequest": {
+        "description": "Use one of allowed values as property and operation.\nAvailable propertiesUSERNAME \nISSUER_DN \nSUBJECT_DN \nEXTERNAL_ACCOUNT_BINDING_ID \nEND_ENTITY_PROFILE \nCERTIFICATE_PROFILE \nSTATUS \nTAG \nTYPE \nUPDATE_TIME \nISSUED_DATE \nEXPIRE_DATE \nREVOCATION_DATE \n\nAvailable operationsASC \nDESC \n",
+        "example": {
+          "property": "USERNAME",
+          "operation": "ASC"
+        },
+        "properties": {
+          "property": {
+            "description": "Sorted by",
+            "enum": [
+              "USERNAME",
+              "ISSUER_DN",
+              "SUBJECT_DN",
+              "EXTERNAL_ACCOUNT_BINDING_ID",
+              "END_ENTITY_PROFILE",
+              "CERTIFICATE_PROFILE",
+              "STATUS",
+              "TAG",
+              "TYPE",
+              "UPDATE_TIME",
+              "ISSUED_DATE",
+              "EXPIRE_DATE",
+              "REVOCATION_DATE"
+            ],
+            "type": "string"
+          },
+          "operation": {
+            "description": "Sort ascending or descending. 'ASC' for ascending, 'DESC' for descending.",
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SearchCertificatesRestRequestV2": {
+        "example": {
+          "pagination": {
+            "current_page": 1,
+            "page_size": 10
+          },
+          "criteria": [
+            {
+              "property": "CERTIFICATE_PROFILE",
+              "value": "ENDUSER",
+              "operation": "EQUAL"
+            },
+            {
+              "property": "CERTIFICATE_PROFILE",
+              "value": "ENDUSER",
+              "operation": "EQUAL"
+            }
+          ],
+          "sort": {
+            "property": "USERNAME",
+            "operation": "ASC"
+          }
+        },
+        "properties": {
+          "pagination": {
+            "$ref": "#/components/schemas/Pagination"
+          },
+          "sort": {
+            "$ref": "#/components/schemas/SearchCertificateSortRestRequest"
+          },
+          "criteria": {
+            "description": "A List of search criteria.",
+            "items": {
+              "$ref": "#/components/schemas/SearchCertificateCriteriaRestRequest"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CertificateCountResponse": {
+        "example": {
+          "count": 1054
+        },
+        "properties": {
+          "count": {
+            "description": "The quantity of issued or active certificates",
+            "example": 1054,
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ConfigdumpResults": {
+        "example": {
+          "success": true,
+          "warnings": [
+            "warnings",
+            "warnings"
+          ],
+          "errors": [
+            "errors",
+            "errors"
+          ]
+        },
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "CryptoTokenActivationRestRequest": {
+        "example": {
+          "activation_code": "foo123"
+        },
+        "properties": {
+          "activation_code": {
+            "description": "Activation Code",
+            "example": "foo123",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CryptoTokenKeyGenerationRestRequest": {
+        "example": {
+          "key_usage": "SIGN",
+          "key_alg": "RSA",
+          "key_spec": "4096",
+          "key_pair_alias": "signKey"
+        },
+        "properties": {
+          "key_pair_alias": {
+            "description": "Key pair aliasof the key pair to be generated, must not already exist",
+            "example": "signKey",
+            "type": "string"
+          },
+          "key_alg": {
+            "description": "Key algorithm, required for some algorithms, RSA, not required for others like EC or Dilithium",
+            "example": "RSA",
+            "type": "string"
+          },
+          "key_spec": {
+            "description": "Key specification, key size, curve or name, must be supported by the underlying crypto token, like 4096 for RSA or secp256r1 for EC",
+            "example": "4096",
+            "type": "string"
+          },
+          "key_usage": {
+            "description": "Optional key usage, affects some crypto tokens (PKCS#11 NG) but not most others. Values SIGN, ENCRYPT, SIGN_ENCRYPT",
+            "example": "SIGN",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AddEndEntityRestRequest": {
+        "example": {
+          "end_entity_profile_name": "ExampleEEP",
+          "subject_alt_name": "rfc822Name=john.doe@example.com",
+          "token": "P12",
+          "ca_name": "ExampleCA",
+          "password": "foo123",
+          "account_binding_id": "1234567890",
+          "subject_dn": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+          "extension_data": [
+            {
+              "name": "1.3.6.1.5.5.7.1.24/customdata_STARTTIME",
+              "value": "3003020105/2022-12-13 00:00:00"
+            },
+            {
+              "name": "1.3.6.1.5.5.7.1.24/customdata_STARTTIME",
+              "value": "3003020105/2022-12-13 00:00:00"
+            }
+          ],
+          "key_recoverable": false,
+          "custom_data": [
+            {
+              "name": "1.3.6.1.5.5.7.1.24/customdata_STARTTIME",
+              "value": "3003020105/2022-12-13 00:00:00"
+            },
+            {
+              "name": "1.3.6.1.5.5.7.1.24/customdata_STARTTIME",
+              "value": "3003020105/2022-12-13 00:00:00"
+            }
+          ],
+          "certificate_profile_name": "ENDUSER",
+          "email": "john.doe@example.com",
+          "username": "JohnDoe"
+        },
+        "properties": {
+          "username": {
+            "description": "Username",
+            "example": "JohnDoe",
+            "type": "string"
+          },
+          "password": {
+            "description": "Password",
+            "example": "foo123",
+            "type": "string"
+          },
+          "subject_dn": {
+            "description": "Subject Distinguished Name",
+            "example": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+            "type": "string"
+          },
+          "subject_alt_name": {
+            "description": "Subject Alternative Name (SAN)",
+            "example": "rfc822Name=john.doe@example.com",
+            "type": "string"
+          },
+          "email": {
+            "description": "Email",
+            "example": "john.doe@example.com",
+            "type": "string"
+          },
+          "extension_data": {
+            "items": {
+              "$ref": "#/components/schemas/ExtendedInformationRestRequestComponent"
+            },
+            "type": "array"
+          },
+          "custom_data": {
+            "items": {
+              "$ref": "#/components/schemas/ExtendedInformationRestRequestComponent"
+            },
+            "type": "array"
+          },
+          "ca_name": {
+            "description": "Certificate Authority (CA) name",
+            "example": "ExampleCA",
+            "type": "string"
+          },
+          "certificate_profile_name": {
+            "description": "Certificate profile name",
+            "example": "ENDUSER",
+            "type": "string"
+          },
+          "end_entity_profile_name": {
+            "description": "End Entity profile name",
+            "example": "ExampleEEP",
+            "type": "string"
+          },
+          "token": {
+            "description": "Token type property",
+            "enum": [
+              "USERGENERATED",
+              "P12",
+              "JKS",
+              "PEM"
+            ],
+            "example": "P12",
+            "type": "string"
+          },
+          "account_binding_id": {
+            "description": "Account Binding ID",
+            "example": "1234567890",
+            "type": "string"
+          },
+          "key_recoverable": {
+            "description": "Key recoverable or not",
+            "example": false,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "ExtendedInformationRestRequestComponent": {
+        "example": {
+          "name": "1.3.6.1.5.5.7.1.24/customdata_STARTTIME",
+          "value": "3003020105/2022-12-13 00:00:00"
+        },
+        "properties": {
+          "name": {
+            "description": "For extension_data a certificate extension object identifier (OID), for custom_data a string variable and value see ExtendedInformation class",
+            "example": "1.3.6.1.5.5.7.1.24/customdata_STARTTIME",
+            "type": "string"
+          },
+          "value": {
+            "description": "OID value",
+            "example": "3003020105/2022-12-13 00:00:00",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EndEntityRestResponse": {
+        "example": {
+          "extension_data": [
+            {
+              "name": "1.3.6.1.5.5.7.1.24",
+              "value": "3003020105"
+            },
+            {
+              "name": "1.3.6.1.5.5.7.1.24",
+              "value": "3003020105"
+            }
+          ],
+          "subject_alt_name": "rfc822Name=john.doe@example.com",
+          "dn": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+          "email": "john.doe@example.com",
+          "username": "JohnDoe",
+          "status": "NEW",
+          "token": "P12"
+        },
+        "properties": {
+          "username": {
+            "description": "Username",
+            "example": "JohnDoe",
+            "type": "string"
+          },
+          "dn": {
+            "description": "Subject Distinguished Name",
+            "example": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+            "type": "string"
+          },
+          "subject_alt_name": {
+            "description": "Subject Alternative Name (SAN)",
+            "example": "rfc822Name=john.doe@example.com",
+            "type": "string"
+          },
+          "email": {
+            "description": "Email",
+            "example": "john.doe@example.com",
+            "type": "string"
+          },
+          "status": {
+            "description": "End Entity status",
+            "enum": [
+              "NEW",
+              "FAILED",
+              "INITIALIZED",
+              "INPROCESS",
+              "GENERATED",
+              "REVOKED",
+              "HISTORICAL",
+              "KEYRECOVERY",
+              "WAITINGFORADDAPPROVAL"
+            ],
+            "example": "NEW",
+            "type": "string"
+          },
+          "token": {
+            "description": "Token type",
+            "enum": [
+              "USERGENERATED",
+              "P12",
+              "BCFKS",
+              "JKS",
+              "PEM"
+            ],
+            "example": "P12",
+            "type": "string"
+          },
+          "extension_data": {
+            "description": "Extended Information",
+            "items": {
+              "$ref": "#/components/schemas/ExtendedInformationRestResponseComponent"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ExtendedInformationRestResponseComponent": {
+        "example": {
+          "name": "1.3.6.1.5.5.7.1.24",
+          "value": "3003020105"
+        },
+        "properties": {
+          "name": {
+            "description": "Extended Information property name",
+            "example": "1.3.6.1.5.5.7.1.24",
+            "type": "string"
+          },
+          "value": {
+            "description": "Property value",
+            "example": "3003020105",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SearchEndEntitiesRestResponse": {
+        "example": {
+          "end_entities": [
+            {
+              "extension_data": [
+                {
+                  "name": "1.3.6.1.5.5.7.1.24",
+                  "value": "3003020105"
+                },
+                {
+                  "name": "1.3.6.1.5.5.7.1.24",
+                  "value": "3003020105"
+                }
+              ],
+              "subject_alt_name": "rfc822Name=john.doe@example.com",
+              "dn": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+              "email": "john.doe@example.com",
+              "username": "JohnDoe",
+              "status": "NEW",
+              "token": "P12"
+            },
+            {
+              "extension_data": [
+                {
+                  "name": "1.3.6.1.5.5.7.1.24",
+                  "value": "3003020105"
+                },
+                {
+                  "name": "1.3.6.1.5.5.7.1.24",
+                  "value": "3003020105"
+                }
+              ],
+              "subject_alt_name": "rfc822Name=john.doe@example.com",
+              "dn": "CN=John Doe,SURNAME=Doe,GIVENNAME=John,C=SE",
+              "email": "john.doe@example.com",
+              "username": "JohnDoe",
+              "status": "NEW",
+              "token": "P12"
+            }
+          ],
+          "more_results": true
+        },
+        "properties": {
+          "end_entities": {
+            "items": {
+              "$ref": "#/components/schemas/EndEntityRestResponse"
+            },
+            "type": "array"
+          },
+          "more_results": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "SearchEndEntitiesRestRequest": {
+        "example": {
+          "criteria": [
+            {
+              "property": "QUERY",
+              "value": "exampleUsername",
+              "operation": "EQUAL"
+            },
+            {
+              "property": "QUERY",
+              "value": "exampleUsername",
+              "operation": "EQUAL"
+            }
+          ],
+          "max_number_of_results": 10,
+          "current_page": 0
+        },
+        "properties": {
+          "max_number_of_results": {
+            "description": "Maximum number of results",
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          },
+          "current_page": {
+            "description": "Current page number",
+            "example": 0,
+            "format": "int32",
+            "type": "integer"
+          },
+          "criteria": {
+            "description": "A List of search criteria.",
+            "items": {
+              "$ref": "#/components/schemas/SearchEndEntityCriteriaRestRequest"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "SearchEndEntityCriteriaRestRequest": {
+        "description": "Use one of allowed values as property(see enum values below).\nQUERY - multiplicity [0, 1] - is used to search by SubjectDn, SubjectAn, Username; \nAvailable STATUS - multiplicity [0, 9] - values are: NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n\nEND_ENTITY_PROFILE, CERTIFICATE_PROFILE, CA - multiplicity [0, *) - exact match of the name for referencing End Entity Profile, Certificate Profile or CA; \n",
+        "example": {
+          "property": "QUERY",
+          "value": "exampleUsername",
+          "operation": "EQUAL"
+        },
+        "properties": {
+          "property": {
+            "description": "A search property",
+            "enum": [
+              "QUERY",
+              "END_ENTITY_PROFILE",
+              "CERTIFICATE_PROFILE",
+              "CA",
+              "STATUS",
+              "MODIFIED_BEFORE",
+              "MODIFIED_AFTER"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "description": "A search value. This could be string value, an appropriate string name of End Entity Profile or Certificate Profile or CA",
+            "example": "exampleUsername",
+            "type": "string"
+          },
+          "operation": {
+            "description": "An operation for property on inserted value. 'EQUALS' for string, 'LIKE' for string value ('QUERY')",
+            "enum": [
+              "EQUAL",
+              "LIKE"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SetEndEntityStatusRestRequest": {
+        "description": "Use one of allowed values as property(see enum values below).\nAvailable TOKEN - USERGENERATED, P12, BCFKS, JKS, PEM; \nAvailable STATUS - NEW, FAILED, INITIALIZED, INPROCESS, GENERATED, REVOKED, HISTORICAL, KEYRECOVERY, WAITINGFORADDAPPROVAL;\n",
+        "example": {
+          "password": "foo123",
+          "token": "USERGENERATED",
+          "status": "NEW"
+        },
+        "properties": {
+          "password": {
+            "description": "Password",
+            "example": "foo123",
+            "type": "string"
+          },
+          "token": {
+            "description": "Token type property",
+            "enum": [
+              "USERGENERATED",
+              "P12",
+              "BCFKS",
+              "JKS",
+              "PEM"
+            ],
+            "example": "USERGENERATED",
+            "type": "string"
+          },
+          "status": {
+            "description": "End entity status property",
+            "enum": [
+              "NEW",
+              "FAILED",
+              "INITIALIZED",
+              "INPROCESS",
+              "GENERATED",
+              "REVOKED",
+              "HISTORICAL",
+              "KEYRECOVERY",
+              "WAITINGFORADDAPPROVAL"
+            ],
+            "example": "NEW",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EndEntityRevocationRestRequest": {
+        "description": "End Entity revocation request. Available reason codes: \n 0 - Unspecified,\n 1 - Key Compromise,\n 2 - CA Compromise,\n 3 - Affiliation Changed,\n 4 - Superseded,\n 5 - Cessation of Operation,\n 6 - Certificate Hold,\n 8 - Remove from CRL,\n 9 - Privileges Withdrawn,\n 10 - AA Compromise",
+        "example": {
+          "reason_code": 2,
+          "delete": true
+        },
+        "properties": {
+          "reason_code": {
+            "description": "Reason code",
+            "enum": [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              8,
+              9,
+              10
+            ],
+            "example": 2,
+            "format": "int32",
+            "type": "integer"
+          },
+          "delete": {
+            "description": "Delete",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "EndEntityProfileResponse": {
+        "example": {
+          "end_entity_profile_name": "ExampleEEP",
+          "subject_distinguished_name_fields": "[\"CN\"]",
+          "available_cas": "[\"ExampleCA\"]",
+          "available_certificate_profiles": "[\"ENDUSER\"]",
+          "subject_alternative_name_fields": "[\"RFC822NAME\"]"
+        },
+        "properties": {
+          "end_entity_profile_name": {
+            "description": "End Entity profile name",
+            "example": "ExampleEEP",
+            "type": "string"
+          },
+          "available_cas": {
+            "description": "List of available Certificate Authorities (CAs)",
+            "example": "[\"ExampleCA\"]",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "available_certificate_profiles": {
+            "description": "List of available Certificate Profiles",
+            "example": "[\"ENDUSER\"]",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "subject_distinguished_name_fields": {
+            "description": "List of Subject DN Attributes",
+            "example": "[\"CN\"]",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "subject_alternative_name_fields": {
+            "description": "List of Subject Alternative Name fields",
+            "example": "[\"RFC822NAME\"]",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "AuthorizedEEPsRestResponse": {
+        "example": {
+          "end_entitie_profiles": [
+            {
+              "name": "ExampleEEP",
+              "description": "Example End Entity profile",
+              "id": 1234567890
+            },
+            {
+              "name": "ExampleEEP",
+              "description": "Example End Entity profile",
+              "id": 1234567890
+            }
+          ]
+        },
+        "properties": {
+          "end_entitie_profiles": {
+            "items": {
+              "$ref": "#/components/schemas/EndEntityProfileRestResponse"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "EndEntityProfileRestResponse": {
+        "example": {
+          "name": "ExampleEEP",
+          "description": "Example End Entity profile",
+          "id": 1234567890
+        },
+        "properties": {
+          "name": {
+            "description": "End Entity profile name",
+            "example": "ExampleEEP",
+            "type": "string"
+          },
+          "id": {
+            "description": "End Entity profile ID",
+            "example": 1234567890,
+            "format": "int64",
+            "type": "integer"
+          },
+          "description": {
+            "description": "Description",
+            "example": "Example End Entity profile",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SearchEndEntitiesRestRequestV2": {
+        "example": {
+          "criteria": [
+            {
+              "property": "QUERY",
+              "value": "exampleUsername",
+              "operation": "EQUAL"
+            },
+            {
+              "property": "QUERY",
+              "value": "exampleUsername",
+              "operation": "EQUAL"
+            }
+          ],
+          "max_number_of_results": 10,
+          "current_page": 1,
+          "sort_operation": {
+            "property": "USERNAME",
+            "operation": "ASC"
+          }
+        },
+        "properties": {
+          "max_number_of_results": {
+            "description": "Maximum number of results",
+            "example": 10,
+            "format": "int32",
+            "type": "integer"
+          },
+          "current_page": {
+            "description": "Current page number",
+            "example": 1,
+            "format": "int32",
+            "type": "integer"
+          },
+          "criteria": {
+            "description": "A List of search criteria.",
+            "items": {
+              "$ref": "#/components/schemas/SearchEndEntityCriteriaRestRequest"
+            },
+            "type": "array"
+          },
+          "sort_operation": {
+            "$ref": "#/components/schemas/SearchEndEntitiesSortRestRequest"
+          }
+        },
+        "type": "object"
+      },
+      "SearchEndEntitiesSortRestRequest": {
+        "description": "Use one of allowed values as property and operation.\nAvailable propertiesUSERNAME \nSUBJECT_DN \nSUBJECT_ALT_NAME \nEND_ENTITY_PROFILE(by databse identifier, not user-given name) \nCERTIFICATE_PROFILE(by identifier) \nCA(by identifier) \nSTATUS \nUPDATE_TIME \nCREATED_DATE \n\nAvailable operationsASC \nDESC \n",
+        "example": {
+          "property": "USERNAME",
+          "operation": "ASC"
+        },
+        "properties": {
+          "property": {
+            "description": "Sorted by",
+            "enum": [
+              "USERNAME",
+              "SUBJECT_DN",
+              "SUBJECT_ALT_NAME",
+              "END_ENTITY_PROFILE",
+              "CERTIFICATE_PROFILE",
+              "STATUS",
+              "UPDATE_TIME",
+              "CREATED_TIME"
+            ],
+            "type": "string"
+          },
+          "operation": {
+            "description": "Sort ascending or descending. 'ASC' for ascending, 'DESC' for descending.",
+            "enum": [
+              "ASC",
+              "DESC"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SshCertificateRestResponse": {
+        "example": {
+          "response_format": "BYTE",
+          "certificate": "c3N...T09"
+        },
+        "properties": {
+          "certificate": {
+            "description": "Certificate",
+            "example": "c3N...T09",
+            "items": {
+              "format": "byte",
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$",
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "response_format": {
+            "description": "Response format",
+            "example": "BYTE",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SshCertificateRequestRestRequest": {
+        "example": {
+          "public_key": "ssh-rsa AAA...EWj",
+          "not_after": "ISO 8601 Date string, eg. '2024-06-15T14:07:09Z'",
+          "password": "foo123",
+          "key_id": "ski-02",
+          "critical_options": {
+            "source_address": "1.2.3.0/24,1.10.10.1/32",
+            "force_command": "./init.sh"
+          },
+          "not_before": "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'",
+          "certificate_authority": "ExampleCA",
+          "certificate_profile": "ENDUSER",
+          "comment": "Yellow fish under blue water",
+          "principals": "[\"Wishman\", \"Bradman\"]",
+          "end_entity_profile": "ExampleEEP",
+          "username": "JohnDoe"
+        },
+        "properties": {
+          "end_entity_profile": {
+            "description": "End Entity profile name",
+            "example": "ExampleEEP",
+            "type": "string"
+          },
+          "certificate_profile": {
+            "description": "Certificate profile name",
+            "example": "ENDUSER",
+            "type": "string"
+          },
+          "certificate_authority": {
+            "description": "Certificate Authority (CA) name",
+            "example": "ExampleCA",
+            "type": "string"
+          },
+          "key_id": {
+            "description": "SSH Key Identifier",
+            "example": "ski-02",
+            "type": "string"
+          },
+          "comment": {
+            "description": "Comment",
+            "example": "Yellow fish under blue water",
+            "type": "string"
+          },
+          "public_key": {
+            "description": "Public Key",
+            "example": "ssh-rsa AAA...EWj",
+            "type": "string"
+          },
+          "principals": {
+            "description": "Valid principals",
+            "example": "[\"Wishman\", \"Bradman\"]",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "critical_options": {
+            "$ref": "#/components/schemas/SshCriticalOptions"
+          },
+          "username": {
+            "description": "Username",
+            "example": "JohnDoe",
+            "type": "string"
+          },
+          "password": {
+            "description": "Password",
+            "example": "foo123",
+            "type": "string"
+          },
+          "not_before": {
+            "description": "Valid notBefore date",
+            "example": "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'",
+            "type": "string"
+          },
+          "not_after": {
+            "description": "Valid notAfter date",
+            "example": "ISO 8601 Date string, eg. '2024-06-15T14:07:09Z'",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SshCriticalOptions": {
+        "example": {
+          "source_address": "1.2.3.0/24,1.10.10.1/32",
+          "force_command": "./init.sh"
+        },
+        "properties": {
+          "force_command": {
+            "description": "force-command",
+            "example": "./init.sh",
+            "type": "string"
+          },
+          "source_address": {
+            "description": "source-address",
+            "example": "1.2.3.0/24,1.10.10.1/32",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "SshPublicKeyRestResponse": {
+        "example": {
+          "ca_name": "ExampleCA",
+          "response": "ssh-rsa AAAAB...QxLwx SshCA"
+        },
+        "properties": {
+          "ca_name": {
+            "description": "Certificate Authority (CA) name",
+            "example": "ExampleCA",
+            "type": "string"
+          },
+          "response": {
+            "description": "CA’s public key",
+            "example": "ssh-rsa AAAAB...QxLwx SshCA",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "importCrl_request": {
+        "properties": {
+          "crlPartitionIndex": {
+            "default": 0,
+            "description": "CRL partition index",
+            "format": "int32",
+            "type": "integer"
+          },
+          "crlFile": {
+            "description": "CRL file in DER format",
+            "format": "binary",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "postZipImport_request": {
+        "properties": {
+          "zipfile": {
+            "description": "A zipfile containing directories of YAML files.",
+            "format": "binary",
+            "type": "string"
+          },
+          "ignoreerrors": {
+            "default": false,
+            "description": "Add to warnings instead of aborting on errors.",
+            "type": "boolean"
+          },
+          "initialize": {
+            "default": false,
+            "description": "Generate initial certificate for CAs on import",
+            "type": "boolean"
+          },
+          "continue": {
+            "default": false,
+            "description": "Continue on errors. Default is to abort.",
+            "type": "boolean"
+          },
+          "overwrite": {
+            "default": "abort",
+            "description": "How to handle already existing configuration. Options are abort,skip,yes",
+            "enum": [
+              "yes",
+              "skip",
+              "abort"
+            ],
+            "type": "string"
+          },
+          "resolve": {
+            "default": "abort",
+            "description": "How to resolve missing references. Options are abort,skip,default",
+            "enum": [
+              "abort",
+              "skip",
+              "useDefault"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    }
+  }
+}

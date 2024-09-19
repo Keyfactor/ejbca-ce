@@ -16,7 +16,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.util.Collection;
 import java.util.Set;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;

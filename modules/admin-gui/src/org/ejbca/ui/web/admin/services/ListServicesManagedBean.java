@@ -18,10 +18,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import javax.enterprise.context.SessionScoped;
-import javax.faces.application.Application;
-import javax.faces.context.FacesContext;
-import javax.inject.Named;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.application.Application;
+import jakarta.faces.context.FacesContext;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.authorization.AccessRulesConstants;

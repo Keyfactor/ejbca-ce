@@ -16,17 +16,16 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -36,7 +35,7 @@ import org.cesecore.keybind.InternalKeyBindingTrustEntry;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "TestInternalKeyBindingMgmtSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class TestInternalKeyBindingMgmtSessionBean implements TestInternalKeyBindingMgmtSessionRemote {
     

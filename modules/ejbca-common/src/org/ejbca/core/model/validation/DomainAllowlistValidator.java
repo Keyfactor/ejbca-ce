@@ -41,6 +41,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.IssuancePhase;
+import org.cesecore.keys.validation.ValidationRequestParameters;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.profiles.Profile;
@@ -263,7 +264,8 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
     }
 
     @Override
-    public Entry<Boolean, List<String>> validate(ExecutorService executorService, String... domainNames) {        
+    public Entry<Boolean, List<String>> validate(ExecutorService executorService, ValidationRequestParameters validationRequestParameters,
+            String... domainNames) {
         final Set<String> whiteList = getWhitelist();
         if(whiteList==null || whiteList.isEmpty()) {
             return new AbstractMap.SimpleEntry<>(false, Arrays.asList("Allowed domain list is not initialized."));
@@ -305,7 +307,7 @@ public class DomainAllowlistValidator extends ValidatorBase implements DnsNameVa
         if (StringUtils.isBlank(domain)) {
             return "";
         }
-        final Entry<Boolean,List<String>> result = validate(null, domain.trim());
+        final Entry<Boolean,List<String>> result = validate(null, null, domain.trim());
         if (result.getKey()) {
             return StringEscapeUtils.escapeHtml(intres.getLocalizedMessage("validator.domainallowlist.validation_successful", getProfileName()));
         } else if (CollectionUtils.isEmpty(result.getValue())) {

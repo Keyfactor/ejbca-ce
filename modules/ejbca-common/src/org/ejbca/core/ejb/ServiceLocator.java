@@ -15,7 +15,7 @@ package org.ejbca.core.ejb;
 
 import java.net.URL;
 
-import javax.mail.Session;
+import jakarta.mail.Session;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;

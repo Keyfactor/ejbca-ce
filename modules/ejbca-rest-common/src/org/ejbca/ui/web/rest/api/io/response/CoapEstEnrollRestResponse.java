@@ -13,7 +13,8 @@
 
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class representing the response for EST simpleenroll and simplereenroll requests with CoAP REST method.
@@ -22,7 +23,7 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class CoapEstEnrollRestResponse {
 
-    @ApiModelProperty(value = "Enrolled Certificate", example = "MIIDXzCCA...eW1Zro0=")
+    @Schema(description = "Enrolled Certificate", example = "MIIDXzCCA...eW1Zro0=")
     private String enrolledCertificate;
 
     public CoapEstEnrollRestResponse(String enrolledCertificate) {

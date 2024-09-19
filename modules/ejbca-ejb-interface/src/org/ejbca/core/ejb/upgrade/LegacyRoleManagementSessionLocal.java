@@ -15,7 +15,7 @@ package org.ejbca.core.ejb.upgrade;
 import java.util.Collection;
 import java.util.List;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;

@@ -56,9 +56,9 @@ public abstract class SubjectFieldData {
         this.fieldValue = fieldValue;
     }
     
-    protected abstract String getFieldValueToSave(final UserView userView, int[] fieldData) throws AddEndEntityException;
+    protected abstract String getFieldValueToSave(final UserView userView, int[] fieldData) throws EndEntityException;
     
-    protected abstract void validateFieldValue(final String fieldValueToSave, final int[] fieldData) throws AddEndEntityException;
+    protected abstract void validateFieldValue(final String fieldValueToSave, final int[] fieldData) throws EndEntityException;
 
 
 }

@@ -28,8 +28,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 
-import javax.ejb.CreateException;
-import javax.ejb.EJBTransactionRolledbackException;
+import jakarta.ejb.CreateException;
+import jakarta.ejb.EJBTransactionRolledbackException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;

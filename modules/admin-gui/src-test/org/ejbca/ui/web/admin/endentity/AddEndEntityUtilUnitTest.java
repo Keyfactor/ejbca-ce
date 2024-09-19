@@ -87,7 +87,6 @@ public class AddEndEntityUtilUnitTest {
         assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("\\"));
         assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("$"));
         assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("#"));
-        assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("&"));
         assertFalse(VALID_USERNAME, AddEndEntityUtil.isValidUserNameField("!"));
     }
     

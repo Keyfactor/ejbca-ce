@@ -274,6 +274,9 @@
     	<copy todir="${mod.ejbca-db-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${cli.classpath.property}"/>
     		<fileset dir="${ejbca.home}/lib/hibernate" includes="jboss-logging-*.jar"/>
+    		<fileset dir="${ejbca.home}/lib/hibernate" includes="yasson-*.jar"/>
+    		<fileset dir="${ejbca.home}/lib/hibernate" includes="parsson-*.jar"/>
+			<fileset dir="${ejbca.home}/lib/ext/wsgen" includes="jaxb-core-*.jar"/>
     	</copy>
     	<pathconvert property="ejbca-db-cli.dependencies" pathsep=" ">
     	    <path>

@@ -134,7 +134,7 @@ public class EnableGlobalPiiDataRedactionSystemTest {
         startMarkerParams.add("CUSTOMLOG_INFO");
         startMarkerParams.add("%" + CUSTOM_LOG_MESSAGE + "%");
         List<? extends AuditLogEntry> customMessageOccurences = ejbcaAuditorSession.selectAuditLogNoAuth(admin, DEVICE_NAME, 0, 10, 
-                " a.eventType=?0 and a.additionalDetails LIKE ?1", "a.timeStamp DESC", startMarkerParams);
+                " a.eventType=?1 and a.additionalDetails LIKE ?2", "a.timeStamp DESC", startMarkerParams);
         if (customMessageOccurences.isEmpty()) {
             fail("failed to detect SystemTest starting marker");
         }
@@ -163,8 +163,8 @@ public class EnableGlobalPiiDataRedactionSystemTest {
             int offset = 0;
             while (true && offset < 100_000) {
                 auditLogsGenerated =  ejbcaAuditorSession.selectAuditLogNoAuth(admin, DEVICE_NAME, offset, 1000, 
-                        "a.timeStamp > ?0" +
-                        " and a.eventType LIKE ?1 and a.eventType NOT LIKE ?2", "a.timeStamp DESC", parameters);
+                        "a.timeStamp > ?1" +
+                        " and a.eventType LIKE ?2 and a.eventType NOT LIKE ?3", "a.timeStamp DESC", parameters);
                 if(auditLogsGenerated.isEmpty()) {
                     break;
                 }

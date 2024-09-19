@@ -13,21 +13,25 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+
 
 /**
  * A class to handle EST simpleenroll and simplereenroll requests through CoAP. This REST resource is only used
  * by CoAP Proxy
  *
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class CoapEstEnrollRestRequest {
 
-    @ApiModelProperty(value = "Certificate Request", example = "MIIDXzCCA...eW1Zro0=")
+    @Schema(description = "Certificate Request", example = "MIIDXzCCA...eW1Zro0=")
     private String csr;
 
     @JsonAlias({"tlsCertificate", "tls_certificate"})
-    @ApiModelProperty(value = "DTLS Certificate", example = "MIIDXzCCA...eW1Zro0=")
+    @Schema(description = "DTLS Certificate", example = "MIIDXzCCA...eW1Zro0=")
     private String tlsCertificate;
 
     public CoapEstEnrollRestRequest() {

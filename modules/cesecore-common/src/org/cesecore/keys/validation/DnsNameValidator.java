@@ -27,17 +27,19 @@ import org.cesecore.util.ui.DynamicUiModelAware;
 public interface DnsNameValidator extends Validator, DynamicUiModelAware {
 
     /** The validator type. */
-    final String CAA_TYPE_IDENTIFIER = "CAA_VALIDATOR";
-    
+    String CAA_TYPE_IDENTIFIER = "CAA_VALIDATOR";
+
     /**
      * Validates DNS names, specifically the dnsName value in the SubjectAltName (SAN) extension
      *
      * @param executorService a thread pool facilitating parallel lookups
+     * @param validationRequestParameters a thread pool to set CertificateProfile for TLS/SMIME lookups
      * @param domainNames one or several domain names (Varargs)
      * @return an Entry where key is the final validation result, true or false, and the value is a list is messages corresponding to
      * domain names passed as varargs, messages can include both success and failure messages, one failure will result in the key returned being false.
      */
-    Entry<Boolean, List<String>> validate(final ExecutorService executorService, String... domainNames);
+    Entry<Boolean, List<String>> validate(final ExecutorService executorService, ValidationRequestParameters validationRequestParameters,
+            String... domainNames);
 
     /**
      * Returns a human readable log message for this validator.

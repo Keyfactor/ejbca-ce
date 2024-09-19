@@ -1678,11 +1678,13 @@ public class LdapPublisher extends BasePublisher {
             if (StringUtils.isEmpty(dnField) && userDataExtractor!=null) {
                 dnField = userDataExtractor.getFieldString(fieldNum);
             }
-            
-            if (StringUtils.isNotEmpty(dnField)) {
-                RDN rdn = new X500Name(LdapNameStyle.INSTANCE, dnField).getRDNs()[0];
-                nameBuilder.addRDN(rdn.getFirst());
-            }
+
+			if (StringUtils.isNotEmpty(dnField)) {
+				RDN[] rdns = new X500Name(LdapNameStyle.INSTANCE, dnField).getRDNs();
+				for (RDN rdn : rdns) {
+					nameBuilder.addRDN(rdn.getFirst());
+				}
+			}
 		}
 		
 		String retval = nameBuilder.build().toString() + "," + this.getBaseDN(); 

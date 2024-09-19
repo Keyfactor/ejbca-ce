@@ -15,8 +15,8 @@ package org.ejbca.ra;
 
 import org.ejbca.ui.web.StaticResourceVersioning;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Named;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Named;
 import java.io.Serializable;
 
 /**

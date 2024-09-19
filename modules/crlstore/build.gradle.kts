@@ -7,7 +7,7 @@ dependencies {
     compileOnly(project(":modules:cesecore-common"))
     compileOnly(project(":modules:cesecore-ejb-interface"))
     compileOnly(project(":modules:ejbca-common-web"))
-    compileOnly(libs.java.ee.api)
+    compileOnly(libs.jakartaee.api)
     compileOnly(libs.bcpkix)
     compileOnly(libs.bcprov)
     compileOnly(libs.bctls)
