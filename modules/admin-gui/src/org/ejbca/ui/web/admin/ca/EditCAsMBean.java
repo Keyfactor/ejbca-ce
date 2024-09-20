@@ -1081,9 +1081,6 @@ public class EditCAsMBean extends BaseManagedBean implements Serializable {
         final String cryptoTokenIdParam = caInfoDto.getCryptoTokenIdParam();
 
         for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
-            if (!AlgorithmTools.isSigAlgEnabled(current)) {
-                continue; // e.g. GOST3410 if not configured
-            }
             resultList.add(new SelectItem(current, current, ""));
         }
 
