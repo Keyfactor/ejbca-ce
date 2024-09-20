@@ -32,7 +32,6 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 
@@ -119,9 +118,7 @@ public class X509CAUnitTestBase {
 
     /** @return Algorithm name for test key pair */
     protected static String getTestKeyPairAlgName(String algName) {
-        if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410) ||
-            algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145) ||
-            algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
+        if (algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA) ||
             algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA) ||
             algName.equals(AlgorithmConstants.SIGALG_ED25519) ||
             algName.equals(AlgorithmConstants.SIGALG_ED448) ||
@@ -136,11 +133,7 @@ public class X509CAUnitTestBase {
     }
 
     protected static String getTestKeySpec(String algName) {
-        if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
-            return CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-        } else if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
-            return CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-        } else if (algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
+        if (algName.equals(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)) {
             return "brainpoolp224r1";
         } else if (algName.equals(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)) {
             return "prime256v1";

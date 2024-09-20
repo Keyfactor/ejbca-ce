@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.lang.reflect.Field;
 import java.security.KeyPair;
@@ -45,9 +44,7 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jcajce.provider.asymmetric.dstu.BCDSTU4145PublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.bouncycastle.jcajce.provider.asymmetric.ecgost.BCECGOST3410PublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -79,7 +76,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
@@ -105,7 +101,6 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -135,11 +130,7 @@ public class CAsSystemTest extends CaTestCase {
             .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
-    // private AuthenticationToken adminTokenNoAuth;
-
+    
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -335,7 +326,6 @@ public class CAsSystemTest extends CaTestCase {
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_ECDSA_CA_NAME));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_ECDSA_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
-            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             byte[] authKeyIdBytes = CertTools.getAuthorityKeyId(cert);
             assertEquals("Length of method 2 Authority Key Identifier should be 8 bytes", 8, authKeyIdBytes.length);
             byte[] subjectKeyIdBytes = CertTools.getSubjectKeyId(cert);
@@ -555,85 +545,6 @@ public class CAsSystemTest extends CaTestCase {
             removeOldCa(TEST_DILITHIUM5_CA_NAME);
         }
         
-    }
-
-    /** Adds a CA using ECGOST3410 keys to the database. It also checks that the CA is stored correctly. */
-    @Test
-    public void test04primAddECGOST3410() throws Exception {
-        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
-        cesecoreConfigurationProxySession.setGost3410Enabled(true);
-        boolean ret = false;
-        try {
-            createECGOST3410Ca();
-            CAInfo info = caSession.getCAInfo(admin, CaTestCase.TEST_ECGOST3410_CA_NAME);
-            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-            assertEquals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, sigAlg);
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN="+CaTestCase.TEST_ECGOST3410_CA_NAME));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN="+CaTestCase.TEST_ECGOST3410_CA_NAME));
-            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
-            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
-            PublicKey pk = bccert.getPublicKey();
-            checkECGOST3410Key(pk);
-            ret = true;
-        } catch (CAExistsException pee) {
-            log.info("CA exists.");
-            fail("Creating ECGOST3410 CA failed because CA exists.");
-        } finally {
-            removeOldCa(TEST_ECGOST3410_CA_NAME);
-            certificateProfileSession.removeCertificateProfile(admin, TEST_ECGOST3410_CA_NAME);
-        }
-        assertTrue("Creating ECGOST3410 CA failed", ret);
-    }
-
-    private void checkECGOST3410Key(PublicKey pk) {
-        if (pk instanceof BCECGOST3410PublicKey) {
-            BCECGOST3410PublicKey gostpk = (BCECGOST3410PublicKey)pk;
-            assertEquals("ECGOST3410", gostpk.getAlgorithm());
-            org.bouncycastle.jce.spec.ECParameterSpec spec = gostpk.getParameters();
-            assertNotNull("GOST3410 public key spec can't be null", spec);
-        } else {
-            fail("Public key is not GOST3410: "+pk.getClass().getName());
-        }
-    }
-    
-    /** Adds a CA using DSTU4510 keys to the database. It also checks that the CA is stored correctly. */
-    @Test
-    public void test04bisAddDSTU4510() throws Exception {
-        log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
-        boolean ret = false;
-        try {
-            createDSTU4145Ca();
-            CAInfo info = caSession.getCAInfo(admin, CaTestCase.TEST_DSTU4145_CA_NAME);
-            X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-            String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-            assertEquals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145, sigAlg);
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN="+CaTestCase.TEST_DSTU4145_CA_NAME));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN="+CaTestCase.TEST_DSTU4145_CA_NAME));
-            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
-            X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
-            PublicKey pk = bccert.getPublicKey();
-            checkDSTU4145Key(pk);
-            ret = true;
-        } catch (CAExistsException pee) {
-            log.info("CA exists.");
-            fail("Creating DSTU4145 CA failed because CA exists.");
-        } finally {
-            removeOldCa(TEST_DSTU4145_CA_NAME);
-        }
-        assertTrue("Creating DSTU4145 CA failed", ret);
-    }
-    
-    private void checkDSTU4145Key(PublicKey pk) {
-        if (pk instanceof BCDSTU4145PublicKey) {
-            BCDSTU4145PublicKey dstupk = (BCDSTU4145PublicKey)pk;
-            assertEquals("DSTU4145", dstupk.getAlgorithm());
-            org.bouncycastle.jce.spec.ECParameterSpec spec = dstupk.getParameters();
-            assertNotNull("DSTU4145 public key spec can't be null", spec);
-        } else {
-            assertTrue("Public key is not DSTU4145: "+pk.getClass().getName(), false);
-        }
     }
 
     /** Adds a CA using RSA keys to the database. It also checks that the CA is stored correctly. */

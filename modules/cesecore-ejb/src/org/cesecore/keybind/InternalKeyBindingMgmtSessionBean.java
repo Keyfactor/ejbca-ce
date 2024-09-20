@@ -40,11 +40,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -86,7 +81,6 @@ import org.cesecore.certificates.pinning.TrustedChain;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.impl.OcspKeyBinding;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.KeyPairInfo;
@@ -102,6 +96,11 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyGenParamsBuilder;
 import com.keyfactor.util.keys.token.KeyGenParams.KeyPairTemplate;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * Generic Management implementation for InternalKeyBindings.
@@ -425,9 +424,6 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             final String msg = intres.getLocalizedMessage("authorization.notauthorizedtoresource", InternalKeyBindingRules.MODIFY.resource(),
                     authenticationToken.toString());
             throw new AuthorizationDeniedException(msg);
-        }
-        if (!AlgorithmTools.isSigAlgEnabled(signatureAlgorithm)) {
-            throw new InvalidAlgorithmException("Signature algorithm " + signatureAlgorithm + " is not available.");
         }
         // Convert supplied properties using a prefix to ensure that the caller can't mess with internal ones
         final LinkedHashMap<Object, Object> initDataMap = new LinkedHashMap<>();
