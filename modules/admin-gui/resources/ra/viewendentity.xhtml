@@ -1,0 +1,478 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" 
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html" 
+      xmlns:ui="jakarta.faces.facelets"
+      xmlns:c="jakarta.tags.core" 
+      xmlns:fn="jakarta.tags.functions">
+<ui:remove>
+ <!--
+    /*************************************************************************
+     *                                                                       *
+     *  EJBCA: The OpenSource Certificate Authority                          *
+     *                                                                       *
+     *  This software is free software; you can redistribute it and/or       *
+     *  modify it under the terms of the GNU Lesser General Public           *
+     *  License as published by the Free Software Foundation; either         *
+     *  version 2.1 of the License, or any later version.                    *
+     *                                                                       *
+     *  See terms of license at gnu.org.                                     *
+     *                                                                       *
+     *************************************************************************/
+     -->
+</ui:remove>
+
+<ui:composition template="/WEB-INF/include/popup.xhtml">
+ <ui:define name="content">
+  <h2>
+   <h:outputText value="#{web.text.VIEW_ENDENTITY_HEADING}" />
+  </h2>
+
+  <h:panelGroup rendered="#{viewEndEntityMBean.currentUserIndex == 0}">
+   <h4>
+    <strong> <h:outputText value="#{web.text.CURRENTUSERDATA}" /></strong>
+   </h4>
+  </h:panelGroup>
+
+  <h:panelGroup rendered="#{viewEndEntityMBean.currentUserIndex != 0}">
+   <h4>
+    <strong> <h:outputText
+      value="#{web.text.HISTORICALUSERDATA}" /></strong>
+   </h4>
+  </h:panelGroup>
+
+  <h:form id="vieweeform"
+   rendered="#{viewEndEntityMBean.userData != null}">
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2">
+    <h:panelGroup rendered="#{!empty viewEndEntityMBean.userName}">
+     <strong> <h:outputLabel value="#{web.text.USERNAME}" />
+     </strong>
+    </h:panelGroup>
+    <h:panelGroup rendered="#{!empty viewEndEntityMBean.userName}">
+     <strong> <h:outputLabel
+       value="#{viewEndEntityMBean.userName}" />
+     </strong>
+    </h:panelGroup>
+
+    <!-- *********** End-entity information ********** -->
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.currentUserIndex == 0}">
+     <h:outputLabel value="#{web.text.STATUS}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.currentUserIndex == 0}">
+     <h:outputLabel value="#{viewEndEntityMBean.userStatus}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.currentUserIndex != 0}">
+                      &nbsp; 
+                      &nbsp;
+    </h:panelGroup>
+
+    <h:panelGroup>
+     <h:outputLabel value="#{web.text.CREATED}" />
+    </h:panelGroup>
+    <h:panelGroup>
+     <h:outputLabel value="#{viewEndEntityMBean.eeCreatedTime}" />
+    </h:panelGroup>
+
+    <h:panelGroup>
+     <h:outputLabel value="#{web.text.MODIFIED}" />
+    </h:panelGroup>
+    <h:panelGroup>
+     <h:outputLabel value="#{viewEndEntityMBean.eeModifiedTime}" />
+    </h:panelGroup>
+
+    <!-- *********** Index *********** -->
+                &nbsp;
+     <h:panelGroup
+     rendered="#{viewEndEntityMBean.viewOlderEe}">
+     <h:commandButton name="#{viewEndEntityMBean.buttonViewOlderName}"
+      value="&lt; #{web.text.VIEWOLDER}" tabindex="1" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.viewNewerEe}">
+     <h:commandButton name="#{viewEndEntityMBean.buttonViewNewerName}"
+      value="#{web.text.VIEWNEWER} &gt;" tabindex="2" />
+    </h:panelGroup>
+                &nbsp;
+                
+    <!-- *********** Main *********** -->
+
+    <h:panelGroup>
+     <h:outputLabel value="#{web.text.ENDENTITYPROFILE}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.eeProfileDefined}">
+     <h:outputLabel value="#{viewEndEntityMBean.eeProfileName}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{!viewEndEntityMBean.eeProfileDefined}">
+     <h:outputLabel value="#{web.text.NOENDENTITYPROFILEDEFINED}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderUseInBatch}">
+     <h:outputLabel value="#{web.text.USEINBATCH_ABBR}" />
+    </h:panelGroup>
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderUseInBatch and viewEndEntityMBean.useCleartextPassword}">
+     <h:outputLabel value="#{web.text.YES}" />
+    </h:panelGroup>
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderUseInBatch and !viewEndEntityMBean.useCleartextPassword}">
+     <h:outputLabel value="#{web.text.NO}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.useEmail}">
+     <h:outputLabel value="#{web.text.EMAIL}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.useEmail}">
+     <h:outputLabel value="#{viewEndEntityMBean.eeEmail}" />
+    </h:panelGroup>
+   </h:panelGrid>
+
+   <!-- *********** Subject DN *********** -->
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2">
+
+    <h:panelGroup>
+     <strong> <h:outputLabel value="#{web.text.CERT_SUBJECTDN}" />
+     </strong>
+    </h:panelGroup>
+
+    <h:panelGroup>&nbsp;</h:panelGroup>
+
+    <c:forEach items="#{viewEndEntityMBean.subjectDnFieldNameAndData}"
+     var="subjectDnFieldData" varStatus="subjectDn">
+
+     <h:panelGroup>
+      <h:outputLabel value="#{subjectDnFieldData.left}" />
+     </h:panelGroup>
+     <h:panelGroup rendered="#{subjectDnFieldData.right != null}">
+      <h:outputLabel value="#{subjectDnFieldData.right}" />
+     </h:panelGroup>
+
+    </c:forEach>
+   </h:panelGrid>
+
+   <!-- *********** Subject Alt Names  *********** -->
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2"
+    rendered="#{viewEndEntityMBean.renderSubjectAltNamesSection}">
+
+    <h:panelGroup>
+     <strong> <h:outputLabel
+       value="#{web.text.EXT_ABBR_SUBJECTALTNAME}" />
+     </strong>
+    </h:panelGroup>
+
+    <h:panelGroup>&nbsp;</h:panelGroup>
+
+    <c:forEach
+     items="#{viewEndEntityMBean.subjectAltNameFieldNameAndData}"
+     var="subjectAltNameFieldData" varStatus="subjectAltName">
+
+     <h:panelGroup>
+      <h:outputLabel value="#{subjectAltNameFieldData.left}" />
+     </h:panelGroup>
+     <h:panelGroup rendered="#{subjectAltNameFieldData.right != null}">
+      <h:outputLabel value="#{subjectAltNameFieldData.right}" />
+     </h:panelGroup>
+
+    </c:forEach>
+   </h:panelGrid>
+
+   <!-- *********** Subject Dir Attributes  *********** -->
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2"
+    rendered="#{viewEndEntityMBean.renderSubjectDirAttrsSection}">
+
+    <h:panelGroup>
+     <strong> <h:outputLabel
+       value="#{web.text.EXT_ABBR_SUBJECTDIRATTRS}" />
+     </strong>
+    </h:panelGroup>
+
+    <h:panelGroup>
+      &nbsp;
+    </h:panelGroup>
+
+    <c:forEach
+     items="#{viewEndEntityMBean.subjectDirAttrsFieldNameAndData}"
+     var="subjectDirAttrsFieldData" varStatus="subjectDirAttr">
+
+     <h:panelGroup>
+      <h:outputLabel value="#{subjectDirAttrsFieldData.left}" />
+     </h:panelGroup>
+     <h:panelGroup rendered="#{subjectDirAttrsFieldData.right != null}">
+      <h:outputLabel value="#{subjectDirAttrsFieldData.right}" />
+     </h:panelGroup>
+    </c:forEach>
+   </h:panelGrid>
+
+   <!-- *********** Main Certificate Data  *********** -->
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2">
+
+    <h:panelGroup>
+     <strong> <h:outputLabel
+       value="#{web.text.MAINCERTIFICATEDATA}" />
+     </strong>
+    </h:panelGroup>
+
+    <h:panelGroup>
+       &nbsp;
+    </h:panelGroup>
+
+    <h:panelGroup>
+     <h:outputLabel value="#{web.text.CERTIFICATEPROFILE}" />
+    </h:panelGroup>
+    <h:panelGroup>
+     <h:outputLabel value="#{viewEndEntityMBean.certProfileName}" />
+    </h:panelGroup>
+
+    <h:panelGroup>
+     <h:outputLabel value="#{web.text.CA}" />
+    </h:panelGroup>
+    <h:panelGroup>
+     <h:outputLabel value="#{viewEndEntityMBean.caName}" />
+    </h:panelGroup>
+
+    <h:panelGroup>
+     <h:outputLabel value="#{web.text.TOKEN}" />
+    </h:panelGroup>
+    <h:panelGroup>
+     <h:outputLabel value="#{viewEndEntityMBean.tokenName}" />
+    </h:panelGroup>
+   </h:panelGrid>
+
+   <!-- *********** Other certificate data *********** -->
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2"
+    rendered="#{viewEndEntityMBean.renderOtherCertData}">
+
+    <h:panelGroup>
+     <strong> <h:outputLabel
+       value="#{web.text.OTHERCERTIFICATEDATA}" />
+     </strong>
+    </h:panelGroup>
+
+    <h:panelGroup>
+       &nbsp;
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderCertSerialNum}">
+     <h:outputLabel value="#{web.text.CERT_SERIALNUMBER}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderCertSerialNum}">
+     <h:outputLabel value="#{viewEndEntityMBean.certSerialNum}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderTimeOfStart}">
+     <h:outputLabel value="#{web.text.TIMEOFSTART}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderTimeOfStart}">
+     <h:outputLabel value="#{viewEndEntityMBean.timeOfStart}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderTimeOfEnd}">
+     <h:outputLabel value="#{web.text.TIMEOFEND}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderTimeOfEnd}">
+     <h:outputLabel value="#{viewEndEntityMBean.timeOfEnd}" />
+    </h:panelGroup>
+
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderCardNumber}">
+     <h:outputLabel value="#{web.text.CARDNUMBER}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderCardNumber}">
+     <h:outputLabel value="#{viewEndEntityMBean.cardNumber}" />
+    </h:panelGroup>
+
+
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderCertExtensionData}">
+     <h:outputLabel value="#{web.text.CERT_EXTENSIONDATA}" />
+    </h:panelGroup>
+    <h:panelGrid
+     rendered="#{viewEndEntityMBean.renderCertExtensionData}">
+     <c:forEach var="extensionData"
+      items="${viewEndEntityMBean.extensionDataAsMap}">
+      <h:panelGroup>
+       <h:outputLabel value="${extensionData.key}" />
+      </h:panelGroup>
+      <h:panelGroup>
+       <h:outputLabel value="${extensionData.value}" />
+      </h:panelGroup>
+     </c:forEach>
+    </h:panelGrid>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderRawSubjectDn}">
+     <h:outputLabel value="#{web.text.RAWSUBJECTDN}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderRawSubjectDn}">
+     <h:outputLabel value="#{viewEndEntityMBean.rawSubjectDn}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderPsd2NcaName}">
+     <h:outputLabel value="#{web.text.PSD2_NCANAME}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderPsd2NcaName}">
+     <h:outputLabel value="#{viewEndEntityMBean.psd2NcaName}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderPsd2NcaId}">
+     <h:outputLabel value="#{web.text.PSD2_NCAID}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderPsd2NcaId}">
+     <h:outputLabel value="#{viewEndEntityMBean.psd2NcaId}" />
+    </h:panelGroup>
+
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderPsd2PspRoles}">
+     <h:outputLabel value="#{web.text.PSD2_PSP_ROLES}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderPsd2PspRoles}">
+     <h:selectManyListbox id="psd2PspRoles" disabled="true"
+      value="#{viewEndEntityMBean.selectedPsd2PspRoles}" size="4"
+      styleClass="select-list">
+      <f:selectItems value="#{viewEndEntityMBean.psd2PspRoles}" />
+     </h:selectManyListbox>
+    </h:panelGroup>
+
+
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderCabfOrganizationIdentifier}">
+     <h:outputLabel value="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER}" />
+    </h:panelGroup>
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderCabfOrganizationIdentifier}">
+     <h:outputLabel
+      value="#{viewEndEntityMBean.cabfOrganizationIdentifier}" />
+    </h:panelGroup>
+   </h:panelGrid>
+
+
+   <!-- *********** Other data *********** -->
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2"
+    rendered="#{viewEndEntityMBean.renderOtherData}">
+
+    <h:panelGroup>
+     <strong> <h:outputLabel value="#{web.text.OTHERDATA}" />
+     </strong>
+    </h:panelGroup>
+
+    <h:panelGroup>
+      &nbsp;
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderAllowedRequests}">
+     <h:outputLabel value="#{web.text.ALLOWEDREQUESTS}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderAllowedRequests}">
+     <h:outputLabel value="#{viewEndEntityMBean.allowedRequests}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderKeyRecoverable}">
+     <h:outputLabel value="#{web.text.KEYRECOVERABLE}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderKeyRecoverable}">
+     <h:outputLabel value="#{viewEndEntityMBean.keyRecoverable}" />
+    </h:panelGroup>
+
+
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderIssuanceRevocationReason}">
+     <h:outputLabel value="#{web.text.ISSUANCEREVOCATIONREASON}" />
+    </h:panelGroup>
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderIssuanceRevocationReason}">
+     <h:outputLabel
+      value="#{viewEndEntityMBean.issuanceRevocationReason}" />
+    </h:panelGroup>
+
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderSendNotification}">
+     <h:outputLabel value="#{web.text.SENDNOTIFICATION}" />
+    </h:panelGroup>
+    <h:panelGroup
+     rendered="#{viewEndEntityMBean.renderSendNotification}">
+     <h:outputLabel value="#{viewEndEntityMBean.sendNotification}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderPrintUserdata}">
+     <h:outputLabel value="#{web.text.PRINTUSERDATA}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderPrintUserdata}">
+     <h:outputLabel value="#{viewEndEntityMBean.printUserdata}" />
+    </h:panelGroup>
+
+   </h:panelGrid>
+
+   <!-- *********** CSR *********** -->
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2"
+    rendered="#{viewEndEntityMBean.renderCsrSection}">
+
+    <h:panelGroup>
+     <strong> <h:outputLabel
+       value="#{web.text.CERTIFICATEREQUESTDATA}" />
+     </strong>
+    </h:panelGroup>
+
+    <h:panelGroup>
+      &nbsp;
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderCsr}">
+     <h:outputLabel value="#{web.text.CSR}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderCsr}">
+     <h:outputLabel value="#{viewEndEntityMBean.csr}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderKeyAlgType}">
+     <h:outputLabel value="#{web.text.REQKSALGTYPE}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderKeyAlgType}">
+     <h:outputLabel value="#{viewEndEntityMBean.keyAlgType}" />
+    </h:panelGroup>
+
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderKeyAlgType}">
+     <h:outputLabel value="#{web.text.REQKSALGSUBTYPE}" />
+    </h:panelGroup>
+    <h:panelGroup rendered="#{viewEndEntityMBean.renderKeyAlgType}">
+     <h:outputLabel value="#{viewEndEntityMBean.keyAlgSubType}" />
+    </h:panelGroup>
+   </h:panelGrid>
+
+   <!-- *********** Actions *********** -->
+   <h:panelGrid columns="2" styleClass="view-top" cellspacing="2"
+    cellpadding="0" border="0" width="100%" rowClasses="Row0,Row1"
+    columnClasses="viewEeColumn1,viewEeColumn2">
+
+    <h:panelGroup>
+       &nbsp;
+    </h:panelGroup>
+
+    <h:panelGroup>
+     <h:commandButton type="reset" id="closeButton"
+      value="#{web.text.CLOSE}" tabindex="3" onclick="self.close()" />
+    </h:panelGroup>
+
+   </h:panelGrid>
+
+  </h:form>
+ </ui:define>
+</ui:composition>
+</html>

@@ -45,7 +45,7 @@ public class GetCertificateCountCommand extends BaseRaCommand {
         try {
             final Long result = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateDataSessionRemote.class).getCertificateCount(
                     getAuthenticationToken(), isActive);
-            getLogger().info("Total " + (isActive ? " active " : "") + "certificate count is:  " + result + ".");
+            getLogger().info("Total " + (isActive ? "active " : "") + "certificate count is: " + result + ".");
             return CommandResult.SUCCESS;
         } catch (AuthorizationDeniedException e) {
             log.error("ERROR: CLI use not authorized to perform certificate count " );

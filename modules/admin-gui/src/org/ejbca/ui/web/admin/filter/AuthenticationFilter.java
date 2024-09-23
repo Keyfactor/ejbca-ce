@@ -14,14 +14,14 @@ package org.ejbca.ui.web.admin.filter;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -66,6 +66,7 @@ public class AuthenticationFilter implements Filter {
                 final EjbcaWebBean ejbcaWebBean = SessionBeans.getEjbcaWebBean(httpServletRequest);
                 final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
                 try {
+                    // creates admin token and does access rules check
                     ejbcaWebBean.initialize(httpServletRequest, accessResourcesByRequestURI);
                 } catch (AuthenticationFailedException e) {
                     if (oauthBearerToken != null) {
@@ -81,21 +82,21 @@ public class AuthenticationFilter implements Filter {
                     authenticationErrorPublicMessage = "You are not authorized to view this page.";
                 }
                 final X509Certificate x509Certificate = ejbcaWebBean.getClientX509Certificate(httpServletRequest);
-                if ((x509Certificate != null || oauthBearerToken != null) && !hasAuthenticationError) {
-                    final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
-                    if (admin != null) {
-                        httpServletRequest.setAttribute("authenticationtoken", admin);
-                        filterChain.doFilter(servletRequest, servletResponse);
-                    } else {
-                        hasAuthenticationError = true;
+                final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
+                if (admin != null && !hasAuthenticationError) {
+                    // let through only if admin token exists AND no auth error
+                    httpServletRequest.setAttribute("authenticationtoken", admin);
+                    filterChain.doFilter(servletRequest, servletResponse);
+                } else {
+                    hasAuthenticationError = true;
+                    if (x509Certificate != null || oauthBearerToken != null) {
                         authenticationErrorMessage = oauthBearerToken != null ? "Authentication failed using OAuth Bearer Token"
                                 : "Authorization denied for certificate: " + CertTools.getSubjectDN(x509Certificate);
                         authenticationErrorPublicMessage = authenticationErrorMessage;
+                    } else {
+                        authenticationErrorMessage = "No client certificate sent.";
+                        authenticationErrorPublicMessage = "This operation requires certificate authentication!";
                     }
-                } else if (!hasAuthenticationError) {
-                    hasAuthenticationError = true;
-                    authenticationErrorMessage = "No client certificate sent.";
-                    authenticationErrorPublicMessage = "This operation requires certificate authentication!";
                 }
             }
             // No binding defined, pass the request along the filter chain

@@ -25,12 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -66,7 +66,6 @@ import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.crl.CrlCreationParams;
@@ -85,7 +84,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * - Setting revocation status in the database (using certificate store)
  * - Publishing revocations to publishers 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RevocationSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RevocationSessionBean implements RevocationSessionLocal, RevocationSessionRemote {
 
@@ -209,7 +208,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         }
         
         // ECA-9716 caInfo == null with self-signed certificates stored in DB before revoking
-        // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity)
+        // an end entity (found in EndEntityManagementSessionSystemTest.testRevokeEndEntity)
         if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
             log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
             AuthenticationToken newAdmin = getOrCreateAuthorizedTokenCreateCrl(admin, caInfo.getName());
@@ -307,7 +306,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 caId = revokedCertificates.get(0).getBaseCertificateData().getIssuerDN().hashCode();
                 caInfo = caSession.getCAInfo(admin, caId);
                 // ECA-9716 caInfo == null with self signed certificates stored in DB before revoking 
-                // an end entity (found in EndEntityManagementSessionTest.testRevokeEndEntity) 
+                // an end entity (found in EndEntityManagementSessionSystemTest.testRevokeEndEntity)
                 if (caInfo != null && caInfo.isGenerateCrlUponRevocation()) {
                     log.info("Generate new CRL upon revocation for CA '" + caId + "'.");
                     try {
@@ -327,20 +326,63 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     }
 
     @Override
-    public int revokeIncompletelyIssuedCertsBatched(final AuthenticationToken admin, final long maxIssuanceTimeMillis) throws AuthorizationDeniedException {
+    public int handleIncompletelyIssuedCertsBatched(final AuthenticationToken admin, final long maxIssuanceTimeMillis, final boolean revokePreCerts)
+            throws AuthorizationDeniedException {
         // Fetch a list of up to 100 "half-issued" certificates
-        final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession.getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
+        final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts = incompleteIssuanceJournalDataSession
+                .getIncompleteIssuedCertsBatch(maxIssuanceTimeMillis);
         final Date now = new Date();
-        final RevocationReasons revocationReason = RevocationReasons.UNSPECIFIED;
+
+        if (revokePreCerts) {
+            revokePreCerts(admin, incompleteIssuedCerts, now);
+        } else {
+            storePreCerts(admin, incompleteIssuedCerts, now);
+        }
+
+        return incompleteIssuedCerts.size();
+    }
+
+    private void storePreCerts(AuthenticationToken admin, List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts, Date now) {
         for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {
             final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(incompleteIssuedCert.getCertificateProfileId());
+
+            try {
+                final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME,
+                        Certificate.class);
+
+                // Sets the status of the pre certs in CertificateData to ACTIVE
+                certificateStoreSession.storeCertificateNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
+                        incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_ACTIVE, certProfile.getType(),
+                        incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
+                        incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
+                        incompleteIssuedCert.getAccountBindingId());
+
+                // The certificate is now in a meaningful state, so it can be removed from IncompleteIssuanceJournalData
+                incompleteIssuanceJournalDataSession.removeFromJournal(incompleteIssuedCert.getCaId(), incompleteIssuedCert.getSerialNumber());
+            } catch (CertificateParsingException e) {
+                log.error("Failed to handle incompletely issued certificate, with CA ID " + incompleteIssuedCert.getCaId() + " and serial "
+                        + incompleteIssuedCert.getSerialNumber().toString(16));
+            }
+
+        }
+
+    }
+
+    private void revokePreCerts(final AuthenticationToken admin, final List<IncompletelyIssuedCertificateInfo> incompleteIssuedCerts, final Date now)
+            throws AuthorizationDeniedException {
+        final RevocationReasons revocationReason = RevocationReasons.UNSPECIFIED;
+        for (final IncompletelyIssuedCertificateInfo incompleteIssuedCert : incompleteIssuedCerts) {
+            final CertificateProfile certProfile = certificateProfileSession
+                    .getCertificateProfile(incompleteIssuedCert.getCertificateProfileId());
             final List<Integer> publishers = certProfile.getPublisherList();
             try {
                 // Add certificate in revoked state
-                final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME, Certificate.class);
-                final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateRevokedNoAuth(admin, cert, incompleteIssuedCert.getUsername(),
-                        incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED, certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(),
-                        incompleteIssuedCert.getEndEntityProfileId(), incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
+                final Certificate cert = CertTools.getCertfromByteArray(incompleteIssuedCert.getCertBytes(), BouncyCastleProvider.PROVIDER_NAME,
+                        Certificate.class);
+                final CertificateDataWrapper cdw = certificateStoreSession.storeCertificateRevokedNoAuth(admin, cert,
+                        incompleteIssuedCert.getUsername(), incompleteIssuedCert.getCaFingerprint(), null, CertificateConstants.CERT_REVOKED,
+                        certProfile.getType(), incompleteIssuedCert.getCertificateProfileId(), incompleteIssuedCert.getEndEntityProfileId(),
+                        incompleteIssuedCert.getCrlPartitionIndex(), CertificateConstants.CERT_TAG_PRECERT, now.getTime(),
                         incompleteIssuedCert.getAccountBindingId(), revocationReason, now);
                 // Publish revocation information
                 final BaseCertificateData certificateData = cdw.getBaseCertificateData();
@@ -350,13 +392,15 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 // The certificate is now in a meaningful state, so it can be removed from IncompleteIssuanceJournalData
                 incompleteIssuanceJournalDataSession.removeFromJournal(incompleteIssuedCert.getCaId(), incompleteIssuedCert.getSerialNumber());
             } catch (CertificateParsingException e) {
-                log.error("Failed to revoke incompletely issued certificate, with CA ID " + incompleteIssuedCert.getCaId() + " and serial " + incompleteIssuedCert.getSerialNumber().toString(16));
+                log.error("Failed to revoke incompletely issued certificate, with CA ID " + incompleteIssuedCert.getCaId() + " and serial "
+                        + incompleteIssuedCert.getSerialNumber().toString(16));
             }
         }
-        return incompleteIssuedCerts.size();
     }
 
-    /** @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
+    /**
+     * Returns a new revocation date of certificate based on user provided date, revocation reason and Crl
+     * @return revocationDate as is, or null if unrevoking a certificate that's not on a base CRL in on hold state. */
     private Date getRevocationDate(final AuthenticationToken admin, final CertificateDataWrapper cdw, final Date revocationDate, final int reason) throws AuthorizationDeniedException {
         if (revocationDate == null
                 || (reason != RevokedCertInfo.NOT_REVOKED && reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL) ||
@@ -365,7 +409,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
         }
         final String issuerDN = cdw.getBaseCertificateData().getIssuerDN();
         CAInfo caInfo = caSession.getCAInfo(admin, issuerDN.hashCode());
-        boolean isDeltaCrlEnabled = caInfo.getDeltaCRLPeriod() > 0;
+        boolean isDeltaCrlEnabled = caInfo != null && caInfo.getDeltaCRLPeriod() > 0;
         if (!isDeltaCrlEnabled) {
             return revocationDate;
         }

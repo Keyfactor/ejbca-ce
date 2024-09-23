@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.roles.management;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Interface for low level Role operations.

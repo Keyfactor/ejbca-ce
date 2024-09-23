@@ -15,7 +15,7 @@ package org.cesecore.keys.token;
 import java.util.List;
 import java.util.Map;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 /**
  * 

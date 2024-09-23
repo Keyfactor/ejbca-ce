@@ -12,15 +12,18 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.ui.web.rest.api.validator.ValidEndEntityRevocationRestRequest;
+
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 /**
  * JSON input representation of end entity revocation request through REST API.
  */
 @ValidEndEntityRevocationRestRequest
-@ApiModel(description = "End Entity revocation request. Available reason codes: \n" +
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
+@Schema(description = "End Entity revocation request. Available reason codes: \n" +
         " 0 - Unspecified,\n" +
         " 1 - Key Compromise,\n" +
         " 2 - CA Compromise,\n" +
@@ -33,9 +36,9 @@ import org.ejbca.ui.web.rest.api.validator.ValidEndEntityRevocationRestRequest;
         " 10 - AA Compromise")
 public class EndEntityRevocationRestRequest {
 
-    @ApiModelProperty(value = "Reason code", example = "2", allowableValues = "0, 1, 2, 3, 4, 5, 6, 8, 9, 10")
+    @Schema(description = "Reason code", example = "2", allowableValues = "0, 1, 2, 3, 4, 5, 6, 8, 9, 10")
     private int reasonCode;
-    @ApiModelProperty(value = "Delete", example = "true", allowableValues = "true, false")
+    @Schema(description = "Delete", example = "true", allowableValues = "true, false")
     private boolean delete;
     
     public EndEntityRevocationRestRequest() {}

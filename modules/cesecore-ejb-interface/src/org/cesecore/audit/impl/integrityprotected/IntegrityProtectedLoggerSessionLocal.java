@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.audit.impl.integrityprotected;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.cesecore.audit.AuditLogger;
 

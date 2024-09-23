@@ -33,9 +33,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1BitString;
@@ -100,17 +107,13 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.model.InternalEjbcaResources;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * Helper class to create different standard parts of CMP messages
- * 
+ *
  */
 public class CmpMessageHelper {
-    
+
     private static Logger LOG = Logger.getLogger(CmpMessageHelper.class);
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
     private static final SecureRandom secureRandom = new SecureRandom();
@@ -140,7 +143,7 @@ public class CmpMessageHelper {
     /** Returns the PKIFailureInfo that is the correct format for CMP, i.e. a DERBitString as specified in PKIFailureInfo.
      * @see org.bouncycastle.asn1.cmp.PKIFailureInfo
      * @see org.cesecore.certificates.certificate.request.FailInfo
-     * 
+     *
      * @param failInfo
      * @return PKIFailureInfo for use in CMP error messages
      */
@@ -166,12 +169,12 @@ public class CmpMessageHelper {
 
     /**
      * Creates signature protection on a CMP message based on lots of parameters
-     * 
+     *
      * @param pkiMessage the CMP message to sign
      * @param signCertChain the signer certificate chain to be included as extraCerts in the CMP (response) message
      * @param signKey the key to sign message with
      * @param signAlg the default signature algorithm used with signKey
-     * @param requestDigestAlg if the request has come in with a different signature algorithm for example SHA256WithRSA 
+     * @param requestDigestAlg if the request has come in with a different signature algorithm for example SHA256WithRSA
      *   and signAlg is SHA384WithRSA, the message signature is downgraded to SHA256WithRSA to make sure the client can handle it
      * @param provider the signature provider to use for signing, BC for software keys and another provider for HSM keys (P11, Azure, etc)
      * @return returns the ASN.1 encoded signed CMP message, ready to send to the server, or back to the client
@@ -182,8 +185,8 @@ public class CmpMessageHelper {
      * @throws SignatureException
      * @throws CertificateEncodingException
      */
-    public static byte[] signPKIMessage(PKIMessage pkiMessage, Collection<Certificate> signCertChain, 
-            PrivateKey signKey, String signAlg, String requestDigestAlg, String provider) 
+    public static byte[] signPKIMessage(PKIMessage pkiMessage, Collection<Certificate> signCertChain,
+            PrivateKey signKey, String signAlg, String requestDigestAlg, String provider)
     		        throws InvalidKeyException, NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException,
             CertificateEncodingException {
         if (LOG.isTraceEnabled()) {
@@ -211,7 +214,7 @@ public class CmpMessageHelper {
         if (LOG.isTraceEnabled()) {
             LOG.trace("<signPKIMessage()");
         }
-        // Return response as byte array 
+        // Return response as byte array
         return pkiMessageToByteArray(signedPkiMessage);
     }
 
@@ -227,7 +230,7 @@ public class CmpMessageHelper {
             LOG.debug("Selected signature alg oid: " + pAlg.getAlgorithm().getId() + ", from signAlg " + signAlg + " and key algorithm: "+key.getAlgorithm());
         }
         headerBuilder.setProtectionAlg(pAlg);
-        // Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
+        // Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so
         // we use BC classes to translate it into a signature algorithm name instead
         PKIHeader head = headerBuilder.build();
         if (LOG.isDebugEnabled()) {
@@ -258,7 +261,7 @@ public class CmpMessageHelper {
         builder.setFreeText(head.getFreeText());
         builder.setGeneralInfo(head.getGeneralInfo());
         builder.setMessageTime(head.getMessageTime());
-        builder.setRecipKID((DEROctetString) head.getRecipKID());
+        builder.setRecipKID(head.getRecipKID());
         builder.setRecipNonce(head.getRecipNonce());
         builder.setSenderKID(head.getSenderKID());
         builder.setSenderNonce(head.getSenderNonce());
@@ -267,7 +270,7 @@ public class CmpMessageHelper {
     }
 
     /** verifies signature protection on CMP PKI messages
-     *  
+     *
      * @param pKIMessage the CMP message to verify signature on, if protected by signature protection
      * @param pubKey the public key used to verify the signature
      * @return true if verification is ok or false if verification fails
@@ -285,7 +288,7 @@ public class CmpMessageHelper {
         if(sigAlg == null) {
             throw new SignatureException("No signature algorithm was provided.");
         }
-      
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Verifying signature with algorithm: " + sigAlg.getAlgorithm().getId());
         }
@@ -366,7 +369,7 @@ public class CmpMessageHelper {
             throw new IllegalStateException(e);
         }
     }
-        
+
     public static byte[] protectPKIMessageWithPBE(PKIMessage msg, String keyId, String raSecret, String digestAlgId, String macAlgId,
             int iterationCount) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
         if (LOG.isTraceEnabled()) {
@@ -385,7 +388,7 @@ public class CmpMessageHelper {
         ASN1Integer iteration = new ASN1Integer(iterationCount);
         // HMAC/SHA1
         AlgorithmIdentifier macAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(macAlgId));
-        // We need some random bytes for the nonce
+        // We need some random bytes for the salt
         byte[] saltbytes = createSenderNonce();
         DEROctetString derSalt = new DEROctetString(saltbytes);
 
@@ -423,11 +426,11 @@ public class CmpMessageHelper {
         if (LOG.isTraceEnabled()) {
             LOG.trace("<protectPKIMessageWithPBE()");
         }
-        // Return response as byte array 
+        // Return response as byte array
         return pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
     }
 
-    /** @return response as byte array */ 
+    /** @return response as byte array */
     public static byte[] pkiMessageToByteArray(final PKIMessage pkiMessage) {
         try {
             return pkiMessage.getEncoded();
@@ -436,9 +439,9 @@ public class CmpMessageHelper {
         }
     }
 
-    /** 
+    /**
      * Creates a 16 bytes random sender nonce.
-     * 
+     *
      * @return byte array of length 16
      */
     public static byte[] createSenderNonce() {
@@ -451,7 +454,7 @@ public class CmpMessageHelper {
     public static ResponseMessage createUnprotectedErrorMessage(BaseCmpMessage cmpRequestMessage, FailInfo failInfo, String failText) {
         return createUnprotectedErrorMessage(cmpRequestMessage.getHeader(), failInfo, failText);
     }
-    
+
     /**
      * Create a standard unprotected error message with PKIStatus.rejection and PKIFailureInfo.badRequest.
      * The generated message should be sent as a response to an unparsable CMP request only, since the sender nonce
@@ -465,14 +468,14 @@ public class CmpMessageHelper {
                 setMessageTime(new ASN1GeneralizedTime(new Date())).
                 build();
         final ErrorMsgContent errorMessage = new ErrorMsgContent(
-                new PKIStatusInfo(PKIStatus.rejection, 
-                        new PKIFreeText(errorDescription), 
-                        new PKIFailureInfo(PKIFailureInfo.badRequest))); 
+                new PKIStatusInfo(PKIStatus.rejection,
+                        new PKIFreeText(errorDescription),
+                        new PKIFailureInfo(PKIFailureInfo.badRequest)));
         final PKIBody pkiBody = new PKIBody(PKIBody.TYPE_ERROR, errorMessage);
         final PKIMessage pkiResponse = new PKIMessage(pkiHeader, pkiBody);
         return CmpMessageHelper.pkiMessageToByteArray(pkiResponse);
     }
-    
+
     /**
      * Create an unsigned RFC 4210 error message as described in section 5.3.21 based on a PKIHeader obtained from
      * a previous CMP client request message.
@@ -482,7 +485,7 @@ public class CmpMessageHelper {
      * @return An <code>org.cesecore.certificates.certificate.request.ResponseMessage</code> data structure containing the error
      */
     public static ResponseMessage createUnprotectedErrorMessage(PKIHeader pkiHeader, FailInfo failInfo, String failText) {
-        final CmpErrorResponseMessage resp = new CmpErrorResponseMessage(); 
+        final CmpErrorResponseMessage resp = new CmpErrorResponseMessage();
         try {
             if (pkiHeader == null) {
                 pkiHeader = new PKIHeader(PKIHeader.CMP_2000, PKIHeader.NULL_NAME, PKIHeader.NULL_NAME);
@@ -509,15 +512,15 @@ public class CmpMessageHelper {
             resp.create();
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException | IllegalStateException e) {
             LOG.error("Exception during CMP processing: ", e);
-        } 
+        }
         return resp;
     }
-    
+
     /**
      * creates a simple error message in response to msg.
-     * 
+     *
      * The protection parameters can be null to create an unprotected message
-     * 
+     *
      * @return IResponseMessage that can be sent to user
      */
     public static CmpErrorResponseMessage createErrorMessage(BaseCmpMessage msg, FailInfo failInfo, String failText, int requestId, int requestType,
@@ -563,11 +566,11 @@ public class CmpMessageHelper {
             cresp.create();
         } catch (InvalidKeyException | NoSuchAlgorithmException | NoSuchProviderException e) {
             LOG.error(INTRES.getLocalizedMessage(CMP_ERRORGENERAL), e);
-        } 
+        }
         return cresp;
     }
 
-    public static CmpErrorResponseMessage createSignedErrorMessage(PKIHeader pkiHeader, FailInfo failInfo, String failText, List<Certificate> signCaChain, 
+    public static CmpErrorResponseMessage createSignedErrorMessage(PKIHeader pkiHeader, FailInfo failInfo, String failText, List<Certificate> signCaChain,
             PrivateKey privateKey, String signAlg, String provider ) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         final CmpErrorResponseMessage errorMessage = new CmpErrorResponseMessage();
             if (pkiHeader == null) {
@@ -575,7 +578,7 @@ public class CmpMessageHelper {
             }
             // Create a failure message
             if (LOG.isDebugEnabled()) {
-                LOG.debug("Creating a signed error message with failInfo=" + failInfo + 
+                LOG.debug("Creating a signed error message with failInfo=" + failInfo +
                                 ", failText=" + LogRedactionUtils.getRedactedMessage(failText));
             }
             errorMessage.setSenderNonce(new String(Base64.encode(createSenderNonce())));
@@ -619,13 +622,13 @@ public class CmpMessageHelper {
         CertRepMessage certRepMessage = new CertRepMessage(null, certResponses);
 
         int respType;
-        
+
         if (requestType == PKIBody.TYPE_P10_CERT_REQ) {
-            respType = PKIBody.TYPE_CERT_REP; 
+            respType = PKIBody.TYPE_CERT_REP;
         } else {
             respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
         }
-        
+
         if (LOG.isDebugEnabled()) {
             LOG.debug("Creating response body of type " + respType);
         }
@@ -633,9 +636,9 @@ public class CmpMessageHelper {
     }
 
     /**
-     * Converts the header and the body of a PKIMessage to an ASN1Encodable and 
+     * Converts the header and the body of a PKIMessage to an ASN1Encodable and
      * returns the as a byte array
-     * 
+     *
      * @param msg
      * @return the PKIMessage's header and body in byte array
      */
@@ -644,9 +647,9 @@ public class CmpMessageHelper {
     }
 
     /**
-     * Converts the header and the body of a PKIMessage to an ASN1Encodable and 
+     * Converts the header and the body of a PKIMessage to an ASN1Encodable and
      * returns the as a byte array
-     *  
+     *
      * @param header
      * @param body
      * @return the PKIMessage's header and body in byte array
@@ -670,7 +673,7 @@ public class CmpMessageHelper {
 
     /**
      * Parses a CRMF request created with novosec library classes and return a bouncycastle CertReqMsg object
-     * 
+     *
      * @param messages
      * @return
      */
@@ -692,9 +695,9 @@ public class CmpMessageHelper {
         //
         // The bouncycastle parser expects an implicit tag, so to it, it looks like the sequence is containing a single element.
         //--------------------------------------
-        // A comment from bouncycastle that might not effect anything here but maybe effect something else in the future: 
-        //         What's happened is the novosec generator has explicitly tagged the PopoSigningKey structure, it should be 
-        //         implicitly tagged (this isn't true if it's a POPOPrivKey, but that's because it's a CHOICE item so the tag 
+        // A comment from bouncycastle that might not effect anything here but maybe effect something else in the future:
+        //         What's happened is the novosec generator has explicitly tagged the PopoSigningKey structure, it should be
+        //         implicitly tagged (this isn't true if it's a POPOPrivKey, but that's because it's a CHOICE item so the tag
         //         has to be preserved, but that is a different story).
 
         // Reconstructing the CertRequest
@@ -788,7 +791,7 @@ public class CmpMessageHelper {
         }
 
         //The constructor RevDetails(certTemplate, crlEntryDetails) only sets 'crlEntryDetails' and ignores 'certTemplate'
-        //This is a reported bug in bouncycastle. For now, the only way to have both of them set is to create a ASN1/DERSequence 
+        //This is a reported bug in bouncycastle. For now, the only way to have both of them set is to create a ASN1/DERSequence
         ASN1EncodableVector seq = new ASN1EncodableVector();
         seq.add(ct);
         seq.add(crlEntryDetails);
@@ -842,7 +845,7 @@ public class CmpMessageHelper {
                 return pkiMessage;
             }
         } catch (RuntimeException e) {
-            // BC library will throw an IllegalArgumentException if the underlying ASN.1 could not be parsed. 
+            // BC library will throw an IllegalArgumentException if the underlying ASN.1 could not be parsed.
             if (LOG.isDebugEnabled()) {
                 LOG.debug(INTRES.getLocalizedMessage("cmp.errornotcmpmessage"), e);
             }

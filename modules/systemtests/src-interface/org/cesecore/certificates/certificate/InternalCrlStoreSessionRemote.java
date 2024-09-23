@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * This session bean should under no circumstances be included in the release version of CESeCore.

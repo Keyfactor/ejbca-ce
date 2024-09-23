@@ -42,18 +42,18 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.AsyncResult;
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang.StringUtils;
@@ -98,7 +98,6 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBinding;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNameInUseException;
@@ -165,7 +164,7 @@ import com.keyfactor.util.certificate.DnComponents;
  * releases.
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UpgradeSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
 public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRemote {
 
@@ -286,7 +285,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return getGlobalUpgradeConfiguration().getPostUpgradeStarted();
     }
 
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public boolean setPostUpgradeStarted(final long startTimeMs) {
         final GlobalUpgradeConfiguration globalUpgradeConfiguration = getGlobalUpgradeConfiguration();
@@ -725,7 +723,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     private boolean postMigrateDatabase781() {
         log.info("Starting post upgrade to 7.8.1");
         List<?> ids;
@@ -760,7 +757,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     private boolean postMigrateDatabase830() {
         log.info("Starting post upgrade to 8.3.0");
        
@@ -788,7 +784,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *  from the AcmeAuthorizationData rawData into the separate DB columns for indexing.
      */
     @SuppressWarnings("unchecked")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     private boolean postMigrateDatabase710() {
         log.info("Starting post upgrade to 7.10.0");
         
@@ -1122,7 +1117,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase624() throws UpgradeFailedException {
         // Check if there the default responder has been set. If not, try setting it using the old value.
@@ -1146,7 +1140,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Access rules have also been added for read only rights to parts of the GUI.
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase640() throws UpgradeFailedException {
         //First add access rules for handling custom OIDs to any roles which previous had access to system configuration
@@ -1167,7 +1160,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase642() throws UpgradeFailedException {
         addReadOnlyRules642();
@@ -1183,7 +1175,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase651() throws UpgradeFailedException {
         CmpConfiguration cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
@@ -1225,7 +1216,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase660() throws UpgradeFailedException {
         log.debug("migrateDatabase660: Upgrading roles with approval rules");
@@ -1381,7 +1371,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws UpgradeFailedException if upgrade fails (rolls back)
      */
     @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase680() throws UpgradeFailedException {
         log.debug("migrateDatabase680: Upgrading roles, rules and role members.");
@@ -1562,7 +1551,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Upgrading System configuration and certificate profiles with CT log label system
      */
     @SuppressWarnings("deprecation")
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6101() throws UpgradeFailedException {
         log.debug("migrateDatabase6100: Upgrading CT logs");
@@ -1662,7 +1650,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * on remote RA instances. All should be allowed by default to not cause any regressions. The rules are
      * only relevant for RA Peer connector roles.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6110() throws UpgradeFailedException {
         log.debug("migrateDatabase6110: Adding new rules for protocol access on remote RA instances.");
@@ -1712,7 +1699,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws InternalKeyBindingNameInUseException 
      * 
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6120() {
         log.debug("migrateDatabase6120: Importing OCSP extensions from ocsp.properties file and UnidFnr trust dir (if available)");
@@ -1726,7 +1712,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * migrateDatabase6110) on remote RA instances. Should be allowed by default to not cause any regressions. 
      * This rules is only relevant for RA Peer connector roles.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6140() throws UpgradeFailedException {
         log.debug("migrateDatabase6140: Adding new rule for SCEP protocol access on remote RA instances.");
@@ -1749,7 +1734,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * All the CCE will get a new required flag with the default value set to true.
      *  
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase6150() throws UpgradeFailedException {
         log.debug("migrateDatabase6150: Adding new field (required) for custom certificate extensions.");
@@ -1916,34 +1900,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         log.info("Starting post upgrade to 7.4.0");
         try {
             removeUnidFnrConfigurationFromCmp();
-
-            // Counting the number of non normal CRLData rows
-            final Query query = entityManager.createQuery("SELECT count(*) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
-            final long countOfRowsToBeNormalized = (long) query.getSingleResult();            
-            
-            final long startDataNormalization = System.currentTimeMillis();
-            
-            // Check whether it is an MSSQL database. If yes, don't normalize in chunks
-            final String dbType = DatabaseConfiguration.getDatabaseName();
-            if (MSSQL.equals(dbType)) {
-                upgradeSession.fixPartitionedCrls(0, true);
-            } else {
-                // Normalization for non-MSSQL databases is done in chunks in case number of rows are huge in CRLData table.
-                // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
-                // See ECA-10712 for more info.
-                for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
-                    upgradeSession.fixPartitionedCrls(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE, false);
-                    
-                }
-                // Do fix the remaining if any
-                final Query normalizeData = entityManager.createQuery(
-                        "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
-                log.debug("Executing SQL query: " + normalizeData);
-                normalizeData.executeUpdate();
-                log.info("Successfully normalized " + countOfRowsToBeNormalized + " rows in CRLData. Completed in "
-                        + (System.currentTimeMillis() - startDataNormalization) + " ms.");
-            }
-            
+            upgradeSession.fixPartitionedCrls();
             fixPartitionedCrlIndexes();
         } catch (AuthorizationDeniedException | UpgradeFailedException e) {
             log.error(e);
@@ -2188,6 +2145,38 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     }
 
     /**
+     * Runs in a new transaction because {@link upgradeIndex} depends on the changes and the release of the metadata locks on CRLData.
+     */
+    @Override
+    public void fixPartitionedCrls() throws UpgradeFailedException {
+        // Counting the number of non normal CRLData rows
+        final Query query = entityManager.createQuery("SELECT count(*) FROM CRLData WHERE crlPartitionIndex IS NULL OR crlPartitionIndex = 0 ");
+        final long countOfRowsToBeNormalized = (long) query.getSingleResult();
+
+        final long startDataNormalization = System.currentTimeMillis();
+
+        // Check whether it is an MSSQL database. If yes, don't normalize in chunks
+        final String dbType = DatabaseConfiguration.getDatabaseName();
+        if (MSSQL.equals(dbType)) {
+            fixPartitionedCrls2(0, true);
+        } else {
+            // Normalization for non-MSSQL databases is done in chunks in case number of rows are huge in CRLData table.
+            // This is to avoid the error "Got error 90 "Message too long" during COMMIT" in Galera clusters
+            // See ECA-10712 for more info.
+            for (int i = 0; i < countOfRowsToBeNormalized; i += PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE) {
+                fixPartitionedCrls2(PARTITIONED_CRLS_NORMALIZE_BATCH_SIZE, false);
+            }
+            // Do fix the remaining if any
+            final Query normalizeData = entityManager.createQuery(
+                    "UPDATE CRLData a SET a.crlPartitionIndex = -1 WHERE a.crlPartitionIndex IS NULL OR a.crlPartitionIndex=0");
+            log.debug("Executing SQL query: " + normalizeData);
+            normalizeData.executeUpdate();
+            log.info("Successfully normalized " + countOfRowsToBeNormalized + " rows in CRLData. Completed in "
+                    + (System.currentTimeMillis() - startDataNormalization) + " ms.");
+        }
+    }
+
+    /**
      * Try to update the database to make it possible to use 'Partitioned CRLs' on existing installations using
      * default database indexes by modifying the <code>CRLData</code> table.
      *
@@ -2195,15 +2184,11 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * <code>(issuerDN, crlPartitionIndex, deltaCRLIndicator, cRLNumber)</code> and
      * <code>(issuerDN, crlPartitionIndex, cRLNumber)</code>. See ECA-8680 for more details.
      *
-     * Runs in a new transaction because {@link upgradeIndex} depends on the changes.
-     *
      * @return true if migration should be considered complete and the <code>lastPostUpgradedToVersion</code>
      * value in the database should be incremented.
      * @throws UpgradeFailedException if upgrade fails
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
-    @Override
-    public void fixPartitionedCrls(final int limit, final boolean isMSSQL) throws UpgradeFailedException {
+    private void fixPartitionedCrls2(final int limit, final boolean isMSSQL) throws UpgradeFailedException {
         try {
             // Do the whole normalization at once in the case of MSSQL
             if (isMSSQL) {
@@ -2255,7 +2240,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Replaces a database index. Called by {@link #fixPartitionedCrlIndexes}.
      * Runs in a new transaction because the queries will fail if the index does not exist.
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public IndexUpgradeResult upgradeIndex(final String oldIndexName, final String tableName, final String createIndexQuery) {
         try {
@@ -2405,7 +2389,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      *
      * @throws UpgradeFailedException if upgrade fails
      */
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void migrateDatabase781() throws UpgradeFailedException {
         final GlobalConfiguration globalConfig = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);

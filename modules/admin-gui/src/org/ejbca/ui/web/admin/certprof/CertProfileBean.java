@@ -50,12 +50,12 @@ import org.ejbca.cvc.AccessRightAuthTerm;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
-import javax.annotation.PostConstruct;
-import javax.faces.context.FacesContext;
-import javax.faces.model.ListDataModel;
-import javax.faces.model.SelectItem;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
+import jakarta.annotation.PostConstruct;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
@@ -192,11 +192,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
 
             if (prof.getAvailableBitLengthsAsList().isEmpty() && prof.isKeyAlgorithmsRequireKeySizes()) {
                 addErrorMessage("ONEAVAILABLEBITLENGTH");
-                success = false;
-            }
-            if (prof.isKeyAlgorithmsRequireSecurityLevel() &&
-                    (prof.getAvailableSecurityLevelsAsList() == null || prof.getAvailableSecurityLevelsAsList().isEmpty())) {
-                addErrorMessage("ONEAVAILABLESECURITYLEVEL");
                 success = false;
             }
             if (isCtEnabled()) {
@@ -414,8 +409,23 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    // SelectItem<String, String>
+    public List<SelectItem> getAvailableAlternativeKeyAlgorithmsAvailable() {
+        final List<SelectItem> ret = new ArrayList<>();
+        for (final String current : AlgorithmTools.getAvailableKeyAlgorithms()) {
+            if (AlgorithmTools.isPQC(current)) {
+                ret.add(new SelectItem(current));
+            }
+        }
+        return ret;
+    }
+
     public int getAvailableKeyAlgorithmsSize() {
         return getAvailableKeyAlgorithmsAvailable().size();
+    }
+
+    public int getAvailableAlternativeKeyAlgorithmsSize() {
+        return getAvailableAlternativeKeyAlgorithmsAvailable().size();
     }
 
     // SelectItem<String,String>
@@ -426,10 +436,10 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_EC) ||
                     certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECDSA)    ) {
                 ret.add(new SelectItem(CertificateProfile.ANY_EC_CURVE, getEjbcaWebBean().getText("AVAILABLEECDSABYBITS")));
-                namedEcCurvesMap.putAll(AlgorithmTools.getOnlyNamedEcCurvesMap(false));
+                namedEcCurvesMap.putAll(AlgorithmTools.getOnlyNamedEcCurvesMap());
             }
             if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-                namedEcCurvesMap.putAll(AlgorithmTools.getNamedGostCurvesMap(false));
+                namedEcCurvesMap.putAll(AlgorithmTools.getNamedGostCurvesMap());
             }
             final String[] keys = namedEcCurvesMap.keySet().toArray(new String[0]);
             Arrays.sort(keys);
@@ -438,19 +448,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
             }
         } else {
             ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOECCURVECHOSEN")));
-        }
-        return ret;
-    }
-
-    public List<SelectItem> getAvailableSecurityLevel() {
-        Set<Integer> availableSecurityLevel = new TreeSet<>();
-        final List<SelectItem> ret = new ArrayList<>();
-        if (!availableSecurityLevel.isEmpty() && certificateProfile.isKeyAlgorithmsRequireSecurityLevel()) {
-            for (final Integer current : availableSecurityLevel) {
-                ret.add(new SelectItem(current, current.toString()));
-            }
-        } else {
-            ret.add(new SelectItem(null, getEjbcaWebBean().getText("NOALGORITHMWITHSELECTABLESECURITYLEVEL")));
         }
         return ret;
     }
@@ -507,6 +504,22 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return ret;
     }
 
+    // SelectItem<String, String>
+    public List<SelectItem> getSignatureAlgorithmAvailableAlternative() {
+        final List<SelectItem> ret = new ArrayList<>();
+        // null becomes ""-value.
+        ret.add(new SelectItem(null, getEjbcaWebBean().getText("INHERITFROMCA")));
+        if (certificateProfile.getType() != CertificateConstants.CERTTYPE_SSH) {
+            for (final String sigAlg : AlgorithmConstants.AVAILABLE_SIGALGS) {
+                final String keyAlg = AlgorithmTools.getKeyAlgorithmFromSigAlg(sigAlg);
+                if (AlgorithmTools.isPQC(keyAlg)) {
+                    ret.add(new SelectItem(sigAlg, sigAlg));
+                }
+            }
+        }
+        return ret;
+    }
+
     public List<SelectItem> getSshCertificateTypes() {
         final List<SelectItem> ret = new ArrayList<>();
         for(SshCertificateType sshCertificateType : SshCertificateType.values()) {
@@ -553,10 +566,20 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         return getCertificateProfile().getSignatureAlgorithm();
     }
 
+    public String getAlternativeSignatureAlgorithm() {
+        return getCertificateProfile().getAlternativeSignatureAlgorithm();
+    }
+
     public void setSignatureAlgorithm(final String signatureAlgorithm) {
         // Inherit signature algorithm from issuing CA is signaled by null, but is rendered as "".
-        final String sigAlg = StringUtils.isBlank(signatureAlgorithm) ? null : signatureAlgorithm;
+        final String sigAlg = StringUtils.defaultIfEmpty(signatureAlgorithm, null);
         getCertificateProfile().setSignatureAlgorithm(sigAlg);
+    }
+
+    public void setAlternativeSignatureAlgorithm(final String signatureAlgorithm) {
+        // Inherit signature algorithm from issuing CA is signaled by null, but is rendered as "".
+        final String sigAlg = StringUtils.defaultIfEmpty(signatureAlgorithm, null);
+        getCertificateProfile().setAlternativeSignatureAlgorithm(sigAlg);
     }
 
     /**

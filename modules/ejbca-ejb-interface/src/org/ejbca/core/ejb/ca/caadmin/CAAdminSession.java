@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
@@ -21,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.EJBException;
+import jakarta.ejb.EJBException;
 
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.audit.enums.EventType;
@@ -409,9 +411,10 @@ public interface CAAdminSession {
      * @param privkeypass               used to unlock the private key.
      * @param privateSignatureKeyAlias  the alias for the private key in the keystore.
      * @param privateEncryptionKeyAlias the alias for the private encryption key in the keystore
+     * @param autoActivate set to true to have the token auto activate
      */
     void importCAFromKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
-                              String privateSignatureKeyAlias, String privateEncryptionKeyAlias);
+                              String privateSignatureKeyAlias, String privateEncryptionKeyAlias, final boolean autoActivate);
 
     /**
      * Method that is used to create a new CA from keys and certificates.
@@ -424,8 +427,8 @@ public interface CAAdminSession {
      * @param p12PrivateSignatureKey  CA private signature key
      * @param p12PrivateEncryptionKey CA private encryption key, or null to generate a new
      *                                encryption key
-     * @param p12PublicEncryptionKey  CA public encryption key, or null to generate a new
-     *                                encryption key
+     * @param p12PublicEncryptionKey  CA public encryption key, or null to generate a new  encryption key
+     * @param autoActivate set to true to have the token auto activated
      * @throws CryptoTokenAuthenticationFailedException if authentication to the crypto token failed.
      * @throws CryptoTokenOfflineException              if crypto token is unavailable.
      * @throws IllegalCryptoTokenException              the certificate chain is incomplete
@@ -433,9 +436,9 @@ public interface CAAdminSession {
      * @throws AuthorizationDeniedException             if the administrators isn't authorized
      * @throws CAOfflineException                       if CRLs can not be generated because imported CA did not manage to get online
      */
-    void importCAFromKeys(AuthenticationToken admin, String caname, String keystorepass, java.security.cert.Certificate[] signatureCertChain,
-                          java.security.PublicKey p12PublicSignatureKey, java.security.PrivateKey p12PrivateSignatureKey,
-                          java.security.PrivateKey p12PrivateEncryptionKey, java.security.PublicKey p12PublicEncryptionKey)
+    void importCAFromKeys(AuthenticationToken admin, String caname, String keystorepass, Certificate[] signatureCertChain,
+                          PublicKey p12PublicSignatureKey, PrivateKey p12PrivateSignatureKey,
+                          PrivateKey p12PrivateEncryptionKey, PublicKey p12PublicEncryptionKey, final boolean autoActivate)
             throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, IllegalCryptoTokenException,
             CAExistsException, AuthorizationDeniedException, CAOfflineException;
 
@@ -569,13 +572,14 @@ public interface CAAdminSession {
      * @param privkeypass               Password for the private key
      * @param privateSignatureKeyAlias  Alias of the signature key in the KeyStore
      * @param privateEncryptionKeyAlias Alias of the encryption key in the KeyStore
+     * @param autoActivate set to true to have the token auto-activated
      * @throws EJBException in case of the CAToken is not a soft CAToken or if the CA
      *                      already has an active CAToken or if any of the aliases can
      *                      not be found or if the KeyStore does not contain the right
      *                      private key
      */
     void restoreCAKeyStore(AuthenticationToken admin, String caname, byte[] p12file, String keystorepass, String privkeypass,
-                           String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws EJBException;
+                           String privateSignatureKeyAlias, String privateEncryptionKeyAlias, final boolean autoActivate) throws EJBException;
 
     /**
      * Method used to edit the data of a CA.

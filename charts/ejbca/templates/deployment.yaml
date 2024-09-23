@@ -1,5 +1,9 @@
 apiVersion: apps/v1
+{{- if eq (int .Values.replicaCount) 1 }}
 kind: Deployment
+{{- else }}
+kind: StatefulSet
+{{- end }}
 metadata:
   name: {{ include "ejbca.fullname" . }}
   labels:
@@ -7,6 +11,10 @@ metadata:
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  {{- if .Values.updateStrategy }}
+  strategy:
+    {{- toYaml .Values.updateStrategy | nindent 4 }}
   {{- end }}
   selector:
     matchLabels:
@@ -19,19 +27,30 @@ spec:
       {{- end }}
       labels:
         {{- include "ejbca.selectorLabels" . | nindent 8 }}
+      {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       serviceAccountName: {{ include "ejbca.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       {{- if or .Values.nginx.enabled .Values.ejbca.initContainers }}
       initContainers:
-        {{- if and .Values.nginx.enabled (not .Values.nginx.mountInternalNginxCert) }}
+        {{- if and .Values.nginx.enabled (not .Values.nginx.mountInternalNginxCert) (not .Values.nginx.initializeWithSelfSignedTls) }}
         - name: {{ .Chart.Name }}-init
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
+          {{- if hasKey .Values.ejbca "envFrom" }}
+          envFrom:
+            {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
+          {{- end }}
           command:
             - "/bin/sh"
             - "-c"
@@ -63,7 +82,16 @@ spec:
       containers:
         {{- if .Values.nginx.enabled }}
         - name: {{ .Chart.Name }}-nginx
-          image: nginx:alpine
+          image: {{ .Values.nginx.image }}
+          {{- if and .Values.nginx.initializeWithSelfSignedTls (not .Values.nginx.mountInternalNginxCert)}}
+          command:
+            - "/bin/bash"
+            - "-c"
+            - |
+              mkdir -p /etc/nginx/ssl/pem/
+              openssl req -x509 -newkey rsa:4096 -keyout /etc/nginx/ssl/pem/{{ .Values.nginx.host }}-Key.pem -out /etc/nginx/ssl/pem/{{ .Values.nginx.host }}.pem -sha256 -days 7 -nodes -subj '/CN={{ .Values.nginx.host }}-selfsigned'
+              nginx -g "daemon off;"
+          {{- end }}
           ports:
           - name: nginx-http
             containerPort: 80
@@ -90,7 +118,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
             {{- if .Values.services.proxyAJP.enabled }}
@@ -101,6 +129,10 @@ spec:
             - name: PROXY_HTTP_BIND
               value: {{ .Values.services.proxyHttp.bindIP }}
             {{- end }}
+          {{- if hasKey .Values.ejbca "envFrom" }}
+          envFrom:
+            {{- toYaml .Values.ejbca.envFrom | nindent 12 }}
+          {{- end }}
           {{- if or (not .Values.ejbca.importEjbcaConfFiles) (hasKey .Values.ejbca "superadminPasswordOverride") }}
           lifecycle:
             postStart:
@@ -197,9 +229,9 @@ spec:
             {{- if .Values.ejbca.volumeMounts }}
               {{- toYaml .Values.ejbca.volumeMounts | nindent 12 }}
             {{- end }}
-          {{- if .Values.ejbca.sidecarContainers }}
-            {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
-          {{- end }}
+        {{- if .Values.ejbca.sidecarContainers }}
+          {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
+        {{- end }}
       volumes:
         {{- if .Values.ejbca.useH2Persistence }}
         - name: ejbca-h2-persistence
@@ -284,4 +316,17 @@ spec:
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      {{- with .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.schedulerName }}
+      schedulerName: {{ .Values.schedulerName | quote }}
+      {{- end }}
+      {{- if .Values.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
       {{- end }}

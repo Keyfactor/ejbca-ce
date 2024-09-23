@@ -12,15 +12,14 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import javax.ejb.Asynchronous;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.oscp.OcspResponseData;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
 
@@ -28,11 +27,10 @@ import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
  * Provide access to EntityManager, and OcspDataSessionLocal methods for convenient call
  * with EjbRemoteHelper in Ocsp related system tests.
  *
- * See OcspDataSessionBeanTest.java
+ * See OcspDataSessionBeanSystemTest.java
  *
- * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "OcspDataProxySessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class OcspDataProxySessionBean implements OcspDataProxySessionRemote {
 

@@ -16,8 +16,8 @@ import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.ServiceExecutionResult;
 
-import javax.ejb.Local;
-import javax.ejb.Timer;
+import jakarta.ejb.Local;
+import jakarta.ejb.Timer;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;

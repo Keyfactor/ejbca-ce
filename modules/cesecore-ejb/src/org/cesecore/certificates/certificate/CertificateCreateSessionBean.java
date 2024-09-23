@@ -34,12 +34,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -70,6 +70,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.CertificateGenerationParams;
+import org.cesecore.certificates.ca.HybridCa;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.IllegalValidityException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -100,10 +101,9 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
-import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -122,7 +122,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Session bean for creating certificates.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateCreateSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CertificateCreateSessionBean implements CertificateCreateSessionLocal, CertificateCreateSessionRemote {
 
@@ -399,8 +399,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
             CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CTLogException {
+        return createCertificate(admin, endEntityInformation, ca, request, pk, null, keyusage, notBefore, notAfter, extensions, sequence,
+                certGenParams, updateTime);
+    }
+    
+    @Override
+    public CertificateDataWrapper createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
+            final RequestMessage request, final PublicKey pk, PublicKey altPK, final int keyusage, final Date notBefore, final Date notAfter,
+            final Extensions extensions, final String sequence, CertificateGenerationParams certGenParams, final long updateTime)
+            throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
+            CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
+            CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CTLogException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
+            log.trace(">createCertificate(EndEntityInformation, CA, X500Name, pk, altPK, ku, notBefore, notAfter, extesions, sequence)");
         }
         
         // Even though CA is passed as an argument to this method, we do check authorization on that.
@@ -426,6 +437,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         details.put("notafter", notAfter);
         details.put("sequence", sequence);
         details.put("publickey", new String(Base64.encode(pk.getEncoded(), false)));
+        if (altPK != null) {
+            details.put("altpublickey", new String(Base64.encode(altPK.getEncoded(), false)));
+        }
         logSession.log(EventTypes.CERT_REQUEST, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(),
                 String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), details);
         
@@ -438,9 +452,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Validate ValidatorPhase.DATA_VALIDATION
         try {
             // Which public key to validate follows the criteria established in RequestAndPublicKeySelector, which is the same as used in the CA.
-            final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, ei);
+            final RequestAndPublicKeySelector pkSelector = new RequestAndPublicKeySelector(request, pk, altPK, ei);     
             keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
                     pkSelector.getPublicKey());
+            if (pkSelector.getAlternativePublicKey() != null) {
+                keyValidatorSession.validatePublicKey(admin, ca, endEntityInformation, certProfile, notBefore, notAfter,
+                        pkSelector.getAlternativePublicKey());
+            }
         } catch(ValidationException e) {
             throw new CertificateCreateException(ErrorCode.ILLEGAL_KEY, e);
         }
@@ -556,7 +574,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
                     log.info(msg);
                     CryptoTokenOfflineException exception = new CryptoTokenOfflineException("CA's CryptoToken not found.");
-                    auditFailure(admin, exception, exception.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+                    auditFailure(admin, exception, exception.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, altPK, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
                     throw exception;
                 }
                 final AvailableCustomCertificateExtensionsConfiguration cceConfig = (AvailableCustomCertificateExtensionsConfiguration) 
@@ -566,7 +584,18 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 
                 // Validate ValidatorPhase.PRE_CERTIFICATE_VALIDATION (X.509 CA only)
                 try {
-                    cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence, certGenParams, cceConfig);
+                    if (ca instanceof HybridCa) {
+                        cert = ((HybridCa) ca).generateCertificate(cryptoToken, endEntityInformation, request, pk, altPK, keyusage, notBefore, notAfter, certProfile,
+                                extensions, sequence, certGenParams, cceConfig);
+                    } else {
+                        if (altPK != null) {
+                            // Error
+                            throw new CertificateCreateException(ErrorCode.BAD_REQUEST, "Can't use alternative public key with this CA type");
+                        } else {
+                            cert = ca.generateCertificate(cryptoToken, endEntityInformation, request, pk, keyusage, notBefore, notAfter, certProfile,
+                                    extensions, sequence, certGenParams, cceConfig);
+                        }
+                    }
                 } catch (CertificateCreateException e) {
                     if (e.getCause() instanceof CTLogException) {
                         // Issuance will eventually be aborted but we have to store the pre-certificate.
@@ -723,7 +752,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 throw new IllegalStateException();
             }
             logSession.log(EventTypes.CERT_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), serialNo, endEntityInformation.getUsername(),
-            		issuedetails);
+                    issuedetails);
 
             if (log.isTraceEnabled()) {
                 log.trace("<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
@@ -732,26 +761,26 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             // We need to catch and re-throw all of these exception just because we need to audit log all failures
         } catch (CustomCertificateSerialNumberException | AuthorizationDeniedException | CertificateCreateException e) {
             log.info(LogRedactionUtils.getRedactedMessage(e.getMessage(), endEntityInformation.getEndEntityProfileId()));
-            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, altPK, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
         } catch(CryptoTokenOfflineException e) {
             final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
             log.info(msg);
-            auditFailure(admin, e, e.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            auditFailure(admin, e, e.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, altPK, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
         } catch (CAOfflineException | InvalidAlgorithmException | IllegalValidityException e) {
             log.error("Error creating certificate", LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
-            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, altPK, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             throw e;
         } catch (CertificateExtensionException e) {
             final CertificateExtensionException redactedCEException = LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId());
             log.error("Error creating certificate", redactedCEException);
-            auditFailure(admin, redactedCEException, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            auditFailure(admin, redactedCEException, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, altPK, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             // Rollback
             throw new CertificateCreateException(ErrorCode.CUSTOM_CERTIFICATE_EXTENSION_ERROR, redactedCEException);
         } catch (OperatorCreationException | IOException | SignatureException e) {
             log.error("Error creating certificate", LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
-            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
+            auditFailure(admin, LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()), null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, altPK, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), endEntityInformation.getUsername());
             // Rollback
             throw new CertificateCreateException(LogRedactionUtils.getRedactedException(e, endEntityInformation.getEndEntityProfileId()));
         }

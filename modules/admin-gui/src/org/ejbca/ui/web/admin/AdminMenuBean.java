@@ -24,9 +24,9 @@ import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
-import javax.ejb.EJB;
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Named;
 import java.io.Serializable;
 
 /**
@@ -112,20 +112,8 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAuthorizedToViewVAHeader() {
-        return isAuthorizedViewInternalKeyBindings()
-                && isAuthorizedToViewVA();
-    }
-
-    private boolean isAuthorizedToViewVA() {
         return getEjbcaErrorWebBean().isRunningBuildWithVA()
-                || getEjbcaErrorWebBean().isRunningBuildWithCA()
-                || isRunningBuildInFullMode();
-    }
-
-    private boolean isRunningBuildInFullMode() {
-        return getEjbcaErrorWebBean().isRunningBuildWithVA()
-                && getEjbcaErrorWebBean().isRunningBuildWithCA()
-                && getEjbcaErrorWebBean().isRunningBuildWithRA();
+                && isAuthorizedViewInternalKeyBindings();
     }
 
     /*===SUPERVISION FUNCTIONS===*/
