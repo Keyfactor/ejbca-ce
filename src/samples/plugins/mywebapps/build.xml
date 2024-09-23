@@ -24,6 +24,9 @@
 
 	<path id="compile.classpath">
 		<pathelement path="${ejbca.classpath}"/>
+		<fileset dir="web/WEB-INF/lib">
+			<include name="*.jar"/>
+		</fileset>
 	</path>
 	
 	<target name="help">
