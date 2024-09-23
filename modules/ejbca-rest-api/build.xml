@@ -29,7 +29,7 @@
 		<path refid="lib.swagger.classpath"/>
 		<path refid="lib.jackson2.classpath"/>
         <path refid="lib.jboss-logging.classpath"/>
-        <path refid="lib.commons-fileupload.classpath"/><!-- only for FileUploadException -->
+        <path refid="lib.commons-fileupload2.classpath"/><!-- only for FileUploadException -->
 		<path location="${mod.ejbca-entity.lib}"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path location="${mod.cesecore-common.lib}"/>
@@ -49,8 +49,8 @@
 	</path>
 
 	<path id="compile-test.classpath">
-        <path refid="lib.resteasy-jaxrs.classpath"/>
 		<path refid="compile.classpath"/>
+        <path refid="lib.resteasy-jaxrs.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path location="${ejbca-rest-api.build.dir}/WEB-INF/classes"/>
 		<path refid="lib.p11ng.classpath" />
@@ -62,7 +62,6 @@
 		<path location="${mod.cesecore-x509ca.lib}"/>
         <path location="${mod.cesecore-cvcca.lib}"/>
 		<path refid="lib.hibernate.validator"/>
-		<path refid="lib.test.powermock.classpath"/>
 		<path refid="lib.cryptotokens.classpath"/>
 	</path>
 
@@ -86,6 +85,7 @@
 
 		<war destfile="${mod.ejbca-rest-api.war}" webxml="${ejbca-rest-api.resources.dir}/WEB-INF/web.xml" basedir="${ejbca-rest-api.build.dir}">
             <zipfileset prefix="WEB-INF/lib" dir="${lib}/ext/swagger" erroronmissingdir="false" includes="*.jar"/>
+			<zipfileset prefix="WEB-INF/lib" dir="${lib}" includes="javassist-3.29.2-GA.jar"/>
 			<lib file="${mod.ejbca-rest-common.lib}"/>
 			<lib file="${mod.ejbca-rest-certificate.lib}"/>
 			<lib file="${mod.ejbca-rest-coap.lib}"/>

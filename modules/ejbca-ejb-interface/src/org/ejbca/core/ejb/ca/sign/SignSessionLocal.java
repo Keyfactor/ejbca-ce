@@ -16,7 +16,7 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.bouncycastle.its.ETSISignedDataBuilder;
 import org.bouncycastle.its.ITSCertificate;
@@ -274,4 +274,10 @@ public interface SignSessionLocal extends SignSession {
 
     byte[] signItsPayload(ETSISignedDataBuilder signedDataBuilder, ECA eca) 
             throws CryptoTokenOfflineException, SignRequestSignatureException;
+
+    Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, PublicKey altPK)
+            throws NoSuchEndEntityException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException;
 }

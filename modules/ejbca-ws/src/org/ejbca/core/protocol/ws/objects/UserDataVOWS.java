@@ -16,9 +16,9 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -50,25 +50,25 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "userDataVOWS", propOrder = {
-    "username",
-    "password",
-    "clearPwd",
-    "subjectDN",
-    "caName",
-    "subjectAltName",
-    "email",
-    "status",
-    "tokenType",
-    "sendNotification",
-    "keyRecoverable",
-    "endEntityProfileName",
-    "certificateProfileName",
-    "hardTokenIssuerName",
-    "startTime",
-    "endTime",
-    "certificateSerialNumber",
-    "extendedInformation",
-    "cardNumber"
+        "caName",
+        "cardNumber",
+        "certificateProfileName",
+        "certificateSerialNumber",
+        "clearPwd",
+        "email",
+        "endEntityProfileName",
+        "endTime",
+        "extendedInformation",
+        "hardTokenIssuerName",
+        "keyRecoverable",
+        "password",
+        "sendNotification",
+        "startTime",
+        "status",
+        "subjectAltName",
+        "subjectDN",
+        "tokenType",
+        "username",
 })
 public class UserDataVOWS implements Serializable{
 	

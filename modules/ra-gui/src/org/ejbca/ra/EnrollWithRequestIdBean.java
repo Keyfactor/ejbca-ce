@@ -25,17 +25,17 @@ import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.application.FacesMessage;
-import javax.faces.component.UIComponent;
-import javax.faces.context.FacesContext;
-import javax.faces.model.SelectItem;
-import javax.faces.validator.ValidatorException;
-import javax.faces.view.ViewScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -115,6 +115,7 @@ public class EnrollWithRequestIdBean implements Serializable {
     private String requestUsername;
     private String selectedAlgorithm;
     private String selectedAlgorithmUiRepresentation;
+    private String alternativeAlgorithmFromCsrUiRepresentation = "";
     private String certificateRequest;
     private int requestStatus;
     private EndEntityInformation endEntityInformation;
@@ -668,6 +669,13 @@ public class EnrollWithRequestIdBean implements Serializable {
         selectedAlgorithmUiRepresentation = alg.equals(spec)? alg : alg + " " + spec;
     }
 
+    protected void setAlternativeAlgorithmUiRepresentation(String alg, String spec) {
+        if (alg == null && spec == null) {
+            alternativeAlgorithmFromCsrUiRepresentation = null;
+        } else {
+            alternativeAlgorithmFromCsrUiRepresentation = alg.equals(spec) ? alg : alg + " " + spec;
+        }
+    }
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         RaCsrTools.validateCsr(value, this, raLocaleBean, getCertificateProfile(), requestId, false);
@@ -777,6 +785,17 @@ public class EnrollWithRequestIdBean implements Serializable {
     
     public String getSelectedAlgorithmUiRepresentation() {
         return selectedAlgorithmUiRepresentation;
+    }
+    
+    /**
+     * @return the current alternative key algorithm as UI representation
+     */
+    public String getAlternativeAlgorithmUiRepresentation() {
+        return alternativeAlgorithmFromCsrUiRepresentation;
+    }
+    
+    public boolean isHybrid() {
+        return StringUtils.isNotEmpty(alternativeAlgorithmFromCsrUiRepresentation);
     }
 
     /** @param selectedAlgorithm sets the algorithm and key size to be used for keystore / certificate enrollment. Format: 'algorithm keysize'*/

@@ -12,19 +12,20 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.Map;
 
 public class CreateCrlRestResponse {
 
-    @ApiModelProperty(value = "Issuer Distinguished Name", example = "CN=ExampleCA")
+    @Schema(description = "Issuer Distinguished Name", example = "CN=ExampleCA")
     private String issuerDn;
 
-    @ApiModelProperty(value = "Latest base CRL version", example = "10")
+    @Schema(description = "Latest base CRL version", example = "10")
     private int latestCrlVersion;
 
-    @ApiModelProperty(value = "Latest delta CRL version", example = "5")
+    @Schema(description = "Latest delta CRL version", example = "5")
     private int latestDeltaCrlVersion;
 
     private Map<String, Integer> latestPartitionCrlVersions;

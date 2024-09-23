@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import com.keyfactor.util.keys.token.CryptoToken;
 

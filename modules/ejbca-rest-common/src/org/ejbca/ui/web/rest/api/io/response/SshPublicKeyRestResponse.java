@@ -12,7 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class containing a public key in SSH format
@@ -20,9 +21,9 @@ import io.swagger.annotations.ApiModelProperty;
  */
 public class SshPublicKeyRestResponse {
 
-    @ApiModelProperty(value = "Certificate Authority (CA) name", example = "ExampleCA")
+    @Schema(description = "Certificate Authority (CA) name", example = "ExampleCA")
     private final String caName;
-    @ApiModelProperty(value = "CA’s public key", example = "ssh-rsa AAAAB...QxLwx SshCA")
+    @Schema(description = "CA’s public key", example = "ssh-rsa AAAAB...QxLwx SshCA")
     private final String response;
 
     public SshPublicKeyRestResponse(final String caName, final String response) {

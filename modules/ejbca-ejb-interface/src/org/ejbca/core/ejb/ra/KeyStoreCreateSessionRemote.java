@@ -31,7 +31,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;

@@ -67,7 +67,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Test of {@link WebAuthenticationProviderSessionBean}. See also WebAuthenticationProviderSessionBeanTest
+ * Test of {@link WebAuthenticationProviderSessionBean}. See also WebAuthenticationProviderSessionBeanSystemTest
  */
 public class WebAuthenticationProviderSessionUnitTest {
 

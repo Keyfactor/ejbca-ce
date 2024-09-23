@@ -27,15 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.FinderException;
-import javax.ejb.SessionContext;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.FinderException;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.math.IntRange;
 import org.apache.log4j.Logger;
@@ -71,7 +71,6 @@ import org.cesecore.certificates.crl.DeltaCrlException;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 
@@ -84,7 +83,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
  * This session bean provides a bridge between EJBCA and CESecore by incorporating CRL creation (CESeCore) with publishing (EJBCA)
  * into a single atomic action.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "PublishingCrlSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS) // CRLs may be huge and should not be created inside a transaction if it can be avoided
 public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, PublishingCrlSessionRemote {
 
@@ -648,7 +647,7 @@ public class PublishingCrlSessionBean implements PublishingCrlSessionLocal, Publ
      * @return the bytes of the Delta CRL generated or null of no delta CRL was
      *         generated.
      * @throws AuthorizationDeniedException
-     * @throws javax.ejb.EJBException if a communications- or system error occurs
+     * @throws jakarta.ejb.EJBException if a communications- or system error occurs
      */
     @Override
     public byte[] internalCreateDeltaCRL(final AuthenticationToken admin, final CA ca, final int crlPartitionIndex, final CRLInfo lastBaseCrlInfo)

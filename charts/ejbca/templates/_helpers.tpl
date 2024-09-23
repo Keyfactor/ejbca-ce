@@ -4,10 +4,10 @@ Define the EJBCA deployment parameters
 {{- define "ejbca.ejbcaDeploymentParameters" -}}
 {{- if .Values.ejbca.useEphemeralH2Database }}
 - name: DATABASE_JDBC_URL
-  value: "jdbc:h2:mem:ejbcadb;DB_CLOSE_DELAY=-1"
+  value: "jdbc:h2:mem:ejbcadb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE"
 {{- else if .Values.ejbca.useH2Persistence }}
 - name: DATABASE_JDBC_URL
-  value: "jdbc:h2:/mnt/persistent/ejbcadb;DB_CLOSE_DELAY=-1"
+  value: "jdbc:h2:/mnt/persistent/ejbcadb;DB_CLOSE_DELAY=-1;NON_KEYWORDS=VALUE"
 {{- end }}
 {{- if hasKey .Values.ejbca "env" }}
 {{- range $key, $value := .Values.ejbca.env }}
@@ -106,5 +106,18 @@ Create the name of the service account to use
 {{- default (include "ejbca.fullname" .) .Values.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+{{/*
+Append the application variant to enterprise edition repository paths
+*/}}
+{{- define "ejbca.imageRepository" -}}
+{{- $variant := .Values.image.variant | default "" }}
+{{- $repository := .Values.image.repository }}
+{{- if and (hasSuffix "/ejbca-ee" $repository) (or (eq $variant "ra") (eq $variant "va")) }}
+{{- printf "%s-%s" $repository $variant }}
+{{- else }}
+{{- print $repository }}
 {{- end }}
 {{- end }}

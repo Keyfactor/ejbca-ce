@@ -15,12 +15,12 @@ package org.ejbca.ui.web.rest.api.io.response;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.keyfactor.util.CertTools;
 
-import io.swagger.annotations.ApiModelProperty;
-
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.ejbca.core.model.SecConst;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,20 +28,20 @@ import java.util.stream.Collectors;
  * A class representing general information about certificate. Is used for REST services' responses.
  */
 public class CertificateRestResponse {
-    @ApiModelProperty(value = "Certificate", example = "MIIDXzCCA...eW1Zro0=")
+    @Schema(description = "Certificate", example = "MIIDXzCCA...eW1Zro0=")
     private byte[] certificate;
-    @ApiModelProperty(value = "Hex Serial Number", example = "1234567890ABCDEF")
+    @Schema(description = "Hex Serial Number", example = "1234567890ABCDEF")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String serialNumber;
-    @ApiModelProperty(value = "Response format", example = "DER")
+    @Schema(description = "Response format", example = "DER")
     private String responseFormat;
-    @ApiModelProperty(value = "Certificate chain", example = "[\"ABC123efg...345xyz0=\"]")
+    @Schema(description = "Certificate chain", example = "[\"ABC123efg...345xyz0=\"]")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private List<byte[]> certificateChain;
-    @ApiModelProperty(value = "Certificate profile name", example = "ENDUSER")
+    @Schema(description = "Certificate profile name", example = "ENDUSER")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String certificateProfile;
-    @ApiModelProperty(value = "End Entity profile name", example = "ExampleEEP")
+    @Schema(description = "End Entity profile name", example = "ExampleEEP")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String endEntityProfile;
     
@@ -102,7 +102,6 @@ public class CertificateRestResponse {
         private List<byte[]> certificateChain;
         private String certificateProfile;
         private String endEntityProfile;
-
         
         private CertificateRestResponseBuilder() {
         }
@@ -184,7 +183,24 @@ public class CertificateRestResponse {
                     .setResponseFormat("DER")
                     .build();
         }
-        
+
+        public CertificateRestResponse toRestResponse(final byte[] certificateBytes, final byte[] certificateChainBytes,
+                Certificate certificate, String responseFormat){
+            return CertificateRestResponse.builder()
+                    .setCertificate(certificateBytes)
+                    .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
+                    .setCertificateChain(Collections.singletonList(certificateChainBytes))
+                    .setResponseFormat(responseFormat)
+                    .build();
+        }
+
+        public CertificateRestResponse toRestResponse(final byte[] certificateBytes, Certificate certificate, String responseFormat){
+            return CertificateRestResponse.builder()
+                    .setCertificate(certificateBytes)
+                    .setSerialNumber(CertTools.getSerialNumberAsString(certificate))
+                    .setResponseFormat(responseFormat)
+                    .build();
+        }
         public CertificateRestResponse toRestResponse(final byte[] keyStoreBytes, final int keystoreType)  {
             return CertificateRestResponse.builder()
                     .setCertificate(keyStoreBytes)

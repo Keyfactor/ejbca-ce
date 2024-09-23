@@ -48,17 +48,17 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.DependsOn;
-import javax.ejb.EJB;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.TransactionManagement;
-import javax.ejb.TransactionManagementType;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
@@ -933,6 +933,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         final RaCertificateSearchResponse ret = new RaCertificateSearchResponse();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
+                if (raMasterApi.getApiVersion() < 18 && (
+                    raCertificateSearchRequest.getUsernameSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectAnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH"))) {
+                        log.warn("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                        throw new UnsupportedOperationException("Operation 'BEGINS_WITH' not supported by instance");
+                }
                 try {
                     ret.merge(raMasterApi.searchForCertificates(authenticationToken, raCertificateSearchRequest));
                 } catch (UnsupportedOperationException e) {
@@ -958,6 +966,14 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         final RaCertificateSearchResponseV2 ret = new RaCertificateSearchResponseV2();
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable()) {
+                if (raMasterApi.getApiVersion() < 18 && (
+                    raCertificateSearchRequest.getUsernameSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectDnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getSubjectAnSearchOperation().equals("BEGINS_WITH") ||
+                    raCertificateSearchRequest.getExternalAccountIdSearchOperation().equals("BEGINS_WITH"))) {
+                        log.warn("Search operation 'BEGINS_WITH' not supported by Peer connected instance");
+                        throw new UnsupportedOperationException("Operation 'BEGINS_WITH' not supported by instance");
+                }
                 try {
                     ret.merge(raMasterApi.searchForCertificatesV2(authenticationToken, raCertificateSearchRequest));
                 } catch (UnsupportedOperationException e) {
@@ -981,6 +997,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         RaCertificateSearchRequest request = new RaCertificateSearchRequest();
         request.setUsernameSearchString(username);
         request.setUsernameSearchExact(true);
+        request.setUsernameSearchOperation("EQUAL");
         return searchForCertificates(authenticationToken, request);
     }
 
@@ -3262,46 +3279,9 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     @Override
     public byte[] generateOrKeyRecoverToken(final AuthenticationToken authenticationToken, final String username, final String password, final String hardTokenSN, final String keySpecification,
             final String keyAlgorithm) throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-    	AuthorizationDeniedException authorizationDeniedException = null;
-    	CADoesntExistsException caDoesntExistException = null;
-    	NotFoundException notFoundException = null;
-        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
-            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
-                try {
-                    return raMasterApi.generateOrKeyRecoverToken(authenticationToken, username, password, hardTokenSN, keySpecification, keyAlgorithm);
-                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
-                    // Just try next implementation
-                } catch (AuthorizationDeniedException e) {
-                    log.info("Authorization was denied to access CA for proxied request: " + e.getMessage());
-                    if (authorizationDeniedException == null) {
-                        authorizationDeniedException = e;
-                    }
-                    // Just try next implementation
-                } catch (CADoesntExistsException e) {
-                    log.debug("CA for proxied request could not be found: " + e.getMessage());
-                    if (caDoesntExistException == null) {
-                    	caDoesntExistException = e;
-                    }
-                    // Just try next implementation
-                } catch (NotFoundException e) {
-                    log.debug("End entity with name " + username + " for proxied request could not be found: " + e.getMessage());
-                    if (notFoundException == null) {
-                    	notFoundException = e;
-                    }
-                    // Just try next implementation
-                }
-            }
-        }
-        if (authorizationDeniedException != null) {
-            throw authorizationDeniedException;
-        }
-        if (notFoundException != null) {
-            throw notFoundException;
-        }
-        if (caDoesntExistException != null) {
-            throw caDoesntExistException;
-        }
-        return null;
+        GenerateOrKeyRecoverTokenRequest request = new GenerateOrKeyRecoverTokenRequest(username, password, hardTokenSN, keySpecification,
+                keyAlgorithm, null, null);
+        return generateOrKeyRecoverTokenV2(authenticationToken, request);
     }
 
     @Override
@@ -3991,6 +3971,91 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
                     // Just try next implementation
                 }
             }
+        }
+        return null;
+    }
+
+    @Override
+    public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber) {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 18) {
+                try {
+                    return raMasterApi.findUsernameByIssuerDnAndSerialNumber(issuerDn, serialNumber);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        AuthorizationDeniedException authorizationDeniedException = null;
+        CADoesntExistsException caDoesntExistException = null;
+        NotFoundException notFoundException = null;
+        for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 18) {
+                try {
+                    return raMasterApi.generateOrKeyRecoverTokenV2(authenticationToken, request);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Authorization was denied to access CA for proxied request: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    log.debug("CA for proxied request could not be found: " + e.getMessage());
+                    if (caDoesntExistException == null) {
+                        caDoesntExistException = e;
+                    }
+                    // Just try next implementation
+                } catch (NotFoundException e) {
+                    log.debug("End entity with name " + request.getUsername() + " for proxied request could not be found: " + e.getMessage());
+                    if (notFoundException == null) {
+                        notFoundException = e;
+                    }
+                    // Just try next implementation
+                }
+            } else if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 4) {
+                try {
+                    return raMasterApi.generateOrKeyRecoverToken(authenticationToken, request.getUsername(), request.getPassword(),
+                            request.getHardTokenSN(), request.getKeySpecification(), request.getKeyAlgorithm());
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                } catch (AuthorizationDeniedException e) {
+                    log.info("Authorization was denied to access CA for proxied request: " + e.getMessage());
+                    if (authorizationDeniedException == null) {
+                        authorizationDeniedException = e;
+                    }
+                    // Just try next implementation
+                } catch (CADoesntExistsException e) {
+                    log.debug("CA for proxied request could not be found: " + e.getMessage());
+                    if (caDoesntExistException == null) {
+                        caDoesntExistException = e;
+                    }
+                    // Just try next implementation
+                } catch (NotFoundException e) {
+                    log.debug("End entity with name " + request.getUsername() + " for proxied request could not be found: " + e.getMessage());
+                    if (notFoundException == null) {
+                        notFoundException = e;
+                    }
+                    // Just try next implementation
+                }
+
+            }
+        }
+        if (authorizationDeniedException != null) {
+            throw authorizationDeniedException;
+        }
+        if (notFoundException != null) {
+            throw notFoundException;
+        }
+        if (caDoesntExistException != null) {
+            throw caDoesntExistException;
         }
         return null;
     }

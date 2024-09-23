@@ -168,7 +168,7 @@
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
-			<test name="org.ejbca.database.DatabaseSchemaTest" todir="${reports.dir}"/>
+			<test name="org.ejbca.database.DatabaseSchemaSystemTest" todir="${reports.dir}"/>
 		</junit>
     	<condition property="databaseschemarest.ok" value="true"><not><isset property="databaseschemarest.failed"/></not></condition>
     	<echo message="If your test runs out of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
@@ -192,11 +192,11 @@
 			</classpath>
     		<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
-			<test name="org.ejbca.database.OcspMonitoringToolTest" todir="${reports.dir}"/>
+			<test name="org.ejbca.database.OcspMonitoringToolSystemTest" todir="${reports.dir}"/>
 		</junit>
     </target>
 
-	<target name="test" depends="compile-test" description="Run tests for this module">
+	<target name="test:unit" depends="compile-test" description="Run unit tests for this module">
     	<antcall target="showtime" inheritall="true" inheritrefs="true"/>
 		<echo message=" ** Running EJBCA entity tests **"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${ejbca-entity.dir}">
@@ -205,10 +205,7 @@
 			</classpath>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${ejbca-entity.build-test.dir}" includes="**/**Test.class">
-					<exclude name="org/ejbca/ui/cli/OcspMonitoringToolTest.class"/>
-					<exclude name="org/ejbca/database/DatabaseSchemaTest.class"/>
-				</fileset>
+				<fileset dir="${ejbca-entity.build-test.dir}" includes="**/*UnitTest.class"/>
 			</batchtest>
 			<jvmarg line="${tests.jvmargs}"/>
 		</junit>
@@ -277,6 +274,9 @@
     	<copy todir="${mod.ejbca-db-cli.dist}/lib" flatten="true">
     		<fileset dir="${ejbca.home}" includes="${cli.classpath.property}"/>
     		<fileset dir="${ejbca.home}/lib/hibernate" includes="jboss-logging-*.jar"/>
+    		<fileset dir="${ejbca.home}/lib/hibernate" includes="yasson-*.jar"/>
+    		<fileset dir="${ejbca.home}/lib/hibernate" includes="parsson-*.jar"/>
+			<fileset dir="${ejbca.home}/lib/ext/wsgen" includes="jaxb-core-*.jar"/>
     	</copy>
     	<pathconvert property="ejbca-db-cli.dependencies" pathsep=" ">
     	    <path>
@@ -304,7 +304,7 @@
     </target>
 
 	<target name="runone" depends="compile-test">
-		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
+		<fail message="'test.runone' is not set. Example -Dtest.runone=FooBarUnitTest . You can also use -Dtest.showoutput=true to send test output to console." unless="test.runone" />
         <copy file="${log4j.test.file}" tofile="${ejbca-entity.build-test.dir}/log4j.xml" failonerror="true"/>
 		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
 			<classpath>

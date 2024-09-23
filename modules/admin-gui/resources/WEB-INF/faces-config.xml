@@ -13,12 +13,12 @@
  *                                                                       *
  *************************************************************************/
  -->
-<faces-config version="2.2"
+<faces-config version="4.0"
               metadata-complete="false"
-              xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+              xmlns="https://jakarta.ee/xml/ns/jakartaee"
               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
-                        http://xmlns.jcp.org/xml/ns/javaee/web-facesconfig_2_2.xsd">
+              xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                        https://jakarta.ee/xml/ns/jakartaee/web-facesconfig_4_0.xsd">
 
     <navigation-rule>
         <from-view-id>/approval/approvalaction.xhtml</from-view-id>

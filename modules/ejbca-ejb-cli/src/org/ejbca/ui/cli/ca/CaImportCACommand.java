@@ -62,6 +62,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
     public static final String KEYSTORE_PASSWORD_KEY = "-kspassword";
     private static final String SIGNATURE_ALIAS_KEY = "--signalias";
     private static final String ENCRYPTION_ALIAS_KEY = "--encalias";
+    private static final String AUTOACTIVATE_KEY = "--autoactivate";
     //CACert
     private static final String CA_TOKEN_CLASSPATH_KEY = "--cp";
     private static final String CA_TOKEN_PASSWORD_KEY = "--ctpassword";
@@ -85,6 +86,8 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 ParameterMode.ARGUMENT,
                 "(PKCS#12) If left blank, will use the only available alias, or if multiple are available a list will be shown. "
                         + "If no encryption alias is given, the encryption keys will be generated."));
+        registerParameter(new Parameter(AUTOACTIVATE_KEY, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
+                "Set to true|false to allow|disallow whether crypto token should be autoactivated or not. Default is false."));
         //CA Certificate arguments
         registerParameter(new Parameter(CA_TOKEN_CLASSPATH_KEY, "CA Token Classpath", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW,
                 ParameterMode.ARGUMENT, "(PKCS#11) Example: org.cesecore.keys.token.PKCS11CryptoToken for PKCS11 HSMs."));
@@ -198,8 +201,14 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                 log.error("File " + p12file + " not found.");
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
+            final boolean autoActivate;
+            if(parameters.containsKey(AUTOACTIVATE_KEY)) {           
+                autoActivate = Boolean.valueOf(parameters.get(AUTOACTIVATE_KEY));
+            } else {
+                autoActivate = false;
+            }
             EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).importCAFromKeyStore(getAuthenticationToken(), caName,
-                    keystorebytes, kspwd, kspwd, alias, encryptionAlias);
+                    keystorebytes, kspwd, kspwd, alias, encryptionAlias, autoActivate);
             return CommandResult.SUCCESS;
         } else {
             // Import HSM keystore

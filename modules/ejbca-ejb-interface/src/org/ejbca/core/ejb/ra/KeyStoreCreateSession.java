@@ -196,4 +196,34 @@ public interface KeyStoreCreateSession {
             CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException,
             NoSuchEndEntityException, CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException,
             InvalidKeySpecException;
+
+    byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken authenticationToken, String username, String password, String keySpecification,
+            String keyAlgorithm, String alternativeKeySpecification, String alternativeKeyAlgorithm) throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
+
+    KeyStore generateOrKeyRecoverTokenWithoutViewEndEntityAccessRule(AuthenticationToken administrator, String username, String password, int caid,
+            String keyspec, String keyalg, String alternativeKeySpec, String alternativeKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys,
+            boolean savekeys, boolean reusecertificate, int endEntityProfileId)
+            throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException, CADoesntExistsException, IllegalKeyException,
+            CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException,
+            NoSuchEndEntityException, CertificateSignatureException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException;
+
+    KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid, String keyspec, String keyalg,
+            String altKeyspec, String altKeyalg, Date notBefore, Date notAfter, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate,
+            int endEntityProfileId) throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException,
+            CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException,
+            NoSuchEndEntityException, CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException,
+            InvalidKeySpecException;
+
+    byte[] generateOrKeyRecoverTokenAsByteArray(AuthenticationToken administrator, String username, String password, int caid, String keyspec,
+            String keyalg, String alternativeKeySpec, String alternativeKeyalg, int keystoreType, boolean loadkeys, boolean savekeys, boolean reusecertificate,
+            int endEntityProfileId) throws AuthorizationDeniedException, KeyStoreException, InvalidAlgorithmParameterException,
+            CADoesntExistsException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
+            CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException, EndEntityProfileValidationException,
+            NoSuchEndEntityException, CertificateSignatureException, CertificateEncodingException, CertificateException, NoSuchAlgorithmException,
+            InvalidKeySpecException;
 }

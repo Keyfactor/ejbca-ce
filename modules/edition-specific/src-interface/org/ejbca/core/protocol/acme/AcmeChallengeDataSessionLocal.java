@@ -14,7 +14,7 @@ package org.ejbca.core.protocol.acme;
 
 import java.util.List;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import org.ejbca.acme.AcmeChallengeData;
 

@@ -20,10 +20,9 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.EntityPart;
+import jakarta.ws.rs.core.GenericEntity;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
@@ -82,13 +81,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyPair;
@@ -106,7 +106,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -1059,7 +1058,9 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName("ENDUSER").
                 endEntityProfileName("EMPTY").
                 username(testUsername).
-                password("foo123").email(email).
+                password("foo123").
+                email(email).
+                responseFormat("DER").
                 certificateRequest(certificateRequest).build();
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
@@ -1093,6 +1094,45 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     @Test
+    public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
+        String responseFormat = "PKCS7";
+
+        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
+                certificateAuthorityName(testCaName).
+                certificateProfileName("ENDUSER").
+                endEntityProfileName("EMPTY").
+                username(testUsername).
+                password("foo123").includeChain(false).responseFormat(responseFormat).
+                certificateRequest(CSR_WITHOUT_HEADERS).build();
+
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+        // Send request
+        final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        // Verify response
+        assertJsonContentType(actualResponse);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+        final String responseFormatREST = (String) actualJsonObject.get("response_format");
+        assertEquals("The response format is not PKCS7", responseFormat, responseFormatREST);
+        final String responseCertificate = (String) actualJsonObject.get("certificate");
+        assertNotNull(responseCertificate);
+        //Verify certificate is a pkcs7
+        String pkcs7CertificatePem = new String(Base64.decode(responseCertificate.getBytes()), StandardCharsets.UTF_8);
+        assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
+        assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
+        //Varify certificate
+        pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("^-----BEGIN PKCS7-----","");
+        pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("-----END PKCS7-----$", "");
+        byte[] certBytes = Base64.decode(pkcs7CertificatePem.getBytes());
+        Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
+        String responseSerialNo = (String) actualJsonObject.get("serial_number");
+        assertEquals("", CertTools.getSerialNumber(cert), CertTools.getSerialNumberFromString(responseSerialNo));
+    }
+
+    @Test
     public void certificateRequestExpectCsrSubjectIgnoredWithoutHeaders() throws Exception {
         certificateRequestExpectCsrSubjectIgnored(false);
     }
@@ -1102,7 +1142,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         certificateRequestExpectCsrSubjectIgnored(true);
     }
 
-    public void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
+    private void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
         // Add End Entity
         EndEntityInformation userdata = new EndEntityInformation(testUsername, "O=PrimeKey,CN=" + testUsername, x509TestCa.getCAId(), null,
                 null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
@@ -1317,10 +1357,37 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         
         return;
     }
+    
+    @Test
+    public void testCreateCertificateNonExistingCa() throws Exception {
+        
+        final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        PKCS10CertificationRequest pkcs10CertificationRequest = CertTools.genPKCS10CertificationRequest(
+                AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
+                DnComponents.stringToBcX500Name("CN=DUMMY_USER"), 
+                keys.getPublic(), null, keys.getPrivate(), null);
 
+        String caName = "testCreateCertificateNonExistingCa_DUMMY_CA";
+        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder()
+                .certificateAuthorityName(caName)
+                .username("DUMMY_USER")
+                .password("foo123")
+                .certificateProfileName("DUMMY_CP")
+                .endEntityProfileName("DUMMY_EEP")
+                .certificateRequest(CertTools.buildCsr(pkcs10CertificationRequest)).build();
+        // Construct POST  request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+        // Send request
+        final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
+        String responseBody = actualResponse.readEntity(String.class);
+        assertTrue(responseBody.contains("CA with name " + caName + " doesn't exist."));
+    }
+    
     private String addAndEnrollEntity(String caDn, String certProfileName, int certProfileId,
                                                             String eeProfileName, int eeProfileId) {
-        
         String userName = "expireSearchTest" + RANDOM.nextLong();
         
         try {
@@ -1405,7 +1472,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName(profileName).
                 endEntityProfileName(profileName).
                 username(username).
-                password(password).
+                password(password). responseFormat("DER").
                 certificateRequest(unidFnrCsr).build();
 
         // Construct POST  request
@@ -1711,12 +1778,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private X509CRL getLatestCrl(final boolean delta) throws Exception {
         final String orderedIssuerDn = DnComponents.stringToBCDNString(testIssuerDn);
         final String deltaCrlParameter = (delta) ? "?deltacrl=true" : "";
+
         // get the created CRL
-        final Response getLatestCrlResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/getLatestCrl" + deltaCrlParameter).request().get();
-        assertEquals("Failed to retrieve latest CRL", 200, getLatestCrlResponse.getStatus());
-        final Object latestCrlDer = getLatestCrlResponse.readEntity(Map.class).get("crl");
-        assertNotNull("Response does not contain a CRL", latestCrlDer);
-        return CertTools.getCRLfromByteArray(Base64.decode(latestCrlDer.toString().getBytes()));
+        final Response latestCRLResponse = newRequest("/v1/ca/" + orderedIssuerDn + "/getLatestCrl" + deltaCrlParameter).request().get();
+        assertEquals("Failed to retrieve latest CRL", 200, latestCRLResponse.getStatus());
+
+        final JSONObject latestCRLResponseAsJSON = (JSONObject) jsonParser.parse(latestCRLResponse.readEntity(String.class));
+        final Object latestCRL = latestCRLResponseAsJSON.get("crl");
+        assertNotNull("Response does not contain a CRL", latestCRL);
+
+        return CertTools.getCRLfromByteArray(Base64.decode(latestCRL.toString().getBytes()));
     }
 
     /**
@@ -1761,12 +1832,16 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      */
     private void importCrl(X509CRL crl) throws Exception {
         Files.write(Paths.get(CRL_FILENAME), crl.getEncoded());
-        final MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-        entity.addBinaryBody("crlFile", new File(CRL_FILENAME), ContentType.DEFAULT_BINARY, CRL_FILENAME);
-        final HttpPost request = new HttpPost(getBaseUrl() + "/v1/ca/" + DnComponents.stringToBCDNString(testIssuerDn) + "/importcrl");
-        request.setEntity(entity.build());
-        final HttpResponse response = getHttpClient(true).execute(request);
-        assertEquals("CRL import failed", Response.Status.OK.getStatusCode(), response.getStatusLine().getStatusCode());
+        final EntityPart fileEP = EntityPart.withName("crlFile").fileName(CRL_FILENAME).content(new File(CRL_FILENAME)).build();
+        final EntityPart crlPartitionIndexEP = EntityPart.withName("crlPartitionIndex").content(0, Integer.class).build();
+        final List<EntityPart> entityParts = Arrays.asList(fileEP, crlPartitionIndexEP);
+
+        final Entity requestEntity = Entity.entity(new GenericEntity<>(entityParts){}, MediaType.MULTIPART_FORM_DATA);
+
+        final WebTarget crlImportRequest = newRequest("/v1/ca/" + DnComponents.stringToBCDNString(testIssuerDn) + "/importcrl");
+        final Response crlImportResponse = crlImportRequest.request().post(requestEntity);
+
+        assertEquals("CRL import failed", Response.Status.OK.getStatusCode(), crlImportResponse.getStatus());
         Files.deleteIfExists(Paths.get(CRL_FILENAME));
     }
 

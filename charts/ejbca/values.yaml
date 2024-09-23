@@ -81,11 +81,6 @@ ejbca:
   #     secretKeyRef:
   #       name: ejbca-confidentiality-secrets
   #       key: password_encrpytion_key
-  #  - name: CA_KEYSTOREPASS
-  #    valueFrom:
-  #     secretKeyRef:
-  #       name: ejbca-confidentiality-secrets
-  #       key: ca_keystore_pass
   #  - name: EJBCA_CLI_DEFAULTPASSWORD
   #    valueFrom:
   #     secretKeyRef:
@@ -96,6 +91,11 @@ ejbca:
   #     secretKeyRef:
   #       name: ejbca-smtp-secrets
   #       key: smtp_password
+
+  #envFrom:
+  #  - secretRef:
+  #      name: configdump-secrets
+
   # Extra init containers to be added to the deployment
   initContainers: []
   # Extra sidecar containers to be added to the deployment
@@ -106,12 +106,18 @@ ejbca:
   volumeMounts: []
 
 replicaCount: 1
+
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
+updateStrategy: {}
+#  type: RollingUpdate
+#  rollingUpdate: {}
+
 image:
-  registry: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images
-  name: ejbca-ca
+  # Application variant: not set for full EJBCA, "ra" or "va"
+  #variant: ra
+  repository: keyfactor/ejbca-ce
+  tag: latest
   pullPolicy: IfNotPresent
-  repository: keyfactor.jfrog.io/dev-oci/ejbca/ejbca/images/ejbca-ca
-  tag: 8.2.0-Alpha1
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
@@ -123,9 +129,12 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+podLabels: {}
 podAnnotations: {}
 podSecurityContext: {}
 # fsGroup: 2000
+# Annotations to add to the service EJBCA and nginx
+serviceAnnotations: {}
 
 securityContext: {}
 # capabilities:
@@ -162,8 +171,11 @@ services:
 # Recommended for cluster internal communications
 # Requires proxyHttp service to be enabled
 nginx:
+  image: nginx:1.27.1
   enabled: false
-  host: ""
+  initializeWithSelfSignedTls: false
+  host: "ejbcahost"
+  externalConfiguration:
   # Server TLS credential for cluster internal communication
   mountInternalNginxCert: false
   #secretInternalNginxCert: "internal-nginx-credential-secret-ca"
@@ -172,6 +184,12 @@ nginx:
     bindIP: 0.0.0.0
     httpPort: 80
     httpsPort: 443
+  # only relevant if multiple replicas
+  loadBalancerAccess:
+    enableStickySessionClientIp: false
+    # create a load balancer service for each Pod with separate IP address
+    enableReplicaSpecificAccess: false
+  additionalHosts:
 
 # External communication from cluster
 # Requires proxyAJP or proxyHttp service to be enabled for adminweb access
@@ -189,10 +207,6 @@ ingress:
     nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
     ## Verification depth of the client certificates chain
     nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
-    ## Configure sticky sessions if using more than one replica
-    #nginx.ingress.kubernetes.io/affinity: "cookie"
-    #nginx.ingress.kubernetes.io/session-cookie-name: "ejbcaCOOKIE"
-    #nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
   hosts: []
   #- host: ""
   #  paths:
@@ -200,12 +214,52 @@ ingress:
   #      pathType: Prefix
   tls: []
 resources: {}
+# https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 5
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
+  behavior: {}
+  # scaleDown:
+  #   stabilizationWindowSeconds: 300
+  #   policies:
+  #   - type: Percent
+  #     value: 100
+  #     periodSeconds: 15
+  # scaleUp:
+  #   stabilizationWindowSeconds: 0
+  #   policies:
+  #   - type: Percent
+  #     value: 100
+  #     periodSeconds: 15
+  #   - type: Pods
+  #     value: 4
+  #     periodSeconds: 15
+  #   selectPolicy: Max
+
+# https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+podDisruptionBudget:
+  create: false
+  minAvailable: 1
+  maxUnavailable: ""
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
 nodeSelector: {}
-tolerations: []
 affinity: {}
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+tolerations: []
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+topologySpreadConstraints: []
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
+priorityClassName: ""
+
+# https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/
+schedulerName: ""
+
+# https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
+terminationGracePeriodSeconds: ""

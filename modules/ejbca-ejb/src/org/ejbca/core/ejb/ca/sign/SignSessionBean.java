@@ -39,14 +39,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.EJBException;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -144,7 +144,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.util.CvcKeyTools;
 import org.cesecore.keys.util.PublicKeyWrapper;
@@ -204,7 +203,7 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 /**
  * Creates and signs certificates.
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SignSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
@@ -379,13 +378,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
+    
+    @Override
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk, final PublicKey altPK)
+            throws NoSuchEndEntityException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
+            IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException {
+        // Default key usage is defined in certificate profiles
+        return createCertificate(admin, username, password, pk, altPK, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
+                SecConst.CAID_USEUSERDEFINED);
+    }
 
     @Override
     public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKeyWrapper pk)
             throws NoSuchEndEntityException, CADoesntExistsException, AuthorizationDeniedException, IllegalKeyException, CertificateCreateException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException,
             CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, AuthStatusException, AuthLoginException {
-        return createCertificate(admin, username, password, pk.getPublicKey());
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey());
     }
 
     @Override
@@ -404,10 +414,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CADoesntExistsException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException {
-        return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter,
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey(), keyusage, notBefore, notAfter,
                 CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
-
+    
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert)
             throws NoSuchEndEntityException, AuthorizationDeniedException, SignRequestSignatureException, CADoesntExistsException,
@@ -614,7 +624,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException {
-        return createCertificate(admin, username, password, pk.getPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
+        return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey(), keyusage, notBefore, notAfter, certificateprofileid, caid);
     }
 
     @Override
@@ -624,8 +634,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
             CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, NoSuchEndEntityException {
+        return createCertificate(admin, username, password, pk, null, keyusage, notBefore, notAfter, certificateprofileid, caid);
+    }
+
+    @Override
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk,
+            final PublicKey altPK, final int keyusage, final Date notBefore, final Date notAfter, final int certificateprofileid, final int caid)
+            throws CADoesntExistsException, AuthorizationDeniedException, AuthStatusException, AuthLoginException, IllegalKeyException,
+            CertificateCreateException, IllegalNameException, CertificateRevokeException, CertificateSerialNumberException,
+            CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
+            CustomCertificateSerialNumberException, NoSuchEndEntityException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, ku, date)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, date)");
         }
         // Authorize user and get DN
         final EndEntityInformation data = authUser(admin, username, password);
@@ -658,7 +678,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final Certificate cert;
         try {
             // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-            cert = createCertificate(admin, data, ca, pk, keyusage, notBefore, notAfter, null, null);
+            cert = createCertificate(admin, data, ca, pk, altPK, keyusage, notBefore, notAfter, null, null);
             // Call authentication session and tell that we are finished with this user
             finishUser(ca, data);
         } catch (CustomCertificateSerialNumberException e) {
@@ -668,7 +688,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("CertificateExtensionException was thrown, even though no extensions were supplied.", e);
         }
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, date)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, date)");
         }
         return cert;
     }
@@ -1167,7 +1187,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             }
             ret.create();
             // TODO: handle returning errors as response message,
-            // javax.ejb.ObjectNotFoundException and the others thrown...
+            // jakarta.ejb.ObjectNotFoundException and the others thrown...
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
@@ -1373,12 +1393,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws IllegalNameException                   if the certificate request contained an illegal name
      */
     private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation endEntityInformation, final CA ca,
-                                          final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
+            final PublicKey pk, final PublicKey altPK, final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence)
             throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CertificateExtensionException, IllegalNameException,
             CustomCertificateSerialNumberException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, ku, notAfter)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");
         }
         final long updateTime = System.currentTimeMillis();
         //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
@@ -1388,8 +1408,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         CertificateDataWrapper certWrapper;
         final CertificateGenerationParams certGenParams = fetchCertGenParams();
         try {
-            certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, keyusage,
-                    notBefore, notAfter, extensions, sequence, certGenParams, updateTime);
+            certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, altPK, keyusage, notBefore, notAfter,
+                    extensions, sequence, certGenParams, updateTime);
+            
         } catch (CTLogException e) {
             if (e.getPreCertificate() != null) {
                 certWrapper = (CertificateDataWrapper) e.getPreCertificate();
@@ -1400,7 +1421,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(pk, ku, notAfter)");
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");          
         }
         return certWrapper.getCertificate();
     }

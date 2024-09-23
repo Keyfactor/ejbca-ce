@@ -15,8 +15,9 @@ package org.ejbca.ui.web.rest.api.io.request;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
@@ -25,13 +26,12 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestReq
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificatePagination;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateSortRestRequest;
 
-import io.swagger.annotations.ApiModelProperty;
 
 import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestUtil.parseDateFromStringValue;
 
 /**
  * JSON input for a certificate search V2 containing multiple search criteria and pagination.
- * 
+ *
  * @see org.ejbca.ui.web.rest.api.io.request.Pagination
  *
  * The properties of this class has to be valid.
@@ -43,15 +43,15 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest
  */
 public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteriaRequest {
 
-    @ApiModelProperty(value = "Pagination." )
+    @Schema(description = "Pagination." )
     @ValidSearchCertificatePagination
     private Pagination pagination;
-    
-    @ApiModelProperty(value = "Sort." )
+
+    @Schema(description = "Sort." )
     @ValidSearchCertificateSortRestRequest
     private SearchCertificateSortRestRequest sort = null;
-    
-    @ApiModelProperty(value = "A List of search criteria." )
+
+    @Schema(description = "A List of search criteria." )
     @ValidSearchCertificateCriteriaRestRequestList
     @Valid
     private List<SearchCertificateCriteriaRestRequest> criteria = new ArrayList<>();
@@ -63,7 +63,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
     public void setPagination(Pagination pagination) {
         this.pagination = pagination;
     }
-    
+
     public SearchCertificateSortRestRequest getSort() {
         return sort;
     }
@@ -92,7 +92,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
 
     public static class SearchCertificatesRestRequestBuilderV2 {
         private Pagination pagination;
-        private SearchCertificateSortRestRequest orderBy; 
+        private SearchCertificateSortRestRequest orderBy;
         private List<SearchCertificateCriteriaRestRequest> criteria;
 
         private SearchCertificatesRestRequestBuilderV2() {
@@ -102,7 +102,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
             this.pagination = pagination;
             return this;
         }
-        
+
         public SearchCertificatesRestRequestBuilderV2 orderBy(final SearchCertificateSortRestRequest request) {
             this.orderBy = request;
             return this;
@@ -166,9 +166,6 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                 final SearchCertificateCriteriaRestRequest.CriteriaOperation criteriaOperation = SearchCertificateCriteriaRestRequest.CriteriaOperation.resolveCriteriaOperation(searchCertificateCriteriaRestRequest.getOperation());
                 switch (criteriaProperty) {
                     case SERIAL_NUMBER: {
-                        // if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
-                        //     raCertificateSearchRequest.setser(true);
-                        // }
                         raRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raRequest.setSerialNumberSearchStringFromHex(criteriaValue);
                         break;
@@ -177,6 +174,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setSubjectDnSearchExact(true);
                         }
+                        raRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raRequest.setSubjectDnSearchString(criteriaValue);
                         break;
                     }
@@ -184,6 +182,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setSubjectAnSearchExact(true);
                         }
+                        raRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raRequest.setSubjectAnSearchString(criteriaValue);
                         break;
                     }
@@ -191,6 +190,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setUsernameSearchExact(true);
                         }
+                        raRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raRequest.setUsernameSearchString(criteriaValue);
                         break;
                     }
@@ -202,11 +202,15 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                             raRequest.setExternalAccountIdSearchExact(true);
                         }
                         raRequest.setSubjectDnSearchString(criteriaValue);
+                        raRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raRequest.setSubjectAnSearchString(criteriaValue);
+                        raRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raRequest.setUsernameSearchString(criteriaValue);
+                        raRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raRequest.setSerialNumberSearchStringFromHex(criteriaValue);
                         raRequest.setExternalAccountIdSearchString(criteriaValue);
+                        raRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         break;
                     }
                     case END_ENTITY_PROFILE: {
@@ -217,6 +221,7 @@ public class SearchCertificatesRestRequestV2 implements SearchCertificateCriteri
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raRequest.setExternalAccountIdSearchExact(true);
                         }
+                        raRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         raRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }

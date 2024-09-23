@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.keybind;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * @see InternalKeyBindingMgmtSession

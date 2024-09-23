@@ -8,5 +8,5 @@
 %>
 
 <div id="footer">
-	<span>&copy; 2002&ndash;2024. EJBCA® is a registered trademark.</span>
+	<span><%=ejbcawebbean.getText("MADEBYPRIMEKEY") %></span>
 </div>

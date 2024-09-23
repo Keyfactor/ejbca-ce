@@ -18,9 +18,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlType;
 
 /**
  * Class used to represent userdatasource in the WebService API because profile names are used instead of ID's.
@@ -28,8 +28,8 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "userDataSourceVOWS", propOrder = {
-    "userDataVOWS",
-    "isModifyable"
+        "isModifyable",
+        "userDataVOWS"
 })
 public class UserDataSourceVOWS implements Serializable{
 

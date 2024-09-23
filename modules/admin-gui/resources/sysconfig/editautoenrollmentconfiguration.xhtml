@@ -1,12 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core"
-      xmlns:p="http://java.sun.com/jsf/html">
+      xmlns:f="jakarta.faces.core"
+      xmlns:h="jakarta.faces.html"
+      xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
     <!--
     /*************************************************************************
@@ -282,11 +279,11 @@
                 </h:panelGroup>
                 <h:panelGroup>
                     <h:inputSecret id="msaeAdLoginPassword" disabled="#{autoenrollmentConfigMBean.viewOnly}"
-                                   autocomplete="off"
                                    redisplay="true"
                                    value="#{msAutoEnrollmentSettings.dto.adLoginPassword}" size="45"
                                    title="#{web.text.FORMAT_STRING}">
                         <f:converter converterId="trimConverter"/>
+                        <f:passThroughAttribute name="autocomplete" value="new-password"/>
                     </h:inputSecret>
                 </h:panelGroup>
 

@@ -15,7 +15,6 @@ package org.ejbca.ui.web.rest.api.resource;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertEqualJsonPropertyAsLong;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -33,9 +32,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import org.cesecore.CaTestUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -1013,9 +1012,50 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), actualResponse.getStatus());
         assertEquals("Unexpected response code when request contains multiple search string criteria", 400, actualErrorcode);
         assertEquals("Unexpected response error message request contains multiple search string criteria", 
-                "Invalid criteria value, combining 'QUERY', 'SERIAL_NUMBER' 'USERNAME', SUBJECT_DN, SUBJECT_ALT_NAME, EXTERNAL_ACCOUNT_BINDING_ID properties are not allowed.", 
+                "Invalid criteria value, combining 'QUERY', 'SERIAL_NUMBER' 'USERNAME', SUBJECT_DN, SUBJECT_ALT_NAME, EXTERNAL_ACCOUNT_BINDING_ID properties is not allowed.", 
                 actualErrorMessage);
-}
+        }
+
+        @Test
+        public void shouldFindCertificatesBeginsWith() throws Exception {
+            //given
+            final X509Certificate certificateNegative = createCertificate("a_thisUsernameBeginWithA", "C=SE,O=AnaTom,CN=negativeMatch");
+            final X509Certificate certificatePositive = createCertificate("thisUsernameDoesntBeginWithA", "C=SE,O=AnaTom,CN=positiveMatch");
+            certificates.add(certificateNegative);
+            certificates.add(certificatePositive);
+            final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()
+                    .property(SearchCertificateCriteriaRestRequest.CriteriaProperty.USERNAME.name())
+                    .value("thisUsername")
+                    .operation(SearchCertificateCriteriaRestRequest.CriteriaOperation.BEGINS_WITH.name())
+                    .build();
+            List<SearchCertificateCriteriaRestRequest> criterias = new ArrayList<>();
+            criterias.add(searchCertificateCriteriaRestRequest);
+            final SearchCertificatesRestRequest searchCertificatesRestRequest = SearchCertificatesRestRequest.builder()
+                    .maxNumberOfResults(10)
+                    .criteria(criterias)
+                    .build();
+
+            //when
+            final Entity<String> requestEntity = Entity.entity(objectMapper.writeValueAsString(searchCertificatesRestRequest), MediaType.APPLICATION_JSON);
+            final Response actualResponse = newRequest("/v1/certificate/search").request().post(requestEntity);
+            
+            final String actualJsonString = actualResponse.readEntity(String.class);
+            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            final JSONArray actualCertificates = (JSONArray)actualJsonObject.get("certificates");
+            final JSONObject actualCertificate0JsonObject = (JSONObject) actualCertificates.get(0);
+            final String actualCertificateString = (String)actualCertificate0JsonObject.get("certificate");
+    
+            byte[] certificateBytes = Base64.decode(Base64.decode(actualCertificateString.getBytes()));
+            X509Certificate actualCertificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            String actualSubjectDN = CertTools.getSubjectDN(actualCertificate);
+    
+            //then
+            assertEquals("Should have one result only", 1, actualCertificates.size());
+            assertTrue("Should have one result only", actualSubjectDN.contains("positiveMatch"));
+            assertEquals(Response.Status.OK.getStatusCode(), actualResponse.getStatus());
+        }
+
+
 
     private X509Certificate createCertificate(String username, String subjectDn, Date notAfter) throws CertificateExtensionException, CustomCertificateSerialNumberException, IllegalKeyException, CertificateSerialNumberException, CertificateRevokeException, AuthorizationDeniedException, CADoesntExistsException, IllegalValidityException, CertificateCreateException, CryptoTokenOfflineException, IllegalNameException, InvalidAlgorithmException, SignRequestSignatureException, CAOfflineException {
         EndEntityInformation user = new EndEntityInformation(username, subjectDn, x509TestCa.getCAId(), null,

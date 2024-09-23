@@ -19,17 +19,17 @@ import java.security.cert.CertificateEncodingException;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.ColumnResult;
-import javax.persistence.Entity;
-import javax.persistence.EntityManager;
-import javax.persistence.PostLoad;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
-import javax.persistence.Query;
-import javax.persistence.SqlResultSetMapping;
-import javax.persistence.SqlResultSetMappings;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import jakarta.persistence.ColumnResult;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PostLoad;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Query;
+import jakarta.persistence.SqlResultSetMapping;
+import jakarta.persistence.SqlResultSetMappings;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
@@ -148,7 +148,8 @@ public class CertificateData extends BaseCertificateData implements Serializable
      *
      * @param certificate the (X509)Certificate to be stored in the database. If the property "database.useSeparateCertificateTable" is true then it should be null.
      * @param enrichedpubkey possibly an EC public key enriched with the full set of parameters, if the public key in the certificate does not have
-     *            parameters. Can be null if RSA or certificate public key contains all parameters.
+     *            parameters. Can be null if RSA or PQC or certificate public key contains all parameters. Only used for generating Subject Key ID,
+     *            so the alternative public key is not needed here.
      * @param username the username in UserData to map the certificate to
      * @param cafp CA certificate fingerprint, can be null
      * @param certificateRequest the certificate request used to issue this certificate, or null, as Base64 encoded string, with line breaks, like com.keyfactor.util.Base64.encode(csr.getEncoded()), StandardCharsets.UTF_8)

@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import javax.ejb.EJB;
-import javax.enterprise.context.SessionScoped;
-import javax.faces.model.ListDataModel;
-import javax.inject.Named;
+import jakarta.ejb.EJB;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.faces.model.ListDataModel;
+import jakarta.inject.Named;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -292,9 +292,11 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
                     approvalProfileSession.renameApprovalProfile(getAdmin(), approvalProfileSession.getApprovalProfile(getSelectedApprovalProfileId()),
                             approvalProfileName);
                     setApprovalProfileName("");
-                } catch (ApprovalProfileExistsException | ApprovalProfileDoesNotExistException e) {
+                } catch (ApprovalProfileExistsException e) {
+                    addErrorMessage("APPROVAL_PROFILE_ALREADY_EXISTS");
+                } catch (ApprovalProfileDoesNotExistException e) {
                     addNonTranslatedErrorMessage(e);
-                } catch (AuthorizationDeniedException e) {
+				} catch (AuthorizationDeniedException e) {
                     addNonTranslatedErrorMessage("Not authorized to rename certificate profile.");
                 }
                 actionCancel();

@@ -37,7 +37,7 @@ import org.cesecore.util.query.elems.Term;
  * Queries will be generated according to provided Criteria. 
  * Each criteria (composing Terms) will be subdued to validation.
  * 
- * <em>For usage examples @see QueryCriteriaTest</em>
+ * <em>For usage examples @see QueryCriteriaUnitTest</em>
  * 
  * @version $Id$
  */

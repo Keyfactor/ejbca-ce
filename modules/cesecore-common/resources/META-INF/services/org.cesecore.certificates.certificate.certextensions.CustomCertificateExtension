@@ -1,0 +1,4 @@
+org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension
+org.cesecore.certificates.certificate.certextensions.BasicCVCertificateExtension
+org.cesecore.certificates.certificate.certextensions.standard.AuthorityKeyIdentifier
+org.cesecore.certificates.certificate.certextensions.standard.SubjectKeyIdentifier

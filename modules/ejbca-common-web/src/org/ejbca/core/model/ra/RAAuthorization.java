@@ -15,9 +15,9 @@ package org.ejbca.core.model.ra;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -33,7 +33,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 /**
  * A class that looks up the which CA:s or end entity profiles the administrator is authorized to view.
  *
- * @version $Id$
  */
 public class RAAuthorization implements Serializable {
 
@@ -153,15 +152,12 @@ public class RAAuthorization implements Serializable {
 
     public TreeMap<String, String> getAuthorizedEndEntityProfileNames(final String endentityAccessRule) {
     	if (authprofilenames==null){
-            authprofilenames = new TreeMap<String, String>(new Comparator<String>() {
-                @Override
-                public int compare(String o1, String o2) {
-                    int result = o1.compareToIgnoreCase(o2);
-                    if (result == 0) {
-                        result = o1.compareTo(o2);
-                    }
-                    return result;
+            authprofilenames = new TreeMap<>((o1, o2) -> {
+                int result = o1.compareToIgnoreCase(o2);
+                if (result == 0) {
+                    result = o1.compareTo(o2);
                 }
+                return result;
             });
     		final Map<Integer, String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
     		for (final Integer id : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin, endentityAccessRule)) {

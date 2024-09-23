@@ -14,13 +14,21 @@ package org.ejbca.ui.web.admin.ca.validators;
 
 import org.junit.Test;
 
+import jakarta.faces.validator.ValidatorException;
+
 /**
  * Unit test of PartitionedCrlUrlValidator
  */
 public class PartitionedCrlUrlValidatorUnitTest extends JsfValidatorTestBase  {
 
     public void validateUrl(final String url) {
-        new PartitionedCrlUrlValidator().validate(getMockedFacesContext(), getMockedUiComponent(), url);
+        final PartitionedCrlUrlValidator fieldValidator = new PartitionedCrlUrlValidator() {
+            @Override
+            protected String lookupErrorMessage(jakarta.faces.component.UIComponent uiComponent) {
+                return "Mock error message";
+            }
+        };
+        fieldValidator.validate(getMockedFacesContext(), getMockedUiComponent(), url);
     }
 
     // Tests of good URLs
@@ -35,12 +43,12 @@ public class PartitionedCrlUrlValidatorUnitTest extends JsfValidatorTestBase  {
     }
 
     // Tests of bad URLs
-    @Test(expected = NullPointerException.class) // NPE is thrown when trying to get message text (for the real exception) outside an appserver
+    @Test(expected = ValidatorException.class)
     public void missingPartitionAsterisk() {
         validateUrl("https://crl.example/crl.crl");
     }
 
-    @Test(expected = NullPointerException.class) // thrown when trying to get message text
+    @Test(expected = ValidatorException.class)
     public void missingPartitionAsteriskMultipleUrls() {
         validateUrl("https://crl.example/crl*.crl;\"http://other.example/crl?n=\"");
     }

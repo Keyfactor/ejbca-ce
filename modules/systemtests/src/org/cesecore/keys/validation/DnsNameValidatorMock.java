@@ -75,7 +75,8 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
     }
 
     @Override
-    public Entry<Boolean, List<String>> validate(final ExecutorService executorService, final String... domainNames) {
+    public Entry<Boolean, List<String>> validate(final ExecutorService executorService, ValidationRequestParameters validationRequestParameters,
+            final String... domainNames) {
         //Return all domain names that overlap with those preset in this validator.
         List<String> result = new ArrayList<>();
         for(String domainName : domainNames) {
@@ -125,7 +126,7 @@ public class DnsNameValidatorMock extends ValidatorBase implements DnsNameValida
 
     @Override
     public String getLogMessage(final boolean successful, final List<String> messages) {
-        return null;
+        return "";
     }
 
 }

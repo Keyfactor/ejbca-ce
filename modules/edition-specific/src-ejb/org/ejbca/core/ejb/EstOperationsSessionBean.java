@@ -14,12 +14,11 @@ package org.ejbca.core.ejb;
 
 import java.security.cert.X509Certificate;
 
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.protocol.est.EstOperationsSessionLocal;
 import org.ejbca.core.protocol.est.EstOperationsSessionRemote;
 
@@ -27,7 +26,7 @@ import org.ejbca.core.protocol.est.EstOperationsSessionRemote;
  * Class that receives a EST message and passes it on to the correct message handler.
  * Not available in Community Edition
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EstOperationsSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class EstOperationsSessionBean implements EstOperationsSessionLocal, EstOperationsSessionRemote {
 

@@ -12,22 +12,27 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input representation of key store enrollment
  * @version $Id: KeyStoreRestRequest.java 29481 2018-07-09 08:06:14Z henriks $
  *
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class KeyStoreRestRequest {
 
-    @ApiModelProperty(value = "Username", example = "JohnDoe")
+    @Schema(description = "Username", example = "JohnDoe")
     private String username;
-    @ApiModelProperty(value = "Password", example = "foo123")
+    @Schema(description = "Password", example = "foo123")
     private String password;
-    @ApiModelProperty(value = "Key algorithm used for enrollment", example = "RSA")
+    @Schema(description = "Key algorithm used for enrollment", example = "RSA")
     private String keyAlg;
-    @ApiModelProperty(value = "Key specification to use", example = "4096")
+    @Schema(description = "Key specification to use", example = "4096")
     private String keySpec;
     
     public KeyStoreRestRequest() {}

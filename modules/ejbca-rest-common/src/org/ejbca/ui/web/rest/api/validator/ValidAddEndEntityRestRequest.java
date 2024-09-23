@@ -21,10 +21,10 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import javax.validation.Constraint;
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.Payload;
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Payload;
 
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
@@ -111,7 +111,7 @@ public @interface ValidAddEndEntityRestRequest {
             try{
                 DnComponents.stringToBCDNString(subjectDn);
             }catch (Exception e){
-                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.nullOrEmpty}");
+                ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.subjectDn.malformed}");
                 return false;
             }
             final String caName = addEndEntityRestRequest.getCaName();

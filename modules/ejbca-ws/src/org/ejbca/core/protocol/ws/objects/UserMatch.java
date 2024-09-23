@@ -14,9 +14,9 @@ package org.ejbca.core.protocol.ws.objects;
 
 import java.io.Serializable;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlType;
+import jakarta.xml.bind.annotation.XmlAccessType;
+import jakarta.xml.bind.annotation.XmlAccessorType;
+import jakarta.xml.bind.annotation.XmlType;
 
 import org.ejbca.util.query.BasicMatch;
 
@@ -26,9 +26,9 @@ import org.ejbca.util.query.BasicMatch;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "userMatch", propOrder = {
-    "matchwith",
     "matchtype",
-    "matchvalue"
+    "matchvalue",
+    "matchwith"
 })
 public class UserMatch implements Serializable {
 

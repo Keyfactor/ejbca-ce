@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.junit.util;
 
-import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -31,9 +30,6 @@ import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
-/**
- *
- */
 public class PKCS12TestRunner extends CryptoTokenRunner {
     
   
