@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import javax.ejb.ApplicationException;
+import jakarta.ejb.ApplicationException;
 
 import com.keyfactor.CesecoreException;
 

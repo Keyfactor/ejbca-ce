@@ -14,7 +14,7 @@
 package org.ejbca.ui.web.rest.api.io.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
@@ -27,19 +27,19 @@ import java.util.List;
 public class CoapEstAliasConfigurationRestResponse {
     private String name;
     @JsonAlias({"vendorCaCertificates", "vendor_ca_certificates" })
-    @ApiModelProperty(value = "Vendor CA Certificate (PEM)", example = "MIIDXzCCA...eW1Zro0=")
+    @Schema(description = "Vendor CA Certificate (PEM)", example = "MIIDXzCCA...eW1Zro0=")
     private List<String> vendorCaCertificates;
 
     @JsonAlias({"signingCaCertificate", "signing_ca_certificate" })
-    @ApiModelProperty(value = "Signing CA Certificate (PEM)", example = "MIIDXzCCA...eW1Zro0=")
+    @Schema(description = "Signing CA Certificate (PEM)", example = "MIIDXzCCA...eW1Zro0=")
     private String signingCaCertificate;
 
     @JsonAlias({"signingCaCertificateChain", "signing_ca_certificate_chain" })
-    @ApiModelProperty(value = "Signing CA Certificate Chain", example = "MIIDXzCCA...eW1Zro0=")
+    @Schema(description = "Signing CA Certificate Chain", example = "MIIDXzCCA...eW1Zro0=")
     private String signingCaCertificateChain;
 
     @JsonAlias({"supportServerKeyGeneration", "support_server_key_generation" })
-    @ApiModelProperty(value = "Is serverside key generation supported", example = "true")
+    @Schema(description = "Is serverside key generation supported", example = "true")
     private boolean supportServerKeyGeneration;
 
     public CoapEstAliasConfigurationRestResponse() {}

@@ -16,7 +16,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import org.apache.log4j.Logger;
 

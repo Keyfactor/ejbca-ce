@@ -22,6 +22,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CACommon;
@@ -74,15 +75,15 @@ import org.ejbca.ui.web.rest.api.io.response.PaginationRestResponseComponent;
 import org.ejbca.ui.web.rest.api.io.response.RevokeStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponse;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+import jakarta.xml.bind.DatatypeConverter;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -131,40 +132,72 @@ public class CertificateRestResource extends BaseRestResource {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
 
+    /**
+     * Enrolls a user generated certificate from csr.
+     * @param requestContext HttpServletRequest
+     * @param enrollCertificateRestRequest
+     * @return Certificate with or without certificate chain (optional). Response Format is
+     * DER (default) or PKCS7 in PEM format.
+     * @throws RestException
+     * @throws AuthorizationDeniedException
+     */
     public Response enrollPkcs10Certificate(final HttpServletRequest requestContext,
                                             final EnrollCertificateRestRequest enrollCertificateRestRequest)
             throws RestException, AuthorizationDeniedException {
+        String responseFormat;
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
-            final byte[] certificateBytes = raMasterApi.createCertificateRest(
-                    authenticationToken,
-                    EnrollCertificateRestRequest.converter().toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest)
-            );
-            final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
-            final List<Certificate> certificateChain = fetchCaCertificateChain(
-                    authenticationToken,
-                    enrollCertificateRestRequest.getIncludeChain(),
-                    enrollCertificateRestRequest.getCertificateAuthorityName());
-            final CertificateEnrollmentRestResponse enrollCertificateRestResponse = CertificateEnrollmentRestResponse.converter().toRestResponse(
-                    certificate,
-                    certificateChain
-            );
-            return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
-        } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException e) {
-            log.info("exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
+            if (enrollCertificateRestRequest.getResponseFormat() == null) {
+                throw new RestException(400, "Invalid input. Incorrect response format");
+            } else {
+                responseFormat = enrollCertificateRestRequest.getResponseFormat().toUpperCase();
+            }
+            if (TokenDownloadType.PKCS7.name().equals(responseFormat) || TokenDownloadType.DER.name()
+                    .equals(responseFormat)) {
+                final byte[] certificateBytes = raMasterApi.createCertificateRest(authenticationToken,
+                        EnrollCertificateRestRequest.converter()
+                                .toEnrollPkcs10CertificateRequest(enrollCertificateRestRequest));
+                final boolean includeChain = enrollCertificateRestRequest.getIncludeChain();
+                final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
+                final List<Certificate> certificateChain = fetchCaCertificateChain(authenticationToken, includeChain,
+                        enrollCertificateRestRequest.getCertificateAuthorityName());
+                CertificateRestResponse enrollCertificateRestResponse;
+
+                switch (TokenDownloadType.valueOf(responseFormat)) {
+                case PKCS7:
+                    byte[] certResponseBytes = CertTools.getPemFromPkcs7(certificateBytes);
+                    if (includeChain && !certificateChain.isEmpty()) {
+                        byte[] certificateChainBytes = CertTools.getPemFromPkcs7(CertTools.createCertsOnlyCMS(
+                                CertTools.convertCertificateChainToX509Chain(certificateChain)));
+                        enrollCertificateRestResponse = CertificateRestResponse.converter()
+                                .toRestResponse(certResponseBytes, certificateChainBytes, certificate, responseFormat);
+                    } else {
+                        enrollCertificateRestResponse = CertificateRestResponse.converter()
+                                .toRestResponse(certResponseBytes, certificate, responseFormat);
+                    }
+                    break;
+                case DER:
+                    enrollCertificateRestResponse = CertificateRestResponse.converter()
+                            .toRestResponse(certificateChain, certificate);
+                    break;
+                default:
+                    throw new RestException(400, "Invalid input. Incorrect response format");
+                }
+                return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
+            } else {
+                throw new RestException(400, "Invalid input. Response format can only be DER or PKCS7");
+            }
+        } catch (EjbcaException | CertificateException | EndEntityProfileValidationException | CesecoreException |
+                CMSException e) {
+            log.info("Exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(),
+                    e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
         }
     }
 
-    private List<Certificate> fetchCaCertificateChain(AuthenticationToken authenticationToken,
-            boolean includeChain, String caName)
-            throws AuthorizationDeniedException, CADoesntExistsException {
-        return includeChain
-                ? raMasterApi.getLastCaChain(authenticationToken, caName)
-                    .stream()
-                    .map(CertificateWrapper::getCertificate)
-                    .collect(Collectors.toList())
-                : null;
+
+    private List<Certificate> fetchCaCertificateChain(AuthenticationToken authenticationToken, boolean includeChain, String caName) throws AuthorizationDeniedException, CADoesntExistsException {
+        return includeChain ? raMasterApi.getLastCaChain(authenticationToken, caName).stream().map(CertificateWrapper::getCertificate).collect(Collectors.toList()) : null;
     }
 
     public Response certificateRequest(final HttpServletRequest requestContext, final CertificateRequestRestRequest certificateRequestRestRequest)
@@ -172,6 +205,14 @@ public class CertificateRestResource extends BaseRestResource {
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
             final EnrollPkcs10CertificateRequest requestData = CertificateRequestRestRequest.converter().toEnrollPkcs10CertificateRequest(certificateRequestRestRequest);
+            
+            // local call as the CA should normally be present as external CA in RA
+            String caName = requestData.getCertificateAuthorityName();
+            // seems to be only way to read from cache without instantiating the CA related objects
+            if (!caSessionLocal.getCAIdToNameMap().values().contains(caName)) {
+                throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA with name " + caName + " doesn't exist.");
+            }
+            
             final byte[] certificateBytes = raMasterApi.processCertificateRequest(authenticationToken, requestData.getUsername(), requestData.getPassword(),
                     requestData.getCertificateRequest(), CertificateConstants.CERT_REQ_TYPE_PKCS10, null, "CERTIFICATE");
 
@@ -300,7 +341,7 @@ public class CertificateRestResource extends BaseRestResource {
      * @param requestContext HttpServletRequest
      * @param issuerDN       of the certificate to revoke
      * @param serialNumber   HEX encoded SN with or without 0x prefix
-     * @param reason         revocation reason. Must be valid RFC5280 reason:
+     * @param reason         revocation reason (optional). Must be valid RFC5280 reason:
      *                       NOT_REVOKED, UNSPECIFIED , KEY_COMPROMISE,
      *                       CA_COMPROMISE, AFFILIATION_CHANGED, SUPERSEDED, CESSATION_OF_OPERATION,
      *                       CERTIFICATE_HOLD, REMOVE_FROM_CRL, PRIVILEGES_WITHDRAWN, AA_COMPROMISE

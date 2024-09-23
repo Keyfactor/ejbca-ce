@@ -12,12 +12,13 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import io.swagger.annotations.ApiModelProperty;
+
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class SshCertificateRestResponse {
-    @ApiModelProperty(value = "Certificate", example = "c3N...T09")
+    @Schema(description = "Certificate", example = "c3N...T09")
     private byte[] certificate;
-    @ApiModelProperty(value = "Response format", example = "BYTE")
+    @Schema(description = "Response format", example = "BYTE")
     private String responseFormat;
 
     public SshCertificateRestResponse() {

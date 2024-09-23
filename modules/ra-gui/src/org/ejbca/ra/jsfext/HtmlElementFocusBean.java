@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.ra.jsfext;
 
-import javax.enterprise.context.RequestScoped;
-import javax.inject.Named;
+import jakarta.enterprise.context.RequestScoped;
+import jakarta.inject.Named;
 
 /**
  * Request scoped managed bean that can be used to focus an html element after form submit

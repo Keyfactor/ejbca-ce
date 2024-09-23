@@ -22,11 +22,11 @@ import java.security.NoSuchProviderException;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.faces.view.ViewScoped;
-import javax.inject.Named;
-import javax.servlet.http.Part;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
+import jakarta.servlet.http.Part;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -116,7 +116,8 @@ public class ImportCaMBean extends BaseManagedBean implements Serializable {
         try {
             final byte[] fileBuffer =  IOUtils.toByteArray(uploadedFile.getInputStream(), uploadedFile.getSize());
             detectAliases(fileBuffer);
-            caAdminSession.importCAFromKeyStore(getAdmin(), importCaName, fileBuffer, importPassword, importPassword, importSigAlias, importEncAlias);
+            //Auto-activate set to false as this is the default behavior for this bean
+            caAdminSession.importCAFromKeyStore(getAdmin(), importCaName, fileBuffer, importPassword, importPassword, importSigAlias, importEncAlias, false);
             return EditCaUtil.MANAGE_CA_NAV;
         } catch (ParameterException e) {
             addNonTranslatedErrorMessage(e.getMessage());

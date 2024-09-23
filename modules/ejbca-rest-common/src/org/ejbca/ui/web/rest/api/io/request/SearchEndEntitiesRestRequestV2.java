@@ -12,8 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.era.RaEndEntitySearchRequestV2;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -22,8 +22,11 @@ import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntitiesSortRestRequest
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityCriteriaRestRequestList;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchEndEntityMaxNumberOfResults;
 
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -43,21 +46,22 @@ import java.util.List;
  *
  */
 @ValidSearchEndEntitiesSearchRestRequestV2
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class SearchEndEntitiesRestRequestV2 {
 
-    @ApiModelProperty(value = "Maximum number of results", example = "10")
+    @Schema(description = "Maximum number of results", example = "10")
     @ValidSearchEndEntityMaxNumberOfResults
     private Integer maxNumberOfResults;
 
-    @ApiModelProperty(value = "Current page number", example = "1")
+    @Schema(description = "Current page number", example = "1")
     private int currentPage = 1;
-        
-    @ApiModelProperty(value = "A List of search criteria." )
+
+    @Schema(description = "A List of search criteria." )
     @ValidSearchEndEntityCriteriaRestRequestList
     @Valid
     private List<SearchEndEntityCriteriaRestRequest> criteria = new ArrayList<>();
-    
-    @ApiModelProperty(value = "Sort." )
+
+    @Schema(description = "Sort." )
     @ValidSearchEndEntitiesSortRestRequest
     @Valid
     private SearchEndEntitiesSortRestRequest sortOperation;
@@ -77,7 +81,7 @@ public class SearchEndEntitiesRestRequestV2 {
     public void setCriteria(List<SearchEndEntityCriteriaRestRequest> criteria) {
         this.criteria = criteria;
     }
-    
+
     public int getCurrentPage() {
         return currentPage;
     }
@@ -126,7 +130,7 @@ public class SearchEndEntitiesRestRequestV2 {
             this.criteria = criteria;
             return this;
         }
-        
+
         public SearchEndEntitiesRestRequestBuilder sortOperation(final SearchEndEntitiesSortRestRequest sortOperation) {
             this.sortOperation = sortOperation;
             return this;
@@ -164,7 +168,7 @@ public class SearchEndEntitiesRestRequestV2 {
             raEndEntitySearchRequest.setSubjectDnSearchString("");
             raEndEntitySearchRequest.setSubjectAnSearchString("");
             raEndEntitySearchRequest.setUsernameSearchString("");
-            
+
             for(final SearchEndEntityCriteriaRestRequest searchEndEntityCriteriaRestRequest : searchEndEntitiesRestRequest.getCriteria()) {
                 final SearchEndEntityCriteriaRestRequest.CriteriaProperty criteriaProperty = SearchEndEntityCriteriaRestRequest.CriteriaProperty.resolveCriteriaProperty(searchEndEntityCriteriaRestRequest.getProperty());
                 if(criteriaProperty == null) {

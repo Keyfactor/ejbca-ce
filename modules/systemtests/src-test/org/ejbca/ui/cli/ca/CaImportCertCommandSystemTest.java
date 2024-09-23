@@ -60,9 +60,6 @@ import com.keyfactor.util.FileTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
-/**
- * @version $Id$
- */
 public class CaImportCertCommandSystemTest {
 
     private static final String CA_NAME = "CaImportCertCommandSystemTest";
@@ -194,6 +191,39 @@ public class CaImportCertCommandSystemTest {
                 certificateStatus.revocationReason);
         assertEquals("Certificate revocation date was incorrectly imported.", new SimpleDateFormat(CaImportCertDirCommand.DATE_FORMAT).parse("2015.05.04-10:15"),
                 certificateStatus.revocationDate);
+    }
+
+    @Test
+    public void testStrictParameterSuccess() {
+        String[] args = new String[] { USERNAME, "foo123", CA_NAME, "ACTIVE", "--email", "foo@foo.com", "--strict", certificateFile.getAbsolutePath(),
+                "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
+        assertEquals(CommandResult.SUCCESS, command.execute(args));
+    }
+
+    @Test
+    public void testStrictParameterfailure() throws Exception {
+        String CA_NAME_StrictParameterfailure = "CA_NAME_StrictParameterfailure";
+        String CA_DN_StrictParameterfailure = "CN=" + CA_NAME_StrictParameterfailure;
+        String USERNAME_StrictParameterfailure = "CaImportCertCommandSystemTestStrictParameterfailure";
+        X509CA ca2 = CaTestUtils.createTestX509CA(CA_DN_StrictParameterfailure, null, false);
+        String CERTIFICATE_DN_StrictParameterfailure = "C=SE,O=foo,CN=" + USERNAME_StrictParameterfailure;
+        AuthenticationToken authenticationTokenWrong = new TestAlwaysAllowLocalAuthenticationToken(
+                "CaImportCertCommandSystemTestStrictParameterfailure");
+        caSession.addCA(authenticationTokenWrong, ca2);
+        EndEntityInformation endEntityInformation = new EndEntityInformation(USERNAME_StrictParameterfailure, CERTIFICATE_DN_StrictParameterfailure,
+                ca2.getCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), EndEntityConstants.EMPTY_END_ENTITY_PROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
+        endEntityInformation.setPassword("foo12356");
+        endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
+
+        String[] args2 = new String[] { USERNAME_StrictParameterfailure, "foo123", CA_NAME_StrictParameterfailure, "ACTIVE", "--email", "foo@foo.com",
+                "--strict", certificateFile.getAbsolutePath(), "--eeprofile", "EMPTY", "--certprofile", "ENDUSER" };
+        assertEquals(CommandResult.FUNCTIONAL_FAILURE, command.execute(args2));
+        assertEquals(0, certificateStoreSession.findCertificatesByUsername(USERNAME_StrictParameterfailure).size());
+
+        caSession.removeCA(authenticationTokenWrong, ca2.getCAId());
+        endEntityManagementSession.deleteUser(authenticationTokenWrong, USERNAME_StrictParameterfailure);
+
     }
     
 }

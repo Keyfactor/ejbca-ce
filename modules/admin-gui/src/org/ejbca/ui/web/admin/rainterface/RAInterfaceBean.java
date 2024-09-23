@@ -114,24 +114,28 @@ public class RAInterfaceBean implements Serializable {
     public void initialize(EjbcaWebBean ejbcawebbean) {
     	log.trace(">initialize()");
         if (!initialized) {
-            // Choosing the proper admin is done in ejbcawebbean initialize method!
-            administrator = ejbcawebbean.getAdminObject();
-            endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
-            certificatesession = ejbLocalHelper.getCertificateStoreSession();
-            caSession = ejbLocalHelper.getCaSession();
-            authorizationSession = ejbLocalHelper.getAuthorizationSession();
-            endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
-            keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
-            certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-            this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
-            globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
-            raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession,
-                    endEntityProfileSession);
-            initialized = true;
+            forceInitialization(ejbcawebbean);
     	} else {
     		log.debug("=initialize(): already initialized");
     	}
     	log.trace("<initialize()");
+    }
+
+    public void forceInitialization(EjbcaWebBean ejbcawebbean) {
+        // Choosing the proper admin is done in ejbcawebbean initialize method!
+        administrator = ejbcawebbean.getAdminObject();
+        endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
+        certificatesession = ejbLocalHelper.getCertificateStoreSession();
+        caSession = ejbLocalHelper.getCaSession();
+        authorizationSession = ejbLocalHelper.getAuthorizationSession();
+        endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
+        keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
+        certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+        this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
+        globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
+        raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationSession, caSession,
+                endEntityProfileSession);
+        initialized = true;
     }
     
     private GlobalConfiguration getGlobalConfiguration() {
@@ -520,13 +524,14 @@ public class RAInterfaceBean implements Serializable {
             sortedMap.put(caInfo, caInfo.getCAId());
         }
         final Collection<Integer> authorizedCas = sortedMap.values();
+        
         // 2. Retrieve the list of CA's available to the end entity profile
         final EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(endentityprofileid);
         // If the end entity profile has been removed, just return empty result
         if (endentityprofile != null) {
-            final List<Integer> casDefineInEndEntityProfile = new ArrayList<>(endentityprofile.getAvailableCAs());
+            final List<Integer> casDefinedInEndEntityProfile = new ArrayList<>(endentityprofile.getAvailableCAs());
             boolean allCasDefineInEndEntityProfile = false;
-            if (casDefineInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
+            if (casDefinedInEndEntityProfile.contains(Integer.valueOf(SecConst.ALLCAS))) {
                 allCasDefineInEndEntityProfile = true;
             }
             // 3. Next retrieve all certificate profiles defined in the end entity profile
@@ -547,7 +552,7 @@ public class RAInterfaceBean implements Serializable {
                 }
                 if (!allCasDefineInEndEntityProfile) {
                     //If ALL wasn't defined in the EE profile, only keep the intersection
-                    authorizedCasClone.retainAll(casDefineInEndEntityProfile);
+                    authorizedCasClone.retainAll(casDefinedInEndEntityProfile);
                 }
                 ret.put(certificateProfileId, authorizedCasClone);
             }

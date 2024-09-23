@@ -17,21 +17,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
-import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.util.QueryResultWrapper;
@@ -44,8 +43,7 @@ import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
  * Basic CRUD and activation caching of CryptoTokens is provided through this local access SSB.
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CryptoTokenSessionRemote")
-@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@Stateless
 public class CryptoTokenSessionBean implements CryptoTokenSessionLocal, CryptoTokenSessionRemote {
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;

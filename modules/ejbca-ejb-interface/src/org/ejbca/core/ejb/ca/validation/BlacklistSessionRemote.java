@@ -13,7 +13,7 @@
 
 package org.ejbca.core.ejb.ca.validation;
 
-import javax.ejb.Remote;
+import jakarta.ejb.Remote;
 
 /**
  * Remote interface for public key blacklist operations.

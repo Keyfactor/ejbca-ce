@@ -12,16 +12,19 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.request;
 
-import io.swagger.annotations.ApiModelProperty;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.model.era.RaCertificateSearchRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequestList;
 import org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResults;
 
-import javax.validation.Valid;
-import javax.ws.rs.core.Response;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
+import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,14 +39,14 @@ import static org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequest
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateCriteriaRestRequest
  * @see org.ejbca.ui.web.rest.api.validator.ValidSearchCertificateMaxNumberOfResults
  *
- * @version $Id: SearchCertificatesRestRequest.java 29504 2018-07-17 17:55:12Z andrey_s_helmes $
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class SearchCertificatesRestRequest implements SearchCertificateCriteriaRequest {
 
-    @ApiModelProperty(value = "Maximum number of results", example = "10")
+    @Schema(description = "Maximum number of results", example = "10")
     @ValidSearchCertificateMaxNumberOfResults
     private Integer maxNumberOfResults;
-    @ApiModelProperty(value = "A List of search criteria." )
+    @Schema(description = "A List of search criteria." )
     @ValidSearchCertificateCriteriaRestRequestList
     @Valid
     private List<SearchCertificateCriteriaRestRequest> criteria = new ArrayList<>();
@@ -133,6 +136,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setSubjectDnSearchExact(true);
                         }
+                        raCertificateSearchRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
                         break;
                     }
@@ -148,13 +152,16 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setSubjectAnSearchExact(true);
                         }
+                        raCertificateSearchRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
                         break;
                     }
                     case USERNAME: {
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setUsernameSearchExact(true);
+                            raCertificateSearchRequest.setUsernameSearchOperation("EQUAL");
                         }
+                        raCertificateSearchRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
                         break;
                     }
@@ -163,14 +170,19 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                             raCertificateSearchRequest.setSubjectDnSearchExact(true);
                             raCertificateSearchRequest.setSubjectAnSearchExact(true);
                             raCertificateSearchRequest.setUsernameSearchExact(true);
+                            raCertificateSearchRequest.setUsernameSearchOperation("EQUAL");
                             raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
                         }
                         raCertificateSearchRequest.setSubjectDnSearchString(criteriaValue);
+                        raCertificateSearchRequest.setSubjectDnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSubjectAnSearchString(criteriaValue);
+                        raCertificateSearchRequest.setSubjectAnSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setUsernameSearchString(criteriaValue);
+                        raCertificateSearchRequest.setUsernameSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setSerialNumberSearchStringFromDec(criteriaValue);
                         raCertificateSearchRequest.setSerialNumberSearchStringFromHex(criteriaValue);
                         raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
+                        raCertificateSearchRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         break;
                     }
                     case END_ENTITY_PROFILE: {
@@ -181,6 +193,7 @@ public class SearchCertificatesRestRequest implements SearchCertificateCriteriaR
                         if (criteriaOperation == SearchCertificateCriteriaRestRequest.CriteriaOperation.EQUAL) {
                             raCertificateSearchRequest.setExternalAccountIdSearchExact(true);
                         }
+                        raCertificateSearchRequest.setExternalAccountIdSearchOperation(criteriaOperation.name());
                         raCertificateSearchRequest.setExternalAccountIdSearchString(criteriaValue);
                         break;
                     }

@@ -1,10 +1,9 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
-    xmlns:f="http://xmlns.jcp.org/jsf/core"
-    xmlns:h="http://xmlns.jcp.org/jsf/html"
-    xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-    xmlns:p="http://primefaces.org/ui">
+    xmlns:f="jakarta.faces.core"
+    xmlns:h="jakarta.faces.html"
+    xmlns:ui="jakarta.faces.facelets">
 <ui:remove>
 	<!--
     /*************************************************************************
@@ -19,8 +18,6 @@
      *  See terms of license at gnu.org.                                     *
      *                                                                       *
      *************************************************************************/
-     
-     version: $Id$
      -->
 </ui:remove>
 <ui:composition template="/WEB-INF/include/template.xhtml">
@@ -84,7 +81,7 @@
 					<f:ajax render="validators" event="change"/>
 				</h:selectBooleanCheckbox>
 				<h:outputLabel for="selectapplicablecertificateprofiles" value="#{web.text.VALIDATORCERTIFICATEPROFILE}"/>
-				<h:selectManyListbox styleClass="select-list" id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" converter="javax.faces.Integer" 
+				<h:selectManyListbox styleClass="select-list" id="selectapplicablecertificateprofiles" value="#{validatorBean.certificateProfileIds}" converter="jakarta.faces.Integer"
 					validator="#{validatorBean.validateCertificateProfileIds}" size="10" disabled="#{validatorsBean.viewOnly or validatorBean.allCertificateProfileIds}">
 					<f:ajax event="change" render="validators" />
 					<f:selectItems value="#{validatorBean.availableCertificateProfiles}"/>

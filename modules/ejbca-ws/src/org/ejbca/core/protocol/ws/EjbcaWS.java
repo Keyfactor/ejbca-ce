@@ -36,19 +36,19 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.jws.WebMethod;
-import javax.jws.WebService;
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.bind.DatatypeConverter;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.jws.WebMethod;
+import jakarta.jws.WebService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.ws.Action;
-import javax.xml.ws.WebServiceContext;
-import javax.xml.ws.handler.MessageContext;
+import jakarta.xml.ws.Action;
+import jakarta.xml.ws.WebServiceContext;
+import jakarta.xml.ws.handler.MessageContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
@@ -246,7 +246,7 @@ public class EjbcaWS implements IEjbcaWS {
         final MessageContext msgContext = wsContext.getMessageContext();
         final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
         
-        final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+        final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("jakarta.servlet.request.X509Certificate");
         final X509Certificate certificate = certificates != null ? certificates[0] : null;
         final String oauthBearerToken = HttpTools.extractBearerAuthorization(request.getHeader(HttpTools.AUTHORIZATION_HEADER));
 
@@ -1701,7 +1701,7 @@ public class EjbcaWS implements IEjbcaWS {
 
     /**
      * Key recovers specified certificate and generates a new keystore in one
-     * atomic operation.
+     * atomic operation. Keystore type is detfined by the setting in the end entity.
      *
      * Authorization requirements:<pre>
      * - /administrator
@@ -1732,38 +1732,13 @@ public class EjbcaWS implements IEjbcaWS {
         if (log.isTraceEnabled()) {
             log.trace(">keyRecoverEnroll");
         }
-
-        // Keystore type is available in UserData but we do it this way to avoid another network round trip, looking it up.
-        final byte PKCS12_MAGIC = (byte)48;
-        final byte JKS_MAGIC = (byte)(0xfe);
-
         final AuthenticationToken admin = getAdmin();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
-
         try {
             byte[] keyStoreBytes = raMasterApiProxyBean.keyRecoverEnrollWS(admin, username, certSNinHex, issuerDN, password, hardTokenSN);
-            final java.security.KeyStore ks;
-            final KeyStore keyStore;
-            if (keyStoreBytes[0] == PKCS12_MAGIC) {
-                ks = java.security.KeyStore.getInstance("PKCS12", "BC");
-            } else if (keyStoreBytes[0] == JKS_MAGIC) {
-                ks = java.security.KeyStore.getInstance("JKS");
-            } else {
-                throw new IOException("Unsupported keystore type. Must be PKCS12 or JKS");
-            }
-
-            try (final ByteArrayInputStream bais = new ByteArrayInputStream(keyStoreBytes)) {
-                Properties.setThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS, true);
-                ks.load(bais, password.toCharArray());
-                keyStore = new KeyStore(ks, password);
-            } finally {
-                Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);
-            }
-            
+            final KeyStore keyStore = new KeyStore(keyStoreBytes, password);
             return keyStore;
-        } catch (KeyStoreException | NoSuchProviderException | NoSuchAlgorithmException | CertificateException | IOException e) {
-            throw getEjbcaException(e, logger, ErrorCode.NOT_SUPPORTED_KEY_STORE, null);
         } catch (AuthorizationDeniedException | CADoesntExistsException | WaitingForApprovalException e) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), e.toString());
             throw e;

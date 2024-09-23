@@ -23,13 +23,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ejb.EJB;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.Query;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -46,7 +46,6 @@ import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
-import org.cesecore.jndi.JndiConstants;
 import org.ejbca.util.DatabaseIndexUtil;
 import org.ejbca.util.DatabaseIndexUtil.DatabaseIndex;
 import org.ejbca.util.JDBCUtil;
@@ -55,9 +54,9 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
- * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalCertificateStoreSessionRemote")
+@Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InternalCertificateStoreSessionBean implements InternalCertificateStoreSessionRemote {
 
@@ -323,6 +322,12 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     public void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username, BigInteger serialNumber,
             int status, Date revocationDate, int reasonCode, String caFingerprint) throws AuthorizationDeniedException {
         certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, subjectDn, username, serialNumber, status, revocationDate, reasonCode, caFingerprint, null);
+    }
+    
+    @Override
+    public void updateLimitedCertificateDataStatus(AuthenticationToken admin, int caId, String issuerDn, String subjectDn, String username, BigInteger serialNumber,
+            int status, Date revocationDate, int reasonCode, String caFingerprint, Date invalidityDate) throws AuthorizationDeniedException {
+        certStore.updateLimitedCertificateDataStatus(admin, caId, issuerDn, subjectDn, username, serialNumber, status, revocationDate, reasonCode, caFingerprint, invalidityDate);
     }
 
     @Override

@@ -16,6 +16,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -24,6 +27,8 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,20 +36,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.faces.component.UIComponent;
-import javax.faces.component.UIInput;
-import javax.faces.context.ExternalContext;
-import javax.faces.context.FacesContext;
-import javax.faces.event.ComponentSystemEvent;
-import javax.faces.model.SelectItem;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.ExternalContext;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ComponentSystemEvent;
+import jakarta.faces.model.SelectItem;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1GeneralizedTime;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.AltSignatureAlgorithm;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.PrivateKeyUsagePeriod;
+import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -76,6 +86,7 @@ import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -147,7 +158,9 @@ public class RaCertificateDetails implements Serializable {
     private String revocationDate = "";
     private String invalidityDate = "";
     private String publicKeyAlgorithm = "";
+    private String publicAlternativeKeyAlgorithm = "";
     private String publicKeySpecification = "";
+    private String publicAlternativeKeySpecification = "";
     private String publicKeyParameter = "";
     private String subjectKeyId = "";
     private String accountBindingId = "";
@@ -162,6 +175,7 @@ public class RaCertificateDetails implements Serializable {
     private boolean isPreCertificate = false;
     private boolean hasCertificateTransparencyScts = false;
     private String signatureAlgorithm;
+    private String alternativeSignatureAlgorithm;
     private String password;
     private String confirmPassword;
     private int requestId;
@@ -275,7 +289,12 @@ public class RaCertificateDetails implements Serializable {
         if (certificateData.getType() == CertificateConstants.CERTTYPE_SSH) {
             this.sshKeyId = SshCertificateUtils.getKeyId(certificateData.getSubjectDnNeverNull());
             String[] principalsAndComment = SshCertificateUtils.parsePrincipalsAndComment(certificateData.getSubjectAltNameNeverNull());
-            this.principals = principalsAndComment[0].replace(":", ", ");
+            if (cdw.getCertificate()!=null) {
+                String allPrincipals = ((SshCertificate) cdw.getCertificate()).getPrincipals().toString();
+                this.principals =  allPrincipals.substring(1, allPrincipals.length()-1);
+            } else {
+                this.principals = principalsAndComment[0];
+            }
             this.comment = principalsAndComment[1];
             this.type = SshCertificate.CERTIFICATE_TYPE;
         }
@@ -285,6 +304,28 @@ public class RaCertificateDetails implements Serializable {
             final PublicKey publicKey = certificate.getPublicKey();
             this.publicKeyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
             this.publicKeySpecification = checkForPQCAndGetPublicKeySpec(publicKey, publicKeyAlgorithm);
+            if (certificate instanceof X509Certificate) {
+                X509Certificate x509Certificate = (X509Certificate) certificate;
+                try {
+                    X509CertificateHolder certHolder = new JcaX509CertificateHolder(x509Certificate);
+                    SubjectAltPublicKeyInfo subjectAltPublicKeyInfo = SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions());
+                    if (subjectAltPublicKeyInfo != null) {
+                        final AlgorithmIdentifier keyAlgorithm = subjectAltPublicKeyInfo.getAlgorithm();
+                        final X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(subjectAltPublicKeyInfo.getEncoded());
+                        KeyFactory keyFactory = KeyFactory.getInstance(keyAlgorithm.getAlgorithm().getId(),
+                                CryptoProviderTools.getProviderNameFromAlg(keyAlgorithm.getAlgorithm().getId()));
+                        final PublicKey alternativePublicKey = keyFactory.generatePublic(x509EncodedKeySpec);
+                        this.publicAlternativeKeyAlgorithm = AlgorithmTools.getKeyAlgorithm(alternativePublicKey);
+                        this.publicAlternativeKeySpecification = checkForPQCAndGetPublicKeySpec(alternativePublicKey, publicAlternativeKeyAlgorithm);
+                    }
+                } catch (CertificateEncodingException | IOException | NoSuchAlgorithmException | NoSuchProviderException
+                        | InvalidKeySpecException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Failed to parse Alternative Public Key: " + e.getMessage());
+                    }
+                }
+            }
+            
             if (publicKey instanceof RSAPublicKey) {
                 this.publicKeyParameter = ((RSAPublicKey) publicKey).getModulus().toString(16);
             } else if (certificate.getPublicKey() instanceof DSAPublicKey) {
@@ -297,8 +338,22 @@ public class RaCertificateDetails implements Serializable {
             if (certificate instanceof X509Certificate) {
                 this.created = ValidityDate.formatAsISO8601ServerTZ(CertTools.getNotBefore(certificate).getTime(), TimeZone.getDefault());
                 this.signatureAlgorithm = CertTools.getCertSignatureAlgorithmNameAsString(certificate);
-
+                
                 final X509Certificate x509Certificate = (X509Certificate) certificate;
+                
+                X509CertificateHolder certHolder;
+                try {
+                    certHolder = new JcaX509CertificateHolder(x509Certificate);
+                    AltSignatureAlgorithm altSignatureAlgorithm = AltSignatureAlgorithm.fromExtensions(certHolder.getExtensions());
+                    if (altSignatureAlgorithm != null) {
+                        this.alternativeSignatureAlgorithm = AlgorithmTools.getAlgorithmNameFromOID(altSignatureAlgorithm.getAlgorithm().getAlgorithm());
+                    } 
+                } catch (CertificateEncodingException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Could not parse alternative signature algorithm from certificate.", e);
+                    }
+                }
+              
                 this.typeVersion = Integer.toString(x509Certificate.getVersion());
                 this.subjectAn = DnComponents.getSubjectAlternativeName(certificate);
                 try {
@@ -512,6 +567,10 @@ public class RaCertificateDetails implements Serializable {
     public boolean isCpNameSameAsEepName() {
         return getEepName().equals(getCpName());
     }
+    
+    public boolean isHybridCertificate() {
+        return StringUtils.isNotEmpty(this.alternativeSignatureAlgorithm);
+    }
 
     /**
      * @return End Entity Profile Name from the provided EEP ID or a localized error String
@@ -622,6 +681,10 @@ public class RaCertificateDetails implements Serializable {
     public String getPublicKeySpecification() {
         return publicKeySpecification;
     }
+    
+    public String getPublicAlternativeKeySpecification() {
+        return publicAlternativeKeySpecification;
+    }
 
     public String getPublicKeyParameter() {
         return publicKeyParameter;
@@ -676,6 +739,11 @@ public class RaCertificateDetails implements Serializable {
     public String getSignatureAlgorithm() {
         return signatureAlgorithm;
     }
+    
+    public String getAlternativeSignatureAlgorithm() {
+        return alternativeSignatureAlgorithm;
+    }
+
 
     public String getDump() {
         final Certificate certificate = cdw.getCertificate();
@@ -1075,6 +1143,10 @@ public class RaCertificateDetails implements Serializable {
 
     public boolean isSshVerifyRequired() {
         return sshVerifyRequired;
+    }
+
+    public String getPublicAlternativeKeyAlgorithm() {
+        return publicAlternativeKeyAlgorithm;
     }
 
 }

@@ -18,8 +18,9 @@
         <path refid="lib.commons-codec.classpath"/>
         <path refid="lib.commons-config.classpath"/>
         <path refid="lib.commons-collections4.classpath"/>
-        <path location="${mod.cesecore-common.lib}"/>
+    	<path location="${mod.cesecore-common.lib}"/>
     	<path refid="lib.x509-common-util.classpath" />
+    	<path refid="lib.cryptotokens.classpath" />
     </path>
 
     <!-- The buildservicemanifest needs additional classes in order to run. 
@@ -41,7 +42,10 @@
         <path refid="lib.ldap.classpath"/>
         <path location="${mod.cesecore-entity.lib}"/>
         <path refid="lib.commons-codec.classpath"/>
+		<path refid="lib.xmlpull.classpath"/>
+    	<path refid="lib.cert-cvc.classpath" /> <!-- Needed because cesecore-commons depends on CVC -->
         <path location="${ejbca.home}/src/java" /> <!-- For profilemappings.properties -->
+        <path refid="lib.cryptotokens.classpath"/>
     </path>
 
     <target name="jar" depends="">
@@ -83,7 +87,7 @@
         <copy file="${systemtests.properties.file}" todir="${cesecore-x509ca.build-test.dir}" failonerror="false"/>
     </target>
 
-    <target name="test" depends="compile-tests" description="Run tests for this module">
+    <target name="test:unit" depends="compile-tests" description="Run unit tests for this module">
         <antcall target="showtime" inheritall="true" inheritrefs="true"/>
         <junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" dir="${cesecore-x509ca.dir}">
             <classpath>
@@ -91,7 +95,7 @@
             </classpath>
             <formatter type="xml" />
             <batchtest fork="yes" todir="${reports.dir}">
-                <fileset dir="${cesecore-x509ca.build-test.dir}" includes="**/*Test.class">
+                <fileset dir="${cesecore-x509ca.build-test.dir}" includes="**/*UnitTest.class">
                 </fileset>
             </batchtest>
         	<jvmarg line="${tests.jvmargs}"/>
