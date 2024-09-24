@@ -281,13 +281,16 @@ public class CaInitCommand extends BaseCaAdminCommand {
         final String catokenname = parameters.get(TOKEN_NAME_KEY);
         if (catokentype == null && catokenname == null) {
             log.error("Must define either a token type or a token name.");
-            return CommandResult.CLI_FAILURE;            
+            return CommandResult.CLI_FAILURE;
         }
         String catokenpassword = StringTools.passwordDecryption(parameters.get(TOKEN_PASSWORD_KEY), "ca.tokenpassword");
-        if (StringUtils.equals(catokenpassword, "prompt")) {
+        if (catokenpassword == null || StringUtils.equals(catokenpassword, "prompt")) {
             getLogger().info("Enter CA token password: ");
-            getLogger().info("");
             catokenpassword = String.valueOf(System.console().readPassword());
+            if (StringUtils.isEmpty(catokenpassword)) {
+                log.error("Must provide the CA token password.");
+                return CommandResult.CLI_FAILURE;
+            }
         }
         final String keyspec = parameters.get(KEY_SPEC_KEY);
         final String keytype = parameters.get(KEY_TYPE_KEY);
@@ -473,7 +476,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
                 cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
             }
-            
+
             final char[] authenticationCode = catokenpassword.toCharArray();
             
             final String className;
