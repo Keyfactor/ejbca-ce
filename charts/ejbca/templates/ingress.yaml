@@ -24,6 +24,7 @@ metadata:
   labels:
     {{- include "ejbca.labels" . | nindent 4 }}
   annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: 32m
     {{- if .Values.services.proxyAJP.enabled  }}
     nginx.ingress.kubernetes.io/backend-protocol: "AJP"
     {{- else if .Values.services.proxyHttp.enabled  }}
