@@ -90,7 +90,6 @@ dependencyResolutionManagement {
             library("antlr4-runtime", ":antlr4-runtime:4.13.0")
             library("byte-buddy", ":byte-buddy:1.14.15")
             library("classmate", ":classmate:1.5.1")
-            library("dom4j", ":dom4j:2.1.3")
             library("fastInfoset", ":FastInfoset:1.2.15")
             library("hibernate-community-dialects",":hibernate-community-dialects:6.5.2.Final")
             library("hibernate-commons-annotations", ":hibernate-commons-annotations:6.0.6.Final")
