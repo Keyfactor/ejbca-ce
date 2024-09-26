@@ -15,7 +15,7 @@ dependencyResolutionManagement {
             library("jakartaee-api", ":jakarta.jakartaee-api:10.0.0")
             library("jakarta.xml.ws-api", ":jakarta.xml.ws-api:4.0.1")
             library("jaxb-runtime", ":jaxb-runtime:4.0.5")
-            library("cert-cvc", ":cert-cvc:1.6.0")
+            library("cert-cvc", ":cert-cvc:1.6.2")
             library("guava", ":guava:33.0.0-jre")
             library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
             library("commons-lang", ":commons-lang:2.6")
