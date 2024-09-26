@@ -142,7 +142,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             final List<Integer> allUsedIds = getIds(null);
             Integer allocatedId = null;
             for (int i=0; i<100; i++) {
-                final int current = Integer.valueOf(rnd.nextInt());
+                final int current = rnd.nextInt();
                 if (!allUsedIds.contains(current)) {
                     allocatedId = current;
                     break;
@@ -151,7 +151,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
             if (allocatedId == null) {
                 throw new IllegalStateException("Failed to allocate a new internalKeyBindingId.");
             }
-            internalKeyBindingId = allocatedId.intValue();
+            internalKeyBindingId = allocatedId;
             // We need to replace this object with an object that has the correct ID if we are going to cache it later
             internalKeyBinding = InternalKeyBindingFactory.INSTANCE.create(type, internalKeyBindingId, name,
                     status, certificateId, cryptoTokenId, keyPairAlias, dataMap);
