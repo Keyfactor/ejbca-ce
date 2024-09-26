@@ -12,7 +12,7 @@
  *************************************************************************/
 package com.example.ejb;
 
-import javax.ejb.Local;
+import jakarta.ejb.Local;
 
 import com.example.entity.MyCounterData;
 
