@@ -3,6 +3,7 @@ out/
 dist/
 build/
 build-*/
+modules/**/bin
 tmp/
 conf/*.properties
 velocity.log
