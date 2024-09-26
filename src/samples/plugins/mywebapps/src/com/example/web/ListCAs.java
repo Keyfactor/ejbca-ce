@@ -14,7 +14,7 @@ package com.example.web;
 
 import java.io.IOException;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;

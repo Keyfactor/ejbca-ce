@@ -12,7 +12,7 @@
  *************************************************************************/
 package com.example.web;
 
-import javax.ejb.EJB;
+import jakarta.ejb.EJB;
 
 import java.io.IOException;
 
