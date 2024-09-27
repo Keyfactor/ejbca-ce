@@ -71,8 +71,8 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                 "                        files, where the first column contains" + System.lineSeparator() +
                 "                        a SHA-256 hash of the DER encoded public" + System.lineSeparator() + 
                 "                        key modulus." + System.lineSeparator() +
-                "    debianfingerprint - If the input files shall be treated as a" + System.lineSeparator() +
-                "                        Debian weak key block lists, where each line" + System.lineSeparator() +
+                "    debianfingerprint - (Deprecated) If the input files shall be treated" + System.lineSeparator() + // Deprecated in EJBCA 9.0 (ECA-12676)
+                "                        as Debian weak key block lists, where each line" + System.lineSeparator() +
                 "                        is the fingerprint of a weak Debian key." + System.lineSeparator() +
                 "                        See https://wiki.debian.org/SSLkeys" + System.lineSeparator() +
                 "If not specified, the input files are treated as PEM-encoded public keys."));
