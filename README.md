@@ -8,11 +8,6 @@
 
 [![Discuss](https://img.shields.io/badge/discuss-ejbca-ce?style=flat)](https://github.com/Keyfactor/ejbca-ce/discussions) 
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9419/badge)](https://www.bestpractices.dev/projects/9419)
-[![GitHub All Releases](https://img.shields.io/github/downloads/Keyfactor/ejbca-ce/total.svg)](https://github.com/Keyfactor/ejbca-ce/releases/latest)
-[![Latest Release](https://img.shields.io/github/v/release/Keyfactor/ejbca-ce?include_prereleases)](https://github.com/Keyfactor/ejbca-ce/releases/latest)
-[![License](https://img.shields.io/badge/License-LGPL-blue)](https://github.com/Keyfactor/ejbca-ce/blob/main/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/Keyfactor/ejbca-ce?style=social)](https://github.com/Keyfactor/ejbca-ce/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/Keyfactor/ejbca-ce?style=social)](https://github.com/Keyfactor/ejbca-ce/forks)
 
 The open-source public key infrastructure (PKI) and certificate authority (CA) software **EJBCA** is one of the longest-running CA software projects. EJBCA is platform-independent and covers all your needs – from certificate enrollment, via certificate management, to certificate validation.
 
