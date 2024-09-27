@@ -31,14 +31,11 @@ import org.apache.log4j.Logger;
 
 /**
  * Helper class for reading the index meta data from the database using direct JDBC.
- * 
- * @version $Id$
  */
 public abstract class DatabaseIndexUtil {
 
     private static final Logger log = Logger.getLogger(DatabaseIndexUtil.class);
 
-    private static final String ORACLE = "oracle";
     private static final int ORACLE_VERSION = 19;
 
     /** Private helper class to help sorting the columns in the right order even if the database would return them in a different order than the ordinal */
@@ -154,7 +151,7 @@ public abstract class DatabaseIndexUtil {
                 // due to different case sensitivity rules when comparing table names.
                 String tablePattern = null;
                 String[] tableTypes = null;
-                if (databaseMetaData.getDatabaseProductName().equalsIgnoreCase(ORACLE) &&
+                if (JDBCUtil.isOracle(databaseMetaData) &&
                     databaseMetaData.getDatabaseMajorVersion() >= ORACLE_VERSION) {
                     tablePattern = tableName.toUpperCase();
                     tableTypes = new String[] { "TABLE" };
