@@ -326,7 +326,7 @@ public class AddEndEntityRestRequest {
         return keyRecoverable;
     }
 
-    public void setKeyRecoverble(boolean keyRecoverable) {
+    public void setKeyRecoverable(boolean keyRecoverable) {
         this.keyRecoverable = keyRecoverable;
     }   
 
