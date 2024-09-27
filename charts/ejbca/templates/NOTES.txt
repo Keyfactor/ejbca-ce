@@ -1,0 +1,15 @@
+Thank you for installing EJBCA!
+
+Now that you have deployed EJBCA, you should look over the docs:
+
+EJBCA: https://docs.keyfactor.com/ejbca/latest/
+EJBCA Container: https://docs.keyfactor.com/container/latest/ejbca/
+
+Your release is named {{ .Release.Name }}. To learn more about the release, try:
+
+  $ helm status {{ .Release.Name }}
+  $ helm get manifest {{ .Release.Name }}
+  $ helm get all {{ .Release.Name }}
+  
+  Please provide the `values.yaml` files and output of `helm get all {{ .Release.Name }}`   
+  when reaching out for help to the community or enterprise customer support. 
