@@ -277,6 +277,7 @@
     		<fileset dir="${ejbca.home}/lib/hibernate" includes="yasson-*.jar"/>
     		<fileset dir="${ejbca.home}/lib/hibernate" includes="parsson-*.jar"/>
 			<fileset dir="${ejbca.home}/lib/ext/wsgen" includes="jaxb-core-*.jar"/>
+			<fileset dir="${ejbca.home}/lib" includes="cryptotokens-*.jar"/>
     	</copy>
     	<pathconvert property="ejbca-db-cli.dependencies" pathsep=" ">
     	    <path>
