@@ -69,7 +69,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 52.0;
+    public static final float LATEST_VERSION = (float) 53.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -3685,16 +3685,27 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setQCCountriesString("");
             }
 
-            // v50 truncated subject key identifier
+            // v50: truncated subject key identifier
             if (data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER) == null) {
                 setUseTruncatedSubjectKeyIdentifier(false);
             }
 
-            // v52. ETSI Validity Assured - Short Term certificate extension specified in EN 319 412-01.
+            // v52: ETSI Validity Assured - Short Term certificate extension specified in EN 319 412-01.
             if (data.get(USE_VALIDITY_ASSURED_SHORT_TERM) == null) {
                 setUseValidityAssuredShortTerm(false);
                 setValidityAssuredShortTermCritical(false);
             }
+            
+            // v53: Remove support for GOST and DSTU if present
+            List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
+            availableKeyAlgorithms.remove("ECGOST3410");
+            availableKeyAlgorithms.remove("DSTU4145");
+            setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
+            // Make sure that they didn't sneak into the alternate set
+            List<String> alternativeAvailableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
+            alternativeAvailableKeyAlgorithms.remove("ECGOST3410");
+            alternativeAvailableKeyAlgorithms.remove("DSTU4145");
+            setAlternativeAvailableKeyAlgorithmsAsList(alternativeAvailableKeyAlgorithms);
 
             data.put(VERSION, LATEST_VERSION);
         }
