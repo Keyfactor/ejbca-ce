@@ -71,6 +71,7 @@ public class Ocsp extends ClientToolBox {
                 super();
             }
 
+            @Override
             public Command[] getCommands() throws Exception {
                 return new Command[] { new Lookup() };
             }
@@ -150,6 +151,7 @@ public class Ocsp extends ClientToolBox {
                         StressTest.this.ocspurl, Ocsp.this.nonceLength, StressTest.this.keyStoreFileName != null, StressTest.this.getFnr);
             }
 
+            @Override
             public boolean doIt() throws Exception {
                 final BigInteger currentSerialNumber = StressTest.this.serialNrs.getRandom();
                 final OCSPUnidResponse response = this.client.lookup(currentSerialNumber, StressTest.this.cacert, StressTest.this.useGet);
@@ -166,6 +168,7 @@ public class Ocsp extends ClientToolBox {
                 return true;
             }
 
+            @Override
             public String getJobTimeDescription() {
                 return "OCSP lookup";
             }
@@ -375,7 +378,7 @@ public class Ocsp extends ClientToolBox {
      * @param args command line arguments
      */
     public static void main(String[] args) {
-        final List<String> lArgs = new ArrayList<String>();
+        final List<String> lArgs = new ArrayList<>();
         lArgs.add("dummy");
         for (int i = 0; i < args.length; i++) { // remove first argument
             lArgs.add(args[i]);
