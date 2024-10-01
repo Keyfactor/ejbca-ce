@@ -127,7 +127,7 @@ public class OCSPUnidClient {
 	    this.certChain = certs!=null ? Arrays.asList(certs).toArray(new X509Certificate[0]) : null;
         this.nonce = new byte[nonceLength];
 	    {
-	        List<Extension> extensionList = new ArrayList<Extension>();
+	        List<Extension> extensionList = new ArrayList<>();
 	        final Random randomSource = new Random();
             randomSource.nextBytes(nonce);
             extensionList.add(new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce).getEncoded()));
@@ -209,7 +209,7 @@ public class OCSPUnidClient {
             return ret;
         }
         final OCSPReqBuilder gen = new OCSPReqBuilder();
-        final CertificateID certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate)cacert, serialNr);
+        final CertificateID certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, serialNr);
         gen.addRequest(certId);
         if (!useGet) {
             // Add a nonce to the request
@@ -217,7 +217,7 @@ public class OCSPUnidClient {
         }
         final OCSPReq req;
         if (this.signKey != null) {
-            final X509Certificate localCertChain[] = this.certChain != null ? this.certChain : new X509Certificate[] { (X509Certificate) cacert };
+            final X509Certificate localCertChain[] = this.certChain != null ? this.certChain : new X509Certificate[] { cacert };
             final JcaX509CertificateHolder[] certificateHolderChain = CertTools.convertToX509CertificateHolder(localCertChain);
             gen.setRequestorName(certificateHolderChain[0].getSubject());
             req = gen.build(new BufferingContentSigner(new JcaContentSignerBuilder("SHA1withRSA").setProvider(BouncyCastleProvider.PROVIDER_NAME)
@@ -465,6 +465,7 @@ public class OCSPUnidClient {
     }
 
     class SimpleVerifier implements HostnameVerifier {
+        @Override
         public boolean verify(String hostname, SSLSession session) {
             return true;
         }
