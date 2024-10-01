@@ -1818,7 +1818,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void reloadCaCertificateCache() {
-        log.info("Reloading CA certificate cache.");
+        if (log.isDebugEnabled()) {
+            log.debug("Reloading CA certificate cache.");
+        }
         Collection<Certificate> caCerts = certificateDataSession.findActiveCaCertificatesByType(Arrays.asList(CertificateConstants.CERTTYPE_SUBCA,
                         CertificateConstants.CERTTYPE_ROOTCA));
         // Very old CAs might not have the SYSTEMCA username, therefore we need to double-check that they are included
@@ -1831,7 +1833,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             }
         }
         CaCertificateCache.INSTANCE.loadCertificates(caCerts);
-        log.info("Reloaded CA certificate cache with " + caCerts.size() + " certificates");
+        if (log.isDebugEnabled()) {
+            log.debug("Reloaded CA certificate cache with " + caCerts.size() + " certificates");
+        }
     }
 
     /**
