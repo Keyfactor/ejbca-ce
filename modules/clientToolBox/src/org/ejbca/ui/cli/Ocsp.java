@@ -50,6 +50,12 @@ import com.keyfactor.util.FileTools;
  * @version $Id$
  */
 public class Ocsp extends ClientToolBox {
+
+    private static final String NONCE_LENGTH_ENV_VAR = "CLIENTTOOLBOX_OCSP_NONCE_LENGTH";
+    /** Recommended minimum length per RFC-9654 */
+    private static final int DEFAULT_NONCE_LENGTH = 32;
+    private int nonceLength;
+
     private class StressTest {
         final PerformanceTest performanceTest;
         final String ocspurl;
@@ -141,7 +147,7 @@ public class Ocsp extends ClientToolBox {
 
             Lookup() throws Exception {
                 this.client = OCSPUnidClient.getOCSPUnidClient(StressTest.this.keyStoreFileName, StressTest.this.keyStorePassword,
-                        StressTest.this.ocspurl, StressTest.this.keyStoreFileName != null, StressTest.this.getFnr);
+                        StressTest.this.ocspurl, Ocsp.this.nonceLength, StressTest.this.keyStoreFileName != null, StressTest.this.getFnr);
             }
 
             public boolean doIt() throws Exception {
@@ -223,7 +229,7 @@ public class Ocsp extends ClientToolBox {
     protected void execute(String[] args) {
         try {
             CryptoProviderTools.installBCProvider();
-
+            initializeNonceLength();
             final String ksfilename;
             final String kspwd;
             final String ocspUrlFromCLI;
@@ -259,7 +265,8 @@ public class Ocsp extends ClientToolBox {
                 System.out
                         .println("Usage 2: OCSP <OCSPUrl | null> <CertificateFileName | HexEncodedCertificateSerialNumber> <CA-CertificateFileName> [<POST | GET>]");
                 System.out.println("Usage 3: OCSP stress ...");
-                System.out.println("Keystore should be a PKCS12. GET requests will not use a nonce.");
+                System.out.println("Keystore should be a PKCS12. Only POST requests use a nonce, by default 32 bytes.");
+                System.out.println("Nonce length is overrideable by environment variable "+ NONCE_LENGTH_ENV_VAR +"");
                 System.out
                         .println("OCSPUrl is like: http://127.0.0.1:8080/ejbca/publicweb/status/ocsp or https://127.0.0.1:8443/ejbca/publicweb/status/ocsp");
                 System.out.println("OCSP response status is: GOOD=" + OCSPUnidResponse.OCSP_GOOD + ", REVOKED=" + OCSPUnidResponse.OCSP_REVOKED
@@ -280,7 +287,7 @@ public class Ocsp extends ClientToolBox {
                         System.exit(-1); // NOPMD, it's not a JEE app
                     }
                     final OCSPUnidClient client = OCSPUnidClient
-                            .getOCSPUnidClient(ksfilename, kspwd, ocspUrlFromCLI, signRequest, ksfilename != null);
+                            .getOCSPUnidClient(ksfilename, kspwd, ocspUrlFromCLI, nonceLength, signRequest, ksfilename != null);
                     response = client.lookup(new BigInteger(certfilename, 16), getCertFromPemFile(cacertfilename), useGet);
                 } catch (NumberFormatException e) {
                     // Not a hex serial number
@@ -298,7 +305,7 @@ public class Ocsp extends ClientToolBox {
                         System.exit(-1); // NOPMD, it's not a JEE app
                     }
                 }
-                final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrl, signRequest, true);
+                final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrl, nonceLength, signRequest, true);
                 response = client.lookup(userCert, getCertFromPemFile(cacertfilename), useGet);
             }
             if (response.getErrorCode() != OCSPUnidResponse.ERROR_NO_ERROR) {
@@ -352,6 +359,15 @@ public class Ocsp extends ClientToolBox {
             System.out.println(e.getMessage());
             e.printStackTrace();
             System.exit(-1); // NOPMD, it's not a JEE app
+        }
+    }
+
+    private void initializeNonceLength() {
+        final String envVar = System.getenv(NONCE_LENGTH_ENV_VAR);
+        if (envVar != null) {
+            nonceLength = Integer.parseInt(envVar);
+        } else {
+            nonceLength = DEFAULT_NONCE_LENGTH;
         }
     }
 
