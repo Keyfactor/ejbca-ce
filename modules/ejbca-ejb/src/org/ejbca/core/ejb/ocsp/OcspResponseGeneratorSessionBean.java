@@ -62,19 +62,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.SessionContext;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.Timeout;
-import jakarta.ejb.Timer;
-import jakarta.ejb.TimerConfig;
-import jakarta.ejb.TimerService;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -137,7 +124,6 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStatusHolder;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.HashID;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparency;
 import org.cesecore.certificates.certificatetransparency.CertificateTransparencyFactory;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -201,6 +187,19 @@ import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.Timeout;
+import jakarta.ejb.Timer;
+import jakarta.ejb.TimerConfig;
+import jakarta.ejb.TimerService;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * This SSB generates OCSP responses. 
@@ -711,8 +710,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         if (aki != null) {
             keyIdsAreEqual = Arrays.equals(aki, ski);
         }
-        final Principal sdn = cert.getSubjectDN();
-        final Principal idn = cert.getIssuerDN();
+        final Principal sdn = cert.getSubjectX500Principal();
+        final Principal idn = cert.getIssuerX500Principal();
         final boolean dNsAreEqual = sdn.equals(idn);
         //AKI can be omitted in self signed certificates, RFC 5280
         if ((aki == null && dNsAreEqual) || keyIdsAreEqual ){
@@ -1667,7 +1666,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN,
                             CertTools.getIssuerDN(shouldSignOnBehalfCaCert));
                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN_RAW,
-                            shouldSignOnBehalfCaCert.getIssuerDN().getName());
+                            shouldSignOnBehalfCaCert.getIssuerX500Principal().getName());
                 } else {
                     transactionLogger.paramPut(TransactionLogger.ISSUER_NAME_DN,
                             ocspSigningCacheEntry.getSigningCertificateIssuerDn());
@@ -1738,19 +1737,10 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                     if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
                         nextUpdate = ocspSigningCacheEntry.getOcspKeyBinding().getUntilNextUpdate()*1000L;
                     }
-                    // If we have an explicit value configured for this certificate profile, we override the the current value with this value
-                    if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
-                            OcspConfiguration.isUntilNextUpdateConfigured(status.certificateProfileId)) {
-                        nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
-                    }
+
                     // If we have an OcspKeyBinding configured for this request, we override the default value
                     if (ocspSigningCacheEntry.isUsingSeparateOcspSigningCertificate()) {
                         maxAge = ocspSigningCacheEntry.getOcspKeyBinding().getMaxAge()*1000L;
-                    }
-                    // If we have an explicit value configured for this certificate profile, we override the the current value with this value
-                    if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
-                            OcspConfiguration.isMaxAgeConfigured(status.certificateProfileId)) {
-                        maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
                     }
 
                     final String sStatus;
@@ -1841,16 +1831,6 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         if (!isPreSigning && transactionLogger.isEnabled()) {
                             transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_REVOKED);
                             transactionLogger.paramPut(TransactionLogger.REV_REASON, reasonCode);
-                        }
-                        // If we have an explicit value configured for this certificate profile, we override the the current value with this value
-                        if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
-                                OcspConfiguration.isRevokedUntilNextUpdateConfigured(status.certificateProfileId)) {
-                            nextUpdate = OcspConfiguration.getRevokedUntilNextUpdate(status.certificateProfileId);
-                        }
-                        // If we have an explicit value configured for this certificate profile, we override the the current value with this value
-                        if (status.certificateProfileId != CertificateProfileConstants.CERTPROFILE_NO_PROFILE &&
-                                OcspConfiguration.isRevokedMaxAgeConfigured(status.certificateProfileId)) {
-                            maxAge = OcspConfiguration.getRevokedMaxAge(status.certificateProfileId);
                         }
                     } else {
                         sStatus = "good";
@@ -2421,7 +2401,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
             throw new CryptoTokenOfflineException("HSM timed out while trying to get OCSP response", e);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Signing OCSP response with OCSP signer cert: " + signerCert.getSubjectDN().getName());
+            log.debug("Signing OCSP response with OCSP signer cert: " + signerCert.getSubjectX500Principal().getName());
         }
         
         if (!returnval.getResponderId().equals(ocspSigningCacheEntry.getRespId())) {
