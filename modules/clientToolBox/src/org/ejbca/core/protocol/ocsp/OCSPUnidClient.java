@@ -119,13 +119,13 @@ public class OCSPUnidClient {
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException if ASN1 parsing error occurs
 	 */
-	private OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl, Certificate[] certs, PrivateKey _signKey, boolean getfnr) throws NoSuchAlgorithmException, IOException {
+	private OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl, Certificate[] certs, PrivateKey _signKey, int nonceLength, boolean getfnr) throws NoSuchAlgorithmException, IOException {
 	    this.httpReqPath = ocspurl;
 	    this.passphrase = pwd;
 	    this.ks = keystore;
 	    this.signKey = _signKey;
 	    this.certChain = certs!=null ? Arrays.asList(certs).toArray(new X509Certificate[0]) : null;
-        this.nonce = new byte[16];
+        this.nonce = new byte[nonceLength];
 	    {
 	        List<Extension> extensionList = new ArrayList<Extension>();
 	        final Random randomSource = new Random();
@@ -144,10 +144,11 @@ public class OCSPUnidClient {
      * @param ksfilename String Filename of PKCS#12 keystore used to authenticate TLS client authentication, or null if TLS is not used
      * @param pwd String password for the key store,or null if no keystore is used 
      * @param ocspurl String url to the OCSP server, or null if we should try to use the AIA extension from the cert; e.g. http://127.0.0.1:8080/ejbca/publicweb/status/ocsp (or https for TLS)
+     * @param nonceLength Length of the nonce extension in bytes. Per RFC-9654 it must be no longer than 128 bytes.
 	 * @return the client to use
      * @throws Exception
 	 */
-	public static OCSPUnidClient getOCSPUnidClient(String ksfilename, String pwd, String ocspurl, boolean doSignRequst, boolean getfnr) throws Exception {
+	public static OCSPUnidClient getOCSPUnidClient(String ksfilename, String pwd, String ocspurl, int nonceLength, boolean doSignRequst, boolean getfnr) throws Exception {
 	    if ( doSignRequst && ksfilename==null ) {
             throw new Exception("You got to give the path name for a keystore to use when using signing.");
 	    }
@@ -166,9 +167,9 @@ public class OCSPUnidClient {
                 throw new IOException("Can not find a certificate entry in PKCS12 keystore for alias "+alias);
             }
             final PrivateKey privateKey = doSignRequst ? (PrivateKey)ks.getKey(alias, null) : null;
-            return new OCSPUnidClient(ks, pwd, ocspurl, certs, privateKey, getfnr);
+            return new OCSPUnidClient(ks, pwd, ocspurl, certs, privateKey, nonceLength, getfnr);
 		} else {
-            return new OCSPUnidClient(null, null, ocspurl, null, null, getfnr);
+            return new OCSPUnidClient(null, null, ocspurl, null, null, nonceLength, getfnr);
 		}
 	}
 	/**
