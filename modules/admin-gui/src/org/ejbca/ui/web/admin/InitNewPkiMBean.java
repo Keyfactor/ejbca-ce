@@ -69,6 +69,7 @@ import org.cesecore.certificates.certificate.exception.CustomCertificateSerialNu
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.config.CesecoreConfiguration;
@@ -484,9 +485,16 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
             AuthLoginException, NoSuchEndEntityException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException, CertificateSignatureException {
         final CAInfo caInfo = caSession.getCAInfo(getAdmin(), getCaName());
         final int caId = caInfo.getCAId();
-        endEntityManagementSession.addUser(getAdmin(), "superadmin", getAdminKeyStorePassword(), getAdminDn(), 
-                null, null, false, EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
-                new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.TOKEN_SOFT_P12, caId);
+        EndEntityInformation endEntityInformation = new EndEntityInformation();
+        endEntityInformation.setUsername("superadmin");
+        endEntityInformation.setPassword(getAdminKeyStorePassword());
+        endEntityInformation.setDN(getAdminDn());
+        endEntityInformation.setEndEntityProfileId(EndEntityConstants.EMPTY_END_ENTITY_PROFILE);
+        endEntityInformation.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        endEntityInformation.setType(new EndEntityType(EndEntityTypes.ENDUSER));
+        endEntityInformation.setTokenType( EndEntityConstants.TOKEN_SOFT_P12);
+        endEntityInformation.setCAId(caId);
+        endEntityManagementSession.addUser(getAdmin(), endEntityInformation, false);
         Date notAfter = ValidityDate.getDate(getAdminValidity(), new Date(), caInfo.isExpirationInclusive());
         KeyStore keyStore = null;
         keyStore = keyStoreCreateSession.generateOrKeyRecoverToken(getAdmin(), "superadmin", getAdminKeyStorePassword(), 
@@ -656,13 +664,16 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     
     private String getFileName() {
         final String commonName = DnComponents.getPartFromDN(getAdminDn(), "CN");
-        if (StringUtils.isEmpty(commonName)) {
+        //Use Common Name if available
+        if (!StringUtils.isEmpty(commonName)) {
+            if (StringUtils.isAsciiPrintable(commonName)) {
+                return StringTools.stripFilename(commonName);
+            }
+            return Base64.encodeBase64String(commonName.getBytes());
+        } else {            
             return "certificatetoken";
         }
-        if (StringUtils.isAsciiPrintable(commonName)) {
-            return StringTools.stripFilename(commonName);
-        }
-        return Base64.encodeBase64String(commonName.getBytes());
+        
     }
     
     private boolean verifySuperAdminFields() {
