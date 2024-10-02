@@ -564,11 +564,11 @@ public class IntegratedOcspResponseSystemTest {
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
         Extension[] extensions = new Extension[1];
 
-        // Use a nonce with more than 32 bytes to see if we reject it. We should not allow too long nonces due to the possibility of using 
+        // Use a nonce with more than 128 bytes to see if we reject it. We should not allow too long nonces due to the possibility of using 
         // this as a chosen-prefix attack on hash collisions.
         // https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
-        // https://www.rfc-editor.org/rfc/rfc8954.txt
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[33]).getEncoded());
+        // https://www.rfc-editor.org/rfc/rfc9654.txt (which supersedes RFC-8954)
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[129]).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         OCSPReq reqnonce = gen.build();
 
@@ -599,8 +599,8 @@ public class IntegratedOcspResponseSystemTest {
                 .getOcspResponse(req.getEncoded(), null, "", null, null, auditLogger, transactionLogger, false, PresignResponseValidity.CONFIGURATION_BASED, false).getOcspResponse();
         assertNotNull("OCSP responder replied null", responseBytes);
 
-        // Go on now with a nonce that is not too long, exactly 32 bytes
-        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[32]).getEncoded());
+        // Go on now with a nonce that is not too long, exactly 128 bytes
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new byte[128]).getEncoded());
         gen.setRequestExtensions(new Extensions(extensions));
         req = gen.build();
         responseBytes = ocspResponseGeneratorSession
