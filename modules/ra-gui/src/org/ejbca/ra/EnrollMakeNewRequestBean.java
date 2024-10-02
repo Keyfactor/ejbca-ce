@@ -1558,13 +1558,25 @@ public class EnrollMakeNewRequestBean implements Serializable {
         if (isRenderSshEnrolmentFields()) {
             commonName = getSshKeyId();
         }
-        if (StringUtils.isEmpty(commonName)) {
-            return "certificatetoken";
+        if (!StringUtils.isEmpty(commonName)) {
+            //Use the common name if available
+            if (StringUtils.isAsciiPrintable(commonName)) {
+                return StringTools.stripFilename(commonName);
+            }
+            return Base64.encodeBase64String(commonName.getBytes());                
+        } else {
+            //If there was no Common Name, see if there's a dnsName
+            final String subjectAltName = endEntityInformation.getSubjectAltName();
+            if(StringUtils.isNotEmpty(subjectAltName)) {
+                final List<String> dnsNames = DnComponents.getPartsFromDN(subjectAltName, "dNSName");
+                if(!dnsNames.isEmpty()) {
+                    return dnsNames.get(0);   
+                }
+            }            
         }
-        if (StringUtils.isAsciiPrintable(commonName)) {
-            return StringTools.stripFilename(commonName);
-        }
-        return Base64.encodeBase64String(commonName.getBytes());
+        //Otherwise default to "certificatetoken"
+        return "certificatetoken";
+        
     }
 
     private void updateRfcAltNameField(final UIInput input) {
