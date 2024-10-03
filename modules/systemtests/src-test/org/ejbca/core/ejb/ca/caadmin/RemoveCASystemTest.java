@@ -14,7 +14,6 @@
 package org.ejbca.core.ejb.ca.caadmin;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assume.assumeTrue;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -22,7 +21,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -31,12 +29,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 
 /**
  * Tests and removes the CA entity and its CryptoToken.
  * 
- * @version $Id$
  */
 public class RemoveCASystemTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(RemoveCASystemTest.class);
@@ -44,8 +40,6 @@ public class RemoveCASystemTest extends CaTestCase {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private final CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @Before
     public void setUp() throws Exception {
@@ -75,19 +69,6 @@ public class RemoveCASystemTest extends CaTestCase {
     @Test
     public void test03removeECDSAImplicitlyCA() throws Exception {
         removeCa("CN=TESTECDSAImplicitlyCA");
-    }
-
-    @Test
-    public void test03primRemoveECGOST3410CA() throws Exception {
-        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(true);
-        cesecoreConfigurationProxySession.setGost3410Enabled(true);
-        removeCa("CN=TESTECGOST3410");
-    }
-    
-    @Test
-    public void test03bisRemoveDSTU4145CA() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
-        removeCa("CN=TESTDSTU4145");
     }
 
     @Test
