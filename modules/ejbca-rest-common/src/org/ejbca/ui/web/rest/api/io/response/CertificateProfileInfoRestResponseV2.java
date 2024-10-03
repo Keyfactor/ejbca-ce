@@ -28,7 +28,7 @@ public class CertificateProfileInfoRestResponseV2 {
     private List<String> availableKeyAlgs;
 
     @Schema(description = "Alternative algorithm keys")
-    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     @JsonAlias({"availableAltKeyAlgs", "available_alt_key_algs" })
     private List<String> availableAltKeyAlgs;
 

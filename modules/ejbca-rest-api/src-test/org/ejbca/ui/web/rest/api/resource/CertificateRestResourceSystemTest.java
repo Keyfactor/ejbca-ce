@@ -353,7 +353,39 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final JSONArray jsonArrayAlternativeAlgorithms = (JSONArray) actualJsonObject.get("available_alt_key_algs");
 
         // Then
-        assertNull("No alternativate key algorithms should have been returned", jsonArrayAlternativeAlgorithms);
+        assertNull("No alternative key algorithms should have been returned", jsonArrayAlternativeAlgorithms);
+    }
+
+    @Test
+    public void shouldReturnEmptyAltKeysListIfNoneSelected() throws Exception {
+        // Given
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        final List<Integer> availableCas = new ArrayList<>();
+        availableCas.add(x509TestCa.getCAId());
+        certificateProfile.setAvailableCAs(availableCas);
+
+        final int[] availableBitLengths = { 4096 };
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
+
+        final String[] availableAlgorithms = { "RSA" };
+        certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+
+        certificateProfile.setUseAlternativeSignature(true);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(new String[0]);
+
+        int certProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+
+        // When
+        final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+
+        final JSONArray jsonArrayAlternativeAlgorithms = (JSONArray) actualJsonObject.get("available_alt_key_algs");
+
+        // Then
+        assertNotNull("Alternative key algorithms should have been returned", jsonArrayAlternativeAlgorithms);
+        assertEquals("Alternative key algorithms list should be empty", 0, jsonArrayAlternativeAlgorithms.size());
     }
 
 
