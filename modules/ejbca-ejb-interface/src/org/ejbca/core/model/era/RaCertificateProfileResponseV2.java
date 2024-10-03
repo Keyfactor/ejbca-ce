@@ -118,8 +118,6 @@ public class RaCertificateProfileResponseV2 implements Serializable {
 
             if (useAlternativeSignature) {
                 response.availableAlternativeAlgorithms = availableAlternativeKeyAlgorithmsFromProfile;
-            } else {
-                response.availableAlternativeAlgorithms = new ArrayList<>();
             }
 
             return response;
