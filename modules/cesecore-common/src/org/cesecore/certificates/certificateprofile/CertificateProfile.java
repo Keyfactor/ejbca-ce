@@ -3703,9 +3703,11 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
             // Make sure that they didn't sneak into the alternate set
             List<String> alternativeAvailableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
-            alternativeAvailableKeyAlgorithms.remove("ECGOST3410");
-            alternativeAvailableKeyAlgorithms.remove("DSTU4145");
-            setAlternativeAvailableKeyAlgorithmsAsList(alternativeAvailableKeyAlgorithms);
+            if (alternativeAvailableKeyAlgorithms != null && !alternativeAvailableKeyAlgorithms.isEmpty()) {
+                alternativeAvailableKeyAlgorithms.remove("ECGOST3410");
+                alternativeAvailableKeyAlgorithms.remove("DSTU4145");
+                setAlternativeAvailableKeyAlgorithmsAsList(alternativeAvailableKeyAlgorithms);
+            }
 
             data.put(VERSION, LATEST_VERSION);
         }
