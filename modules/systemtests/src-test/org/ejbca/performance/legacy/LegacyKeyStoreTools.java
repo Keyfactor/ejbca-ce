@@ -59,8 +59,6 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyCreationException;
 
@@ -208,43 +206,7 @@ public class LegacyKeyStoreTools {
         	log.trace("<generate: curve name "+name+", keyEntryName "+keyEntryName);
         }
     }
-    
-    private void generateExtraEC(final String name, final String keyEntryName, final String algInstanceName, final String sigAlgName)
-            throws InvalidAlgorithmParameterException {
-     if (log.isTraceEnabled()) {
-            log.trace(">generate "+algInstanceName+": curve name "+name+", keyEntryName "+keyEntryName);
-        }
-        // Generate the EC Keypair
-        KeyPairGenerator kpg;
-        try {
-            kpg = KeyPairGenerator.getInstance(algInstanceName, this.providerName);
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException("Algorithm " + name + "was not recognized.", e);
-         } catch (NoSuchProviderException e) {
-             throw new IllegalStateException("BouncyCastle was not found as a provider.", e);
-         }
-        try {
-            ECGenParameterSpec ecSpec = new ECGenParameterSpec(name);
-            kpg.initialize(ecSpec);
-        } catch( InvalidAlgorithmParameterException e ) {
-            log.debug("EC "+algInstanceName+" name "+name+" not supported.");
-            throw e;
-        }
-        generateKeyPair(kpg, keyEntryName, sigAlgName);
-        if (log.isTraceEnabled()) {
-            log.trace("<generate: curve name "+name+", keyEntryName "+keyEntryName);
-        }
-    }
 
-    private void generateGOST3410(final String name, final String keyEntryName) throws
-            InvalidAlgorithmParameterException {
-        generateExtraEC(name, keyEntryName, AlgorithmConstants.KEYALGORITHM_ECGOST3410, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
-    }
-    
-    private void generateDSTU4145(final String name, final String keyEntryName) throws
-            InvalidAlgorithmParameterException {
-        generateExtraEC(name, keyEntryName, AlgorithmConstants.KEYALGORITHM_DSTU4145, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
-    }
 
     private void generateRSA(final int keySize, final String keyEntryName) {
         if (log.isTraceEnabled()) {
@@ -268,25 +230,19 @@ public class LegacyKeyStoreTools {
 
     /** Generates asymmteric keys in the Keystore token.
      * 
-     * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve or DSA key using syntax DSAnnnn
+     * @param keySpec all decimal digits RSA key length, otherwise name of ECC curve
      * @param keyEntryName
      */
-    public void generateKeyPair(final String keySpec, final String keyEntryName) throws
-            InvalidAlgorithmParameterException {
-        if (AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled() && keySpec.startsWith(AlgorithmConstants.KEYSPECPREFIX_ECGOST3410)) {
-            generateGOST3410(keySpec, keyEntryName);
-        } else if (AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled() && keySpec.startsWith(AlgorithmConstants.DSTU4145_OID + ".")) {
-            generateDSTU4145(keySpec, keyEntryName);
-        } else {
+    public void generateKeyPair(final String keySpec, final String keyEntryName) throws InvalidAlgorithmParameterException {
 
-            try {
-                generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
-            } catch (NumberFormatException e) {
-                generateEC(keySpec, keyEntryName);
-            }
+        try {
+            generateRSA(Integer.parseInt(keySpec.trim()), keyEntryName);
+        } catch (NumberFormatException e) {
+            generateEC(keySpec, keyEntryName);
         }
+
     }
-    
+
     /** Generates symmetric keys in the Keystore token.
      * 
      * @param algorithm symmetric algorithm specified in http://download.oracle.com/javase/1.5.0/docs/api/index.html, suggest AES, DESede or DES
