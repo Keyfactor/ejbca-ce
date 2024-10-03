@@ -85,8 +85,8 @@ public class CertificateProfileInfoRestResponseV2 {
 
     public static class CertificateProfileInfoRestResponseBuilderV2 {
         private Integer certificateProfileId;
-        private List<String> availableProfileAlgos;
-        private List<String> availableProfileAltAlgos;
+        private List<String> availableProfileAlgorithms;
+        private List<String> availableProfileAlternativeAlgorithms;
         private List<Integer> availableProfileBitLengths;
         private List<String> availableProfileEcdsaCurves;
         private List<String> availableProfileCas;
@@ -98,13 +98,13 @@ public class CertificateProfileInfoRestResponseV2 {
             return this;
         }
 
-        public CertificateProfileInfoRestResponseBuilderV2 setAvailableAlgos(List<String> availableProfileAlgos) {
-            this.availableProfileAlgos = availableProfileAlgos;
+        public CertificateProfileInfoRestResponseBuilderV2 setAvailableProfileAlgorithms(List<String> availableProfileAlgorithms) {
+            this.availableProfileAlgorithms = availableProfileAlgorithms;
             return this;
         }
 
-        public CertificateProfileInfoRestResponseBuilderV2 setAvailableAltAlgos(List<String> availableProfileAltAlgos) {
-            this.availableProfileAltAlgos = availableProfileAltAlgos;
+        public CertificateProfileInfoRestResponseBuilderV2 setAvailableProfileAlternativeAlgorithms(List<String> availableProfileAlternativeAlgorithms) {
+            this.availableProfileAlternativeAlgorithms = availableProfileAlternativeAlgorithms;
             return this;
         }
 
@@ -124,7 +124,7 @@ public class CertificateProfileInfoRestResponseV2 {
         }
 
         public CertificateProfileInfoRestResponseV2 build() {
-            return new CertificateProfileInfoRestResponseV2(availableProfileAlgos, availableProfileAltAlgos, availableProfileBitLengths,
+            return new CertificateProfileInfoRestResponseV2(availableProfileAlgorithms, availableProfileAlternativeAlgorithms, availableProfileBitLengths,
                                                             availableProfileEcdsaCurves, availableProfileCas, certificateProfileId);
         }
     }
@@ -138,8 +138,8 @@ public class CertificateProfileInfoRestResponseV2 {
         
         public CertificateProfileInfoRestResponseV2 toCertificateProfileInfoRestResponse(RaCertificateProfileResponseV2 raResponse) {
             return CertificateProfileInfoRestResponseV2.builder().setCertificateProfileId(raResponse.getCertificateProfileId())
-                    .setAvailableAlgos(raResponse.getAvailableAlgorithms())
-                    .setAvailableAltAlgos(raResponse.getAvailableAltAlgorithms())
+                    .setAvailableProfileAlgorithms(raResponse.getAvailableAlgorithms())
+                    .setAvailableProfileAlternativeAlgorithms(raResponse.getAvailableAlternativeAlgorithms())
                     .setAvailableBitLengths(raResponse.getAvailableBitLengths())
                     .setAvailableEcdsaCurves(raResponse.getAvailableEcdsaCurves())
                     .setAvailableProfileCAs(raResponse.getAvailableCas())

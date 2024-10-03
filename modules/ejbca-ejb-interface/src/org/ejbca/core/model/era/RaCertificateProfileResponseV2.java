@@ -32,7 +32,7 @@ public class RaCertificateProfileResponseV2 implements Serializable {
 
     private Integer certificateProfileId;
     private List<String> availableAlgorithms;
-    private List<String> availableAltAlgorithms;
+    private List<String> availableAlternativeAlgorithms;
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     private List<Integer> availableBitLengths;
@@ -45,8 +45,8 @@ public class RaCertificateProfileResponseV2 implements Serializable {
         return availableAlgorithms;
     }
 
-    public List<String> getAvailableAltAlgorithms(){
-        return availableAltAlgorithms;
+    public List<String> getAvailableAlternativeAlgorithms(){
+        return availableAlternativeAlgorithms;
     }
 
     public List<String> getAvailableEcdsaCurves(){
@@ -91,7 +91,7 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             final List<Integer> caIds = certificateProfile.getAvailableCAs();
             final List<String> availableKeyAlgorithmsFromProfile = certificateProfile.getAvailableKeyAlgorithmsAsList();
 
-            final List<String> availableAltKeyAlgorithmsFromProfile = certificateProfile.getAlternativeAvailableKeyAlgorithmsAsList();
+            final List<String> availableAlternativeKeyAlgorithmsFromProfile = certificateProfile.getAlternativeAvailableKeyAlgorithmsAsList();
             final boolean useAlternativeSignature = certificateProfile.getUseAlternativeSignature();
 
             List<String> availableEcdsaCurvesFromProfile = new ArrayList<>();
@@ -117,9 +117,9 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             response.availableCas = getAvailableCasFromProfile(caIds, caInfos);
 
             if (useAlternativeSignature) {
-                response.availableAltAlgorithms = availableAltKeyAlgorithmsFromProfile;
+                response.availableAlternativeAlgorithms = availableAlternativeKeyAlgorithmsFromProfile;
             } else {
-                response.availableAltAlgorithms = new ArrayList<>();
+                response.availableAlternativeAlgorithms = new ArrayList<>();
             }
 
             return response;
