@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -139,7 +138,6 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keys.validation.CertificateValidationDomainService;
 import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
@@ -150,7 +148,6 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -175,18 +172,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1 uses small w in With. Test with capital as well
         // because this was used previously so need to be supported for upgraded systems.
         doTestX509CABasicOperations("SHA256WithRSAandMGF1");
-    }
-
-    @Test
-    public void testX509CABasicOperationsGOST() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
-        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
-    }
-
-    @Test
-    public void testX509CABasicOperationsDSTU() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
-        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
 
     @Test
@@ -436,18 +421,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         doTestStoreAndLoad(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
     }
 
-    @Test
-    public void testStoreAndLoadGOST() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
-        doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
-    }
-
-    @Test
-    public void testStoreAndLoadDSTU() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
-        doTestStoreAndLoad(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
-    }
-
     private void doTestStoreAndLoad(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA ca = createTestCA(cryptoToken, CADN, algName, null, null);
@@ -634,9 +607,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     public void testPreCertValidation() throws Exception {
         // Test with CAs using different signature algorithms:
         // RSA, ECDSA, DSA
-        // Leaving for future work, or not supported at all: GOST, DSTU
         // The CA code will throw an exception if a key suitable will not be found, so pre certificate validation 
-        // is not possible when using GOST or DSTU
 
         // Create a set of user keypairs for different algs
         KeyPair userKeyPairRSA = genTestKeyPair("SHA256WithRSA");
@@ -644,9 +615,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         KeyPair userKeyPairEd25519 = genTestKeyPair(AlgorithmConstants.SIGALG_ED25519);
         KeyPair userKeyPairDilithium3 = genTestKeyPair(AlgorithmConstants.SIGALG_DILITHIUM3);
         KeyPair userKeyPairFalcon512 = genTestKeyPair(AlgorithmConstants.SIGALG_FALCON512);
-        // These will return null if GOST or DSTU support is not enabled
-        KeyPair userKeyPairGOST = genTestKeyPair("GOST3411withECGOST3410");
-        KeyPair userKeyPairDSTU = genTestKeyPair("GOST3411withDSTU4145");
 
         // Create a CA using SHA256WithRSA as sigAlg
         {
@@ -657,16 +625,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
-            if (userKeyPairGOST != null) {
-                runValidatorTests(cryptoToken, x509ca, userKeyPairGOST);
-            } else {
-                log.info("Not testing GOST");
-            }
-            if (userKeyPairDSTU != null) {
-                runValidatorTests(cryptoToken, x509ca, userKeyPairDSTU);
-            } else {
-                log.info("Not testing DSTU");
-            }
         }
 
         // Create a CA using SHA256WithECDSA as sigAlg
@@ -966,18 +924,6 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     @Test
     public void testWrongCAKeyRSA() throws Exception {
         doTestWrongCAKey(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-    }
-
-    @Test
-    public void testWrongCAKeyGOST() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isGost3410Enabled());
-        doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410);
-    }
-
-    @Test
-    public void testWrongCAKeyDSTU() throws Exception {
-        assumeTrue(AlgorithmConfigurationCache.INSTANCE.isDstu4145Enabled());
-        doTestWrongCAKey(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145);
     }
 
     public void doTestWrongCAKey(String algName) throws Exception {
@@ -1993,21 +1939,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
 
     private static KeyPair genTestKeyPair(String algName) throws InvalidAlgorithmParameterException {
-        if (algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410)) {
-            final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("gost3410", "B");
-            if (keyspec != null) {
-                return KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_ECGOST3410);
-            } else {
-                return null;
-            }
-        } else if(algName.equals(AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145)) {
-            final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-            if (keyspec != null) {
-                return KeyTools.genKeys(keyspec, AlgorithmConstants.KEYALGORITHM_DSTU4145);
-            } else {
-                return null;
-            }
-        } else if(algName.contains("ECDSA")) {
+        if(algName.contains("ECDSA")) {
             return KeyTools.genKeys("brainpoolp224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         } else if(algName.equals(AlgorithmConstants.SIGALG_ED25519)) {
             return KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);

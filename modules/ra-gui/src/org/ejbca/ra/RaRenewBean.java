@@ -25,23 +25,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TimeZone;
 
-import jakarta.ejb.EJB;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.component.UIInput;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.ComponentSystemEvent;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.PublicAccessAuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -52,9 +41,18 @@ import org.ejbca.core.model.era.RaSelfRenewCertificateData;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
+import jakarta.ejb.EJB;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.UIInput;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.ComponentSystemEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 
 /**
@@ -335,22 +333,7 @@ public class RaRenewBean implements Serializable {
                             + StringTools.getAsStringWithSeparator(" / ", AlgorithmTools.getAllCurveAliasesFromAlias(ecNamedCurve))));
                 }
             }
-            for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
-                if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
-                    for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
-                        final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
-                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                        if (availableBitLengths.contains(bitLength)) {
-                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
-                                    CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
-                        } else {
-                            if (log.isTraceEnabled()) {
-                                log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
-                            }
-                        }
-                    }
-                }
-            }
+            
             if (availableAlgorithmSelectItems.isEmpty()) {
                 availableAlgorithmSelectItems.add(new SelectItem(null, raLocaleBean.getMessage("enroll_select_ka_nochoice"), raLocaleBean.getMessage("enroll_select_ka_nochoice"), true));
             }
