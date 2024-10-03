@@ -32,6 +32,7 @@ public class RaCertificateProfileResponseV2 implements Serializable {
 
     private Integer certificateProfileId;
     private List<String> availableAlgorithms;
+    private List<String> availableAltAlgorithms;
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     private List<Integer> availableBitLengths;
@@ -42,6 +43,10 @@ public class RaCertificateProfileResponseV2 implements Serializable {
 
     public List<String> getAvailableAlgorithms(){
         return availableAlgorithms;
+    }
+
+    public List<String> getAvailableAltAlgorithms(){
+        return availableAltAlgorithms;
     }
 
     public List<String> getAvailableEcdsaCurves(){
@@ -79,29 +84,44 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             return availableCas;
         }
 
-        public RaCertificateProfileResponseV2 toRaResponse(
-                final CertificateProfile certificateProfile, final IdNameHashMap<CAInfo> caInfos, final Integer certProfileId) {
+        public RaCertificateProfileResponseV2 toRaResponse(final CertificateProfile certificateProfile, final IdNameHashMap<CAInfo> caInfos,
+                                                           final Integer certProfileId) {
             RaCertificateProfileResponseV2 response = new RaCertificateProfileResponseV2();
+
             final List<Integer> caIds = certificateProfile.getAvailableCAs();
             final List<String> availableKeyAlgorithmsFromProfile = certificateProfile.getAvailableKeyAlgorithmsAsList();
+
+            final List<String> availableAltKeyAlgorithmsFromProfile = certificateProfile.getAlternativeAvailableKeyAlgorithmsAsList();
+            final boolean useAlternativeSignature = certificateProfile.getUseAlternativeSignature();
+
             List<String> availableEcdsaCurvesFromProfile = new ArrayList<>();
             List<Integer> availableBitLengthsFromProfile = new ArrayList<>();
+
             if (!availableKeyAlgorithmsFromProfile.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 availableEcdsaCurvesFromProfile.add("No ECDSA curves available.");
             }else {
                 availableEcdsaCurvesFromProfile = certificateProfile.getAvailableEcCurvesAsList();
             }
+
             if ((!availableKeyAlgorithmsFromProfile.contains(AlgorithmConstants.KEYALGORITHM_RSA)) && 
                     (!availableEcdsaCurvesFromProfile.contains(CertificateProfile.ANY_EC_CURVE))) {
                 availableBitLengthsFromProfile.add(0);
             }else {
                 availableBitLengthsFromProfile = certificateProfile.getAvailableBitLengthsAsList();
             }
+
             response.certificateProfileId = certProfileId;
             response.availableAlgorithms = availableKeyAlgorithmsFromProfile;
             response.availableBitLengths = availableBitLengthsFromProfile;
             response.availableEcdsaCurves = availableEcdsaCurvesFromProfile;
             response.availableCas = getAvailableCasFromProfile(caIds, caInfos);
+
+            if (useAlternativeSignature) {
+                response.availableAltAlgorithms = availableAltKeyAlgorithmsFromProfile;
+            } else {
+                response.availableAltAlgorithms = new ArrayList<>();
+            }
+
             return response;
         }
     }

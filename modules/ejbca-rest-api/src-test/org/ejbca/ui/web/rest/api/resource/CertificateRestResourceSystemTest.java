@@ -276,33 +276,84 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldReturnCertificateProfileInfo() throws Exception {
-        //given
+        // Given
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
         final List<Integer> availableCas = new ArrayList<>();
         availableCas.add(x509TestCa.getCAId());
         certificateProfile.setAvailableCAs(availableCas);
+
         final int[] availableBitLengths = { 4096 };
         certificateProfile.setAvailableBitLengths(availableBitLengths);
+
         final String[] availableAlgorithms = { "RSA" };
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+
+        final String[] availableAltAlgorithms = {"KYBER768", "DILITHIUM3"};
+        certificateProfile.setUseAlternativeSignature(true);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(availableAltAlgorithms);
+
         int certProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
-        // when
+
+        // When
         final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+
         final String responseCertProfileId = actualJsonObject.get("certificate_profile_id").toString();
-        JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
-        String algorithms = (String) jsonArrayAlgs.get(0);
-        JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
-        long bitLengths = (long) jsonArrayBitLengths.get(0);
-        JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
-        String cas = (String) jsonArrayCas.get(0);
+
+        final JSONArray jsonArrayAlgorithms = (JSONArray) actualJsonObject.get("available_key_algs");
+        final String algorithms = (String) jsonArrayAlgorithms.get(0);
+
+        final JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
+        final long bitLengths = (long) jsonArrayBitLengths.get(0);
+
+        final JSONArray jsonArrayAlternativeAlgorithms = (JSONArray) actualJsonObject.get("available_alt_key_algs");
+        final String alternativeAlgorithm = (String) jsonArrayAlternativeAlgorithms.get(0);
+
+        final JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
+        final String cas = (String) jsonArrayCas.get(0);
+
         // then
         assertEquals(Integer.toString(certProfileId), responseCertProfileId);
         assertEquals("RSA", algorithms);
         assertEquals(4096, bitLengths);
+        assertEquals("KYBER768", alternativeAlgorithm);
         assertEquals(testCaName, cas);
         assertJsonContentType(actualResponse);
+    }
+
+    @Test
+    public void shouldNotReturnAltKeysIfNotUsed() throws Exception {
+        // Given
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        final List<Integer> availableCas = new ArrayList<>();
+        availableCas.add(x509TestCa.getCAId());
+        certificateProfile.setAvailableCAs(availableCas);
+
+        final int[] availableBitLengths = { 4096 };
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
+
+        final String[] availableAlgorithms = { "RSA" };
+        certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+
+        final String[] availableAltAlgorithms = {"KYBER768", "DILITHIUM3"};
+        // Alternative signature is NOT used.
+        certificateProfile.setUseAlternativeSignature(false);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(availableAltAlgorithms);
+
+        int certProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+
+        // When
+        final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+
+        final JSONArray jsonArrayAlternativeAlgorithms = (JSONArray) actualJsonObject.get("available_alt_key_algs");
+
+        // Then
+        assertNull("No alternativate key algorithms should have been returned", jsonArrayAlternativeAlgorithms);
     }
 
 
