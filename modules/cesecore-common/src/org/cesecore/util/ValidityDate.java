@@ -239,37 +239,7 @@ public class ValidityDate {
 	public static boolean isDeltaTimeBeforeVersion661(final long lEncoded) {
 		return lEncoded < Integer.MAX_VALUE;	// This could probably be <= instead??
 	}
-	
-	/**
-	 * Parse a date as either "yyyy-MM-dd HH:mm:ssZZ" or a relative hex encoded UNIX time stamp (in seconds).
-	 * Use for parsing of the build time property "ca.toolateexpiredate" in ejbca.properties.
-	 * @return the date or the largest possible Date if unable to parse the argument.
-	 */
-	public static Date parseCaLatestValidDateTime(final String sDate) {
-		Date tooLateExpireDate = null;
-        if (sDate.length()>0) {
-        	//First, try to parse the date in ISO8601 date time format.
-    		try {
-    			return parseAsIso8601(sDate);
-    		} catch (ParseException e) {
-        		log.debug("tooLateExpireDate could not be parsed as an ISO8601 date: " + e.getMessage());
-    		}
-    		// Second, try to parse it as a hexadecimal value (without markers of any kind.. just a raw value).
-        	try {
-        		tooLateExpireDate = new Date(Long.parseLong(sDate, 16)*1000);
-        	} catch (NumberFormatException e) {
-        		log.debug("tooLateExpireDate could not be parsed as a hex value: " + e.getMessage());
-        	}
-        }
-        if (tooLateExpireDate == null) {
-        	log.debug("Using default value for ca.toolateexpiredate.");
-            tooLateExpireDate = new Date(Long.MAX_VALUE);
-        } else if (log.isDebugEnabled()) {
-        	log.debug("tooLateExpireData is set to: "+tooLateExpireDate);
-        }
-        return tooLateExpireDate;
-	} 
-	
+		
 	/**
 	 * Rolls the given date one day forward or backward, until a date with a day not included in the restrictions (list of weekdays) is reached.
 	 * @param date the date to change.
