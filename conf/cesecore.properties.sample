@@ -78,28 +78,9 @@
 # Default: 20 
 #ca.serialnumberoctetsize=20 
 
-# The date and time from which an expire date of a certificate is to be considered to be too far in the future.
-# The time could be specified in two ways:
-# 1. The unix time see http://en.wikipedia.org/wiki/Unix_time given as an integer decoded to an hexadecimal string.
-#    The value 80000000 will give the time when the integer becomes negative if casted to 32 bit.
-#    This is when the year 2038 problem occurs. See http://en.wikipedia.org/wiki/Year_2038_problem .
-#    Set to this value if you don't want to issue any certificates that could cause this problem.
-# 2. For you convenience this could also be specified in the ISO8601 date format.
-# Default: no limitation
-# The 2038 problem:
-#ca.toolateexpiredate=80000000
-#ca.toolateexpiredate=2038-01-19 03:14:08+00:00
-
 # This offsets the certificates 'notBefore' value (and the 'notAfter' value if a relative validity is configured).
 # The offset can be overwritten by the user with it's corresponding value in a certificate profile
 certificate.validityoffset=-10m
-
-# The idea of a HSM to use a HSM is to have the private keys protected. It should not be possible to extract them.
-# To prevent using a key with the private part extractable a test is made before activating a CA.
-# If this test shows that you can read the private part from the key the CA will not be activated unless the key is a SW key.
-# You may (but should not) permit using extractable private keys by setting this property to 'true'.
-# Default: false
-#ca.doPermitExtractablePrivateKeys=true
 
 # Forbidden characters in DB.
 # When one of these characters is found in any string that should be stored in
@@ -299,20 +280,6 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 # we need some configuration option to force old behavior in new versions, until we have upgrade
 # all nodes and can set the system to use new (improved) behavior.
 
-# Option if we should keep internal CA keystores in the CAData table to be compatible with CeSecore 1.1/EJBCA 5.0.
-# Default to false in defaultvalues.properties, true if no value is present there. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,
-# then internal keystore in CAData will be replaced with a foreign key in to the migrated entry in CryptotokenData.
-#
-# When upgrading a 100% up-time cluster, all nodes should initially be deployed with db.keepinternalcakeystores=true.
-# Once all nodes are running > EJBCA 5.0, set to false again to increase efficiency and portability.
-# For upgrades from EJBCA version 5.0 to later versions.
-# Default: false (from defaultvalues.properties)
-#db.keepinternalcakeystores=true
-
-# When upgrading a 100% up-time cluster, all nodes should be deployed with ca.keepocspextendedservice=true.
-# Once all nodes are running > 6.0, set to false to increase efficiency and portability.
-# Default: false
-#ca.keepocspextendedservice=true
 
 # Custom Serializable Classes
 #
