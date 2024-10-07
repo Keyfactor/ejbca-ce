@@ -51,6 +51,7 @@ spec:
 spec:
   type: {{ .Values.services.proxyHttp.type }}
   ports:
+    {{- if .Values.services.proxyHttp.httpPort }}
     - port: {{ .Values.services.proxyHttp.httpPort }}
       {{- if eq .Values.services.proxyHttp.type "NodePort" }}
       nodePort: {{ .Values.services.proxyHttp.httpPort }}
@@ -58,6 +59,7 @@ spec:
       targetPort: proxy-http
       protocol: TCP
       name: proxy-http
+    {{- end }}
     - port: {{ .Values.services.proxyHttp.httpsPort }}
       {{- if eq .Values.services.proxyHttp.type "NodePort" }}
       nodePort: {{ .Values.services.proxyHttp.httpsPort }}

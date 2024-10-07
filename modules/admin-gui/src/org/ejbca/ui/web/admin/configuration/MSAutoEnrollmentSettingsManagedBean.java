@@ -52,8 +52,8 @@ import org.ejbca.core.model.era.IdNameHashMap;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.util.msae.MsaeUtil;
-import org.ejbca.core.protocol.msae.ADConnectionSingletonLocal;
 import org.ejbca.core.protocol.msae.LDAPException;
+import org.ejbca.core.protocol.msae.MsaeLdapMessageSessionLocal;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
 /**
@@ -92,7 +92,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
 
     @EJB
-    private ADConnectionSingletonLocal adConnection;
+    private MsaeLdapMessageSessionLocal msaeLdapMessageSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -277,7 +277,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
      * @return
      */
     public List<MSAutoEnrollmentSettingsTemplate> getAvailableTemplateSettingsFromAD() {
-        return StringUtils.isEmpty(getDto().getAlias()) ? List.of() : adConnection.getCertificateTemplateSettings(getDto().getAlias());
+        return StringUtils.isEmpty(getDto().getAlias()) ? List.of() : msaeLdapMessageSession.getCertificateTemplateSettings(getDto().getAlias());
     }
 
     public List<SelectItem> getAvailableTemplates() {
@@ -485,7 +485,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
             }
         }
         try {
-            adConnection.testConnection(getDto().getMsaeDomain(), getDto().getAdConnectionPort(), getDto().getAdLoginDN(), adLoginPass, getDto().isUseSSL(), getDto().isFollowLdapReferral(),
+            msaeLdapMessageSession.testConnection(getDto().getMsaeDomain(), getDto().getAdConnectionPort(), getDto().getAdLoginDN(), adLoginPass, getDto().isUseSSL(), getDto().isFollowLdapReferral(),
                     getDto().getLdapReadTimeout(), getDto().getLdapConnectTimeout(), getDto().getAlias());
             addInfoMessage("MSAE_AD_TEST_CONNECTION_SUCCESS");
         } catch (LDAPException e) {

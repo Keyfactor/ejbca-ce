@@ -438,9 +438,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
                 ret.add(new SelectItem(CertificateProfile.ANY_EC_CURVE, getEjbcaWebBean().getText("AVAILABLEECDSABYBITS")));
                 namedEcCurvesMap.putAll(AlgorithmTools.getOnlyNamedEcCurvesMap());
             }
-            if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)) {
-                namedEcCurvesMap.putAll(AlgorithmTools.getNamedGostCurvesMap());
-            }
             final String[] keys = namedEcCurvesMap.keySet().toArray(new String[0]);
             Arrays.sort(keys);
             for (final String name : keys) {
@@ -461,9 +458,6 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
         }
         if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_RSA)) {
             availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_RSA);
-        }
-        if(certificateProfile.getAvailableKeyAlgorithmsAsList().contains(AlgorithmConstants.KEYALGORITHM_DSTU4145)) {
-            availableBitLengths.addAll(AlgorithmTools.DEFAULTBITLENGTHS_DSTU);
         }
         final List<SelectItem> ret = new ArrayList<>();
         if (availableBitLengths.size() > 0 && certificateProfile.isKeyAlgorithmsRequireKeySizes()) {
