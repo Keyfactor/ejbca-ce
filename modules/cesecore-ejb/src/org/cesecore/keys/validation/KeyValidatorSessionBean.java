@@ -62,6 +62,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -413,23 +415,28 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             phase.getIndex() != validator.getPhase()) {
                         continue;
                     }
-                    CertificateProfile certificateProfile = certificateProfileSession
+                    final CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
 
-                    final List<String> dnsNames = new ArrayList<>();
-
-                    if (certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId())) {
+                    final Set<String> dnsNames = new TreeSet<>();
+                    final boolean isEmailProtection = certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId());
+                    
+                    if (isEmailProtection) {
                         dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
                     } else {
                         dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
-                        if (certificateProfile.getAllowExtensionOverride()
-                                && requestMessage != null
-                                && requestMessage.getRequestExtensions() != null
-                                && requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName)!= null) {
-                            var extension = requestMessage.getRequestExtensions()
-                                    .getExtension(Extension.subjectAlternativeName);
-                            var extendedSubjectAltName = DnComponents.getAltNameStringFromExtension(extension);
-                            dnsNames.addAll(findAllDNSInSubject(extendedSubjectAltName));
+                    }
+                    
+                    if (certificateProfile.getAllowExtensionOverride() && requestMessage != null && requestMessage.getRequestExtensions() != null) {
+                        var extension = requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName);
+                        if (extension != null) {
+                            var san = DnComponents.getAltNameStringFromExtension(extension);
+                            
+                            if (isEmailProtection) {
+                                dnsNames.addAll(findAllEmailDomainsInSubject(san));
+                            } else {
+                                dnsNames.addAll(findAllDNSInSubject(san));
+                            }
                         }
                     }
 
@@ -454,12 +461,11 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                         final int index = validator.getFailedAction();
                         performValidationFailedActions(index, message, validatorType);
                     } else {
-                        // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor
+                        // Validation succeeded, this can be considered a security audit event because CAs may be asked to present this as evidence to an auditor.
                         final String message = validator.getLogMessage(true, messages);
                         auditSession.log(EventTypes.VALIDATOR_VALIDATION_SUCCESS, EventStatus.SUCCESS, ModuleTypes.VALIDATOR, ServiceTypes.CORE,
                                 authenticationToken.toString(), String.valueOf(ca.getCAId()), null, endEntityInformation.getUsername(), Map.of("msg", message));
                     }
-
                 }
             }
         } else {
@@ -470,7 +476,7 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         return allResults;
     }
 
-	protected static List<String> findAllEmailDomainsInSubject(String subject) {
+    protected static List<String> findAllEmailDomainsInSubject(String subject) {
 		return Arrays.stream(subject.trim().split(","))
 				.map(s -> s.trim().split("="))
 				.filter(mapEntry -> DnComponents.RFC822NAME.equalsIgnoreCase(mapEntry[0]))

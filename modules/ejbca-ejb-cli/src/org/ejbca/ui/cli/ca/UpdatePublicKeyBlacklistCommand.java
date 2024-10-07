@@ -14,8 +14,15 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.security.KeyFactory;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.Security;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +31,17 @@ import java.util.Set;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.pkcs.RSAPrivateKey;
+import org.bouncycastle.asn1.sec.ECPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.validation.BlacklistDoesntExistsException;
@@ -37,6 +55,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
+//import com.google.common.io.Files;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -60,6 +79,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
     public static final String COMMAND_GEN_SQL = "generatesql";
     public static final String UPDATE_MODE_FINGERPRINT = "fingerprint";
     public static final String UPDATE_MODE_DEBIAN_FINGERPRINT = "debianfingerprint";
+    public static final String UPDATE_MODE_DEBIAN_KEY = "debiankey";
     public static final String CSV_SEPARATOR = ",";
 
     {
@@ -71,10 +91,17 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                 "                        files, where the first column contains" + System.lineSeparator() +
                 "                        a SHA-256 hash of the DER encoded public" + System.lineSeparator() + 
                 "                        key modulus." + System.lineSeparator() +
-                "    debianfingerprint - If the input files shall be treated as a" + System.lineSeparator() +
-                "                        Debian weak key block lists, where each line" + System.lineSeparator() +
+                "    debianfingerprint - (Deprecated) If the input files shall be treated" + System.lineSeparator() + // Deprecated in EJBCA 9.0 (ECA-12676)
+                "                        as Debian weak key block lists, where each line" + System.lineSeparator() +
                 "                        is the fingerprint of a weak Debian key." + System.lineSeparator() +
                 "                        See https://wiki.debian.org/SSLkeys" + System.lineSeparator() +
+                "    debiankey         - If the input files shall be treated as a" + System.lineSeparator() +
+                "                        Debian weak key block lists, where each file" + System.lineSeparator() +
+                "                        is the private key of a weak Debian key." + System.lineSeparator() +
+                "                        See https://github.com/CVE-2008-0166/private_keys" + System.lineSeparator() + 
+                "                        Makes hashes of it" + System.lineSeparator() + 
+                "                        and stores the hashes in the database." + System.lineSeparator() +
+                
                 "If not specified, the input files are treated as PEM-encoded public keys."));
         registerParameter(new Parameter(DIRECTORY_KEY, "Public key directory", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Directory with block list data."));
@@ -109,6 +136,7 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
             final String importDirString = parameters.get(DIRECTORY_KEY);
             final boolean byFingerprint = UPDATE_MODE_FINGERPRINT.equals(parameters.get(UPDATE_MODE_KEY));
             final boolean byDebianFingerprint = UPDATE_MODE_DEBIAN_FINGERPRINT.equals(parameters.get(UPDATE_MODE_KEY));
+            final boolean byDebianKey = UPDATE_MODE_DEBIAN_KEY.equals(parameters.get(UPDATE_MODE_KEY));
             final boolean resumeOnError = parameters.containsKey(RESUME_ON_ERROR_KEY);
 
             // Get all files in the directory to add/remove to/from public key blacklist. 
@@ -177,6 +205,53 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
                                     continue;
                                 }
                                 state = addPublicKeyFingerprintToBlacklist(trimmedLine);
+                                
+                            }
+                        } else if (byDebianKey) {
+                            Security.addProvider(new BouncyCastleProvider());
+                            //Read file to bytes
+                            log.info("Read Debian private key fingerprints file " + path);
+                            
+                            FileInputStream fileInputStream = new FileInputStream(file); 
+                            byte[] byteArray = fileInputStream.readAllBytes();
+                            fileInputStream.read(byteArray);
+                            fileInputStream.close();             
+                            
+                            ASN1Sequence seq = ASN1Sequence.getInstance(byteArray);
+                            RSAPrivateKey rsaPrivateKey = null;
+                            ECPrivateKey ecPrivateKey = null;
+
+                            try {
+                                rsaPrivateKey = RSAPrivateKey.getInstance(seq) ;
+                                log.info("Found RSA private: " + rsaPrivateKey.getEncoded().length);
+                            }
+                            catch (Exception e){  
+                                ecPrivateKey = ECPrivateKey.getInstance(seq);
+                                log.info("Found EC private: length " + ecPrivateKey.getEncoded().length + ", algorithm OID '" + ecPrivateKey.getParametersObject().toString() + "'.");
+                            }
+                            
+                            String result = "";
+                            if (rsaPrivateKey != null) {
+                                try {
+                                    result = Hex.toHexString(MessageDigest.getInstance("SHA-256").digest(rsaPrivateKey.getModulus().toByteArray()));
+                                    state = addPublicKeyFingerprintToBlacklist(result);
+                                } catch (NoSuchAlgorithmException e) {
+                                    throw new RuntimeException("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?", e);
+                                }
+                            } else if (ecPrivateKey != null) {
+                                try {
+                                    result = getEcPublicKeyHash(ecPrivateKey);
+                                    state = addPublicKeyFingerprintToBlacklist(result);
+                                } catch (NoSuchProviderException e) {
+                                    throw new RuntimeException("Unable to create SHA-256 fingerprint. Crypto provider not found: " + e.getMessage(), e);
+                                } catch (NoSuchAlgorithmException e) {
+                                    throw new RuntimeException("Unable to create SHA-256 fingerprint. Is the algorithm supported on this system?", e);
+                                } catch (InvalidKeySpecException e) {
+                                    throw new RuntimeException("Unable to create SHA-256 fingerprint. Key specification is invalid: " + e.getMessage(), e);
+                                }
+                            } else {
+                                log.error("Found unsupported key type for import.");
+                                state = STATUS_READ_ERROR; 
                             }
                         } else {
                             log.info("Read public key file " + path);
@@ -434,6 +509,32 @@ public class UpdatePublicKeyBlacklistCommand extends BaseCaAdminCommand {
         return result;
     }
 
+    /**
+     * Gets the SHA-256 hash over the public key derived by the private key.
+     * 
+     * @param privateKey the private EC key.
+     * 
+     * @return SHA-256 hash over the public key.
+     * 
+     * @throws NoSuchAlgorithmException if the algorithm is not supported.
+     * @throws NoSuchProviderException if the crypto provider is not available.
+     * @throws InvalidKeySpecException if the key specification is invalid.
+     */
+    private String getEcPublicKeyHash(ECPrivateKey ecPrivateKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeySpecException {
+        // Get the bouncy castle EC private key.
+        final ECNamedCurveParameterSpec params = ECNamedCurveTable.getParameterSpec(ecPrivateKey.getParametersObject().toString());
+        final ECPrivateKeySpec privSpec = new ECPrivateKeySpec(ecPrivateKey.getKey(), params);
+        final KeyFactory factory = KeyFactory.getInstance("ECDSA", "BC");
+        final BCECPrivateKey privateKey = (BCECPrivateKey) factory.generatePrivate(privSpec);
+        
+        // Derive the public key by the private key and the key specification.
+        final ECPoint point = params.getG().multiply(privateKey.getD());
+        final ECPublicKeySpec pubSpec = new ECPublicKeySpec(point, params);
+        final PublicKey publicKey = factory.generatePublic(pubSpec);
+       
+        return Hex.toHexString(MessageDigest.getInstance("SHA-256").digest(publicKey.getEncoded()));
+    } 
+    
     /**
      * Logs the summary to STDOUT.
      * 

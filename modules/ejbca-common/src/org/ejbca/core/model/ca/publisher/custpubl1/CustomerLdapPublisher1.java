@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SimpleTimeZone;
 
 import javax.security.auth.x500.X500Principal;
@@ -248,6 +249,22 @@ public class CustomerLdapPublisher1 implements ICustomPublisher {
         }
 
         inited = true;
+    }
+
+    @Override
+    public Set<String> getDeclaredPropertyNames() {
+        return Set.of(
+                PROPERTY_HOSTNAMES,
+                PROPERTY_USESSL,
+                PROPERTY_PORT,
+                PROPERTY_BASEDN,
+                PROPERTY_LOGINDN,
+                PROPERTY_LOGINPASSWORD,
+                PROPERTY_LOGCONNECTIONTESTS,
+                PROPERTY_CONNECTIONTIMEOUT,
+                PROPERTY_READTIMEOUT,
+                PROPERTY_STORETIMEOUT,
+                PROPERTY_EXTENDEDINFOOBJECTCLASS);
     }
 
     @Override

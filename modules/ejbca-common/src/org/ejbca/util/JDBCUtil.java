@@ -14,6 +14,7 @@
 package org.ejbca.util;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,13 +35,31 @@ import org.ejbca.core.ejb.ServiceLocatorException;
  * quietly could mask potential errors that could have no impact depending on GC
  * stress conditions, or simply exhaust database resources, so it is better to have some
  * warning than nothing at all.
- *
- * @version $Id$
  */
 public class JDBCUtil {
 
     private static final Logger log = Logger.getLogger(JDBCUtil.class);
     
+    /**
+     * Returns true if database product name is Oracle.
+     * @param databaseMetaData meta data retrieved with connection.getMetaData
+     * @return true if meta data shows it's an Oracle database
+     * @throws SQLException in case of database access error, the connection is closed, database can not be reached, etc.
+     */
+    public static final boolean isOracle(DatabaseMetaData databaseMetaData) throws SQLException {
+        return databaseMetaData.getDatabaseProductName().equalsIgnoreCase("Oracle");
+    }
+
+    /**
+     * Returns true if database product name is PostgreSQL.
+     * @param databaseMetaData meta data retrieved with connection.getMetaData
+     * @return true if meta data shows it's a PostgreSQL database
+     * @throws SQLException in case of database access error, the connection is closed, database can not be reached, etc.
+     */
+    public static final boolean isPostgres(DatabaseMetaData databaseMetaData) throws SQLException {
+        return databaseMetaData.getDatabaseProductName().equalsIgnoreCase("PostgreSQL");
+    }
+
     public interface Preparer {
         /**
          * Modifies the argument according to the implementing class' requirements

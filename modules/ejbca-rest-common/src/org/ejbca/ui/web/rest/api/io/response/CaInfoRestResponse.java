@@ -16,18 +16,17 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 
+import com.keyfactor.util.CertTools;
 
-import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 
-import com.keyfactor.util.CertTools;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * A class representing general information about CA certificate.
  *
- * @version $Id: CaInfoRestResponse.java 28909 2018-05-22 12:16:53Z andrey_s_helmes $
  */
 public class CaInfoRestResponse {
 
@@ -319,9 +318,9 @@ public class CaInfoRestResponse {
         private String extractIssuerDn(final CAInfo caInfo) throws CADoesntExistsException {
             final List<Certificate> caInfoCertificateChain = caInfo.getCertificateChain();
             if(caInfoCertificateChain != null && !caInfoCertificateChain.isEmpty()) {
-                // Get last it should be RootCA
-                final Certificate rootCa = caInfoCertificateChain.get(caInfoCertificateChain.size() - 1);
-                return CertTools.getIssuerDN(rootCa);
+                // Get first certificate, it's this CAs issuer wr're looking for
+                final Certificate ca = caInfoCertificateChain.get(0);
+                return CertTools.getIssuerDN(ca);
             }
             throw new CADoesntExistsException("Cannot extract the Issuer DN for CA certificate with id " + caInfo.getCAId());
         }

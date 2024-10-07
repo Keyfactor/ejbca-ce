@@ -18,17 +18,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.faces.model.SelectItem;
-
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.config.CesecoreConfiguration;
 import org.ejbca.config.WebConfiguration;
 
 import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+
+import jakarta.faces.model.SelectItem;
 
 public class RaAvailableAlgorithmsTool {
     private static final Logger log = Logger.getLogger(RaAvailableAlgorithmsTool.class);
@@ -98,22 +96,7 @@ public class RaAvailableAlgorithmsTool {
                     }
                 }
             }
-            for (final String algName : AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithms()) {
-                if (availableKeyAlgorithms.contains(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName))) {
-                    for (final String subAlg : CesecoreConfiguration.getExtraAlgSubAlgs(algName)) {
-                        final String name = CesecoreConfiguration.getExtraAlgSubAlgName(algName, subAlg);
-                        final int bitLength = AlgorithmTools.getNamedEcCurveBitLength(name);
-                        if (availableBitLengths.contains(bitLength)) {
-                            availableAlgorithmSelectItems.add(new SelectItem(AlgorithmConfigurationCache.INSTANCE.getConfigurationDefinedAlgorithmTitle(algName) + "_" + name,
-                                    CesecoreConfiguration.getExtraAlgSubAlgTitle(algName, subAlg)));
-                        } else {
-                            if (log.isTraceEnabled()) {
-                                log.trace("Excluding " + name + " from enrollment options since bit length " + bitLength + " is not available.");
-                            }
-                        }
-                    }
-                }
-            }
+            
             if (availableAlgorithmSelectItems.size() < 1) {
                 availableAlgorithmSelectItems.add(new SelectItem(null, noChoiceMessage, noChoiceMessage, true));
             }

@@ -561,8 +561,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @param validityInDays Validity of the CA in days.
      * @param certProfile Makes the CA use the certificate profile 'cert profile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
-     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA,
-     * GOST3411withECGOST3410, GOST3411withDSTU4145
+     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA
      * @param signedByCAId The ID of a CA that will sign this CA. Use '1' for self signed CA (i.e. a root CA). For externally signed CAs, use {@link #createExternallySignedCa()}
      * @param cryptoTokenName The name of the crypto token associated with the CA
      * @param purposeKeyMapping The mapping the the crypto token keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
@@ -603,8 +602,7 @@ public class EjbcaWS implements IEjbcaWS {
      * @param validityInDays Validity of the CA in days.
      * @param certProfile Makes the CA use the certificate profile 'cert profile' instead of the default ROOTCA or SUBCA.
      * @param signAlg Signing Algorithm may be one of the following: SHA1WithRSA, SHA256WithRSA, SHA384WithRSA, SHA512WithRSA
-     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA,
-     * GOST3411withECGOST3410, GOST3411withDSTU4145
+     * SHA256WithRSAAndMGF1, SHA1withECDSA, SHA224withECDSA, SHA256withECDSA, SHA384withECDSA, SHA512withECDSA
      * @param cryptoTokenName The name of the crypto token associated with the CA
      * @param purposeKeyMapping The mapping the the crypto token keys and their purpose. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
      * @param caProperties Optional CA properties. See {@link org.ejbca.core.protocol.ws.objects.CAConstantsWS}
