@@ -479,7 +479,6 @@
             <include name="antlr4-runtime-*.jar"/>
         	<include name="byte-buddy*.jar"/>
             <include name="classmate*.jar"/>
-            <include name="dom4j-*.jar"/>
         	<include name="FastInfoset*.jar"/>
 			<include name="hibernate-community-dialects-*.jar"/>
             <include name="hibernate-commons-annotations-*.jar"/>

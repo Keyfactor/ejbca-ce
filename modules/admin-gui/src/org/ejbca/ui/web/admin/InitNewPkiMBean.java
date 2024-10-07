@@ -309,9 +309,6 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         final List<SelectItem> resultList = new ArrayList<>();
         final String cryptoTokenIdParam = caInfoDto.getCryptoTokenIdParam();
         for (final String current : AlgorithmConstants.AVAILABLE_SIGALGS) {
-            if (!AlgorithmTools.isSigAlgEnabled(current)) {
-                continue; // e.g. GOST3410 if not configured
-            }
             resultList.add(new SelectItem(current, current, ""));
         }
         // "0" is the first "Create a new Crypto Token..." option in the select list.

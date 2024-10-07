@@ -24,8 +24,10 @@
 
 	<path id="compile.classpath">
 		<pathelement path="${ejbca.classpath}"/>
+		<pathelement path="${ejbca.home}/lib/jee/jakarta.jakartaee-api-*.jar"/>
+		<pathelement path="${ejbca.home}/lib/jee/jakarta.ejb-api-*.jar"/>
 	</path>
-	
+
 	<target name="help">
 		<echo message="Available targets are help and dist."/>
 	</target>

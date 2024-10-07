@@ -121,22 +121,22 @@ public class CaInitCommandSystemTest {
     @Test
     public void testExecuteInvalidTokenArgs() throws Exception {
         // Arguments missing both --tokenType and --tokenName
-        final String[] NO_TOKEN_TYPE = {  "--caname", CA_NAME, "--dn", CA_DN, "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
+        final String[] NO_TOKEN_TYPE = {  "--caname", CA_NAME, "--dn", CA_DN, "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA", "--tokenPass foo123" };
         CommandResult result = caInitCommand.execute(NO_TOKEN_TYPE);
         assertEquals("Result should be failure for NO_TOKEN_TYPE", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
 
         // Arguments with PKCS#11 --tokenType, but missing --tokenprop
-        final String[] NO_TOKEN_PROP_WITH_TyPE = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenType", "org.cesecore.keys.token.PKCS11CryptoToken", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
+        final String[] NO_TOKEN_PROP_WITH_TyPE = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenType", "org.cesecore.keys.token.PKCS11CryptoToken", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA", "--tokenPass foo123"  };
         result = caInitCommand.execute(NO_TOKEN_PROP_WITH_TyPE);
         assertEquals("Result should be failure for NO_TOKEN_PROP_WITH_TyPE", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
 
         // Arguments with --tokenName, but missing --tokenprop
-        final String[] NO_TOKEN_PROP_WITH_NAME = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenName", "My Token", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
+        final String[] NO_TOKEN_PROP_WITH_NAME = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenName", "My Token", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA", "--tokenPass foo123"  };
         result = caInitCommand.execute(NO_TOKEN_PROP_WITH_NAME);
         assertEquals("Result should be failure for NO_TOKEN_PROP_WITH_NAME", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
 
         // Arguments with Soft --tokenType, but including --tokenprop
-        final String[] SOFT_WITH_TOKEN_PROP = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenType", "soft", "--tokenprop", "my.properties", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA" };
+        final String[] SOFT_WITH_TOKEN_PROP = {  "--caname", CA_NAME, "--dn", CA_DN, "--tokenType", "soft", "--tokenprop", "my.properties", "--keyspec", "secp256r1", "--keytype", "ECDSA", "-v", "365", "--policy", "null", "-s", "SHA256withECDSA", "--tokenPass foo123"  };
         result = caInitCommand.execute(SOFT_WITH_TOKEN_PROP);
         assertEquals("Result should be failure for SOFT_WITH_TOKEN_PROP", CommandResult.CLI_FAILURE.getReturnCode(), result.getReturnCode());
 

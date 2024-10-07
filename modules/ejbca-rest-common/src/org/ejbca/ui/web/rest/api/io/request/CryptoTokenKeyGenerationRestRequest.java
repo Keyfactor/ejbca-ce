@@ -13,11 +13,15 @@
 package org.ejbca.ui.web.rest.api.io.request;
 
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * JSON input representation of crypto token key generation request through REST API.
  */
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
 public class CryptoTokenKeyGenerationRestRequest {
 
     @Schema(description = "Key pair aliasof the key pair to be generated, must not already exist", example = "signKey")

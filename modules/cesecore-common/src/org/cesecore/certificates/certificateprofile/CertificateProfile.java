@@ -69,7 +69,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     private static final InternalResources intres = InternalResources.getInstance();
 
     // Public Constants
-    public static final float LATEST_VERSION = (float) 52.0;
+    public static final float LATEST_VERSION = (float) 53.0;
 
     public static final String ROOTCAPROFILENAME = "ROOTCA";
     public static final String SUBCAPROFILENAME = "SUBCA";
@@ -1367,8 +1367,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean isKeyAlgorithmsECType() {
         List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_EC)
-                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)
-                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410);
+                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA);
     }
 
     public boolean doSelectedEcRequirebitLenths() {
@@ -1380,7 +1379,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     public boolean isKeyAlgorithmsRequireKeySizes() {
         List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
         return  doSelectedEcRequirebitLenths()
-                || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECGOST3410)
                 || availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
@@ -3618,8 +3616,6 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 final List<String> availableKeyAlgorithms = AlgorithmTools.getAvailableKeyAlgorithms();
                 if (getMinimumAvailableBitLength()>521) {
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECDSA);
-                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_DSTU4145);
-                    availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_ECGOST3410);
                 }
                 if (getMaximumAvailableBitLength()<1024) {
                     availableKeyAlgorithms.remove(AlgorithmConstants.KEYALGORITHM_RSA);
@@ -3689,15 +3685,28 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 setQCCountriesString("");
             }
 
-            // v50 truncated subject key identifier
+            // v50: truncated subject key identifier
             if (data.get(USETRUNCATEDSUBJECTKEYIDENTIFIER) == null) {
                 setUseTruncatedSubjectKeyIdentifier(false);
             }
 
-            // v52. ETSI Validity Assured - Short Term certificate extension specified in EN 319 412-01.
+            // v52: ETSI Validity Assured - Short Term certificate extension specified in EN 319 412-01.
             if (data.get(USE_VALIDITY_ASSURED_SHORT_TERM) == null) {
                 setUseValidityAssuredShortTerm(false);
                 setValidityAssuredShortTermCritical(false);
+            }
+            
+            // v53: Remove support for GOST and DSTU if present
+            List<String> availableKeyAlgorithms = getAvailableKeyAlgorithmsAsList();
+            availableKeyAlgorithms.remove("ECGOST3410");
+            availableKeyAlgorithms.remove("DSTU4145");
+            setAvailableKeyAlgorithmsAsList(availableKeyAlgorithms);
+            // Make sure that they didn't sneak into the alternate set
+            List<String> alternativeAvailableKeyAlgorithms = getAlternativeAvailableKeyAlgorithmsAsList();
+            if (alternativeAvailableKeyAlgorithms != null && !alternativeAvailableKeyAlgorithms.isEmpty()) {
+                alternativeAvailableKeyAlgorithms.remove("ECGOST3410");
+                alternativeAvailableKeyAlgorithms.remove("DSTU4145");
+                setAlternativeAvailableKeyAlgorithmsAsList(alternativeAvailableKeyAlgorithms);
             }
 
             data.put(VERSION, LATEST_VERSION);
@@ -3713,9 +3722,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @return true if the certificate profile supports a key algorithm which utilises ECC, false otherwise.
      */
     public boolean isEccCapable() {
-        return getAvailableKeyAlgorithmsAsList().contains("ECDSA")
-                || getAvailableKeyAlgorithmsAsList().contains("ECGOST3410")
-                || getAvailableKeyAlgorithmsAsList().contains("DSTU4145");
+        return getAvailableKeyAlgorithmsAsList().contains("ECDSA");
     }
 
 }
