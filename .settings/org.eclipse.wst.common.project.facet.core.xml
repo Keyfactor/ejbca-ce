@@ -4,5 +4,6 @@
   <installed facet="jst.web" version="3.0"/>
   <installed facet="wst.jsdt.web" version="1.0"/>
   <installed facet="jst.jsf" version="2.1"/>
-  <installed facet="java" version="17"/>
+  <installed facet="java" version="11"/>
 </faceted-project>
+
