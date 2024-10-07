@@ -158,7 +158,6 @@ public abstract class LegacyBaseCryptoToken implements CryptoToken {
             log.debug("Testing key of type " + baos.toString());
         }
         if (!permitExtractablePrivateKeyForTest() && KeyTools.isPrivateKeyExtractable(privateKey)) {
-            //Note: ignore references to ca.doPermitExtractablePrivateKeys – this class should be slated for removal
             String msg = "HW key must not be extractable. You can set ca.doPermitExtractablePrivateKeys=true in ejbca.properties to allow extractable keys. ca.doPermitExtractablePrivateKeys="
                     + CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys() + ".";
             if (!CryptoProviderConfigurationCache.INSTANCE.isPermitExtractablePrivateKeys() ) {
