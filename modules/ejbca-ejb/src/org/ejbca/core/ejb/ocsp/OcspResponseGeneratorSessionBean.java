@@ -2177,8 +2177,8 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         nonceoctets = noncestr.getOctets();
                     }
                     if (nonceoctets != null && (nonceoctets.length > 128 || nonceoctets.length < 1)) {
-                        log.info("Received OCSP request with Nonce larger than 128 bytes, rejecting.");
-                        throw new IllegalNonceException("Nonce too large");
+                        log.info("Received OCSP request with Nonce extension of " + nonceoctets.length + " bytes was rejected. Allowed range: 1-128 bytes.");
+                        throw new IllegalNonceException("Invalid length of Nonce: " + nonceoctets.length + " bytes");
                     }
                 }
                 result.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
