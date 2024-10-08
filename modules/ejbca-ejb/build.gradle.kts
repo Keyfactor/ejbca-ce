@@ -38,7 +38,6 @@ sourceSets {
     val main by getting {
         java {
             setSrcDirs(listOf("src"))
-		    exclude("org/ejbca/samples/**/*.java")
             exclude("org/ejbca/util/EjbDependencyGraphTool.java")
         }
     }
