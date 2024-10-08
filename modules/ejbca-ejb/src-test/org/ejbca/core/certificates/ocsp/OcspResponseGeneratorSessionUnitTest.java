@@ -700,7 +700,7 @@ public class OcspResponseGeneratorSessionUnitTest {
             gen.addRequest(certId).build();
             if (nonce != null) {
                 Extension[] extensions = new Extension[1];
-                // Max size of nonce is 32 bytes
+                // Max size of nonce is 128 bytes
                 extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce);
                 gen.setRequestExtensions(new Extensions(extensions));
             }
