@@ -545,7 +545,7 @@ public class IntegratedOcspResponseSystemTest {
     /**
      * Tests creating an OCSP response using the root CA cert.
      * Tests using both SHA1, SHA256 and SHA224 CertID. SHA1 and SHA256 should work, while SHA224 should give an error.
-     * Tests that OCSP Nonce with more than 32 bytes are not allowed.
+     * Tests that OCSP Nonce with more than 128 bytes are not allowed.
      */
     @Test
     public void testGetOcspResponseSanity() throws Exception {
