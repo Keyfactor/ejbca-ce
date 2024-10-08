@@ -53,8 +53,15 @@ delete from CertificateData where status=60;
 -- Then 1394628796000 (times 1000) is the date in milliseconds format
 -- list all certificates that have expired.
 select fingerprint,username,expireDate from CertificateData where expireDate<1394628796000;
--- delete all certificates that have expired.
+-- You can export these in a format that can be re-imported, not on MySQL/MariaDB you must have granted FILE privileges
+-- so use a user, not the same as the appserver user to export. GRANT FILE ON *.* TO 'user'@'localhost';
+-- make sure to test this before running in production
+-- select * from CertificateData where expireDate<1394628796000 into outfile '/tmp/certexport.sql';
+
+-- delete all certificates that have expired. Maks sure you make a backup before running this
 delete from CertificateData where expireDate<1394628796000;
+-- If you would ever need, you can load the export back into the databse
+-- load data infile '/tmp/certexport.sql' into table CertificateData;
 
 -- Delete from UserData and CertReqHistoryData where there is a username that does not have any certificates anymore
 -- Warning these questions must be modified by DBA, they can not be executed as they are if you have a very large database.
