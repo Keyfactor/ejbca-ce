@@ -156,7 +156,7 @@ public class SCEPCommandSystemTest {
 
         String[] args = new String[]{"SCEPTest", httpReqPath + "/publicweb/apply/scep/" + SCEP_ALIAS + "/pkiclient.exe",
                 SCEP_CA,
-                numberOfThreads + ":" + numberOfTests, waitTime};
+                numberOfThreads + ":" + numberOfTests, "DES", "RSA", waitTime};
         command.execute(args);
     }
 }

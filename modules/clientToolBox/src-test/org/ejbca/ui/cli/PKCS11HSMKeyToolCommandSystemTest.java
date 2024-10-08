@@ -331,7 +331,7 @@ public class PKCS11HSMKeyToolCommandSystemTest {
         final KeyStoreTools store = KeyStoreToolsFactory.getInstance(PKCS11_LIBRARY, SLOT_LABEL,
                 Pkcs11SlotLabelType.SLOT_LABEL, null, protectionParameter, "batch-" + new Date().getTime());
 
-        String oldName = aliases[5];
+        String oldName = aliases[4];
         final X509Certificate[] oldChain = generateKeyEntry(store, oldName, protectionParameter);
         String oldFileName = oldName + ".der";
         File oldRootCertFile = folder.newFile(oldFileName);
@@ -339,7 +339,7 @@ public class PKCS11HSMKeyToolCommandSystemTest {
             writeChainToStream(os, oldChain);
         }
 
-        String newName = aliases[6];
+        String newName = aliases[5];
         final X509Certificate[] newChain = generateKeyEntry(store, newName, protectionParameter);
         String newFileName = newName + ".der";
         File newRootCertFile = folder.newFile(newFileName);
@@ -375,7 +375,7 @@ public class PKCS11HSMKeyToolCommandSystemTest {
                 Pkcs11SlotLabelType.SLOT_LABEL, null, protectionParameter, "batch-" + new Date().getTime());
 
         final KeyStore.PrivateKeyEntry caEntry = (KeyStore.PrivateKeyEntry) store.getKeyStore()
-                .getEntry(aliases[6], protectionParameter);
+                .getEntry(aliases[5], protectionParameter);
         final X509Certificate[] theCertificate;
         try (final InputStream is = new FileInputStream(alias + ".pem")) {
             theCertificate = signCertificate(is, caEntry, store.getKeyStore().getProvider(), "SHA256WithRSA");
@@ -479,15 +479,6 @@ public class PKCS11HSMKeyToolCommandSystemTest {
         checkDecryptedData(inFile.getCanonicalPath(), verifiedFile.getCanonicalPath());
     }
 
-
-    @Test
-    public void testC20DeleteKeyWithAliasDsaOnToken1() {
-        //PKCS11HSMKeyTool delete ./p11m.so TOKEN_LABEL:${label_1} dsa
-        String[] args = new String[]{"PKCS11HSMKeyTool", "delete", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, aliases[4], "-password", TOKEN_PIN};
-        command.execute(args);
-    }
-
     //    expected errors
     @Test
     public void testC21CfgKeyRsa3OnToken1ShouldFail() {
@@ -502,19 +493,6 @@ public class PKCS11HSMKeyToolCommandSystemTest {
         String message = "Key alias " + aliases[2] + " does not exist";
         assertTrue("System.err should contain: " + message, consoleOutput.contains(message));
 
-    }
-
-    @Test
-    public void testC22KeyDsaDeletedFromToken1() {
-        int numberOfThreads = 10;
-        int numberOfTests = 35;
-        //PKCS11HSMKeyTool test ${p11m} TOKEN_LABEL:${label_1} 10:35 dsa
-        String[] args = new String[]{"PKCS11HSMKeyTool", "test", PKCS11_LIBRARY,
-                "TOKEN_LABEL:" + SLOT_LABEL, numberOfThreads + ":" + numberOfTests, aliases[4], "-password", TOKEN_PIN};
-        command.execute(args);
-        final String consoleOutput = errStream.toString();
-        String message = "Key alias " + aliases[4] + " does not exist";
-        assertTrue("System.err should contain: " + message, consoleOutput.contains(message));
     }
 
     @Test
