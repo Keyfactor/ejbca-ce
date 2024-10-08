@@ -30,8 +30,7 @@ dependencies {
     compileOnly(libs.snakeyaml)
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.api)
-    compileOnly(libs.cryptotokens.impl)
+    compileOnly(libs.bundles.cryptotokens)
     compileOnly(libs.jldap)
     if (project.extra["edition"] == "ee") {
         compileOnly(project(":modules:peerconnector:common"))
@@ -44,10 +43,11 @@ dependencies {
     implementation(libs.csrfguard.extension.session)
     implementation(libs.csrfguard.jsp.tags)
     implementation(libs.primefaces)
+    testRuntimeOnly(libs.myfaces.api)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
             if (project.extra["edition"] == "ce") {

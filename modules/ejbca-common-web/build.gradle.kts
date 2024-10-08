@@ -22,19 +22,23 @@ dependencies {
     compileOnly(libs.jldap)
     compileOnly(libs.myfaces.api)
     compileOnly(libs.x509.common.util)
+    testImplementation(project(":modules:ejbca-entity"))
+    testImplementation(project(":modules:ejbca-ejb"))
+    testRuntimeOnly(libs.myfaces.api)
+    testRuntimeOnly(libs.jakarta.xml.bind.api)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
+        }
+        resources {
+            srcDirs("resources")
         }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF/services") {
-        into("META-INF/services")
-    }
 }

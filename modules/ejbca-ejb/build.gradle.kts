@@ -30,12 +30,12 @@ dependencies {
     compileOnly(libs.commons.collections4)
     compileOnly(libs.nimbus.jose.jwt)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.api)
-    compileOnly(libs.cryptotokens.impl)
+    compileOnly(libs.bundles.cryptotokens)
+    testRuntimeOnly(libs.jldap)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
             exclude("org/ejbca/util/EjbDependencyGraphTool.java")
