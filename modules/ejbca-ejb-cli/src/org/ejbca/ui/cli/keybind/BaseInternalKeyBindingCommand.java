@@ -29,7 +29,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
  * @version $Id$
@@ -110,9 +109,8 @@ public abstract class BaseInternalKeyBindingCommand extends EjbcaCliUserCommandB
     protected String showSigAlgs() {
         final StringBuilder sbAlg = new StringBuilder("Signature algorithm is one of ");
         for (final String algorithm : AlgorithmConstants.AVAILABLE_SIGALGS) {
-            if (AlgorithmTools.isSigAlgEnabled(algorithm)) {
-                sbAlg.append(algorithm).append(',');
-            }
+            sbAlg.append(algorithm).append(',');
+
         }
         return sbAlg.deleteCharAt(sbAlg.length() - 1).append('\n').toString();
     }

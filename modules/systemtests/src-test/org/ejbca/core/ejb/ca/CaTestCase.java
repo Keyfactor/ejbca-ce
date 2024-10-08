@@ -61,14 +61,12 @@ import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemo
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
@@ -122,8 +120,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_DILITHIUM2_CA_NAME = "TESTDILITHIUM2";
     public static final String TEST_DILITHIUM3_CA_NAME = "TESTDILITHIUM3";
     public static final String TEST_DILITHIUM5_CA_NAME = "TESTDILITHIUM5";
-    public static final String TEST_ECGOST3410_CA_NAME = "TESTECGOST3410";
-    public static final String TEST_DSTU4145_CA_NAME = "TESTDSTU4145";
     public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
     public static final String TEST_SHA256_WITH_MFG1_CA_DN = "CN="+TEST_SHA256_WITH_MFG1_CA_NAME;
     public static final String TEST_RSA_REVSERSE_CA_DN = DnComponents.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE"); 
@@ -703,59 +699,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
         removeOldCa(name);
         final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-        caAdminSession.createCA(internalAdmin, cainfo);
-    }
-
-    protected static void createECGOST3410Ca() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            InvalidAlgorithmException, AuthorizationDeniedException {
-        final String keyspec = "GostR3410-2001-CryptoPro-B";
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_ECGOST3410_CA_NAME, keyspec, keyspec, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_ECGOST3410, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-        // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        final List<CertificatePolicy> policies = new ArrayList<>(1);
-        policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-      
-        CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-        certificateProfile.setAvailableKeyAlgorithms(new String[]{"ECGOST3410"});
-        int certificateProfileId;
-        try {
-             certificateProfileId = certificateProfileSession.addCertificateProfile(internalAdmin, TEST_ECGOST3410_CA_NAME, certificateProfile);
-        } catch (CertificateProfileExistsException | AuthorizationDeniedException e) {
-            certificateProfileId = certificateProfileSession.getCertificateProfileId(TEST_ECGOST3410_CA_NAME);
-        } 
-      
-
-        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_ECGOST3410_CA_NAME, TEST_ECGOST3410_CA_NAME, CAConstants.CA_ACTIVE,
-                certificateProfileId, "365d", CAInfo.SELFSIGNED, null, catoken);
-        cainfo.setDescription("JUnit GOST3410 CA");
-        cainfo.setPolicies(policies);
-        cainfo.setExtendedCAServiceInfos(extendedcaservices);
-        removeOldCa(TEST_ECGOST3410_CA_NAME);
-        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-        caAdminSession.createCA(internalAdmin, cainfo);
-    }
-    
-    protected static void createDSTU4145Ca() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
-            InvalidAlgorithmException, AuthorizationDeniedException {
-        final String keyspec = CesecoreConfiguration.getExtraAlgSubAlgName("dstu4145", "233");
-        final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(null, TEST_DSTU4145_CA_NAME, keyspec, RSA_1024,
-                CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-        final CAToken catoken = CaTestUtils.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_GOST3411_WITH_DSTU4145,
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
-        // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
-        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        final List<CertificatePolicy> policies = new ArrayList<>(1);
-        policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
-        X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=" + TEST_DSTU4145_CA_NAME, TEST_DSTU4145_CA_NAME, CAConstants.CA_ACTIVE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "365d", CAInfo.SELFSIGNED, null, catoken);
-        cainfo.setDescription("JUnit DSTU4145 CA");
-        cainfo.setPolicies(policies);
-        cainfo.setExtendedCAServiceInfos(extendedcaservices);
-        removeOldCa(TEST_DSTU4145_CA_NAME);
-        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cainfo);
     }
 
