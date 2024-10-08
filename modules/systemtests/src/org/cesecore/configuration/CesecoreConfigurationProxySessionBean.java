@@ -12,14 +12,13 @@
  *************************************************************************/
 package org.cesecore.configuration;
 
-import jakarta.ejb.Stateless;
-
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
 
 import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConfigurationCache;
 import com.keyfactor.util.string.StringConfigurationCache;
+
+import jakarta.ejb.Stateless;
 
 /**
  * 
@@ -49,13 +48,4 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
     public char[] getForbiddenCharacters() {
         return StringConfigurationCache.INSTANCE.getForbiddenCharacters();
     }
-
-    @Override
-    public void setGost3410Enabled(boolean value) {
-        AlgorithmConfigurationCache.INSTANCE.setGost3410Enabled(value);
-        
-    }
-    
-    
-
 }

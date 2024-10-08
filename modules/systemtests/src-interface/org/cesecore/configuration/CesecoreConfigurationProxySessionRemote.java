@@ -36,6 +36,5 @@ public interface CesecoreConfigurationProxySessionRemote {
     void setForbiddenCharacters(char[] forbiddenCharacters);
     
     char[] getForbiddenCharacters();
-    
-    void setGost3410Enabled(boolean value);
+
 }                           
