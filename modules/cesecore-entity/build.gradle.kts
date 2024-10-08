@@ -14,13 +14,14 @@ dependencies {
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.configuration2)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.api)
-    compileOnly(libs.cryptotokens.impl) 
+    compileOnly(libs.bundles.cryptotokens)
     compileOnly(libs.jakarta.persistence.api)
+    testImplementation(project(":modules:cesecore-common").dependencyProject.sourceSets["test"].output)
+    testRuntimeOnly(libs.cert.cvc)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(
                 listOf("src")

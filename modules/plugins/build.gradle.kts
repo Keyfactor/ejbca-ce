@@ -18,19 +18,24 @@ dependencies {
     compileOnly(libs.jsch)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
+    testImplementation(project(":modules:systemtests:ejb"))
+    testCompileOnly(project(":modules:systemtests:common"))
+    testCompileOnly(project(":modules:systemtests:interface"))
+    testCompileOnly(project(":modules:systemtests").dependencyProject.sourceSets["test"].output)
+    testRuntimeOnly(libs.cert.cvc)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
+        }
+        resources {
+            srcDirs("resources")
         }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF/services") {
-        into("META-INF/services")
-    }
 }
