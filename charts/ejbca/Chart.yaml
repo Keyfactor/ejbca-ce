@@ -1,6 +1,6 @@
 apiVersion: v2
 name: ejbca
-description: Official Keyfactor EJBCA CE Chart
+description: Official Keyfactor EJBCA Chart
 type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
@@ -11,12 +11,12 @@ version: "0.0.0"
 # follow Semantic Versioning. They should reflect the version the application is using.
 # It is recommended to use it with quotes.
 appVersion: "latest"
-home: https://www.ejbca.org/
-icon: https://github.com/Keyfactor/ejbca-community-helm/raw/1345784e1be4f91b783a026f585536a4a52c0624/.github/community-ejbca-lite.png
+home: https://www.ejbca.org
+icon: https://raw.githubusercontent.com/Keyfactor/ejbca-ce/main/.github/images/community-ejbca-icon.png
 keywords: ["pki", "security", "encryption", "certificates", "management", "automation", "infrastructure", "pqc", "protocol", "tls"]
 sources:
-  - https://www.ejbca.org/
-  - https://github.com/Keyfactor/ejbca-community-helm
+  - https://www.ejbca.org
+  - https://github.com/Keyfactor/ejbca-ce
 #dependencies:
 #- name: postgresql
 #  repository: "https://charts.bitnami.com/bitnami"
