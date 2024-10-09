@@ -2584,6 +2584,10 @@
             "available_key_algs",
             "available_key_algs"
           ],
+          "available_alt_key_algs": [
+            "available_alt_key_alg",
+            "available_alt_key_alg"
+          ],
           "certificate_profile_id": 0,
           "available_cas": [
             "available_cas",
@@ -2604,6 +2608,12 @@
             "type": "integer"
           },
           "available_key_algs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "available_alt_key_algs": {
             "items": {
               "type": "string"
             },
