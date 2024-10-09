@@ -90,41 +90,6 @@
 #ocsp.nonexistingisrevoked.uri.1=.*\\?thisEndingIsRevoked$
 #ocsp.nonexistingisrevoked.uri.2=^http://revoked.myhost.nu:8080/.*
 
-# You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
-# This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-# You can find the certificateProfileId (999 in the example below) in the CA UI.
-# If no specific certificateProfileId is specified the default value from ocsp.untilNextUpdate is used.
-#
-# NOTE: This function has been deprecated in EJBCA 8.3.0 and will be removed in the following release
-#
-#ocsp.999.untilNextUpdate = 50
-
-# You can also specify different nextUpdate values depending on which certificate profiles the certificate was issued by.
-# This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-# You can find the certificateProfileId (999 in the example below) in the CA UI.
-# If no specific certificateProfileId is specified the default value from ocsp.untilNextUpdate is used.
-# If this configuration is set, its value will override the global value in case of certificate with a revoked status..
-#ocsp.999.revoked.untilNextUpdate = 50
-
-# You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
-# This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-# You can find the certificateProfileId (999 in the example below) in the CA UI.
-# If no specific certificateProfileId is specified the default value from ocsp.maxAge is used.
-#
-# NOTE: This function has been deprecated in EJBCA 8.3.0 and will be removed in the following release
-#
-#ocsp.999.maxAge = 100
-
-# You can also specify different maxAge values depending on which certificate profiles the certificate was issued by.
-# This only works when you have published using EJBCA 3.9.0 or later, where the certificateProfileId column in the CertificateData table is populated.
-# You can find the certificateProfileId (999 in the example below) in the CA UI.
-# If no specific certificateProfileId is specified the default value from ocsp.maxAge is used.
-# If this configuration is set, its value will override the global value in case of certificate with a revoked status.
-#
-# NOTE: This function has been deprecated in EJBCA 8.3.0 and will be removed in the following release
-#
-#ocsp.999.revoked.maxAge = 100
-
 # Setting this to true will enable unidfnr extension in EJBCA.
 # Default is false since it is not normally used by many customers.
 # Prior to setting this to true the appropriate data source must be set in JBoss.
