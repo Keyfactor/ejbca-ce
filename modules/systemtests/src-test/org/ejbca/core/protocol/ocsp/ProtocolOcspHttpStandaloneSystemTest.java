@@ -36,8 +36,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.ejb.CreateException;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -65,7 +63,6 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorTestSessionRemote;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.GlobalOcspConfiguration;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionRemote;
 import org.cesecore.keybind.InternalKeyBindingStatus;
@@ -75,7 +72,6 @@ import org.cesecore.keys.token.CryptoTokenTestUtils;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.TraceLogMethodsRule;
-import org.cesecore.util.ValidityDate;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -90,6 +86,8 @@ import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
+import jakarta.ejb.CreateException;
+
 /**
  * 
  */
@@ -99,9 +97,7 @@ public class ProtocolOcspHttpStandaloneSystemTest extends ProtocolOcspTestBase {
     
     private static final String TESTCLASSNAME = ProtocolOcspHttpStandaloneSystemTest.class.getSimpleName();
     private static final String CA_DN = "CN=OcspDefaultTestCA,O=Foo,C=SE";
-    
-    private CesecoreConfigurationProxySessionRemote configurationSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private OcspResponseGeneratorTestSessionRemote ocspResponseGeneratorTestSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(OcspResponseGeneratorTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -528,66 +524,6 @@ public class ProtocolOcspHttpStandaloneSystemTest extends ProtocolOcspTestBase {
         assertTrue("nextUpdate cannot be before thisUpdate.", !nextUpdate.before(thisUpdate));
         assertTrue("producedAt cannot be before thisUpdate.", !producedAt.before(thisUpdate));
     }
-    
-    
-    /**
-     * Tests the ocsp.revoked.untilNextUpdate configuration.
-     * 
-     * The test sets ocsp.untilNextUpdate and ocsp.revoked.untilNextUpdate to different values and then verified that the response's next update value matches 
-     * the setting of ocsp.revoked.untilNextUpdate and not ocsp.untilNextUpdate
-     * 
-     *             
-     * @deprecated Slated for removal after 8.3, see ECA-12084
-     */
-    @Deprecated
-    @Test
-    public void testRevokedNextUpdate() throws Exception {
-       ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        final X509Certificate ocspTestCert = getRevokedTestCert(CERTIFICATE_USERNAME);
-        
-        final String oldConfigurationValue1 = configurationSession.getConfigurationValue("ocsp." + CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ".untilNextUpdate");
-        final String oldConfigurationValue2 = configurationSession.getConfigurationValue("ocsp." + CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ".revoked.untilNextUpdate");
-        configurationSession.setConfigurationValue("ocsp." + CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ".untilNextUpdate", "7");
-        configurationSession.setConfigurationValue("ocsp." + CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ".revoked.untilNextUpdate", "5");
-        // Make sure that we run the test with a CA where this is no OcspKeyBinding
-        OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.DISABLED);
-        ocspResponseGeneratorTestSession.reloadOcspSigningCache();
-        try {
-            
-            // And an OCSP request
-            OCSPReqBuilder gen = new OCSPReqBuilder();
-            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
-            OCSPReq req = gen.build();
-
-            // Send the request and receive a singleResponse
-            SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
-            assertEquals("No of SingResps should be 1.", 1, singleResps.length);
-            SingleResp singleResp = singleResps[0];
-
-            CertificateID certId = singleResp.getCertID();
-            assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
-            Object status = singleResp.getCertStatus();
-            assertTrue("Status ("+status+") is not RevokedStatus", status instanceof RevokedStatus);
-            RevokedStatus rev = (RevokedStatus) status;
-            assertTrue("Status does not have reason", rev.hasRevocationReason());
-
-            
-            Date thisUpdate = singleResp.getThisUpdate();
-            Date nextUpdate = singleResp.getNextUpdate();
-            assertNotNull("thisUpdate was not set.", thisUpdate);
-            assertNotNull("nextUpdate was not set. (This test requires ocsp.revoked.untilNextUpdate to be configured.)", nextUpdate);
-
-            long diff = nextUpdate.getTime() - thisUpdate.getTime() + ValidityDate.NOT_AFTER_INCLUSIVE_OFFSET;
-            assertEquals("The nextUpdate value was not taken from ocsp.revoked.untilNextUpdate", 5000L, diff);
-            
-        } finally {
-            configurationSession.setConfigurationValue("ocsp." + CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ".untilNextUpdate", oldConfigurationValue1);
-            configurationSession.setConfigurationValue("ocsp." + CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ".revoked.untilNextUpdate", oldConfigurationValue2);
-            OcspTestUtils.setInternalKeyBindingStatus(authenticationToken, internalKeyBindingId, InternalKeyBindingStatus.ACTIVE);
-        }
-        
-    }
-    
     
     public static X509Certificate createCaCertificate(AuthenticationToken authenticationToken, Certificate certificate) throws CreateException, AuthorizationDeniedException {
         final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE

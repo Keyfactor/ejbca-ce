@@ -42,19 +42,6 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.Resource;
-import jakarta.ejb.AsyncResult;
-import jakarta.ejb.Asynchronous;
-import jakarta.ejb.EJB;
-import jakarta.ejb.SessionContext;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.Query;
-
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -83,7 +70,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.certificatetransparency.CTLogInfo;
 import org.cesecore.certificates.certificatetransparency.GoogleCtPolicy;
@@ -158,6 +144,19 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.annotation.Resource;
+import jakarta.ejb.AsyncResult;
+import jakarta.ejb.Asynchronous;
+import jakarta.ejb.EJB;
+import jakarta.ejb.SessionContext;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.Query;
 
 /**
  * The upgrade session bean is used to upgrade the database between EJBCA
@@ -1874,7 +1873,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             List<InternalKeyBindingTrustEntry> currentTrustEntries = ikbToEdit.getTrustedCertificateReferences();
             
             for (X509Certificate trustedCert : trustedCerts) {
-                final String subjectDn = trustedCert.getSubjectDN().getName();
+                final String subjectDn = trustedCert.getSubjectX500Principal().getName();
                 final DNFieldExtractor dnFieldExtractor = new DNFieldExtractor(subjectDn, DNFieldExtractor.TYPE_SUBJECTDN);
                 final String commonName = dnFieldExtractor.getFieldString(DNFieldExtractor.CN);
                 currentTrustEntries.add(new InternalKeyBindingTrustEntry(caid, trustedCert.getSerialNumber(), commonName));
@@ -2599,10 +2598,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         GlobalOcspConfiguration globalOcspConfiguration = (GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID);
         
         @SuppressWarnings("deprecation")
-        long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
+        long nextUpdate = OcspConfiguration.getUntilNextUpdate()/1000L;
         globalOcspConfiguration.setDefaultValidityTime(nextUpdate);
         @SuppressWarnings("deprecation")
-        long maxAge = OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE)/1000L;
+        long maxAge = OcspConfiguration.getMaxAge()/1000L;
         globalOcspConfiguration.setDefaultResponseMaxAge(maxAge);
         @SuppressWarnings("deprecation")
         boolean useMaxAgeForExpired = OcspConfiguration.getCacheHeaderMaxAge();
