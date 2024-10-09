@@ -2145,7 +2145,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      * @param req the OCSP request
      * @param ocspSigningCacheEntry the OCSP signing cache entry used 
      * @return a HashMap, can be empty but not null
-     * @throws IllegalNonceException if Nonce is larger than 32 bytes
+     * @throws IllegalNonceException if Nonce is larger than 128 bytes
      */
     private Map<ASN1ObjectIdentifier, Extension> getStandardResponseExtensions(final OCSPReq req, final OcspSigningCacheEntry ocspSigningCacheEntry)
             throws IllegalNonceException {
@@ -2159,9 +2159,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 ((GlobalOcspConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalOcspConfiguration.OCSP_CONFIGURATION_ID)).getNonceEnabled());
             if (null != ext && nonceEnable) {
                 ASN1OctetString noncestr = ext.getExtnValue();
-                // If we have a nonce, limit Nonce to 32 bytes to avoid chosen-prefix attack on hash collisions.
+                // If we have a nonce, limit Nonce to 128 bytes to avoid chosen-prefix attack on hash collisions.
                 // See https://groups.google.com/forum/#!topic/mozilla.dev.security.policy/x3TOIJL7MGw
-                // https://www.rfc-editor.org/rfc/rfc8954.txt
+                // https://www.rfc-editor.org/rfc/rfc9654.txt. The limit is now 128 bytes, but was previously 32 bytes (in the obsolete RFC-8954).
                 if ( (noncestr != null) && (noncestr.getOctets() != null)) {
                     byte[] nonceoctets;
                     try {
@@ -2176,9 +2176,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                         log.info("Non-parseable Nonce Octet String, invalid OCSP extension from client, letting is pass but checking the number of bytes raw");
                         nonceoctets = noncestr.getOctets();
                     }
-                    if (nonceoctets != null && (nonceoctets.length > 32 || nonceoctets.length < 1)) {
-                        log.info("Received OCSP request with Nonce larger than 32 bytes, rejecting.");
-                        throw new IllegalNonceException("Nonce too large");
+                    if (nonceoctets != null && (nonceoctets.length > 128 || nonceoctets.length < 1)) {
+                        log.info("Received OCSP request with Nonce extension of " + nonceoctets.length + " bytes was rejected. Allowed range: 1-128 bytes.");
+                        throw new IllegalNonceException("Invalid length of Nonce: " + nonceoctets.length + " bytes");
                     }
                 }
                 result.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
