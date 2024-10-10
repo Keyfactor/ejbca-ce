@@ -17,6 +17,8 @@ keywords: ["pki", "security", "encryption", "certificates", "management", "autom
 sources:
   - https://www.ejbca.org
   - https://github.com/Keyfactor/ejbca-ce
+  - https://docs.keyfactor.com/ejbca/latest
+  - https://docs.keyfactor.com/container/latest/ejbca
 #dependencies:
 #- name: postgresql
 #  repository: "https://charts.bitnami.com/bitnami"
