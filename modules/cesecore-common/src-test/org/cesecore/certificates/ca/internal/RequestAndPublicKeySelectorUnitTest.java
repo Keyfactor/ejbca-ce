@@ -61,12 +61,12 @@ public class RequestAndPublicKeySelectorUnitTest {
         keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-        KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_DILITHIUM,
+        KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_MLDSA,
                 BouncyCastleProvider.PROVIDER_NAME);
         alternativeKeyPairGenerator.initialize(DilithiumParameterSpec.dilithium2);
         KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
 
-        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_DILITHIUM2).setProvider(BouncyCastleProvider.PROVIDER_NAME)
+        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_MLDSA44).setProvider(BouncyCastleProvider.PROVIDER_NAME)
                 .build(alternativeKeyPair.getPrivate());
 
         JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name(subjectDn),

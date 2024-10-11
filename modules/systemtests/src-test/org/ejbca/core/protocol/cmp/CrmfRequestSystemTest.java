@@ -166,13 +166,13 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         this.testx509caSHA384 = CaTestUtils.createTestX509CA(ISSUER_DN_SHA384, null, false, keyusage, AlgorithmConstants.SIGALG_SHA384_WITH_RSA);
         this.caIDSHA384 = this.testx509caSHA384.getCAId();
         this.cacertSHA384 = (X509Certificate) this.testx509caSHA384.getCACertificate();
-        this.testx509caDilithium2 = CaTestUtils.createTestX509CA(ISSUER_DN_DILITHIUM2, null, false, keyusage, AlgorithmConstants.KEYALGORITHM_DILITHIUM2);
+        this.testx509caDilithium2 = CaTestUtils.createTestX509CA(ISSUER_DN_DILITHIUM2, null, false, keyusage, AlgorithmConstants.KEYALGORITHM_MLDSA44);
         this.caIDDilithium2 = this.testx509caDilithium2.getCAId();
         this.cacertDilithium2 = (X509Certificate) this.testx509caDilithium2.getCACertificate();
 
         // Client keys
         this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        this.keysDilithium2 = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2);
+        this.keysDilithium2 = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44);
     }
     @Override
     @Before

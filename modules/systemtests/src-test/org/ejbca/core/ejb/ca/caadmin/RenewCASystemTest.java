@@ -181,10 +181,10 @@ public class RenewCASystemTest extends CaTestCase {
             assertEquals("Current CA's Signature Algorithm should be EC", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, previousSigAlg);
             // Create a Dilithium2 key with a new alias
             final String nextKeyAlias = "signKeyRenewalDilithium2";
-            cryptoTokenManagementSession.createKeyPair(internalAdmin, caToken.getCryptoTokenId(), nextKeyAlias, KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2).build());
+            cryptoTokenManagementSession.createKeyPair(internalAdmin, caToken.getCryptoTokenId(), nextKeyAlias, KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_MLDSA44).build());
 
             // To get EJBCA to renew a CA with a different key algorithm, we need to set the new signing algorithm in the CA's token,         
-            caToken.setSignatureAlgorithm( AlgorithmConstants.SIGALG_DILITHIUM2);
+            caToken.setSignatureAlgorithm( AlgorithmConstants.SIGALG_MLDSA44);
             // Update the CA with the new CAToken signature algorithm
             caSession.editCA(internalAdmin, info);
 
@@ -194,7 +194,7 @@ public class RenewCASystemTest extends CaTestCase {
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
-            assertEquals("New signature algorithm should be Dilithium", AlgorithmConstants.SIGALG_DILITHIUM2, newSigAlg);
+            assertEquals("New signature algorithm should be Dilithium", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
 
             // Check the Link certificate was signed using the previous Signing Algorithm
             linkCertificateAfterRenewalBytes = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
@@ -203,7 +203,7 @@ public class RenewCASystemTest extends CaTestCase {
             assertEquals("The link certificate should be signed by the CA's previous signing algorithm", previousSigAlg.toUpperCase(), CertTools.getCertSignatureAlgorithmNameAsString(linkCertificateAfterRenewal).toUpperCase());
 
             // Check the SignatureAlgorithm on the CA's Token is still set correctly
-            assertEquals("The signature algorithm on the CA's token was changed and should be ECDSA", AlgorithmConstants.SIGALG_DILITHIUM2, caToken.getSignatureAlgorithm());
+            assertEquals("The signature algorithm on the CA's token was changed and should be ECDSA", AlgorithmConstants.SIGALG_MLDSA44, caToken.getSignatureAlgorithm());
 
             // Check the link cert's IssuerDN matches the original CA's SubjectDN 
             assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getIssuerDN());
@@ -225,7 +225,7 @@ public class RenewCASystemTest extends CaTestCase {
             // The current Signing Algorithm should be Dilithium based
             final X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
             final String previousSigAlg = AlgorithmTools.getSignatureAlgorithm(orgcert);
-            assertEquals("Current CA's Signature Algorithm should be EC", AlgorithmConstants.SIGALG_DILITHIUM2, previousSigAlg);
+            assertEquals("Current CA's Signature Algorithm should be EC", AlgorithmConstants.SIGALG_MLDSA44, previousSigAlg);
             // Re-use the already existing EC key 
             final String nextKeyAlias = "signKeyRenewalEC";
             // Set a signature algorithm that doesn't match the nextKeyAlias         
@@ -243,7 +243,7 @@ public class RenewCASystemTest extends CaTestCase {
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
-            assertEquals("Signature algorithm should still be Dilithium", AlgorithmConstants.SIGALG_DILITHIUM2, newSigAlg);
+            assertEquals("Signature algorithm should still be Dilithium", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
 
             // Check the Link certificate is still the old one
             byte[] oldLinkCert = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
