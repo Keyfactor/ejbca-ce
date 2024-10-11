@@ -98,9 +98,9 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         createTestCA(); // RSA
         createPQCCa(TEST_FALCON512_CA_NAME, AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.SIGALG_FALCON512);
         createPQCCa(TEST_FALCON1024_CA_NAME, AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.SIGALG_FALCON1024);
-        createPQCCa(TEST_DILITHIUM2_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.SIGALG_DILITHIUM2);
-        createPQCCa(TEST_DILITHIUM3_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.SIGALG_DILITHIUM3);
-        createPQCCa(TEST_DILITHIUM5_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.SIGALG_DILITHIUM5);
+        createPQCCa(TEST_DILITHIUM2_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.SIGALG_MLDSA44);
+        createPQCCa(TEST_DILITHIUM3_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.SIGALG_MLDSA65);
+        createPQCCa(TEST_DILITHIUM5_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.SIGALG_MLDSA87);
         
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
@@ -111,7 +111,7 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         createEndEntity(TEST_DILITHIUM5_CA_NAME, DILITHIUM5_USERNAME);
         // Only use one set of client keys, we test with so many keys in CSRs so it is expected to work
         falcon512keys = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512);
-        dilithium2keys = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2);
+        dilithium2keys = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44);
     }
 
     @AfterClass
@@ -161,7 +161,7 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         log.debug("Reset status of " + RSA_USERNAME + " to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dilithium2keys.getPrivate(), dilithium2keys.getPublic(),
-                AlgorithmConstants.SIGALG_DILITHIUM2, false);
+                AlgorithmConstants.SIGALG_MLDSA44, false);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", selfcert);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -189,17 +189,17 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
 
     @Test
     public void testSignSessionDilithiumWithDilithium2CA() throws Exception {
-        testSignSessionPQCWithPQCCA(DILITHIUM2_USERNAME, TEST_DILITHIUM2_CA_NAME, dilithium2keys, AlgorithmConstants.SIGALG_DILITHIUM2);
+        testSignSessionPQCWithPQCCA(DILITHIUM2_USERNAME, TEST_DILITHIUM2_CA_NAME, dilithium2keys, AlgorithmConstants.SIGALG_MLDSA44);
     }
 
     @Test
     public void testSignSessionDilithiumWithDilithium3CA() throws Exception {
-        testSignSessionPQCWithPQCCA(DILITHIUM3_USERNAME, TEST_DILITHIUM3_CA_NAME, dilithium2keys, AlgorithmConstants.SIGALG_DILITHIUM2);
+        testSignSessionPQCWithPQCCA(DILITHIUM3_USERNAME, TEST_DILITHIUM3_CA_NAME, dilithium2keys, AlgorithmConstants.SIGALG_MLDSA44);
     }
 
     @Test
     public void testSignSessionDilithiumWithDilithium5CA() throws Exception {
-        testSignSessionPQCWithPQCCA(DILITHIUM5_USERNAME, TEST_DILITHIUM5_CA_NAME, dilithium2keys, AlgorithmConstants.SIGALG_DILITHIUM2);
+        testSignSessionPQCWithPQCCA(DILITHIUM5_USERNAME, TEST_DILITHIUM5_CA_NAME, dilithium2keys, AlgorithmConstants.SIGALG_MLDSA44);
     }
 
     private void testSignSessionPQCWithPQCCA(final String username, final String caname, KeyPair keys, String sigAlg) throws Exception {
@@ -237,7 +237,7 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
      */
     @Test
     public void testBCPKCS10DilithiumWithDilithiumCA() throws Exception {
-        testBCPKCS10PQCWithPQCCA(DILITHIUM2_USERNAME, TEST_DILITHIUM2_CA_NAME, dilithium2keys, AlgorithmConstants.SIGALG_DILITHIUM2);
+        testBCPKCS10PQCWithPQCCA(DILITHIUM2_USERNAME, TEST_DILITHIUM2_CA_NAME, dilithium2keys, AlgorithmConstants.SIGALG_MLDSA44);
 
     }
     
@@ -290,7 +290,7 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
             assertEquals("Spec was not Falcon 512", FalconParameterSpec.falcon_512, paramspec); 
         } else if (pk instanceof DilithiumPublicKey) {
             DilithiumPublicKey pub = (DilithiumPublicKey) pk;
-            assertEquals(pub.getAlgorithm(), AlgorithmConstants.KEYALGORITHM_DILITHIUM2);
+            assertEquals(pub.getAlgorithm(), AlgorithmConstants.KEYALGORITHM_MLDSA44);
             DilithiumParameterSpec paramspec = pub.getParameterSpec();
             assertNotNull("Dilithium can not have null spec", paramspec);
             assertEquals("Spec was not Dilithium-2", DilithiumParameterSpec.dilithium2, paramspec);                

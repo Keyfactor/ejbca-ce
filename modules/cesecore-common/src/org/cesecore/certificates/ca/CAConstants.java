@@ -737,11 +737,11 @@ public final class CAConstants {
                 return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_FALCON512_PRIV);
             case AlgorithmConstants.KEYALGORITHM_FALCON1024:
                 return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_FALCON1024_PRIV);
-            case AlgorithmConstants.KEYALGORITHM_DILITHIUM2:
+            case AlgorithmConstants.KEYALGORITHM_MLDSA44:
                 return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_DILITHIUM2_PRIV);
-            case AlgorithmConstants.KEYALGORITHM_DILITHIUM3:
+            case AlgorithmConstants.KEYALGORITHM_MLDSA65:
                 return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_DILITHIUM3_PRIV);
-            case AlgorithmConstants.KEYALGORITHM_DILITHIUM5:
+            case AlgorithmConstants.KEYALGORITHM_MLDSA87:
                 return KeyTools.getKeyPairFromPEM(CAConstants.PRESIGN_VALIDATION_KEY_DILITHIUM5_PRIV);
             default:
                 return null;

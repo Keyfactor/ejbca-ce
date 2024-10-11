@@ -336,7 +336,7 @@ public class CaAdminSessionHybridSystemTest {
         caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         if (hybrid) {
-            caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
+            caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44);
         }
         return caToken;
     }
@@ -364,7 +364,7 @@ public class CaAdminSessionHybridSystemTest {
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
                 KeyGenParams.builder("secp256r1").build());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS,
-                KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2).build());
+                KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_MLDSA44).build());
         return cryptoTokenId;
     }
     

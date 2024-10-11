@@ -488,11 +488,11 @@ public class CAsSystemTest extends CaTestCase {
     @Test
     public void testAddDilithiumCA() throws Exception {
         try {
-            createPQCCa(TEST_DILITHIUM2_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.SIGALG_DILITHIUM2);
+            createPQCCa(TEST_DILITHIUM2_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.SIGALG_MLDSA44);
             CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM2_CA_NAME);
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM2, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_MLDSA44, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM2_CA_NAME));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM2_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
@@ -507,11 +507,11 @@ public class CAsSystemTest extends CaTestCase {
             removeOldCa(TEST_DILITHIUM2_CA_NAME);
         }
         try {
-            createPQCCa(TEST_DILITHIUM3_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.SIGALG_DILITHIUM3);
+            createPQCCa(TEST_DILITHIUM3_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.SIGALG_MLDSA65);
             CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM3_CA_NAME);
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM3, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_MLDSA65, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM3_CA_NAME));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM3_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
@@ -526,11 +526,11 @@ public class CAsSystemTest extends CaTestCase {
             removeOldCa(TEST_DILITHIUM3_CA_NAME);
         }
         try {
-            createPQCCa(TEST_DILITHIUM5_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.SIGALG_DILITHIUM5);
+            createPQCCa(TEST_DILITHIUM5_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.SIGALG_MLDSA87);
             CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM5_CA_NAME);
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM5, sigAlg);
+            assertEquals(AlgorithmConstants.SIGALG_MLDSA87, sigAlg);
             assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM5_CA_NAME));
             assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM5_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)

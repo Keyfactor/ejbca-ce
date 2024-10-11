@@ -162,7 +162,7 @@ public class HybridCertificateSystemTest {
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
                 KeyGenParams.builder("secp256r1").build());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS,
-                KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2).build());
+                KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_MLDSA44).build());
 
         final String caDn = "CN=" + testName.getMethodName() + "_CA";
 
@@ -174,7 +174,7 @@ public class HybridCertificateSystemTest {
         caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
+        caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44);
 
         hybridRoot = X509CAInfo.getDefaultX509CAInfo(caDn, "testHybridRootCa", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
@@ -234,7 +234,7 @@ public class HybridCertificateSystemTest {
             keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
             KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-            KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_DILITHIUM,
+            KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_MLDSA,
                     BouncyCastleProvider.PROVIDER_NAME);
             alternativeKeyPairGenerator.initialize(DilithiumParameterSpec.dilithium2);
             KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
@@ -242,7 +242,7 @@ public class HybridCertificateSystemTest {
             JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(
                     new X500Name(subjectDn), keyPair.getPublic());
 
-            ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_DILITHIUM2)
+            ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_MLDSA44)
                     .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(alternativeKeyPair.getPrivate());
 
             PKCS10CertificationRequest pkcs10CertificationRequest = jcaPKCS10CertificationRequestBuilder
