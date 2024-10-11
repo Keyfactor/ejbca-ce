@@ -19,6 +19,7 @@ import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -52,10 +53,11 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
 	    CryptoToken cryptoToken = createSoftToken(true);
 	    doCaTokenFalcon("FALCON-512", cryptoToken, getCaTokenProperties("falcontest" + CAToken.DEFAULT_KEYSEQUENCE));
 	}
-    @Test
+
+	@Test
     public void testCATokenDilithium() throws Exception {
         CryptoToken cryptoToken = createSoftToken(true);
-        doCaTokenDilithium("DILITHIUM2", cryptoToken, getCaTokenProperties("dilithiumtest" + CAToken.DEFAULT_KEYSEQUENCE));
+        doCaTokenDilithium("ML-DSA-44", cryptoToken, getCaTokenProperties("dilithiumtest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
     @Test

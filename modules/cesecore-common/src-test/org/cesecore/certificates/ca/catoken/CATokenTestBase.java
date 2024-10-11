@@ -536,7 +536,7 @@ public abstract class CATokenTestBase {
 	        // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
 	        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
 	        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-	        catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
+	        catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44);
 	        catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 
 	        // First we start by deleting all old entries

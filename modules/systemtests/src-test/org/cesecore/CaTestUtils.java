@@ -101,7 +101,7 @@ public abstract class CaTestUtils {
     
     private static final String RSA_1024 = "RSA1024";
     private static final String EC_256 = "prime256v1";
-    private static final String DILITHIUM2 = AlgorithmConstants.KEYALGORITHM_DILITHIUM2;
+    private static final String DILITHIUM2 = AlgorithmConstants.KEYALGORITHM_MLDSA44;
 
     
     /**
