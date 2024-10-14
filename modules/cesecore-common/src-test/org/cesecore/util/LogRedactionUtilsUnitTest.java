@@ -107,8 +107,7 @@ public class LogRedactionUtilsUnitTest {
         
     }
 
-    //TODO: ECA-11309 PQ Readiness
-    //@Test
+    @Test
     public void testRedactionPatterns() {
         assertEquals("SubjectDN redaction pattern mismatch", LogRedactionUtils.getSubjectDnRedactionPattern(),
                 "((certificationid=)|(description=)|(jurisdictioncountry=)|(jurisdictionstate=)|(jurisdictionlocality=)|"
@@ -118,7 +117,8 @@ public class LogRedactionUtilsUnitTest {
                 + "(statutecitation=)|(trademarkofficename=)|(statutelocalityname=)|(statutestateorprovincename=)|"
                 + "(trademarkcountryorregionname=)|(statutecountryname=)|(marktype=)|"
                 + "(emailaddress=)|(email=)|(dn=)|(uniqueidentifier=)|"
-                + "(uid=)|(pid=)|(vid=)|(cn=)|(name=)|(sn=)|(serialnumber=)|(gn=)|(givenname=)|(initials=)|(surname=)|"
+                + "(uid=)|(pid=)|(vid=)|(rcacid=)|(icacid=)|(nodeid=)|(fabricid=)|(noccat=)|(fwsigningid=)|(cn=)|"
+                + "(name=)|(sn=)|(serialnumber=)|(gn=)|(givenname=)|(initials=)|(surname=)|"
                 + "(ou=)|(organizationidentifier=)|(st=)|(dc=)|(c=)).*");
         // include FASC-N only if it's available in the runtime edition
         final String federalAgencySmartCredentialNumberPattern = DnComponents.getDnIdFromAltName("FASCN") == null ? "" : "|(FASCN=)";
