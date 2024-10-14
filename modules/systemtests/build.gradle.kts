@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(libs.cert.cvc)
+    implementation(libs.jldap)
     testImplementation(project(":modules:cesecore-common"))
     testImplementation(project(":modules:cesecore-ejb-interface"))
     testImplementation(project(":modules:cesecore-entity"))
@@ -19,6 +20,8 @@ dependencies {
     testImplementation(project(":modules:ejbca-rest-common"))
     testImplementation(project(":modules:ejbca-ws"))
     testImplementation(project(":modules:ejbca-ws:common"))
+    testImplementation(project(":modules:peerconnector:common"))
+    testImplementation(project(":modules:peerconnector:interface"))
     testImplementation(project(":modules:plugins"))
     testImplementation(project(":modules:systemtests:common"))
     testImplementation(project(":modules:systemtests:ejb"))
@@ -46,7 +49,19 @@ dependencies {
         testImplementation(project(":modules:ejbca-entity:cli"))
         testImplementation(project(":modules:peerconnector:publ"))
     }
+    implementation("jboss:jboss-client:4.0.2")
+    implementation("org.jboss:jboss-remote-naming:2.0.5.Final")
+    implementation("org.jboss.logging:jboss-logging:3.6.1.Final")
+    implementation("org.jboss.xnio:xnio-api:3.8.15.Final")
+    implementation("org.jboss.xnio:xnio-nio:3.8.15.Final")
+    implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
+
     implementation("org.eclipse.angus:jakarta.mail:2.0.3")
+    implementation("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
+    implementation("com.sun.xml.ws:jaxws-rt:4.0.1")
+    implementation("com.sun.xml.bind:jaxb-core:4.0.2")
+    implementation("com.sun.xml.stream.buffer:streambuffer:2.1.0")
+
 
 }
 

@@ -66,6 +66,10 @@ dependencies {
     deploy("org.jboss.xnio:xnio-api:3.8.15.Final")
     deploy("org.jboss.xnio:xnio-nio:3.8.15.Final")
     deploy("org.eclipse.angus:jakarta.mail:2.0.3")
+    deploy("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
+    deploy("com.sun.xml.ws:jaxws-rt:4.0.1")
+    deploy("com.sun.xml.bind:jaxb-core:4.0.2")
+    deploy("com.sun.xml.stream.buffer:streambuffer:2.1.0")
 
     if (edition == "ee") {
         "earlibanddeploy"(project(path = ":modules:edition-specific-ee", configuration = "archives"))
@@ -321,7 +325,7 @@ subprojects {
                 shouldRunAfter("test")
 
                 filter {
-                    includeTestsMatching("CertStoreServletSystemTest")
+                    includeTestsMatching("HttpMethodsSystemTest")
                     excludeTestsMatching("*UnitTest")
                     isFailOnNoMatchingTests = false
                 }
