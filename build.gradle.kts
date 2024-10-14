@@ -65,6 +65,7 @@ dependencies {
     deploy("jboss:jboss-client:4.0.2")
     deploy("org.jboss.xnio:xnio-api:3.8.15.Final")
     deploy("org.jboss.xnio:xnio-nio:3.8.15.Final")
+    deploy("org.eclipse.angus:jakarta.mail:2.0.3")
 
     if (edition == "ee") {
         "earlibanddeploy"(project(path = ":modules:edition-specific-ee", configuration = "archives"))
