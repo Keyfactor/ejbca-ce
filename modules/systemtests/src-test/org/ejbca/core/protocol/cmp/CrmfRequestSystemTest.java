@@ -39,7 +39,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.bc.BCObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
@@ -52,6 +51,7 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.EncryptedKey;
 import org.bouncycastle.asn1.crmf.EncryptedValue;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
 import org.bouncycastle.asn1.x500.RDN;
@@ -337,7 +337,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, true, null, BCObjectIdentifiers.dilithium2.getId(), false);
+        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, true, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacertDilithium2, resp, reqId);
         String altNames = DnComponents.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
@@ -348,7 +348,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         ba = CmpMessageHelper.pkiMessageToByteArray(confirm);
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, false, null, BCObjectIdentifiers.dilithium2.getId(), false);
+        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, false, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), false);
         checkCmpPKIConfirmMessage(userDN, this.cacertDilithium2, resp);
 
         // Now revoke the bastard!
@@ -356,7 +356,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
         // Send request and receive response
         resp = sendCmpHttp(barev, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, false, null, BCObjectIdentifiers.dilithium2.getId(), false);
+        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, false, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), false);
         checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, reqId,
                                 PKIFailureInfo.badRequest);
 
@@ -373,7 +373,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         ba = CmpMessageHelper.pkiMessageToByteArray(req);
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, cmpAlias);
-        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, true, null, BCObjectIdentifiers.dilithium2.getId(), true, "primekey", false);
+        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, true, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), true, "primekey", false);
         cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacertDilithium2, resp, reqId);
         altNames = DnComponents.getSubjectAlternativeName(cert);
         assertNull("AltNames was not null (" + altNames + ").", altNames);
@@ -439,7 +439,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
         // We used a CA using Dilithium as signature algorithm here, verify that that's what the response uses
-        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, true, null, BCObjectIdentifiers.dilithium2.getId(), false);
+        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, true, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), false);
         final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacertDilithium2, resp, reqId);
 
         // Send a confirm message to the CA
@@ -449,7 +449,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(ba, 200, cmpAlias);
         // We used a CA using Dilithium as signature algorithm here, verify that that's what the response uses
-        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, false, null, BCObjectIdentifiers.dilithium2.getId(), false);
+        checkCmpResponseGeneral(resp, ISSUER_DN_DILITHIUM2, userDN, this.cacertDilithium2, nonce, transid, false, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), false);
         checkCmpPKIConfirmMessage(userDN, this.cacertDilithium2, resp);
         log.trace("<test03CrmfHttpOkUserUnisigSubSet137PBEPlusDilithium2");
     }
