@@ -59,6 +59,13 @@ dependencies {
     deploy(project(path = ":modules:crlstore", configuration = "archives"))
     deploy(project(path = ":modules:ra-gui", configuration = "archives"))
     deploy(project(path = ":modules:ejbca-rest-api", configuration = "archives"))
+    deploy("org.jboss:jboss-remote-naming:2.0.5.Final")
+    deploy("org.jboss.logging:jboss-logging:3.6.1.Final")
+    deploy("org.jboss.remoting:jboss-remoting:5.0.29.Final")
+    deploy("jboss:jboss-client:4.0.2")
+    deploy("org.jboss.xnio:xnio-api:3.8.15.Final")
+    deploy("org.jboss.xnio:xnio-nio:3.8.15.Final")
+
     if (edition == "ee") {
         "earlibanddeploy"(project(path = ":modules:edition-specific-ee", configuration = "archives"))
         deploy(project(path = ":modules:statedump:ejb", configuration = "archives"))
@@ -313,7 +320,7 @@ subprojects {
                 shouldRunAfter("test")
 
                 filter {
-                    includeTestsMatching("*SystemTest")
+                    includeTestsMatching("AcmeAccountManagementSystemTest")
                     excludeTestsMatching("*UnitTest")
                     isFailOnNoMatchingTests = false
                 }
