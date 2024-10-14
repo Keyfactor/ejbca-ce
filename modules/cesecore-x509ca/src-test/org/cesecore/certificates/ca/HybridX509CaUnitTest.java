@@ -45,6 +45,7 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -171,7 +172,7 @@ public class HybridX509CaUnitTest {
 
         X509CertificateHolder certHolder = new JcaX509CertificateHolder(caCertificate);
         PrivateKey alternativePrivateKey = cryptoToken.getPrivateKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
-        ContentSigner altSigGen = new JcaContentSignerBuilder("Dilithium2").setProvider(BouncyCastlePQCProvider.PROVIDER_NAME)
+        ContentSigner altSigGen = new JcaContentSignerBuilder("ML-DSA-44").setProvider(BouncyCastleProvider.PROVIDER_NAME)
                 .build(alternativePrivateKey);
         assertEquals("Incorrect alternative signature value", altSigGen.getAlgorithmIdentifier(),
                 AltSignatureAlgorithm.fromExtensions(certHolder.getExtensions()));
@@ -179,7 +180,7 @@ public class HybridX509CaUnitTest {
         assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativePublicKey.getEncoded()),
                 SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()));
         assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
-                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(alternativePublicKey)));
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(alternativePublicKey)));
     }
 
     @Test
@@ -195,7 +196,7 @@ public class HybridX509CaUnitTest {
 
         KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_MLDSA,
                 BouncyCastleProvider.PROVIDER_NAME);
-        alternativeKeyPairGenerator.initialize(DilithiumParameterSpec.dilithium2);
+        alternativeKeyPairGenerator.initialize(MLDSAParameterSpec.ml_dsa_44);
         KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
 
         JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name(subjectDn),
@@ -221,7 +222,7 @@ public class HybridX509CaUnitTest {
         X509CertificateHolder certHolder = new JcaX509CertificateHolder(x509Certificate);
         PrivateKey caAlternativePrivateKey = cryptoToken.getPrivateKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
         ContentSigner altSigGen = new JcaContentSignerBuilder(AlgorithmConstants.KEYALGORITHM_MLDSA44)
-                .setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePrivateKey);
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePrivateKey);
         assertEquals("Incorrect alternative signature value", altSigGen.getAlgorithmIdentifier(),
                 AltSignatureAlgorithm.fromExtensions(certHolder.getExtensions()));
 
@@ -236,7 +237,7 @@ public class HybridX509CaUnitTest {
         assertEquals("Incorrect alternative public key", alternativeKeyPair.getPublic(), alternativePublicKey);
         PublicKey caAlternativePublicKey = cryptoToken.getPublicKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
         assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
-                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
 
     }
 
