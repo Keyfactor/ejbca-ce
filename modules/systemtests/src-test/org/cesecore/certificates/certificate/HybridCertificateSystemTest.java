@@ -35,6 +35,7 @@ import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -236,7 +237,7 @@ public class HybridCertificateSystemTest {
 
             KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_MLDSA,
                     BouncyCastleProvider.PROVIDER_NAME);
-            alternativeKeyPairGenerator.initialize(DilithiumParameterSpec.dilithium2);
+            alternativeKeyPairGenerator.initialize(MLDSAParameterSpec.ml_dsa_44);
             KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
 
             JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(
@@ -268,7 +269,7 @@ public class HybridCertificateSystemTest {
 
             PublicKey caAlternativePublicKey = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
             assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
-                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
         } finally {
             try {
                 endEntityManagementSession.deleteUser(alwaysAllowToken, username);
