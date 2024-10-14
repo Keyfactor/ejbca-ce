@@ -3,6 +3,7 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.cert.cvc)
     testImplementation(project(":modules:cesecore-common"))
     testImplementation(project(":modules:cesecore-ejb-interface"))
     testImplementation(project(":modules:cesecore-entity"))
