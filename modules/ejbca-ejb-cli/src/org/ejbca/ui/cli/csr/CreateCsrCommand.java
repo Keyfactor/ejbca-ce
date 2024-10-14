@@ -434,13 +434,13 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         case "ED448":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_ED448;
             break;
-        case "DILITHIUM2":
+        case "ML-DSA-44":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA44;
             break;
-        case "DILITHIUM3":
+        case "ML-DSA-65":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA65;
             break;
-        case "DILITHIUM5":
+        case "ML-DSA-87":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87;
             break;
         case "FALCON-512":
