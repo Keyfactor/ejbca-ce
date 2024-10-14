@@ -42,7 +42,7 @@ public class CreateCsrCommandSystemTest {
     @Test
     public void testVanilla() throws IOException {
         Path tmpDir = Files.createTempDirectory("CreateCsrCommandSystemTest");
-        String[] args = new String[] { "--subjectdn", "CN=foo", "--keyalg", "RSA", "--keyspec", "1024", "--altkeyalg", "DILITHIUM2", "--destination", tmpDir.toFile().getAbsolutePath() };
+        String[] args = new String[] { "--subjectdn", "CN=foo", "--keyalg", "RSA", "--keyspec", "1024", "--altkeyalg", "ML-DSA-44", "--destination", tmpDir.toFile().getAbsolutePath() };
         //Verify that the command ran without errors
         assertEquals("CreateCsrCommand executed with errors, see logs.", CommandResult.SUCCESS, command.execute(args));
        
