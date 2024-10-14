@@ -101,7 +101,7 @@ public abstract class CaTestUtils {
     
     private static final String RSA_1024 = "RSA1024";
     private static final String EC_256 = "prime256v1";
-    private static final String DILITHIUM2 = AlgorithmConstants.KEYALGORITHM_MLDSA44;
+    private static final String ML_DSA_44 = AlgorithmConstants.KEYALGORITHM_MLDSA44;
 
     
     /**
@@ -443,8 +443,8 @@ public abstract class CaTestUtils {
             keyspec = RSA_1024;
         } else if (StringUtils.contains(caSignAlg, "ECDSA")) {
             keyspec = EC_256;
-        } else if (StringUtils.containsIgnoreCase(caSignAlg, "DILITHIUM2")) {
-            keyspec = DILITHIUM2;
+        } else if (StringUtils.containsIgnoreCase(caSignAlg, "ML-DSA-44")) {
+            keyspec = ML_DSA_44;
         } else {
             throw new InvalidAlgorithmException("Trying to create testCA with invalid signature algorithm: " + caSignAlg);
         }
