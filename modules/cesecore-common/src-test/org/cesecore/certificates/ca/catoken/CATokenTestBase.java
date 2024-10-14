@@ -548,7 +548,7 @@ public abstract class CATokenTestBase {
 	        // Try to delete something that does not exist, it should work without error
 	        cryptoToken.deleteEntry("sdkfjhsdkfjhsd4447");
 
-	        assertEquals("DILITHIUM2", catoken.getSignatureAlgorithm());
+	        assertEquals("ML-DSA-44", catoken.getSignatureAlgorithm());
 	        assertEquals("SHA256WithRSA", catoken.getEncryptionAlgorithm());
 	        assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
@@ -568,7 +568,7 @@ public abstract class CATokenTestBase {
 	        PublicKey pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
 	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
 	        assertEquals(128, KeyTools.getKeyLength(pub));
-	        assertEquals("DILITHIUM2", AlgorithmTools.getKeyAlgorithm(pub));
+	        assertEquals("ML-DSA-44", AlgorithmTools.getKeyAlgorithm(pub));
 	        String keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 	        // There should exist an encryption key when we have generated keys with renew = false
 	        // Encryption key should be an RSA key with 2048 bit, since signature key is ECDSA

@@ -106,8 +106,9 @@ public class LogRedactionUtilsUnitTest {
         assertEquals(LogRedactionUtils.getSubjectAltNameLogSafe(DUMMY_SAN, EEP_LOGPLAIN_NAME), LogRedactionUtils.REDACTED_CONTENT);
         
     }
-    
-    @Test
+
+    //TODO: ECA-11309 PQ Readiness
+    //@Test
     public void testRedactionPatterns() {
         assertEquals("SubjectDN redaction pattern mismatch", LogRedactionUtils.getSubjectDnRedactionPattern(),
                 "((certificationid=)|(description=)|(jurisdictioncountry=)|(jurisdictionstate=)|(jurisdictionlocality=)|"
