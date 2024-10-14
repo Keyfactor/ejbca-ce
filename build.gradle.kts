@@ -320,7 +320,7 @@ subprojects {
                 shouldRunAfter("test")
 
                 filter {
-                    includeTestsMatching("AcmeAccountManagementSystemTest")
+                    includeTestsMatching("*SystemTest")
                     excludeTestsMatching("*UnitTest")
                     isFailOnNoMatchingTests = false
                 }
