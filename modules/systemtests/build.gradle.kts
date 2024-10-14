@@ -46,6 +46,8 @@ dependencies {
         testImplementation(project(":modules:ejbca-entity:cli"))
         testImplementation(project(":modules:peerconnector:publ"))
     }
+    implementation("org.eclipse.angus:jakarta.mail:2.0.3")
+
 }
 
 sourceSets {
