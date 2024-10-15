@@ -83,6 +83,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.ApprovalRequestType;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -2699,7 +2700,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         final String cryptoTokenName = "testCreateExternallySignedCa";
         int cryptoTokenId = CryptoTokenTestUtils.createSoftCryptoToken(intAdmin, cryptoTokenName);
         final String rootCaName = "ExternalCaRoot";
-        X509CA rootCa = CaTestUtils.createActiveX509Ca(intAdmin, rootCaName, rootCaName, "CN="+rootCaName);
+        CACommon rootCa = CaTestUtils.createActiveCACommon(intAdmin, rootCaName, rootCaName, "CN="+rootCaName);
         try {
             // Generate CA key pairs
             final String decKeyAlias = CAToken.SOFTPRIVATEDECKEYALIAS;
