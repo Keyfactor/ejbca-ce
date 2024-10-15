@@ -24,9 +24,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -192,7 +192,7 @@ public class MultiGroupPublisherSystemTest {
         certiciateProfileId = certificateProfileSession.addCertificateProfile(alwaysAllowToken, CERT_PROFILE_NAME, certProf);
 
         log.debug("Creating CA");
-        final X509CA ca = CaTestUtils.createActiveX509Ca(alwaysAllowToken, CA_NAME, CA_NAME, CA_DN);
+        final CACommon ca = CaTestUtils.createActiveCACommon(alwaysAllowToken, CA_NAME, CA_NAME, CA_DN);
         final CAInfo cainfo = ca.getCAInfo();
         cainfo.setCertificateProfileId(certiciateProfileId);
         caSession.editCA(alwaysAllowToken, cainfo);

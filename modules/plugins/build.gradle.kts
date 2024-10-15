@@ -20,9 +20,14 @@ dependencies {
     compileOnly(libs.x509.common.util)
     testImplementation(project(":modules:systemtests:ejb"))
     testCompileOnly(project(":modules:systemtests:common"))
-    testCompileOnly(project(":modules:systemtests:interface"))
-    testCompileOnly(project(":modules:systemtests").dependencyProject.sourceSets["test"].output)
+    testImplementation(project(":modules:systemtests:interface"))
+    testImplementation(project(":modules:systemtests").dependencyProject.sourceSets["test"].output)
+    compileOnly(project(":modules:ejbca-ejb-interface"))
+    testImplementation(project(":modules:cesecore-entity"))
+    testImplementation(project(":modules:cesecore-x509ca"))
     testRuntimeOnly(libs.cert.cvc)
+    testImplementation(libs.cryptotokens.api)
+    testImplementation(libs.cryptotokens.impl)
 }
 
 sourceSets {
