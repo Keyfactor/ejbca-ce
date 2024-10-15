@@ -60,7 +60,10 @@ dependencies {
     implementation("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     implementation("com.sun.xml.ws:jaxws-rt:4.0.1")
     implementation("com.sun.xml.bind:jaxb-core:4.0.2")
+    implementation("com.sun.xml.bind:jaxb-impl:4.0.2")
     implementation("com.sun.xml.stream.buffer:streambuffer:2.1.0")
+    implementation("org.jvnet.staxex:stax-ex:1.8")
+    implementation("org.glassfish.gmbal:gmbal:4.0.3")
 
 
 }
