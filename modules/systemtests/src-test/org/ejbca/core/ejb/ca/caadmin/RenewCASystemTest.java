@@ -170,7 +170,7 @@ public class RenewCASystemTest extends CaTestCase {
             assertEquals("notBefore in the link certificate should be the same as notBefore in the new CA certificate.", newcert.getNotBefore(), linkCertificateAfterRenewal.getNotBefore());
         }
 
-        // Prepare to renew CA but with a Dilithium key instead of EC
+        // Prepare to renew CA but with a ML-DSA key instead of EC
         final byte[] linkCertificateAfterRenewalBytes;
         {
             final X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
@@ -179,8 +179,8 @@ public class RenewCASystemTest extends CaTestCase {
             final X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
             final String previousSigAlg = AlgorithmTools.getSignatureAlgorithm(orgcert);
             assertEquals("Current CA's Signature Algorithm should be EC", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, previousSigAlg);
-            // Create a Dilithium2 key with a new alias
-            final String nextKeyAlias = "signKeyRenewalDilithium2";
+            // Create a ML-DSA-44 key with a new alias
+            final String nextKeyAlias = "signKeyRenewalMLDSA44";
             cryptoTokenManagementSession.createKeyPair(internalAdmin, caToken.getCryptoTokenId(), nextKeyAlias, KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_MLDSA44).build());
 
             // To get EJBCA to renew a CA with a different key algorithm, we need to set the new signing algorithm in the CA's token,         
@@ -190,15 +190,15 @@ public class RenewCASystemTest extends CaTestCase {
 
             // We are all set and now ready to renew the CA
             caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true);        
-            // Check the CA's new certificate has the Dilithium based signing algorithm
+            // Check the CA's new certificate has the ML-DSA based signing algorithm
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
-            assertEquals("New signature algorithm should be Dilithium", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
+            assertEquals("New signature algorithm should be ML-DSA", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
 
             // Check the Link certificate was signed using the previous Signing Algorithm
             linkCertificateAfterRenewalBytes = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
-            assertNotNull("There is no available link certificate after CA renewal with Dilithium key", linkCertificateAfterRenewalBytes);
+            assertNotNull("There is no available link certificate after CA renewal with ML-DSA key", linkCertificateAfterRenewalBytes);
             final X509Certificate linkCertificateAfterRenewal = CertTools.getCertfromByteArray(linkCertificateAfterRenewalBytes, X509Certificate.class);
             assertEquals("The link certificate should be signed by the CA's previous signing algorithm", previousSigAlg.toUpperCase(), CertTools.getCertSignatureAlgorithmNameAsString(linkCertificateAfterRenewal).toUpperCase());
 
@@ -222,7 +222,7 @@ public class RenewCASystemTest extends CaTestCase {
         {
             final X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final CAToken caToken = info.getCAToken();
-            // The current Signing Algorithm should be Dilithium based
+            // The current Signing Algorithm should be ML-DSA based
             final X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
             final String previousSigAlg = AlgorithmTools.getSignatureAlgorithm(orgcert);
             assertEquals("Current CA's Signature Algorithm should be EC", AlgorithmConstants.SIGALG_MLDSA44, previousSigAlg);
@@ -239,11 +239,11 @@ public class RenewCASystemTest extends CaTestCase {
             } catch (EJBException e) {
                 assertTrue(e.getMessage(), e.getMessage().contains("Supplied key (org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey) is not a RSAPrivateKey instance"));
             }
-            // Check the CA's certificate still have has Dilithium signing algorithm
+            // Check the CA's certificate still have has ML-DSA signing algorithm
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
-            assertEquals("Signature algorithm should still be Dilithium", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
+            assertEquals("Signature algorithm should still be ML-DSA", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
 
             // Check the Link certificate is still the old one
             byte[] oldLinkCert = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());

@@ -613,7 +613,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         KeyPair userKeyPairRSA = genTestKeyPair("SHA256WithRSA");
         KeyPair userKeyPairECDSA = genTestKeyPair("SHA256WithECDSA");
         KeyPair userKeyPairEd25519 = genTestKeyPair(AlgorithmConstants.SIGALG_ED25519);
-        KeyPair userKeyPairDilithium3 = genTestKeyPair(AlgorithmConstants.SIGALG_MLDSA65);
+        KeyPair userKeyPairMLDSA65 = genTestKeyPair(AlgorithmConstants.SIGALG_MLDSA65);
         KeyPair userKeyPairFalcon512 = genTestKeyPair(AlgorithmConstants.SIGALG_FALCON512);
 
         // Create a CA using SHA256WithRSA as sigAlg
@@ -623,7 +623,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
 
@@ -634,7 +634,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
 
@@ -645,7 +645,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
         // Create a CA using Ed25519 as sigAlg
@@ -655,17 +655,17 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
-        // Create a CA using Dilithium3 as sigAlg
+        // Create a CA using ML-DSA-65 as sigAlg
         {
             final CryptoToken cryptoToken = getNewCryptoToken();
             final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_MLDSA65, null, null);
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
         // Create a CA using Falcon-512 as sigAlg
@@ -675,7 +675,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
     }
