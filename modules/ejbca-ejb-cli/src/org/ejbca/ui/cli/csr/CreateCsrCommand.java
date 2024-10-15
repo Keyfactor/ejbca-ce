@@ -133,8 +133,8 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         registerParameter(new Parameter(KEYALG_ARG, "cipher", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Cipher must be one of [ " + AlgorithmConstants.KEYALGORITHM_RSA + ", " + AlgorithmConstants.KEYALGORITHM_EC + ", "
                         + AlgorithmConstants.KEYALGORITHM_ED25519 + ", " + AlgorithmConstants.KEYALGORITHM_ED448 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_DILITHIUM2 + ", " + AlgorithmConstants.KEYALGORITHM_DILITHIUM3 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_DILITHIUM5 + ", " + AlgorithmConstants.KEYALGORITHM_FALCON512 + ", "
+                        + AlgorithmConstants.KEYALGORITHM_MLDSA44 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA65 + ", "
+                        + AlgorithmConstants.KEYALGORITHM_MLDSA87 + ", " + AlgorithmConstants.KEYALGORITHM_FALCON512 + ", "
                         + AlgorithmConstants.KEYALGORITHM_FALCON1024 + "].  Omit if using existing keys."));
 
         StringBuilder ecCurvesFormatted = new StringBuilder();
@@ -151,8 +151,8 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         registerParameter(new Parameter(ALT_KEYALG_ARG, "cipher", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Alternative cipher must be one of [ " + AlgorithmConstants.KEYALGORITHM_RSA + ", " + AlgorithmConstants.KEYALGORITHM_EC + ", "
                         + AlgorithmConstants.KEYALGORITHM_ED25519 + ", " + AlgorithmConstants.KEYALGORITHM_ED448 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_DILITHIUM2 + ", " + AlgorithmConstants.KEYALGORITHM_DILITHIUM3 + ", "
-                        + AlgorithmConstants.KEYALGORITHM_DILITHIUM5 + ", " + AlgorithmConstants.KEYALGORITHM_FALCON512 + ", "
+                        + AlgorithmConstants.KEYALGORITHM_MLDSA44 + ", " + AlgorithmConstants.KEYALGORITHM_MLDSA65 + ", "
+                        + AlgorithmConstants.KEYALGORITHM_MLDSA87 + ", " + AlgorithmConstants.KEYALGORITHM_FALCON512 + ", "
                         + AlgorithmConstants.KEYALGORITHM_FALCON1024 + "].  Omit if using existing keys."));
 
         registerParameter(new Parameter(ALT_KEYSPEC_ARG, "Key Specification", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
@@ -434,14 +434,14 @@ public class CreateCsrCommand extends EjbcaCommandBase {
         case "ED448":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_ED448;
             break;
-        case "DILITHIUM2":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DILITHIUM2;
+        case "ML-DSA-44":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA44;
             break;
-        case "DILITHIUM3":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DILITHIUM3;
+        case "ML-DSA-65":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA65;
             break;
-        case "DILITHIUM5":
-            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_DILITHIUM5;
+        case "ML-DSA-87":
+            keyAlgorithm = AlgorithmConstants.KEYALGORITHM_MLDSA87;
             break;
         case "FALCON-512":
             keyAlgorithm = AlgorithmConstants.KEYALGORITHM_FALCON512;
