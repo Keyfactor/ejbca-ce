@@ -1,0 +1,12 @@
+{{- if .Values.networkPolicy }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "ejbca.fullname" . }}-network-policy
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: ejbca
+      app.kubernetes.io/instance: {{ include "ejbca.fullname" . }}
+  {{- toYaml .Values.networkPolicy | nindent 2 }}
+{{- end }}  
