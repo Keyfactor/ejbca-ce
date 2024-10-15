@@ -528,7 +528,7 @@ public abstract class CATokenTestBase {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
     }
 
-	protected void doCaTokenDilithium(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
+	protected void doCaTokenMLDSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
 	CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
 	    log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
 	    final CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
@@ -541,7 +541,7 @@ public abstract class CATokenTestBase {
 
 	        // First we start by deleting all old entries
 	        for (int i=0; i<4; i++) {
-	            cryptoToken.deleteEntry("dilithiumtest0000"+i);
+	            cryptoToken.deleteEntry("ml-dsa-test0000"+i);
 	        }
 	        cryptoToken.deleteEntry(ENCRYPTION_KEY);
 
@@ -663,7 +663,7 @@ public abstract class CATokenTestBase {
 	    } finally {
 	        // Clean up and delete our generated keys
 	        for (int i=0; i<4; i++) {
-	            cryptoToken.deleteEntry("dilithiumtest0000"+i);
+	            cryptoToken.deleteEntry("ml-dsa-test0000"+i);
 	        }
 	        cryptoToken.deleteEntry("rsatest00001");            
 	        cryptoToken.deleteEntry("ecctest0000000002");

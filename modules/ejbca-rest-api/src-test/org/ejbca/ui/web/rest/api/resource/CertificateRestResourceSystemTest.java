@@ -289,7 +289,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String[] availableAlgorithms = { "RSA" };
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
 
-        final String[] availableAltAlgorithms = {"KYBER768", "DILITHIUM3"};
+        final String[] availableAltAlgorithms = {"KYBER768", "ML-DSA-65"};
         certificateProfile.setUseAlternativeSignature(true);
         certificateProfile.setAlternativeAvailableKeyAlgorithms(availableAltAlgorithms);
 
@@ -338,7 +338,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String[] availableAlgorithms = { "RSA" };
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
 
-        final String[] availableAltAlgorithms = {"KYBER768", "DILITHIUM3"};
+        final String[] availableAltAlgorithms = {"KYBER768", "ML-DSA-65"};
         // Alternative signature is NOT used.
         certificateProfile.setUseAlternativeSignature(false);
         certificateProfile.setAlternativeAvailableKeyAlgorithms(availableAltAlgorithms);
