@@ -1555,7 +1555,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("Not possible to sign a payload using a CV CA", e);
         }
         final CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-        // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3            
+        // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between ML-DSA-44 and ML-DSA-65
         final String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(catoken.getSignatureAlgorithm(),
                 publicKey.getAlgorithm());
         try {

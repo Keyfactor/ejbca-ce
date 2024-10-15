@@ -147,7 +147,7 @@ public class HybridX509CaUnitTest {
     }
 
     /**
-     * Construct a vanilla X509 root CA with an P256 key as primary and Dilithium2 as alternative
+     * Construct a vanilla X509 root CA with an P256 key as primary and ML-DSA-44 as alternative
      */
     @Test
     public void testHybridRootCa() throws CryptoTokenOfflineException, OperatorCreationException,

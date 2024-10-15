@@ -873,10 +873,10 @@ public class CertificateProfileUnitTest {
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
-        // Add dilithium as allowed
+        // Add ML-DSA as allowed
         certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_MLDSA44});
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
-        // With Dilithium Specify only one EC curve
+        // With ML-DSA Specify only one EC curve
         certificateProfile.setAvailableEcCurves(new String[] {"secp256r1"});
         certificateProfile.setAvailableBitLengths(new int[] {2048});
         assertFalse(certificateProfile.isKeyTypeAllowed("OTHER", "2048"));

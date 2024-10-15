@@ -19,7 +19,6 @@ import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -55,9 +54,9 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
 	}
 
 	@Test
-    public void testCATokenDilithium() throws Exception {
+    public void testCATokenMLDSA() throws Exception {
         CryptoToken cryptoToken = createSoftToken(true);
-        doCaTokenDilithium("ML-DSA-44", cryptoToken, getCaTokenProperties("dilithiumtest" + CAToken.DEFAULT_KEYSEQUENCE));
+        doCaTokenMLDSA("ML-DSA-44", cryptoToken, getCaTokenProperties("ml-dsa-test" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
     @Test
