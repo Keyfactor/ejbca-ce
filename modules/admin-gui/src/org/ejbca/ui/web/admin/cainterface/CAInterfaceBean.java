@@ -1250,7 +1250,7 @@ public class CAInterfaceBean implements Serializable {
                 //Or in case of RSA
                 aliases.add(cryptoTokenKeyPairInfo.getAlias());
             }
-            // Dilithium and Falcon can only sign, so skip the PQ algorithms
+            // ML-DSA and Falcon can only sign, so skip the PQ algorithms
         }
         
         return aliases;

@@ -12,8 +12,21 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.internal;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -23,22 +36,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.ECGenParameterSpec;
 
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
-import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for the RequestAndPublicKeySelector class
@@ -61,12 +60,12 @@ public class RequestAndPublicKeySelectorUnitTest {
         keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-        KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_DILITHIUM,
+        KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_MLDSA,
                 BouncyCastleProvider.PROVIDER_NAME);
-        alternativeKeyPairGenerator.initialize(DilithiumParameterSpec.dilithium2);
+        alternativeKeyPairGenerator.initialize(MLDSAParameterSpec.ml_dsa_44);
         KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
 
-        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_DILITHIUM2).setProvider(BouncyCastleProvider.PROVIDER_NAME)
+        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_MLDSA44).setProvider(BouncyCastleProvider.PROVIDER_NAME)
                 .build(alternativeKeyPair.getPrivate());
 
         JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name(subjectDn),

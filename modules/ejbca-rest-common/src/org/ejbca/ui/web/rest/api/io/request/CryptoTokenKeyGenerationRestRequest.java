@@ -26,7 +26,7 @@ public class CryptoTokenKeyGenerationRestRequest {
 
     @Schema(description = "Key pair aliasof the key pair to be generated, must not already exist", example = "signKey")
     private String keyPairAlias;
-    @Schema(description = "Key algorithm, required for some algorithms, RSA, not required for others like EC or Dilithium", example = "RSA")
+    @Schema(description = "Key algorithm, required for some algorithms, RSA, not required for others like EC or ML-DSA", example = "RSA")
     private String keyAlg;
     @Schema(description = "Key specification, key size, curve or name, must be supported by the underlying crypto token, like 4096 for RSA or secp256r1 for EC", example = "4096")
     private String keySpec;

@@ -117,9 +117,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static final String TEST_EDDSA_CA_NAME = "TESTEDDSA";
     public static final String TEST_FALCON512_CA_NAME = "TESTFALCON512";
     public static final String TEST_FALCON1024_CA_NAME = "TESTFALCON1024";
-    public static final String TEST_DILITHIUM2_CA_NAME = "TESTDILITHIUM2";
-    public static final String TEST_DILITHIUM3_CA_NAME = "TESTDILITHIUM3";
-    public static final String TEST_DILITHIUM5_CA_NAME = "TESTDILITHIUM5";
+    public static final String TEST_MLDSA44_CA_NAME = "TESTMLDSA44";
+    public static final String TEST_MLDSA65_CA_NAME = "TESTMLDSA65";
+    public static final String TEST_MLDSA87_CA_NAME = "TESTMLDSA87";
     public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
     public static final String TEST_SHA256_WITH_MFG1_CA_DN = "CN="+TEST_SHA256_WITH_MFG1_CA_NAME;
     public static final String TEST_RSA_REVSERSE_CA_DN = DnComponents.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE"); 
