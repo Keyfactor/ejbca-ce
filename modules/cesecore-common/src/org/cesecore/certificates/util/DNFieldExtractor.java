@@ -254,10 +254,8 @@ public class DNFieldExtractor implements Serializable {
         if ((StringUtils.isNotEmpty(dn)) && !dn.equalsIgnoreCase("null")) {
             try {
                 if (type == TYPE_SUBJECTDN) {
-                    System.out.println("1");
                     // Check if there are multi value RDNs
                     RDN[] rdns = IETFUtils.rDNsFromString(dn, CeSecoreNameStyle.INSTANCE);
-                    System.out.println(rdns.length);
                     final X500NameBuilder nameBuilder = new X500NameBuilder(CeSecoreNameStyle.INSTANCE);
                     boolean hasMultiValue = false;
                     for (RDN rdn : rdns) {
