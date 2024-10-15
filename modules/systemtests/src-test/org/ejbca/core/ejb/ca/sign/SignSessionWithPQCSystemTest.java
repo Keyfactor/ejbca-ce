@@ -12,11 +12,18 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import java.io.ByteArrayOutputStream;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1OutputStream;
@@ -46,12 +53,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 
-import java.io.ByteArrayOutputStream;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -61,9 +62,9 @@ import static org.junit.Assert.fail;
  * Tests signing with PQC algorithms
  * Falcon-512
  * Falcon-1024
- * MLDSA44
- * MLDSA65
- * MLDSA87
+ * ML-DSA-44
+ * ML-DSA-65
+ * ML-DSA-87
  */
 public class SignSessionWithPQCSystemTest extends SignSessionCommon {
 
@@ -100,7 +101,7 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         createPQCCa(TEST_MLDSA44_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.SIGALG_MLDSA44);
         createPQCCa(TEST_MLDSA65_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.SIGALG_MLDSA65);
         createPQCCa(TEST_MLDSA87_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.SIGALG_MLDSA87);
-        
+
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
         createEndEntity(TEST_FALCON512_CA_NAME, FALCON512_USERNAME);
@@ -230,7 +231,7 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         testBCPKCS10PQCWithPQCCA(FALCON512_USERNAME, TEST_FALCON512_CA_NAME, falcon512keys, AlgorithmConstants.SIGALG_FALCON512);
 
     }
-    
+
     /**
      * Tests PKCS10 to MLDSA CA
      */
@@ -239,7 +240,7 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         testBCPKCS10PQCWithPQCCA(MLDSA44_USERNAME, TEST_MLDSA44_CA_NAME, mldsa44keys, AlgorithmConstants.SIGALG_MLDSA44);
 
     }
-    
+
     private void testBCPKCS10PQCWithPQCCA(final String username, final String caname, final KeyPair keys, final String sigAlg) throws Exception {
         endEntityManagementSession.setUserStatus(internalAdmin, username, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of " + username + " to NEW");
@@ -286,16 +287,16 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
             assertEquals(pub.getAlgorithm(), AlgorithmConstants.KEYALGORITHM_FALCON512);
             FalconParameterSpec paramspec = pub.getParameterSpec();
             assertNotNull("Falcon can not have null spec", paramspec);
-            assertEquals("Spec was not Falcon 512", FalconParameterSpec.falcon_512, paramspec);
+            assertEquals("Spec was not Falcon-512", FalconParameterSpec.falcon_512, paramspec);
         } else if (pk instanceof MLDSAPublicKey) {
             MLDSAPublicKey pub = (MLDSAPublicKey) pk;
             assertEquals(pub.getAlgorithm(), AlgorithmConstants.KEYALGORITHM_MLDSA44);
             MLDSAParameterSpec paramspec = pub.getParameterSpec();
-            assertNotNull("MLDSA spec can not have null spec", paramspec);
-            assertEquals("Spec was not MLDSA-44", MLDSAParameterSpec.ml_dsa_44, paramspec);         
+            assertNotNull("ML-DSA spec can not have null spec", paramspec);
+            assertEquals("Spec was not ML-DSA-44", MLDSAParameterSpec.ml_dsa_44, paramspec);
         } else {
-            assertTrue("Public key is not Falcon or MLDSA: " + pk.getClass().getName(), false);
-        }        
+            assertTrue("Public key is not Falcon or ML-DSA: " + pk.getClass().getName(), false);
+        }
     }
 
     private static void createEndEntity(final String caname, final String username) throws Exception {

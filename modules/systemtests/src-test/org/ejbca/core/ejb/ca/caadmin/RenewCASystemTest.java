@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 
-import jakarta.ejb.EJBException;
-
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -55,6 +53,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import jakarta.ejb.EJBException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -74,17 +74,20 @@ public class RenewCASystemTest extends CaTestCase {
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static GlobalConfigurationSessionRemote globalConfigSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    
+
+    @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
     }
 
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
     }
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
     }
@@ -116,13 +119,13 @@ public class RenewCASystemTest extends CaTestCase {
         log.trace("<test01renewCA()");
     }
 
-    
-    /** Test renewal of a CA using a different key algorithm. 
+
+    /** Test renewal of a CA using a different key algorithm.
      */
     @Test
     public void testRenewCAChangeKeyAlg() throws Exception {
         log.trace(">testRenewCAChangeKeyAlg()");
-        
+
         // Prepare to renew CA but with an EC key instead of RSA
         {
             final X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
@@ -135,13 +138,13 @@ public class RenewCASystemTest extends CaTestCase {
             final String nextKeyAlias = "signKeyRenewalEC";
             cryptoTokenManagementSession.createKeyPair(internalAdmin, caToken.getCryptoTokenId(), nextKeyAlias, KeyGenParams.builder("prime256v1").build());
 
-            // To get EJBCA to renew a CA with a different key algorithm, we need to set the new signing algorithm in the CA's token,         
+            // To get EJBCA to renew a CA with a different key algorithm, we need to set the new signing algorithm in the CA's token,
             caToken.setSignatureAlgorithm( AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             // Update the CA with the new CAToken signature algorithm
             caSession.editCA(internalAdmin, info);
 
             // We are all set and now ready to renew the CA
-            caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true);        
+            caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true);
             // Check the CA's new certificate has the ECDSA based signing algorithm
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
@@ -157,13 +160,13 @@ public class RenewCASystemTest extends CaTestCase {
             // Check the SignatureAlgorithm on the CA's Token is still set correctly
             assertEquals("The signature algorithm on the CA's token was changed and should be ECDSA", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, caToken.getSignatureAlgorithm());
 
-            // Check the link cert's IssuerDN matches the original CA's SubjectDN 
+            // Check the link cert's IssuerDN matches the original CA's SubjectDN
             assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getIssuerDN());
 
             // Check the link cert's SubjectDN matches the original CA's SubjectDN
             // Note: Because there was not a Name change occurring
             assertEquals("The SubjectDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getSubjectDN());
-            
+
             // Check validity period, notAfter in the link certificate should be same as notAfter in the old CA certificate
             assertEquals("notAfter in the link certificate should be the same as notAfter in the old CA certificate.", orgcert.getNotAfter(), linkCertificateAfterRenewal.getNotAfter());
             // notBefore in the link certificate should be same as notBefore in the new CA certificate
@@ -183,18 +186,18 @@ public class RenewCASystemTest extends CaTestCase {
             final String nextKeyAlias = "signKeyRenewalMLDSA44";
             cryptoTokenManagementSession.createKeyPair(internalAdmin, caToken.getCryptoTokenId(), nextKeyAlias, KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_MLDSA44).build());
 
-            // To get EJBCA to renew a CA with a different key algorithm, we need to set the new signing algorithm in the CA's token,         
+            // To get EJBCA to renew a CA with a different key algorithm, we need to set the new signing algorithm in the CA's token,
             caToken.setSignatureAlgorithm( AlgorithmConstants.SIGALG_MLDSA44);
             // Update the CA with the new CAToken signature algorithm
             caSession.editCA(internalAdmin, info);
 
             // We are all set and now ready to renew the CA
-            caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true);        
+            caAdminSession.renewCA(internalAdmin, info.getCAId(), nextKeyAlias, null, /*CreateLinkCert*/true);
             // Check the CA's new certificate has the ML-DSA based signing algorithm
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
-            assertEquals("New signature algorithm should be ML-DSA", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
+            assertEquals("New signature algorithm should be ML-DSA-44", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
 
             // Check the Link certificate was signed using the previous Signing Algorithm
             linkCertificateAfterRenewalBytes = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
@@ -205,7 +208,7 @@ public class RenewCASystemTest extends CaTestCase {
             // Check the SignatureAlgorithm on the CA's Token is still set correctly
             assertEquals("The signature algorithm on the CA's token was changed and should be ECDSA", AlgorithmConstants.SIGALG_MLDSA44, caToken.getSignatureAlgorithm());
 
-            // Check the link cert's IssuerDN matches the original CA's SubjectDN 
+            // Check the link cert's IssuerDN matches the original CA's SubjectDN
             assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getIssuerDN());
 
             // Check the link cert's SubjectDN matches the original CA's SubjectDN
@@ -217,7 +220,7 @@ public class RenewCASystemTest extends CaTestCase {
             // notBefore in the link certificate should be same as notBefore in the new CA certificate
             assertEquals("notBefore in the link certificate should be the same as notBefore in the new CA certificate.", newcert.getNotBefore(), linkCertificateAfterRenewal.getNotBefore());
         }
-        
+
         // Try to renew CA but with an invalid algorithm not matching the signing key, it should fail and nothing should be done
         {
             final X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
@@ -226,9 +229,9 @@ public class RenewCASystemTest extends CaTestCase {
             final X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
             final String previousSigAlg = AlgorithmTools.getSignatureAlgorithm(orgcert);
             assertEquals("Current CA's Signature Algorithm should be EC", AlgorithmConstants.SIGALG_MLDSA44, previousSigAlg);
-            // Re-use the already existing EC key 
+            // Re-use the already existing EC key
             final String nextKeyAlias = "signKeyRenewalEC";
-            // Set a signature algorithm that doesn't match the nextKeyAlias         
+            // Set a signature algorithm that doesn't match the nextKeyAlias
             caToken.setSignatureAlgorithm( AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
             // Update the CA with the new CAToken signature algorithm
             caSession.editCA(internalAdmin, info);
@@ -243,7 +246,7 @@ public class RenewCASystemTest extends CaTestCase {
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
-            assertEquals("Signature algorithm should still be ML-DSA", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
+            assertEquals("Signature algorithm should still be ML-DSA-44", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
 
             // Check the Link certificate is still the old one
             byte[] oldLinkCert = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
@@ -254,29 +257,29 @@ public class RenewCASystemTest extends CaTestCase {
         log.trace("<testRenewCAChangeKeyAlg()");
     }
 
-        
-    /** Test renewal of a CA using a different key algorithm and a different SubjectDN. 
+
+    /** Test renewal of a CA using a different key algorithm and a different SubjectDN.
      */
     @Test
     public void testRenewCAChangeKeyAlgWithNameChange() throws Exception {
         log.trace(">testRenewCAChangeKeyAlgWithNameChange()");
-        
-        // Prepare to renew CA but with an EC key        
+
+        // Prepare to renew CA but with an EC key
         final X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
-        final CAToken caToken = info.getCAToken();        
+        final CAToken caToken = info.getCAToken();
         // The current Signing Algorithm should be RSA based
         final X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         final String previousSigAlg = AlgorithmTools.getSignatureAlgorithm(orgcert);
-        assertEquals("Current CA's Signature Algorithm should be RSA", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, previousSigAlg);        
+        assertEquals("Current CA's Signature Algorithm should be RSA", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, previousSigAlg);
         // Create an EC key with a new alias
         final String nextKeyAlias = "signKeyRenewalEC";
         cryptoTokenManagementSession.createKeyPair(internalAdmin, caToken.getCryptoTokenId(), nextKeyAlias, com.keyfactor.util.keys.token.KeyGenParams.builder("prime256v1").build());
 
-        // To get EJBCA to renew a CA with a different key algorithm, we need to set the new signing algorithm in the CA's token,         
+        // To get EJBCA to renew a CA with a different key algorithm, we need to set the new signing algorithm in the CA's token,
         caToken.setSignatureAlgorithm( AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         // Update the CA with the new CAToken signature algorithm
         caSession.editCA(internalAdmin, info);
-        
+
         // We are all set and now ready to renew the CA
         // Lets do a name change too
         final String newSubjectDN = "CN=NewName,o=Test";
@@ -298,7 +301,7 @@ public class RenewCASystemTest extends CaTestCase {
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
             assertEquals("New signature algorithm should be ECDSA", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, newSigAlg);
-            
+
             // Check the Link certificate was signed using the previous Signing Algorithm
             byte[] linkCertificateAfterRenewalBytes = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
             assertNotNull("There is no available link certificate after CA renewal with EC key", linkCertificateAfterRenewalBytes);
@@ -308,16 +311,16 @@ public class RenewCASystemTest extends CaTestCase {
             // Check the SignatureAlgorithm on the CA's Token is still set correctly
             assertEquals("The signature algorithm on the CA's token was changed and should be ECDSA", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, caToken.getSignatureAlgorithm());
 
-            // Check the link certificates IssuerDN matches the original CA's SubjectDN 
+            // Check the link certificates IssuerDN matches the original CA's SubjectDN
             assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getIssuerDN());
 
-            // Check the link certificates SubjectDN does not matches the original CA's SubjectDN 
+            // Check the link certificates SubjectDN does not matches the original CA's SubjectDN
             assertNotEquals("The SubjectDN of the link certificate should not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getSubjectDN());
 
             // Check the link cert's SubjectDN matches the renewed CA's SubjectDN
             // Note: There is a Name change occurring
             assertEquals("The SubjectDN of the link certificate should match the SubjectDN of the renewed CA certificate.", newcert.getSubjectDN(), linkCertificateAfterRenewal.getSubjectDN());
-            
+
             // Check validity period, notAfter in the link certificate should be same as notAfter in the old CA certificate
             assertEquals("notAfter in the link certificate should be the same as notAfter in the old CA certificate.", orgcert.getNotAfter(), linkCertificateAfterRenewal.getNotAfter());
             // notBefore in the link certificate should be same as notBefore in the new CA certificate
@@ -333,7 +336,7 @@ public class RenewCASystemTest extends CaTestCase {
         log.trace("<testRenewCAChangeKeyAlgWithNameChange()");
     }
 
-    
+
     /** Test renewal of a subCA, using Renew CA Worker. */
     @Test
     public void testRenewSubCAWithRenewCAWorker() throws Exception {
@@ -366,7 +369,7 @@ public class RenewCASystemTest extends CaTestCase {
             // Wait a little to get new expire time on new cert...
             Thread.sleep(2000);
 
-            Map<Class<?>, Object> ejbs = new HashMap<Class<?>, Object>();
+            Map<Class<?>, Object> ejbs = new HashMap<>();
             ejbs.put(ServiceSessionLocal.class, serviceSession);
             final Integer subCaId = subCaInfo.getCAId();
             ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
