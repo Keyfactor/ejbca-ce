@@ -69,7 +69,11 @@ dependencies {
     deploy("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     deploy("com.sun.xml.ws:jaxws-rt:4.0.1")
     deploy("com.sun.xml.bind:jaxb-core:4.0.2")
+    deploy("com.sun.xml.bind:jaxb-impl:4.0.2")
+    deploy("org.glassfish.gmbal:gmbal:4.0.3")
+
     deploy("com.sun.xml.stream.buffer:streambuffer:2.1.0")
+    deploy("org.jvnet.staxex:stax-ex:1.8")
 
     if (edition == "ee") {
         "earlibanddeploy"(project(path = ":modules:edition-specific-ee", configuration = "archives"))
@@ -325,7 +329,7 @@ subprojects {
                 shouldRunAfter("test")
 
                 filter {
-                    includeTestsMatching("HttpMethodsSystemTest")
+                    includeTestsMatching("*SystemTest")
                     excludeTestsMatching("*UnitTest")
                     isFailOnNoMatchingTests = false
                 }
