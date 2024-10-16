@@ -942,7 +942,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3
+            // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between ML-DSA-44 and ML-DSA-65
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
             try {
                 final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
@@ -1010,7 +1010,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3            
+            // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between ML-DSA-44 and ML-DSA-65
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
             try {
                 final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
