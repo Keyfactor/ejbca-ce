@@ -24,11 +24,11 @@ dependencies {
     compileOnly(libs.commons.lang)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.impl)
+    compileOnly(libs.bundles.cryptotokens)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             srcDir("../src")
             exclude("org/cesecore/SystemTestsConfiguration.java")
@@ -40,13 +40,13 @@ sourceSets {
             exclude("org/ejbca/ui/web/rest/api/resource/RestResourceSystemTestBase.java")
 			exclude("com/widget/WidgetCustomExtension.java")
         }
+        resources {
+            srcDirs("resources")
+        }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF") {
-        into("META-INF")
-    }
     archiveBaseName.set("systemtests-ejb")
 }

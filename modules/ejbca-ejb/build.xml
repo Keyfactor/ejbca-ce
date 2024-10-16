@@ -85,8 +85,6 @@
 	<fileset id="source.fileset.ejbca-ejb" dir="${ejbca-ejb.src.dir}" excludes="${source.fileset.ejbca-common.files}">
 		<!-- Exclude appserver specific code.. -->
 		<exclude name="org/ejbca/appserver/**" />
-		<!-- Samples should never be included.. -->
-		<exclude name="org/ejbca/samples/**/*.java" />
 		<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
 		<exclude name="org/ejbca/util/PluginTool.java" />
 		<exclude name="org/ejbca/util/PerformanceTest.java" />

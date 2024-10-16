@@ -484,65 +484,65 @@ public class CAsSystemTest extends CaTestCase {
         }
     }
 
-    /** Adds a CA Using Dilithium keys (Dilithium-2, 3 and 5) to the database. It also checks that the CA is stored correctly. */
+    /** Adds a CA Using MLDSA keys (MLDSA44, MLDSA65 and MLDSA87) to the database. It also checks that the CA is stored correctly. */
     @Test
-    public void testAddDilithiumCA() throws Exception {
+    public void testAddMLDSACA() throws Exception {
         try {
-            createPQCCa(TEST_DILITHIUM2_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.SIGALG_DILITHIUM2);
-            CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM2_CA_NAME);
+            createPQCCa(TEST_MLDSA44_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.SIGALG_MLDSA44);
+            CAInfo info = caSession.getCAInfo(admin, TEST_MLDSA44_CA_NAME);
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM2, sigAlg);
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM2_CA_NAME));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM2_CA_NAME));
+            assertEquals(AlgorithmConstants.SIGALG_MLDSA44, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_MLDSA44_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_MLDSA44_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
             X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             PublicKey pk = bccert.getPublicKey();
             final String keySpec = AlgorithmTools.getKeySpecification(pk);
-            assertEquals("Standard keySpec should be DILITHIUM2", "DILITHIUM2", keySpec);
+            assertEquals("Standard keySpec should be MLDSA44", "ML-DSA-44", keySpec);
         } catch (CAExistsException pee) {
             log.info("CA exists.");
-            fail("Creating DILITHIUM2 CA failed because CA exists.");
+            fail("Creating MLDSA44 CA failed because CA exists.");
         } finally {
-            removeOldCa(TEST_DILITHIUM2_CA_NAME);
+            removeOldCa(TEST_MLDSA44_CA_NAME);
         }
         try {
-            createPQCCa(TEST_DILITHIUM3_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.SIGALG_DILITHIUM3);
-            CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM3_CA_NAME);
+            createPQCCa(TEST_MLDSA65_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.SIGALG_MLDSA65);
+            CAInfo info = caSession.getCAInfo(admin, TEST_MLDSA65_CA_NAME);
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM3, sigAlg);
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM3_CA_NAME));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM3_CA_NAME));
+            assertEquals(AlgorithmConstants.SIGALG_MLDSA65, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_MLDSA65_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_MLDSA65_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
             X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             PublicKey pk = bccert.getPublicKey();
             final String keySpec = AlgorithmTools.getKeySpecification(pk);
-            assertEquals("Standard keySpec should be DILITHIUM3", "DILITHIUM3", keySpec);
+            assertEquals("Standard keySpec should be MLDSA65", "ML-DSA-65", keySpec);
         } catch (CAExistsException pee) {
             log.info("CA exists.");
-            fail("Creating DILITHIUM3 CA failed because CA exists.");
+            fail("Creating MLDSA65 CA failed because CA exists.");
         } finally {
-            removeOldCa(TEST_DILITHIUM3_CA_NAME);
+            removeOldCa(TEST_MLDSA65_CA_NAME);
         }
         try {
-            createPQCCa(TEST_DILITHIUM5_CA_NAME, AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.SIGALG_DILITHIUM5);
-            CAInfo info = caSession.getCAInfo(admin, TEST_DILITHIUM5_CA_NAME);
+            createPQCCa(TEST_MLDSA87_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.SIGALG_MLDSA87);
+            CAInfo info = caSession.getCAInfo(admin, TEST_MLDSA87_CA_NAME);
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
-            assertEquals(AlgorithmConstants.SIGALG_DILITHIUM5, sigAlg);
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_DILITHIUM5_CA_NAME));
-            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_DILITHIUM5_CA_NAME));
+            assertEquals(AlgorithmConstants.SIGALG_MLDSA87, sigAlg);
+            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + TEST_MLDSA87_CA_NAME));
+            assertTrue("Creating CA failed", info.getSubjectDN().equals("CN=" + TEST_MLDSA87_CA_NAME));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
             X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             PublicKey pk = bccert.getPublicKey();
             final String keySpec = AlgorithmTools.getKeySpecification(pk);
-            assertEquals("Standard keySpec should be DILITHIUM5", "DILITHIUM5", keySpec);
+            assertEquals("Standard keySpec should be MLDSA87", "ML-DSA-87", keySpec);
         } catch (CAExistsException pee) {
             log.info("CA exists.");
-            fail("Creating DILITHIUM5 CA failed because CA exists.");
+            fail("Creating MLDSA87 CA failed because CA exists.");
         } finally {
-            removeOldCa(TEST_DILITHIUM5_CA_NAME);
+            removeOldCa(TEST_MLDSA87_CA_NAME);
         }
         
     }

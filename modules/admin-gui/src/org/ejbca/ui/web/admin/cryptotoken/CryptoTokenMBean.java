@@ -1561,9 +1561,9 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         if (WebConfiguration.isPQCEnabled()) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.KEYALGORITHM_FALCON1024));
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM3));
-            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DILITHIUM5, AlgorithmConstants.KEYALGORITHM_DILITHIUM5));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.KEYALGORITHM_MLDSA65));
+            availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.KEYALGORITHM_MLDSA87));
         }
         return availableKeySpecs;
     }

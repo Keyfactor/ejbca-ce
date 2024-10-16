@@ -528,7 +528,7 @@ public abstract class CATokenTestBase {
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
     }
 
-	protected void doCaTokenDilithium(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
+	protected void doCaTokenMLDSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
 	CertificateException, IOException, CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmParameterException {
 	    log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName());
 	    final CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
@@ -536,19 +536,19 @@ public abstract class CATokenTestBase {
 	        // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
 	        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
 	        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-	        catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
+	        catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44);
 	        catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 
 	        // First we start by deleting all old entries
 	        for (int i=0; i<4; i++) {
-	            cryptoToken.deleteEntry("dilithiumtest0000"+i);
+	            cryptoToken.deleteEntry("ml-dsa-test0000"+i);
 	        }
 	        cryptoToken.deleteEntry(ENCRYPTION_KEY);
 
 	        // Try to delete something that does not exist, it should work without error
 	        cryptoToken.deleteEntry("sdkfjhsdkfjhsd4447");
 
-	        assertEquals("DILITHIUM2", catoken.getSignatureAlgorithm());
+	        assertEquals("ML-DSA-44", catoken.getSignatureAlgorithm());
 	        assertEquals("SHA256WithRSA", catoken.getEncryptionAlgorithm());
 	        assertEquals(getProvider(), cryptoToken.getSignProviderName());
 
@@ -568,7 +568,7 @@ public abstract class CATokenTestBase {
 	        PublicKey pub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
 	        KeyTools.testKey(priv, pub, cryptoToken.getSignProviderName());
 	        assertEquals(128, KeyTools.getKeyLength(pub));
-	        assertEquals("DILITHIUM2", AlgorithmTools.getKeyAlgorithm(pub));
+	        assertEquals("ML-DSA-44", AlgorithmTools.getKeyAlgorithm(pub));
 	        String keyhash = CertTools.getFingerprintAsString(pub.getEncoded());
 	        // There should exist an encryption key when we have generated keys with renew = false
 	        // Encryption key should be an RSA key with 2048 bit, since signature key is ECDSA
@@ -663,7 +663,7 @@ public abstract class CATokenTestBase {
 	    } finally {
 	        // Clean up and delete our generated keys
 	        for (int i=0; i<4; i++) {
-	            cryptoToken.deleteEntry("dilithiumtest0000"+i);
+	            cryptoToken.deleteEntry("ml-dsa-test0000"+i);
 	        }
 	        cryptoToken.deleteEntry("rsatest00001");            
 	        cryptoToken.deleteEntry("ecctest0000000002");

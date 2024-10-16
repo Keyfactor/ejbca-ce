@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 
-import org.apache.cxf.common.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -179,7 +179,7 @@ public class CmpUpdateCommandSystemTest extends CmpTestCase{
     @Test
     public void test05CmpUpdateVendorCaIdsCommand() throws Exception {
         log.trace(">test05CmpUpdateVendorCaIdsCommand()");
-        assertTrue("Vendor CA ID list is initially epty", StringUtils.isEmpty(cmpConfiguration.getVendorCaIds(ALIAS)));
+        assertTrue("Vendor CA ID list is initially empty", StringUtils.isEmpty(cmpConfiguration.getVendorCaIds(ALIAS)));
         final String[] updateVendorCaCommand = new String[]{ ALIAS, "vendorcaids", "1;100"};
         new org.ejbca.ui.cli.config.cmp.UpdateCommand().execute(updateVendorCaCommand);
         cmpConfiguration = (CmpConfiguration) globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
