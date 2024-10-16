@@ -145,8 +145,8 @@ public class X509CAUnitTestBase {
             return "2048"; // RSA-PSS required at least 2014 bits
         } else if (algName.equalsIgnoreCase(AlgorithmConstants.SIGALG_SHA512_WITH_RSA_AND_MGF1)) {
             return "2048"; // RSA-PSS required at least 2014 bits
-        } else if (algName.equals(AlgorithmConstants.SIGALG_DILITHIUM3)) {
-            return AlgorithmConstants.KEYALGORITHM_DILITHIUM3;
+        } else if (algName.equals(AlgorithmConstants.SIGALG_MLDSA65)) {
+            return AlgorithmConstants.KEYALGORITHM_MLDSA65;
         } else if (algName.equals(AlgorithmConstants.SIGALG_FALCON512)) {
             return AlgorithmConstants.KEYALGORITHM_FALCON512;
         } else {

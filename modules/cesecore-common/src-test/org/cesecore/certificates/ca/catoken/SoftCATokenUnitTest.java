@@ -52,10 +52,11 @@ public class SoftCATokenUnitTest extends CATokenTestBase {
 	    CryptoToken cryptoToken = createSoftToken(true);
 	    doCaTokenFalcon("FALCON-512", cryptoToken, getCaTokenProperties("falcontest" + CAToken.DEFAULT_KEYSEQUENCE));
 	}
-    @Test
-    public void testCATokenDilithium() throws Exception {
+
+	@Test
+    public void testCATokenMLDSA() throws Exception {
         CryptoToken cryptoToken = createSoftToken(true);
-        doCaTokenDilithium("DILITHIUM2", cryptoToken, getCaTokenProperties("dilithiumtest" + CAToken.DEFAULT_KEYSEQUENCE));
+        doCaTokenMLDSA("ML-DSA-44", cryptoToken, getCaTokenProperties("ml-dsa-test" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
     @Test

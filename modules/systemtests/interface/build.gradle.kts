@@ -17,17 +17,20 @@ dependencies {
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("../src-interface"))
+        }
+        resources {
+            srcDirs("resources")
         }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF") {
-        into("META-INF")
+    from("${rootProject.projectDir}/conf"){
+        include("systemtests.properties")
     }
     archiveBaseName.set("systemtests-interfaces")
 }
