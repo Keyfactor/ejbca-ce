@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -210,7 +211,8 @@ public class HttpTools {
         try {
           HttpServletResponse httpResponse = (HttpServletResponse)fc.getExternalContext().getResponse();
           httpResponse.setHeader("Location", rawUrl);
-          httpResponse.setHeader("Content-Type", "text/html");
+          httpResponse.setContentType("text/html");
+          httpResponse.setCharacterEncoding(StandardCharsets.UTF_8.name());
           httpResponse.setStatus(302);
           try (Writer writer = httpResponse.getWriter()) {
               writer.append("<!DOCTYPE html>\n" +
