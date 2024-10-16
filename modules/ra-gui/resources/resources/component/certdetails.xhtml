@@ -105,7 +105,7 @@
                 <h:outputText value="#{cc.attrs.raCertificateDetails.publicKeyAlgorithm} "/>
                 <h:outputText value=" #{cc.attrs.raCertificateDetails.publicKeySpecification} "/>
             </h:panelGroup>
-            
+
             <h:outputLabel for="alternativepublickeyspec" value="#{msg.component_certdetails_field_publickeyspec_alternative}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                             rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
@@ -115,7 +115,6 @@
                 <h:outputText value="#{cc.attrs.raCertificateDetails.publicAlternativeKeyAlgorithm} "  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
                 <h:outputText value=" #{cc.attrs.raCertificateDetails.publicAlternativeKeySpecification} "  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
             </h:panelGroup>
-            
             
             <h:outputLabel for="signaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -490,6 +489,16 @@
                 <h:outputLabel for="subjectkeyid" value="#{msg.component_certdetails_field_subjectkeyid}"
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="subjectkeyid" value="#{cc.attrs.raCertificateDetails.subjectKeyId}"
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+
+                <h:outputLabel for="publickeyfull" value="#{msg.component_certdetails_field_publickeyfull}"
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="publickeyfull" value="#{cc.attrs.raCertificateDetails.publicKeyFull}"
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+
+                <h:outputLabel for="altpublickeyfull" value="#{msg.component_certdetails_field_altpublickeyfull}"
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="altpublickeyfull" value="#{cc.attrs.raCertificateDetails.altPublicKeyFull}"
                               styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
 
                 <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>

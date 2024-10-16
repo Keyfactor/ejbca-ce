@@ -28,6 +28,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.EdECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -42,6 +43,10 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jcajce.provider.asymmetric.mldsa.BCMLDSAPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
+import org.bouncycastle.pqc.jcajce.provider.dilithium.BCDilithiumPublicKey;
+import org.bouncycastle.pqc.jcajce.provider.falcon.BCFalconPublicKey;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
@@ -65,9 +70,8 @@ import com.keyfactor.util.keys.KeyTools;
 
 /**
  * A class transforming X509 certificate data into more readable form used
- * by JSP pages.
+ * by JSF pages.
  *
- * @version $Id$
  */
 public class CertificateView implements Serializable {
 
@@ -361,31 +365,15 @@ public class CertificateView implements Serializable {
         return len > 0 ? ""+len : null; 
     }
 
-    public String getPublicKeyModulus(){
-        if (certificate==null) {
+    public String getPublicKeyHex(boolean abbreviate){
+        if (certificate == null || certificate.getPublicKey() == null) {
             return UNKNOWN;
         }
-    	String mod = null;
-    	if( certificate.getPublicKey() instanceof RSAPublicKey){
-    		mod = "" + ((RSAPublicKey)certificate.getPublicKey()).getModulus().toString(16);
-    		mod = mod.toUpperCase();
-    		mod = StringUtils.abbreviate(mod, 50);
-    	} else if( certificate.getPublicKey() instanceof DSAPublicKey){
-    		mod = "" + ((DSAPublicKey)certificate.getPublicKey()).getY().toString(16);
-    		mod = mod.toUpperCase();
-    		mod = StringUtils.abbreviate(mod, 50);
-    	} else if( certificate.getPublicKey() instanceof ECPublicKey){
-    		mod = "" + ((ECPublicKey)certificate.getPublicKey()).getW().getAffineX().toString(16);
-    		mod = mod + ((ECPublicKey)certificate.getPublicKey()).getW().getAffineY().toString(16);
-    		mod = mod.toUpperCase();
-    		mod = StringUtils.abbreviate(mod, 50);
-    	}
-    	return mod;
+        PublicKey publicKey = certificate.getPublicKey();
+        return extractPublicKeyHexForm(publicKey, abbreviate);
     }
     
-    
-    
-    public String getPublicAlternativeKeyModulus() {
+    public String getPublicAlternativeKeyHex(boolean abbreviate) {
         if (certificate == null || !(certificate instanceof X509Certificate)) {
             return UNKNOWN;
         }
@@ -394,26 +382,42 @@ public class CertificateView implements Serializable {
             if (publicKey == null) {
                 return UNKNOWN;
             } else {
-                String mod = null;
-                if (publicKey instanceof RSAPublicKey) {
-                    mod = "" + ((RSAPublicKey) certificate.getPublicKey()).getModulus().toString(16);
-                    mod = mod.toUpperCase();
-                    mod = StringUtils.abbreviate(mod, 50);
-                } else if (publicKey instanceof DSAPublicKey) {
-                    mod = "" + ((DSAPublicKey) certificate.getPublicKey()).getY().toString(16);
-                    mod = mod.toUpperCase();
-                    mod = StringUtils.abbreviate(mod, 50);
-                } else if (publicKey instanceof ECPublicKey) {
-                    mod = "" + ((ECPublicKey) certificate.getPublicKey()).getW().getAffineX().toString(16);
-                    mod = mod + ((ECPublicKey) certificate.getPublicKey()).getW().getAffineY().toString(16);
-                    mod = mod.toUpperCase();
-                    mod = StringUtils.abbreviate(mod, 50);
-                }
-                return mod;
+                return extractPublicKeyHexForm(publicKey, abbreviate);
             }
         } catch (CertificateEncodingException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException | IOException e) {
             throw new IllegalStateException("Could not parse alternative signing key from certificate.", e);
         }
+    }
+    
+    private String extractPublicKeyHexForm(PublicKey publicKey, boolean abbreviate) {
+        String hex = null;
+        if (publicKey instanceof RSAPublicKey) {
+            hex = "" + ((RSAPublicKey) publicKey).getModulus().toString(16);
+            hex = hex.toUpperCase();
+        } else if (certificate.getPublicKey() instanceof DSAPublicKey) {
+            hex = "" + ((DSAPublicKey) publicKey).getY().toString(16);
+            hex = hex.toUpperCase();
+        } else if (publicKey instanceof ECPublicKey) {
+            hex = "" + ((ECPublicKey) publicKey).getW().getAffineX().toString(16);
+            hex = hex + ((ECPublicKey) publicKey).getW().getAffineY().toString(16);
+            hex = hex.toUpperCase();
+        } else if (publicKey instanceof EdECPublicKey) {
+            hex = "" + ((EdECPublicKey) publicKey).getPoint().getY().toString(16);
+            hex = hex.toUpperCase();
+        } else if (publicKey instanceof BCMLDSAPublicKey) {
+            hex = "" + Hex.toHexString(((BCMLDSAPublicKey) publicKey).getPublicData());
+            hex = hex.toUpperCase();
+        } else if (publicKey instanceof BCMLKEMPublicKey) {
+            hex = "" + Hex.toHexString(((BCMLKEMPublicKey) publicKey).getPublicData());
+            hex = hex.toUpperCase();
+        } else if (publicKey instanceof BCFalconPublicKey) {
+            hex = "" + Hex.toHexString(((BCFalconPublicKey) publicKey).getEncoded());
+            hex = hex.toUpperCase();
+        }
+        if (hex != null && abbreviate) {
+            hex = StringUtils.abbreviate(hex, 50);
+        }
+        return hex;
     }
 
     public String getSignatureAlgoritm() {
