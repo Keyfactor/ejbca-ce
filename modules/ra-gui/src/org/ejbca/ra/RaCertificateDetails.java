@@ -193,6 +193,7 @@ public class RaCertificateDetails implements Serializable {
     private boolean sshVerifyRequired = false;
 
     private boolean more = false;
+    private boolean showFullPublicKeys = false;
     private boolean renderConfirmRecovery = false;
     private Boolean keyRecoveryPossible;
     private int styleRowCallCounter = 0;
@@ -339,10 +340,8 @@ public class RaCertificateDetails implements Serializable {
             }
             
             CertificateView certView = new CertificateView(cdw);
-            
             this.publicKeyFull = certView.getPublicKeyHex(false);
             this.altPublicKeyFull = certView.getPublicAlternativeKeyHex(false);
-            
             this.expireDate = certificateData.getExpireDate();
 
             if (certificate instanceof X509Certificate) {
@@ -797,6 +796,18 @@ public class RaCertificateDetails implements Serializable {
 
     public void actionToggleMore() {
         more = !more;
+        styleRowCallCounter = 0;    // Reset
+    }
+
+    /**
+     * @return true if full public keys should be shown
+     */
+    public boolean isShowFullPublicKeys() {
+        return showFullPublicKeys;
+    }
+
+    public void actionToggleShowFullPublicKeys() {
+        showFullPublicKeys = !showFullPublicKeys;
         styleRowCallCounter = 0;    // Reset
     }
 
