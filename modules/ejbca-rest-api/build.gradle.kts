@@ -53,6 +53,9 @@ dependencies {
     testRuntimeOnly(project(":modules:ejbca-ws:common"))
     testRuntimeOnly(libs.classmate)
     testRuntimeOnly(libs.jboss.logging)
+    testImplementation(libs.hibernate.commons.annotations)
+    testImplementation(libs.hibernate.core)
+    testImplementation(libs.hibernate.validator)
 }
 
 sourceSets {
