@@ -43,9 +43,9 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.mldsa.BCMLDSAPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
-import org.bouncycastle.pqc.jcajce.provider.dilithium.BCDilithiumPublicKey;
 import org.bouncycastle.pqc.jcajce.provider.falcon.BCFalconPublicKey;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -397,12 +397,11 @@ public class CertificateView implements Serializable {
         } else if (certificate.getPublicKey() instanceof DSAPublicKey) {
             hex = "" + ((DSAPublicKey) publicKey).getY().toString(16);
             hex = hex.toUpperCase();
-        } else if (publicKey instanceof ECPublicKey) {
-            hex = "" + ((ECPublicKey) publicKey).getW().getAffineX().toString(16);
-            hex = hex + ((ECPublicKey) publicKey).getW().getAffineY().toString(16);
+        } else if (publicKey instanceof BCECPublicKey) {
+            hex = "" + Hex.toHexString(((BCECPublicKey) publicKey).getQ().getEncoded(false));
             hex = hex.toUpperCase();
         } else if (publicKey instanceof EdECPublicKey) {
-            hex = "" + ((EdECPublicKey) publicKey).getPoint().getY().toString(16);
+            hex = "" + Hex.toHexString(((EdECPublicKey) publicKey).getEncoded());
             hex = hex.toUpperCase();
         } else if (publicKey instanceof BCMLDSAPublicKey) {
             hex = "" + Hex.toHexString(((BCMLDSAPublicKey) publicKey).getPublicData());
