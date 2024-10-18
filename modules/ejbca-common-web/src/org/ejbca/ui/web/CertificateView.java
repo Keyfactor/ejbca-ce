@@ -26,9 +26,7 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
-import java.security.interfaces.EdECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
@@ -41,11 +39,15 @@ import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AltSignatureAlgorithm;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.mldsa.BCMLDSAPublicKey;
 import org.bouncycastle.jcajce.provider.asymmetric.mlkem.BCMLKEMPublicKey;
+import org.bouncycastle.pqc.crypto.falcon.FalconPublicKeyParameters;
+import org.bouncycastle.pqc.crypto.util.PublicKeyFactory;
 import org.bouncycastle.pqc.jcajce.provider.falcon.BCFalconPublicKey;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificate.CertificateData;
@@ -394,14 +396,11 @@ public class CertificateView implements Serializable {
         if (publicKey instanceof RSAPublicKey) {
             hex = "" + ((RSAPublicKey) publicKey).getModulus().toString(16);
             hex = hex.toUpperCase();
-        } else if (certificate.getPublicKey() instanceof DSAPublicKey) {
-            hex = "" + ((DSAPublicKey) publicKey).getY().toString(16);
-            hex = hex.toUpperCase();
         } else if (publicKey instanceof BCECPublicKey) {
             hex = "" + Hex.toHexString(((BCECPublicKey) publicKey).getQ().getEncoded(false));
             hex = hex.toUpperCase();
-        } else if (publicKey instanceof EdECPublicKey) {
-            hex = "" + Hex.toHexString(((EdECPublicKey) publicKey).getEncoded());
+        } else if (publicKey instanceof BCEdDSAPublicKey) {
+            hex = "" + Hex.toHexString(((BCEdDSAPublicKey) publicKey).getPointEncoding());
             hex = hex.toUpperCase();
         } else if (publicKey instanceof BCMLDSAPublicKey) {
             hex = "" + Hex.toHexString(((BCMLDSAPublicKey) publicKey).getPublicData());
@@ -410,8 +409,16 @@ public class CertificateView implements Serializable {
             hex = "" + Hex.toHexString(((BCMLKEMPublicKey) publicKey).getPublicData());
             hex = hex.toUpperCase();
         } else if (publicKey instanceof BCFalconPublicKey) {
-            hex = "" + Hex.toHexString(((BCFalconPublicKey) publicKey).getEncoded());
-            hex = hex.toUpperCase();
+            // Since BCFalconPublicKey.getKeyParams() is package private we need to get the key params in a less direct way
+            byte[] encoded = publicKey.getEncoded();
+            SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(encoded);
+            FalconPublicKeyParameters keyParams;
+            try {
+                keyParams = (FalconPublicKeyParameters) PublicKeyFactory.createKey(keyInfo);
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+            hex = Hex.toHexString(keyParams.getH()).toUpperCase();
         }
         if (hex != null && abbreviate) {
             hex = StringUtils.abbreviate(hex, 50);
