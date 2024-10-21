@@ -63,8 +63,6 @@ dependencies {
     deploy("org.jboss.logging:jboss-logging:3.6.1.Final")
     deploy("org.jboss.remoting:jboss-remoting:5.0.29.Final")
     deploy("jboss:jboss-client:4.0.2")
-    deploy("org.jboss.xnio:xnio-api:3.8.15.Final")
-    deploy("org.jboss.xnio:xnio-nio:3.8.15.Final")
     deploy("org.eclipse.angus:jakarta.mail:2.0.3")
     deploy("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     deploy("com.sun.xml.ws:jaxws-rt:4.0.1")

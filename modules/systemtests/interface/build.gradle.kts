@@ -18,9 +18,10 @@ dependencies {
     implementation("jboss:jboss-client:4.0.2")
     implementation("org.jboss:jboss-remote-naming:2.0.5.Final")
     implementation("org.jboss.logging:jboss-logging:3.6.1.Final")
-    implementation("org.jboss.xnio:xnio-api:3.8.15.Final")
-    implementation("org.jboss.xnio:xnio-nio:3.8.15.Final")
     implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
+
+    // System test specific
+    testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
 }
 
 sourceSets {

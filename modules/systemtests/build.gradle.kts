@@ -52,8 +52,6 @@ dependencies {
     implementation("jboss:jboss-client:4.0.2")
     implementation("org.jboss:jboss-remote-naming:2.0.5.Final")
     implementation("org.jboss.logging:jboss-logging:3.6.1.Final")
-    implementation("org.jboss.xnio:xnio-api:3.8.15.Final")
-    implementation("org.jboss.xnio:xnio-nio:3.8.15.Final")
     implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
 
     implementation("org.eclipse.angus:jakarta.mail:2.0.3")
@@ -64,6 +62,9 @@ dependencies {
     implementation("com.sun.xml.stream.buffer:streambuffer:2.1.0")
     implementation("org.jvnet.staxex:stax-ex:1.8")
     implementation("org.glassfish.gmbal:gmbal:4.0.3")
+
+    // System test specific
+    testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
 
 
 }
