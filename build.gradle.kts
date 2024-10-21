@@ -326,6 +326,7 @@ subprojects {
             tasks.register<Test>("systemTest") {
                 description = "Runs system tests."
                 group = "verification"
+                forkEvery = 0
                 shouldRunAfter("test")
 
                 filter {
