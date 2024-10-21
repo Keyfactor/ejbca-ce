@@ -1,7 +1,35 @@
+import java.util.Properties
+
 rootProject.name = "ejbca"
+
+// Specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
 val editionProp = providers.gradleProperty("edition").getOrElse("ee")
 val eeModuleExists = file("modules/edition-specific-ee").exists()
 val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
+val appServerHome: String? = System.getenv("APPSRV_HOME")
+
+val properties: Properties = Properties().apply {
+    val propertiesFilePath = "conf/ejbca.properties"
+    if (file(propertiesFilePath).exists()) {
+        load(file(propertiesFilePath).inputStream())
+    } else {
+        load(file("$propertiesFilePath.sample").inputStream())
+    }
+    gradle.rootProject {
+        properties.forEach { (key, value) ->
+            extra[key.toString()] = value
+        }
+    }
+}
+
+val isProductionMode = properties.getProperty("ejbca.productionmode", "true").toBoolean()
+
+// share project properties with other build files
+gradle.allprojects {
+    extra["isProductionMode"] = isProductionMode
+    extra["edition"] = edition
+    extra["appServerHome"] = appServerHome
+}
 
 dependencyResolutionManagement {
     versionCatalogs {
@@ -134,7 +162,11 @@ dependencyResolutionManagement {
             library("jackson-module-jaxb-annotations", ":jackson-module-jaxb-annotations:2.17.2")
             library("jboss-logging", ":jboss-logging:3.6.0.Final")
             library("el-impl", ":el-impl:2.2")
-            library("jboss.client", "jboss:jboss-client:4.0.2")
+
+            if (!isProductionMode) {
+                library("jboss.client", ":jboss:client")
+            }
+
             // bundles
             bundle(
                 "test",

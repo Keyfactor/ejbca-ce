@@ -49,7 +49,6 @@ dependencies {
         testImplementation(project(":modules:ejbca-entity:cli"))
         testImplementation(project(":modules:peerconnector:publ"))
     }
-    implementation("jboss:jboss-client:4.0.2")
     implementation("org.jboss:jboss-remote-naming:2.0.5.Final")
     implementation("org.jboss.logging:jboss-logging:3.6.1.Final")
     implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
