@@ -123,7 +123,7 @@ public class CrlCreateSessionSystemTest {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-        CaTestUtils.createActiveCACommon(authenticationToken, className, className, "CN="+className);
+        CaTestUtils.createActiveX509Ca(authenticationToken, className, className, "CN="+className);
     }
 
     @AfterClass
