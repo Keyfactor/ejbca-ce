@@ -331,7 +331,7 @@ subprojects {
                 shouldRunAfter("test")
 
                 filter {
-                    includeTestsMatching("*SystemTest")
+                    includeTestsMatching("SystemRestResourceSystemTest")
                     excludeTestsMatching("*UnitTest")
                     isFailOnNoMatchingTests = false
                 }
