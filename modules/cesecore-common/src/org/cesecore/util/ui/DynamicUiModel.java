@@ -34,7 +34,7 @@ import com.keyfactor.CesecoreException;
  * @version $Id$
  *
  */
-public class DynamicUiModel {
+public class DynamicUiModel implements Serializable {
 
     public static final String BASECLASS_PREFIX = "BASECLASS_";
 

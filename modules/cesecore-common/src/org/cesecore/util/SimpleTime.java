@@ -13,6 +13,7 @@
  
 package org.cesecore.util;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,7 +30,7 @@ import org.apache.log4j.Logger;
  * Maximum time value is 292471208y 8mo 7d 7h 12m 55s 807ms
  * -> SimpleTime.getInstance(Long.MAX_VALUE).toString()
  */
-public class SimpleTime {
+public class SimpleTime implements Serializable {
 
 	public static final long MILLISECONDS_PER_YEAR = 31536000000L; // 365 days
 	public static final long MILLISECONDS_PER_MONTH = 2592000000L; // 30 days

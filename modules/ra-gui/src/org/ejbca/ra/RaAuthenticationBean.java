@@ -68,24 +68,19 @@ public class RaAuthenticationBean implements Serializable {
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    private RaAuthenticationHelper raAuthenticationHelper = null;
-    private AuthenticationToken authenticationToken = null;
+    private transient RaAuthenticationHelper raAuthenticationHelper = null;
+    private transient AuthenticationToken authenticationToken = null;
     private X509Certificate x509Certificate = null;
 
     /** @return the X509CertificateAuthenticationToken if the client has provided a certificate or a PublicAccessAuthenticationToken otherwise. */
     public AuthenticationToken getAuthenticationToken() {
-        if (raAuthenticationHelper==null) {
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
-        }
-        authenticationToken = raAuthenticationHelper.getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
+        authenticationToken = getRaAuthenticationHelper().getAuthenticationToken(getHttpServletRequest(), getHttpServletResponse());
         return authenticationToken;
     }
+    
     /** @return any X509Certificate the client has provided */
     public X509Certificate getX509CertificateFromRequest() {
-        if (raAuthenticationHelper==null) {
-            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
-        }
-        x509Certificate = raAuthenticationHelper.getX509CertificateFromRequest(getHttpServletRequest());
+        x509Certificate = getRaAuthenticationHelper().getX509CertificateFromRequest(getHttpServletRequest());
         return x509Certificate;
     }
 
@@ -94,7 +89,7 @@ public class RaAuthenticationBean implements Serializable {
     }
 
     public void resetAuthentication(){
-        raAuthenticationHelper.resetAuthenticationToken();
+        getRaAuthenticationHelper().resetAuthenticationToken();
     }
     
     private HttpServletRequest getHttpServletRequest() {
@@ -195,4 +190,13 @@ public class RaAuthenticationBean implements Serializable {
     public String getUserRemoteAddr() {
         return getHttpServletRequest().getRemoteAddr();
     }
+    
+    public RaAuthenticationHelper getRaAuthenticationHelper() {
+        if (raAuthenticationHelper == null) {
+            raAuthenticationHelper = new RaAuthenticationHelper(webAuthenticationProviderSession, raMasterApi);
+        }
+        
+        return raAuthenticationHelper;
+    }
+
 }

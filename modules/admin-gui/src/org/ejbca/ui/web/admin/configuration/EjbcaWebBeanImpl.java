@@ -14,6 +14,8 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -148,25 +150,25 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private static final char SINGLE_SPACE_CHAR = ' ';
     private static final String PUBLIC_ACCESS_AUTHENTICATION_TOKEN = "PublicAccessAuthenticationToken";
 
-    private final EjbBridgeSessionLocal ejbLocalHelper;
-    private final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
-    private final AdminPreferenceSessionLocal adminPreferenceSession;
-    private final ApprovalProfileSessionLocal approvalProfileSession;
-    private final AuthorizationSessionLocal authorizationSession;
-    private final CAAdminSessionLocal caAdminSession;
-    private final CaSessionLocal caSession;
-    private final CertificateProfileSessionLocal certificateProfileSession;
-    private final CertificateStoreSessionLocal certificateStoreSession;
-    private final EndEntityManagementSessionLocal endEntityManagementSession;
-    private final EndEntityProfileSessionLocal endEntityProfileSession;
-    private final PublisherSessionLocal publisherSession;
-    private final SecurityEventsLoggerSessionLocal auditSession;
-    private final RoleSessionLocal roleSession;
-    private final RoleMemberSessionLocal roleMemberSession;
-    private final UpgradeSessionLocal upgradeSession;
-    private final GlobalConfigurationSessionLocal globalConfigurationSession;
-    private final WebAuthenticationProviderSessionLocal authenticationSession;
-    private final ClearCacheSessionLocal clearCacheSession;
+    private transient EjbBridgeSessionLocal ejbLocalHelper;
+    private transient EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbLocalHelper;
+    private transient AdminPreferenceSessionLocal adminPreferenceSession;
+    private transient ApprovalProfileSessionLocal approvalProfileSession;
+    private transient AuthorizationSessionLocal authorizationSession;
+    private transient CAAdminSessionLocal caAdminSession;
+    private transient CaSessionLocal caSession;
+    private transient CertificateProfileSessionLocal certificateProfileSession;
+    private transient CertificateStoreSessionLocal certificateStoreSession;
+    private transient EndEntityManagementSessionLocal endEntityManagementSession;
+    private transient EndEntityProfileSessionLocal endEntityProfileSession;
+    private transient PublisherSessionLocal publisherSession;
+    private transient SecurityEventsLoggerSessionLocal auditSession;
+    private transient RoleSessionLocal roleSession;
+    private transient RoleMemberSessionLocal roleMemberSession;
+    private transient UpgradeSessionLocal upgradeSession;
+    private transient GlobalConfigurationSessionLocal globalConfigurationSession;
+    private transient WebAuthenticationProviderSessionLocal authenticationSession;
+    private transient ClearCacheSessionLocal clearCacheSession;
 
     private AdminPreference currentAdminPreference;
     private GlobalConfiguration globalconfiguration;
@@ -180,11 +182,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
     private OAuthConfiguration oAuthConfiguration = null;
     private EABConfiguration eabConfiguration = null;
-    private ServletContext servletContext = null;
     private WebLanguagesImpl adminsweblanguage;
 
+    // this is initialized when needed
+    private transient ServletContext servletContext = null;
+
     /** Wraps all authentication state, so it can be replaced atomically (i.e. other threads won't see "half-updated" state) */
-    private class AuthState {
+    private class AuthState implements Serializable {
         String usercommonname = "";
         String certificateFingerprint; // Unique key to identify the admin in this session. Usually a hash of the admin's certificate
         String authenticationTokenTlsSessionId; // Keep the currect TLS session ID so we can detect changes
@@ -198,8 +202,11 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         String currentRemoteIp;
     }
 
-    private AuthState authState = new AuthState();
-    private AuthState stagingState = new AuthState();
+    // these are transient to trigger re-authentication logic when transferred
+    // to a new JVM.  This is required because authentication tokens, although
+    // serializable, cannot be transferred to a new JVM.
+    private transient AuthState authState = new AuthState();
+    private transient AuthState stagingState = new AuthState();
 
     /*
      * We should make this configurable, so GUI client can use their own time zone rather than the
@@ -218,6 +225,10 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     protected EjbcaWebBeanImpl(final EjbBridgeSessionLocal ejbBridge, final EnterpriseEditionEjbBridgeSessionLocal enterpriseEjbBridge) {
         ejbLocalHelper = ejbBridge;
         enterpriseEjbLocalHelper = enterpriseEjbBridge;
+        setEjbReferences();
+    }
+
+    private void setEjbReferences() {
         adminPreferenceSession = ejbLocalHelper.getAdminPreferenceSession();
         approvalProfileSession = ejbLocalHelper.getApprovalProfileSession();
         authorizationSession = ejbLocalHelper.getAuthorizationSession();
@@ -235,6 +246,20 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
         globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
         authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
         clearCacheSession = ejbLocalHelper.getClearCacheSession();
+    }
+    
+    /**
+     * Implementing this ensures that transient fields will exist after serialization.
+     */
+    private void readObject(ObjectInputStream ois) throws ClassNotFoundException, IOException {
+        // default deserialization
+        ois.defaultReadObject();
+        ejbLocalHelper = new EjbLocalHelper();
+        enterpriseEjbLocalHelper = new EnterpriseEjbLocalHelper();
+        authState = new AuthState();
+        stagingState = new AuthState();
+
+        setEjbReferences();
     }
 
     private void commonInit() {

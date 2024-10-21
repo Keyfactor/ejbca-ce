@@ -20,7 +20,7 @@ import java.util.List;
  * 
  * @version $Id$
  */
-public interface ConfigDumpItemAware {
+public interface ConfigDumpItemAware extends Serializable {
     
     /**
      * Initializes the config dump properties.

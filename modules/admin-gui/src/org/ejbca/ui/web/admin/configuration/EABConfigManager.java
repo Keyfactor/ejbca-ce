@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -40,11 +41,11 @@ import com.keyfactor.util.StringTools;
 /**
  * This class is used to manage EAB configs in EJBCA's system configuration.
  */
-public class EABConfigManager {
+public class EABConfigManager implements Serializable {
     private static final Logger log = Logger.getLogger(EABConfigManager.class);
 
     private final SystemConfigurationHelper systemConfigurationHelper;
-    private Part eabCSVFile = null;
+    private transient Part eabCSVFile = null;
 
     public EABConfigManager(SystemConfigurationHelper systemConfigurationHelper) {
         this.systemConfigurationHelper = systemConfigurationHelper;
@@ -74,7 +75,7 @@ public class EABConfigManager {
         }
         return "EAB saved";
     }
-    public interface SystemConfigurationHelper {
+    public interface SystemConfigurationHelper extends Serializable {
         /**
          * Displays an error message to the user.
          * @param languageKey the language key of the message to show

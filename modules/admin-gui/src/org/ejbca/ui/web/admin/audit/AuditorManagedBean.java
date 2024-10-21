@@ -83,8 +83,8 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	private static final boolean ORDER_ASC = true;
 	private static final boolean ORDER_DESC = false;
 	
-	private final SecurityEventsAuditorSessionLocal securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
-	private final CaSessionLocal caSession = new EjbLocalHelper().getCaSession();
+	private transient SecurityEventsAuditorSessionLocal securityEventsAuditorSession;
+	private transient CaSessionLocal caSession;
 	
 	private boolean renderNext = false;
 
@@ -198,7 +198,7 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 
 	public List<SelectItem> getDevices() {
 		final List<SelectItem> list = new ArrayList<>();
-		for (final String deviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
+		for (final String deviceId : getSecurityEventsAuditorSession().getQuerySupportingLogDevices()) {
 			list.add(new SelectItem(deviceId, deviceId));
 		}
 		return list;
@@ -467,11 +467,11 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
 	}
 
 	private void updateCaIdToNameMap() {
-		final Map<Integer, String> map = caSession.getCAIdToNameMap();
+		final Map<Integer, String> map = getCaSession().getCAIdToNameMap();
 		final Map<Object, String> ret = new HashMap<>();
 		final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
 		for (final Entry<Integer,String> entry : map.entrySet()) {
-            if (caSession.authorizedToCANoLogging(authenticationToken, entry.getKey())) {
+            if (getCaSession().authorizedToCANoLogging(authenticationToken, entry.getKey())) {
                 ret.put(entry.getKey().toString(), entry.getValue());
             }
 		}
@@ -674,5 +674,17 @@ public class AuditorManagedBean extends BaseManagedBean implements Serializable 
         auditExporter.writeField(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, additionalDetailsEncoded);
         auditExporter.writeField("rowProtection", auditRecordData.getRowProtection());
         auditExporter.writeEndObject();
+    }
+
+    public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() {
+        if (securityEventsAuditorSession == null)
+            securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
+        return securityEventsAuditorSession;
+    }
+
+    public CaSessionLocal getCaSession() {
+        if (caSession == null)
+            caSession = new EjbLocalHelper().getCaSession();
+        return caSession;
     }
 }

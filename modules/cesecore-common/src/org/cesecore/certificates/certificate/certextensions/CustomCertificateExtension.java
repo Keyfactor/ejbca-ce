@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.certextensions;
 
+import java.io.Serializable;
 import java.security.PublicKey;
 import java.util.Map;
 import java.util.Properties;
@@ -27,7 +28,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * @version $Id$
  *
  */
-public interface CustomCertificateExtension {
+public interface CustomCertificateExtension extends Serializable {
 
     String[] BOOLEAN = {"true", "false"};
     

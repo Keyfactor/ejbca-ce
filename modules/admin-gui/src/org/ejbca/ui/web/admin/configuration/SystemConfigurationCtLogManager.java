@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
 import java.security.cert.CertificateParsingException;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -36,16 +37,16 @@ import com.keyfactor.util.keys.KeyTools;
  * new CT logs, checking whether a CT log is in use before removing it and language awareness.
  *
  */
-public class SystemConfigurationCtLogManager extends CtLogManager {
+public class SystemConfigurationCtLogManager extends CtLogManager implements Serializable {
     private static final String EDIT_CT_LOG = "editCTLog";
     private static final String CT_LOG_SAVED = "saved";
     private static final Logger log = Logger.getLogger(SystemConfigurationCtLogManager.class);
     private final SystemConfigurationHelper systemConfigurationHelper;
     private final CtLogEditor ctLogEditor;
 
-    public class CtLogEditor {
+    public class CtLogEditor implements Serializable {
         private String url;
-        private Part publicKeyFile;
+        private transient Part publicKeyFile;
         private String label;
         private int timeout = 5000;
         private CTLogInfo ctLogBeingEdited;
@@ -191,7 +192,7 @@ public class SystemConfigurationCtLogManager extends CtLogManager {
         }
     }
 
-    public interface SystemConfigurationHelper {
+    public interface SystemConfigurationHelper extends Serializable {
         /**
          * Displays an error message to the user.
          * @param languageKey the language key of the message to show

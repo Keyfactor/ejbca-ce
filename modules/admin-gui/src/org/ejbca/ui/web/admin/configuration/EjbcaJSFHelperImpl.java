@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
+
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.Application;
 import jakarta.faces.context.FacesContext;
@@ -38,31 +40,19 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
  */
 @Named("web")
 @SessionScoped
-public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
+public class EjbcaJSFHelperImpl implements EjbcaJSFHelper, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
     private static final Logger log = Logger.getLogger(EjbcaJSFHelperImpl.class);
 		
-	private EjbcaJSFLanguageResource text = null;
-	private EjbcaJSFImageResource image = null;
-	private EjbcaWebBean ejbcawebbean;
+	private transient EjbcaJSFLanguageResource text = null;
+	private transient EjbcaJSFImageResource image = null;
+	private transient EjbcaWebBean ejbcawebbean;
     private Boolean legacyInternetExplorer = null;
 
-	private boolean initialized = false;
-	
 	public EjbcaJSFHelperImpl() {}
 	
-    @Override
-    public void setEjbcaWebBean(EjbcaWebBean ejbcawebbean) {
-    	if(!initialized){
-    		this.ejbcawebbean = ejbcawebbean;
-    		text = new EjbcaJSFLanguageResourceImpl(ejbcawebbean);
-    		image = new EjbcaJSFImageResourceImpl(ejbcawebbean);
-    		initialized = true;
-    	}
-    }
-    
     /** Returns the EJBCA version */
     @Override
     public String getEjbcaVersion() {
@@ -104,14 +94,18 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
    /** Used for language resources. */
     @Override
     public org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource getText() {
-    	setEjbcaWebBean(getEjbcaWebBean());
+        if (text == null) {
+            text = new EjbcaJSFLanguageResourceImpl(getEjbcaWebBean());
+        }
     	return text;
     }
     
     /** Used for image resources. */
     @Override
     public org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource getImage() {
-        setEjbcaWebBean(getEjbcaWebBean());
+        if (image == null) {
+            image = new EjbcaJSFImageResourceImpl(getEjbcaWebBean());
+        }
      	return image;
      }
     
@@ -137,7 +131,7 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
     
      @Override
     public org.ejbca.ui.web.jsf.configuration.EjbcaWebBean getEjbcaWebBean() {
-         if(ejbcawebbean == null) {
+         if (ejbcawebbean == null) {
              final FacesContext ctx = FacesContext.getCurrentInstance();
              final HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
              try {
@@ -173,7 +167,7 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
      public static EjbcaJSFHelper getBean() {
     	 FacesContext context = FacesContext.getCurrentInstance();    
     	 Application app = context.getApplication();   
-    	 return app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
+         return app.evaluateExpressionGet(context, "#{web}", EjbcaJSFHelper.class);
      }
 
      /** @return true if the client browser has identified itself as a legacy Internet Explorer 10 (or earlier) */

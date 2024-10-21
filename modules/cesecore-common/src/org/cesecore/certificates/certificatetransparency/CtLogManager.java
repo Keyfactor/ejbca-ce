@@ -13,6 +13,7 @@
 
 package org.cesecore.certificates.certificatetransparency;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,7 +30,7 @@ import org.apache.commons.lang.StringUtils;
  * a database or a file.
  * @version $Id$
  */
-public class CtLogManager {
+public class CtLogManager implements Serializable {
     private final List<CTLogInfo> ctLogs;
 
     /**

@@ -78,10 +78,10 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private static final String KEYTAB_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE = "application/octet-stream";
     private static final String KRB5_CONF_CONTENT_TYPE_PLAIN = "text/plain";
-    private Part keyTabFile;
+    private transient Part keyTabFile;
 
     // MSAE Krb5Conf Settings
-    private Part krb5ConfFile;
+    private transient Part krb5ConfFile;
     private String selectedTemplateOid;
     private String selectedCertificateProfileName;
     private Integer selectedCertificateProfileId;
@@ -89,7 +89,7 @@ public class MSAutoEnrollmentSettingsManagedBean extends BaseManagedBean {
     private Integer selectedEndEntityProfileId;
     private IdNameHashMap<EndEntityProfile> authorizedEndEntityProfiles = new IdNameHashMap<>();
     private IdNameHashMap<CertificateProfile> authorizedCertificateProfiles = new IdNameHashMap<>();
-    private ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
+    private transient ListDataModel<MSAutoEnrollmentSettingsTemplate> mappedMsTemplates = null;
 
     @EJB
     private MsaeLdapMessageSessionLocal msaeLdapMessageSession;

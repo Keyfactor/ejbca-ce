@@ -55,7 +55,7 @@ public class CustomWorkerType extends WorkerType {
     private Collection<String> compatibleActionTypeNames = new ArrayList<>();
     private Collection<String> compatibleActionTypeNamesNoMail = new ArrayList<>();
     private Collection<String> compatibleIntervalTypeNames = new ArrayList<>();
-    private ListDataModel<CustomServiceWorkerProperty> customUiPropertyListDataModel = null;
+    private transient ListDataModel<CustomServiceWorkerProperty> customUiPropertyListDataModel = null;
 
 	public CustomWorkerType() {
 		super(CUSTOMWORKER_SUB_PAGE, NAME, true);

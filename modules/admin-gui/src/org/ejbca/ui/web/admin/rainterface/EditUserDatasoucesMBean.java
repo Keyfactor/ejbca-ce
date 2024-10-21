@@ -65,7 +65,7 @@ public class EditUserDatasoucesMBean extends BaseManagedBean implements Serializ
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES);
     }
     
-    public class DatasourceGui {
+    public class DatasourceGui implements Serializable {
         private String name;
         private int type;
         private String description;

@@ -16,6 +16,7 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 import java.util.Date;
@@ -47,7 +48,7 @@ import com.keyfactor.util.CertTools;
 
 //Suppress warnings for deprecation of the Admin object, required for legacy support
 @SuppressWarnings("deprecation") 
-public class Approval implements Comparable<Approval>, Externalizable { 
+public class Approval implements Serializable, Comparable<Approval>, Externalizable { 
 	
 	private static final long serialVersionUID = -1L;
 	

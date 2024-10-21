@@ -33,7 +33,7 @@ public class ApprovalPartitionProfileGuiObject implements Serializable {
 
     private static final long serialVersionUID = 2L;
 
-    private ListDataModel<DynamicUiProperty<? extends Serializable>> profilePropertyList = null;
+    private List<DynamicUiProperty<? extends Serializable>> profileProperties = null;
 
     private final String approvalProfileIdentifier;
     private final int partitionId;
@@ -42,25 +42,25 @@ public class ApprovalPartitionProfileGuiObject implements Serializable {
     public ApprovalPartitionProfileGuiObject(final String approvalProfileIdentifier, final int partitionId, final String partitionName,
             List<DynamicUiProperty<? extends Serializable>> propertyValues) {
         //Pass property values as a parameter because it may need some outside poking
-        setProfilePropertyList(new ListDataModel<>(propertyValues));
+        this.profileProperties = propertyValues;
         this.approvalProfileIdentifier = approvalProfileIdentifier;
         this.partitionId = partitionId;
         this.partitionName = partitionName;
     }
 
     public ListDataModel<DynamicUiProperty<? extends Serializable>> getProfilePropertyList() {
-        return profilePropertyList;
+        if (profileProperties == null) {
+            return null;
+        } else {
+            return new ListDataModel<>(profileProperties);
+        }
     }
     
-    public void setProfilePropertyList(ListDataModel<DynamicUiProperty<? extends Serializable>> profilePropertyList) {
-        this.profilePropertyList = profilePropertyList;
-    }
-
     /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
     public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
         final List<SelectItem> propertyPossibleValues = new ArrayList<>();
-        if (profilePropertyList != null) {
-            final DynamicUiProperty<? extends Serializable> property = profilePropertyList.getRowData();
+        if (getProfilePropertyList() != null) {
+            final DynamicUiProperty<? extends Serializable> property = getProfilePropertyList().getRowData();
             if (property != null && property.getPossibleValues() != null) {
                 for (final Serializable possibleValue : property.getPossibleValues()) {
                     propertyPossibleValues
@@ -73,7 +73,7 @@ public class ApprovalPartitionProfileGuiObject implements Serializable {
 
     /** @return the lookup result of message key "APPROVAL_PROFILE_<TYPE>_<property-name>" or property-name if no key exists. */
     public String getPropertyNameLocalized() {
-        final String name = profilePropertyList.getRowData().getName();
+        final String name = getProfilePropertyList().getRowData().getName();
         final String msgKeyCommon = "APPROVAL_PROFILE_COMMON_" + name.toUpperCase();
         final String translatedNameCommon = EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(msgKeyCommon);
         if (!translatedNameCommon.equals(msgKeyCommon)) {
@@ -85,7 +85,7 @@ public class ApprovalPartitionProfileGuiObject implements Serializable {
     }
     
     public String getPropertyName() {
-        return profilePropertyList.getRowData().getName();
+        return getProfilePropertyList().getRowData().getName();
     }
 
     public int getPartitionId() {

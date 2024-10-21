@@ -93,7 +93,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, InternalKeyBindingRules.VIEW.resource());
     }
     
-    public final class GuiInfo {
+    public final class GuiInfo implements Serializable {
         public static final String TEXTKEY_PREFIX = "INTERNALKEYBINDING_STATUS_";
         private final int internalKeyBindingId;
         private final String name;
@@ -230,24 +230,27 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     private static final long serialVersionUID = 3L;
-    private final AuthenticationToken authenticationToken = getAdmin();
-
-    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
-    private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
-    private final CertificateStoreSessionLocal certificateStoreSession = getEjbcaWebBean().getEjb().getCertificateStoreSession();
-    private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
-    private final EndEntityAccessSessionLocal endEntityAccessSessionSession = getEjbcaWebBean().getEjb().getEndEntityAccessSession();
-    private final InternalKeyBindingMgmtSessionLocal internalKeyBindingSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+    
+    private transient AuthenticationToken authenticationToken;
+    private transient AuthorizationSessionLocal authorizationSession;
+    private transient CaSessionLocal caSession;
+    private transient CertificateStoreSessionLocal certificateStoreSession;
+    private transient CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
+    private transient EndEntityAccessSessionLocal endEntityAccessSessionSession;
+    private transient InternalKeyBindingMgmtSessionLocal internalKeyBindingSession;
 
     ////
     //// Below is code related to viewing and/or interacting with the list of InternalKeyBindings
     ////
     private String currentInternalKeyBindingId = null;
     private String currentName = null;
-    private ListDataModel<GuiInfo> internalKeyBindingGuiList = null;
+    private transient ListDataModel<GuiInfo> internalKeyBindingGuiList = null;
+    private List<GuiInfo> internalKeyBindingList = null;
+
     private Integer uploadTarget = null;
     private transient Part uploadToTargetFile;
-    private ListDataModel<InternalKeyBindingTrustEntry> trustedCertificates = null;
+    private transient ListDataModel<InternalKeyBindingTrustEntry> trustedCertificates = null;
+    private List<InternalKeyBindingTrustEntry> trustedCertificateList = null;
     private String currentCertificateSerialNumber = null;
     private String currentTrustEntryDescription = null;
 
@@ -276,6 +279,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     private void flushListCaches() {
         internalKeyBindingGuiList = null;
+        internalKeyBindingList = null;
     }
 
     public Integer getUploadTarget() {
@@ -314,7 +318,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
         if (uploadToTargetFile != null && uploadToTargetFile.getSize() > 0) {
             try {
-                internalKeyBindingSession.importCertificateForInternalKeyBinding(getAdmin(), uploadTarget.intValue(),
+                getInternalKeyBindingSession().importCertificateForInternalKeyBinding(getAdmin(), uploadTarget.intValue(),
                         IOUtils.toByteArray(uploadToTargetFile.getInputStream()));
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_INFO, "Operation completed without errors.", null));
@@ -331,94 +335,105 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** @return list of gui representations for all the InternalKeyBindings of the current type*/
     public ListDataModel<GuiInfo> getInternalKeyBindingGuiList() {
         if (internalKeyBindingGuiList == null) {
-            // Get the current type of tokens we operate on
-            final String internalKeyBindingType = getSelectedInternalKeyBindingType();
-            List<GuiInfo> internalKeyBindingList = new LinkedList<>();
-            for (InternalKeyBindingInfo current : internalKeyBindingSession.getInternalKeyBindingInfos(authenticationToken, internalKeyBindingType)) {
-                final int cryptoTokenId = current.getCryptoTokenId();
-                final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId);
-                final String cryptoTokenName;
-                boolean authorizedToCryptotoken = false;
-                boolean authorizedToGenerateKeys = false;
-                boolean cryptoTokenActive = false;
-                if (cryptoTokenInfo == null) {
-                    cryptoTokenName = "unknown";
-                } else {
-                    authorizedToCryptotoken = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource()
-                            + "/" + cryptoTokenId);
-                    authorizedToGenerateKeys = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.GENERATE_KEYS.resource()
-                            + "/" + cryptoTokenId);              
-                    cryptoTokenActive = cryptoTokenInfo.isActive();
-                    cryptoTokenName = cryptoTokenInfo.getName();
-                }
-                final String certificateId = current.getCertificateId();
-                final Certificate certificate = certificateId == null ? null : certificateStoreSession.findCertificateByFingerprint(certificateId);
-                String certificateIssuerDn = "";
-                String certificateSubjectDn = "";
-                String certificateSerialNumber = "";
-                String caCertificateIssuerDn = "";
-                String caCertificateSerialNumber = "";
-                String certificateInternalCaName = null;
-                int certificateInternalCaId = 0;
-                String status = current.getStatus().name();
-                if (certificate != null) {
-                    certificateSubjectDn = CertTools.getSubjectDN(certificate);
-                    certificateIssuerDn = CertTools.getIssuerDN(certificate);
-                    certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
-                    boolean caAvailable = false;
-                    try {
-                        // Note that we can do lookups using the .hashCode, but we will use the objects id
-                        final CACommon ca = caSession.getCANoLog(authenticationToken, certificateIssuerDn.hashCode(), null);
-                        if (ca != null) {
-                            certificateInternalCaName = ca.getName();
-                            certificateInternalCaId = ca.getCAId();
-                            caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
-                            caCertificateSerialNumber = CertTools.getSerialNumberAsString(ca.getCACertificate());
-                            // Check that the current CA certificate is the issuer of the IKB certificate
-                            certificate.verify(ca.getCACertificate().getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
-                            caAvailable = true;
-                        }
-                    } catch (AuthorizationDeniedException | InvalidKeyException | CertificateException | NoSuchAlgorithmException |
-                            NoSuchProviderException | SignatureException e) {
-                        // CA is not available
+            
+            // create the key binding list
+            if (internalKeyBindingList == null) {
+                // Get the current type of tokens we operate on
+                final String internalKeyBindingType = getSelectedInternalKeyBindingType();
+                internalKeyBindingList = new LinkedList<>();
+                for (InternalKeyBindingInfo current : getInternalKeyBindingSession().getInternalKeyBindingInfos(getAuthenticationToken(),
+                        internalKeyBindingType)) {
+                    final int cryptoTokenId = current.getCryptoTokenId();
+                    final CryptoTokenInfo cryptoTokenInfo = getCryptoTokenManagementSession().getCryptoTokenInfo(cryptoTokenId);
+                    final String cryptoTokenName;
+                    boolean authorizedToCryptotoken = false;
+                    boolean authorizedToGenerateKeys = false;
+                    boolean cryptoTokenActive = false;
+                    if (cryptoTokenInfo == null) {
+                        cryptoTokenName = "unknown";
+                    } else {
+                        authorizedToCryptotoken = getAuthorizationSession().isAuthorizedNoLogging(getAuthenticationToken(),
+                                CryptoTokenRules.USE.resource() + "/" + cryptoTokenId);
+                        authorizedToGenerateKeys = getAuthorizationSession().isAuthorizedNoLogging(getAuthenticationToken(),
+                                CryptoTokenRules.GENERATE_KEYS.resource() + "/" + cryptoTokenId);
+                        cryptoTokenActive = cryptoTokenInfo.isActive();
+                        cryptoTokenName = cryptoTokenInfo.getName();
                     }
-                    if (!caAvailable) {
-                        // The CA is for the purpose of "internal" renewal not available to this administrator.
-                        // Try to find the issuer (CA) certificate by other means, trying to get it through CA certificate link from the bound certificate
-                        CertificateInfo info = certificateStoreSession.getCertificateInfo(certificateId);
-                        final Certificate cacertificate = info.getCAFingerprint() == null ? null : certificateStoreSession
-                                .findCertificateByFingerprint(info.getCAFingerprint());
-                        if (cacertificate != null) {
-                            caCertificateIssuerDn = CertTools.getIssuerDN(cacertificate);
-                            caCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);
-                        }
-                    }
-                    // Check for additional informative UI states
-                    if (InternalKeyBindingStatus.ACTIVE.equals(current.getStatus()) && certificate instanceof X509Certificate) {
-                        // Check if certificate is expired
-                        final X509Certificate x509Certificate = (X509Certificate) certificate;
+                    final String certificateId = current.getCertificateId();
+                    final Certificate certificate = certificateId == null ? null
+                            : getCertificateStoreSession().findCertificateByFingerprint(certificateId);
+                    String certificateIssuerDn = "";
+                    String certificateSubjectDn = "";
+                    String certificateSerialNumber = "";
+                    String caCertificateIssuerDn = "";
+                    String caCertificateSerialNumber = "";
+                    String certificateInternalCaName = null;
+                    int certificateInternalCaId = 0;
+                    String status = current.getStatus().name();
+                    if (certificate != null) {
+                        certificateSubjectDn = CertTools.getSubjectDN(certificate);
+                        certificateIssuerDn = CertTools.getIssuerDN(certificate);
+                        certificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
+                        boolean caAvailable = false;
                         try {
-                            x509Certificate.checkValidity();
-                            // Check if certificate is revoked
-                            if (certificateStoreSession.isRevoked(certificateIssuerDn, x509Certificate.getSerialNumber())) {
-                                status = "REVOKED";
+                            // Note that we can do lookups using the .hashCode, but we will use the objects id
+                            final CACommon ca = getCaSession().getCANoLog(getAuthenticationToken(), certificateIssuerDn.hashCode(), null);
+                            if (ca != null) {
+                                certificateInternalCaName = ca.getName();
+                                certificateInternalCaId = ca.getCAId();
+                                caCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
+                                caCertificateSerialNumber = CertTools.getSerialNumberAsString(ca.getCACertificate());
+                                // Check that the current CA certificate is the issuer of the IKB certificate
+                                certificate.verify(ca.getCACertificate().getPublicKey(), BouncyCastleProvider.PROVIDER_NAME);
+                                caAvailable = true;
                             }
-                        } catch (CertificateExpiredException e) {
-                            status = "EXPIRED";
-                        } catch (CertificateNotYetValidException e) {
-                            status = "NOTYETVALID";
+                        } catch (AuthorizationDeniedException | InvalidKeyException | CertificateException | NoSuchAlgorithmException
+                                | NoSuchProviderException | SignatureException e) {
+                            // CA is not available
+                        }
+                        if (!caAvailable) {
+                            // The CA is for the purpose of "internal" renewal not available to this administrator.
+                            // Try to find the issuer (CA) certificate by other means, trying to get it through CA certificate link from the bound certificate
+                            CertificateInfo info = getCertificateStoreSession().getCertificateInfo(certificateId);
+                            final Certificate cacertificate = info.getCAFingerprint() == null ? null
+                                    : getCertificateStoreSession().findCertificateByFingerprint(info.getCAFingerprint());
+                            if (cacertificate != null) {
+                                caCertificateIssuerDn = CertTools.getIssuerDN(cacertificate);
+                                caCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);
+                            }
+                        }
+                        // Check for additional informative UI states
+                        if (InternalKeyBindingStatus.ACTIVE.equals(current.getStatus()) && certificate instanceof X509Certificate) {
+                            // Check if certificate is expired
+                            final X509Certificate x509Certificate = (X509Certificate) certificate;
+                            try {
+                                x509Certificate.checkValidity();
+                                // Check if certificate is revoked
+                                if (getCertificateStoreSession().isRevoked(certificateIssuerDn, x509Certificate.getSerialNumber())) {
+                                    status = "REVOKED";
+                                }
+                            } catch (CertificateExpiredException e) {
+                                status = "EXPIRED";
+                            } catch (CertificateNotYetValidException e) {
+                                status = "NOTYETVALID";
+                            }
                         }
                     }
+                    internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName,
+                            authorizedToCryptotoken, authorizedToGenerateKeys, cryptoTokenActive, current.getKeyPairAlias(),
+                            current.getNextKeyPairAlias(), status, updateOperationalStatus(current, cryptoTokenInfo), current.getCertificateId(),
+                            certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId, certificateSerialNumber,
+                            caCertificateIssuerDn, caCertificateSerialNumber));
+                    internalKeyBindingList.sort((guiInfo1, guiInfo2) -> guiInfo1.getName().compareToIgnoreCase(guiInfo2.getName()));
+
                 }
-                internalKeyBindingList.add(new GuiInfo(current.getId(), current.getName(), cryptoTokenId, cryptoTokenName, authorizedToCryptotoken, authorizedToGenerateKeys,
-                        cryptoTokenActive, current.getKeyPairAlias(), current.getNextKeyPairAlias(), status, updateOperationalStatus(current, cryptoTokenInfo),
-                        current.getCertificateId(), certificateIssuerDn, certificateSubjectDn, certificateInternalCaName, certificateInternalCaId,
-                        certificateSerialNumber, caCertificateIssuerDn, caCertificateSerialNumber));
-                internalKeyBindingList.sort((guiInfo1, guiInfo2) -> guiInfo1.getName().compareToIgnoreCase(guiInfo2.getName()));
 
             }
+            
+            // return a wrapped key binding list
             internalKeyBindingGuiList = new ListDataModel<>(internalKeyBindingList);
         }
+        
         // View the list will purge the view cache
         flushSingleViewCache();
         return internalKeyBindingGuiList;
@@ -427,26 +442,26 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** Invoked when the user wants to renew a the InternalKeyBinding certificates issued by a instance local CA */
     public void commandRenewCertificate() {
         try {
-            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
+            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
             // Find username and current data for this user
-            final InternalKeyBindingInfo internalKeyBindingInfo = internalKeyBindingSession.getInternalKeyBindingInfo(authenticationToken,
+            final InternalKeyBindingInfo internalKeyBindingInfo = getInternalKeyBindingSession().getInternalKeyBindingInfo(getAuthenticationToken(),
                     internalKeyBindingId);
             final String currentCertificateId = internalKeyBindingInfo.getCertificateId();
             if (currentCertificateId == null) {
                 throw new CertificateImportException("Can only renew certificate when there already is one.");
             }
-            final String endEntityId = certificateStoreSession.findUsernameByFingerprint(currentCertificateId);
+            final String endEntityId = getCertificateStoreSession().findUsernameByFingerprint(currentCertificateId);
             if (endEntityId == null) {
                 throw new CertificateImportException("Cannot renew certificate without an existing end entity.");
             }
             // Re-use the end entity's information with the current "next" public key to request a certificate
-            final EndEntityInformation endEntityInformation = endEntityAccessSessionSession.findUser(authenticationToken, endEntityId);
+            final EndEntityInformation endEntityInformation = getEndEntityAccessSessionSession().findUser(getAuthenticationToken(), endEntityId);
             if (endEntityInformation != null) {
                 final IPasswordGenerator passwordGenerator = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
                 endEntityInformation.setPassword(passwordGenerator.getNewPassword(12, 12));
             }
-            final String certificateId = internalKeyBindingSession.renewInternallyIssuedCertificate(authenticationToken, internalKeyBindingId,
+            final String certificateId = getInternalKeyBindingSession().renewInternallyIssuedCertificate(getAuthenticationToken(), internalKeyBindingId,
                     endEntityInformation);
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage("New certificate with fingerprint " + certificateId + " has been issued."));
@@ -459,9 +474,9 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** Invoked when the user wants to search the database for new certificates matching an InternalKeyBinding key pair */
     public void commandReloadCertificate() {
         try {
-            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
+            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
-            final String certificateId = internalKeyBindingSession.updateCertificateForInternalKeyBinding(authenticationToken, internalKeyBindingId);
+            final String certificateId = getInternalKeyBindingSession().updateCertificateForInternalKeyBinding(getAuthenticationToken(), internalKeyBindingId);
             if (certificateId == null) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("No new certificate for " + guiInfo.getName() + "."));
             } else {
@@ -476,9 +491,9 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** Invoked when the user wants to generate a nextKeyPair for an InternalKeyBinding */
     public void commandGenerateNewKey() {
         try {
-            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
+            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
-            final String nextKeyPairAlias = internalKeyBindingSession.generateNextKeyPair(authenticationToken, internalKeyBindingId);
+            final String nextKeyPairAlias = getInternalKeyBindingSession().generateNextKeyPair(getAuthenticationToken(), internalKeyBindingId);
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Generated next key with alias " + nextKeyPairAlias + "."));
         } catch (AuthorizationDeniedException | CryptoTokenOfflineException | InvalidKeyException | InvalidAlgorithmParameterException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
@@ -489,9 +504,9 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** Invoked when the user wants to get a CSR for the current or next KeyPair for an InternalKeyBinding */
     public void commandGenerateRequest() {
         try {
-            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
+            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
             final int internalKeyBindingId = guiInfo.getInternalKeyBindingId();
-            final byte[] pkcs10 = internalKeyBindingSession.generateCsrForNextKey(authenticationToken, internalKeyBindingId, null);
+            final byte[] pkcs10 = getInternalKeyBindingSession().generateCsrForNextKey(getAuthenticationToken(), internalKeyBindingId, null);
             final byte[] pemEncodedPkcs10 = CertTools.getPEMFromCertificateRequest(pkcs10);
             final HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
             final OutputStream outputStream = response.getOutputStream();
@@ -508,13 +523,13 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /** Invoked when the user wants to disable an InternalKeyBinding */
     public void commandDisable() {
-        changeStatus(internalKeyBindingGuiList.getRowData().getInternalKeyBindingId(), InternalKeyBindingStatus.DISABLED);
+        changeStatus(getInternalKeyBindingGuiList().getRowData().getInternalKeyBindingId(), InternalKeyBindingStatus.DISABLED);
         flushListCaches();
     }
 
     /** Invoked when the user wants to enable an InternalKeyBinding */
     public void commandEnable() {
-        changeStatus(internalKeyBindingGuiList.getRowData().getInternalKeyBindingId(), InternalKeyBindingStatus.ACTIVE);
+        changeStatus(getInternalKeyBindingGuiList().getRowData().getInternalKeyBindingId(), InternalKeyBindingStatus.ACTIVE);
         flushListCaches();
     }
 
@@ -522,13 +537,13 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     
     private void changeStatus(final int internalKeyBindingId, final InternalKeyBindingStatus internalKeyBindingStatus) {
         try {
-            final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken, internalKeyBindingId);
+            final InternalKeyBinding internalKeyBinding = getInternalKeyBindingSession().getInternalKeyBinding(getAuthenticationToken(), internalKeyBindingId);
             if (internalKeyBinding.getCertificateId() == null && internalKeyBindingStatus.equals(InternalKeyBindingStatus.ACTIVE)) {
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(FacesMessage.SEVERITY_ERROR, "Cannot activate " + getKeybindingTypeName() + " that has no certificate.", null));
             } else {
                 internalKeyBinding.setStatus(internalKeyBindingStatus);
-                internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding);
+                getInternalKeyBindingSession().persistInternalKeyBinding(getAuthenticationToken(), internalKeyBinding);
                 FacesContext.getCurrentInstance().addMessage(null,
                         new FacesMessage(internalKeyBinding.getName() + " status is now " + internalKeyBindingStatus.name()));
             }
@@ -541,8 +556,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** Invoked when the user wants to remove an InternalKeyBinding */
     public void commandDelete() {
         try {
-            final GuiInfo guiInfo = internalKeyBindingGuiList.getRowData();
-            if (internalKeyBindingSession.deleteInternalKeyBinding(authenticationToken, guiInfo.getInternalKeyBindingId())) {
+            final GuiInfo guiInfo = getInternalKeyBindingGuiList().getRowData();
+            if (getInternalKeyBindingSession().deleteInternalKeyBinding(getAuthenticationToken(), guiInfo.getInternalKeyBindingId())) {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(guiInfo.getName() + " deleted."));
             } else {
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(guiInfo.getName() + " had already been deleted."));
@@ -564,9 +579,13 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     private String currentKeyPairAlias = null;
     private String currentSignatureAlgorithm = null;
     private String currentNextKeyPairAlias = null;
-    private ListDataModel<DynamicUiProperty<? extends Serializable>> internalKeyBindingPropertyList = null;
+    private transient ListDataModel<DynamicUiProperty<? extends Serializable>> internalKeyBindingPropertyList = null;
+    private ArrayList<DynamicUiProperty<? extends Serializable>> internalKeyBindingProperties;
     private boolean inEditMode = false;
     private Integer currentCertificateAuthority = null;
+
+
+
     
    
    
@@ -589,8 +608,10 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         currentSignatureAlgorithm = null;
         currentNextKeyPairAlias = null;
         internalKeyBindingPropertyList = null;
+        internalKeyBindingProperties = null;
         inEditMode = false;
         trustedCertificates = null;
+        trustedCertificateList = null;
     }
 
     /** @return the current InternalKeyBindingId as a String */
@@ -641,14 +662,14 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
             getAvailableCryptoTokens();
             getAvailableKeyPairAliases();
             getAvailableSignatureAlgorithms();
-            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<>(internalKeyBindingSession.getAvailableTypesAndProperties()
-                    .get(getSelectedInternalKeyBindingType()).values()));
+            internalKeyBindingProperties = new ArrayList<>(getInternalKeyBindingSession().getAvailableTypesAndProperties()
+                    .get(getSelectedInternalKeyBindingType()).values());
         } else {
             // Load existing
             final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
             final InternalKeyBinding internalKeyBinding;
             try {
-                internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(authenticationToken, internalKeyBindingId);
+                internalKeyBinding = getInternalKeyBindingSession().getInternalKeyBindingReference(getAuthenticationToken(), internalKeyBindingId);
             } catch (AuthorizationDeniedException e) {
                 // No longer authorized to this token, or the user tried to pull a fast one
                 FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
@@ -659,8 +680,9 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
             currentKeyPairAlias = internalKeyBinding.getKeyPairAlias();
             currentSignatureAlgorithm = internalKeyBinding.getSignatureAlgorithm();
             currentNextKeyPairAlias = internalKeyBinding.getNextKeyPairAlias();
-            internalKeyBindingPropertyList = new ListDataModel<>(new ArrayList<>(internalKeyBinding.getCopyOfProperties().values()));
+            internalKeyBindingProperties = new ArrayList<>(internalKeyBinding.getCopyOfProperties().values());
             trustedCertificates = null;
+            trustedCertificateList = null;
         }
     }
 
@@ -689,7 +711,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     }
 
     public boolean isAllowedToEdit() {
-        return authorizationSession.isAuthorizedNoLogging(authenticationToken, InternalKeyBindingRules.MODIFY.resource() + "/"
+        return getAuthorizationSession().isAuthorizedNoLogging(getAuthenticationToken(), InternalKeyBindingRules.MODIFY.resource() + "/"
                 + getCurrentInternalKeyBindingId());
     }
 
@@ -715,7 +737,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     public boolean isCryptoTokenActive() {
         final boolean ret;
         if (currentCryptoToken != null) {
-            final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(currentCryptoToken);
+            final CryptoTokenInfo cryptoTokenInfo = getCryptoTokenManagementSession().getCryptoTokenInfo(currentCryptoToken);
             ret = (cryptoTokenInfo != null && cryptoTokenInfo.isActive());
         } else {
             ret = false;
@@ -767,14 +789,14 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         final int internalKeyBindingId = Integer.parseInt(getCurrentInternalKeyBindingId());
         InternalKeyBinding internalKeyBindingInfo;
         try {
-            internalKeyBindingInfo = internalKeyBindingSession.getInternalKeyBindingInfoNoLog(authenticationToken, internalKeyBindingId);
+            internalKeyBindingInfo = getInternalKeyBindingSession().getInternalKeyBindingInfoNoLog(getAuthenticationToken(), internalKeyBindingId);
         } catch (AuthorizationDeniedException e) {
             // Silently ignore that the admin has tried to access a token that he/she was not authorized to.
             return;
         }
         if (internalKeyBindingInfo.getCertificateId() != null && !internalKeyBindingInfo.getCertificateId().equals(boundCertificateId)) {
             boundCertificateId = internalKeyBindingInfo.getCertificateId();
-            final Certificate certificate = boundCertificateId == null ? null : certificateStoreSession
+            final Certificate certificate = boundCertificateId == null ? null : getCertificateStoreSession()
                     .findCertificateByFingerprint(boundCertificateId);
             int certificateInternalCaId = boundCertificateIssuerDn.hashCode();
             if (certificate != null) {
@@ -782,7 +804,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                 boundCertificateSerialNumber = CertTools.getSerialNumberAsString(certificate);
                 try {
                     // Note that we can do lookups using the .hashCode, but we will use the objects id
-                    final CACommon ca = caSession.getCANoLog(authenticationToken, boundCertificateIssuerDn.hashCode(), null);
+                    final CACommon ca = getCaSession().getCANoLog(getAuthenticationToken(), boundCertificateIssuerDn.hashCode(), null);
                     boundCertificateInternalCaName = ca.getName();
                     certificateInternalCaId = ca.getCAId();
                     boundCaCertificateIssuerDn = CertTools.getIssuerDN(ca.getCACertificate());
@@ -791,8 +813,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                     // CADoesntExistsException or AuthorizationDeniedException
                     // The CA is for the purpose of "internal" renewal not available to this administrator.
                     // Try to find the issuer (CA) certificate by other means, trying to get it through CA certificate link from the bound certificate
-                    CertificateInfo info = certificateStoreSession.getCertificateInfo(boundCertificateId);
-                    final Certificate cacertificate = info.getCAFingerprint() == null ? null : certificateStoreSession
+                    CertificateInfo info = getCertificateStoreSession().getCertificateInfo(boundCertificateId);
+                    final Certificate cacertificate = info.getCAFingerprint() == null ? null : getCertificateStoreSession()
                             .findCertificateByFingerprint(info.getCAFingerprint());
                     boundCaCertificateIssuerDn = CertTools.getIssuerDN(cacertificate);
                     boundCaCertificateSerialNumber = CertTools.getSerialNumberAsString(cacertificate);
@@ -847,7 +869,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                 currentCryptoToken = (Integer) availableCryptoTokens.get(0).getValue();
             }
         }
-        CryptoTokenInfo info = cryptoTokenManagementSession.getCryptoTokenInfo(currentCryptoToken.intValue());
+        CryptoTokenInfo info = getCryptoTokenManagementSession().getCryptoTokenInfo(currentCryptoToken.intValue());
         return info != null ? info.getName() : null;
     }
 
@@ -889,9 +911,9 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     public List<SelectItem/*<Integer,String>*/> getAvailableCryptoTokens() {
         final List<SelectItem> availableCryptoTokens = new ArrayList<>();
-        for (CryptoTokenInfo current : cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken)) {
+        for (CryptoTokenInfo current : getCryptoTokenManagementSession().getCryptoTokenInfos(getAuthenticationToken())) {
             if (current.isActive()
-                    && authorizationSession.isAuthorizedNoLogging(authenticationToken,
+                    && getAuthorizationSession().isAuthorizedNoLogging(getAuthenticationToken(),
                             CryptoTokenRules.USE.resource() + "/" + current.getCryptoTokenId())) {
                 availableCryptoTokens.add(new SelectItem(current.getCryptoTokenId(), current.getName()));
             }
@@ -928,7 +950,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         final List<SelectItem> availableKeyPairAliases = new ArrayList<>();
         try {
             if (currentCryptoToken != null) {
-                for (final String alias : cryptoTokenManagementSession.getKeyPairAliases(authenticationToken, currentCryptoToken.intValue())) {
+                for (final String alias : getCryptoTokenManagementSession().getKeyPairAliases(getAuthenticationToken(), currentCryptoToken.intValue())) {
                     availableKeyPairAliases.add(new SelectItem(alias, alias));
                 }
                 if (currentKeyPairAlias == null && !availableKeyPairAliases.isEmpty()) {
@@ -957,7 +979,7 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
         final List<SelectItem> availableSignatureAlgorithms = new ArrayList<>();
         if (currentCryptoToken != null && currentKeyPairAlias != null) {
             try {
-                final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, currentCryptoToken.intValue(),
+                final PublicKey currentPublicKey = getCryptoTokenManagementSession().getPublicKey(getAuthenticationToken(), currentCryptoToken.intValue(),
                         currentKeyPairAlias).getPublicKey();
                 for (final String signatureAlgorithm : AlgorithmTools.getSignatureAlgorithms(currentPublicKey)) {
                     if (OcspConfiguration.isAcceptedSignatureAlgorithm(signatureAlgorithm)) {
@@ -984,8 +1006,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
 
     /** @return a list of all CAs known to the system */
     public List<SelectItem/*<Integer,String>*/> getAvailableCertificateAuthorities() {
-        final List<Integer> availableCaIds = caSession.getAuthorizedCaIds(authenticationToken);
-        final Map<Integer, String> caIdToNameMap = caSession.getCAIdToNameMap();
+        final List<Integer> availableCaIds = getCaSession().getAuthorizedCaIds(getAuthenticationToken());
+        final Map<Integer, String> caIdToNameMap = getCaSession().getCAIdToNameMap();
         final List<SelectItem> availableCertificateAuthorities = new ArrayList<>(availableCaIds.size());
         for (final Integer availableCaId : availableCaIds) {
             availableCertificateAuthorities.add(new SelectItem(availableCaId, caIdToNameMap.get(availableCaId)));
@@ -1000,31 +1022,35 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
  
     
     public String getTrustedCertificatesCaName() {
-        return caSession.getCAIdToNameMap().get(trustedCertificates.getRowData().getCaId());
+        return getCaSession().getCAIdToNameMap().get(getTrustedCertificates().getRowData().getCaId());
     }
     
 
 
     public String getTrustedCertificatesSerialNumberHex() {
-        return trustedCertificates.getRowData().fetchCertificateSerialNumber().toString(16);
+        return getTrustedCertificates().getRowData().fetchCertificateSerialNumber().toString(16);
     }
     
 
     /** @return a list of all currently trusted certificates references as pairs of [CAId,CertificateSerialNumber] */
-    public ListDataModel<InternalKeyBindingTrustEntry>getTrustedCertificates() {
+    public ListDataModel<InternalKeyBindingTrustEntry> getTrustedCertificates() {
         if (trustedCertificates == null) {
-            final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
-            if (internalKeyBindingId == 0) {
-                trustedCertificates = new ListDataModel<>(new ArrayList<>());
-            } else {
-                try {
-                    final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBindingReference(
-                            authenticationToken, internalKeyBindingId);
-                    trustedCertificates = new ListDataModel<>(internalKeyBinding.getTrustedCertificateReferences());
-                } catch (AuthorizationDeniedException e) {
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
+            if (trustedCertificateList == null) {
+                final int internalKeyBindingId = Integer.parseInt(currentInternalKeyBindingId);
+                if (internalKeyBindingId == 0) {
+                    trustedCertificateList = new ArrayList<>();
+                } else {
+                    try {
+                        final InternalKeyBinding internalKeyBinding = getInternalKeyBindingSession()
+                                .getInternalKeyBindingReference(getAuthenticationToken(), internalKeyBindingId);
+                        trustedCertificateList = internalKeyBinding.getTrustedCertificateReferences();
+                    } catch (AuthorizationDeniedException e) {
+                        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
+                    }
                 }
             }
+
+            trustedCertificates = new ListDataModel<>(trustedCertificateList);
         }
         return trustedCertificates;
     }
@@ -1032,37 +1058,34 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** Invoked when the user wants to a new entry to the list of trusted certificate references */
     @SuppressWarnings("unchecked")
     public void addTrust() {
-        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = (List<InternalKeyBindingTrustEntry>) getTrustedCertificates()
-                .getWrappedData();
         final String currentCertSerialNumber = getCurrentCertificateSerialNumber();
         if (currentCertSerialNumber == null || currentCertSerialNumber.trim().length() == 0) {
-            trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), null, currentTrustEntryDescription));
+            trustedCertificateList.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), null, currentTrustEntryDescription));
         } else {
-            trustedCertificateReferences.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), new BigInteger(
+            trustedCertificateList.add(new InternalKeyBindingTrustEntry(getCurrentCertificateAuthority(), new BigInteger(
                     currentCertSerialNumber.trim(), 16), currentTrustEntryDescription));
         }
-        trustedCertificates.setWrappedData(trustedCertificateReferences);
     }
 
     /** Invoked when the user wants to remove an entry to the list of trusted certificate references */
     @SuppressWarnings("unchecked")
     public void removeTrust() {
-        final InternalKeyBindingTrustEntry trustEntry = (trustedCertificates.getRowData());
-        final List<InternalKeyBindingTrustEntry> trustedCertificateReferences = (List<InternalKeyBindingTrustEntry>) getTrustedCertificates()
-                .getWrappedData();
-        trustedCertificateReferences.remove(trustEntry);
-        trustedCertificates.setWrappedData(trustedCertificateReferences);
+        final InternalKeyBindingTrustEntry trustEntry = (getTrustedCertificates().getRowData());
+        trustedCertificateList.remove(trustEntry);
     }
     
 
     /** @return a list of the current InteralKeyBinding's properties */
     public ListDataModel<DynamicUiProperty<? extends Serializable>> getInternalKeyBindingPropertyList() {
+        if (internalKeyBindingPropertyList == null) {
+            internalKeyBindingPropertyList = new ListDataModel<>(internalKeyBindingProperties);
+        }
         return internalKeyBindingPropertyList;
     }
 
     /** @return the lookup result of message key "INTERNALKEYBINDING_<type>_<property-name>" or property-name if no key exists. */
     public String getPropertyNameTranslated() {
-        final String name = ((DynamicUiProperty<? extends Serializable>) internalKeyBindingPropertyList.getRowData()).getName();
+        final String name = ((DynamicUiProperty<? extends Serializable>) getInternalKeyBindingPropertyList().getRowData()).getName();
         final String msgKey = "INTERNALKEYBINDING_" + getSelectedInternalKeyBindingType().toUpperCase() + "_" + name.toUpperCase();
         final String translatedName = super.getEjbcaWebBean().getText(msgKey);
         return translatedName.equals(msgKey) ? name : translatedName;
@@ -1071,8 +1094,8 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
     /** @return the current multi-valued property's possible values as JSF friendly SelectItems. */
     public List<SelectItem/*<String,String>*/> getPropertyPossibleValues() {
         final List<SelectItem> propertyPossibleValues = new ArrayList<>();
-        if (internalKeyBindingPropertyList != null) {
-            final DynamicUiProperty<? extends Serializable> property = internalKeyBindingPropertyList
+        if (getInternalKeyBindingPropertyList() != null) {
+            final DynamicUiProperty<? extends Serializable> property = getInternalKeyBindingPropertyList()
                     .getRowData();
             for (final Serializable possibleValue : property.getPossibleValues()) {
                 propertyPossibleValues.add(new SelectItem(property.getAsEncodedValue(property.getType().cast(possibleValue)), possibleValue
@@ -1156,5 +1179,49 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
      */
     private boolean hasOcspCacheEntry(final int keyBindingId) {
         return InternalKeyBindingCache.INSTANCE.getEntry(keyBindingId) != null;
+    }
+
+    public AuthenticationToken getAuthenticationToken() {
+        if (authenticationToken == null)
+            authenticationToken = getAdmin();
+
+        return authenticationToken;
+    }
+
+    public AuthorizationSessionLocal getAuthorizationSession() {
+        if (authorizationSession == null)
+            authorizationSession = getEjbcaErrorWebBean().getEjb().getAuthorizationSession();
+
+        return authorizationSession;
+    }
+
+    public CaSessionLocal getCaSession() {
+        if (caSession == null)
+            caSession = getEjbcaWebBean().getEjb().getCaSession();
+        return caSession;
+    }
+
+    public CertificateStoreSessionLocal getCertificateStoreSession() {
+        if (certificateStoreSession == null)
+            certificateStoreSession = getEjbcaWebBean().getEjb().getCertificateStoreSession();
+        return certificateStoreSession;
+    }
+
+    public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() {
+        if (cryptoTokenManagementSession == null)
+            cryptoTokenManagementSession = getEjbcaWebBean().getEjb().getCryptoTokenManagementSession();
+        return cryptoTokenManagementSession;
+    }
+
+    public EndEntityAccessSessionLocal getEndEntityAccessSessionSession() {
+        if (endEntityAccessSessionSession == null)
+            endEntityAccessSessionSession = getEjbcaWebBean().getEjb().getEndEntityAccessSession();
+        return endEntityAccessSessionSession;
+    }
+
+    public InternalKeyBindingMgmtSessionLocal getInternalKeyBindingSession() {
+        if (internalKeyBindingSession == null)
+            internalKeyBindingSession = getEjbcaWebBean().getEjb().getInternalKeyBindingMgmtSession();
+        return internalKeyBindingSession;
     }
 }

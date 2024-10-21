@@ -13,6 +13,7 @@
 
 package org.cesecore.authentication.oauth;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -23,7 +24,7 @@ import org.apache.commons.lang.StringUtils;
  * This class is responsible for managing a list of OAuth Keys.
  *
  */
-public class OAuthKeyManager {
+public class OAuthKeyManager implements Serializable {
     private final List<OAuthKeyInfo> oauthKeys;
 
     /**

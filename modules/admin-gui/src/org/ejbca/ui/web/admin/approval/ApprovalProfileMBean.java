@@ -131,7 +131,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     private int currentApprovalProfileId = -1;
     private ApprovalProfile currentApprovalProfile = null;
 
-    private ListDataModel<ApprovalStepGuiObject> steps = null;
+    // stepList is the backing object for steps.  Always get steps via getSteps, which will correctly
+    // initialize steps if it is null.
+    private transient ListDataModel<ApprovalStepGuiObject> steps = null;
+    private List<ApprovalStepGuiObject> stepList = null;
 
     /**
      * The type of metadata field to add to a partition, if any.
@@ -217,7 +220,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
         try {
             final ApprovalProfile approvalProfile = getApprovalProfile();
             List<Integer> stepOrder = new ArrayList<>();
-            for (final ApprovalStepGuiObject approvalSequenceGuiObject : steps) {
+            for (final ApprovalStepGuiObject approvalSequenceGuiObject : getSteps()) {
                 final int sequenceIdentifier = approvalSequenceGuiObject.getIdentifier();
                 for (final ApprovalPartitionProfileGuiObject approvalPartitionGuiObject : approvalSequenceGuiObject.getPartitionGuiObjects()) {
                     approvalProfile.addPropertiesToPartition(sequenceIdentifier, approvalPartitionGuiObject.getPartitionId(),
@@ -245,7 +248,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     public void saveTemporary() {
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final List<Integer> stepOrder = new ArrayList<>();
-        for (final ApprovalStepGuiObject step : steps) {
+        for (final ApprovalStepGuiObject step : getSteps()) {
             for (final ApprovalPartitionProfileGuiObject partition : step.getPartitionGuiObjects()) {
                 final int stepId = step.getIdentifier();
                 final int partitionId = partition.getPartitionId();
@@ -254,7 +257,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             }
             stepOrder.add(step.getIdentifier());
         }
-        steps = createStepListFromProfile(approvalProfile);
+        stepList = createStepListFromProfile(approvalProfile);
+        steps = new ListDataModel<>(stepList);
     }
 
     public String cancel() {
@@ -269,7 +273,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
      * @return an empty string to keep the scope.
      */
     public String addField(int partitionId) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
 
         saveTemporary();
 
@@ -305,7 +309,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             addErrorMessage("APPROVAL_PROFILE_FIELD_EXISTS");
         } else {
             updatedApprovalProfile.addPropertyToPartition(currentStep, partitionId, property);
-            steps = createStepListFromProfile(updatedApprovalProfile);
+            stepList = createStepListFromProfile(updatedApprovalProfile);
+            steps = new ListDataModel<>(stepList);
             this.fieldLabel = new HashMap<>();
             fieldToAdd = new HashMap<>();
         }
@@ -322,9 +327,9 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
      * @return an empty string to keep the scope.
      */
     public String addRowToRadioButton(int partitionId, String label) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         final ApprovalProfile updatedApprovalProfile = getApprovalProfile();
-        final List<ApprovalPartitionProfileGuiObject> guiPartitions = steps.getRowData().getPartitionGuiObjects();
+        final List<ApprovalPartitionProfileGuiObject> guiPartitions = getSteps().getRowData().getPartitionGuiObjects();
         for (ApprovalPartitionProfileGuiObject approvalPartitionProfileGuiObject : guiPartitions) {
             //find the right partition
             if (approvalPartitionProfileGuiObject.getPartitionId() == partitionId) {
@@ -344,7 +349,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 radioButtonProperty.setPossibleValues(possibleValues);
                 saveTemporary();
                 updatedApprovalProfile.addPropertyToPartition(currentStep, partitionId, radioButtonProperty);
-                steps = createStepListFromProfile(updatedApprovalProfile);
+                stepList = createStepListFromProfile(updatedApprovalProfile);
+                steps = new ListDataModel<>(stepList);
                 break;
             }
         }
@@ -359,10 +365,10 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
      * @return an empty string to keep the scope.
      */
     public String removeRowFromRadioButton(int partitionId, String encodedRadioButton) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         final ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         final RadioButton radioButton = DynamicUiProperty.getAsObject(encodedRadioButton, RadioButton.class);
-        final List<ApprovalPartitionProfileGuiObject> guiPartitions = steps.getRowData().getPartitionGuiObjects();
+        final List<ApprovalPartitionProfileGuiObject> guiPartitions = getSteps().getRowData().getPartitionGuiObjects();
         for(ApprovalPartitionProfileGuiObject approvalPartitionProfileGuiObject : guiPartitions) {
             //find the right partition
             if(approvalPartitionProfileGuiObject.getPartitionId() == partitionId) {
@@ -381,7 +387,8 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
                 radioButtonProperty.setPossibleValues(prunedValues);
                 saveTemporary();
                 updatedApprovalProfile.addPropertyToPartition(currentStep, partitionId, radioButtonProperty);
-                steps = createStepListFromProfile(updatedApprovalProfile);
+                stepList = createStepListFromProfile(updatedApprovalProfile);
+                steps = new ListDataModel<>(stepList);
                 break;
             }
         }
@@ -389,11 +396,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public String removeField(int partitionId, String propertyName) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
         ApprovalProfile updatedApprovalProfile = getApprovalProfile();
         updatedApprovalProfile.removePropertyFromPartition(currentStep, partitionId, propertyName);
-        steps = createStepListFromProfile(updatedApprovalProfile);
+        stepList = createStepListFromProfile(updatedApprovalProfile);
+        steps = new ListDataModel<>(stepList);
+        
         return "";
     }
 
@@ -404,37 +413,37 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public void moveStepDown() {
-        final Integer currentStep = steps.getRowData().getIdentifier();
-        final Integer nextStep = steps.getRowData().getNextStep();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
+        final Integer nextStep = getSteps().getRowData().getNextStep();
         saveTemporary();
         getApprovalProfile().switchStepOrder(currentStep, nextStep);
         steps = null;
     }
 
     public void moveStepUp() {
-        final Integer currentStep = steps.getRowData().getIdentifier();
-        final Integer previousStep = steps.getRowData().getPreviousStep();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
+        final Integer previousStep = getSteps().getRowData().getPreviousStep();
         saveTemporary();
         getApprovalProfile().switchStepOrder(previousStep, currentStep);
         steps = null;
     }
 
     public void deleteStep() {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
         getApprovalProfile().deleteStep(currentStep);
         steps = null;
     }
 
     public void addPartition() {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
         getApprovalProfile().addPartition(currentStep);
         steps = null;
     }
 
     public void deletePartition(int partitionId) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
         getApprovalProfile().deletePartition(currentStep, partitionId);
         steps = null;
@@ -442,7 +451,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
 
     public boolean isPropertyPredefined(int partitionId, String propertyName) {
         ApprovalProfile approvalProfile = getApprovalProfile();
-        return approvalProfile.isPropertyPredefined(steps.getRowData().getIdentifier(), partitionId, propertyName);
+        return approvalProfile.isPropertyPredefined(getSteps().getRowData().getIdentifier(), partitionId, propertyName);
     }
 
     public void selectUpdate() {
@@ -475,15 +484,18 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     /** @return a list of the current steps in the current Approval Profile object */
     public ListDataModel<ApprovalStepGuiObject> getSteps() {
         if (steps == null) {
-            final ApprovalProfile approvalProfile = getApprovalProfile();
-            if (approvalProfile!=null) {
-                steps = createStepListFromProfile(approvalProfile);
+            if (stepList == null) {
+                final ApprovalProfile approvalProfile = getApprovalProfile();
+                if (approvalProfile!=null) {
+                    stepList = createStepListFromProfile(approvalProfile);
+                }
             }
+            steps = new ListDataModel<>(stepList);
         }
         return steps;
     }
 
-    private ListDataModel<ApprovalStepGuiObject> createStepListFromProfile(final ApprovalProfile approvalProfile) {
+    private List<ApprovalStepGuiObject> createStepListFromProfile(final ApprovalProfile approvalProfile) {
         List<ApprovalStepGuiObject> steps = new ArrayList<>();
         int ordinal = 1;
         //Use the internal ordering for sequences, if one is predefined
@@ -495,7 +507,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
             partitionProperties = getPartitionProperties(step);
             steps.add(new ApprovalStepGuiObject(step, approvalProfile.getApprovalProfileTypeIdentifier(), ++ordinal, partitionProperties));
         }
-        return new ListDataModel<>(steps);
+        return steps;
     }
 
     /**
@@ -588,7 +600,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
 
     public boolean isNotificationEnabled(final int partitionIdentifier) {
         final ApprovalProfile approvalProfile = getApprovalProfile();
-        final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
+        final ApprovalStep approvalStep = approvalProfile.getStep(getSteps().getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         return approvalProfile.isNotificationEnabled(approvalPartition);
     }
@@ -599,7 +611,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public void addNotification(final int partitionIdentifier) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(currentStep);
@@ -620,7 +632,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public void removeNotification(final int partitionIdentifier) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(currentStep);
@@ -633,13 +645,13 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
 
     public boolean isUserNotificationEnabled(final int partitionIdentifier) {
         final ApprovalProfile approvalProfile = getApprovalProfile();
-        final ApprovalStep approvalStep = approvalProfile.getStep(steps.getRowData().getIdentifier());
+        final ApprovalStep approvalStep = approvalProfile.getStep(getSteps().getRowData().getIdentifier());
         final ApprovalPartition approvalPartition = approvalStep.getPartition(partitionIdentifier);
         return approvalProfile.isUserNotificationEnabled(approvalPartition);
     }
 
     public void addUserNotification(final int partitionIdentifier) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(currentStep);
@@ -660,7 +672,7 @@ public class ApprovalProfileMBean extends BaseManagedBean implements Serializabl
     }
 
     public void removeUserNotification(final int partitionIdentifier) {
-        final Integer currentStep = steps.getRowData().getIdentifier();
+        final Integer currentStep = getSteps().getRowData().getIdentifier();
         saveTemporary();
         final ApprovalProfile approvalProfile = getApprovalProfile();
         final ApprovalStep approvalStep = approvalProfile.getStep(currentStep);

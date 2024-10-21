@@ -12,12 +12,14 @@
  *************************************************************************/
 package org.ejbca.ui.web.configuration;
 
+import java.io.Serializable;
+
 /*
  * DTO class for holding information and properties about one language
  *
  * @version $Id: CacheClearException.java 22945 2016-03-09 13:32:20Z mikekushner $
  */
-public class WebLanguage {
+public class WebLanguage implements Serializable {
 
     private int id;
     private String englishName;
