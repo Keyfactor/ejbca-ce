@@ -339,13 +339,23 @@ subprojects {
                 // we can reuse the source configuration of the "test" task.
                 testClassesDirs = sourceSets["test"].output.classesDirs
                 classpath = sourceSets["test"].runtimeClasspath
+
+                onlyIf {
+                    if (isProductionMode) {
+                        logger.lifecycle("You can't run system tests in production mode.")
+                    }
+                    !isProductionMode
+                }
             }
 
             // Add common system test dependencies.
             dependencies {
-                val testRuntimeOnly by configurations
                 if (!isProductionMode) {
-                    testRuntimeOnly(rootProject.libs.jboss.client)
+                    val testRuntimeOnly by configurations
+                    // `:jboss:client` is used instead of `rootProject.libs.jboss.client`
+                    // to prevent Gradle from prematurely resolving the non-existent library
+                    // when `isProductionMode` is set to true
+                    testRuntimeOnly(":jboss:client")
                 }
             }
         }
