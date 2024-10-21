@@ -1000,9 +1000,9 @@ public class ProtocolScepHttpSystemTest extends ScepTestBase {
         final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
                 keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
         if (makeCrlReq) {
-            msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keyPair.getPrivate(), encryptionAlg);
+            msgBytes = gen.generateCrlReq(userDN, transId, cacert, senderCertificate, keyPair.getPrivate(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, encryptionAlg);
         } else {
-            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate(), wrappingAlg, encryptionAlg);
+            msgBytes = gen.generateCertReq(userDN, "foo123", transId, cacert, senderCertificate, keyPair.getPrivate(), wrappingAlg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, encryptionAlg);
         }
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
