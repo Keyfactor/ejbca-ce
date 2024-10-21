@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.web.jsf.configuration;
 
+import java.io.Serializable;
 import java.util.Map;
 
 /**
@@ -23,6 +24,6 @@ import java.util.Map;
  *
  * @see EjbcaWebBean#getImagePath(String)
  */
-public interface EjbcaJSFImageResource extends Map<String, String> {
+public interface EjbcaJSFImageResource extends Map<String, String>, Serializable {
 
 }

@@ -104,7 +104,7 @@ public class RaCasPageBean implements Serializable {
         }
     }
 
-    public class CrlLinkInfo {
+    public class CrlLinkInfo implements Serializable {
         private final String link;
         private final int partitionIndex;
 
@@ -228,4 +228,5 @@ public class RaCasPageBean implements Serializable {
         final byte[] hashSubjectX500Principal = CertTools.generateSHA1Fingerprint(x509Certificate.getSubjectX500Principal().getEncoded());
         return new String(Base64.encode(hashSubjectX500Principal)).substring(0, 27).replaceAll("\\+", "%2B");
     }
+
 }

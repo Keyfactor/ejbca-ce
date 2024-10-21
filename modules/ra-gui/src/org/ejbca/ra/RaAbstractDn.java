@@ -12,7 +12,15 @@
  *************************************************************************/
 package org.ejbca.ra;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.keyfactor.util.certificate.DnComponents;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500NameStyle;
@@ -20,13 +28,6 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile.Field;
 import org.ejbca.util.CeSecoreNameStyleEnumSingleton;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Represents two APIs: list (needed for JSF) and map
@@ -41,10 +42,12 @@ public abstract class RaAbstractDn implements Serializable {
     private final Collection<EndEntityProfile.FieldInstance> requiredFieldInstances = new ArrayList<>();
     private final Collection<EndEntityProfile.FieldInstance> optionalFieldInstances = new ArrayList<>();
     private final Collection<EndEntityProfile.FieldInstance> fullListOfInstances = new ArrayList<>();
+    
+    // we use a "provider" here because X500NameStyle isn't serializable
+    private NameStyleProvider nameStyleProvider = () -> CeSecoreNameStyleEnumSingleton.CE_SECORE_NAME_STYLE.getStyle();
 
     private final Map<String, Map<Integer, EndEntityProfile.FieldInstance>> fieldInstancesMap = new HashMap<>();
     protected String value;
-    protected X500NameStyle nameStyle = CeSecoreNameStyleEnumSingleton.CE_SECORE_NAME_STYLE.getStyle();
     protected boolean ldapOrder = true;
 
     /**
@@ -195,18 +198,16 @@ public abstract class RaAbstractDn implements Serializable {
         this.ldapOrder = ldapOrder;
     }
 
-    /**
-     * @return the nameStyle
-     */
-    public X500NameStyle getNameStyle() {
-        return nameStyle;
-    }
 
-    /**
-     * @param nameStyle the nameStyle to set
-     */
-    public void setNameStyle(X500NameStyle nameStyle) {
-        this.nameStyle = nameStyle;
+    public X500NameStyle getNameStyle() {
+        return nameStyleProvider.get();
+    }
+    
+    public void setNameStyleProvider(NameStyleProvider nameStyleProvider) {
+        this.nameStyleProvider = nameStyleProvider;
+    }    
+
+    interface NameStyleProvider extends java.util.function.Supplier<X500NameStyle>, Serializable {
     }
 
 }

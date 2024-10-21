@@ -241,4 +241,5 @@ public class RaLoginBean implements Serializable {
         httpResponse.setHeader("Content-Security-Policy", header);
         httpResponse.setHeader("X-Content-Security-Policy", header);
     }
+
 }

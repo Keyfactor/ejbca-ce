@@ -98,7 +98,7 @@ public class RaCertificateDetails implements Serializable {
 
     private static final long serialVersionUID = -909308593706119329L;
 
-    public interface Callbacks {
+    public interface Callbacks extends Serializable {
         RaLocaleBean getRaLocaleBean();
 
         boolean changeStatus(RaCertificateDetails raCertificateDetails, int newStatus, int newRevocationReason) throws ApprovalException, WaitingForApprovalException;

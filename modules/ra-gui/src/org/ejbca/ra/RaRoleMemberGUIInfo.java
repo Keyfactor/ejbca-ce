@@ -70,5 +70,5 @@ public final class RaRoleMemberGUIInfo implements Serializable {
     public boolean getTokenMatchValueIsLink() {
         return tokenMatchValueIsLink;
     }
-    
+
 }

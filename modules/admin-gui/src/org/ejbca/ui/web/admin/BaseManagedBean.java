@@ -55,7 +55,7 @@ public abstract class BaseManagedBean implements Serializable {
 
     // Reference to AccessRulesConstants.* and StandardRules.*
     final String[] accessRulesConstantString;
-    
+
     /**
      * Initializes authorization assuming authorization required to following resources.
      * @param resources Reference to AccessRulesConstants.* and StandardRules.*

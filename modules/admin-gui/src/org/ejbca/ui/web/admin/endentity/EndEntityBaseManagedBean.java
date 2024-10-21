@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.endentity;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Iterator;
@@ -23,7 +24,15 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.rainterface.UserView;
 
+/**
+ * Bean used by JSP pages containing logic for setting and getting end entity
+ * data.
+ * 
+ * Currently only used for extension data.
+ *
+ */
 public class EndEntityBaseManagedBean extends BaseManagedBean {
+    private ExtendedInformation extendedInformation;
 
     private static final long serialVersionUID = 1L;
 

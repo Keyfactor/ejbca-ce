@@ -119,7 +119,7 @@ public class EndEntityProfilesMBean extends BaseManagedBean implements Serializa
     private Integer selectedEndEntityProfileId = null;
     private boolean deleteInProgress = false;
     private String endEntityProfileName;
-    private Part uploadFile;
+    private transient Part uploadFile;
     private boolean profileSaved;
     private String uploadFilename;
     private List<SelectItem> endEntityProfileItems = null;

@@ -105,7 +105,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     private String tokenMatchValue = "";
     private String description = "";
 
-    private ListDataModel<RoleMember> roleMembers = null;
+    private transient ListDataModel<RoleMember> roleMembers = null;
     private RoleMember roleMemberToDelete = null;
     
     private Map<Integer, String> caIdToNameMap = null;

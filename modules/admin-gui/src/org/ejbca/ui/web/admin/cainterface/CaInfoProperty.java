@@ -13,12 +13,9 @@
 
 package org.ejbca.ui.web.admin.cainterface;
 
-/**
- *
- *
- */
+import java.io.Serializable;
 
-public class CaInfoProperty {    
+public class CaInfoProperty implements Serializable {    
     private final String text;
     private final String data;
     

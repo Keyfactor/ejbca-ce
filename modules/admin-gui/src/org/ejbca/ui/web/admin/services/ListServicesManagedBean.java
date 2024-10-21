@@ -44,9 +44,11 @@ import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 public class ListServicesManagedBean extends BaseManagedBean {
 
 	private static final long serialVersionUID = 1L;
-	private final EjbLocalHelper ejb = new EjbLocalHelper();
 	private String selectedServiceName;
 	private String newServiceName = "";
+
+	// this shouldn't be serialized - only access via getter
+    private transient EjbLocalHelper ejb = new EjbLocalHelper();
 
 	public ListServicesManagedBean() {
 	    super(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.SERVICES_VIEW);
@@ -62,11 +64,11 @@ public class ListServicesManagedBean extends BaseManagedBean {
 
     public List<SortableSelectItem> getAvailableServices() {
         List<SortableSelectItem> availableServices = new ArrayList<>();
-        Collection<Integer> availableServicesIds = ejb.getServiceSession().getVisibleServiceIds();
+        Collection<Integer> availableServicesIds = getEjb().getServiceSession().getVisibleServiceIds();
 		boolean isAuthorizedToDbMaintenanceService = isAuthorizedToDbMaintenanceService();
 		for (Integer id : availableServicesIds) {
-            ServiceConfiguration serviceConfig = ejb.getServiceSession().getServiceConfiguration(id);
-            String serviceName = ejb.getServiceSession().getServiceName(id);
+            ServiceConfiguration serviceConfig = getEjb().getServiceSession().getServiceConfiguration(id);
+            String serviceName = getEjb().getServiceSession().getServiceName(id);
 			if (!isAuthorizedToDbMaintenanceService && DatabaseMaintenanceWorkerConstants.WORKER_CLASS.equals(serviceConfig.getWorkerClassPath())) {
 				continue;
 			}
@@ -90,7 +92,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		String retval = "editservice";
         if (StringUtils.isNotEmpty(selectedServiceName)) {
             getEditServiceBean().setServiceName(selectedServiceName);
-            ServiceConfiguration serviceConf = ejb.getServiceSession().getService(selectedServiceName);
+            ServiceConfiguration serviceConf = getEjb().getServiceSession().getService(selectedServiceName);
             getEditServiceBean().setServiceConfiguration(serviceConf);
         } else {
 			addErrorMessage("YOUHAVETOSELECTASERVICE");
@@ -102,7 +104,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	
 	public String deleteService(){
         if (StringUtils.isNotEmpty(selectedServiceName)) {
-			ejb.getServiceSession().removeService(getAdmin(), selectedServiceName);
+			getEjb().getServiceSession().removeService(getAdmin(), selectedServiceName);
 		}else{
 			addErrorMessage("YOUHAVETOSELECTASERVICE");
 		}
@@ -119,7 +121,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 			addErrorMessage("THECHARACTERSARENTALLOWED");
 		} else {			
 			try {
-				ejb.getServiceSession().renameService(getAdmin(), selectedServiceName, newServiceName);
+				getEjb().getServiceSession().renameService(getAdmin(), selectedServiceName, newServiceName);
 			} catch (ServiceExistsException e) {
 				addErrorMessage("SERVICENAMEALREADYEXISTS");
 			}			
@@ -136,7 +138,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		} else {			
 			try {
 				ServiceConfiguration serviceConfig = new ServiceConfiguration();			
-				ejb.getServiceSession().addService(getAdmin(), newServiceName, serviceConfig);
+				getEjb().getServiceSession().addService(getAdmin(), newServiceName, serviceConfig);
 				getEditServiceBean().setServiceConfiguration(serviceConfig);
 				getEditServiceBean().setServiceName(newServiceName);
 			} catch (ServiceExistsException e) {
@@ -156,7 +158,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 			addErrorMessage("THECHARACTERSARENTALLOWED");
 		} else {			
 			try {
-				ejb.getServiceSession().cloneService(getAdmin(), selectedServiceName, newServiceName);
+				getEjb().getServiceSession().cloneService(getAdmin(), selectedServiceName, newServiceName);
 			} catch (ServiceExistsException e) {
 				addErrorMessage("SERVICENAMEALREADYEXISTS");				
 			}			
@@ -179,14 +181,14 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	 * @return true if admin has access to /services/edit
 	 */
 	public boolean getHasEditRights() {
-	    return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
+	    return getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_EDIT);
 	}
 
 	/**
 	 * @return true if admin has access to /services/dbMaintenance
 	 */
 	private boolean isAuthorizedToDbMaintenanceService() {
-		return ejb.getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_DB_MAINTENANCE);
+		return getEjb().getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.SERVICES_DB_MAINTENANCE);
 	}
 	
 	/**
@@ -203,4 +205,10 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		EditServiceManagedBean value =  app.evaluateExpressionGet(context, "#{editService}", EditServiceManagedBean.class);
 		return value;
 	}
+
+    public EjbLocalHelper getEjb() {
+        if (ejb == null)
+            ejb = new EjbLocalHelper();
+        return ejb;
+    }
 }

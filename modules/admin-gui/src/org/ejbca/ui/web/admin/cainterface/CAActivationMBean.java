@@ -12,11 +12,16 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -47,6 +52,8 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 
+import com.google.common.reflect.ClassPath;
+import com.google.common.reflect.ClassPath.ClassInfo;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -67,7 +74,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	}
 	
 	/** GUI representation of a CA for the activation view */
-	public class CaActivationGuiInfo {
+	public class CaActivationGuiInfo implements Serializable {
 	    private final int status;
 	    private final String name;
 	    private final int caId;
@@ -103,7 +110,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	}
 
     /** GUI representation of a CryptoToken and its CA(s) for the activation view */
-	public class TokenAndCaActivationGuiInfo {
+	public class TokenAndCaActivationGuiInfo implements Serializable {
 	    private final CryptoTokenInfo cryptoTokenInfo;
 	    private final List<CaActivationGuiInfo> caActivationGuiInfos = new ArrayList<>();
         private final boolean allowedActivation;
@@ -142,7 +149,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	}
 
     /** GUI representation of a CryptoToken and its CA(s) for the activation view */
-    public class TokenAndCaActivationGuiComboInfo {
+    public class TokenAndCaActivationGuiComboInfo implements Serializable {
         private final boolean firstCryptoTokenListing;
         private final TokenAndCaActivationGuiInfo cryptoTokenInfo;
         private final CaActivationGuiInfo caActivationGuiInfo;
@@ -156,29 +163,30 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
         public CaActivationGuiInfo getCa() { return caActivationGuiInfo; }
     }
 
-	private final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
-    private final EjbLocalHelper ejbLocalhelper = new EjbLocalHelper();
-	private final CAAdminSessionLocal caAdminSession = ejbLocalhelper.getCaAdminSession();
-	private final CaSessionLocal caSession = ejbLocalhelper.getCaSession(); 
-	private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ejbLocalhelper.getCryptoTokenManagementSession();
-    private final AuthorizationSessionLocal authorizationSession = ejbLocalhelper.getAuthorizationSession();
+	private transient AuthenticationToken authenticationToken = null;
+    private transient EjbLocalHelper ejbLocalhelper = null;
+	private transient CAAdminSessionLocal caAdminSession = null;
+	private transient CaSessionLocal caSession = null;
+	private transient CryptoTokenManagementSessionLocal cryptoTokenManagementSession  = null;
+    private transient AuthorizationSessionLocal authorizationSession  = null;
 
 	private List<TokenAndCaActivationGuiComboInfo> authorizedTokensAndCas = null;
 	private String authenticationcode;
+    
 
 	public List<TokenAndCaActivationGuiComboInfo> getAuthorizedTokensAndCas() {
         final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<>();
-        for (final CAInfo caInfo : caSession.getAuthorizedAndEnabledCaInfos(authenticationToken)) {
+        for (final CAInfo caInfo : getCaSession().getAuthorizedAndEnabledCaInfos(getAuthenticationToken())) {
                 final Integer cryptoTokenId = Integer.valueOf(caInfo.getCAToken().getCryptoTokenId());
                 if (sortMap.get(cryptoTokenId)==null) {
                     // Perhaps not authorized to view the CryptoToken used by the CA, but we implicitly
                     // allow this in the current context since we are authorized to the CA.
-                    final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId.intValue());
+                    final CryptoTokenInfo cryptoTokenInfo = getCryptoTokenManagementSession().getCryptoTokenInfo(cryptoTokenId.intValue());
                     if (cryptoTokenInfo==null) {
                         sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenId));
                     } else {
-                        final boolean allowedActivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
-                        final boolean allowedDeactivation = authorizationSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
+                        final boolean allowedActivation = getAuthorizationSession().isAuthorizedNoLogging(getAuthenticationToken(), CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
+                        final boolean allowedDeactivation = getAuthorizationSession().isAuthorizedNoLogging(getAuthenticationToken(), CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
                         sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
                     }
                 }
@@ -232,8 +240,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                    if (authenticationcode != null && authenticationcode.length()>0) {
 	                        // Activate CA's CryptoToken
 	                        try {
-	                            cryptoTokenManagementSession.activate(authenticationToken, tokenAndCa.getCryptoTokenId(), authenticationcode.toCharArray());
-	                            log.info(authenticationToken.toString() + " activated CryptoToken " + tokenAndCa.getCryptoTokenId());
+	                            getCryptoTokenManagementSession().activate(getAuthenticationToken(), tokenAndCa.getCryptoTokenId(), authenticationcode.toCharArray());
+	                            log.info(getAuthenticationToken().toString() + " activated CryptoToken " + tokenAndCa.getCryptoTokenId());
 	                        } catch (CryptoTokenAuthenticationFailedException e) {
 	                            super.addNonTranslatedErrorMessage("Unable to log in to the token. Either the authentication code " +
                                         "was wrong or you forgot to provide a smart card or PED key.");
@@ -248,8 +256,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	                } else {
 	                    // Deactivate CA's CryptoToken
 	                    try {
-	                        cryptoTokenManagementSession.deactivate(authenticationToken, tokenAndCa.getCryptoTokenId());
-	                        log.info(authenticationToken.toString() + " deactivated CryptoToken " + tokenAndCa.getCryptoTokenId());
+	                        getCryptoTokenManagementSession().deactivate(getAuthenticationToken(), tokenAndCa.getCryptoTokenId());
+	                        log.info(getAuthenticationToken().toString() + " deactivated CryptoToken " + tokenAndCa.getCryptoTokenId());
 	                    } catch (AuthorizationDeniedException e) {
 	                        super.addNonTranslatedErrorMessage(e.getMessage());
 	                    }
@@ -261,7 +269,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	            // Valid transition 1: Currently offline, become active
 	            if (ca.isNewState() && ca.getStatus()==CAConstants.CA_OFFLINE) {
 	                try {
-	                    caAdminSession.activateCAService(authenticationToken, ca.getCaId());
+	                    getCaAdminSession().activateCAService(getAuthenticationToken(), ca.getCaId());
 	                } catch (WaitingForApprovalException|ApprovalException e) {
 	                    super.addInfoMessage(e.getMessage());
 	                } catch (Exception e) {
@@ -271,7 +279,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	            // Valid transition 2: Currently online, become offline
 	            if (!ca.isNewState() && ca.getStatus()==CAConstants.CA_ACTIVE) {
 	                try {
-	                    caAdminSession.deactivateCAService(authenticationToken, ca.getCaId());
+	                    getCaAdminSession().deactivateCAService(getAuthenticationToken(), ca.getCaId());
 	                } catch (Exception e) {
 	                    super.addNonTranslatedErrorMessage(e);
 	                }
@@ -280,9 +288,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	        if (ca.isMonitored() != ca.isMonitoredNewState()) {
 	            // Only persist changes if there are any
 	            try {
-	                final CAInfo caInfo = caSession.getCAInfoInternal(ca.getCaId(), null, false);
+	                final CAInfo caInfo = getCaSession().getCAInfoInternal(ca.getCaId(), null, false);
 	                caInfo.setIncludeInHealthCheck(ca.isMonitoredNewState());
-	                caAdminSession.editCA(authenticationToken, caInfo);
+	                getCaAdminSession().editCA(getAuthenticationToken(), caInfo);
 	            } catch (AuthorizationDeniedException | CmsCertificatePathMissingException | InternalKeyBindingNonceConflictException | CaMsCompatibilityIrreversibleException e) {
 	                super.addNonTranslatedErrorMessage(e.getMessage());
 	            }
@@ -313,9 +321,45 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
      * @return true if admin is authorized to {@link AccessRulesConstants#REGULAR_ACTIVATECA}
      */
     public boolean isAuthorizedToBasicFunctions() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_ACTIVATECA);
+        return getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), AccessRulesConstants.REGULAR_ACTIVATECA);
     }
     
     public void setAuthenticationCode(String authenticationcode) { this.authenticationcode = authenticationcode; }
 	public String getAuthenticationCode() { return ""; }
+	
+    public AuthenticationToken getAuthenticationToken() {
+        if (authenticationToken == null)
+            authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
+        return authenticationToken;
+    }
+
+    public EjbLocalHelper getEjbLocalhelper() {
+        if (ejbLocalhelper == null)
+            ejbLocalhelper = new EjbLocalHelper();
+        return ejbLocalhelper;
+    }
+
+    public CAAdminSessionLocal getCaAdminSession() {
+        if (caAdminSession == null)
+            caAdminSession = getEjbLocalhelper().getCaAdminSession();
+        return caAdminSession;
+    }
+
+    public CaSessionLocal getCaSession() {
+        if (caSession == null)
+            caSession = getEjbLocalhelper().getCaSession(); 
+        return caSession;
+    }
+
+    public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() {
+        if (cryptoTokenManagementSession == null)
+            cryptoTokenManagementSession = getEjbLocalhelper().getCryptoTokenManagementSession();
+        return cryptoTokenManagementSession;
+    }
+
+    public AuthorizationSessionLocal getAuthorizationSession() {
+        if (authorizationSession == null)
+            authorizationSession = getEjbLocalhelper().getAuthorizationSession();
+        return authorizationSession;
+    }
 }

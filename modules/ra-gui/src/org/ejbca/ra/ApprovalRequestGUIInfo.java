@@ -57,7 +57,7 @@ public class ApprovalRequestGUIInfo implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(ApprovalRequestGUIInfo.class);
     
-    public static final class ApprovalGuiObject {
+    public static final class ApprovalGuiObject implements Serializable {
         private Approval approval;
         
         public ApprovalGuiObject(Approval approval) {

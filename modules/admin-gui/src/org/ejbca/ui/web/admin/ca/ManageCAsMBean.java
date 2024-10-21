@@ -112,11 +112,11 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private EndEntityManagementSessionLocal endEntityManagementSession;
-    private final Map<String, Integer> caNames = getEjbcaWebBean().getCANames();
-    private CAInterfaceBean caBean;
+    private Map<String, Integer> caNames;
+    private transient CAInterfaceBean caBean;
     private int selectedCaId;
     private String createCaName;
-    private Map<Integer, String> caidtonamemap;
+    private Map<Integer, String> caIdToNameMap;
     private transient Part certificateBundle;
 
     public void setCertificateBundle(final Part certificateBundle) {
@@ -249,20 +249,14 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     @PostConstruct
     public void init() {
-        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        try {
-            caBean = SessionBeans.getCaBean(request);
-        } catch (ServletException e) {
-            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
-        }
-        caidtonamemap = caSession.getCAIdToNameMap();
+        caNames = getEjbcaWebBean().getCANames();
     }
-
+    
     public Map<Integer, String> getListOfCas() {
         final Map<Integer, String> caMap = new LinkedHashMap<>();
         for (final String caName : caNames.keySet()) {
             int caId = caNames.get(caName);
-            int caStatus = caBean.getCAStatusNoAuth(caId);
+            int caStatus = getCaBean().getCAStatusNoAuth(caId);
             String statusText = getEjbcaWebBean().getText(CAConstants.getStatusText(caStatus));
 
             String nameAndStatus = caName + " (" + statusText + ")";
@@ -334,7 +328,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
 
     public String getConfirmMessage() {
         if (selectedCaId != 0) {
-            return getEjbcaWebBean().getText("AREYOUSURETODELETECA", true, caidtonamemap.get(selectedCaId));
+            return getEjbcaWebBean().getText("AREYOUSURETODELETECA", true, getCaIdToNameMap().get(selectedCaId));
         } else {
             return StringUtils.EMPTY;
         }
@@ -344,7 +338,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
         if (selectedCaId == 0) {
             return EditCaUtil.MANAGE_CA_NAV;
         }
-        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editcaname", caidtonamemap.get(selectedCaId));
+        FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("editcaname", getCaIdToNameMap().get(selectedCaId));
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("caid", selectedCaId);
         FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("iseditca", true);
         return EditCaUtil.EDIT_CA_NAV;
@@ -532,7 +526,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                 throw new IllegalStateException("Admin is not authorized to get ca type!", e);
             }
 
-            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", caidtonamemap.get(selectedCaId));
+            FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaName", getCaIdToNameMap().get(selectedCaId));
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaId", selectedCaId);
             FacesContext.getCurrentInstance().getExternalContext().getRequestMap().put("selectedCaType", selectedCaType);
 
@@ -541,5 +535,23 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
             addErrorMessage("SELECTCAFIRST");
             return EditCaUtil.MANAGE_CA_NAV;
         }
+    }
+
+    public CAInterfaceBean getCaBean() {
+        if (caBean == null) {
+            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            try {
+                caBean = SessionBeans.getCaBean(request);
+            } catch (ServletException e) {
+                throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
+            }
+        }
+        return caBean;
+    }
+
+    public Map<Integer, String> getCaIdToNameMap() {
+        if (caIdToNameMap == null)
+            caIdToNameMap = caSession.getCAIdToNameMap();
+        return caIdToNameMap;
     }
 }

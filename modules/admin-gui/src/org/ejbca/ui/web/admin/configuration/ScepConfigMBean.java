@@ -54,7 +54,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final String HIDDEN_PWD = "**********";
 
-    public class ScepAliasGuiInfo {
+    public class ScepAliasGuiInfo implements Serializable {
         private String alias;
         private String mode;
         private boolean includeCA;
@@ -415,17 +415,17 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private String selectedAlias;
     private ScepConfiguration scepConfig;
     private boolean currentAliasEditMode = false;
-    private final GlobalConfigurationSessionLocal globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
-    private final AuthorizationSessionLocal authorizationSession = getEjbcaWebBean().getEjb().getAuthorizationSession();
-    private final AuthenticationToken authenticationToken = getAdmin();
-    private final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
-    private final CertificateProfileSessionLocal certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
-    private final EndEntityProfileSessionLocal endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
-    private final EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession = (EnterpriseEditionEjbBridgeSessionLocal) getEjbcaWebBean().getEnterpriseEjb();
+    private transient GlobalConfigurationSessionLocal globalConfigSession;
+    private transient AuthorizationSessionLocal authorizationSession;
+    private transient AuthenticationToken authenticationToken;
+    private transient CaSessionLocal caSession;
+    private transient CertificateProfileSessionLocal certProfileSession;
+    private transient EndEntityProfileSessionLocal endentityProfileSession;
+    private transient EnterpriseEditionEjbBridgeSessionLocal editionEjbBridgeSession;
 
     public ScepConfigMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.SYSTEMCONFIGURATION_VIEW.resource());
-        scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        scepConfig = (ScepConfiguration) getGlobalConfigSession().getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
     }
 
     /**
@@ -434,7 +434,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     private void flushCache() {
         currentAlias = null;
         currentAliasEditMode = false;
-        scepConfig = (ScepConfiguration) globalConfigSession.getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
+        scepConfig = (ScepConfiguration) getGlobalConfigSession().getCachedConfiguration(ScepConfiguration.SCEP_CONFIGURATION_ID);
     }
 
     public String getSelectedAlias() {
@@ -450,7 +450,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isAllowedToEdit() {
-        return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
+        return getAuthorizationSession().isAuthorizedNoLogging(getAdmin(), StandardRules.SYSTEMCONFIGURATION_EDIT.resource());
     }
 
     public void setCurrentAliasEditMode(boolean currentAliasEditMode) {
@@ -564,7 +564,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
             }
 
             try {
-                globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
+                getGlobalConfigSession().saveConfiguration(getAuthenticationToken(), scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Cannot save alias. Administrator is not authorized.";
                 log.info(msg + e.getLocalizedMessage());
@@ -579,7 +579,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if (scepConfig.aliasExists(selectedAlias)) {
             scepConfig.removeAlias(selectedAlias);
             try {
-                globalConfigSession.saveConfiguration(authenticationToken, scepConfig);
+                getGlobalConfigSession().saveConfiguration(getAuthenticationToken(), scepConfig);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Failed to remove alias: " + e.getLocalizedMessage();
                 log.info(msg, e);
@@ -650,7 +650,7 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
      * @return a list of all CA names
      */
     public List<SelectItem> getAvailableCAs() {
-        final Collection<String> cas = caSession.getAuthorizedCaNames(authenticationToken);
+        final Collection<String> cas = getCaSession().getAuthorizedCaNames(getAuthenticationToken());
         return cas.stream()
                 .map(SelectItem::new)
                 .sorted(new SelectItemComparator())
@@ -661,8 +661,8 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
      * @return a list of EndEntity profiles that this admin is authorized to
      */
     public List<SelectItem> getAuthorizedEEProfileNames() {
-        final Collection<Integer> endEntityProfileIds = endentityProfileSession.getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
-        final Map<Integer, String> nameMap = endentityProfileSession.getEndEntityProfileIdToNameMap();
+        final Collection<Integer> endEntityProfileIds = getEndentityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(), AccessRulesConstants.CREATE_END_ENTITY);
+        final Map<Integer, String> nameMap = getEndentityProfileSession().getEndEntityProfileIdToNameMap();
         return endEntityProfileIds.stream()
                 .map(nameMap::get)
                 .map(SelectItem::new)
@@ -678,10 +678,10 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isEmpty(eep)) {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
-        final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
+        final EndEntityProfile p = getEndentityProfileSession().getEndEntityProfile(eep);
         if (p != null) {
             return p.getAvailableCertificateProfileIds().stream()
-                    .map(certProfileSession::getCertificateProfileName)
+                    .map(getCertProfileSession()::getCertificateProfileName)
                     .map(SelectItem::new)
                     .sorted(new SelectItemComparator())
                     .collect(Collectors.toList());
@@ -697,12 +697,12 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
         if (StringUtils.isEmpty(eep)) {
             eep = ScepConfiguration.DEFAULT_RA_ENTITYPROFILE;
         }
-        final EndEntityProfile p = endentityProfileSession.getEndEntityProfile(eep);
+        final EndEntityProfile p = getEndentityProfileSession().getEndEntityProfile(eep);
         if (p != null) {
             if (p.getAvailableCAs().contains(CAConstants.ALLCAS)) {
                 return getAvailableCAs();
             } else {
-                final Map<Integer, String> caidname = caSession.getCAIdToNameMap();
+                final Map<Integer, String> caidname = getCaSession().getCAIdToNameMap();
                 return p.getAvailableCAs().stream()
                         .map(caidname::get)
                         .map(SelectItem::new)
@@ -763,7 +763,49 @@ public class ScepConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     public boolean isExistsClientCertificateRenewalExtension() {
-        return editionEjbBridgeSession.isRunningEnterprise();
+        return getEditionEjbBridgeSession().isRunningEnterprise();
+    }
+
+    public GlobalConfigurationSessionLocal getGlobalConfigSession() {
+        if (globalConfigSession == null)
+            globalConfigSession = getEjbcaWebBean().getEjb().getGlobalConfigurationSession();
+        return globalConfigSession;
+    }
+
+    public AuthorizationSessionLocal getAuthorizationSession() {
+        if (authorizationSession == null)
+            authorizationSession  = getEjbcaWebBean().getEjb().getAuthorizationSession();
+        return authorizationSession;
+    }
+
+    public AuthenticationToken getAuthenticationToken() {
+        if (authenticationToken == null)
+            authenticationToken = getAdmin();
+        return authenticationToken;
+    }
+
+    public CaSessionLocal getCaSession() {
+        if (caSession == null)
+            caSession = getEjbcaWebBean().getEjb().getCaSession();
+        return caSession;
+    }
+
+    public CertificateProfileSessionLocal getCertProfileSession() {
+        if (certProfileSession == null)
+            certProfileSession = getEjbcaWebBean().getEjb().getCertificateProfileSession();
+        return certProfileSession;
+    }
+
+    public EndEntityProfileSessionLocal getEndentityProfileSession() {
+        if (endentityProfileSession == null)
+            endentityProfileSession = getEjbcaWebBean().getEjb().getEndEntityProfileSession();
+        return endentityProfileSession;
+    }
+
+    public EnterpriseEditionEjbBridgeSessionLocal getEditionEjbBridgeSession() {
+        if (editionEjbBridgeSession == null)
+            editionEjbBridgeSession = (EnterpriseEditionEjbBridgeSessionLocal) getEjbcaWebBean().getEnterpriseEjb();
+        return editionEjbBridgeSession;
     }
 
 }

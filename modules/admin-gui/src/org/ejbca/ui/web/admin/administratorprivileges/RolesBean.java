@@ -74,7 +74,7 @@ public class RolesBean extends BaseManagedBean implements Serializable {
     private String editRoleName;
     private int selectedStyle;
     private List<SelectItem> raStyleList;
-    private ListDataModel<Role> rolesAvailable;
+    private transient ListDataModel<Role> rolesAvailable;
     private List<String> nameSpacesAvailable;
     private boolean onlyEmptyNameSpaceInUse = true;
 

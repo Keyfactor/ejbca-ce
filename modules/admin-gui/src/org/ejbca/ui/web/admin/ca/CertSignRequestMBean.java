@@ -42,11 +42,11 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
 
     private static final long serialVersionUID = 1L;
 
-    private CAInterfaceBean caBean;
+    private transient CAInterfaceBean caBean;
     private String selectedCaName;
     private int selectedCaId;
     private int selectedCaType;
-    private Part uploadedFile;
+    private transient Part uploadedFile;
     
     public CertSignRequestMBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.CAVIEW.resource());
@@ -56,13 +56,7 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     public void init() {
         EditCaUtil.navigateToManageCaPageIfNotPostBack();
         
-        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        try {
-            caBean = SessionBeans.getCaBean(request);
-        } catch (ServletException e) {
-            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
-        }
-        
+    
         final Map<String, Object> requestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
         selectedCaName = (String) requestMap.get("selectedCaName");
         selectedCaId = (Integer) requestMap.get("selectedCaId");
@@ -85,10 +79,10 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
     public String signRequest() {     
         try {
             final byte[] fileBuffer = IOUtils.toByteArray(uploadedFile.getInputStream(), uploadedFile.getSize());
-            if (caBean.createAuthCertSignRequest(selectedCaId, fileBuffer)) {
+            if (getCaBean().createAuthCertSignRequest(selectedCaId, fileBuffer)) {
                 final Map<String, Object> facesContextRequestMap = FacesContext.getCurrentInstance().getExternalContext().getRequestMap();
                 facesContextRequestMap.put("filemode", EditCaUtil.CERTREQGENMODE);
-                facesContextRequestMap.put(SESSION.CA_INTERFACE_BEAN, caBean);
+                facesContextRequestMap.put(SESSION.CA_INTERFACE_BEAN, getCaBean());
                 facesContextRequestMap.put("caname", selectedCaName);
                 facesContextRequestMap.put("caType", selectedCaType);
                 return EditCaUtil.DISPLAY_RESULT_NAV;
@@ -98,6 +92,18 @@ public class CertSignRequestMBean extends BaseManagedBean implements Serializabl
             addNonTranslatedErrorMessage(e);
             return "";
         }
+    }
+
+    public CAInterfaceBean getCaBean() {
+        if (caBean == null) {
+            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            try {
+                caBean = SessionBeans.getCaBean(request);
+            } catch (ServletException e) {
+                throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
+            }
+        }
+        return caBean;
     }
 
 }

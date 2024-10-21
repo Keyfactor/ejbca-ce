@@ -148,15 +148,9 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     @EJB
     private RoleSessionLocal roleSession;
     
-    private CAInterfaceBean caBean;
+    private transient CAInterfaceBean caBean;
     
     public void initialize() {
-        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        try {
-            caBean = SessionBeans.getCaBean(request);
-        } catch (ServletException e) {
-            throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
-        }
         updateAvailableCryptoTokenList();
         updateAvailableSigningAlgorithmList();
         updateKeyAliases();
@@ -581,7 +575,7 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
         suitableCryptoTokenExists = true;
         availableCryptoTokenSelectItems = Collections.emptyList();
         try {
-            List<Entry<String, String>> availableCryptoTokens = caBean.getAvailableCryptoTokens(true);
+            List<Entry<String, String>> availableCryptoTokens = getCaBean().getAvailableCryptoTokens(true);
             suitableCryptoTokenExists = !availableCryptoTokens.isEmpty();
             final List<SelectItem> resultList = new ArrayList<>();
             int numSelected = 0; // should be 1 after the loop
@@ -609,10 +603,10 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     }
     
     private void updateAvailableKeyAliasesList() throws CryptoTokenOfflineException, AuthorizationDeniedException {
-        final List<KeyPairInfo> keyPairInfos = caBean.getKeyPairInfos(currentCryptoTokenId);
-        availableCryptoTokenKeyAliases = caBean.getAvailableCryptoTokenAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
-        availableCryptoTokenMixedAliases = caBean.getAvailableCryptoTokenMixedAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
-        availableCryptoTokenEncryptionAliases = caBean.getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        final List<KeyPairInfo> keyPairInfos = getCaBean().getKeyPairInfos(currentCryptoTokenId);
+        availableCryptoTokenKeyAliases = getCaBean().getAvailableCryptoTokenAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        availableCryptoTokenMixedAliases = getCaBean().getAvailableCryptoTokenMixedAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
+        availableCryptoTokenEncryptionAliases = getCaBean().getAvailableCryptoTokenEncryptionAliases(keyPairInfos, caInfoDto.getSignatureAlgorithmParam());
     }
     
     private void updateKeyAliases() {
@@ -713,5 +707,17 @@ public class InitNewPkiMBean extends BaseManagedBean implements Serializable {
     private void resetSuperAdminSettings() {
         adminKeyStorePassword = null;
         adminKeyStorePasswordRepeated = null;
+    }
+
+    public CAInterfaceBean getCaBean() {
+        if (caBean == null) {
+            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+            try {
+                caBean = SessionBeans.getCaBean(request);
+            } catch (ServletException e) {
+                throw new IllegalStateException("Could not initiate CAInterfaceBean", e);
+            }
+        }
+        return caBean;
     }
 }

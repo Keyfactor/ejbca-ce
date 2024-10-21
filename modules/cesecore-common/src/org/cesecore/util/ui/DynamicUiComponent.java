@@ -12,10 +12,12 @@
  *************************************************************************/
 package org.cesecore.util.ui;
 
+import java.io.Serializable;
+
 /**
  * Interface type for PSM components like check boxes, text fields, etc. for dynamic UI model.
  */
-public interface DynamicUiComponent {
+public interface DynamicUiComponent extends Serializable {
 
 	/**
 	 * Enables or disables the component.

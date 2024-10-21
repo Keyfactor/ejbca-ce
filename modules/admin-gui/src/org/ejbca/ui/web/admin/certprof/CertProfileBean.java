@@ -88,13 +88,13 @@ public class CertProfileBean extends BaseManagedBean implements Serializable {
     private int certificateProfileId;
     private boolean isViewOnly;
     private CertificateProfile certificateProfile = null;
-    private ListDataModel<CertificatePolicy> certificatePoliciesModel = null;
+    private transient ListDataModel<CertificatePolicy> certificatePoliciesModel = null;
     private CertificatePolicy newCertificatePolicy = null;
-    private ListDataModel<String> caIssuersModel = null;
+    private transient ListDataModel<String> caIssuersModel = null;
     private String newCaIssuer = "";
-    private ListDataModel<String> documentTypeList = null;
+    private transient ListDataModel<String> documentTypeList = null;
     private String documentTypeListNew = "";
-    private ListDataModel<PKIDisclosureStatement> pdsListModel = null;
+    private transient ListDataModel<PKIDisclosureStatement> pdsListModel = null;
     private List<ApprovalRequestItem> approvalRequestItems = null;
 
     public CertProfileBean( ) {

@@ -101,7 +101,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     private DynamicUiModel uiModel;
 
     /** Dynamic UI PSM component. */
-    private HtmlPanelGrid dataGrid;
+    private transient HtmlPanelGrid dataGrid;
 
     public ValidatorBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VALIDATORVIEW.resource());
@@ -283,6 +283,11 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
      * @throws DynamicUiModelException if the PSM could not be initialized.
      */
     public HtmlPanelGrid getDataGrid() throws DynamicUiModelException {
+        // if this bean is deserialized on another VM, the UI components
+        // need to be regenerated
+        if (dataGrid == null) {
+            initializeDynamicUI(stagedValidator);
+        }
         return dataGrid;
     }
 

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.ejb.PostActivate;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
@@ -61,10 +62,32 @@ import com.keyfactor.util.certificate.DnComponents;
 public class ViewEndEntityMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    
+    @PostActivate
+    protected void restoreUnserializedState() throws Exception {
+        if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+        }
+        initData();
+    }
+    
+    @Override
+    protected EjbcaWebBean getEjbcaWebBean() {
+        if (ejbcaWebBean == null) {
+            ejbcaWebBean = super.getEjbcaWebBean();
+            try {
+                initData();
+            } catch (Exception e) {
+                // initData can throw an but getEjbcaWebBean wont.  
+                throw new IllegalStateException(e);
+            }
+        }
+        return ejbcaWebBean;
+    }
 
-    private EjbcaWebBean ejbcaWebBean;
-    private CAInterfaceBean caBean;
-    private RAInterfaceBean raBean;
+    private transient EjbcaWebBean ejbcaWebBean;
+    private transient CAInterfaceBean caBean;
+    private transient RAInterfaceBean raBean;
 
     // Fields from legacy ViewEndEntityHelper class
 
@@ -129,7 +152,6 @@ public class ViewEndEntityMBean extends BaseManagedBean implements Serializable 
 
         final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
 
-        ejbcaWebBean = getEjbcaWebBean();
         globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
                 AccessRulesConstants.REGULAR_VIEWENDENTITY);
         caBean = SessionBeans.getCaBean(request);

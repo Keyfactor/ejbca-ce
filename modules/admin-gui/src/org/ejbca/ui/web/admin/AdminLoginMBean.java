@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.context.FacesContext;
@@ -72,7 +71,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     @EJB
     private InternalKeyBindingMgmtSessionLocal internalKeyBindings;
 
-    public class OAuthKeyInfoGui{
+    public class OAuthKeyInfoGui implements Serializable {
         String label;
 
         public OAuthKeyInfoGui(String label) {
@@ -91,16 +90,8 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
     private String firstHeader;
     private String secondHeader;
     private String text;
-    private OauthRequestHelper oauthRequestHelper;
+    private transient OauthRequestHelper oauthRequestHelper;
 
-    /**
-     * Set the helper object that interacts with OAuth servers.
-     */
-    @PostConstruct
-    public void setRequestHelper() {
-        oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken));
-    }
-    
     /**
      * @return the general error which occurred, or welcome header
      */
@@ -227,7 +218,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
             if (oAuthKeyInfo != null) {
                 try {
                     
-                    OAuthGrantResponseInfo token = oauthRequestHelper.sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
+                    OAuthGrantResponseInfo token = getOauthRequestHelper().sendTokenRequest(oAuthKeyInfo, authCode, getRedirectUri());
                     if (token.compareTokenType(HttpTools.AUTHORIZATION_SCHEME_BEARER)) {
                         if (token.getAccessToken() != null) {
                             log.debug("Successfully obtained oauth token, redirecting to main page.");
@@ -342,5 +333,12 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         header = header.replace("form-action 'self'", "form-action " + urls + "'self'");
         httpResponse.setHeader("Content-Security-Policy", header);
         httpResponse.setHeader("X-Content-Security-Policy", header);
+    }
+
+    public OauthRequestHelper getOauthRequestHelper() {
+        if (oauthRequestHelper == null) {
+            oauthRequestHelper = new OauthRequestHelper(new KeyBindingFinder(internalKeyBindings, certificateStoreLocal, cryptoToken));
+        }
+        return oauthRequestHelper;
     }
 }

@@ -41,7 +41,7 @@ public class InitExistingPkiMBean extends BaseManagedBean implements Serializabl
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(InitExistingPkiMBean.class);
     
-    private Part uploadFile;
+    private transient Part uploadFile;
     private String importedCaName;
     private boolean caImported = false;
 

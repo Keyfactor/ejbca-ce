@@ -27,7 +27,7 @@ import org.ejbca.core.model.approval.profile.PartitionedApprovalProfile;
  * @version $Id$
  *
  */
-public class ApprovalStepGuiObject {
+public class ApprovalStepGuiObject implements Serializable {
     private final Integer identifier;
     private final int stepNumber;
     private final List<ApprovalPartitionProfileGuiObject> partitionGuiObjects;

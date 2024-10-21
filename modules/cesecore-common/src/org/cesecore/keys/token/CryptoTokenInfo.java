@@ -156,4 +156,10 @@ public class CryptoTokenInfo implements Named, Serializable {
         }
         return true;
     }
+
+    @Override
+    public String toString() {
+        return "CryptoTokenInfo [cryptoTokenId=" + cryptoTokenId + ", name=" + name + ", active=" + active + ", autoActivation=" + autoActivation
+                + ", type=" + type + "]";
+    }
 }

@@ -24,7 +24,6 @@ import jakarta.faces.application.FacesMessage;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -52,8 +51,6 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
 
     private static final String REMOTE_AUTHENTICATION = "AuthenticationKeyBinding";
 
-    private final AuthenticationToken authenticationToken = getAdmin();
-   
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -114,7 +111,7 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
                 for (final DynamicUiProperty<? extends Serializable> property : internalKeyBindingProperties) {
                     dataMap.put(property.getName(), property.getValue());
                 }
-                setCurrentInternalKeybindingId(String.valueOf(internalKeyBindingSession.createInternalKeyBinding(authenticationToken,
+                setCurrentInternalKeybindingId(String.valueOf(internalKeyBindingSession.createInternalKeyBinding(getAuthenticationToken(),
                         getSelectedInternalKeyBindingType(), getCurrentName(), InternalKeyBindingStatus.DISABLED, null,
                         getCurrentCryptoToken().intValue(), getCurrentKeyPairAlias(), getCurrentSignatureAlgorithm(), dataMap,
                         (List<InternalKeyBindingTrustEntry>) getTrustedCertificates().getWrappedData())));
@@ -132,7 +129,7 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
     @SuppressWarnings("unchecked")
     public void saveCurrent() throws InternalKeyBindingNonceConflictException {
         try {
-            final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(authenticationToken,
+            final InternalKeyBinding internalKeyBinding = internalKeyBindingSession.getInternalKeyBinding(getAuthenticationToken(),
                     Integer.parseInt(getCurrentInternalKeyBindingId()));
             internalKeyBinding.setName(getCurrentName());
             if (isCryptoTokenActive()) {
@@ -159,11 +156,10 @@ public class RemoteAuthenticationMBean extends InternalKeyBindingMBeanBase {
             }
 
             setCurrentInternalKeybindingId(
-                    String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(authenticationToken, internalKeyBinding)));
+                    String.valueOf(internalKeyBindingSession.persistInternalKeyBinding(getAuthenticationToken(), internalKeyBinding)));
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(getCurrentName() + " saved"));
         } catch (AuthorizationDeniedException | InternalKeyBindingNameInUseException | IllegalArgumentException e) {
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, e.getMessage(), null));
         }
     }
-    
 }

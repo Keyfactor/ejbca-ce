@@ -357,4 +357,5 @@ public class RaCertDistServlet extends HttpServlet {
             writeResponseBytes(httpServletResponse, "certbundle.zip", "application/octet-stream", zipContent.toByteArray());
         }
     }
+
 }

@@ -86,7 +86,7 @@ public class CaHttpSessionListener implements HttpSessionListener {
         try {
             ejbcaWebBean = SessionBeans.getEjbcaWebBean(httpSessionEvent.getSession());
             if (ejbcaWebBean == null) {
-                // Since this method is invoked right before the session is actually terminated,
+                //Since this method is invoked right before the session is actually terminated,
                 // this should never happen. If it does, audit logging will fail but with a log error.
                 return;
             }
@@ -116,9 +116,16 @@ public class CaHttpSessionListener implements HttpSessionListener {
         if (log.isDebugEnabled()) {
             log.debug("HTTP session from client destroyed. jsessionId=" + httpSessionEvent.getSession().getId());
         }
-        // Audit log the event
-        auditLogSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDOUT, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, 
-                admin.toString(), caID, serialNr, null, logDetails);
+        
+        // Note that the session may appear on another VM without being associated with an admin in HA mode.
+        // Thats because sessions are shared across VM instances in HA mode, but the authentication info isn't -
+        // client authentication state is re-initialized when a client connects to a new VM.  In this case, there
+        // is a session to destroy, but admin will be null.
+        if (admin != null) {
+            // Audit log the event
+            auditLogSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDOUT, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, 
+                    admin.toString(), caID, serialNr, null, logDetails);
+        } 
     }
     
     private Certificate getCertificate(final AuthenticationToken admin) {

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,18 +31,21 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.annotation.WebInitParam;
+import jakarta.servlet.annotation.WebListener;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionEvent;
+import jakarta.servlet.http.HttpSessionListener;
 
 import org.apache.log4j.Logger;
 
 /**
  * Use this filter to synchronize requests to your web application and
  * reduce the maximum load that each individual user can put on your
- * web application. Requests will be synchronized per session.  When more
- * than one additional requests are made while a request is in process,
- * only the most recent of the additional requests will actually be
- * processed.
+ * web application. Requests will be synchronized per session, per-JVM.
+ * When more than one additional requests are made while a request 
+ * is in process on this JVM, only the most recent of the additional 
+ * requests will actually be processed.
  * <p>
  * If a user makes two requests, A and B, then A will be processed first
  * while B waits.  When A finishes, B will be processed.
@@ -63,7 +67,8 @@ import org.apache.log4j.Logger;
  * Ivelin Ivanov (ivelin@apache.org)
  * 
  * @author Kevin Chipalowsky and Ivelin Ivanov
- * Changed to WebFilter and modernized by PrimeKey
+ * Changed to WebFilter and modernized by PrimeKey.  Changed from using session
+ * state to static ConcurrentHashMaps by KeyFactor.
  */
 @WebFilter(filterName = "RequestControlFilter", urlPatterns = {"/*"}, initParams= {
         @WebInitParam(name="excludePattern.1",value="^.+\\.((gif))$"),
@@ -72,9 +77,14 @@ import org.apache.log4j.Logger;
         @WebInitParam(name="excludePattern.4",value="^.+\\.((css))$"),
         @WebInitParam(name="excludePattern.5",value="^.+\\.((js))$")
 })
-public class RequestControlFilter implements Filter {
+@WebListener
+public class RequestControlFilter implements Filter, HttpSessionListener {
 
     private static final Logger log = Logger.getLogger(RequestControlFilter.class);
+    
+    private static ConcurrentHashMap<String, Object> synchronizationObjects = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, HttpServletRequest> requestInProcess = new ConcurrentHashMap<>();
+    private static ConcurrentHashMap<String, HttpServletRequest> requestQueue = new ConcurrentHashMap<>();
 
     /**
      * Initialize this filter by reading its configuration parameters
@@ -189,14 +199,9 @@ public class RequestControlFilter implements Filter {
      * @param session
      */
     private static synchronized Object getSynchronizationObject(HttpSession session) {
-        // get the object from the session.  If it does not yet exist,
+        // get the object associated with the session.  If it does not yet exist,
         // then create one.
-        Object syncObj = session.getAttribute(SYNC_OBJECT_KEY);
-        if (syncObj == null) {
-            syncObj = new Object();
-            session.setAttribute(SYNC_OBJECT_KEY, syncObj);
-        }
-        return syncObj;
+        return synchronizationObjects.computeIfAbsent(session.getId(), id -> new Object());
     }
 
     /**
@@ -207,7 +212,7 @@ public class RequestControlFilter implements Filter {
      */
     private void setRequestInProgress(HttpServletRequest request) {
         HttpSession session = request.getSession();
-        session.setAttribute(REQUEST_IN_PROCESS, request);
+        requestInProcess.put(session.getId(), request);
     }
 
     /**
@@ -222,8 +227,8 @@ public class RequestControlFilter implements Filter {
             // if this request is still the current one (i.e., it didn't run for too
             // long and result in another request being processed), then clear it
             // and thus release the lock
-            if (session.getAttribute(REQUEST_IN_PROCESS) == request) {
-                session.removeAttribute(REQUEST_IN_PROCESS);
+            if (requestInProcess.get(session.getId()) == request) {
+                requestInProcess.remove(session.getId());
                 getSynchronizationObject(session).notify();
             }
         }
@@ -236,7 +241,7 @@ public class RequestControlFilter implements Filter {
      * @return          true if the server is handling another request for this session
      */
     private boolean isRequestInProcess(HttpSession session) {
-        return session.getAttribute(REQUEST_IN_PROCESS) != null;
+        return requestInProcess.containsKey(session.getId());
     }
 
     /**
@@ -260,7 +265,7 @@ public class RequestControlFilter implements Filter {
         }
 
         // This request can be processed now if it hasn't been replaced in the queue
-        return request == session.getAttribute(REQUEST_QUEUE);
+        return request == requestQueue.get(session.getId());
     }
 
     /**
@@ -271,9 +276,9 @@ public class RequestControlFilter implements Filter {
      */
     private void enqueueRequest(HttpServletRequest request) {
         HttpSession session = request.getSession();
-
+        
         // Put this request in the queue, replacing whoever was there before
-        session.setAttribute(REQUEST_QUEUE, request);
+        requestQueue.put(session.getId(), request);
 
         // if another request was waiting, notify it so it can discover that
         // it was replaced
@@ -322,23 +327,23 @@ public class RequestControlFilter implements Filter {
         // this path is not excluded
         return true;
     }
+    
+    @Override
+    public void sessionDestroyed(HttpSessionEvent se) {
+        String sessionId = se.getSession().getId();
+        if (log.isTraceEnabled()) {
+            log.trace("Removing RequestControlFilter state for session:" + sessionId);
+        }
+        requestInProcess.remove(sessionId);
+        requestQueue.remove(sessionId);
+        synchronizationObjects.remove(sessionId);
+    }
 
     /** A list of Pattern objects that match paths to exclude */
     private LinkedList<Pattern> excludePatterns;
 
     /** A map from Pattern to max wait duration (Long objects) */
     private HashMap<Pattern,Long> maxWaitDurations; 
-
-    /** The session attribute key for the request currently being processed */
-    private final static String REQUEST_IN_PROCESS
-    = "RequestControlFilter.requestInProcess";
-
-    /** The session attribute key for the request currently waiting in the queue */
-    private final static String REQUEST_QUEUE
-    = "RequestControlFilter.requestQueue";
-
-    /** The session attribute key for the synchronization object */
-    private final static String SYNC_OBJECT_KEY = "RequestControlFilter.sessionSync";
 
     /** The default maximum number of milliseconds to wait for a request */
     private final static long DEFAULT_DURATION = 30000;

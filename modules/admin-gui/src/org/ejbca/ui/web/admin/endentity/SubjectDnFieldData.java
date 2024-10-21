@@ -20,12 +20,14 @@ import org.ejbca.ui.web.admin.rainterface.UserView;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
 import org.ietf.ldap.LDAPDN;
 
+import java.io.Serializable;
+
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Class holding and validating data for subject dn attributes of End Entity
  */
-public class SubjectDnFieldData extends SubjectFieldData {
+public class SubjectDnFieldData extends SubjectFieldData implements Serializable {
 
     private MutablePair<Boolean, Boolean> isEmailAndUsesEmailFieldData;
     private String[] options;

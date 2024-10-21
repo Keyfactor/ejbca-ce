@@ -53,7 +53,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
 
     private static final long serialVersionUID = -2452049885728885525L;
         
-    public class ApprovalProfileGuiInfo {
+    public class ApprovalProfileGuiInfo implements Serializable {
         private final int id;
         private final String name;
         public ApprovalProfileGuiInfo(final int id, final String name) {
@@ -75,7 +75,8 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     private boolean renameInProgress = false;
     private boolean deleteInProgress = false;
     private boolean addFromTemplateInProgress = false;
-    private ListDataModel<ApprovalProfileGuiInfo> approvalProfilesList = null;
+    private transient ListDataModel<ApprovalProfileGuiInfo> approvalProfilesList = null;
+    private ArrayList<ApprovalProfileGuiInfo> approvalProfiles = null;
     private String approvalProfileName = "";
     private Integer selectedApprovalProfileId = null;
     private boolean viewOnly = true;
@@ -113,38 +114,39 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
     }
     
     public void selectCurrentRowData() {
-        if (approvalProfilesList == null) {
-            getApprovalProfiles();
-        }
-        final ApprovalProfileGuiInfo approvalProfileItem = approvalProfilesList.getRowData();
+        final ApprovalProfileGuiInfo approvalProfileItem = getApprovalProfiles().getRowData();
         selectedApprovalProfileId = approvalProfileItem.getId();
     }
 
     public ListDataModel<ApprovalProfileGuiInfo> getApprovalProfiles() {
+        // create the approval profiles GUI list and, if necessary, the backing list as well
         if (approvalProfilesList == null) {
-            final List<ApprovalProfileGuiInfo> items = new ArrayList<>();
-            final List<Integer> authorizedProfileIds = new ArrayList<>();
+            if (approvalProfiles == null) {
+                approvalProfiles = new ArrayList<>();
+                final List<Integer> authorizedProfileIds = new ArrayList<>();
 
-            authorizedProfileIds.addAll(approvalProfileSession.getAuthorizedApprovalProfileIds(getAdmin()));
-            final Map<Integer, String> idToNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
-            for (Integer profileId : authorizedProfileIds) {
-                final String name = idToNameMap.get(profileId);
-                items.add(new ApprovalProfileGuiInfo(profileId, name));
-            }
-            // Sort list by name
-            Collections.sort(items, new Comparator<ApprovalProfileGuiInfo>() {
-                @Override
-                public int compare(final ApprovalProfileGuiInfo a, final ApprovalProfileGuiInfo b) {
-                    return a.getName().compareToIgnoreCase(b.getName());
+                authorizedProfileIds.addAll(approvalProfileSession.getAuthorizedApprovalProfileIds(getAdmin()));
+                final Map<Integer, String> idToNameMap = approvalProfileSession.getApprovalProfileIdToNameMap();
+                for (Integer profileId : authorizedProfileIds) {
+                    final String name = idToNameMap.get(profileId);
+                    approvalProfiles.add(new ApprovalProfileGuiInfo(profileId, name));
                 }
-            });
-            approvalProfilesList = new ListDataModel<>(items);
+                // Sort list by name
+                Collections.sort(approvalProfiles, new Comparator<ApprovalProfileGuiInfo>() {
+                    @Override
+                    public int compare(final ApprovalProfileGuiInfo a, final ApprovalProfileGuiInfo b) {
+                        return a.getName().compareToIgnoreCase(b.getName());
+                    }
+                });
+            }
+            approvalProfilesList = new ListDataModel<>(approvalProfiles);
         }
         return approvalProfilesList;
     }
     
     public String getResetApprovalProfilesTrigger() {
         approvalProfilesList = null;
+        approvalProfiles = null;
         return "";
     }
     
@@ -190,6 +192,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
         deleteInProgress = false;
         renameInProgress = false;
         approvalProfilesList = null;
+        approvalProfiles = null;
         selectedApprovalProfileId = null;
         approvalProfileName = null;
     }
@@ -356,8 +359,7 @@ public class ApprovalProfilesMBean extends BaseManagedBean implements Serializab
                     addNonTranslatedErrorMessage("Not authorized to add approval profile.");
                 }
             }
-            approvalProfilesList = null;
+            approvalProfiles = null;
         }
     }
-    
 }
