@@ -68,6 +68,7 @@ import org.bouncycastle.util.CollectionStore;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 /**
@@ -110,28 +111,30 @@ public class ScepRequestGenerator {
     }
 
     public byte[] generateCrlReq(String dn, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
+            final PrivateKey signatureKey, String sigAlg, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
         this.cacert = ca;
         this.reqdn = dn;
         X500Name name = DnComponents.stringToBcX500Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());       
         // wrap message in pkcs#7
-        return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);        
+        return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey,
+                sigAlg.equals(AlgorithmConstants.KEYALGORITHM_MLDSA44) ? PKCSObjectIdentifiers.md2WithRSAEncryption
+                        : PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
-            final PrivateKey signatureKey, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws IOException, OperatorCreationException, CertificateException, CMSException {
+            final PrivateKey signatureKey, ASN1ObjectIdentifier wrappingAlg, String sigAlg, ASN1ObjectIdentifier encryptionAlg) throws IOException, OperatorCreationException, CertificateException, CMSException {
         // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
         ExtensionsGenerator extgen = new ExtensionsGenerator();
         // Requested extensions attribute
         // AltNames
         final GeneralNames san = DnComponents.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
         extgen.addExtension(Extension.subjectAlternativeName, false, san);
-        return generateCertReq( dn, password, transactionId, ca, extgen.generate(), senderCertificate, signatureKey, wrappingAlg, encryptionAlg);
+        return generateCertReq( dn, password, transactionId, ca, extgen.generate(), senderCertificate, signatureKey, wrappingAlg, sigAlg, encryptionAlg);
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, Extensions exts,
-            final X509Certificate senderCertificate, final PrivateKey signatureKey, ASN1ObjectIdentifier wrappingAlg, ASN1ObjectIdentifier encryptionAlg) throws OperatorCreationException, CertificateException,
+            final X509Certificate senderCertificate, final PrivateKey signatureKey, ASN1ObjectIdentifier wrappingAlg, String sigAlg, ASN1ObjectIdentifier encryptionAlg) throws OperatorCreationException, CertificateException,
             IOException, CMSException {
         this.cacert = ca;
         this.reqdn = dn;
@@ -158,8 +161,8 @@ public class ScepRequestGenerator {
         v.add(new DERSequence(challpwdattr));
         v.add(new DERSequence(extensionattr));
         DERSet attributes = new DERSet(v);
-        // Create PKCS#10 certificate request
-        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
+        // Create PKCS#10 certificate request  
+        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest(sigAlg.equals("ML-DSA-44") ? "ML-DSA-44" : "SHA256WithRSA",
                 DnComponents.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
         // wrap message in pkcs#7
