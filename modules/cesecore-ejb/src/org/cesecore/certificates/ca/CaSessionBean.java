@@ -245,6 +245,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         	}
     		try {
     			final CACommon ca = getCAInternal(cainfo.getCAId(), null, null, false);
+                @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
 
                 // Check if we can edit the CA (also checks authorization)
@@ -1048,33 +1049,26 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         final float oldversion = ((Float) caDataMap.get(UpgradeableDataHashMap.VERSION)).floatValue();
         // Fetching the CA object will trigger UpgradableHashMap upgrades
         CACommon ca = cadata.getCA();
-
-
-
-
-            if (ca != null) {
-                final boolean expired = hasCAExpiredNow(ca);
-                if (expired) {
-                    ca.setStatus(CAConstants.CA_EXPIRED);
-                }
-                final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
-                // Compare old version with current version and save the data if there has been a change
-                final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
-                if (upgradedExtendedService || upgradeCA || expired) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
-                            ", upgradedExtendedService: " + upgradedExtendedService +
-                            ", upgradeCA: " + upgradeCA + ", expired: " + expired);
-                    }
-                    ca.getCAToken();
-                    final int caId = caSession.mergeCa(ca);
-                    caDataReturn = entityManager.find(CAData.class, caId);
-                }
+        if (ca != null) {
+            final boolean expired = hasCAExpiredNow(ca);
+            if (expired) {
+                ca.setStatus(CAConstants.CA_EXPIRED);
             }
-            return caDataReturn;
-        /*} else {
-            return cadata;
-        }*/
+            final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
+            // Compare old version with current version and save the data if there has been a change
+            final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
+            if (upgradedExtendedService || upgradeCA || expired) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() + ", upgradedExtendedService: "
+                            + upgradedExtendedService + ", upgradeCA: " + upgradeCA + ", expired: " + expired);
+                }
+                ca.getCAToken();
+                final int caId = caSession.mergeCa(ca);
+                caDataReturn = entityManager.find(CAData.class, caId);
+            }
+        }
+        return caDataReturn;
+
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
