@@ -15,11 +15,6 @@ val properties: Properties = Properties().apply {
     } else {
         load(file("$propertiesFilePath.sample").inputStream())
     }
-    gradle.rootProject {
-        properties.forEach { (key, value) ->
-            extra[key.toString()] = value
-        }
-    }
 }
 
 val isProductionMode = properties.getProperty("ejbca.productionmode", "true").toBoolean()
