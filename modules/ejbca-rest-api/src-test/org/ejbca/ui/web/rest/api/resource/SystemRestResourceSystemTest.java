@@ -137,7 +137,7 @@ public class SystemRestResourceSystemTest extends RestResourceSystemTestBase {
     }
         
     private int addAndActivateService(final String name, final ServiceConfiguration config, final String caName) throws Exception {
-        CaTestUtils.createCACommon(INTERNAL_ADMIN_TOKEN, cryptoTokenName, caName, caDN, CAConstants.CA_ACTIVE);
+        CaTestUtils.createX509Ca(INTERNAL_ADMIN_TOKEN, cryptoTokenName, caName, caDN, CAConstants.CA_ACTIVE);
         if ((config.getIntervalProperties() != null) && (config.getIntervalProperties().getProperty(PeriodicalInterval.PROP_VALUE) == null)) {
             Properties intervalprop = new Properties();
             intervalprop.setProperty(PeriodicalInterval.PROP_VALUE, "30");
@@ -156,7 +156,7 @@ public class SystemRestResourceSystemTest extends RestResourceSystemTestBase {
     }
 
     private int addAndActivateServiceNoAction(final String name, final ServiceConfiguration config, final String caName) throws Exception {
-        CaTestUtils.createCACommon(INTERNAL_ADMIN_TOKEN, cryptoTokenName, caName, caDN, CAConstants.CA_ACTIVE);
+        CaTestUtils.createX509Ca(INTERNAL_ADMIN_TOKEN, cryptoTokenName, caName, caDN, CAConstants.CA_ACTIVE);
         if ((config.getIntervalProperties() != null) && (config.getIntervalProperties().getProperty(PeriodicalInterval.PROP_VALUE) == null)) {
             Properties intervalprop = new Properties();
             intervalprop.setProperty(PeriodicalInterval.PROP_VALUE, "30");
