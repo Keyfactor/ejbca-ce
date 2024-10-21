@@ -41,8 +41,14 @@ sourceSets {
 tasks.systemTest {
     filter {
         // TODO ECA-12480: Create custom test tasks similar to Ant's "test-dbschema" and "test-ocspmon" targets.
-        excludeTestsMatching("DatabaseSchemaSystemTest")
-        excludeTestsMatching("OcspMonitoringToolSystemTest")
+        val includeDbSchema = providers.gradleProperty("includeDbSchema")
+        if (!includeDbSchema.isPresent || includeDbSchema.get() == "false") {
+            excludeTestsMatching("DatabaseSchemaSystemTest")
+        }
+        val includeOcspMonitoringTool = providers.gradleProperty("includeOcspMonitoringTool")
+        if (!includeOcspMonitoringTool.isPresent || includeOcspMonitoringTool.get() == "false") {
+            excludeTestsMatching("OcspMonitoringToolSystemTest")
+        }
     }
 }
 
