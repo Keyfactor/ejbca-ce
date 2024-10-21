@@ -151,7 +151,11 @@ public abstract class SystemTestsConfiguration {
         Properties props = getProperties();
         System.out.println("SystemTestsConfiguration 152: props="+props);
         System.out.println("SystemTestsConfiguration 153: PKCS11_SLOT_PIN="+PKCS11_SLOT_PIN);
-        return StringUtils.trim(getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue)).toCharArray();
+        String token = getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue);
+        if (token == null) {
+            throw new IllegalStateException("PKCS11(Ng) systemtest settings are not properly configured.");
+        }
+        return StringUtils.trim(token).toCharArray();
     }
     
     public static String getPkcs11SecurityProvider(String defaultValue) {
