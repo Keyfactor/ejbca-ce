@@ -147,6 +147,10 @@ public abstract class SystemTestsConfiguration {
     }
     
     public static char[] getPkcs11SlotPin(String defaultValue) {
+        System.out.println("SystemTestsConfiguration 150: defaultValue="+defaultValue);
+        Properties props = getProperties();
+        System.out.println("SystemTestsConfiguration 152: props="+props);
+        System.out.println("SystemTestsConfiguration 153: PKCS11_SLOT_PIN="+PKCS11_SLOT_PIN);
         return StringUtils.trim(getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue)).toCharArray();
     }
     
