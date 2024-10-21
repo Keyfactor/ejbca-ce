@@ -1,18 +1,6 @@
-import java.util.Properties
-
-val props: Properties = Properties().apply {
-    val propertiesFilePath = "conf/ejbca.properties"
-    if (file(propertiesFilePath).exists()) {
-        load(file(propertiesFilePath).inputStream())
-    } else {
-        load(file("$propertiesFilePath.sample").inputStream())
-    }
-}
-
-// Specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
-val editionProp = providers.gradleProperty("edition").getOrElse("ee")
-val eeModuleExists = file("modules/edition-specific-ee").exists()
-val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
+val edition: String by extra
+val appServerHome: String? by extra
+val isProductionMode: Boolean by extra
 
 allprojects {
     repositories {
@@ -32,7 +20,21 @@ allprojects {
             dirs(rootProject.projectDir.resolve("lib/ext/resteasy-jaxrs-lib"))
         }
     }
-    extra["edition"] = edition
+}
+
+// add the directory containing 'jboss-client.jar' to the list of library repositories
+if (!isProductionMode) {
+    if (appServerHome == null) {
+        throw GradleException("Environment variable APPSRV_HOME needs to be set" +
+                " when building EJBCA in non-production mode (ejbca.productionmode=false).")
+    }
+    allprojects {
+        repositories {
+            flatDir {
+                dirs(file("$appServerHome/bin/client"))
+            }
+        }
+    }
 }
 
 plugins {
@@ -62,7 +64,6 @@ dependencies {
     deploy("org.jboss:jboss-remote-naming:2.0.5.Final")
     deploy("org.jboss.logging:jboss-logging:3.6.1.Final")
     deploy("org.jboss.remoting:jboss-remoting:5.0.29.Final")
-    deploy("jboss:jboss-client:4.0.2")
     deploy("org.eclipse.angus:jakarta.mail:2.0.3")
     deploy("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     deploy("com.sun.xml.ws:jaxws-rt:4.0.1")
@@ -99,7 +100,7 @@ dependencies {
         // When edition is CE we use :modules:edition-specific:ejb as a replacement for :modules:edition-specific-ee
         "earlibanddeploy"(project(path = ":modules:edition-specific:ejb", configuration = "archives"))
     }
-    if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
+    if (!isProductionMode) {
         deploy(":swagger-ui@war")
         deploy(project(":modules:systemtests:ejb"))
     }
@@ -188,7 +189,7 @@ dependencies {
         earlib(project(path = ":modules:caa", configuration = "archives"))
         earlib(project(path = ":modules:ct", configuration = "archives"))
     }
-    if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
+    if (!isProductionMode) {
         "earlibanddeploy"(project(":modules:systemtests:common"))
         earlib(project(":modules:systemtests:interface"))
     }
@@ -258,7 +259,7 @@ tasks.ear {
                     )
             }
         }
-        if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
+        if (!isProductionMode) {
             filter { line: String ->
                 line.replace("<!--@ejbca-systemtest-ejb.jar@-->", "<module><ejb>systemtests-ejb.jar</ejb></module>")
                     .replace(
@@ -281,7 +282,6 @@ tasks.ear {
 
 task<Copy>("deployear") {
     dependsOn("ear")
-    val appServerHome = System.getenv("APPSRV_HOME")
     doFirst {
         if (appServerHome == null) {
             throw GradleException("APPSRV_HOME environment variable is not set.")
@@ -341,11 +341,13 @@ subprojects {
                 classpath = sourceSets["test"].runtimeClasspath
             }
 
-            // // Add the "systemTest" task to Gradle's "check" task dependencies
-            // // so that it would be triggered alongside the unit "test" task.
-            // tasks.named("check") {
-            //     dependsOn(tasks.named("systemTest"))
-            // }
+            // Add common system test dependencies.
+            dependencies {
+                val testRuntimeOnly by configurations
+                if (!isProductionMode) {
+                    testRuntimeOnly(rootProject.libs.jboss.client)
+                }
+            }
         }
 
         // Add common dependencies used by most tests.
