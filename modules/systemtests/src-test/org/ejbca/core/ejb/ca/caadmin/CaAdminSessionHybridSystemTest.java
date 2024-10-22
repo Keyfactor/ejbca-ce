@@ -12,6 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.caadmin;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Properties;
+
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
@@ -20,7 +28,7 @@ import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
 import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
-import jakarta.ejb.EJBException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.SubjectAltPublicKeyInfo;
@@ -57,20 +65,14 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.PublicKey;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Properties;
+import jakarta.ejb.EJBException;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 /**
- * Tests CAAdminSessionBean with a focus on hybrid certificates. 
+ * Tests CAAdminSessionBean with a focus on hybrid certificates.
  */
 public class CaAdminSessionHybridSystemTest {
 
@@ -167,9 +169,9 @@ public class CaAdminSessionHybridSystemTest {
         final String subCaName = testName.getMethodName() + "SubCa";
         try {
             rootCryptoTokenId = createCryptoTokenAndKeypairs(rootCryptoTokenName, "foo123");
-            
+
             subCryptoTokenId = createCryptoTokenAndKeypairs(subCryptoTokenName, "foo123");
-      
+
             hybridRoot = constructCa(rootCryptoTokenId, rootCaName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, true);
 
             hybridSub = constructCa(subCryptoTokenId, subCaName, CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, hybridRoot.getCAId(), true);
@@ -210,7 +212,7 @@ public class CaAdminSessionHybridSystemTest {
             }
         }
     }
-    
+
     @Test
     public void testCreateProhibitedSubCaCertificateUnderHybridRootShouldFail()
             throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
@@ -308,7 +310,7 @@ public class CaAdminSessionHybridSystemTest {
             }
         }
     }
-    
+
     private X509CAInfo constructCa(final int cryptoTokenId, final String caName, final int certificateProfileId, final int signedBy, boolean hybrid)
             throws CAExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException, EJBException {
         // Create CAToken
@@ -365,7 +367,7 @@ public class CaAdminSessionHybridSystemTest {
                 KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_MLDSA44).build());
         return cryptoTokenId;
     }
-    
+
     private int createCryptoTokenAndKeypairsForNonHybridCA(final String cryptoTokenName, final String cryptoTokenPin)
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, AuthorizationDeniedException,
             NoSuchSlotException, InvalidKeyException, InvalidAlgorithmParameterException {

@@ -12,12 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -29,9 +23,6 @@ import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
-import org.cesecore.keys.token.PKCS11TestUtils;
-
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
@@ -41,6 +32,15 @@ import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
+import org.apache.log4j.Logger;
+import org.cesecore.keys.token.PKCS11TestUtils;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  */
 public abstract class CATokenTestBase {
@@ -49,7 +49,7 @@ public abstract class CATokenTestBase {
 	public static final String TOKEN_PIN = PKCS11TestUtils.getPkcs11SlotPin();
 	private static final String DEFAULT_KEY = "defaultKey ÅaÄÖbåäöc«»©“”nµA";
 	protected static final String ENCRYPTION_KEY = "encryptionKey ÅaÄbbÖcccäâãêëẽć©A";
-		
+
 	protected void doCaTokenRSA(String keySpecification, CryptoToken cryptoToken, Properties caTokenProperties) throws KeyStoreException, NoSuchAlgorithmException,
 	        CertificateException, IOException,CryptoTokenOfflineException, InvalidKeyException, CryptoTokenAuthenticationFailedException,
 	        InvalidAlgorithmParameterException {
@@ -123,13 +123,13 @@ public abstract class CATokenTestBase {
 			    cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
 				assertTrue("Should have thrown because the key should not exist", false);
 			} catch (CryptoTokenOfflineException e) {
-				// NOPMD: ignore this is what we want			
+				// NOPMD: ignore this is what we want
 			}
 			try {
 			    cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
 				assertTrue("Should have thrown because the key should not exist", false);
 			} catch (CryptoTokenOfflineException e) {
-				// NOPMD: ignore this is what we want			
+				// NOPMD: ignore this is what we want
 			}
 
 			// Generate new keys, moving the old ones to "previous key"
@@ -235,7 +235,7 @@ public abstract class CATokenTestBase {
                 cryptoToken.deleteEntry("rsatest0000"+i);
             }
 		    cryptoToken.deleteEntry("rsatest0000000002");
-		    cryptoToken.deleteEntry("rsatest0000000003");			
+		    cryptoToken.deleteEntry("rsatest0000000003");
 		}
         log.trace("<" + Thread.currentThread().getStackTrace()[1].getMethodName());
 	}
@@ -377,7 +377,7 @@ public abstract class CATokenTestBase {
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("ecctest0000"+i);
             }
-			cryptoToken.deleteEntry("rsatest00001");			
+			cryptoToken.deleteEntry("rsatest00001");
 			cryptoToken.deleteEntry("ecctest0000000002");
 			cryptoToken.deleteEntry("ecctest0000000003");
 		}
@@ -394,24 +394,24 @@ public abstract class CATokenTestBase {
     		catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
     		catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_FALCON512);
     		catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-    
+
     		// First we start by deleting all old entries
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("falcontest0000"+i);
             }
     		cryptoToken.deleteEntry(ENCRYPTION_KEY);
-    
+
     		// Try to delete something that does not exist, it should work without error
     		cryptoToken.deleteEntry("sdkfjhsdkfjhsd4447");
-    
+
     		assertEquals("FALCON-512", catoken.getSignatureAlgorithm());
     		assertEquals("SHA256WithRSA", catoken.getEncryptionAlgorithm());
     		assertEquals(getProvider(), cryptoToken.getSignProviderName());
-    
+
     		cryptoToken.activate(TOKEN_PIN.toCharArray());
     		assertEquals(CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
     		assertEquals(CAToken.DEFAULT_KEYSEQUENCE, catoken.getKeySequence());
-    
+
     		// Generate the first key, will get name rsatest+nextsequence = rsatest00001
     		Integer seq = Integer.valueOf(CAToken.DEFAULT_KEYSEQUENCE);
     		cryptoToken.generateKeyPair("1024", ENCRYPTION_KEY);
@@ -430,7 +430,7 @@ public abstract class CATokenTestBase {
     		// Encryption key should be an RSA key with 2048 bit, since signature key is ECDSA
     		PublicKey encPub = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
     		assertEquals(1024, KeyTools.getKeyLength(encPub));
-    
+
     		// Generate new keys, moving the old ones to "previous key"
     		final String nextSignKeyAlias2 = catoken.generateNextSignKeyAlias();
             final PublicKey currentSingKey2 = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
@@ -455,7 +455,7 @@ public abstract class CATokenTestBase {
     		assertEquals(128, KeyTools.getKeyLength(pub));
     		String previouskeyhash = CertTools.getFingerprintAsString(pub.getEncoded());
     		assertEquals(keyhash, previouskeyhash);
-    
+
     		// Generate new keys, not activating them, this should create a "next key", keeping the current and previous as they are
     		// Generate new keys, moving the old ones to "previous key"
     		final String nextSignKeyAlias3 = catoken.generateNextSignKeyAlias();
@@ -488,7 +488,7 @@ public abstract class CATokenTestBase {
     		assertEquals(nextseq, Integer.valueOf(nextSequence));
     		// Make sure the properties was set correctly so we did not get the "default" key as next
     		priv = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT));
-    
+
     		// finally activate the "next key" moving that to current and moving the current to previous
     		catoken.activateNextSignKey();
     		p = catoken.getProperties();
@@ -521,7 +521,7 @@ public abstract class CATokenTestBase {
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("falcontest0000"+i);
             }
-    		cryptoToken.deleteEntry("rsatest00001");			
+    		cryptoToken.deleteEntry("rsatest00001");
     		cryptoToken.deleteEntry("ecctest0000000002");
     		cryptoToken.deleteEntry("ecctest0000000003");
     	}
@@ -665,7 +665,7 @@ public abstract class CATokenTestBase {
 	        for (int i=0; i<4; i++) {
 	            cryptoToken.deleteEntry("ml-dsa-test0000"+i);
 	        }
-	        cryptoToken.deleteEntry("rsatest00001");            
+	        cryptoToken.deleteEntry("rsatest00001");
 	        cryptoToken.deleteEntry("ecctest0000000002");
 	        cryptoToken.deleteEntry("ecctest0000000003");
 	    }
@@ -702,7 +702,7 @@ public abstract class CATokenTestBase {
             for (int i=0; i<4; i++) {
                 cryptoToken.deleteEntry("rsatest0000"+i);
             }
-			// Before this there are no keys. 
+			// Before this there are no keys.
             final String nextSignKeyAlias = catoken.generateNextSignKeyAlias();
             cryptoToken.generateKeyPair(keySpecification, nextSignKeyAlias);
             catoken.activateNextSignKey();
