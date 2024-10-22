@@ -12,6 +12,23 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyManagementException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.ECGenParameterSpec;
+import java.util.Properties;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
@@ -20,9 +37,7 @@ import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -85,22 +100,9 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyManagementException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.ECGenParameterSpec;
-import java.util.Properties;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType;
 import static org.junit.Assert.assertEquals;
@@ -108,7 +110,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Test class with system tests verifying that hybrid certificates can be enrolled via REST. 
+ * Test class with system tests verifying that hybrid certificates can be enrolled via REST.
  */
 public class CertificateRestResourceHybridSystemTest extends RestResourceSystemTestBase {
 
@@ -193,7 +195,7 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
 
     @After
     public void tearDown() throws Exception {
-        //Delete the end entity 
+        //Delete the end entity
         if (endEntityManagementSession.existsUser(username)) {
             endEntityManagementSession.deleteUser(alwaysAllowToken, username);
         }
@@ -294,7 +296,7 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
         assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
                 new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
     }
-    
+
     @Test
     public void testPkcs10Request() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
             OperatorCreationException, UnrecoverableKeyException, KeyManagementException, KeyStoreException, CertificateParsingException,
@@ -328,7 +330,7 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
                 password("foo123").
                 responseFormat("DER").
                 certificateRequest(certificateRequest).build();
-        
+
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(enrollPkcs10CertificateRequest);
@@ -339,9 +341,9 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
         final String actualJsonString = actualResponse.readEntity(String.class);
         // Verify response
         assertJsonContentType(actualResponse);
-        
+
         JSONParser jsonParser = new JSONParser();
-        
+
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final String base64cert = (String) actualJsonObject.get("certificate");
         assertNotNull(base64cert);
