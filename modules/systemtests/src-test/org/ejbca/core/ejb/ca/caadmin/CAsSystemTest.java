@@ -13,13 +13,6 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.lang.reflect.Field;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -42,6 +35,22 @@ import java.util.Properties;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
+
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.x509.X509CertificateUtility;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
@@ -93,21 +102,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.CertificateImplementationRegistry;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.certificate.x509.X509CertificateUtility;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Tests CA administration.
@@ -130,14 +130,14 @@ public class CAsSystemTest extends CaTestCase {
             .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         CertificateImplementationRegistry.INSTANCE.addCertificateImplementation(new X509CertificateUtility());
         createTestCA();
     }
-    
+
     @AfterClass
     public static void afterClass() throws Exception {
         removeTestCA();
@@ -193,10 +193,10 @@ public class CAsSystemTest extends CaTestCase {
         removeTestCA(caName);
         final CAToken catoken = createCaToken("test01", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
-        List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+        List<CertificatePolicy> policies = new ArrayList<>();
         CertificatePolicy pol = new CertificatePolicy("1.2.3.4", null, null);
         policies.add(pol);
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TEST", caName, CAConstants.CA_ACTIVE,
@@ -265,9 +265,9 @@ public class CAsSystemTest extends CaTestCase {
     }
 
 
-    
 
-    
+
+
     /** Adds a CA Using ECDSA keys to the database. It also checks that the CA is stored correctly. */
     @Test
     public void test04AddECDSACA() throws Exception {
@@ -462,7 +462,7 @@ public class CAsSystemTest extends CaTestCase {
         } finally {
             removeOldCa(TEST_FALCON512_CA_NAME);
         }
-        
+
         try {
             createPQCCa(TEST_FALCON1024_CA_NAME, AlgorithmConstants.KEYALGORITHM_FALCON1024, AlgorithmConstants.SIGALG_FALCON1024);
             CAInfo info = caSession.getCAInfo(admin, TEST_FALCON1024_CA_NAME);
@@ -544,7 +544,7 @@ public class CAsSystemTest extends CaTestCase {
         } finally {
             removeOldCa(TEST_MLDSA87_CA_NAME);
         }
-        
+
     }
 
     /** Adds a CA using RSA keys to the database. It also checks that the CA is stored correctly. */
@@ -574,14 +574,14 @@ public class CAsSystemTest extends CaTestCase {
         log.trace(">test07AddRSACA4096()");
 
         removeOldCa("TESTRSA4096");
-        
+
         boolean ret = false;
         try {
             String dn = DnComponents
                     .stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
             final CAToken caToken = createCaToken("test07", "1024", AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active Extended CA Services.
-            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
             X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(dn, "TESTRSA4096", CAConstants.CA_ACTIVE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
             cainfo.setDescription("JUnit RSA CA, we ned also a very long CA description for this CA, because we want to create a CA Data string that is more than 36000 characters or something like that. All this is because Oracle can not set very long strings with the JDBC provider and we must test that we can handle long CAs");
@@ -641,7 +641,7 @@ public class CAsSystemTest extends CaTestCase {
     /**
      * Test that we can create a SubCA signed by an external RootCA. The SubCA create a certificate request sent to the RootCA that creates a
      * certificate which is then received on the SubCA again.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -649,11 +649,11 @@ public class CAsSystemTest extends CaTestCase {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         removeOldCa("TESTSIGNEDBYEXTERNAL");
 
-        List<Certificate> toremove = new ArrayList<Certificate>();
+        List<Certificate> toremove = new ArrayList<>();
         try {
             final CAToken caToken = createCaToken("test11", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active Extended CA Services.
-            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
 
             X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_ACTIVE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
@@ -715,7 +715,7 @@ public class CAsSystemTest extends CaTestCase {
             // generated, still active
             msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
-            
+
             // Add another certificate for the subCA so we have more than 1 to revoke
             // Generate a certificate request from the CA and send to the TEST CA
             request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, info.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
@@ -729,7 +729,7 @@ public class CAsSystemTest extends CaTestCase {
             resp = caAdminSession.processRequest(admin, info, msg);
             // Receive the signed certificate back on our SubCA
             caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
-            
+
             // create a new CSR with new key
             request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, null);
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -745,7 +745,7 @@ public class CAsSystemTest extends CaTestCase {
             try {
                 caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, currentSignKeyAlias);
             } catch(Exception e) {
-                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.",
                         e.getMessage().contains("keys: signKey"));
             }
             // auto-detect
@@ -754,11 +754,11 @@ public class CAsSystemTest extends CaTestCase {
             try {
                 caAdminSession.receiveResponse(admin, info.getCAId(), firstCertificate, null, null);
             } catch(Exception e) {
-                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.",
                         e.getMessage().contains("keys: signKey00001"));
             }
             caAdminSession.receiveResponse(admin, info.getCAId(), firstCertificate, null, currentSignKeyAlias);
-            
+
             // create another rekey request
             request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, null);
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
@@ -769,20 +769,20 @@ public class CAsSystemTest extends CaTestCase {
             try {
                 caAdminSession.receiveResponse(admin, info.getCAId(), secondCertificate, null, null);
             } catch(Exception e) {
-                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.", 
+                assertTrue("Incorrect key label is not mentioned in error message while importing externally signed cacert.",
                         e.getMessage().contains("keys: signKey and signKey00003"));
             }
             caAdminSession.receiveResponse(admin, info.getCAId(), resp, null, null);
-            
+
             // Ensure all issued subCA certificates are cleaned out after test finishes
             certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
-            toremove.addAll(certs); 
+            toremove.addAll(certs);
             assertEquals("Test CA should have two certificates", 4, certs.size());
             for(Certificate c: certs) {
                 CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(c));
                 assertEquals("Certificate should have status ACTIVE", CertificateConstants.CERT_ACTIVE, certinfo.getStatus());
             }
-            
+
             // Revoke the subCA, both subCA certificates should be revoked
             caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
             certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
@@ -792,34 +792,34 @@ public class CAsSystemTest extends CaTestCase {
                 assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
                 assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
             }
-            
+
         } catch (CAExistsException pee) {
             log.info("CA exists: ", pee);
         } finally {
-            removeOldCa("TESTSIGNEDBYEXTERNAL");            
+            removeOldCa("TESTSIGNEDBYEXTERNAL");
             // Remove the test certificates from the database
             for (Certificate certificate : toremove) {
-                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));                
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
             }
         }
 
-    } 
-    
+    }
+
     /**
      * Test that we can create a SubCA signed by an external RootCA. The SubCA create a certificate request sent to the RootCA that creates a
      * certificate which is then received on the SubCA again.
-     * 
+     *
      * @throws Exception
      */
     @Test
     public void testRSASignedByExternalWithPreloadedChain() throws Exception {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         removeOldCa("TESTSIGNEDBYEXTERNAL");
-        List<Certificate> toremove = new ArrayList<Certificate>();
+        List<Certificate> toremove = new ArrayList<>();
         try {
             final CAToken caToken = createCaToken("test11", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
             // Create and active Extended CA Services.
-            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+            final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
 
             X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_ACTIVE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, "1000d", CAInfo.SIGNEDBYEXTERNALCA, null, caToken);
@@ -864,19 +864,19 @@ public class CAsSystemTest extends CaTestCase {
             }
             cert = iter.next();
             assertTrue("Error in root ca certificate", CertTools.getSubjectDN(cert).equals("CN=TEST"));
-          
-            
+
+
         } catch (CAExistsException pee) {
             log.info("CA exists: ", pee);
         } finally {
-            removeOldCa("TESTSIGNEDBYEXTERNAL");            
+            removeOldCa("TESTSIGNEDBYEXTERNAL");
             // Remove the test certificates from the database
             for (Certificate certificate : toremove) {
-                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));                
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
             }
         }
 
-    } 
+    }
 
     @Test
     public void test13RenewCA() throws Exception {
@@ -896,10 +896,10 @@ public class CAsSystemTest extends CaTestCase {
             policies.add(pol);
             xinfo.setPolicies(policies);
             caSession.editCA(admin, xinfo);
-            
+
             int lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
-            int lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);            
+            int lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
 
             info = caSession.getCAInfo(admin, getTestCAId());
@@ -946,7 +946,7 @@ public class CAsSystemTest extends CaTestCase {
             caAdminSession.renewCA(admin, getTestCAId(), true, null, true);
             lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLNumber(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false);
             assertCrlGenerationAfterCARenewal(lastCrlNumberBeforeRenewCA, lastCrlNumberAfterRenewCA);
-            
+
             info = caSession.getCAInfo(admin, getTestCAId());
             certs = info.getCertificateChain();
             X509Certificate cacert4 = (X509Certificate) certs.iterator().next();
@@ -984,7 +984,7 @@ public class CAsSystemTest extends CaTestCase {
             // A plain request using the CAs key will have the same public key
             assertEquals(key1, key2);
             // Test make request generating new keys
-            request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<Certificate>(), null);
+            request = caAdminSession.makeRequest(admin, getTestCAId(), new ArrayList<>(), null);
             assertNotNull(request);
             msg = RequestMessageUtils.genPKCS10RequestMessage(request);
             pk1 = cacert4.getPublicKey();
@@ -1010,7 +1010,7 @@ public class CAsSystemTest extends CaTestCase {
             // finally do a new renew (in here we enable delta CRLs before renewal and also test for that)
             info.setDeltaCRLPeriod(100_100);
             caAdminSession.editCA(admin, info);
-            
+
             lastCrlNumberBeforeRenewCA = crlStoreSession.getLastCRLInfo(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false).getLastCRLNumber();
             caAdminSession.renewCA(admin, getTestCAId(), false, null, false);
             lastCrlNumberAfterRenewCA = crlStoreSession.getLastCRLInfo(info.getSubjectDN(), CertificateConstants.NO_CRL_PARTITION, false).getLastCRLNumber();
@@ -1027,8 +1027,8 @@ public class CAsSystemTest extends CaTestCase {
     }
 
     /**
-     * Revoking a CA will automatically create a final CRL for that CA's issued certificates. According to CAO Doc-9303-12, this CRL should contain 
-     * a self signed certificate as well. 
+     * Revoking a CA will automatically create a final CRL for that CA's issued certificates. According to CAO Doc-9303-12, this CRL should contain
+     * a self signed certificate as well.
      */
     @Test
     public void testRevokeCaWithCrl() throws AuthorizationDeniedException, CADoesntExistsException, CAExistsException, CryptoTokenOfflineException,
@@ -1056,14 +1056,14 @@ public class CAsSystemTest extends CaTestCase {
             internalCertStoreSession.removeCRLs(admin, caInfo.getSubjectDN());
         }
     }
-    
+
     @Test
     public void testRevokeCA() throws Exception {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
         final String caname = "TestRevokeCA";
         removeTestCA(caname);
         createTestCA(caname);
-        List<Certificate> toremove = new ArrayList<Certificate>();
+        List<Certificate> toremove = new ArrayList<>();
         try {
             CAInfo info = caSession.getCAInfo(admin, caname);
             assertEquals(CAConstants.CA_ACTIVE, info.getStatus());
@@ -1092,7 +1092,7 @@ public class CAsSystemTest extends CaTestCase {
             toremove.addAll(certs);
             assertEquals("Test CA should have three certificates", 3, certs.size());
             // Remove the old revoked one one to make it easier for us
-            internalCertStoreSession.removeCertificate(fp);                
+            internalCertStoreSession.removeCertificate(fp);
             certs = certificateStoreSession.findCertificatesBySubject(info.getSubjectDN());
             assertEquals("Test CA should have two certificates", 2, certs.size());
             Iterator<Certificate> iter = certs.iterator();
@@ -1112,17 +1112,17 @@ public class CAsSystemTest extends CaTestCase {
             final String fp2 = CertTools.getFingerprintAsString(iter.next());
             assertFalse(fp1.equals(fp2));
             certinfo = certificateStoreSession.getCertificateInfo(fp2);
-            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());            
+            assertEquals("Certificate should have status REVOKED", CertificateConstants.CERT_REVOKED, certinfo.getStatus());
             assertEquals("Revocation reason should be CESSATIONOFOPERATION", RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, certinfo.getRevocationReason());
         } finally {
             // Remove the test CA
             removeTestCA(caname);
             // Remove the test CAs certificates from the database
             for (Certificate certificate : toremove) {
-                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));                
+                internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(certificate));
             }
         }
-    } 
+    }
 
     @Test
     public void test15ExternalExpiredCA() throws Exception {
@@ -1141,7 +1141,7 @@ public class CAsSystemTest extends CaTestCase {
                 + "fXnqR22xd2P7ssXE52/tTnAyJbYUrOOCI6iiek3dZN8oTmGhZUBHIgFzxC/8MgHa" + "G6Y=").getBytes());
         Certificate cert = CertTools.getCertfromByteArray(testcert, Certificate.class);
         removeOldCa(caname); // for the test
-        List<Certificate> certs = new ArrayList<Certificate>();
+        List<Certificate> certs = new ArrayList<>();
         certs.add(cert);
 
         try {
@@ -1163,14 +1163,14 @@ public class CAsSystemTest extends CaTestCase {
         removeTestCA("TESTFAIL");
         final CAToken caToken = createCaToken("test16", "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         // Create and active Extended CA Services.
-        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<>();
 
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo("CN=TESTFAIL", "TESTFAIL", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
         cainfo.setDescription("JUnit RSA CA");
         cainfo.setExtendedCAServiceInfos(extendedcaservices);
 
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
         AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         // Try to create the CA as an unprivileged user
@@ -1207,7 +1207,7 @@ public class CAsSystemTest extends CaTestCase {
         CAInfo caInfoTest = caSession.getCAInfo(admin, getTestCAName());
         // Try to edit the CA as an unprivileged user
 
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
         AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
 
@@ -1225,7 +1225,7 @@ public class CAsSystemTest extends CaTestCase {
     public void test18PublicWebCaInfoFetch() throws Exception {
         log.trace(">test18PublicWebCaInfoFetch()");
 
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
         AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
 
@@ -1249,7 +1249,7 @@ public class CAsSystemTest extends CaTestCase {
     @Test
     public void test19UnprivilegedCaMakeRequest() throws Exception {
         log.trace(">test19UnprivilegedCaMakeRequest()");
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
         AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         try {
@@ -1264,7 +1264,7 @@ public class CAsSystemTest extends CaTestCase {
     @Test
     public void test20BadCaReceiveResponse() throws Exception {
         log.trace(">" + Thread.currentThread().getStackTrace()[1].getMethodName() + "()");
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
         AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
 
@@ -1301,7 +1301,7 @@ public class CAsSystemTest extends CaTestCase {
     @Test
     public void test21UnprivilegedCaProcessRequest() throws Exception {
         log.trace(">test21UnprivilegedCaProcessRequest()");
-        Set<Principal> principals = new HashSet<Principal>();
+        Set<Principal> principals = new HashSet<>();
         principals.add(new X500Principal("C=SE,O=UnlovedUser,CN=UnlovedUser"));
         AuthenticationToken unpriviledgedUser = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         CAInfo caInfo = caSession.getCAInfo(admin, getTestCAName());
@@ -1452,7 +1452,7 @@ public class CAsSystemTest extends CaTestCase {
             }
         }
     }
-   
+
     /** Used for direct manipulation of objects without setters. */
     private void setPrivateFieldInSuper(Object object, String fieldName, Object value) {
         log.trace(">setPrivateField");

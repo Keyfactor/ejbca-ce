@@ -118,10 +118,10 @@ import static org.junit.Assert.fail;
  * for example "-DhttpCmpProxyURL=http://proxy-ip:8080/cmpProxy-6.4.0", which can be set in Run Configurations if running the
  * test from Eclipse.
  * Adjusting the properties in cmpProxy.properties could be required, for example set the two below:
- * 
+ *
  * cmp.backend.http.url=http://proxy-ip:8080/ejbca/publicweb/cmp/CrmfRequestSystemTestCmpConfigAlias
  * cmp.backend.http.appendalias=false
- * 
+ *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CrmfRequestSystemTest extends CmpTestCase {
@@ -381,7 +381,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         log.trace("<test03CrmfHttpOkUserMldsa44");
     }
 
-    /** Tests an initial request cycle compliant with Unisig Subset 137 for ERMTS (rail) where the initial request is protected with 
+    /** Tests an initial request cycle compliant with Unisig Subset 137 for ERMTS (rail) where the initial request is protected with
      * Mac based PBE protection, but the response from the CA is protected with signatures protection, and the CA uses SHA384WithRSA.
      * @throws Exception unknown exception (not a standard test failure) during test run
      */
@@ -464,11 +464,11 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             super.createCmpUser(username, "password", "CN=Some Common Name", false, this.caIdSha256, -1, -1);
             byte[] resp = sendCmpHttp(bluexir, 200, cmpAlias);
             assertNotNull(resp);
-            // In this very old BlueX message, POP verification fails. 
+            // In this very old BlueX message, POP verification fails.
             // The HMAC password used to protect the request is 'password', which is set on the CMP user "Some Common Name" above
             checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badPOP, null, null); // expecting a bad_pop
         } finally {
-            endEntityManagementSession.deleteUser(ADMIN, username);        	
+            endEntityManagementSession.deleteUser(ADMIN, username);
         }
 
         try {
@@ -478,7 +478,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             // If we don't know the HMAC password, the below error will be instead
             checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", new X500Name(new RDN[0]), PKIFailureInfo.badRequest, null, null); // expecting a bad_pop
         } finally {
-            endEntityManagementSession.deleteUser(ADMIN, username);         
+            endEntityManagementSession.deleteUser(ADMIN, username);
         }
 
         log.trace("<test04BlueXCrmf");
@@ -488,7 +488,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
     public void test05BadBytes() throws Exception {
         log.trace(">test05BadBytes");
         byte[] msg = bluexirBad;
-        
+
         /* Before EJBCA 6.8.0 we responded with HTTP 400, but now we send a PKIFailureInfo.badRequest instead. */
         byte[] resp = sendCmpHttp(msg, 200, cmpAlias);
         assertNotNull(resp);
@@ -1159,7 +1159,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
      *   new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
      *   new JceCRMFEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
      * myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);
-     * 
+     *
      * @param protocolEncKey the private key (RSA) that was used to encrypt the private key
      * @param pkiMessage PKIMessage structure containing the encrypted private key in the CMP response message
      * @return PrivateKey
@@ -1279,8 +1279,8 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
             + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
 
-    
-    
+
+
     static byte[] bluexirBad = Base64.decode(("BADCIjCB1AIBAqQCMACkVjBUMQswCQYDVQQGEwJOTDEbMBkGA1UEChMSQS5FLlQu"
             + "IEV1cm9wZSBCLlYuMRQwEgYDVQQLEwtEZXZlbG9wbWVudDESMBAGA1UEAxMJVGVz" + "dCBDQSAxoT4wPAYJKoZIhvZ9B0INMC8EEAK/H7Do+55N724Kdvxm7NcwCQYFKw4D"
             + "AhoFAAICA+gwDAYIKwYBBQUIAQIFAKILBAlzc2xjbGllbnSkEgQQpFpBsonfhnW8" + "ia1otGchraUSBBAyzd3nkKAzcJqGFrDw0jkYoIIBLjCCASowggEmMIIBIAIBADCC"
@@ -1288,8 +1288,8 @@ public class CrmfRequestSystemTest extends CmpTestCase {
             + "gYoCgYEAuBgTGPgXrS3AIPN6iXO6LNf5GzAcb/WZhvebXMdxdrMo9+5hw/Le5St/" + "Sz4J93rxU95b2LMuHTg8U6njxC2lZarNExZTdEwnI37X6ep7lq1purq80zD9bFXj"
             + "ougRD5MHfhDUAQC+btOgEXkanoAo8St3cbtHoYUacAXN2Zs/RVcCBAABAAGpLTAr" + "BgNVHREEJDAioCAGCisGAQQBgjcUAgOgEgwQdXBuQGFldGV1cm9wZS5ubIAAoBcD"
             + "FQAy/vSoNUevcdUxXkCQx3fvxkjh6A==").getBytes());
-    
-    
+
+
     /*
      *	header:
      *		pvno: cmp2000 (cmp.pvno = 2)
