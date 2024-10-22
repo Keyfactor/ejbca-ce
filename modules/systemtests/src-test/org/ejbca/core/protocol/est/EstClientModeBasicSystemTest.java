@@ -587,8 +587,8 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
     @Test
     public void testSimpleEnrollWithChallengePwdAndUsernameInDnUsingMlDSA44() throws Exception {
         log.trace(">testSimpleEnrollWithChallengePwdAndUsernameInDnUsingMlDSA44()");
-        final String alias = "testEnrollWithdUsernameInDn";
-        final String username = "EstClientTestUsername";
+        final String alias = "testEnrollWithdUsernameInDnUsingMlDSA44";
+        final String username = "EstClientTestUsernameUsingMlDSA44";
 
 
         EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
