@@ -34,7 +34,9 @@ import java.util.TimeZone;
 
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -51,8 +53,8 @@ import org.easymock.EasyMock;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -89,18 +91,34 @@ public class CertificateValidityUnitTest {
 		caTo = new Date( now.getTime() + 500 * SimpleTime.MILLISECONDS_PER_DAY);
 		assertTrue("CA start date is before end date.", caFrom.before(caTo));
         caInfo = new X509CAInfoBuilder().setSubjectDn(CA_SUBJECT_DN).build();
-        caCertificate = CertTools.genSelfCertForPurpose(CA_SUBJECT_DN, caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign, null, null, "BC", true, null);
+        caCertificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(CA_SUBJECT_DN)
+                .setIssuerDn(CA_SUBJECT_DN)
+                .setFirstDate(caFrom)
+                .setLastDate(caTo)
+                .setSelfSignKeyPair(keyPair)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setKeyUsage(X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign)
+                .setLdapOrder(true)
+                .generateCertificate();      
         shortLivingCaFrom = new Date( now.getTime() + 5 * SimpleTime.MILLISECONDS_PER_DAY);
         shortLivingCaTo = new Date( now.getTime() + 10 * SimpleTime.MILLISECONDS_PER_DAY);
         assertTrue("Short living CA start date is before end date.", shortLivingCaFrom.before(shortLivingCaTo));
-        shortLivingCaCertificate = CertTools.genSelfCertForPurpose("CN=cacert", shortLivingCaFrom, shortLivingCaTo, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign, null, null, "BC", true, null);
+        shortLivingCaCertificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=cacert")
+                .setIssuerDn("CN=cacert")
+                .setFirstDate(shortLivingCaFrom)
+                .setLastDate(shortLivingCaTo)
+                .setSelfSignKeyPair(keyPair)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setKeyUsage(X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign)
+                .setLdapOrder(true)
+                .generateCertificate(); 
         assertTrue("CA start date is before CA end date.", caFrom.before(caTo));
         absolulteTestDate = new Date( caTo.getTime() - 10 * SimpleTime.MILLISECONDS_PER_DAY); 
         assertTrue("Fix test end date '" + absolulteTestDate + "'is before CA end date '" + caTo + "'.", absolulteTestDate.before(caTo));
         relativeTimeString = "1y2mo3d4h5s";
-        assertTrue("Realtive test time does not exceed CA end date time.", new Date(now.getTime() + SimpleTime.parseMillis(relativeTimeString)).before(caTo));
+        assertTrue("Relative test time does not exceed CA end date time.", new Date(now.getTime() + SimpleTime.parseMillis(relativeTimeString)).before(caTo));
     }
 
 	@Test
@@ -304,44 +322,94 @@ public class CertificateValidityUnitTest {
     }
 
 	@Test
-    public void test02TestCertificateValidity() throws Exception {
+    public void testCertificateValidity() throws Exception {
         final Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
         cal.add(Calendar.DATE, 50);
         testBaseTestCertificateValidity(ValidityDate.formatAsISO8601(cal.getTime(), ValidityDate.TIMEZONE_SERVER));
     }
 	
 	@Test
-	public void test03TestCheckPrivateKeyUsagePeriod() throws InvalidAlgorithmParameterException, IllegalStateException, OperatorCreationException, CertificateException, CAOfflineException {
+	public void testCheckPrivateKeyUsagePeriod() throws InvalidAlgorithmParameterException, IllegalStateException, OperatorCreationException, CertificateException, CAOfflineException, CertIOException {
 	    final KeyPair pair = KeyTools.genKeys("512", "RSA");
 	    /// A certificate without private key usage period
-	    X509Certificate cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-	            AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, null, null, "BC");
+	    X509Certificate cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
 	    // No private key usage period, should pass fine 
 	    CertificateValidity.checkPrivateKeyUsagePeriod(cert);
         // A certificate with private key usage period notBefore == "now"
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, new Date(), null, "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotBefore(new Date())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         // should pass fine 
         CertificateValidity.checkPrivateKeyUsagePeriod(cert);
         // A certificate with private key usage period notAfter == "now+1h"
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.HOUR_OF_DAY, 1);
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, null, cal.getTime(), "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotAfter(cal.getTime())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         // should pass fine 
         CertificateValidity.checkPrivateKeyUsagePeriod(cert);
         // A certificate with private key usage period notBefore == "now" and notAfter == "now+1h"
         cal = Calendar.getInstance();
         cal.add(Calendar.HOUR_OF_DAY, 1);
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, new Date(), cal.getTime(), "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotBefore(new Date())
+                .setPrivateKeyNotAfter(cal.getTime())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();           
         // should pass fine 
         CertificateValidity.checkPrivateKeyUsagePeriod(cert);
         // A certificate with private key usage period notBefore == "now+1h"
         cal = Calendar.getInstance();
         cal.add(Calendar.HOUR_OF_DAY, 1);
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal.getTime(), null, "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotBefore(cal.getTime())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         try {
             CertificateValidity.checkPrivateKeyUsagePeriod(cert);
             fail("A certificate with private key usage period notBefore == now+1h should not be useful.");
@@ -351,8 +419,18 @@ public class CertificateValidityUnitTest {
         // A certificate with private key usage period notAfter == "now-1h"
         cal = Calendar.getInstance();
         cal.add(Calendar.HOUR_OF_DAY, -1);
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, null, cal.getTime(), "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotAfter(cal.getTime())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         try {
             CertificateValidity.checkPrivateKeyUsagePeriod(cert);
             fail("A certificate with private key usage period notAfter == now-1h should not be useful.");
@@ -364,8 +442,19 @@ public class CertificateValidityUnitTest {
         cal.add(Calendar.HOUR_OF_DAY, -1);
         Calendar cal2 = Calendar.getInstance();
         cal2.add(Calendar.HOUR_OF_DAY, 1);
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal2.getTime(), cal.getTime(), "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotBefore(cal2.getTime())
+                .setPrivateKeyNotAfter(cal.getTime())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         try {
             CertificateValidity.checkPrivateKeyUsagePeriod(cert);
             fail("A certificate with private key usage period notBefore == now+1h and notAfter == now-1h should not be useful.");
@@ -377,8 +466,19 @@ public class CertificateValidityUnitTest {
         cal.add(Calendar.HOUR_OF_DAY, -1);
         cal2 = Calendar.getInstance();
         cal2.add(Calendar.HOUR_OF_DAY, -1);
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal2.getTime(), cal.getTime(), "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotBefore(cal2.getTime())
+                .setPrivateKeyNotAfter(cal.getTime())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         try {
             CertificateValidity.checkPrivateKeyUsagePeriod(cert);
             fail("A certificate with private key usage period notBefore == now-1h and notAfter == now-1h should not be useful.");
@@ -390,8 +490,19 @@ public class CertificateValidityUnitTest {
         cal.add(Calendar.HOUR_OF_DAY, 1);
         cal2 = Calendar.getInstance();
         cal2.add(Calendar.HOUR_OF_DAY, 1);
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal2.getTime(), cal.getTime(), "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotBefore(cal2.getTime())
+                .setPrivateKeyNotAfter(cal.getTime())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         try {
             CertificateValidity.checkPrivateKeyUsagePeriod(cert);
             fail("A certificate with private key usage period notBefore == now+1h and notAfter == now+1h should not be useful.");
@@ -403,8 +514,19 @@ public class CertificateValidityUnitTest {
         cal.add(Calendar.HOUR_OF_DAY, 1);
         cal2 = Calendar.getInstance();
         cal2.add(Calendar.HOUR_OF_DAY, -1);
-        cert = CertTools.genSelfCertForPurpose("CN=CheckPK", 365, null, pair.getPrivate(), pair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.digitalSignature, cal2.getTime(), cal.getTime(), "BC");
+        cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=CheckPK")
+                .setIssuerDn("CN=CheckPK")
+                .setValidityDays(365)
+                .setIssuerPrivKey(pair.getPrivate())
+                .setEntityPubKey(pair.getPublic())
+                .setKeyUsage(X509KeyUsage.digitalSignature)
+                .setPrivateKeyNotBefore(cal2.getTime())
+                .setPrivateKeyNotAfter(cal.getTime())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         // Should work
         CertificateValidity.checkPrivateKeyUsagePeriod(cert);
 	}
@@ -433,7 +555,10 @@ public class CertificateValidityUnitTest {
                                                                 () -> new CertificateValidity(now, endEntityInformation, caInfo, certificateProfile,
                                                                                               notBefore, notAfter, caCertificate, false, false)
         );
-        assertTrue(exception.getMessage().contains("is outside the allowed validity period and would result in an already expired certificate"));
+        assertTrue(
+                "Incorrect error message. Was: '" + exception.getMessage()
+                        + "', but should contain: 'is outside the allowed validity period and would result in an already expired certificate'",
+                exception.getMessage().contains("is outside the allowed validity period and would result in an already expired certificate"));
 
         // Should give correct notAfter based on certificateProfileLastDate
         endEntityInformation.getExtendedInformation().setCustomData(ExtendedInformation.CUSTOM_STARTTIME, ValidityDate.formatAsUTC(now));
@@ -451,10 +576,16 @@ public class CertificateValidityUnitTest {
         final Date caTo = new Date();
         caTo.setTime(caTo.getTime() + 100L*(24L * 60L * 60L * 1000L));
 
-        final X509Certificate cacert = CertTools.genSelfCertForPurpose("CN=dummy2", caFrom, caTo, null, keyPair.getPrivate(), keyPair.getPublic(),
-    			AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign,
-    			null, null, "BC", true, null);
-
+        final X509Certificate cacert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=dummy2")
+                .setIssuerDn("CN=dummy2")
+                .setFirstDate(caFrom)
+                .setLastDate(caTo)
+                .setSelfSignKeyPair(keyPair)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setKeyUsage(X509KeyUsage.cRLSign|X509KeyUsage.keyCertSign)
+                .setLdapOrder(true)
+                .generateCertificate();   
         final EndEntityInformation subject = new EndEntityInformation();
     	final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     	cp.setEncodedValidity(encodedValidity);
