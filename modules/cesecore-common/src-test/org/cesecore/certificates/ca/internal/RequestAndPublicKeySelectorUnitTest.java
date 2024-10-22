@@ -12,8 +12,17 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.internal;
 
+import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.spec.ECGenParameterSpec;
+
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -27,14 +36,6 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.spec.ECGenParameterSpec;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -77,9 +78,9 @@ public class RequestAndPublicKeySelectorUnitTest {
 
         assertTrue("No alternative key was included in request", pkcs10CertificationRequest.hasAltPublicKey());
         PKCS10RequestMessage request = new PKCS10RequestMessage(pkcs10CertificationRequest.toASN1Structure().getEncoded());
-        
+
         RequestAndPublicKeySelector requestAndPublicKeySelector = new RequestAndPublicKeySelector(request, null, null, null);
-        
+
         assertEquals("Alterative public key was not correctly extracted from request.", alternativeKeyPair.getPublic(), requestAndPublicKeySelector.getAlternativePublicKey());
 
     }
