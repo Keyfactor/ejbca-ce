@@ -508,9 +508,9 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
      */
     @Test
     public void testRASimpleenrollPasswordAuthUsingMlDsa44() throws Exception {
-        log.trace(">testRASimpleenrollPasswordAuth()");
+        log.trace(">testRASimpleenrollPasswordAuthUsingMlDsa44()");
         final String pwd = genRandomPwd();
-        final String username = "testRAPasswordAuth" + genRandomUserName();
+        final String username = "testRAPasswordAuthUsingMlDsa44" + genRandomUserName();
         try {
             EstConfiguration config = (EstConfiguration) globalConfigurationSession.getCachedConfiguration(EstConfiguration.EST_CONFIGURATION_ID);
             // Authentication using username
@@ -625,7 +625,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (NoSuchEndEntityException e) {
             } // NOPMD
         }
-        log.trace("<testRASimpleenrollPasswordAuth()");
+        log.trace("<testRASimpleenrollPasswordAuthUsingMlDsa44()");
     }
 
     @Override
