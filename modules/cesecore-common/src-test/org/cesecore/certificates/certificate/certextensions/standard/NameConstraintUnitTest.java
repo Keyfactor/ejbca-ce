@@ -32,9 +32,9 @@ import org.cesecore.certificates.certificate.certextensions.CertificateExtension
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
@@ -95,9 +95,17 @@ public class NameConstraintUnitTest {
         extensions.add(new Extension(Extension.nameConstraints, false, extdata));
 
         final KeyPair testkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate cacert = CertTools.genSelfCertForPurpose("C=SE,CN=Test Name Constraints CA", 365, null, testkeys.getPrivate(),
-                testkeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign, null, null,
-                "BC", true, extensions);
+        X509Certificate cacert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,CN=Test Name Constraints CA")
+                .setIssuerDn("C=SE,CN=Test Name Constraints CA")
+                .setValidityDays(365)
+                .setIssuerPrivKey(testkeys.getPrivate())
+                .setEntityPubKey(testkeys.getPublic())
+                .setKeyUsage(X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setAdditionalExtensions(extensions)
+                .generateCertificate();
 
         final byte[] ncbytes = cacert.getExtensionValue(Extension.nameConstraints.getId());
         final ASN1OctetString ncstr = (ncbytes != null ? ASN1OctetString.getInstance(ncbytes) : null);
