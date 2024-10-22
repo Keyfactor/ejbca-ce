@@ -46,6 +46,7 @@
 		<path refid="lib.xstream.classpath"/>
         <path refid="lib.p11ng.classpath" />
 		<path refid="lib.cryptotokens.classpath"/>
+        <path refid="lib.jee-client.classpath"/>
 	</path>
 
     <!--path id="compile-test.classpath">
