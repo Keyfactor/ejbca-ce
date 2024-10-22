@@ -55,7 +55,7 @@
 	
 	<target name="clean-optional" depends="statedumpclean, configdumpclean, unidfnrclean, cmpclientclean, ctclean, 
         edition-specific-clean, edition-specific-ee-clean, peerconnectorclean, acmeclean, caaclean,
-        estclean, ejbca-rest-api-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-coap-clean, ejbca-rest-configdump-clean,
+        estclean, ejbca-rest-api-clean, ejbca-cli-common-clean, ejbca-rest-common-clean, ejbca-rest-certificate-clean, ejbca-rest-coap-clean, ejbca-rest-configdump-clean,
         ejbca-rest-ca-clean, ejbca-rest-cryptotoken-clean, ejbca-rest-camanagement-clean, ejbca-rest-endentity-clean, ejbca-rest-system-clean, ejbca-rest-ssh-clean, plugins-clean, plugins-ee-clean,
         cesecore-x509ca-clean, cesecore-cvcca-clean, va-clean, ra-gui-clean, p11ng-cliclean, ssh-clean, msae-clean, cits-clean, proxy-ca-clean"/>
 
@@ -192,6 +192,10 @@
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 	
+    <target name="ejbca-cli-common-clean" if="${mod.ejbca-cli-common.exists}">
+        <ant antfile="${mod.ejbca-cli-common.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
+    </target>
+	
     <target name="ejbca-rest-cryptotoken-clean" if="${mod.ejbca-rest-cryptotoken.exists}">
         <ant antfile="${mod.ejbca-rest-cryptotoken.path}/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
@@ -229,7 +233,7 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ejb-cli" depends="ejbca-ejb-interface, peerconnector-cli, plugins, plugins-ee" description="Build EJBCA EJB CLI">
+	<target name="ejbca-ejb-cli" depends="ejbca-ejb-interface, peerconnector-cli, plugins, plugins-ee, ejbca-cli-common" description="Build EJBCA EJB CLI">
 		<ant antfile="${mod.ejbca-ejb-cli.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
@@ -348,6 +352,10 @@
 
     <target name="ejbca-rest-common" if="${mod.ejbca-rest-common.exists}" description="Build EJBCA rest common">
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
+    </target>
+	
+    <target name="ejbca-cli-common" if="${mod.ejbca-cli-common.exists}" description="Build EJBCA cli common">
+        <ant antfile="${mod.ejbca-cli-common.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
 	
     <target name="cits" if="${mod.cits.exists}" depends="ejbca-rest-common" description="Build EJBCA CITS">
