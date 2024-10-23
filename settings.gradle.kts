@@ -160,6 +160,7 @@ dependencyResolutionManagement {
             library("el-impl", ":el-impl:2.2")
             library("jakarta.mail", ":jakarta.mail:2.0.3")
             library("jaxb.core", ":jaxb-core:4.0.2")
+            library("jaxb.impl", ":jaxb-impl:4.0.2")
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")
