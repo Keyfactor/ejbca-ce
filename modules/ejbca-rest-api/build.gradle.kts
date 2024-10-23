@@ -59,6 +59,7 @@ dependencies {
     testImplementation(libs.hibernate.commons.annotations)
     testImplementation(libs.hibernate.core)
     testImplementation(libs.hibernate.validator)
+    testRuntimeOnly(libs.commons.lang3)
 }
 
 sourceSets {
