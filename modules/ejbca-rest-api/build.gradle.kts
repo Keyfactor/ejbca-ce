@@ -81,6 +81,9 @@ tasks.war {
 }
 
 tasks.processTestResources {
+    from("${rootProject.projectDir}/src") {
+        include("internal.properties")
+    }
     from("resources/WEB-INF") {
         include("ValidationMessages.properties")
     }
