@@ -15,9 +15,6 @@ dependencies {
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
 
-    implementation("org.jboss:jboss-remote-naming:2.0.5.Final")
-    implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
-
     // System test specific
     testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
     testRuntimeOnly(libs.jboss.logging)

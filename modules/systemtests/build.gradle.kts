@@ -49,8 +49,6 @@ dependencies {
         testImplementation(project(":modules:ejbca-entity:cli"))
         testImplementation(project(":modules:peerconnector:publ"))
     }
-    implementation("org.jboss:jboss-remote-naming:2.0.5.Final")
-    implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
 
     implementation("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     implementation(libs.jaxb.core)

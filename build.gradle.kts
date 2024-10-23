@@ -62,8 +62,6 @@ dependencies {
     deploy(project(path = ":modules:crlstore", configuration = "archives"))
     deploy(project(path = ":modules:ra-gui", configuration = "archives"))
     deploy(project(path = ":modules:ejbca-rest-api", configuration = "archives"))
-    deploy("org.jboss:jboss-remote-naming:2.0.5.Final")
-    deploy("org.jboss.remoting:jboss-remoting:5.0.29.Final")
     deploy("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     deploy("com.sun.xml.stream.buffer:streambuffer:2.1.0")
     deploy("org.jvnet.staxex:stax-ex:1.8")
