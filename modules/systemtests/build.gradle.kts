@@ -50,7 +50,6 @@ dependencies {
         testImplementation(project(":modules:peerconnector:publ"))
     }
 
-    implementation("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     implementation(libs.jaxb.core)
     testRuntimeOnly(libs.jaxb.impl)
     implementation("com.sun.xml.stream.buffer:streambuffer:2.1.0")
