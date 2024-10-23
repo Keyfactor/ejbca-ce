@@ -162,6 +162,7 @@ dependencyResolutionManagement {
             library("jaxb.core", ":jaxb-core:4.0.2")
             library("jaxb.impl", ":jaxb-impl:4.0.2")
             library("gmbal.api", ":gmbal-api-only:4.0.3")
+            library("jaxws.rt", ":jaxws-rt:4.0.1")
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")

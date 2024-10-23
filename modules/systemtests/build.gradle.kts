@@ -54,7 +54,6 @@ dependencies {
     implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
 
     implementation("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
-    implementation("com.sun.xml.ws:jaxws-rt:4.0.1")
     implementation(libs.jaxb.core)
     testRuntimeOnly(libs.jaxb.impl)
     implementation("com.sun.xml.stream.buffer:streambuffer:2.1.0")
@@ -63,7 +62,8 @@ dependencies {
     // System test specific
     testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
     testRuntimeOnly(libs.jakarta.mail)
-    testRuntimeOnly(libs.gmbal.api)
+    testRuntimeOnly(libs.gmbal.api) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
+    testRuntimeOnly(libs.jaxws.rt) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
 }
 
 sourceSets {

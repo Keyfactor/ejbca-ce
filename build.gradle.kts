@@ -66,7 +66,6 @@ dependencies {
     deploy("org.jboss.logging:jboss-logging:3.6.1.Final")
     deploy("org.jboss.remoting:jboss-remoting:5.0.29.Final")
     deploy("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
-    deploy("com.sun.xml.ws:jaxws-rt:4.0.1")
     deploy("com.sun.xml.stream.buffer:streambuffer:2.1.0")
     deploy("org.jvnet.staxex:stax-ex:1.8")
     deploy("org.codehaus.woodstox:stax2-api:4.2.1")
