@@ -52,7 +52,6 @@ dependencies {
 
     implementation(libs.jaxb.core)
     testRuntimeOnly(libs.jaxb.impl)
-    implementation("com.sun.xml.stream.buffer:streambuffer:2.1.0")
 
     // System test specific
     testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
@@ -61,6 +60,7 @@ dependencies {
     testRuntimeOnly(libs.jaxws.rt) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
     testRuntimeOnly(libs.jboss.logging)
     testRuntimeOnly(libs.stax.ex)
+    testRuntimeOnly(libs.streambuffer)
 }
 
 sourceSets {
