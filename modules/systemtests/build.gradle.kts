@@ -50,7 +50,6 @@ dependencies {
         testImplementation(project(":modules:peerconnector:publ"))
     }
     implementation("org.jboss:jboss-remote-naming:2.0.5.Final")
-    implementation("org.jboss.logging:jboss-logging:3.6.1.Final")
     implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
 
     implementation("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
@@ -64,6 +63,7 @@ dependencies {
     testRuntimeOnly(libs.jakarta.mail)
     testRuntimeOnly(libs.gmbal.api) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
     testRuntimeOnly(libs.jaxws.rt) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
+    testRuntimeOnly(libs.jboss.logging)
 }
 
 sourceSets {
