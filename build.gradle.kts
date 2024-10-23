@@ -62,7 +62,6 @@ dependencies {
     deploy(project(path = ":modules:crlstore", configuration = "archives"))
     deploy(project(path = ":modules:ra-gui", configuration = "archives"))
     deploy(project(path = ":modules:ejbca-rest-api", configuration = "archives"))
-    deploy("com.sun.xml.stream.buffer:streambuffer:2.1.0")
     deploy("org.codehaus.woodstox:stax2-api:4.2.1")
 
 
