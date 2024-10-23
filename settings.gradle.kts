@@ -163,6 +163,7 @@ dependencyResolutionManagement {
             library("jaxb.impl", ":jaxb-impl:4.0.2")
             library("gmbal.api", ":gmbal-api-only:4.0.3")
             library("jaxws.rt", ":jaxws-rt:4.0.1")
+            library("stax2.api", ":stax2-api:4.2.1")
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")
