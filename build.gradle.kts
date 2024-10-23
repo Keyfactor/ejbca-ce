@@ -26,8 +26,10 @@ allprojects {
 // add the directory containing 'jboss-client.jar' to the list of library repositories
 if (!isProductionMode) {
     if (appServerHome == null) {
-        throw GradleException("Environment variable APPSRV_HOME needs to be set" +
-                " when building EJBCA in non-production mode (ejbca.productionmode=false).")
+        throw GradleException("To build EJBCA in non-production mode ('ejbca.productionmode=false'), " +
+                "you must first configure the application server's home directory. \n" +
+                "You can do this by either setting an 'APPSRV_HOME' environment variable or by " +
+                "configuring the 'appserver.home' property in the 'conf/ejbca.properties' file.")
     }
     allprojects {
         repositories {
@@ -272,7 +274,9 @@ task<Copy>("deployear") {
     dependsOn("ear")
     doFirst {
         if (appServerHome == null) {
-            throw GradleException("APPSRV_HOME environment variable is not set.")
+            throw GradleException("Unknown application server's home directory.\n" +
+                    "Please set an 'APPSRV_HOME' environment variable or configure " +
+                    "the 'appserver.home' property in the 'conf/ejbca.properties' file.")
         }
     }
     from(layout.buildDirectory.file("libs/ejbca.ear"))
