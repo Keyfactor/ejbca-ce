@@ -64,7 +64,6 @@ dependencies {
     deploy("org.jboss:jboss-remote-naming:2.0.5.Final")
     deploy("org.jboss.logging:jboss-logging:3.6.1.Final")
     deploy("org.jboss.remoting:jboss-remoting:5.0.29.Final")
-    deploy("org.eclipse.angus:jakarta.mail:2.0.3")
     deploy("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     deploy("com.sun.xml.ws:jaxws-rt:4.0.1")
     deploy("com.sun.xml.bind:jaxb-core:4.0.2")
