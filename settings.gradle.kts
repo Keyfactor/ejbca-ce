@@ -6,7 +6,6 @@ rootProject.name = "ejbca"
 val editionProp = providers.gradleProperty("edition").getOrElse("ee")
 val eeModuleExists = file("modules/edition-specific-ee").exists()
 val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
-val appServerHome: String? = System.getenv("APPSRV_HOME")
 
 val properties: Properties = Properties().apply {
     val propertiesFilePath = "conf/ejbca.properties"
@@ -17,6 +16,7 @@ val properties: Properties = Properties().apply {
     }
 }
 
+val appServerHome: String? = properties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
 val isProductionMode = properties.getProperty("ejbca.productionmode", "true").toBoolean()
 
 // share project properties with other build files
