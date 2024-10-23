@@ -211,13 +211,6 @@ public abstract class CABase extends CABaseCommon implements Serializable, CA {
 
     @Override
     public long getCRLPeriod() {
-        for (var entry : data.entrySet()) {
-            System.out.println("CABase: "+entry.getKey()+"="+entry.getValue());
-        }
-        Object value = data.get(CRLPERIOD);
-        System.out.println("CABase: value==null: "+(value == null));
-        System.out.println("CABase: value.class: "+(value.getClass().getName()));
-        System.out.flush();
         return (long) data.get(CRLPERIOD);
     }
 
