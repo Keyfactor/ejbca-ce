@@ -59,11 +59,11 @@ dependencies {
     testRuntimeOnly(libs.jaxb.impl)
     implementation("com.sun.xml.stream.buffer:streambuffer:2.1.0")
     implementation("org.jvnet.staxex:stax-ex:1.8")
-    implementation("org.glassfish.gmbal:gmbal:4.0.3")
 
     // System test specific
     testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
     testRuntimeOnly(libs.jakarta.mail)
+    testRuntimeOnly(libs.gmbal.api)
 }
 
 sourceSets {

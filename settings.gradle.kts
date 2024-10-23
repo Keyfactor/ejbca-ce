@@ -161,6 +161,7 @@ dependencyResolutionManagement {
             library("jakarta.mail", ":jakarta.mail:2.0.3")
             library("jaxb.core", ":jaxb-core:4.0.2")
             library("jaxb.impl", ":jaxb-impl:4.0.2")
+            library("gmbal.api", ":gmbal-api-only:4.0.3")
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")
