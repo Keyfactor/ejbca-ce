@@ -62,7 +62,6 @@ dependencies {
     deploy(project(path = ":modules:crlstore", configuration = "archives"))
     deploy(project(path = ":modules:ra-gui", configuration = "archives"))
     deploy(project(path = ":modules:ejbca-rest-api", configuration = "archives"))
-    deploy("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     deploy("com.sun.xml.stream.buffer:streambuffer:2.1.0")
     deploy("org.jvnet.staxex:stax-ex:1.8")
     deploy("org.codehaus.woodstox:stax2-api:4.2.1")
