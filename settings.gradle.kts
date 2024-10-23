@@ -129,6 +129,7 @@ dependencyResolutionManagement {
             library("txw2", ":txw2:2.3.1")
             library("yasson", ":yasson:3.0.4")
             library("slf4j.api", ":slf4j-api:2.0.16")
+            library("slf4j.reload4j", ":slf4j-reload4j:2.0.16")
             // test dependencies
             library("junit", ":junit:4.13.2")
             library("easymock", ":easymock:5.2.0")

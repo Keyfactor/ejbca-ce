@@ -72,8 +72,6 @@ dependencies {
     deploy("org.glassfish.gmbal:gmbal:4.0.3")
     deploy("com.sun.xml.stream.buffer:streambuffer:2.1.0")
     deploy("org.jvnet.staxex:stax-ex:1.8")
-    deploy("org.slf4j:slf4j-api:2.0.16")
-    deploy("org.slf4j:slf4j-reload4j:2.0.16")
     deploy("org.codehaus.woodstox:stax2-api:4.2.1")
 
 
