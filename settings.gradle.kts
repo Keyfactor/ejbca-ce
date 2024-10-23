@@ -159,6 +159,7 @@ dependencyResolutionManagement {
             library("jboss-logging", ":jboss-logging:3.6.0.Final")
             library("el-impl", ":el-impl:2.2")
             library("jakarta.mail", ":jakarta.mail:2.0.3")
+            library("jaxb.core", ":jaxb-core:4.0.2")
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")
