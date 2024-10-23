@@ -53,7 +53,6 @@ dependencies {
     implementation("org.jboss.logging:jboss-logging:3.6.1.Final")
     implementation("org.jboss.remoting:jboss-remoting:5.0.29.Final")
 
-    implementation("org.eclipse.angus:jakarta.mail:2.0.3")
     implementation("org.glassfish.hk2:osgi-resource-locator:2.5.0-b42")
     implementation("com.sun.xml.ws:jaxws-rt:4.0.1")
     implementation("com.sun.xml.bind:jaxb-core:4.0.2")
@@ -64,8 +63,7 @@ dependencies {
 
     // System test specific
     testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
-
-
+    testRuntimeOnly(libs.jakarta.mail)
 }
 
 sourceSets {

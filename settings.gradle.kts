@@ -109,6 +109,8 @@ dependencyResolutionManagement {
             library("wsdl4j", ":wsdl4j:1.6.3")
             library("jcip-annotations", ":jcip-annotations:1.0-1")
             library("jna", ":jna:5.12.1")
+            library("slf4j.api", ":slf4j-api:2.0.16")
+            library("slf4j.reload4j", ":slf4j-reload4j:2.0.16")
             // hibernate
             library("antlr4-runtime", ":antlr4-runtime:4.13.0")
             library("byte-buddy", ":byte-buddy:1.14.15")
@@ -128,8 +130,6 @@ dependencyResolutionManagement {
             library("stax-ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
             library("yasson", ":yasson:3.0.4")
-            library("slf4j.api", ":slf4j-api:2.0.16")
-            library("slf4j.reload4j", ":slf4j-reload4j:2.0.16")
             // test dependencies
             library("junit", ":junit:4.13.2")
             library("easymock", ":easymock:5.2.0")
@@ -158,6 +158,7 @@ dependencyResolutionManagement {
             library("jackson-module-jaxb-annotations", ":jackson-module-jaxb-annotations:2.17.2")
             library("jboss-logging", ":jboss-logging:3.6.0.Final")
             library("el-impl", ":el-impl:2.2")
+            library("jakarta.mail", ":jakarta.mail:2.0.3")
 
             if (!isProductionMode) {
                 library("jboss.client", ":jboss:client")
