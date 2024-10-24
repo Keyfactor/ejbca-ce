@@ -387,7 +387,7 @@ public class CertificateView implements Serializable {
                 return extractPublicKeyHexForm(publicKey, abbreviate);
             }
         } catch (CertificateEncodingException | NoSuchAlgorithmException | NoSuchProviderException | InvalidKeySpecException | IOException e) {
-            throw new IllegalStateException("Could not parse alternative signing key from certificate.", e);
+            throw new IllegalStateException("Could not parse alternative public key from certificate.", e);
         }
     }
     
@@ -416,7 +416,7 @@ public class CertificateView implements Serializable {
             try {
                 keyParams = (FalconPublicKeyParameters) PublicKeyFactory.createKey(keyInfo);
             } catch (IOException e) {
-                throw new IllegalStateException(e);
+                return UNKNOWN;
             }
             hex = Hex.toHexString(keyParams.getH()).toUpperCase();
         }
