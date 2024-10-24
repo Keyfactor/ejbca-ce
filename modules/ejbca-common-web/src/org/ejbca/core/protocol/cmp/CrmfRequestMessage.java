@@ -29,6 +29,7 @@ import java.util.Date;
 
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -51,9 +52,11 @@ import org.bouncycastle.asn1.crmf.CertRequest;
 import org.bouncycastle.asn1.crmf.CertTemplate;
 import org.bouncycastle.asn1.crmf.Controls;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
+import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.POPOSigningKeyInput;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.crmf.SubsequentMessage;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.Extension;
@@ -67,14 +70,16 @@ import org.ejbca.core.protocol.cmp.authentication.RegTokenPasswordExtractor;
 
 /**
  * Certificate request message (crmf) according to RFC4211.
- * - Supported POPO: 
+ * - Supported POPO:
  * -- raVerified (null), i.e. no POPO verification is done, it should be configurable if the CA should allow this or require a real POPO
- * -- Self signature, using the key in CertTemplate, or POPOSigningKeyInput (name and public key), option 2 and 3 in RFC4211, section "4.1.  Signature Key POP"
+ * -- Self signature, using the key in CertTemplate, or POPOSigningKeyInput (name and public key), option 2 and 3 in RFC4211, section "4.1. Signature Key POP"
+ * -- encrCert subsequentMessage, requesting an encrypted certificate back from the CA, see RFC4211 section 6.6 and RFC4211 section 2.1 as well as
+ *    RFC4210 section 5.2.2, which is updated by RFC9480 see section 2.7
  */
 public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMessage {
-	
+
 	private static final Logger log = Logger.getLogger(CrmfRequestMessage.class);
-	
+
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -103,7 +108,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     /** Overriding the notAfter in the request */
     protected Date notAfter = null;
 
-    /** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so 
+    /** Because PKIMessage is not serializable we need to have the serializable bytes save as well, so
      * we can restore the PKIMessage after serialization/deserialization. */
     private byte[] pkimsgbytes = null;
     private transient CertReqMsg req = null;
@@ -124,7 +129,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     public CrmfRequestMessage() { }
 
     /**
-     * 
+     *
      * @param pkiMessage PKIMessage
      * @param defaultCA possibility to enforce a certain CA, instead of taking the CA subject DN from the request, if set to null the CA subject DN is taken from the request
      * @param allowRaVerifyPopo true if we allows the user/RA to specify the POP should not be verified
@@ -172,6 +177,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
         }
         requestId = this.req.getCertReq().getCertReqId().getValue().intValue();
         setTransactionId(getBase64FromAsn1OctetString(pkiHeader.getTransactionID()));
+        setPvno(pkiHeader.getPvno().getPositiveValue().intValue());
         setSenderNonce(getBase64FromAsn1OctetString(pkiHeader.getSenderNonce()));
         setRecipient(pkiHeader.getRecipient());
         setSender(pkiHeader.getSender());
@@ -201,6 +207,8 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 
     @Override
     public PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
+        // In case of server generated keys, the client sends a protocol encryption key, asking the server
+        // to encrypt the sent back private key with this (public key). RFC4211 section 6.6
         final CertRequest request = getReq().getCertReq();
         Controls controls = request.getControls();
         if (controls != null) {
@@ -216,12 +224,12 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                             }
                         }
                     }
-                }                
+                }
             }
         }
         return null;
     }
-    
+
     @Override
     public KeyPair getServerGenKeyPair() {
         return serverGenKeyPair;
@@ -233,6 +241,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     }
 
     /** force a password, i.e. ignore the password in the request */
+    @Override
     public void setPassword(final String pwd) {
         this.password = pwd;
     }
@@ -256,6 +265,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     }
 
     /** force a username, i.e. ignore the DN/username in the request */
+    @Override
     public void setUsername(final String username) {
         this.username = username;
     }
@@ -325,9 +335,9 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     }
 
     /** Gets a requested certificate serial number of the subject. This is a standard field in the CertTemplate in the request.
-     * However the standard RFC 4211, section 5 (CertRequest syntax) says it MUST not be used. 
-     * Requesting custom certificate serial numbers is a very non-standard procedure anyhow, so we use it anyway. 
-     * 
+     * However the standard RFC 4211, section 5 (CertRequest syntax) says it MUST not be used.
+     * Requesting custom certificate serial numbers is a very non-standard procedure anyhow, so we use it anyway.
+     *
      * @return BigInteger the requested custom certificate serial number or null, normally this should return null.
      */
     public BigInteger getSubjectCertSerialNo() {
@@ -428,7 +438,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     @Override
     public void setRequestValidityNotAfter(Date notAfter) {
         this.notAfter = notAfter;
-        
+
     }
 
     @Override
@@ -448,11 +458,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     @Override
     public boolean verify() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
         boolean ret = false;
-        final ProofOfPossession pop = getReq().getPopo();
+        final ProofOfPossession pop = getReq().getPop();
         if (log.isDebugEnabled()) {
             log.debug("allowRaVerifyPopo: " + allowRaVerifyPopo);
             if (pop != null) {
-                log.debug("pop.getRaVerified(): " + (pop.getType() == ProofOfPossession.TYPE_RA_VERIFIED));                
+                log.debug("pop.getRaVerified(): " + (pop.getType() == ProofOfPossession.TYPE_RA_VERIFIED));
             } else {
                 log.debug("No POP in message");
             }
@@ -541,6 +551,34 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             } catch (SignatureException e) {
                 log.error("SignatureException verifying POP: ", e);
             }
+        } else if (pop.getType() == ProofOfPossession.TYPE_KEY_ENCIPHERMENT) {
+            // Looks like the requestor want to have the certificate sent back encrypted, verify that that is the case
+            final ASN1Encodable pObj = pop.getObject();
+            try {
+                final POPOPrivKey pk = POPOPrivKey.getInstance(pObj);
+                final int i = pk.getType();
+                if (i != POPOPrivKey.subsequentMessage) {
+                    log.info("Got POP type TYPE_KEY_ENCIPHERMENT but not with subsequentMessage(1), but " + i);
+                } else {
+                    final ASN1Integer m = SubsequentMessage.getInstance(pk.getValue());
+                    if (m != null && m.getValue().equals(SubsequentMessage.encrCert.getValue())) {
+                        log.info("Message requests POP as cert returned encrypted, RFC4211 4.2");
+                        // Only allow this for ML-KEM (or other PQC KEM keys)
+                        final String pubkeyAlg = getRequestPublicKey().getAlgorithm();
+                        if (AlgorithmTools.isKEM(pubkeyAlg)) {
+                            log.info("Got POP type TYPE_KEY_ENCIPHERMENT and SubsequentMessage, and request public key is " + pubkeyAlg + ", allowing.");
+                            return true;
+                        } else {
+                            log.info("Got POP type TYPE_KEY_ENCIPHERMENT and SubsequentMessage, but request public key is not PQC.");
+                        }
+                    } else {
+                        log.info("Got POP type TYPE_KEY_ENCIPHERMENT but not with encrCert(0), but " + i);
+                    }
+                }
+            } catch (IllegalArgumentException e) {
+                log.info("Got POP type TYPE_KEY_ENCIPHERMENT, but POPOPrivKey is not a SubsequentMessage. " + e.getMessage());
+            }
+            return false;
         }
         return ret;
     }
@@ -579,10 +617,10 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             preferredDigestAlg = digestAlgo;
         }
     }
-    
+
     @Override
     public boolean includeCACert() {
-        // Adapter from interface RequestMessage.includeCACert() 
+        // Adapter from interface RequestMessage.includeCACert()
         // to BaseCmpMessage.isIncludeCaCert()
         return super.isIncludeCaCert();
     }
@@ -606,6 +644,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
             ret = DnComponents.stringToBCDNString(name.toString());
         }
         return ret;
+    }
+
+    @Override
+    public ProofOfPossession getPOP() {
+        return getReq().getPop();
     }
 
     private CertReqMessages getCertReqFromTag(final PKIBody body, final int tag) {
