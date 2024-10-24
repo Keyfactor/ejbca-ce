@@ -339,7 +339,7 @@
 			<isset property="mysql.lib"/>
 		</condition>
     	<echo message="pkcs11-exclude=${p11exclude}"/>
-		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}">
+		<junit printsummary="yes" haltonfailure="no" showoutput="${test.showoutput}" fork="yes">
 			<classpath>
 				<path location="${systemtests.build.test.dir}" />
 				<path refid="systemtests.classpath" />
