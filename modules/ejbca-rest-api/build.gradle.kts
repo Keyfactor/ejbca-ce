@@ -48,6 +48,8 @@ dependencies {
     testImplementation(project(":modules:cesecore-entity"))
     testImplementation(project(":modules:systemtests").dependencyProject.sourceSets["test"].output)
     testImplementation(project(":modules:systemtests:interface"))
+    testRuntimeOnly(project(":modules:ejbca-ejb"))
+    testRuntimeOnly(project(":modules:ejbca-entity"))
     testImplementation(libs.bundles.jackson)
     testImplementation(libs.bundles.resteasy.jaxrs)
     testImplementation(libs.bundles.hibernate.validator)
@@ -60,6 +62,8 @@ dependencies {
     testImplementation(libs.hibernate.core)
     testImplementation(libs.hibernate.validator)
     testRuntimeOnly(libs.commons.lang3)
+    testRuntimeOnly(project(":modules:systemtests:ejb"))
+    testRuntimeOnly(libs.jldap)
 }
 
 sourceSets {
