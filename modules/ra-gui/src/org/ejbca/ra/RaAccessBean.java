@@ -12,13 +12,11 @@
  *************************************************************************/
 package org.ejbca.ra;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.SessionScoped;
-import jakarta.faces.context.ExternalContext;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
@@ -40,6 +38,7 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.ConcurrentCache;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.util.HttpTools;
 
 /**
  * Managed bean with isAuthorized method.
@@ -78,15 +77,10 @@ public class RaAccessBean implements Serializable {
      */
     public void preRenderView() {
         if (!skipLoginRedirect() && isUnauthenticatedWithoutAccess() && isAnyLoginProviderAvailable()) {
-            try {
-                if (log.isDebugEnabled()) {
-                    log.debug("Unauthenticated user has no access, redirecting to login page. Authentication token: " + raAuthenticationBean.getAuthenticationToken());
-                }
-                final ExternalContext ec = FacesContext.getCurrentInstance().getExternalContext();
-                ec.redirect(ec.getRequestContextPath() + "/login.xhtml");
-            } catch (IOException e) {
-                log.error("Unexpected error when attempting to redirect", e);
+            if (log.isDebugEnabled()) {
+                log.debug("Unauthenticated user has no access, redirecting to login page. Authentication token: " + raAuthenticationBean.getAuthenticationToken());
             }
+            HttpTools.sendRedirect(FacesContext.getCurrentInstance(), "/login.xhtml");
         }
     }
 

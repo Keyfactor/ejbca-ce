@@ -399,7 +399,19 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             throws AuthorizationDeniedException, IllegalNameException, CustomCertificateSerialNumberException, CertificateCreateException,
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalKeyException,
             CertificateExtensionException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CTLogException {
-        return createCertificate(admin, endEntityInformation, ca, request, pk, null, keyusage, notBefore, notAfter, extensions, sequence,
+        
+        PublicKey altPk = null;
+        if (request != null){
+            if(request instanceof PKCS10RequestMessage) {
+                PKCS10RequestMessage pkcs10RequestMessage = (PKCS10RequestMessage) request;
+                altPk = pkcs10RequestMessage.getAlternativePublicKey();
+                if (altPk != null) {
+                    log.debug("Retrieved alternate public key from CSR.");
+                }
+            }         
+        }
+        
+        return createCertificate(admin, endEntityInformation, ca, request, pk, altPk, keyusage, notBefore, notAfter, extensions, sequence,
                 certGenParams, updateTime);
     }
     

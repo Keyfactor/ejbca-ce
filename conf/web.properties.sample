@@ -327,6 +327,11 @@ httpsserver.tokentype=P12
 #fortanix.cryptotoken.enabled=true
 
 #
+# Enable usage of Securosys Primus REST API Crypto Token in the Admin UI
+# Default: true  (enabled)
+#securosys.cryptotoken.enabled=true
+
+#
 # Enable usage of P11NG Crypto Token in the Admin UI
 # Default: true (enabled)
 #p11ng.cryptotoken.enabled=true
