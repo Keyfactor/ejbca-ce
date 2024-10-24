@@ -13,9 +13,19 @@
 
 package org.ejbca.ui.web.admin.cmp;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.keyfactor.util.StringTools;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -31,14 +41,6 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * JavaServer Faces Managed Bean for editing CMP alias.
@@ -55,7 +57,9 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
     private static final List<String> dnfields = List.of("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress",
             "SN", "givenName", "initials", "surname", "title", "unstructuredAddress", "unstructuredName", "postalCode",
             "businessCategory", "dnQualifier", "postalAddress", "telephoneNumber", "pseudonym", "streetAddress", "name",
-            "role", "CIF", "NIF", "VID", "PID", "CertificationID");
+            "role", "CIF", "NIF",
+            "VID", "PID", "NODEID", "FABRICID", "NOCCAT", "FirmwareSigningID", // Matter IoT
+            "CertificationID");
 
     @EJB
     private CaSessionLocal caSession;
@@ -90,7 +94,7 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
         getEjbcaWebBean().clearCmpConfigClone();
 
         String aliasName = cmpConfigMBean.getSelectedCmpAlias();
-        
+
         if (cmpDto == null) {
             if (StringUtils.isEmpty(aliasName)) {
                 this.cmpDto = getDefaultCmpDto();
@@ -177,17 +181,17 @@ public class EditCmpConfigMBean extends BaseManagedBean implements Serializable 
 
 
     /**
-     * Reads the existing data associated with the given cmp alias from database    
+     * Reads the existing data associated with the given cmp alias from database
      * @param alias cmp alias to load data from database for
      * @return a data class containing cmp information read from db
      */
     protected CmpDto readCmpDtoFromDB(final String alias) {
         CmpConfiguration cmpConfiguration = getEjbcaWebBean().getCmpConfiguration();
         final CmpDto cmpDTOFromDB = new CmpDto();
-        cmpDTOFromDB.setAlias(alias); 
+        cmpDTOFromDB.setAlias(alias);
         cmpDTOFromDB.setCMPDefaultCA(cmpConfiguration.getCMPDefaultCA(alias));
         cmpDTOFromDB.setResponseProtection(cmpConfiguration.getResponseProtection(alias));
-        cmpDTOFromDB.setRaMode(cmpConfiguration.getRAMode(alias)); 
+        cmpDTOFromDB.setRaMode(cmpConfiguration.getRAMode(alias));
         cmpDTOFromDB.setAuthenticationModule(cmpConfiguration.getAuthenticationModule(alias));
         cmpDTOFromDB.setAuthenticationParameters(cmpConfiguration.getAuthenticationParameters(alias));
         cmpDTOFromDB.setExtractUsernameComponent(cmpConfiguration.getExtractUsernameComponent(alias));

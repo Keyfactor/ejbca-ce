@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import static java.util.Objects.nonNull;
+
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +41,6 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceTypes;
 import org.cesecore.certificates.certificate.certextensions.AvailableCustomCertificateExtensionsConfiguration;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.ValidityDate;
@@ -49,8 +50,6 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoToken;
-
-import static java.util.Objects.nonNull;
 
 /**
  * Implementation of operations common for all CA types
@@ -906,14 +905,7 @@ public abstract class CABaseCommon extends UpgradeableDataHashMap implements CAC
     public boolean upgradeExtendedCAServices() {
         boolean retval = false;
         // call upgrade, if needed, on installed CA services
-        Collection<Integer> externalServiceTypes = getExternalCAServiceTypes();
-        if (!CesecoreConfiguration.getCaKeepOcspExtendedService() && externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE)) {
-            //This type has been removed, so remove it from any CAs it's been added to as well.
-            externalServiceTypes.remove(ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE);
-            data.put(EXTENDEDCASERVICES, externalServiceTypes);
-            retval = true;
-        }
-        
+        Collection<Integer> externalServiceTypes = getExternalCAServiceTypes();        
 
         if (externalServiceTypes.contains(ExtendedCAServiceTypes.TYPE_HARDTOKENENCEXTENDEDSERVICE)) {
             //This type has been removed, so remove it from any CAs it's been added to as well.

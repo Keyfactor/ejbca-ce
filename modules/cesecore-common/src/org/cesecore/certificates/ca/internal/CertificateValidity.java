@@ -47,19 +47,6 @@ public class CertificateValidity {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
     
-    /** Issuing certificates with 'notAfter' greater than this value throws an exception. */
-    private static Date TOO_LATE_EXPIRE_DATE;
-    static {
-        final String value = CesecoreConfiguration.getCaTooLateExpireDate();
-        try {
-            TOO_LATE_EXPIRE_DATE = ValidityDate.parseCaLatestValidDateTime(value);
-        } catch (Exception e) {
-            final String newValue = ValidityDate.formatAsISO8601(new Date(Long.MAX_VALUE), ValidityDate.TIMEZONE_SERVER);
-            TOO_LATE_EXPIRE_DATE = ValidityDate.parseCaLatestValidDateTime(newValue);
-            log.warn("cesecore.properties ca.toolateexpiredate '" + value + "' could not be parsed Using default value '"+newValue+"'.", e);
-        }
-    }
-    
     /** 
      * Validity offset in milliseconds (offset for the 'notBefore' value)
      * The default start date is set 10 minutes back to avoid some problems with unsynchronized clocks.
@@ -83,22 +70,6 @@ public class CertificateValidity {
      */
     public static final long getValidityOffset() {
         return DEFAULT_VALIDITY_OFFSET;
-    }
-    
-    /**
-     * Gets the maximum possible value for the certificates 'notAfter' value.
-     * @return ISO8601 date
-     */
-    public static Date getToolLateExpireDate() {
-        return TOO_LATE_EXPIRE_DATE;
-    }
-    
-    /**
-     * Sets the maximum possible value for the certificates 'notAfter' value. This method MUST NOT BE CALLED, except for unit testing.
-     * @param date the date to set.
-     */
-    public static void setTooLateExpireDate(final Date date) {
-        TOO_LATE_EXPIRE_DATE = date;
     }
     
     /** The certificates 'notAfter' value. */
@@ -134,10 +105,6 @@ public class CertificateValidity {
 		}
 
         final boolean expiredValidityEndDateAllowed = certProfile.getAllowExpiredValidityEndDate();
-
-		if ( TOO_LATE_EXPIRE_DATE==null ) {
-		    throw new IllegalStateException("ca.toolateexpiredate in cesecore.properties is not a valid date.");
-		}
         
 		// ECA-3554 add the offset
 		now = getNowWithOffset(now, certProfile);
@@ -174,8 +141,6 @@ public class CertificateValidity {
                     certProfile.getExpirationRestrictionWeekdays(), certProfile.getExpirationRestrictionForWeekdaysExpireBefore());
                 if (!firstDate.before(newDate)) {
                     log.warn("Expiration restriction of certificate profile could not be applied because it's before start date!");    
-                } else if (!TOO_LATE_EXPIRE_DATE.after(newDate)) {
-                    log.warn("Expiration restriction of certificate profile could not be applied because it's after latest possible end date!");
                 } else {
                     certProfileLastDate = newDate;
                 }
@@ -255,12 +220,6 @@ public class CertificateValidity {
         if (expiredValidityEndDateAllowed && firstDate.after(lastDate)) {
             final String msg = intres.getLocalizedMessage("createcert.errorlimitedvalidity", firstDate);
             log.info(msg);
-            throw new IllegalValidityException(msg);
-        }
-
-        if ( !lastDate.before(CertificateValidity.TOO_LATE_EXPIRE_DATE) ) {
-        	String msg = intres.getLocalizedMessage("createcert.errorbeyondtoolateexpiredate", lastDate.toString(), CertificateValidity.TOO_LATE_EXPIRE_DATE.toString()); 
-        	log.info(msg);
             throw new IllegalValidityException(msg);
         }
         
@@ -390,7 +349,7 @@ public class CertificateValidity {
                     }
                     if (pkuNotBefore != null && checkDate.before(pkuNotBefore)) {
                         final String msg = intres.getLocalizedMessage("createcert.privatekeyusagenotvalid", pkuNotBefore.toString(), cert
-                                .getSubjectDN().toString());
+                                .getSubjectX500Principal().toString());
                         if (log.isDebugEnabled()) {
                             log.debug(msg);
                         }
@@ -410,7 +369,7 @@ public class CertificateValidity {
                     log.debug("PrivateKeyUsagePeriod.notAfter is " + pkuNotAfter);
                 }
                 if (pkuNotAfter != null && checkDate.after(pkuNotAfter)) {
-                    final String msg = intres.getLocalizedMessage("createcert.privatekeyusageexpired", pkuNotAfter.toString(), cert.getSubjectDN().toString());
+                    final String msg = intres.getLocalizedMessage("createcert.privatekeyusageexpired", pkuNotAfter.toString(), cert.getSubjectX500Principal().toString());
                     if (log.isDebugEnabled()) {
                         log.debug(msg);
                     }

@@ -17,6 +17,10 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Locale;
 
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -25,10 +29,6 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.ECNamedCurveTable;
-
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
 
 /**
  * Constants for CAs.
@@ -750,7 +750,7 @@ public final class CAConstants {
                 return null;
         }
     }
-    
+
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String INCLUDE_IN_HEALTH_CHECK = "includeInHealthCheck";
 
@@ -834,12 +834,12 @@ public final class CAConstants {
 
     /** See <a href="https://doc.primekey.com/ejbca/ejbca-operations/ejbca-ca-concept-guide/certificate-authority-overview/ca-fields">CA Fields</a> in the EJBCA documentation */
     public static final String USE_AUTHORITY_KEY_IDENTIFIER = "useAuthorityKeyIdentifier";
-    
+
     /**
-     * List of supported fields when calling the WS createCa method.  This list allows the caller to set fields 
+     * List of supported fields when calling the WS createCa method.  This list allows the caller to set fields
      * on {@link org.cesecore.certificates.ca.X509CAInfo} during CA creation and may be changed when new fields
      * are added that should be exposed to WS clients.
-     * 
+     *
      * @see org.cesecore.certificates.ca.X509CAInfo
      */
     public static final String[] CA_PROPERTY_FIELD_NAMES = {
