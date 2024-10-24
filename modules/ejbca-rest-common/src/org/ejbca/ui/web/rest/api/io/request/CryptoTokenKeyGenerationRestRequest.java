@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 /**
  * JSON input representation of crypto token key generation request through REST API.
  */
-@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class) 
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class CryptoTokenKeyGenerationRestRequest {
 
     @Schema(description = "Key pair aliasof the key pair to be generated, must not already exist", example = "signKey")
@@ -32,7 +32,7 @@ public class CryptoTokenKeyGenerationRestRequest {
     private String keySpec;
     @Schema(description = "Optional key usage, affects some crypto tokens (PKCS#11 NG) but not most others. Values SIGN, ENCRYPT, SIGN_ENCRYPT", example="SIGN")
     private String keyUsage;
-    
+
     public CryptoTokenKeyGenerationRestRequest() {}
 
     public CryptoTokenKeyGenerationRestRequest(String keyPairAlias, String keyAlg, String keySpec, String keyUsage) {
@@ -41,7 +41,7 @@ public class CryptoTokenKeyGenerationRestRequest {
         this.keySpec = keySpec;
         this.keyUsage = keyUsage;
     }
-    
+
     public String getKeyPairAlias() {
         return keyPairAlias;
     }
@@ -49,7 +49,7 @@ public class CryptoTokenKeyGenerationRestRequest {
     public void setKeyPairAlias(String keyPairAlias) {
         this.keyPairAlias = keyPairAlias;
     }
-    
+
     public String getKeyAlg() {
         return keyAlg;
     }
@@ -57,7 +57,7 @@ public class CryptoTokenKeyGenerationRestRequest {
     public void setKeyAlg(String keyAlg) {
         this.keyAlg = keyAlg;
     }
-    
+
     public String getKeySpec() {
         return keySpec;
     }

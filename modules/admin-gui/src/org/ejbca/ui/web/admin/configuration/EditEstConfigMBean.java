@@ -12,10 +12,20 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
+
 import com.keyfactor.util.StringTools;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.math.NumberUtils;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -34,14 +44,6 @@ import jakarta.faces.model.SelectItem;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
 import jakarta.inject.Named;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.TreeMap;
-import java.util.stream.Collectors;
 
 /**
  * Backing bean for edit EST alias view.
@@ -52,13 +54,15 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     private static final long serialVersionUID = 1L;
 
     private static final String HIDDEN_PWD = "**********";
-    
+
     private static Logger log = Logger.getLogger(EditEstConfigMBean.class);
 
     // UniqueIdentifier is left out, because we don't want people to use that
     private static final List<String> dnfields = Arrays.asList("CN", "UID", "OU", "O", "L", "ST", "DC", "C", "emailAddress", "SN", "givenName", "initials", "surname", "title",
             "unstructuredAddress", "unstructuredName", "postalCode", "businessCategory", "dnQualifier", "postalAddress",
-            "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF", "VID", "PID", "CertificationID");
+            "telephoneNumber", "pseudonym", "streetAddress", "name", "role", "CIF", "NIF",
+            "VID", "PID", "NODEID", "FABRICID", "NOCCAT", "FirmwareSigningID", // Matter IoT
+            "CertificationID");
 
     private String selectedRaNameSchemeDnPart;
 
@@ -362,7 +366,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         estAliasGui.setEndEntityProfileId(String.valueOf(estConfiguration.getEndEntityProfileID(aliasName)));
         String certProfileID = estConfiguration.getCertProfileID(aliasName);
         // If we had the old type, EJBCA 6.11 of CP, which is the name, convert it to ID
-        if (certProfileID != null && !NumberUtils.isNumber(certProfileID)) {
+        if (certProfileID != null && !NumberUtils.isCreatable(certProfileID)) {
             Map<String, Integer> certificateProfiles = getEjbcaWebBean().getCertificateProfilesNoKeyId(estAliasGui.getEndEntityProfileId());
             if (certificateProfiles.get(certProfileID) != null) {
                 certProfileID = String.valueOf(certificateProfiles.get(certProfileID));
@@ -427,7 +431,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
     public boolean isVendorMode() {
         return estAliasGui.getVendorMode();
     }
-    
+
     public String getCaId() {
             return estAliasGui.getCaId();
     }
@@ -606,7 +610,7 @@ public class EditEstConfigMBean extends BaseManagedBean implements Serializable 
         final AuthenticationToken authenticationToken = getAdmin();
         final CaSessionLocal caSession = getEjbcaWebBean().getEjb().getCaSession();
         estAliasGui.setUsesProxyCa(false); //default, repeated for remove action
-	
+
         if (!isRaMode() && isVendorMode() && StringUtils.isNotBlank(getCurrentVendorCas())) {
             List<String> currentVendorCaList = new ArrayList<>(Arrays.asList(getCurrentVendorCas().split(";")));
             for (String caName : currentVendorCaList) {
