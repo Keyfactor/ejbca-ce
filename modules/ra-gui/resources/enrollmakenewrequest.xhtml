@@ -1051,7 +1051,7 @@
 														 value="#{enrollMakeNewRequestBean.clearPassword}" />
 							</h:panelGroup>
 							<h:panelGroup layout="block" styleClass="pure-control-group" rendered="#{enrollMakeNewRequestBean.emailRendered}" id="emailBlock">
-								<h:outputLabel for="emailField" value="#{msg.enroll_email}" />
+								<h:outputLabel for="emailField" value="#{msg.enroll_email}#{enrollMakeNewRequestBean.emailRequired ? ' *' : ''}"/>
 								<h:inputText id="emailField" value="#{enrollMakeNewRequestBean.endEntityInformation.email}" styleClass="#{component.valid?'':'jsAutoFocusError'}" 
 									required="#{enrollMakeNewRequestBean.emailRequired}">
 									<f:ajax event="change" render=":requestInfoForm:requestPreviewOuterPanel" listener="#{enrollMakeNewRequestBean.updateRfcAltName}"/>
