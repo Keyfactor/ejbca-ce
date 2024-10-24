@@ -2,15 +2,19 @@ import java.util.Properties
 
 rootProject.name = "ejbca"
 
-val properties: Properties = loadPropertiesFromFiles("conf/ejbca.properties", "conf/database.properties")
+val ejbcaProperties: Properties = loadPropertiesFromFiles(
+    "conf/ejbca.properties",
+    "conf/database.properties",
+    "conf/systemtests.properties"
+)
 
 // specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
 val editionProp = providers.gradleProperty("edition").getOrElse("ee")
 val eeModuleExists = file("modules/edition-specific-ee").exists()
 val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
 
-val appServerHome: String? = properties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
-val isProductionMode = properties.getProperty("ejbca.productionmode", "true").toBoolean()
+val appServerHome: String? = ejbcaProperties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
+val isProductionMode = ejbcaProperties.getProperty("ejbca.productionmode", "true").toBoolean()
 
 // share project properties with other build files
 gradle.allprojects {
@@ -18,8 +22,8 @@ gradle.allprojects {
     extra["edition"] = edition
     extra["appServerHome"] = appServerHome
     // add other properties loaded from EJBCA configuration files
-    properties.forEach { (key, value) ->
-        extra[key.toString()] = value
+    ejbcaProperties.forEach { (key, value) ->
+        extra["$key"] = value
     }
 }
 
@@ -95,7 +99,7 @@ dependencyResolutionManagement {
             library("kerb-core", ":kerb-core:2.0.3")
             library("kerb-crypto", ":kerb-crypto:2.0.3")
             library("kerby-asn1", ":kerby-asn1:2.0.3")
-            library("keyfactor-commons-cli",":keyfactor-commons-cli:2.0.0")
+            library("keyfactor-commons-cli", ":keyfactor-commons-cli:2.0.0")
             library("jsch", ":jsch:0.2.11")
             library("xstream", ":xstream:1.4.20")
             library("xpp3_min", ":xpp3_min:1.1.4c")
@@ -113,7 +117,7 @@ dependencyResolutionManagement {
             library("byte-buddy", ":byte-buddy:1.14.15")
             library("classmate", ":classmate:1.5.1")
             library("fastInfoset", ":FastInfoset:1.2.15")
-            library("hibernate-community-dialects",":hibernate-community-dialects:6.5.2.Final")
+            library("hibernate-community-dialects", ":hibernate-community-dialects:6.5.2.Final")
             library("hibernate-commons-annotations", ":hibernate-commons-annotations:6.0.6.Final")
             library("hibernate-core", ":hibernate-core:6.5.2.Final")
             library("hibernate-validator", ":hibernate-validator:8.0.1.Final")
