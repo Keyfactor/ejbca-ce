@@ -84,6 +84,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.cvc.AuthorizationField;
 import org.ejbca.cvc.CVCertificateBody;
 import org.ejbca.cvc.CardVerifiableCertificate;
+import org.ejbca.ui.web.CertificateView;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
@@ -140,6 +141,8 @@ public class RaCertificateDetails implements Serializable {
     private String typeVersion = "";
     private String serialnumber;
     private String serialnumberRaw;
+    private String publicKeyFull;
+    private String altPublicKeyFull;
     private String subjectDn;
     private String subjectAn = "";
     private String subjectDa = "";
@@ -190,6 +193,7 @@ public class RaCertificateDetails implements Serializable {
     private boolean sshVerifyRequired = false;
 
     private boolean more = false;
+    private boolean showFullPublicKeys = false;
     private boolean renderConfirmRecovery = false;
     private Boolean keyRecoveryPossible;
     private int styleRowCallCounter = 0;
@@ -261,6 +265,7 @@ public class RaCertificateDetails implements Serializable {
                 log.debug("Failed to format serial number as hex. Probably a CVC certificate. Message: " + e.getMessage());
             }
         }
+
         this.username = certificateData.getUsername() == null ? "" : certificateData.getUsername();
         this.subjectDn = certificateData.getSubjectDnNeverNull();
         final Certificate certificate = cdw.getCertificate();
@@ -328,11 +333,15 @@ public class RaCertificateDetails implements Serializable {
             
             if (publicKey instanceof RSAPublicKey) {
                 this.publicKeyParameter = ((RSAPublicKey) publicKey).getModulus().toString(16);
-            } else if (certificate.getPublicKey() instanceof DSAPublicKey) {
+            } else if (publicKey instanceof DSAPublicKey) {
                 this.publicKeyParameter = ((DSAPublicKey) publicKey).getY().toString(16);
-            } else if (certificate.getPublicKey() instanceof ECPublicKey) {
+            } else if (publicKey instanceof ECPublicKey) {
                 this.publicKeyParameter = ((ECPublicKey) publicKey).getW().getAffineX().toString(16) + " " + ((ECPublicKey) publicKey).getW().getAffineY().toString(16);
             }
+            
+            CertificateView certView = new CertificateView(cdw);
+            this.publicKeyFull = certView.getPublicKeyHex(false);
+            this.altPublicKeyFull = certView.getPublicAlternativeKeyHex(false);
             this.expireDate = certificateData.getExpireDate();
 
             if (certificate instanceof X509Certificate) {
@@ -512,6 +521,14 @@ public class RaCertificateDetails implements Serializable {
 
     public String getSerialnumberRaw() {
         return serialnumberRaw;
+    }
+    
+    public String getPublicKeyFull() {
+        return publicKeyFull;
+    }
+    
+    public String getAltPublicKeyFull() {
+        return altPublicKeyFull;
     }
 
     public String getIssuerDn() {
@@ -779,6 +796,18 @@ public class RaCertificateDetails implements Serializable {
 
     public void actionToggleMore() {
         more = !more;
+        styleRowCallCounter = 0;    // Reset
+    }
+
+    /**
+     * @return true if full public keys should be shown
+     */
+    public boolean isShowFullPublicKeys() {
+        return showFullPublicKeys;
+    }
+
+    public void actionToggleShowFullPublicKeys() {
+        showFullPublicKeys = !showFullPublicKeys;
         styleRowCallCounter = 0;    // Reset
     }
 

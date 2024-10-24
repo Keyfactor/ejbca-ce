@@ -47,8 +47,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 /**
  * CryptoToken EJB CLI command. See {@link #getDescription()} implementation.
- * 
- * @version $Id$
  */
 public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
 
@@ -73,6 +71,17 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     private static final String AZUREVAULT_KEY_BINDING = "--azurevaultkeybinding";
     private static final String AZUREVAULT_NAME= "--azurevaultname";
     private static final String AZUREVAULT_CLIENTID= "--azurevaultclientid";
+
+    private static final String REST_API = "--securosysrestapi";
+    private static final String SECUROSYS_AUTHENTICATION_TYPE = "--securosysauthenticationtype";
+    private static final String SECUROSYS_AUTH_TOKEN = "--securosysauthtoken";
+    private static final String SECUROSYS_AUTH_CERT = "--securosysauthcert";
+    private static final String SECUROSYS_AUTH_KEY = "--securosysauthkey";
+    private static final String SECUROSYS_MANAGEMENT_KEY = "--securosysmanagementkey";
+    private static final String SECUROSYS_OPERATION_KEY = "--securosysoperationkey";
+    private static final String SECUROSYS_SERVICE_KEY = "--securosysservicekey";
+    private static final String SECUROSYS_APPROVAL_KEY = "--securosysapprovalkey";
+
     private static final String FORTANIX_BASE_ADDRESS = "--fortanixaddr";
 
 
@@ -116,6 +125,26 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 "(AzureCryptoToken) Whether or not to use an Internal Key Binding when authenticating to Azure."));
         registerParameter(new Parameter(AZUREVAULT_KEY_BINDING, "Key Binding", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(AzureCryptoToken) Internal Key Binding to use when authenticating to Azure."));
+        // Securosys Primus REST API
+        registerParameter(new Parameter(REST_API, "Rest API", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) Securosys Primus HSM REST API name as chosen, example https://primusdev.cloudshsm.com."));
+        registerParameter(new Parameter(SECUROSYS_AUTHENTICATION_TYPE, "Authentication Type", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) Authentication type, TOKEN or CERT."));
+        registerParameter(new Parameter(SECUROSYS_AUTH_TOKEN, "Token", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) Bearer token, if authentication type is set to TOKEN."));
+        registerParameter(new Parameter(SECUROSYS_AUTH_CERT, "Authentication Certificate", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) mTLS certificate, if authentication type is set to CERT."));
+        registerParameter(new Parameter(SECUROSYS_AUTH_KEY, "Authentication Key", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) mTLS key, if authentication type is set to CERT."));
+        registerParameter(new Parameter(SECUROSYS_MANAGEMENT_KEY, "Management Key", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) Management key, if authentication type is set to CERT."));
+        registerParameter(new Parameter(SECUROSYS_OPERATION_KEY, "Operation Key", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) Operation key, if authentication type is set to CERT."));
+        registerParameter(new Parameter(SECUROSYS_SERVICE_KEY, "Service Key", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) Service key, if authentication type is set to CERT."));
+        registerParameter(new Parameter(SECUROSYS_APPROVAL_KEY, "Approval Timeout", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
+                "(SecurosysCryptoToken) Approval Timeout, for keys with specific policy."));
+        // Fortanix DSM REST API
         registerParameter(new Parameter(FORTANIX_BASE_ADDRESS, "Base Fortanix Address", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "(Fortanix) Base address of Fortanix DSM API."));
 
@@ -123,7 +152,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
         registerParameter(new Parameter(USE_EXPLICIT_KEY_PARAMETERS, "true|false", MandatoryMode.OPTIONAL, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "Set to true|false to allow|disallow usage of explicit ECC parameters( Only for ICAO CSCA and DS certificates)."));
     }
-    
+
     @Override
     public String[] getCommandPath() {
         return new String[] { "cryptotoken" };
@@ -151,6 +180,11 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             final Class<?> fortanixClass = Class.forName(CryptoTokenFactory.FORTANIX_NAME);
             sb.append(", ");
             sb.append(fortanixClass.getSimpleName());
+        } catch (ClassNotFoundException e) { /* Ignored */ }
+        try {
+            final Class<?> securosysClass = Class.forName(CryptoTokenFactory.SECUROSYS_NAME);
+            sb.append(", ");
+            sb.append(securosysClass.getSimpleName());
         } catch (ClassNotFoundException e) { /* Ignored */ }
         return sb.toString();
     }
@@ -186,12 +220,26 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
             if (baseAddress == null)
                 baseAddress = CryptoTokenConstants.FORTANIX_BASE_ADDRESS_DEFAULT;
             cryptoTokenPropertes.setProperty(CryptoTokenConstants.FORTANIX_BASE_ADDRESS, baseAddress);
+        } else if (CryptoTokenFactory.SECUROSYS_SIMPLE_NAME.equals(type)) {
+            className = CryptoTokenFactory.SECUROSYS_NAME;
+            // For an Securosys token these parameters are needed
+            if (parameters.get(REST_API) == null || parameters.get(SECUROSYS_AUTHENTICATION_TYPE) == null) {
+                getLogger().info("You need to specify all parameters for Securosys Primus HSM.");
+                return CommandResult.CLI_FAILURE;
+            }
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_REST_API, parameters.get(REST_API));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_AUTHENTICATION_TYPE, parameters.get(SECUROSYS_AUTHENTICATION_TYPE));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_AUTH_CERT, parameters.get(SECUROSYS_AUTH_CERT));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_MANAGEMENT_KEY, parameters.get(SECUROSYS_MANAGEMENT_KEY));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_OPERATION_KEY, parameters.get(SECUROSYS_OPERATION_KEY));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_SERVICE_KEY, parameters.get(SECUROSYS_SERVICE_KEY));
+            cryptoTokenPropertes.setProperty(CryptoTokenConstants.SECUROSYS_APPROVAL_TIMEOUT, parameters.get(SECUROSYS_APPROVAL_KEY));
         } else if (AzureCryptoToken.class.getSimpleName().equals(type)) {
             className = AzureCryptoToken.class.getName();
             // For an Azure token all three parameters are needed
             if (parameters.get(AZUREVAULT_NAME) == null || parameters.get(AZUREVAULT_TYPE) == null || parameters.get(AZUREVAULT_CLIENTID) == null) {
                 getLogger().info("You need to specify all parameters for Azure Key Vault.");
-                return CommandResult.CLI_FAILURE;                
+                return CommandResult.CLI_FAILURE;
             }
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_NAME, parameters.get(AZUREVAULT_NAME));
             cryptoTokenPropertes.setProperty(AzureCryptoToken.KEY_VAULT_TYPE, parameters.get(AZUREVAULT_TYPE));
@@ -214,13 +262,13 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 getLogger().info("PKCS#11 library file " + pkcs11LibFilename + " does not exist!");
                 return CommandResult.CLI_FAILURE;
             }
-            cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, pkcs11LibFilename);         
+            cryptoTokenPropertes.setProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, pkcs11LibFilename);
             String slotPropertyValue = parameters.get(SLOT_REFERENCE_KEY);
             if(slotPropertyValue == null) {
                 getLogger().info("Slot reference key (" + SLOT_REFERENCE_KEY + ") needs to be defined for PKCS#11 tokens.");
                 return CommandResult.CLI_FAILURE;
             }
-            
+
             if (!parameters.containsKey(SLOT_REFERENCE_TYPE_KEY)) {
                 getLogger().info("Slot reference type (" + SLOT_REFERENCE_TYPE_KEY + ") needs to be defined for PKCS#11 tokens.");
                 return CommandResult.CLI_FAILURE;
@@ -269,7 +317,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                     String yes = System.console().readLine();
                     if (!StringUtils.equalsIgnoreCase("yes", yes)) {
                         getLogger().info("Exiting...");
-                        return CommandResult.CLI_FAILURE;                    
+                        return CommandResult.CLI_FAILURE;
                     }
                 }
             } catch (CryptoTokenNameInUseException | CryptoTokenOfflineException | CryptoTokenAuthenticationFailedException
@@ -279,7 +327,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
                 String yes = System.console().readLine();
                 if (!StringUtils.equalsIgnoreCase("yes", yes)) {
                     getLogger().info("Exiting...");
-                    return CommandResult.CLI_FAILURE;                    
+                    return CommandResult.CLI_FAILURE;
                 }
             }
 
@@ -314,7 +362,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
 
     /**
      * convert AWSKMS CLI parameters to cryptoTokenPropertes
-     * 
+     *
      * @return false if parameters are invalid
      */
     private boolean setAwsKmsProperties(ParameterContainer parameters, Properties cryptoTokenPropertes) {
@@ -360,7 +408,7 @@ public class CryptoTokenCreateCommand extends EjbcaCliUserCommandBase {
     protected Logger getLogger() {
         return log;
     }
-    
+
     /** @return a decrypted version of the parameter or use input if the parameter equals "null" */
     private char[] getAuthenticationCode(final String commandLineArgument) {
         final char[] authenticationCode;

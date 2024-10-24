@@ -26,6 +26,9 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CryptoProviderTools;
+
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1OutputStream;
@@ -38,14 +41,11 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CryptoProviderTools;
-
 /**
  * Base class for CMP request messages.
  */
 public abstract class BaseCmpMessage implements Serializable {
-  
+
 	private static final long serialVersionUID = 1L;
 
 	private transient PKIMessage pkiMessage = null;
@@ -57,6 +57,8 @@ public abstract class BaseCmpMessage implements Serializable {
 	private transient GeneralName sender = null;	// GeneralName is not Serializable
 	private byte[] senderBytes = null;
 	private String protectionType = null;
+    private int pvno = 2; // CMP version (RFC4210 / 9480), default to CMPv2
+
 	// pbe parameters
 	private String pbeDigestAlg = null;
 	private String pbeMacAlg = null;
@@ -73,9 +75,9 @@ public abstract class BaseCmpMessage implements Serializable {
 
 	private List<Certificate> additionalCaCertificates = new ArrayList<>();
 	private boolean includeCaCert = true; // True because backward compatibility.
-	
+
 	private List<Certificate> additionalExtraCerts = new ArrayList<>();
-	
+
 	/** @return the ASN.1 encoded octets as a bas64 encoded String or null if no such data is available */
 	protected String getBase64FromAsn1OctetString(final ASN1OctetString asn1OctetString) {
         if (asn1OctetString != null) {
@@ -116,6 +118,14 @@ public abstract class BaseCmpMessage implements Serializable {
 	public String getTransactionId() {
 		return b64TransId;
 	}
+
+    public void setPvno(int pvno) {
+        this.pvno = pvno;
+    }
+
+    public int getPvno() {
+        return pvno;
+    }
 
 	public GeneralName getRecipient() {
 		if (recipient == null && recipientBytes != null) {
@@ -210,7 +220,7 @@ public abstract class BaseCmpMessage implements Serializable {
 	public List<Certificate> getAdditionalCaCertificates() {
         return additionalCaCertificates;
     }
-	
+
 	/**
      * Sets the list of additional CA certificates
      * (i.e. to be appended to the user certificates CA certificate returned in the CMP response message caPubs field).
@@ -219,32 +229,32 @@ public abstract class BaseCmpMessage implements Serializable {
     public void setAdditionalCaCertificates(final List<Certificate> certificates) {
         this.additionalCaCertificates = certificates;
     }
-    
+
     /**
      * Include the issuing CA certificate at caPubs field index 0.
-     * 
+     *
      * @see BaseCmpMessage#additionalCaCertificates
-     * 
-     * @return true if CA certificate is added at index 0 of the CMP message 
-     *      caPubs field by default, false otherwise. Since additionally CA 
-     *      certificates can be added to this field - including the issuing 
-     *      CAs certificate - this is no warranty, that the issuing CA 
-     *      certificate is not returned at index 0 of the caPubs field in the CMP 
+     *
+     * @return true if CA certificate is added at index 0 of the CMP message
+     *      caPubs field by default, false otherwise. Since additionally CA
+     *      certificates can be added to this field - including the issuing
+     *      CAs certificate - this is no warranty, that the issuing CA
+     *      certificate is not returned at index 0 of the caPubs field in the CMP
      *      response if this option is set to false.
      */
     public boolean isIncludeCaCert() {
         return includeCaCert;
     }
-    
+
     /**
      * Include the issuing CA certificate at caPubs field index 0.
-     * 
-     * @param includeCaCert true if to be added.  
+     *
+     * @param includeCaCert true if to be added.
      */
     public void setIncludeCaCert(boolean includeCaCert) {
         this.includeCaCert = includeCaCert;
     }
-    
+
     /**
      * Gets the list of additional CA certificates to be appended to the PKI response message extraCerts field.
      * @return the list of CA certificates.
@@ -252,7 +262,7 @@ public abstract class BaseCmpMessage implements Serializable {
     public List<Certificate> getAdditionalExtraCertsCertificates() {
         return additionalExtraCerts;
     }
-    
+
     /**
      * Sets the list of additional CA certificates to be appended to the PKI response message extraCerts field.
      * @param certificates the list of CA certificates.
@@ -285,5 +295,5 @@ public abstract class BaseCmpMessage implements Serializable {
             throw newe;
         }
     }
-    
+
 }
