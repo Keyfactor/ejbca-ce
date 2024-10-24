@@ -36,7 +36,6 @@ import com.keyfactor.util.CertTools;
 /**
  * Used when this EJBCA instance authenticates to other instances.
  * 
- * @version $Id$
  */
 public class AuthenticationKeyBinding extends InternalKeyBindingBase {
 
@@ -45,9 +44,22 @@ public class AuthenticationKeyBinding extends InternalKeyBindingBase {
 
     public static final String IMPLEMENTATION_ALIAS = "AuthenticationKeyBinding"; // This should not change, even if we rename the class in EJBCA 5.3+..
     public static final String PROPERTY_PROTOCOL_AND_CIPHER_SUITE = "protocolAndCipherSuite";
+    
+    public static final String[] CIPHER_SUITES_SUBSET = {"TLSv1.2;TLS_DHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLSv1.2;TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLSv1.2;TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLSv1.2;TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLSv1.2;TLS_DHE_RSA_WITH_AES_256_CBC_SHA256",
+            "TLSv1.2;TLS_RSA_WITH_AES_256_CBC_SHA256",
+            "TLSv1.2;TLS_RSA_WITH_AES_128_CBC_SHA",
+            "TLSv1;TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+            "TLSv1;TLS_RSA_WITH_AES_256_CBC_SHA",
+            "TLSv1;TLS_RSA_WITH_AES_128_CBC_SHA",
+            "TLSv1.3;TLS_AES_128_GCM_SHA256",
+            "TLSv1.3;TLS_AES_256_GCM_SHA384",
+            "TLSv1.3;TLS_CHACHA20_POLY1305_SHA256"};
 
-    {
-        final String[] CIPHER_SUITES_SUBSET = CesecoreConfiguration.getAvailableCipherSuites();
+    { 
         addProperty(new DynamicUiProperty<>(PROPERTY_PROTOCOL_AND_CIPHER_SUITE, CIPHER_SUITES_SUBSET[0], Arrays.asList(CIPHER_SUITES_SUBSET)));
     }
 
