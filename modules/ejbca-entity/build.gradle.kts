@@ -1,14 +1,3 @@
-import java.util.Properties
-
-val props: Properties = Properties().apply {
-    val propertiesFilePath = "${rootProject.projectDir}/conf/database.properties"
-    if (file(propertiesFilePath).exists()) {
-        load(file(propertiesFilePath).inputStream())
-    } else {
-        load(file("$propertiesFilePath.sample").inputStream())
-    }
-}
-
 plugins {
     java
 }
@@ -61,6 +50,9 @@ tasks.processTestResources {
 }
 
 tasks.jar {
+    val jndiName = extra.properties.getOrDefault("datasource.jndi-name", "EjbcaDS") as String
+    val databaseName = extra.properties.getOrDefault("database.name", "mysql") as String
+
     from(sourceSets["main"].output)
     from("resources") {
         include("orm-ejbca-mysql.xml")
@@ -72,8 +64,8 @@ tasks.jar {
         into("META-INF")
         filter { line: String ->
             line.replace("\${datasource.jndi-name-prefix}", "java:/")
-                .replace("\${datasource.jndi-name}", props.getProperty("datasource.jndi-name", "EjbcaDS"))
-                .replace("\${database.name}", props.getProperty("database.name", "mysql"))
+                .replace("\${datasource.jndi-name}", jndiName)
+                .replace("\${database.name}", databaseName)
         }
     }
 }

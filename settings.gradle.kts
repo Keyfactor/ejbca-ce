@@ -2,19 +2,12 @@ import java.util.Properties
 
 rootProject.name = "ejbca"
 
-// Specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
+val properties: Properties = loadPropertiesFromFiles("conf/ejbca.properties", "conf/database.properties")
+
+// specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
 val editionProp = providers.gradleProperty("edition").getOrElse("ee")
 val eeModuleExists = file("modules/edition-specific-ee").exists()
 val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
-
-val properties: Properties = Properties().apply {
-    val propertiesFilePath = "conf/ejbca.properties"
-    if (file(propertiesFilePath).exists()) {
-        load(file(propertiesFilePath).inputStream())
-    } else {
-        load(file("$propertiesFilePath.sample").inputStream())
-    }
-}
 
 val appServerHome: String? = properties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
 val isProductionMode = properties.getProperty("ejbca.productionmode", "true").toBoolean()
@@ -24,6 +17,10 @@ gradle.allprojects {
     extra["isProductionMode"] = isProductionMode
     extra["edition"] = edition
     extra["appServerHome"] = appServerHome
+    // add other properties loaded from EJBCA configuration files
+    properties.forEach { (key, value) ->
+        extra[key.toString()] = value
+    }
 }
 
 dependencyResolutionManagement {
@@ -343,3 +340,17 @@ include(
     "modules:systemtests:common",
     "modules:systemtests:ejb",
 )
+
+fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
+    val properties = Properties()
+    for (filePath in filePaths) {
+        // load sample properties first, then override values with the user defined ones
+        if (file("$filePath.sample").exists()) {
+            properties.load(file("$filePath.sample").inputStream())
+        }
+        if (file(filePath).exists()) {
+            properties.load(file(filePath).inputStream())
+        }
+    }
+    return properties
+}
