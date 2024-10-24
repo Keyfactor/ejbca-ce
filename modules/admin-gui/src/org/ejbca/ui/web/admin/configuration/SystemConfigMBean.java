@@ -13,9 +13,11 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -107,7 +109,9 @@ import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
 import org.primefaces.component.tabview.Tab;
 import org.primefaces.component.tabview.TabView;
+import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.model.file.UploadedFile;
 
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StreamSizeLimitExceededException;
@@ -123,11 +127,25 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -6653610614851741905L;
     private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
+    
+    
+    UploadedFile headerFile;
 
+    public UploadedFile getHeaderFile() {
+        return headerFile;
+    }
+
+    public void setHeaderFile(UploadedFile headerFile) {
+        this.headerFile = headerFile;
+    }
+    
     public class GuiInfo {
         private String title;
         private String headBanner;
         private String footBanner;
+
+        // Getter for imageBytes
+        
         private boolean enableEndEntityProfileLimitations;
         private boolean enableKeyRecovery;
         private boolean localKeyRecovery;
@@ -172,8 +190,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
             try {
                 this.title = globalConfig.getEjbcaTitle();
-                this.headBanner = globalConfig.getHeadBanner();
-                this.footBanner = globalConfig.getFootBanner();
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
                 this.enableKeyRecovery = globalConfig.getEnableKeyRecovery();
                 this.localKeyRecovery = globalConfig.getLocalKeyRecovery();
@@ -218,6 +234,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setHeadBanner(String banner) { this.headBanner=banner; }
         public String getFootBanner() { return this.footBanner; }
         public void setFootBanner(String banner) { this.footBanner=banner; }
+
         public boolean getEnableEndEntityProfileLimitations() { return this.enableEndEntityProfileLimitations; }
         public void setEnableEndEntityProfileLimitations(boolean enableLimitations) { this.enableEndEntityProfileLimitations=enableLimitations; }
         public boolean getEnableKeyRecovery() { return this.enableKeyRecovery; }
@@ -281,6 +298,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
         public boolean isRedactPiiEnforced() { return redactPiiEnforced; }
         public void setRedactPiiEnforced(boolean redactPiiEnforced) { this.redactPiiEnforced = redactPiiEnforced; }
+    }
+    
+    public void handleBannerUpload(FileUploadEvent event) {
+        // Get the uploaded file
+        this.headerFile = event.getFile();
+        
         
     }
 
@@ -1006,8 +1029,24 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             try {
                 globalConfig.setEjbcaTitle(currentConfig.getTitle());
-                globalConfig.setHeadBanner(currentConfig.getHeadBanner());
-                globalConfig.setFootBanner(currentConfig.getFootBanner());
+                
+                try (InputStream inputStream = headerFile.getInputStream();
+                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                       
+                       // Read the uploaded file into the byte array
+                       byte[] buffer = new byte[1024]; // Buffer for reading
+                       int bytesRead;
+                       while ((bytesRead = inputStream.read(buffer)) != -1) {
+                           outputStream.write(buffer, 0, bytesRead);
+                       }
+                       // Convert the output stream to byte array
+                       globalConfig.setHeadBannerLogo(outputStream.toByteArray());
+
+                   } catch (IOException e) {
+                       e.printStackTrace(); // Handle the exception properly
+                   }
+                
+                
                 globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());

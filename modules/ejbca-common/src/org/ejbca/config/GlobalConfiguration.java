@@ -13,7 +13,11 @@
 
 package org.ejbca.config;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -68,10 +72,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
 	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
 
-    // Default name of headbanner in web interface.
-    public static final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
-    // Default name of footbanner page in web interface.
-    public static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
+    public static final byte[] DEFAULT_HEADER_LOGO = initHeadBannerLogo();
 
     // Default list of nodes in cluster
     private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
@@ -137,8 +138,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
       // Title
     private static final   String TITLE              = "title";
       // Banner files.
-    private static final   String HEADBANNER         = "headbanner";
-    private static final   String FOOTBANNER         = "footbanner";
+    private static final   String HEADLOGO         = "headlogo";
+
       // Other configuration.
     private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
     private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
@@ -178,13 +179,24 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        super();
 
        setEjbcaTitle(DEFAULTEJBCATITLE);
-       setHeadBanner(DEFAULTHEADBANNER);
-       setFootBanner(DEFAULTFOOTBANNER);
+       setHeadBannerLogo(DEFAULT_HEADER_LOGO);
        setEnableEndEntityProfileLimitations(true);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableAuthenticatedUsersOnly(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableKeyRecovery(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableIcaoCANameChange(false);
     }
+    
+    private static byte[] initHeadBannerLogo() {
+        //TODO: fix this hardcoded path!
+        Path path = Paths.get("/home/amin/ejbca_git/ejbca/modules/admin-gui/resources/images/EE/keyfactor-ejbca-logo.png");
+        try {
+            return Files.readAllBytes(path);
+        } catch (IOException e) {
+            LOG.error("Error while loading the default ejbca logo from file system.");
+            throw new IllegalStateException(e);
+        } 
+    }
+
 
     /** Initializes a new global configuration with data used in ra web interface. */
     private void initialize(String availablelanguages, String availablethemes,
@@ -304,31 +316,13 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public String getDefaultAvailableTheme(){
       return getAvailableThemes()[0];
     }
-
-
-
-    // Methods for manipulating the headbanner filename.
-    public   String getHeadBanner() {return fullHeadBannerPath((String) data.get(HEADBANNER));}
-    public   void setHeadBanner(String head){
-      data.put(HEADBANNER, fullHeadBannerPath(head));
+    
+    public byte[] getHeadBannerLogo() {
+        return (byte[]) data.get(HEADLOGO);
     }
-    public boolean isNonDefaultHeadBanner() {
-        return !fullHeadBannerPath(DEFAULTHEADBANNER).equals(fullHeadBannerPath((String) data.get(HEADBANNER)));
-    }
-    private String fullHeadBannerPath(final String head) {
-        return getAdminWebPath() + getBannersPath() + "/" +
-                (StringUtils.isNotBlank(head) ? head.substring(head.lastIndexOf('/')+1) : DEFAULTHEADBANNER);
-    }
-
-
-    // Methods for manipulating the headbanner filename.
-    public   String getFootBanner() {return fullFootBannerPath((String) data.get(FOOTBANNER));}
-    public   void setFootBanner(String foot){
-      data.put(FOOTBANNER, fullFootBannerPath(foot));
-    }
-    private String fullFootBannerPath(final String foot) {
-        return "/" + getBannersPath() + "/" +
-                (StringUtils.isNotBlank(foot) ? foot.substring(foot.lastIndexOf('/')+1) : DEFAULTFOOTBANNER);
+    
+    public void setHeadBannerLogo(byte[] logo) {
+        data.put(HEADLOGO, logo);
     }
 
     // Methods for manipulating the title.
