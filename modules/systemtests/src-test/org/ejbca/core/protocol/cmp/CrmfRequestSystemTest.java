@@ -23,6 +23,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import com.keyfactor.util.Base64;
@@ -36,10 +37,12 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.string.StringConfigurationCache;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.CertOrEncCert;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
 import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
@@ -48,6 +51,8 @@ import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.cms.EnvelopedData;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.crmf.EncryptedKey;
 import org.bouncycastle.asn1.crmf.EncryptedValue;
@@ -61,10 +66,15 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x9.X962Parameters;
 import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.crmf.CertificateRepMessage;
+import org.bouncycastle.cert.crmf.CertificateResponse;
+import org.bouncycastle.cms.jcajce.JceKEMEnvelopedRecipient;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.AsymmetricKeyUnwrapper;
 import org.bouncycastle.operator.OperatorException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.operator.jcajce.JceAsymmetricKeyUnwrapper;
 import org.bouncycastle.operator.jcajce.JceInputDecryptorProviderBuilder;
 import org.bouncycastle.pkcs.PKCS8EncryptedPrivateKeyInfo;
@@ -78,6 +88,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -135,6 +146,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
     private final static String ISSUER_DN_MLDSA = "CN=TestCA ML-DSA-44";
     private final KeyPair keys;
     private final KeyPair keysMldsa;
+    private final KeyPair keysMlkem512;
     private final int caIdSha256;
     private final int caIdSha384;
     private final int caIdMldsa44;
@@ -173,6 +185,7 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         // Client keys
         this.keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         this.keysMldsa = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44);
+        this.keysMlkem512 = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLKEM512, AlgorithmConstants.KEYALGORITHM_MLKEM512);
     }
     @Override
     @Before
@@ -379,6 +392,91 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         assertNull("AltNames was not null (" + altNames + ").", altNames);
 
         log.trace("<test03CrmfHttpOkUserMldsa44");
+    }
+
+    @Test
+    public void testCrmfHttpOkUserMLKEM512() throws Exception {
+        log.trace(">testCrmfHttpOkUserMLKEM512");
+        // Create a new good USER
+        X500Name userDN = createCmpUser("cmptest", "foo123", "C=SE,O=PrimeKey,CN=cmptest", true, this.caIdMldsa44, -1, -1);
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+
+        PKIMessage req = genCertReq(ISSUER_DN_MLDSA, userDN, this.keysMlkem512, this.cacertMldsa, nonce, transid, false, null, null, null, null, null, null);
+        assertNotNull(req);
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        byte[] ba = CmpMessageHelper.pkiMessageToByteArray(req);
+        // Send request and receive response
+        byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, ISSUER_DN_MLDSA, userDN, this.cacertMldsa, nonce, transid, true, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), false, null, false);
+        X509Certificate issuedCert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacertMldsa, resp, reqId, ResponseStatus.SUCCESS.getValue(), this.keysMlkem512.getPrivate());
+        assertNotNull("A cert should have been received", issuedCert);
+        // The previous line does a bunch of checks already, but we'll make even more here just to make sure
+
+        // If successful the response should be an ip, since the request is an ir (see PKIBody.TYPE_INIT_REP)
+        final PKIMessage pkiMessage = PKIMessage.getInstance(resp);
+        assertNotNull(pkiMessage);
+        final PKIBody pkiBody = pkiMessage.getBody();
+        final int tag = pkiBody.getType();
+        // Do some sanity checks in the message (also see CrmfResponseMessageUnitTest
+        final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+        final CertResponse certResponse = certRepMessage.getResponse()[0];
+        assertNotNull("Response should contain certificate response", certRepMessage);
+        assertNotNull("There should be one CertResponse", certResponse);
+
+        assertEquals("RequestID in respone must be same as was sent in request", reqId, certResponse.getCertReqId().getValue().intValue());
+        // Verify response status
+        final PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
+        assertNotNull("PKI status must be there", pkiStatusInfo);
+        assertEquals("Expected PKI response status " + ResponseStatus.SUCCESS.getValue(), ResponseStatus.SUCCESS.getValue(), pkiStatusInfo.getStatus().intValue());
+
+        final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+        assertNotNull("The cert response should have a certificate (CertifiedKeyPair in CMP lingo)", certifiedKeyPair);
+        final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
+        assertNotNull("There must be a CertorEncCert", certOrEncCert);
+        assertTrue("We expect an encrypted cert, but the response doesn't have one.", certOrEncCert.hasEncryptedCertificate());
+        final EncryptedKey encrCert = certOrEncCert.getEncryptedCert();
+        ASN1Encodable asn1 = encrCert.getValue();
+        // Should be a CMS EnvelopedData
+        assertEquals("Encrypted value should be a CMS EnvelopedData", EnvelopedData.class.getName(), asn1.getClass().getName());
+
+        // TODO: CmpPKIBodyConstants can be removed and replaced by BC PKIBody
+        assertEquals("Response should be an initializationResp", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, tag);
+
+        // Now get the actual certificate (by decrypting it) and verify that it's signature verifies
+        final CertificateRepMessage certificateRepMessage = CertificateRepMessage.fromPKIBody(pkiBody);
+        final CertificateResponse certificateResp = certificateRepMessage.getResponses()[0];
+        final CMPCertificate receivedCMPCert = certificateResp.getCertificate(new JceKEMEnvelopedRecipient(this.keysMlkem512.getPrivate()));
+        final X509CertificateHolder receivedCert = new X509CertificateHolder(receivedCMPCert.getX509v3PKCert());
+        if (!receivedCert.isSignatureValid(new JcaContentVerifierProviderBuilder().build(this.cacertMldsa))) {
+            assertTrue("Received certificate didn't verify againsts CA certificate", false);
+        }
+        final X509Certificate cert = CertTools.getCertfromByteArray(receivedCert.getEncoded(), X509Certificate.class);
+        assertEquals("Received cert public key should be ML-KEM", "ML-KEM-512", cert.getPublicKey().getAlgorithm());
+        assertTrue("Public key in issued certificate is not identical to what we sent in request", Objects.deepEquals(this.keysMlkem512.getPublic().getEncoded(), cert.getPublicKey().getEncoded()));
+
+
+        // Send a confirm message to the CA
+        String hash = CertTools.getSHA256FingerprintAsString(cert.getEncoded());
+        PKIMessage confirm = genCertConfirm(userDN, this.cacertMldsa, nonce, transid, hash, reqId, null);
+        ba = CmpMessageHelper.pkiMessageToByteArray(confirm);
+        // Send request and receive response
+        resp = sendCmpHttp(ba, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, ISSUER_DN_MLDSA, userDN, this.cacertMldsa, nonce, transid, false, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), false);
+        checkCmpPKIConfirmMessage(userDN, this.cacertMldsa, resp);
+
+        // Now revoke the bastard!
+        PKIMessage rev = genRevReq(ISSUER_DN_MLDSA, userDN, cert.getSerialNumber(), this.cacertMldsa, nonce, transid, true, null, null);
+        byte[] barev = CmpMessageHelper.pkiMessageToByteArray(rev);
+        // Send request and receive response
+        resp = sendCmpHttp(barev, 200, cmpAlias);
+        checkCmpResponseGeneral(resp, ISSUER_DN_MLDSA, userDN, this.cacertMldsa, nonce, transid, false, null, NISTObjectIdentifiers.id_ml_dsa_44.getId(), false);
+        checkCmpFailMessage(resp, "PKI Message is not authenticated properly. No HMAC protection was found.", PKIBody.TYPE_ERROR, reqId,
+                                PKIFailureInfo.badRequest);
+
+        log.trace("<testCrmfHttpOkUserMLKEM512");
     }
 
     /** Tests an initial request cycle compliant with Unisig Subset 137 for ERMTS (rail) where the initial request is protected with
