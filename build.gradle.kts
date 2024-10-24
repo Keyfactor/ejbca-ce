@@ -1,3 +1,5 @@
+import java.net.Socket
+
 val edition: String by extra
 val appServerHome: String? by extra
 val isProductionMode: Boolean by extra
@@ -26,10 +28,15 @@ allprojects {
 // add the directory containing 'jboss-client.jar' to the list of library repositories
 if (!isProductionMode) {
     if (appServerHome == null) {
-        throw GradleException("To build EJBCA in non-production mode ('ejbca.productionmode=false'), " +
-                "you must first configure the application server's home directory. \n" +
-                "You can do this by either setting an 'APPSRV_HOME' environment variable or by " +
-                "configuring the 'appserver.home' property in the 'conf/ejbca.properties' file.")
+        throw GradleException(
+            """
+                📣 To build EJBCA in non-production mode ('ejbca.productionmode=false'), 
+                you must first configure the application server's home directory.
+                
+                You can do this by either setting an 'APPSRV_HOME' environment variable 
+                or by configuring the 'appserver.home' property in the 'conf/ejbca.properties' file.
+            """.trimIndent()
+        )
     }
     allprojects {
         repositories {
@@ -274,9 +281,12 @@ task<Copy>("deployear") {
     dependsOn("ear")
     doFirst {
         if (appServerHome == null) {
-            throw GradleException("Unknown application server's home directory.\n" +
-                    "Please set an 'APPSRV_HOME' environment variable or configure " +
-                    "the 'appserver.home' property in the 'conf/ejbca.properties' file.")
+            throw GradleException(
+                """
+                    📣 Unknown application server's home directory. Please set an 'APPSRV_HOME' environment variable 
+                    or configure the 'appserver.home' property in the 'conf/ejbca.properties' file.
+                """.trimIndent()
+            )
         }
     }
     from(layout.buildDirectory.file("libs/ejbca.ear"))
@@ -319,6 +329,8 @@ subprojects {
                 description = "Runs system tests."
                 group = "verification"
                 forkEvery = 0
+
+                dependsOn(":checkIfAppServerIsRunning")
                 shouldRunAfter("test")
 
                 filter {
@@ -414,5 +426,24 @@ tasks.register("summarizeTestResults") {
         }
 
         logger.lifecycle("Test summary: $totalExecuted executed, $totalPassed passed, $totalFailed failed, $totalSkipped skipped.")
+    }
+}
+
+tasks.register("checkIfAppServerIsRunning") {
+    description = "Checks whether an application server is running. Used to determine if system tests can be executed."
+    group = "check"
+    doLast {
+        val host = findProperty("target.hostname") as String? ?: "localhost"
+        val port = findProperty("target.port.https") as String? ?: "8443"
+        try {
+            Socket(host, port.toInt()).use { true }
+        } catch (e: Exception) {
+            throw GradleException(
+                """
+                    📣 The application server does not appear to be running on '$host' port '$port'.
+                    Please start it to run system tests.
+                """.trimIndent()
+            )
+        }
     }
 }

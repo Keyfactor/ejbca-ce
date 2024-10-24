@@ -50,8 +50,8 @@ tasks.processTestResources {
 }
 
 tasks.jar {
-    val jndiName = extra.properties.getOrDefault("datasource.jndi-name", "EjbcaDS") as String
-    val databaseName = extra.properties.getOrDefault("database.name", "mysql") as String
+    val jndiName = findProperty("datasource.jndi-name") as String? ?: "EjbcaDS"
+    val databaseName = findProperty("database.name") as String? ?: "mysql"
 
     from(sourceSets["main"].output)
     from("resources") {
