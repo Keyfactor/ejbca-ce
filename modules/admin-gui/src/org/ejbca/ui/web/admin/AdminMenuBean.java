@@ -23,10 +23,16 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 
 /**
@@ -234,14 +240,6 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getUseSessionTimeout();
     }
     
-    public String getHeadBannerUrl() {
-        return EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getHeadBanner();
-    }
-    
-    public boolean isNonDefaultHeadBanner() {
-        return getGlobalConfiguration().isNonDefaultHeadBanner();
-    }
-    
     public String getAppNameCapital() {
         return InternalConfiguration.getAppNameCapital();
     }
@@ -264,5 +262,32 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
             url += "/";
         }
         return url;
+    }
+    
+    private StreamedContent headerLogoImage;
+    
+    public StreamedContent getHeaderLogoImage() {
+
+        if (headerLogoImage == null) {
+
+            byte[] imageBytes = getGlobalConfiguration().getHeadBannerLogo();
+
+            if (imageBytes == null) {
+                imageBytes = getGlobalConfiguration().DEFAULT_HEADER_LOGO;
+            }
+
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes); // Wrap byte array in InputStream
+
+            // Set cache control headers to prevent browser caching
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0
+            response.setDateHeader("Expires", 0); // Proxies
+
+            headerLogoImage = DefaultStreamedContent.builder().contentType("image/png").stream(() -> inputStream).build();
+
+        }
+        return headerLogoImage;
     }
 }
