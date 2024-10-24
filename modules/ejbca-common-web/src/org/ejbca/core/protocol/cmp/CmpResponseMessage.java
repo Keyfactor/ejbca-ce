@@ -32,10 +32,12 @@ import java.util.Collection;
 import java.util.List;
 
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -57,12 +59,24 @@ import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIStatus;
 import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.cms.EnvelopedData;
+import org.bouncycastle.asn1.crmf.EncryptedKey;
+import org.bouncycastle.asn1.crmf.POPOPrivKey;
+import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.crmf.SubsequentMessage;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.cert.cmp.CMSProcessableCMPCertificate;
 import org.bouncycastle.cert.crmf.CRMFException;
 import org.bouncycastle.cert.crmf.jcajce.JceCRMFEncryptorBuilder;
 import org.bouncycastle.cms.CMSAlgorithm;
+import org.bouncycastle.cms.CMSEnvelopedData;
+import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
+import org.bouncycastle.cms.CMSException;
+import org.bouncycastle.cms.jcajce.JceCMSContentEncryptorBuilder;
+import org.bouncycastle.cms.jcajce.JceKEMRecipientInfoGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.jcajce.JceAsymmetricKeyWrapper;
 import org.cesecore.certificates.certificate.Base64CertData;
@@ -79,10 +93,10 @@ public class CmpResponseMessage implements CertificateResponseMessage {
 
     /**
      * Determines if a de-serialized file is compatible with this class.
-     * 
+     *
      * Maintainers must change this value if and only if the new version of this class is not compatible with old versions. See Sun docs for <a
      * href=http://java.sun.com/products/jdk/1.1/docs/guide /serialization/spec/version.doc.html> details. </a>
-     * 
+     *
      */
     static final long serialVersionUID = 10003L;
 
@@ -112,7 +126,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     /** transaction id */
     private String transactionId = null;
 
-    /** Default digest algorithm for CMP response message used for signature protection, is nothing. Can be set/overridden from 
+    /** Default digest algorithm for CMP response message used for signature protection, is nothing. Can be set/overridden from
      * request message with setPreferredDigestAlg() on the request message. If unset (default) value is taken from signer */
     private String digest  = null;
     /** The default provider is BC, if nothing else is specified when setting SignKeyInfo */
@@ -161,7 +175,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     public CertificateData getCertificateData() {
         return certificateData;
     }
-    
+
     @Override
     public void setCertificateData(CertificateData certificateData) {
         if (certificateData != null) {
@@ -170,12 +184,12 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             this.certificateData = null;
         }
     }
-    
+
     @Override
     public Base64CertData getBase64CertData() {
         return base64CertData;
     }
-    
+
     @Override
     public void setBase64CertData(final Base64CertData base64CertData) {
         if (base64CertData != null) {
@@ -184,7 +198,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             this.base64CertData = null;
         }
     }
-    
+
     @Override
     public Certificate getCertificate() {
         try {
@@ -261,7 +275,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
         String subject = null;
         Certificate signCert = null;
         if (CollectionUtils.isNotEmpty(signCertChain)) {
-            signCert = signCertChain.iterator().next();            
+            signCert = signCertChain.iterator().next();
         }
         if (cert != null) {
             final X509Certificate x509cert = (X509Certificate) cert;
@@ -269,10 +283,9 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             subject = x509cert.getSubjectDN().getName();
         } else if (signCert != null) {
             issuer = ((X509Certificate) signCert).getSubjectDN().getName();
-            subject = "CN=fooSubject";
+            subject = reqMsg.getRequestDN() != null ? reqMsg.getRequestDN() : "CN=fooSubject";
         } else {
-            issuer = "CN=fooIssuer";
-            subject = "CN=fooSubject";
+            issuer = reqMsg.getIssuerDN() != null ? reqMsg.getIssuerDN() : "CN=fooIssuer";
         }
 
 		final GeneralName issuerName = new GeneralName(new X500Name(issuer));
@@ -287,93 +300,143 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                     if (log.isDebugEnabled()) {
                         log.debug("Creating a CertRepMessage 'accepted'");
                     }
-                    PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
-                    ASN1InputStream certASN1InputStream = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()));
-                    try {
-                        try {
-                            CMPCertificate cmpcert = CMPCertificate.getInstance(certASN1InputStream.readObject());
-                            CertOrEncCert retCert = new CertOrEncCert(cmpcert);
-                            CertifiedKeyPair myCertifiedKeyPair;
-                            // If the requestMessage has a server generated key pair, and the requestMessage had a public key 
-                            // "controls.protocolEncrKey" to encrypt the private key with
-                            if (reqMsg != null && reqMsg.getServerGenKeyPair() != null && reqMsg.getProtocolEncrKey() != null) {
-                                    log.debug("CMP request had a server generated key pair and controls.protocolEncrKey which we will use to encrypt the private key in the response");
-                                    final KeyPair kp = reqMsg.getServerGenKeyPair();
-                                    final PublicKey protocolEncrKey = reqMsg.getProtocolEncrKey();
-                                    if (!protocolEncrKey.getAlgorithm().equals("RSA")) {
-                                        final String msg = "CMP request had a controls.protocolEncrKey that is not an RSA key, can not create response: "+protocolEncrKey.getAlgorithm();
-                                        log.debug(msg);
-                                        throw new InvalidKeyException(msg);                                        
-                                    }
-                                    // JceAsymmetricKeyWrapper sets kp.getPublic to be the key used for wrapping
-                                    // JceCRMFEncryptorBuilder sets AES256 CBC to be the symmetric encryption algorithm used 
-                                    JcaEncryptedValueBuilder encBldr = new JcaEncryptedValueBuilder(
-                                            new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
-                                            new JceCRMFEncryptorBuilder(CMSAlgorithm.AES256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
-                                    // encBldr.build encrypts the privateKey using the wrapper above, i.e. encrypted with AES128_CBC with the symmkey wrapped with kp.getPublic
-                                    // encBldr.build will encode the private key as a PrivateKeyInfo from RFC 5958
-                                    myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);                                    
-                            } else if (reqMsg != null && reqMsg.getServerGenKeyPair() != null && reqMsg.getProtocolEncrKey() == null) {
-                                // We should actually check this in the outer CMP layers before trying to create a real certificate response, but of course we have to check in here as well
-                                final String msg = "CMP request had a server generated key pair but no controls.protocolEncrKey, can not create response";
+                    try (ASN1InputStream certASN1InputStream = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()))) {
+                        CMPCertificate cmpcert = CMPCertificate.getInstance(certASN1InputStream.readObject());
+                        CertOrEncCert retCert = new CertOrEncCert(cmpcert);
+                        CertifiedKeyPair myCertifiedKeyPair = null;
+                        // If the requestMessage has a server generated key pair, and the requestMessage had a public key
+                        // "controls.protocolEncrKey" to encrypt the private key with
+                        if (reqMsg != null && reqMsg.getServerGenKeyPair() != null && reqMsg.getProtocolEncrKey() != null) {
+                            log.debug("CMP request had a server generated key pair and controls.protocolEncrKey which we will use to encrypt the private key in the response");
+                            final KeyPair kp = reqMsg.getServerGenKeyPair();
+                            final PublicKey protocolEncrKey = reqMsg.getProtocolEncrKey();
+                            if (!protocolEncrKey.getAlgorithm().equals("RSA")) {
+                                final String msg = "CMP request had a controls.protocolEncrKey that is not an RSA key, can not create response: "+protocolEncrKey.getAlgorithm();
                                 log.debug(msg);
                                 throw new InvalidKeyException(msg);
-                            } else {
-                                myCertifiedKeyPair = new CertifiedKeyPair(retCert);                                
                             }
-                            // If we have server generated keys, add privateKey
-                            final CertResponse certResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
-                            final CertResponse[] certResponses = { certResponse };
-                            
-                            // Add the user certificates signing CA certificate (at index 0) and the others by the CMP configuration to the CMP 
-                            // response 'caPubs' field (added previously to the response with CertificateResponseMessage.addAdditionalCaCertificates().
-                            final List<CMPCertificate> caPubs = new ArrayList<>();
-                            for (Certificate certificate : this.cacert) {
-                                try (ASN1InputStream stream = new ASN1InputStream(new ByteArrayInputStream(certificate.getEncoded()));) {
-                                    caPubs.add(CMPCertificate.getInstance(stream.readObject()));
+                            // JceAsymmetricKeyWrapper sets kp.getPublic to be the key used for wrapping
+                            // JceCRMFEncryptorBuilder sets AES256 CBC to be the symmetric encryption algorithm used
+                            // TODO: Use BC standard classes and remove this, see ECA-xyz
+                            JcaEncryptedValueBuilder encBldr = new JcaEncryptedValueBuilder(
+                                    new JceAsymmetricKeyWrapper(protocolEncrKey).setProvider(BouncyCastleProvider.PROVIDER_NAME),
+                                    new JceCRMFEncryptorBuilder(CMSAlgorithm.AES256_CBC).setProvider(BouncyCastleProvider.PROVIDER_NAME).build());
+                            // encBldr.build encrypts the privateKey using the wrapper above, i.e. encrypted with AES128_CBC with the symmkey wrapped with kp.getPublic
+                            // encBldr.build will encode the private key as a PrivateKeyInfo from RFC 5958
+                            myCertifiedKeyPair = new CertifiedKeyPair(retCert, encBldr.build(kp.getPrivate()), null);
+                        } else if (reqMsg != null && reqMsg.getServerGenKeyPair() != null && reqMsg.getProtocolEncrKey() == null) {
+                            // We should actually check this in the outer CMP layers before trying to create a real certificate response, but of course we have to check in here as well
+                            final String msg = "CMP request had a server generated key pair but no controls.protocolEncrKey, can not create response";
+                            log.debug(msg);
+                            throw new InvalidKeyException(msg);
+                        } else if (reqMsg != null && reqMsg.getPOP() != null && reqMsg.getPOP().getType() == ProofOfPossession.TYPE_KEY_ENCIPHERMENT) {
+                            // A request with encrCert subsequentMessage (RFC4211 section 4.2) POP request, that we do get an encrypted message back and we can decrypt the certificate.
+                            // see RFC4211 section 6.6 and RFC4211 section 2.1 as well as RFC4210 section 5.2.2, which is updated by RFC9480 see section 2.7
+                            // Only usable/allowed with ML-KEM keys, and only allowed with CMP v3, RFC9480 due to the usage of EnvelopedData
+                            // We check this in the CMP request message verify() before trying to create a real certificate response, but we make some sanity checks here
+                            if (reqMsg.getPvno() < PKIHeader.CMP_2021) {
+                                final String msg = "Got POP type TYPE_KEY_ENCIPHERMENT with CMP version " + reqMsg.getPvno() +
+                                        ", but required version is 3 (RFC9480)";
+                                log.debug(msg);
+                                failText = msg;
+                            } else {
+                                ASN1Encodable pObj = reqMsg.getPOP().getObject();
+                                try {
+                                    final POPOPrivKey pk = POPOPrivKey.getInstance(pObj);
+                                    final int i = pk.getType();
+                                    if (i != POPOPrivKey.subsequentMessage) {
+                                        final String msg = "Got POP type TYPE_KEY_ENCIPHERMENT but not with subsequentMessage(1), but " + i;
+                                        log.debug(msg);
+                                        failText = msg;
+                                    } else {
+                                        final ASN1Integer m = SubsequentMessage.getInstance(pk.getValue());
+                                        if (m != null && m.getValue().equals(SubsequentMessage.encrCert.getValue())) {
+                                            log.info("Message requests POP as cert returned encrypted, RFC4211 4.2");
+                                            // Only allow this for ML-KEM (or other PQC KEM keys)
+                                            final String pubkeyAlg = reqMsg.getRequestPublicKey().getAlgorithm();
+                                            if (!AlgorithmTools.isKEM(pubkeyAlg)) {
+                                                final String msg = "Got POP type TYPE_KEY_ENCIPHERMENT and SubsequentMessage, but request public key is not PQC: " + pubkeyAlg;
+                                                log.debug(msg);
+                                                failText = msg;
+                                            } else {
+                                                // Send response with encrypted certificate
+                                                final CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
+                                                // note: use cert req ID as key ID, don't want to use issuer/serial in this case!
+                                                edGen.addRecipientInfoGenerator(new JceKEMRecipientInfoGenerator(new ASN1Integer(reqMsg.getRequestId()).getEncoded(),
+                                                        cert.getPublicKey(),CMSAlgorithm.AES256_WRAP).setKDF(new AlgorithmIdentifier(NISTObjectIdentifiers.id_shake256)));
+                                                // Encrypt into EnvelopedData
+                                                CMSEnvelopedData encryptedCert = edGen.generate(
+                                                        new CMSProcessableCMPCertificate(cmpcert),
+                                                        new JceCMSContentEncryptorBuilder(CMSAlgorithm.AES128_CBC).setProvider("BC").build());
+                                                // Add EnvelopedData as CertifiedKeyPair (the option to use according to RFC9480)
+                                                myCertifiedKeyPair = new CertifiedKeyPair(new CertOrEncCert(new EncryptedKey(EnvelopedData.getInstance(encryptedCert.toASN1Structure().getContent()))));
+                                            }
+                                        } else {
+                                            final String msg = "Got POP type TYPE_KEY_ENCIPHERMENT but not with encrCert(0), but " + i;
+                                            log.debug(msg);
+                                            failText = msg;
+                                        }
+                                    }
+                                } catch (IllegalArgumentException e) {
+                                    final String msg = "Got POP type TYPE_KEY_ENCIPHERMENT, but POPOPrivKey is not a SubsequentMessage. " + e.getMessage();
+                                    log.debug(msg);
+                                    failText = msg;
+                                } catch (CMSException e) {
+                                    final String msg = "Unexpected Exception caught while encrypting certificate to be returned as encrCert.";;
+                                    log.debug(msg, e);
+                                    failText = msg;
                                 }
                             }
+                        } else {
+                            // Unencrypted certificate, the most normal case
+                            myCertifiedKeyPair = new CertifiedKeyPair(retCert);
+                        }
+                        final CertResponse certResponse;
+                        // If this is null, we have to create a reject response
+                        if (myCertifiedKeyPair != null) {
+                            final PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
+                            certResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
+                        } else {
+                            final PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection,
+                                    failText != null ? new PKIFreeText(failText) : null); // 2 = rejected
+                            certResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo);
+                        }
+                        final CertResponse[] certResponses = { certResponse };
 
-                            final CertRepMessage myCertRepMessage = new CertRepMessage(!caPubs.isEmpty() ? caPubs.toArray( new CMPCertificate[] {}) : null, certResponses);
-                            int respType = PKIBody.TYPE_INIT_REQ;
-                            if(requestType == PKIBody.TYPE_P10_CERT_REQ) { // For P10Cr requests, response should be certificate response
-                                respType = PKIBody.TYPE_CERT_REP;
-                            } else {
-                                respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+                        // Add the user certificates signing CA certificate (at index 0) and the others by the CMP configuration to the CMP
+                        // response 'caPubs' field (added previously to the response with CertificateResponseMessage.addAdditionalCaCertificates().
+                        final List<CMPCertificate> caPubs = new ArrayList<>();
+                        for (Certificate certificate : this.cacert) {
+                            try (ASN1InputStream stream = new ASN1InputStream(new ByteArrayInputStream(certificate.getEncoded()));) {
+                                caPubs.add(CMPCertificate.getInstance(stream.readObject()));
                             }
+                        }
+
+                        final CertRepMessage myCertRepMessage = new CertRepMessage(!caPubs.isEmpty() ? caPubs.toArray( new CMPCertificate[] {}) : null, certResponses);
+                        int respType = PKIBody.TYPE_INIT_REQ;
+                        if(requestType == PKIBody.TYPE_P10_CERT_REQ) { // For P10Cr requests, response should be certificate response
+                            respType = PKIBody.TYPE_CERT_REP;
+                        } else {
+                            respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
+                        }
+                        if (log.isDebugEnabled()) {
+                            log.debug("Creating response body of type " + respType);
+                        }
+                        myPKIBody = new PKIBody(respType, myCertRepMessage);
+                        // All good, see if we should add implicitConfirm
+                        if (implicitConfirm) {
                             if (log.isDebugEnabled()) {
-                                log.debug("Creating response body of type " + respType);
+                                log.debug("Adding implicitConform (RFC4210 section 5.1.1.1) to CMP response message with transId: "+transactionId);
                             }
-                            myPKIBody = new PKIBody(respType, myCertRepMessage);
-                            // All good, see if we should add implicitConfirm
-                            if (implicitConfirm) {
-                                if (log.isDebugEnabled()) {
-                                    log.debug("Adding implicitConform (RFC4210 section 5.1.1.1) to CMP response message with transId: "+transactionId);
-                                }
-                                final InfoTypeAndValue genInfo = new InfoTypeAndValue(CMPObjectIdentifiers.it_implicitConfirm);
-                                myPKIHeader.setGeneralInfo(genInfo);                                
-                            }
-                        } finally {
-                            certASN1InputStream.close();
+                            final InfoTypeAndValue genInfo = new InfoTypeAndValue(CMPObjectIdentifiers.it_implicitConfirm);
+                            myPKIHeader.setGeneralInfo(genInfo);
                         }
                     } catch (IOException e) {
                         throw new IllegalStateException("Unexpected IOException caught.", e);
                     }
                 }
             } else if (status.equals(ResponseStatus.FAILURE)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Creating a CertRepMessage 'rejected'");
-                }
-                // Create a failure message
-                ASN1EncodableVector statusInfoV = new ASN1EncodableVector();
-                statusInfoV.add(ASN1Integer.getInstance(PKIStatus.rejection.toASN1Primitive()));
-                if (failText != null) {
-                    statusInfoV.add(new PKIFreeText(new DERUTF8String(failText)));
-                }
-                statusInfoV.add(CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
-                PKIStatusInfo myPKIStatusInfo = PKIStatusInfo.getInstance(ASN1Sequence.getInstance(new DERSequence(statusInfoV)));
-                myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIStatusInfo, requestId, requestType);
-                
+                myPKIBody = createFailurePKIBody();
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Creating a 'waiting' message?");
@@ -387,11 +450,11 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 }
                 statusInfoV.add(CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
                 PKIStatusInfo myPKIStatusInfo = PKIStatusInfo.getInstance(new DERSequence(statusInfoV));
-                
+
                 ErrorMsgContent myErrorContent = new ErrorMsgContent(myPKIStatusInfo);
-                myPKIBody = new PKIBody(23, myErrorContent); // 23 = error                
+                myPKIBody = new PKIBody(23, myErrorContent); // 23 = error
             }
-            
+
             final boolean pbeProtected = (pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null);
             final boolean pbmac1Protected = (pbmac1KeyId != null) && (pbmac1Key != null) && (pbmac1PrfAlg != null) && (pbmac1MacAlg != null);
             if (pbeProtected) {
@@ -437,9 +500,9 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
                 responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, extraCertsList, signKey, signAlg, digest, provider);
             }
-            
+
             ret = true;
-            
+
         } catch (CertificateEncodingException | InvalidKeyException | NoSuchProviderException | NoSuchAlgorithmException | SecurityException
                 | SignatureException | CRMFException e) {
             log.error("Error creating CertRepMessage: ", e);
@@ -447,11 +510,28 @@ public class CmpResponseMessage implements CertificateResponseMessage {
         return ret;
     }
 
+    private PKIBody createFailurePKIBody() {
+        PKIBody myPKIBody;
+        if (log.isDebugEnabled()) {
+            log.debug("Creating a CertRepMessage 'rejected'");
+        }
+        // Create a failure message
+        ASN1EncodableVector statusInfoV = new ASN1EncodableVector();
+        statusInfoV.add(ASN1Integer.getInstance(PKIStatus.rejection.toASN1Primitive()));
+        if (failText != null) {
+            statusInfoV.add(new PKIFreeText(new DERUTF8String(failText)));
+        }
+        statusInfoV.add(CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
+        PKIStatusInfo myPKIStatusInfo = PKIStatusInfo.getInstance(ASN1Sequence.getInstance(new DERSequence(statusInfoV)));
+        myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIStatusInfo, requestId, requestType);
+        return myPKIBody;
+    }
+
     private CMPCertificate[] getExtraCertsList() throws CertificateEncodingException {
         final CMPCertificate[] returnList = new CMPCertificate[extraCerts.size()];
         int i = 0;
         for (Certificate c : extraCerts) {
-            returnList[i] = CMPCertificate.getInstance(((X509Certificate) c).getEncoded());
+            returnList[i] = CMPCertificate.getInstance(c.getEncoded());
             i++;
         }
         return returnList;
@@ -493,7 +573,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
 
     @Override
     public void setPreferredDigestAlg(String digest){
-        if(!StringUtils.isEmpty(digest)) { 
+        if(!StringUtils.isEmpty(digest)) {
             this.digest = digest;
         }
     }
