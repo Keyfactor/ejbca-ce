@@ -468,8 +468,8 @@ public class CertificateRequestSessionSystemTest extends CaTestCase {
         return p10request.toASN1Structure().getEncoded();        
     }
     
-    private static byte[] generateHybridPKCS10Req(String dn) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
-        SignatureException, InvalidAlgorithmParameterException, IOException, OperatorCreationException {
+    private static byte[] generateHybridPKCS10Req(String dn) throws InvalidAlgorithmParameterException, IOException,
+            OperatorCreationException {
         // Generate keys
         KeyPair primaryKeyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);    
         KeyPair alternativeKeyPair = KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_FALCON512, 
