@@ -21,20 +21,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.component.UIComponent;
-import jakarta.faces.component.html.HtmlPanelGrid;
-import jakarta.faces.component.html.HtmlSelectOneMenu;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.event.AjaxBehaviorEvent;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.validator.ValidatorException;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Inject;
-import jakarta.inject.Named;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -52,6 +38,7 @@ import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
+import org.cesecore.keys.validation.StaticUserInterfaceValidator;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
@@ -65,6 +52,20 @@ import org.ejbca.ui.web.admin.BaseManagedBean;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.component.UIComponent;
+import jakarta.faces.component.html.HtmlPanelGrid;
+import jakarta.faces.component.html.HtmlSelectOneMenu;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.event.AjaxBehaviorEvent;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.validator.ValidatorException;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
 
 /**
  * JSF MBean backing the edit key validators page.
@@ -685,5 +686,31 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public void setNotApplicableAction(int notApplicableAction) {
         stagedValidator.setNotApplicableAction(notApplicableAction);
     }
+    
+    /**
+     * 
+     * @return true if validator has a statically defined UI
+     */
+    public boolean isStatic() {
+        return stagedValidator instanceof StaticUserInterfaceValidator;
+    }
+
+    /**
+     * 
+     * @return true of validator defines it own UI
+     */
+    public boolean isDynamic() {
+        return stagedValidator instanceof DynamicUiModelAware;
+    }
+    
+    public String getStaticPage() {
+        if (stagedValidator instanceof StaticUserInterfaceValidator) {
+            return ((StaticUserInterfaceValidator) stagedValidator).getStaticPage();
+        } else {
+            return "";
+        }
+    }
+
+
     
 }

@@ -38,6 +38,7 @@ import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiModel;
+import org.cesecore.util.ui.DynamicUiModelAware;
 import org.cesecore.util.ui.DynamicUiProperty;
 
 import com.keyfactor.util.CertTools;
@@ -47,7 +48,7 @@ import com.keyfactor.util.CertTools;
  *
  * @version $Id$
  */
-public class ExternalCommandCertificateValidator extends CertificateValidatorBase {
+public class ExternalCommandCertificateValidator extends CertificateValidatorBase implements DynamicUiModelAware, ExternalScriptCertificateValidator {
 
     private static final long serialVersionUID = -135859158339811678L;
 
@@ -76,10 +77,13 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
 
     /** Holds the test certificates uploaded by the user. */
     private List<Certificate> testCertificates;
-
+    
     static {
         APPLICABLE_CA_TYPES.add(CAInfo.CATYPE_X509);
     }
+    
+    /** Dynamic UI model extension. */
+    private DynamicUiModel uiModel;
 
     /**
      * Public constructor needed for deserialization.
@@ -184,7 +188,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     }
 
     @Override
-    public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsAllowlist externalScriptsWhitelist)
+    public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsAllowlist externalScriptsAllowlist)
             throws ValidatorNotApplicableException, ValidationException, CertificateException {
         final List<String> messages = new ArrayList<>();
         if (log.isDebugEnabled()) {
@@ -200,7 +204,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         final List<String> out = new ArrayList<>();
         // Run external scripts (is used by publishers as well, writes certificate to disk!).
         try {
-            out.addAll(runExternalCommandInternal(cmd, externalScriptsWhitelist, certificates));
+            out.addAll(runExternalCommandInternal(cmd, externalScriptsAllowlist, certificates));
         } catch(ExternalProcessException e) {
             throw new ValidatorNotApplicableException( "External command could not be called, because it does not exit, command can not be found, access was denied, certificate not written, or another error occured: "+e.getMessage());
         }
@@ -535,4 +539,15 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
         }
         return arguments;
     }
+
+    @Override
+    public DynamicUiModel getDynamicUiModel() {
+        return uiModel;
+    }
+
+    @Override
+    public Class<? extends Validator> getValidatorSubType() {
+        return ExternalCommandCertificateValidator.class;
+    }
+
 }
