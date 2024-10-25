@@ -263,3 +263,16 @@ schedulerName: ""
 
 # https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
 terminationGracePeriodSeconds: ""
+
+# https://kubernetes.io/docs/concepts/services-networking/network-policies/
+networkPolicy:
+  # policyTypes:
+  #   - Ingress
+  #   - Egress
+  #   ingress:
+  #   - from:
+  #       ...
+  #   egress:
+  #   - to:
+  #       ...
+    
