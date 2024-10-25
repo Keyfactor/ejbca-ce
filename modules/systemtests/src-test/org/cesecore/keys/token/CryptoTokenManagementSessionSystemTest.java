@@ -12,10 +12,15 @@
  *************************************************************************/
 package org.cesecore.keys.token;
 
+import java.security.InvalidKeyException;
+import java.util.Arrays;
+import java.util.List;
+
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
+
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -27,10 +32,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.security.InvalidKeyException;
-import java.util.Arrays;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -46,7 +47,7 @@ public class CryptoTokenManagementSessionSystemTest extends RoleUsingTestCase {
     private static final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(CryptoTokenManagementSessionSystemTest.class.getSimpleName());
     private static final Logger log = Logger.getLogger(CryptoTokenManagementSessionSystemTest.class);
-    
+
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -73,7 +74,7 @@ public class CryptoTokenManagementSessionSystemTest extends RoleUsingTestCase {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
-    
+
     @Test
     public void basicCryptoTokenForCAWithExplicitRSA() throws Exception {
         int cryptoTokenId = 0;
@@ -270,11 +271,5 @@ public class CryptoTokenManagementSessionSystemTest extends RoleUsingTestCase {
             CryptoTokenTestUtils.removeCryptoToken(roleMgmgToken, cryptoTokenId);
         }
     }
-    
 
-    
-
-   
-
-   
 }

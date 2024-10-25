@@ -105,7 +105,7 @@
                 <h:outputText value="#{cc.attrs.raCertificateDetails.publicKeyAlgorithm} "/>
                 <h:outputText value=" #{cc.attrs.raCertificateDetails.publicKeySpecification} "/>
             </h:panelGroup>
-            
+
             <h:outputLabel for="alternativepublickeyspec" value="#{msg.component_certdetails_field_publickeyspec_alternative}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"
                             rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
@@ -115,7 +115,6 @@
                 <h:outputText value="#{cc.attrs.raCertificateDetails.publicAlternativeKeyAlgorithm} "  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
                 <h:outputText value=" #{cc.attrs.raCertificateDetails.publicAlternativeKeySpecification} "  rendered="#{cc.attrs.raCertificateDetails.hybridCertificate}"/>
             </h:panelGroup>
-            
             
             <h:outputLabel for="signaturealgorithm" value="#{msg.component_certdetails_field_signaturealgorithm}"
                            styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
@@ -464,7 +463,14 @@
                                  action="#{cc.attrs.raCertificateDetails.actionToggleMore}">
                     <f:ajax execute="@this" render="@form"/>
                 </h:commandButton>
-            </h:panelGroup>
+                <h:commandButton id="showHideFullPublicKeysButton"
+                                 value="#{cc.attrs.raCertificateDetails.showFullPublicKeys ? msg.component_certdetails_hide_full_public_keys : msg.component_certdetails_show_full_public_keys}"
+                                 styleClass="pure-button ra-button"
+                                 action="#{cc.attrs.raCertificateDetails.actionToggleShowFullPublicKeys}"
+                                 rendered="#{not empty cc.attrs.raCertificateDetails.altPublicKeyFull and not empty cc.attrs.raCertificateDetails.publicKeyFull}">
+                    <f:ajax execute="@this" render="@form"/>
+                </h:commandButton>
+            </h:panelGroup>        
 
             <h:outputText styleClass="#{cc.attrs.styleFull} pre" value=" "/>
 
@@ -498,6 +504,19 @@
                                styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                 <h:outputText id="dump" value="#{cc.attrs.raCertificateDetails.dump}"
                               styleClass="#{cc.attrs.styleValue}  #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace ellipsis pre"/>
+            </h:panelGroup>
+            
+            <h:panelGroup id="showPublicKeys" styleClass="#{cc.attrs.styleFull}"
+                          rendered="#{cc.attrs.raCertificateDetails.showFullPublicKeys}">
+                <h:outputLabel for="publickeyfull" value="#{msg.component_certdetails_field_publickeyfull}"
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="publickeyfull" value="#{cc.attrs.raCertificateDetails.publicKeyFull}"
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>
+
+                <h:outputLabel for="altpublickeyfull" value="#{msg.component_certdetails_field_altpublickeyfull}" rendered="#{not empty cc.attrs.raCertificateDetails.altPublicKeyFull}"
+                               styleClass="#{cc.attrs.styleLabel} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
+                <h:outputText id="altpublickeyfull" value="#{cc.attrs.raCertificateDetails.altPublicKeyFull}" rendered="#{not empty cc.attrs.raCertificateDetails.altPublicKeyFull}"
+                              styleClass="#{cc.attrs.styleValue} #{cc.attrs.raCertificateDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} monospace"/>                          
             </h:panelGroup>
 
             <h:panelGroup layout="block" styleClass="internal-frame-black"

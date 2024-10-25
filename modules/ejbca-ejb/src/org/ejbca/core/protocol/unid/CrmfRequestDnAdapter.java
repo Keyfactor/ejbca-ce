@@ -24,19 +24,19 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.List;
 
+import com.keyfactor.util.certificate.DnComponents;
+
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 
-import com.keyfactor.util.certificate.DnComponents;
-
 /**
  * Holder for a modified ICrmfRequestMessage
  */
 public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
-  
+
     private static final long serialVersionUID = -4884813822503768798L;
 
     private final ICrmfRequestMessage original;
@@ -156,7 +156,7 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
 	public int getRequestId() {
 		return this.original.getRequestId();
 	}
-	
+
     @Override
     public void setResponseKeyInfo(PrivateKey key, String provider) {
         this.original.setResponseKeyInfo(key, provider);
@@ -225,7 +225,7 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
     @Override
     public void setPassword(String pwd) {
         this.original.setPassword(pwd);
-        
+
     }
     @Override
     public void setRequestValidityNotAfter(Date notAfter) {
@@ -255,4 +255,8 @@ public class CrmfRequestDnAdapter implements ICrmfRequestMessage {
 	public int getPbmac1DkLen() {
 		return this.original.getPbmac1DkLen();
 	}
+    @Override
+    public int getPvno() {
+        return this.original.getPvno();
+    }
 }

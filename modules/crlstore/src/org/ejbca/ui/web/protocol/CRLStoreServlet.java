@@ -90,13 +90,13 @@ public class CRLStoreServlet extends StoreServletBase {
 	}
 
 	@Override
-	public void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url) {
+	public void printInfo(X509Certificate cert, String indent, PrintWriter pw) {
         // Important to escape output that have an even small chance of coming from untrusted source
 		pw.println(indent+HTMLTools.htmlescape(cert.getSubjectX500Principal().toString()));
-		pw.println(indent+" "+RFC4387URL.iHash.getRef(url, HashID.getFromSubjectDN(cert)));
-		pw.println(indent+" "+RFC4387URL.sKIDHash.getRef(url, HashID.getFromKeyID(cert)));
-		pw.println(indent+" "+RFC4387URL.iHash.getRef(url, HashID.getFromSubjectDN(cert), true));
-		pw.println(indent+" "+RFC4387URL.sKIDHash.getRef(url, HashID.getFromKeyID(cert), true));
+		pw.println(indent+" "+RFC4387URL.iHash.getRef("", HashID.getFromSubjectDN(cert)));
+		pw.println(indent+" "+RFC4387URL.sKIDHash.getRef("", HashID.getFromKeyID(cert)));
+		pw.println(indent+" "+RFC4387URL.iHash.getRef("", HashID.getFromSubjectDN(cert), true));
+		pw.println(indent+" "+RFC4387URL.sKIDHash.getRef("", HashID.getFromKeyID(cert), true));
 	}
 
 	@Override
@@ -142,19 +142,19 @@ public class CRLStoreServlet extends StoreServletBase {
 		resp.getOutputStream().write(crl);
 	}
 	
-    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, String url) {
+    @Override
+    protected void printInfo(X509Certificate[] certs, String indent, PrintWriter pw) {
         for (X509Certificate cert : certs) {
             //Verify that there is a CRL to download
             if (crlStoreSession.crlExistsForCa(CertTools.getSubjectDN(cert))) {
-                // Escape the URL as it might be unsafe
-                printInfo(cert, indent, pw, HTMLTools.htmlescape(url));
+                printInfo(cert, indent, pw);
                 pw.println();
             }
             final X509Certificate[] issuedCerts = this.certCache.findLatestByIssuerDN(HashID.getFromSubjectDN(cert));
             if (ArrayUtils.isEmpty(issuedCerts)) {
                 continue;
             }
-            printInfo(issuedCerts, SPACE + indent, pw, url);
+            printInfo(issuedCerts, SPACE + indent, pw);
         }
     }
 }
