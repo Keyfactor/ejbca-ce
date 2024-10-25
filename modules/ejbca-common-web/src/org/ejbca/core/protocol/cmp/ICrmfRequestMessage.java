@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 
+import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 
 
@@ -61,15 +62,15 @@ public interface ICrmfRequestMessage extends RequestMessage {
 	default int getPbmac1DkLen() {
         return 0;
     }
-	
+
 	/**
 	 * RFC4210 section 5.1.1.1
 	 * @return true if the implicitConfirm OID is included in the request PKIHeader.generalInfo
 	 */
 	boolean isImplicitConfirm();
 
-	/** 
-	 * Returns the protocolEncrKey, as sent by the client to encrypt server generated private keys with 
+	/**
+	 * Returns the protocolEncrKey, as sent by the client to encrypt server generated private keys with
 	 * @return PublicKey to be used to encrypt a private key set by {@link #setServerGenKeyPair(KeyPair)}
 	 */
     default PublicKey getProtocolEncrKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
@@ -89,5 +90,17 @@ public interface ICrmfRequestMessage extends RequestMessage {
     default KeyPair getServerGenKeyPair() {
         return null;
     }
+
+    /**
+     * @return The proof-of-possession sent by the client, can be a real POP signature, or an encryption request (encrCert), or raVerified
+     */
+    default ProofOfPossession getPOP() {
+        return null;
+    }
+
+    /** The CMP protocol version, CMP version. RFC4210 - cmp2000(2), RFC9480 - cmp2021(3)
+     * @return integer value, normally 2 (PKIHeader.CMP_2000), but 3 (PKIHeader.CMP_2021) for RFC9480 specifics
+     */
+    int getPvno();
 
 }

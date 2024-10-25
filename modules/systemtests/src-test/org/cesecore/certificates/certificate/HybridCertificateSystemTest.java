@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -27,6 +24,13 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Properties;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -93,12 +97,8 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * System tests focusing on the creation of Hybrid X509 Certificates
@@ -183,7 +183,7 @@ public class HybridCertificateSystemTest {
 
     @After
     public void tearDown() throws Exception {
-        //Delete the end entity 
+        //Delete the end entity
         if (endEntityManagementSession.existsUser(username)) {
             endEntityManagementSession.deleteUser(alwaysAllowToken, username);
         }
@@ -211,7 +211,7 @@ public class HybridCertificateSystemTest {
     }
 
     /**
-     * Try enrolling a hybrid X509 certificate 
+     * Try enrolling a hybrid X509 certificate
      *
      */
     @Test
