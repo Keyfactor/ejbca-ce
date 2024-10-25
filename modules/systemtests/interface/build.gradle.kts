@@ -14,10 +14,7 @@ dependencies {
     compileOnly(libs.commons.lang)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
-
-    // System test specific
     testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
-    testRuntimeOnly(libs.jboss.logging)
 }
 
 sourceSets {
