@@ -354,8 +354,10 @@ subprojects {
 
             // Add common system test dependencies.
             dependencies {
+                val testRuntimeOnly by configurations
+                testRuntimeOnly(rootProject.libs.jboss.logging)
+
                 if (!isProductionMode) {
-                    val testRuntimeOnly by configurations
                     // `:jboss:client` is used instead of `rootProject.libs.jboss.client`
                     // to prevent Gradle from prematurely resolving the non-existent library
                     // when `isProductionMode` is set to true

@@ -58,7 +58,6 @@ dependencies {
     testRuntimeOnly(libs.jakarta.mail)
     testRuntimeOnly(libs.gmbal.api) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
     testRuntimeOnly(libs.jaxws.rt) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
-    testRuntimeOnly(libs.jboss.logging)
     testRuntimeOnly(libs.stax.ex)
     testRuntimeOnly(libs.streambuffer)
 }
