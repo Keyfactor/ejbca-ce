@@ -667,7 +667,7 @@
         <delete file="jacoco.exec"/>
     </target>
 
-    <target name="coverage:report-systemtest" description="get coverage for system test.">
+    <target name="coverage:report-systemtest" description="get coverage for system test. automatically adds links to updated classes after split from main. additional files can be added as updatedfiles.txt in project base directory">
         <java jar="lib/coverage/jacococli.jar" fork="true" failonerror="false">
           <arg line="dump --reset --address localhost --port 8079 --destfile jacoco.exec"/>
           <classpath>
