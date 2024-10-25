@@ -652,7 +652,8 @@
           </classpath>
         </java>
         <java jar="lib/coverage/DecorateCoverageReport.jar" fork="true" failonerror="false">
-        </java>
+		<arg line="updatedfiles.txt"/>
+	</java>
     </target>
 
     <target name="coverage:reset-systemtest" description="remove coverage for system test in wildfly.">
