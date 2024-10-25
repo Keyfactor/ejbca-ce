@@ -41,7 +41,7 @@ public enum RFC4387URL {
 		return sb.toString();
 	}
 	private String appendQueryToURL(String url, String id) {
-        return url+"?"+toString()+"="+id;
+        return url+"?"+name()+"="+id;
 	}
 	/**
 	 * Append the query of the RFC hash to a URL
