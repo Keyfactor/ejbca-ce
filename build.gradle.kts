@@ -431,7 +431,7 @@ tasks.register("summarizeTestResults") {
 
 tasks.register("checkIfAppServerIsRunning") {
     description = "Checks whether an application server is running. Used to determine if system tests can be executed."
-    group = "check"
+    group = "verification"
     doLast {
         val host = findProperty("target.hostname") as String? ?: "localhost"
         val port = findProperty("target.port.https") as String? ?: "8443"
