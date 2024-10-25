@@ -307,7 +307,6 @@ subprojects {
 
             filter {
                 includeTestsMatching("*UnitTest")
-                excludeTestsMatching("*SystemTest")
                 isFailOnNoMatchingTests = false
             }
 
