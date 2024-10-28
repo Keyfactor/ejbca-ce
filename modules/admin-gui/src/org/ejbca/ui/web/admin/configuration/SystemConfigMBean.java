@@ -303,8 +303,21 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public void handleBannerUpload(FileUploadEvent event) {
         // Get the uploaded file
         this.headerFile = event.getFile();
-        
-        
+
+        // Check file size (e.g., max 1MB)
+        if (headerFile.getSize() > 1000000) {
+            addNonTranslatedErrorMessage("File too large! Maximum allowed size is 1MB.");
+            return;
+        }
+
+        // Check file type
+        String contentType = headerFile.getContentType();
+        if (!contentType.equals("image/jpeg") && !contentType.equals("image/png") && !contentType.equals("image/jpg") && !contentType.equals("image/gif")) {
+            addNonTranslatedErrorMessage("Invalid file type! Only JPEG and PNG images are allowed.");
+            return;
+        }
+
+        addInfoMessage("Success" +  headerFile.getFileName() + " is uploaded.");
     }
 
     public class EKUInfo {

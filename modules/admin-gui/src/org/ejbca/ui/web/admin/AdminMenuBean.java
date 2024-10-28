@@ -30,14 +30,15 @@ import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
 
+
 /**
  * Backing bean for the menu on the left (in the default theme) in the AdminWeb.
- * @version $Id$
  */
 @RequestScoped
 @Named
@@ -264,7 +265,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return url;
     }
     
-    private StreamedContent headerLogoImage;
+    private transient StreamedContent headerLogoImage;
     
     public StreamedContent getHeaderLogoImage() {
 
@@ -272,12 +273,17 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
 
             byte[] imageBytes = getGlobalConfiguration().getHeadBannerLogo();
 
-            if (imageBytes == null) {
-                imageBytes = getGlobalConfiguration().DEFAULT_HEADER_LOGO;
+            if (imageBytes == null || imageBytes.length == 0) {
+
+                FacesContext facesContext = FacesContext.getCurrentInstance();
+                ServletContext context = (ServletContext) facesContext.getExternalContext().getContext();
+                final String adminWebLogoPath = context.getRealPath("/") + getEjbcaWebBean().getImagePath(getEjbcaWebBean().getEditionFolder()
+                        + "/keyfactor-" + org.ejbca.config.InternalConfiguration.getAppNameLower() + "-logo.png");
+                imageBytes = getGlobalConfiguration().initHeadBannerLogo(adminWebLogoPath);
             }
 
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes); // Wrap byte array in InputStream
-
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes); 
+            
             // Set cache control headers to prevent browser caching
             FacesContext facesContext = FacesContext.getCurrentInstance();
             HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
@@ -286,7 +292,6 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
             response.setDateHeader("Expires", 0); // Proxies
 
             headerLogoImage = DefaultStreamedContent.builder().contentType("image/png").stream(() -> inputStream).build();
-
         }
         return headerLogoImage;
     }

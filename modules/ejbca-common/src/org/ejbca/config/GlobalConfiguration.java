@@ -34,7 +34,6 @@ import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.util.URIUtil;
 
-
 /**
  * This is a  class containing global configuration parameters.
  */
@@ -72,7 +71,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
 	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
 
-    public static final byte[] DEFAULT_HEADER_LOGO = initHeadBannerLogo();
+    public static byte[] DEFAULT_HEADER_LOGO = new byte[0];
 
     // Default list of nodes in cluster
     private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
@@ -186,17 +185,16 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        setEnableIcaoCANameChange(false);
     }
     
-    private static byte[] initHeadBannerLogo() {
-        //TODO: fix this hardcoded path!
-        Path path = Paths.get("/home/amin/ejbca_git/ejbca/modules/admin-gui/resources/images/EE/keyfactor-ejbca-logo.png");
+    public byte[] initHeadBannerLogo(String path) {
         try {
-            return Files.readAllBytes(path);
+            Path logoPath = Paths.get(path);
+            GlobalConfiguration.DEFAULT_HEADER_LOGO = Files.readAllBytes(logoPath);
+            return DEFAULT_HEADER_LOGO;
         } catch (IOException e) {
-            LOG.error("Error while loading the default ejbca logo from file system.");
+            LOG.error("Error while reading adminweb default logo from file system.");
             throw new IllegalStateException(e);
-        } 
+        }
     }
-
 
     /** Initializes a new global configuration with data used in ra web interface. */
     private void initialize(String availablelanguages, String availablethemes,
