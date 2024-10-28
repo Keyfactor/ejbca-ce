@@ -101,7 +101,6 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         createPQCCa(TEST_MLDSA44_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.SIGALG_MLDSA44);
         createPQCCa(TEST_MLDSA65_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.SIGALG_MLDSA65);
         createPQCCa(TEST_MLDSA87_CA_NAME, AlgorithmConstants.KEYALGORITHM_MLDSA87, AlgorithmConstants.SIGALG_MLDSA87);
-
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
         createEndEntity(RSA_USERNAME, DEFAULT_EE_PROFILE, DEFAULT_CERTIFICATE_PROFILE, rsacaid);
         createEndEntity(TEST_FALCON512_CA_NAME, FALCON512_USERNAME);
@@ -292,10 +291,10 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
             MLDSAPublicKey pub = (MLDSAPublicKey) pk;
             assertEquals(pub.getAlgorithm(), AlgorithmConstants.KEYALGORITHM_MLDSA44);
             MLDSAParameterSpec paramspec = pub.getParameterSpec();
-            assertNotNull("ML-DSA spec can not have null spec", paramspec);
-            assertEquals("Spec was not ML-DSA-44", MLDSAParameterSpec.ml_dsa_44, paramspec);
+            assertNotNull("MLDSA spec can not have null spec", paramspec);
+            assertEquals("Spec was not MLDSA-44", MLDSAParameterSpec.ml_dsa_44, paramspec);
         } else {
-            assertTrue("Public key is not Falcon or ML-DSA: " + pk.getClass().getName(), false);
+            assertTrue("Public key is not Falcon or MLDSA: " + pk.getClass().getName(), false);
         }
     }
 

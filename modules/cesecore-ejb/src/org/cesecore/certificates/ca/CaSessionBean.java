@@ -12,10 +12,28 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import static java.util.Objects.nonNull;
+
+import java.io.Serializable;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.Base64;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -42,11 +60,8 @@ import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
-import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
-import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.CryptoTokenSessionLocal;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.ui.DynamicUiProperty;
 
@@ -54,8 +69,6 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.Resource;
@@ -68,27 +81,6 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateNotYetValidException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.TreeMap;
-import java.util.TreeSet;
-
-import static java.util.Objects.nonNull;
 
 /**
  * Implementation of CaSession, i.e takes care of all CA related CRUD operations.
@@ -253,6 +245,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         	}
     		try {
     			final CACommon ca = getCAInternal(cainfo.getCAId(), null, null, false);
+                @SuppressWarnings("unchecked")
                 final Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData();
 
                 // Check if we can edit the CA (also checks authorization)
@@ -266,7 +259,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 if (cainfo instanceof X509CAInfo && !((X509CAInfo)cainfo).isMsCaCompatible() && ca instanceof X509CA && ((X509CA)ca).isMsCaCompatible())
                     throw new CaMsCompatibilityIrreversibleException("MS Compatible CA setting is irreversible.");
 
-                @SuppressWarnings("unchecked")
                 AvailableCustomCertificateExtensionsConfiguration cceConfig = null;
                 if (cainfo.getCAType() != CAInfo.CATYPE_PROXY) {
                     cceConfig = (AvailableCustomCertificateExtensionsConfiguration)
@@ -1057,135 +1049,26 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         final float oldversion = ((Float) caDataMap.get(UpgradeableDataHashMap.VERSION)).floatValue();
         // Fetching the CA object will trigger UpgradableHashMap upgrades
         CACommon ca = cadata.getCA();
-        // Perform "live" upgrade from 5.0.x and earlier
-        // if (oldversion <= 5.0) {
-        boolean adhocUpgrade;
-        if (ca != null && ca.getCAType() == CAInfo.CATYPE_PROXY) {
-            adhocUpgrade = false;
-        } else {
-            adhocUpgrade = adhocUpgradeFrom50(cadata.getCaId().intValue(), caDataMap, cadata.getName());
-        }
-
-            if (adhocUpgrade) {
-                // Convert map into storage friendly format now since we changed it
-                cadata.setDataMap(caDataMap);
+        if (ca != null) {
+            final boolean expired = hasCAExpiredNow(ca);
+            if (expired) {
+                ca.setStatus(CAConstants.CA_EXPIRED);
             }
-            if (ca != null) {
-                final boolean expired = hasCAExpiredNow(ca);
-                if (expired) {
-                    ca.setStatus(CAConstants.CA_EXPIRED);
-                }
-                final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
-                // Compare old version with current version and save the data if there has been a change
-                final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
-                if (adhocUpgrade || upgradedExtendedService || upgradeCA || expired) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() +
-                            ", adhocUpgrade: " + adhocUpgrade+", upgradedExtendedService: " + upgradedExtendedService +
-                            ", upgradeCA: " + upgradeCA + ", expired: " + expired);
-                    }
-                    ca.getCAToken();
-                    final int caId = caSession.mergeCa(ca);
-                    caDataReturn = entityManager.find(CAData.class, caId);
-                }
-            }
-            return caDataReturn;
-        /*} else {
-            return cadata;
-        }*/
-    }
-
-    /**
-     * Extract keystore or keystore reference and store it as a CryptoToken. Add a reference to the keystore.
-     * @return true if any changes where made
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated // Remove when we no longer need to support upgrades from 5.0.x
-    private boolean adhocUpgradeFrom50(int caid, LinkedHashMap<Object, Object> data, String caName) {
-        HashMap<String, String> tokendata = (HashMap<String, String>) data.get(CABase.CATOKENDATA);
-        if (tokendata.get(CAToken.CRYPTOTOKENID) != null) {
-            // Already upgraded
-            if (!CesecoreConfiguration.isKeepInternalCAKeystores()) {
-                // All nodes in the cluster has been upgraded so we can remove any internal CA keystore now
-                if (tokendata.get(CAToken.KEYSTORE)!=null) {
-                    tokendata.remove(CAToken.KEYSTORE);
-                    tokendata.remove(CAToken.CLASSPATH);
-                    log.info("Removed duplicate of upgraded CA's internal keystore for CA '" + caName + "' with id: " + caid);
-                    return true;
-                }
-            } else {
+            final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
+            // Compare old version with current version and save the data if there has been a change
+            final boolean upgradeCA = (Float.compare(oldversion, ca.getVersion()) != 0);
+            if (upgradedExtendedService || upgradeCA || expired) {
                 if (log.isDebugEnabled()) {
-                    log.debug("CA '" + caName + "' already has cryptoTokenId and will not have it's token split of to a different db table because db.keepinternalcakeystores=true: " + caid);
+                    log.debug("Merging CA to database. Name: " + cadata.getName() + ", id: " + cadata.getCaId() + ", upgradedExtendedService: "
+                            + upgradedExtendedService + ", upgradeCA: " + upgradeCA + ", expired: " + expired);
                 }
-            }
-            return false;
-        }
-        // Perform pre-upgrade of CATokenData to correct classpath changes (org.ejbca.core.model.ca.catoken.SoftCAToken)
-        tokendata = (LinkedHashMap<String, String>) new CAToken(tokendata).saveData();
-        data.put(CABase.CATOKENDATA, tokendata);
-        log.info("Pulling CryptoToken out of CA '" + caName + "' with id " + caid + " into a separate database table.");
-        final String str = tokendata.get(CAToken.KEYSTORE);
-        byte[] keyStoreData = null;
-        if (StringUtils.isNotEmpty(str)) {
-            keyStoreData = Base64.decode(str.getBytes());
-        }
-        String propertyStr = tokendata.get(CAToken.PROPERTYDATA);
-        final Properties prop = new Properties();
-        if (StringUtils.isNotEmpty(propertyStr)) {
-            try {
-                // If the input string contains \ (backslash on windows) we must convert it to \\
-                // Otherwise properties.load will parse it as an escaped character, and that is not good
-                propertyStr = StringUtils.replace(propertyStr, "\\", "\\\\");
-                prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
-            } catch (IOException e) {
-                log.error("Error getting CA token properties: ", e);
+                ca.getCAToken();
+                final int caId = caSession.mergeCa(ca);
+                caDataReturn = entityManager.find(CAData.class, caId);
             }
         }
-        final String classpath = tokendata.get(CAToken.CLASSPATH);
-        if (log.isDebugEnabled()) {
-            log.debug("CA token classpath: " + classpath);
-        }
-        // Upgrade the properties value
-        final Properties upgradedProperties = PKCS11CryptoToken.upgradePropertiesFileFrom5_0_x(prop);
-        // If it is an P11 we are using and the library and slot are the same as an existing CryptoToken we use that CryptoToken's id.
-        int cryptoTokenId = 0;
-        if (PKCS11CryptoToken.class.getName().equals(classpath)) {
-            if (upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE)==null) {
-                log.error("Upgrade of CA '" + caName + "' failed due to failed upgrade of PKCS#11 CA token properties.");
-                return false;
-            }
-            for (final Integer currentCryptoTokenId : cryptoTokenSession.getCryptoTokenIds()) {
-                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(currentCryptoTokenId);
-                final Properties cryptoTokenProperties = cryptoToken.getProperties();
-                if (StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY))
-                        && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY), cryptoTokenProperties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY))
-                        && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE))
-                        && StringUtils.equals(upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE), cryptoTokenProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_TYPE))) {
-                    // The current CryptoToken point to the same HSM slot in the same way.. re-use this id!
-                    cryptoTokenId = currentCryptoTokenId;
-                    break;
-                }
-            }
-        }
-        if (cryptoTokenId == 0) {
-            final String cryptoTokenName = "Upgraded CA CryptoToken for " + caName;
-            try {
-                cryptoTokenId = cryptoTokenSession.mergeCryptoToken(CryptoTokenFactory.createCryptoToken(classpath, upgradedProperties, keyStoreData, caid, cryptoTokenName, true));
-            } catch (CryptoTokenNameInUseException e) {
-                final String msg = "Crypto token name already in use upgrading (adhocUpgradeFrom50) crypto token for CA '"+caName+"', cryptoTokenName '"+cryptoTokenName+"'.";
-                log.info(msg, e);
-                throw new RuntimeException(msg, e);  // Since we have a constraint on CA names to be unique, this should never happen
-            } catch (NoSuchSlotException e) {
-                final String msg = "Slot as defined by " + upgradedProperties.getProperty(PKCS11CryptoToken.SLOT_LABEL_VALUE) + " for CA '" + caName + "' could not be found.";
-                log.error(msg, e);
-                throw new RuntimeException(msg, e);
-            }
-        }
-        // Mark this CA as upgraded by setting a reference to the CryptoToken if the merge was successful
-        tokendata.put(CAToken.CRYPTOTOKENID, String.valueOf(cryptoTokenId));
-        // Note: We did not remove the keystore in the CA properties here, so old versions running in parallel will still work
-        log.info("CA '" + caName + "' with id " + caid + " is now using CryptoToken with cryptoTokenId " + cryptoTokenId);
-        return true;
+        return caDataReturn;
+
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

@@ -242,6 +242,7 @@ public class StartupSingletonBean {
         CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(disableHashingSignMechanisms==null || Boolean.parseBoolean(disableHashingSignMechanisms.trim()));
         
         CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache")));
+
         
         final String doPermitExtractablePrivateKeys = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
         CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(

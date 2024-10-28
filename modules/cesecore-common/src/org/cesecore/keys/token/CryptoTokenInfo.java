@@ -15,14 +15,14 @@ package org.cesecore.keys.token;
 import java.io.Serializable;
 import java.util.Properties;
 
-import org.cesecore.util.Named;
-
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.pkcs11.Pkcs11SlotLabelType;
 
+import org.cesecore.util.Named;
+
 /**
  * Non-sensitive information about a CryptoToken.
- * 
+ *
  */
 public class CryptoTokenInfo implements Named, Serializable {
 
@@ -71,7 +71,7 @@ public class CryptoTokenInfo implements Named, Serializable {
     public boolean isAllowExplicitParameters() {
         return Boolean.valueOf(cryptoTokenProperties.getProperty(SoftCryptoToken.EXPLICIT_ECC_PUBLICKEY_PARAMETERS, Boolean.FALSE.toString()));
     }
-    
+
     public String getP11Library() {
         return cryptoTokenProperties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY, "");
     }
@@ -103,19 +103,48 @@ public class CryptoTokenInfo implements Named, Serializable {
     }
 
     public String getKeyVaultType() {
-        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_TYPE);        
+        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_TYPE);
     }
     public String getKeyVaultName() {
-        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_NAME);        
+        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_NAME);
     }
     public String getKeyVaultClientID() {
-        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_CLIENTID);        
+        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_CLIENTID);
     }
     public String getKeyVaultKeyBinding() {
-        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING);        
+        return cryptoTokenProperties.getProperty(AzureCryptoToken.KEY_VAULT_KEY_BINDING);
     }
+
+    public String getSecurosysRestApiName() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SECUROSYS_REST_API);
+    }
+
+    public String getSecurosysAuthType() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SECUROSYS_AUTHENTICATION_TYPE);
+    }
+
+    public String getSecurosysAuthCert() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SECUROSYS_AUTH_CERT);
+    }
+
+    public String getSecurosysManagementKey() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SECUROSYS_MANAGEMENT_KEY);
+    }
+
+    public String getSecurosysOperationKey() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SECUROSYS_OPERATION_KEY);
+    }
+
+    public String getSecurosysServiceKey() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SECUROSYS_SERVICE_KEY);
+    }
+
+    public String getSecurosysApprovalTimeout() {
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.SECUROSYS_APPROVAL_TIMEOUT);
+    }
+
     public String getAWSKMSRegion() {
-        return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_REGION);        
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_REGION);
     }
 
     public AwsKmsAuthenticationType getAWSKMSAuthenticationType() {
@@ -123,7 +152,7 @@ public class CryptoTokenInfo implements Named, Serializable {
         return authenticationTypeString == null ? AwsKmsAuthenticationType.KEY_ID_AND_SECRET
                 : AwsKmsAuthenticationType.valueOf(authenticationTypeString);
     }
-    
+
     public String getAWSKMSAccessKeyID() {
         return cryptoTokenProperties.getProperty(CryptoTokenConstants.AWSKMS_ACCESSKEYID);
     }
@@ -131,7 +160,7 @@ public class CryptoTokenInfo implements Named, Serializable {
         return cryptoTokenProperties;
     }
     public String getFortanixBaseAddress() {
-        return cryptoTokenProperties.getProperty(CryptoTokenConstants.FORTANIX_BASE_ADDRESS);        
+        return cryptoTokenProperties.getProperty(CryptoTokenConstants.FORTANIX_BASE_ADDRESS);
     }
 
     public AzureAuthenticationType getAzureAuthenticationType() {
@@ -144,7 +173,7 @@ public class CryptoTokenInfo implements Named, Serializable {
     }
 
     /**
-     * False if this is an Azure Key Vault Token using key binding or managed identity authentication 
+     * False if this is an Azure Key Vault Token using key binding or managed identity authentication
      * or a AWS KMS Key Vault Token using service credentials.
      */
     public boolean requiresSecretToActivate() {
