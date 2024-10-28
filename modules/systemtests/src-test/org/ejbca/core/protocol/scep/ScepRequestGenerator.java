@@ -116,7 +116,7 @@ public class ScepRequestGenerator {
         X500Name name = DnComponents.stringToBcX500Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());       
         // wrap message in pkcs#7
-        return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);
+        return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);        
     }
 
     public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, final X509Certificate senderCertificate,
@@ -158,7 +158,7 @@ public class ScepRequestGenerator {
         v.add(new DERSequence(challpwdattr));
         v.add(new DERSequence(extensionattr));
         DERSet attributes = new DERSet(v);
-        // Create PKCS#10 certificate request  
+        // Create PKCS#10 certificate request
         final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithRSA",
                 DnComponents.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
