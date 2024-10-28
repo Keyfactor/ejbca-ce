@@ -33,6 +33,7 @@ public interface OcspResponseGeneratorSession {
      * @param requestCertificates An array of Certificates from the original HttpServletRequest
      * @param remoteAddress Remote address, most likely extracted from the HttpServletRequest
      * @param xForwardedFor Value of X-Forwarded-For header if it was present in the request.
+     * @param requestUrl Request URL (including scheme/domain) from the client. This is currently used for matching against a configurable regex in ocsp.properties.
      * @param auditLogger The AuditLogger to use for this transaction
      * @param transactionLogger The TransactionLogger to use for this transaction
      * @param isPreSigning true if we're using the method to presign responses.
