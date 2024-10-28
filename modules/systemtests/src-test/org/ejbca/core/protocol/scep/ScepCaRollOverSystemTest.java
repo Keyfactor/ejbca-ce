@@ -389,7 +389,7 @@ public class ScepCaRollOverSystemTest extends ScepTestBase {
         final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
                 keyTestRollover.getPrivate(), keyTestRollover.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
         final byte[] msgBytes = gen.generateCertReq(userDN, "foo123", transId, caRolloverCert, senderCertificate, keyTestRollover.getPrivate(),
-                PKCSObjectIdentifiers.rsaEncryption,  AlgorithmConstants.SIGALG_SHA256_WITH_RSA, SMIMECapability.dES_CBC);
+                PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
         assertNotNull(msgBytes);
         senderNonce = gen.getSenderNonce();
         byte[] nonceBytes = Base64.decode(senderNonce.getBytes());
