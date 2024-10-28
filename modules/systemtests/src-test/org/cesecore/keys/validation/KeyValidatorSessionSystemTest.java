@@ -85,6 +85,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileUtil;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -1154,41 +1155,14 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         return result;
     }
 
-    private String findFile(File fileOrDir, String name) {
-        if (fileOrDir.isFile()) {
-            if (fileOrDir.getName().equals(name)) {
-                try {
-                    return fileOrDir.getCanonicalPath();
-                }
-                catch (Exception e) {
-                    throw new RuntimeException("Unable to get the canonical name of: "+fileOrDir.getAbsolutePath(), e);
-                }
-            }
-        }
-        else {
-            for (File file : fileOrDir.listFiles()) {
-                String path = findFile(file, name);
-                if (path != null) {
-                    return path;
-                }
-            }
-        }
-        return null;
-    }
-
     /**
      * Gets the platform dependent full path of the file in the class path.
      * 
      * @param classpath the class path (or filename -> put inside resources directory).
      * @return the full path.
      */
-    private String getFilePathFromClasspath(final String classpath) {
+    private String getFilePathFromClasspath(final String classpath) throws IOException {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
-        final String name = classpath+fileSuffix;
-        final String canonicalName = findFile(new File("."), name);
-        if (canonicalName == null) {
-            throw new IllegalStateException("Could not find any files named " + name);
-        }
-        return canonicalName;
+        return FileUtil.getUniqueFilePath(new File("."), classpath+fileSuffix);
     }
 }
