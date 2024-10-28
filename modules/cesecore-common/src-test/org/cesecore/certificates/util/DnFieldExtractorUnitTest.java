@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
  * Tests the DNFieldExtractor class.
  */
 public class DnFieldExtractorUnitTest {
- 
+
     @Test
     public void test01CheckDnFields() throws Exception {
     	final String comp = DnComponents.getDnExtractorFieldFromDnId(34);
@@ -42,7 +42,7 @@ public class DnFieldExtractorUnitTest {
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
         if (DnComponents.enterpriseMappingsExist()) {
-            assertEquals(48, i.size());
+            assertEquals(54, i.size());
         } else {
             assertEquals(32, i.size());
         }
@@ -74,13 +74,13 @@ public class DnFieldExtractorUnitTest {
         if (DnComponents.enterpriseMappingsExist()) {
             assertEquals(1, num);
         } else {
-            assertEquals(0, num);            
+            assertEquals(0, num);
         }
         final String oi = extractor.getField(DNFieldExtractor.ORGANIZATIONIDENTIFIER, 0);
         if (DnComponents.enterpriseMappingsExist()) {
             assertEquals("12345", oi);
         } else {
-            assertEquals("", oi);            
+            assertEquals("", oi);
         }
     	String fieldstr = extractor.getFieldString(DNFieldExtractor.CN);
     	assertEquals("CN=Tomas Gustavsson", fieldstr);
@@ -106,7 +106,7 @@ public class DnFieldExtractorUnitTest {
         if (DnComponents.enterpriseMappingsExist()) {
             assertFalse(other);
         } else {
-            assertTrue(other);            
+            assertTrue(other);
         }
     	dn = "dn=qualifier,cn=Tomas Gustavsson,1.1.1.1=Foo,o=PrimeKey,L=Stockholm,dc=PrimeKey,DC=com";
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
@@ -125,9 +125,9 @@ public class DnFieldExtractorUnitTest {
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
      	illegal = extractor.isIllegal();
     	assertTrue(illegal);
-    	
+
         // An empty subject DN string is not an illegal string, we want to handle that because
-    	// certificates, CSRs etc can be without a subjectDN, usually only with an altName in that case 
+    	// certificates, CSRs etc can be without a subjectDN, usually only with an altName in that case
         extractor = new DNFieldExtractor("null", DNFieldExtractor.TYPE_SUBJECTDN);
         illegal = extractor.isIllegal();
         assertFalse(illegal);
@@ -137,6 +137,28 @@ public class DnFieldExtractorUnitTest {
         extractor = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDN);
         illegal = extractor.isIllegal();
         assertFalse(illegal);
+    }
+
+    @Test
+    public void testMatterOperationalPKIDnFields() throws Exception {
+        String dn = "RCACID=CACACACA00000001,ICACID=CACACACA00000003,NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,"
+                + "NOCCAT=00AA33CC,NOCCAT=00AA33DD,FWSIGNINGID=DEDEDEDE00010003";
+        DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTDN);
+        HashMap<Integer, Integer> map = extractor.getNumberOfFields();
+        System.out.println(map);
+        String fieldstr = extractor.getFieldString(DNFieldExtractor.RCACID);
+        assertEquals("RCACID=CACACACA00000001", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.ICACID);
+        assertEquals("ICACID=CACACACA00000003", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.NODEID);
+        assertEquals("NODEID=DEDEDEDE00010001", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.FABRICID);
+        assertEquals("FABRICID=FAB000000000001D", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.NOCCAT);
+        assertEquals("NOCCAT=00AA33CC,NOCCAT=00AA33DD", fieldstr);
+        fieldstr = extractor.getFieldString(DNFieldExtractor.FWSIGNINGID);
+        assertEquals("FWSIGNINGID=DEDEDEDE00010003", fieldstr);
+
     }
 
     /**
@@ -150,7 +172,7 @@ public class DnFieldExtractorUnitTest {
         if (DnComponents.enterpriseMappingsExist()) {
             assertEquals(17,i.size());
         } else {
-            assertEquals(16,i.size());            
+            assertEquals(16,i.size());
         }
     	final String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
     	assertEquals("foo.bar.se", dns);
@@ -159,18 +181,18 @@ public class DnFieldExtractorUnitTest {
     	boolean other = extractor.existsOther();
     	assertFalse(other);
     	final String email= extractor.getField(DNFieldExtractor.RFC822NAME, 0);
-    	assertEquals("foo@bar.se", email);    	
+    	assertEquals("foo@bar.se", email);
     	int num = extractor.getNumberOfFields(DNFieldExtractor.RFC822NAME);
     	assertEquals(1, num);
     	final String krb = extractor.getField(DNFieldExtractor.KRB5PRINCIPAL, 0);
-    	assertEquals("foo/bar@P.COM", krb);    	
+    	assertEquals("foo/bar@P.COM", krb);
     	num = extractor.getNumberOfFields(DNFieldExtractor.KRB5PRINCIPAL);
     	assertEquals(1, num);
         final String regid = extractor.getField(DNFieldExtractor.REGISTEREDID, 0);
-        assertEquals("1.1.1.2", regid);     
+        assertEquals("1.1.1.2", regid);
         num = extractor.getNumberOfFields(DNFieldExtractor.REGISTEREDID);
         assertEquals(1, num);
-    	
+
     	dn = "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1,krb5principal=foo/bar@P.COM";
     	extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	illegal = extractor.isIllegal();
@@ -218,7 +240,7 @@ public class DnFieldExtractorUnitTest {
     	field = extractor.getField(DNFieldExtractor.URI, 0);
     	assertEquals("http://www.a.se/", field);
     }
-    
+
     /**
      * @throws Exception error
      */
@@ -246,7 +268,7 @@ public class DnFieldExtractorUnitTest {
     	assertEquals(0, num);
 
     }
-    
+
     @Test
     public void test02CheckDnFieldWithCommas() throws Exception {
         String dn = "cn=Hello\\, World!,dc=example,dc=com";
@@ -260,7 +282,7 @@ public class DnFieldExtractorUnitTest {
         boolean other = extractor.existsOther();
         assertFalse(other);
     }
-    
+
     @Test
     public void test02CheckComplexDnFieldWithCommas() throws Exception {
         // special characters like < can cause problems
