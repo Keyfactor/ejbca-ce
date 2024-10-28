@@ -630,8 +630,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     keys.getPublic(), null, keys.getPrivate(), null);
             //Yeah, what happens, Shoresy?
             CertificateResponse response = ejbcaraws.pkcs10Request(username, password, new String(Base64.encode(request.getEncoded())), null,
-                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
-            //I hit you, you hit the floor, your mom spends the night. 
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE); 
             X509Certificate certificate = response.getCertificate();
             final X500Name x500Name = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
             final String unidFromCertificate = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
@@ -714,7 +713,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             //Yeah, what happens, Shoresy?
             CertificateResponse response = ejbcaraws.pkcs10Request(username, password, new String(Base64.encode(request.getEncoded())), null,
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
-            //I hit you, you hit the floor, your mom spends the night. 
             X509Certificate certificate = response.getCertificate();
             final X500Name x500Name = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
             final String unidFromCertificate = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
