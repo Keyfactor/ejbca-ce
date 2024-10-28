@@ -72,7 +72,7 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
     private static final String TESTCA_NAME = EstClientModeBasicSystemTest.class.getSimpleName();
     private static final String CN = "EstClientModeTestUser";
     private static KeyPair ec256;
-    private static KeyPair ml44;
+    private static KeyPair mldsa44;
     private static boolean isESTEnabled = false; // if EST was enabled or not before running test 
     
     private static final GlobalConfigurationSession globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
@@ -95,7 +95,7 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
             globalConfigurationSession.saveConfiguration(ADMIN, protConf);
         }
         ec256 = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
-        ml44 = KeyTools.genKeys("ML-DSA-44", AlgorithmConstants.KEYALGORITHM_MLDSA44);
+        mldsa44 = KeyTools.genKeys("ML-DSA-44", AlgorithmConstants.KEYALGORITHM_MLDSA44);
         
     }
 
@@ -618,7 +618,7 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
             // Make request with username in DN
             final String dn = "CN=" + CN + ",O=EJBCA,C=SE";
             final String requestDN = "UID=" + username + "," + dn;
-            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "bar123", null, null, null, ml44, "ML-DSA-44");
+            PKCS10CertificationRequest p10 = generateCertReq(requestDN, "bar123", null, null, null, mldsa44, "ML-DSA-44");
             byte[] reqmsg = Base64.encode(p10.getEncoded());
             byte[] resp = sendEstRequest(alias, "simpleenroll", reqmsg, 200, null);
             assertNotNull("There must be response data to simpleenroll request", resp);
@@ -636,7 +636,7 @@ public class EstClientModeBasicSystemTest extends EstTestCase {
                 fail("simpleenroll response certifciate must verify with CA certificate");
             }
             assertEquals("simpleenroll response subjectDN must be the same DN as the PKCS#10 request DN",dn, CertTools.getSubjectDN(cert));
-            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ml44.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
+            assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(mldsa44.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
             
             testServerKeyGen(alias, reqmsg, testcacert, endEntityInfo);
         } finally {
