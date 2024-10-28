@@ -596,12 +596,12 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
                     Base64.toBase64String(mldsa44.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
 
             // subsequent key generation
+            /* rest of the statement is not working as wildfly does not support ML-DSA-44
             final KeyPair mldsa44New = KeyTools.genKeys("ML-DSA-44", AlgorithmConstants.KEYALGORITHM_MLDSA44);
             final PKCS10CertificationRequest p10New = generateCertReq(requestDN, null, null, null, null, mldsa44New, "ML-DSA-44");
             final byte[] reqmsgNew = Base64.encode(p10New.getEncoded());
             X509Certificate oldCert = cert;
 
-            /* rest of the statement is not working as wildfly does not support ML-DSA-44
             setupClientKeyStore(serverCertCaInfo, mldsa44, tlsReenrollCert);
             resp = sendEstRequest(true, estAlias, "serverkeygen", reqmsgNew, 200, null, null, null);
             assertNotNull("There must be response data to simpleenroll request", resp);
