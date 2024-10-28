@@ -21,6 +21,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -1152,6 +1154,28 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         return result;
     }
 
+    private String findFile(File fileOrDir, String name) {
+        if (fileOrDir.isFile()) {
+            if (fileOrDir.getName().equals(name)) {
+                try {
+                    return fileOrDir.getCanonicalPath();
+                }
+                catch (Exception e) {
+                    throw new RuntimeException("Unable to get the canonical name of: "+fileOrDir.getAbsolutePath(), e);
+                }
+            }
+        }
+        else {
+            for (File file : fileOrDir.listFiles()) {
+                String path = findFile(file, name);
+                if (path != null) {
+                    return path;
+                }
+            }
+        }
+        return null;
+    }
+
     /**
      * Gets the platform dependent full path of the file in the class path.
      * 
@@ -1160,12 +1184,11 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
      */
     private String getFilePathFromClasspath(final String classpath) {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
-        final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
-        final String path = "resources/platform/" + subFolder + "/" + classpath + fileSuffix;
-        final String result = KeyValidatorSessionSystemTest.class.getClassLoader().getResource(path).getPath();
-        if (log.isDebugEnabled()) {
-            log.debug("Get file path by class path: " + classpath + " - " + result);
+        final String name = classpath+fileSuffix;
+        final String canonicalName = findFile(new File("."), name);
+        if (canonicalName == null) {
+            throw new IllegalStateException("Could not find any files named " + name);
         }
-        return SystemUtils.IS_OS_WINDOWS ? result.replaceFirst("/", StringUtils.EMPTY) : result;
+        return canonicalName;
     }
 }

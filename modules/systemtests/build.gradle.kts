@@ -6,6 +6,7 @@ dependencies {
     implementation(libs.cert.cvc)
     implementation(libs.jldap)
     testImplementation(project(":modules:cesecore-common"))
+    testImplementation(project(":modules:cesecore-cvcca"))
     testImplementation(project(":modules:cesecore-ejb-interface"))
     testImplementation(project(":modules:cesecore-entity"))
     testImplementation(project(":modules:cesecore-x509ca"))
@@ -42,6 +43,7 @@ dependencies {
     testImplementation(libs.keyfactor.commons.cli)
     testImplementation(libs.nimbus.jose.jwt)
     testImplementation(libs.x509.common.util)
+    testImplementation(libs.caffeine)
 
     if (project.extra["edition"] == "ee") {
         testImplementation(project(":modules:acme:common"))
@@ -60,6 +62,7 @@ dependencies {
     testRuntimeOnly(libs.jaxws.rt) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
     testRuntimeOnly(libs.stax.ex)
     testRuntimeOnly(libs.streambuffer)
+    testRuntimeOnly(libs.ctlog)
 }
 
 sourceSets {
