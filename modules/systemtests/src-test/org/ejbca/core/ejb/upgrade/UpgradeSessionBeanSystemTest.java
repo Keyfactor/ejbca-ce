@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -170,7 +171,7 @@ public class UpgradeSessionBeanSystemTest {
     private static CAInfo testCaInfo;
 
     @BeforeClass
-    public static void beforeClass() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, InvalidAlgorithmException, AuthorizationDeniedException {
+    public static void beforeClass() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, InvalidAlgorithmException, AuthorizationDeniedException, CertIOException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         // Clean up from previous aborted tests
         CaTestUtils.removeCa(alwaysAllowtoken, "NoActions", "NoActions");
@@ -708,11 +709,12 @@ public class UpgradeSessionBeanSystemTest {
      * Test upgrading CAs to the 6.8.0 form of approvals, i.e. using one approval profile per approval action instead of one
      * profile for all actions. Expected behavior is that the upgraded CA should have a map containing all actions mapped to the same (previously)
      * set profile, and any entities
+     * @throws CertIOException 
      * 
      */
     @Test
     public void testUpgradeCaTo680Approvals() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException,
-            CAExistsException, AuthorizationDeniedException, ApprovalProfileExistsException, CADoesntExistsException {
+            CAExistsException, AuthorizationDeniedException, ApprovalProfileExistsException, CADoesntExistsException, CertIOException {
         //This CA should not be assigned an approval profile on account of lacking any actions
         X509CA noActionsCa = CaTestUtils.createTestX509CA("CN=NoActions", "foo123".toCharArray(), false);
         noActionsCa.setApprovals(null);

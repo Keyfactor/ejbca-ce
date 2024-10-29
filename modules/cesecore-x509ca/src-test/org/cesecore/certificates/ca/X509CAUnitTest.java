@@ -100,6 +100,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.asn1.x9.X962Parameters;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
@@ -1417,7 +1418,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     @Test
     public void testNotBeforeAndNotAfterInPast() throws InvalidAlgorithmParameterException, CertificateParsingException, CryptoTokenOfflineException,
             InvalidAlgorithmException, OperatorCreationException, CAOfflineException, IllegalValidityException, IllegalNameException,
-            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, CertIOException {
         final String caDn = "CN=testNotBeforeAndNotAfterInPastCA";
         final String username = "testNotBeforeAndNotAfterInPast";
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1451,7 +1452,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     @Test
     public void testAllowBackdatedRevocation() throws InvalidAlgorithmParameterException, CertificateParsingException, CryptoTokenOfflineException,
             InvalidAlgorithmException, OperatorCreationException, CAOfflineException, IllegalValidityException, IllegalNameException,
-            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, CertIOException {
         final String caDn = "CN=testNotBeforeAndNotAfterInPastCA";
         final String username = "testNotBeforeAndNotAfterInPast";
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
