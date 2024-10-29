@@ -130,7 +130,7 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
     private static final String USER_PASS_PHRASE = "foo123";
     private static final String TEST_USER_NAME = "unidtest";
     private static final String TEST_USER_EMAIL = TEST_USER_NAME+"@anatom.se";
-    private static final String TRUSTED_CA_NAME = CaTestUtils.getClientCertCaName(admin); // Defaults to ManagementCA but can be overridden with target.clientcert.ca
+    private static String TRUSTED_CA_NAME;
     private static final String SAMPLE_UNID = "123456789";
     private static final String SAMPLE_FNR = "654321";
     private static final String TEST_USER_SUBJECTDN_GOOD_SERIAL = "C=SE,O=AnaTom,surname=Jansson,serialNumber="+SAMPLE_UNID+",CN=UNIDTest";
@@ -141,21 +141,23 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
     private String httpReqPath;
     private String resourceOcsp;
 
-    private int caid = getTestCAId(TRUSTED_CA_NAME);
+    private int caid;
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     private static KeyPair keys = null;
 
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
-    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private static UnidfnrProxySessionRemote unidfnrProxySessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
-            EjbRemoteHelper.MODULE_TEST);
+    private EndEntityManagementSessionRemote endEntityManagementSession;
+    private RevocationSessionRemote revocationSession;
+    private SignSessionRemote signSession;
+    private static UnidfnrProxySessionRemote unidfnrProxySessionBean;
 
     @BeforeClass
     public static void beforeClass() {
+        TRUSTED_CA_NAME = CaTestUtils.getClientCertCaName(admin); // Defaults to ManagementCA but can be overridden with target.clientcert.ca
+
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
+        unidfnrProxySessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         unidfnrProxySessionBean.removeUnidFnrDataIfPresent(SAMPLE_UNID);
         unidfnrProxySessionBean.storeUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
     }
@@ -164,6 +166,10 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
+        signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+        caid = getTestCAId(TRUSTED_CA_NAME);
         httpReqPath = "https://127.0.0.1:8443/ejbca";
         resourceOcsp = "publicweb/status/ocsp";
         cacert = (X509Certificate) getTestCACertUsingItsName(TRUSTED_CA_NAME);
