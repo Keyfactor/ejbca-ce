@@ -197,7 +197,7 @@ public class RenewCASystemTest extends CaTestCase {
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
-            assertEquals("New signature algorithm should be ML-DSA", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
+            assertEquals("New signature algorithm should be ML-DSA-44", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
 
             // Check the Link certificate was signed using the previous Signing Algorithm
             linkCertificateAfterRenewalBytes = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
@@ -246,7 +246,7 @@ public class RenewCASystemTest extends CaTestCase {
             final X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, getTestCAName());
             final X509Certificate newcert = (X509Certificate) newinfo.getCertificateChain().iterator().next();
             final String newSigAlg = AlgorithmTools.getSignatureAlgorithm(newcert);
-            assertEquals("Signature algorithm should still be ML-DSA", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
+            assertEquals("Signature algorithm should still be ML-DSA-44", AlgorithmConstants.SIGALG_MLDSA44, newSigAlg);
 
             // Check the Link certificate is still the old one
             byte[] oldLinkCert = caAdminSession.getLatestLinkCertificate(newinfo.getCAId());
