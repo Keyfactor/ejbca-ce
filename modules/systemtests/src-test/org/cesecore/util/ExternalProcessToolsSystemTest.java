@@ -377,7 +377,9 @@ public class ExternalProcessToolsSystemTest {
      */
     private String getFilePathFromClasspath(final String classpath) throws IOException {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
-        String result = FileUtil.getUniqueFilePath(classpath + fileSuffix);
+        final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
+        final String path = "platform/" + subFolder + "/" + classpath + fileSuffix;
+        String result = FileUtil.getResourceAsFile(path).getCanonicalPath();
         if (log.isDebugEnabled()) {
             log.debug("Get file path by class path: " + classpath + " - " + result);
         }

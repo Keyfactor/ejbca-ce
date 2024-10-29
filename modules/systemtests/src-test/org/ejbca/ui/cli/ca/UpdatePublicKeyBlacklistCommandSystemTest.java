@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.util.HashMap;
@@ -44,6 +43,7 @@ import com.keyfactor.util.FileTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -61,9 +61,9 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
 
     // Directory and file constants (see ${project.dir}/resources)
     private static File emptyFolder;
-    private static final String TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS = "resources/publickey/rsa2048.pub.pem";
-    private static final String TEST_RESOURCE_ADD_REMOVE_FINGERPINTS = "resources/publickeyfingerprint/csv/fingerprints.txt";
-    private static final String TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS = "resources/publickeyfingerprint/debian/fingerprints.txt";
+    private static final String TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS = "publickey/rsa2048.pub.pem";
+    private static final String TEST_RESOURCE_ADD_REMOVE_FINGERPINTS = "publickeyfingerprint/csv/fingerprints.txt";
+    private static final String TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS = "publickeyfingerprint/debian/fingerprints.txt";
 
     /** Always allow authentication token. */
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
@@ -79,7 +79,6 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         log.trace(">beforeClass()");
-
         CryptoProviderTools.installBCProvider();
         // Remove test entries from blacklist.
         removePublicKeyFingerprintsFromBlacklist(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
@@ -109,7 +108,7 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     public void test01AddAndRemoveCommand() throws Exception {
         log.trace(">test01AddAndRemoveCommand()");
 
-        File resourceFile = FileUtil.getUniqueFile(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
+        File resourceFile = FileUtil.getResourceAsFile(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
         File dir = resourceFile.getParentFile();
         log.info("Using directory (public keys): " + dir.getAbsolutePath());
 
@@ -184,7 +183,7 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     public void test02AddAndRemoveCommandModeByFingerprint() throws IOException {
         log.trace(">test02AddAndRemoveCommandModeByFingerprint()");
 
-        File resourceFile = FileUtil.getUniqueFile(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
+        File resourceFile = FileUtil.getResourceAsFile(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
         final File dir = resourceFile.getParentFile();
 
         log.info("Using directory with fingerprints in CSV file:" + dir.getAbsolutePath());
@@ -243,7 +242,7 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     public void test02AddAndRemoveCommandModeByDebianFingerprint() throws IOException {
         log.trace(">test02AddAndRemoveCommandModeByDebianFingerprint()");
 
-        File resourceFile = FileUtil.getUniqueFile(TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS);
+        File resourceFile = FileUtil.getResourceAsFile(TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS);
         final File dir = resourceFile.getParentFile();
         log.info("Using directory of Debian fingerprints: " + dir.getAbsolutePath());
 
@@ -283,7 +282,7 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
      * @throws IOException 
      */
     private static void removePublicKeysFromBlacklist(String resource) throws CertificateParsingException, IOException {
-        File resourceFile = FileUtil.getUniqueFile(resource);
+        File resourceFile = FileUtil.getResourceAsFile(resource);
         final File dir = resourceFile.getParentFile();
         log.info("Using directory (remove publicKey): " + dir.getAbsolutePath());
         final File[] files = dir.listFiles();
@@ -315,12 +314,7 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
      */
     private static void removePublicKeyFingerprintsFromBlacklist(final String resource)
             throws IllegalArgumentException, IOException, FileNotFoundException {
-        System.getProperties().forEach((k, v)-> {
-            if ("/".equals(""+v)) {
-                System.out.println("k=");
-            }
-        });
-        File resourceFile = FileUtil.getUniqueFile(resource);
+        File resourceFile = FileUtil.getResourceAsFile(resource);
         final File dir = resourceFile.getParentFile();
         log.info("Using directory (remove fingerprint): " + dir.getAbsolutePath());
         final File[] files = dir.listFiles();
