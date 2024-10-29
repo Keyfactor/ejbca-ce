@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -359,6 +360,17 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
     @Override
     public String getRoleName() {
         return "EjbcaWsFindMethodsTest";
+    }
+
+    @Test
+    public void showFiles() throws IOException {
+        final String path="/home/gustav-hallen/projects/ejbca/modules/systemtests/p12";
+        File dir = new File(path);
+        System.out.println("showFiles: "+dir.exists());
+        System.out.println("showFiles: count = "+dir.listFiles().length);
+        for (File f : dir.listFiles()) {
+            System.out.println("showFiles: "+f.getCanonicalFile());
+        }
     }
 
 }

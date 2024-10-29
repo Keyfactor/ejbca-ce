@@ -1163,6 +1163,8 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
      */
     private String getFilePathFromClasspath(final String classpath) throws IOException {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
-        return FileUtil.getUniqueFilePath(classpath+fileSuffix);
+        final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
+        final String path = "platform/" + subFolder + "/" + classpath + fileSuffix;
+        return FileUtil.getResourceAsFile(path).getAbsolutePath();
     }
 }
