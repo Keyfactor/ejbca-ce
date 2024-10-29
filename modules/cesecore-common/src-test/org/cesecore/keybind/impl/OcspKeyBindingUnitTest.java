@@ -45,8 +45,8 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -133,9 +133,19 @@ public class OcspKeyBindingUnitTest {
 
     /** @return A self-signed certificate. */
     private X509Certificate getCertificate(final int keyUsage, final List<Extension> extensions) throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, IOException {
-        final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        return CertTools.genSelfCertForPurpose("CN=OcspSinger", 365, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA256WithRSA", false,
-                keyUsage, null, null, BouncyCastleProvider.PROVIDER_NAME, true, extensions);
+        final KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);        
+        return SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=OcspSigner")
+                .setIssuerDn("CN=OcspSigner")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setKeyUsage(keyUsage)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setAdditionalExtensions(extensions)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
     }
 
     /** @return An extended key usage extension with id_kp_OCSPSigning set. */
