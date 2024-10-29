@@ -62,9 +62,9 @@ import static org.junit.Assert.fail;
  * Tests signing with PQC algorithms
  * Falcon-512
  * Falcon-1024
- * MLDSA44
- * MLDSA65
- * MLDSA87
+ * ML-DSA-44
+ * ML-DSA-65
+ * ML-DSA-87
  */
 public class SignSessionWithPQCSystemTest extends SignSessionCommon {
 
@@ -286,7 +286,7 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
             assertEquals(pub.getAlgorithm(), AlgorithmConstants.KEYALGORITHM_FALCON512);
             FalconParameterSpec paramspec = pub.getParameterSpec();
             assertNotNull("Falcon can not have null spec", paramspec);
-            assertEquals("Spec was not Falcon 512", FalconParameterSpec.falcon_512, paramspec);
+            assertEquals("Spec was not Falcon-512", FalconParameterSpec.falcon_512, paramspec);
         } else if (pk instanceof MLDSAPublicKey) {
             MLDSAPublicKey pub = (MLDSAPublicKey) pk;
             assertEquals(pub.getAlgorithm(), AlgorithmConstants.KEYALGORITHM_MLDSA44);
