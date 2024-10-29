@@ -219,7 +219,10 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
     public UnidfnrSessionLocal getUnidfnrSession() {
         try {
             if (!useEjb31GlobalJndiName) {
-                return (UnidfnrSessionLocal) getInitialContext().lookup("java:comp/env/UnidfnrSession");
+				Context context = getInitialContext();
+				var object = context.lookup("java:comp/env/UnidfnrSession");
+				return (UnidfnrSessionLocal)object;
+                //return (UnidfnrSessionLocal) getInitialContext().lookup("java:comp/env/UnidfnrSession");
             }
         } catch (NamingException e) {
             // NOPMD ignore and continue
@@ -227,7 +230,11 @@ public class EjbLocalHelper implements EjbBridgeSessionLocal {
         
         // Try using EJB 3.1 name
         try {
-            return (UnidfnrSessionLocal) getInitialContext().lookup("java:global/ejbca/"+UnidfnrSession.UNIDFNR_MODULE+"/UnidfnrSessionBean!org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal");
+			Context context = getInitialContext();
+			String s = "java:global/ejbca/"+UnidfnrSession.UNIDFNR_MODULE+"/UnidfnrSessionBean!org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal";
+			var object = context.lookup(s);
+			return (UnidfnrSessionLocal) object;
+            //return (UnidfnrSessionLocal) getInitialContext().lookup("java:global/ejbca/"+UnidfnrSession.UNIDFNR_MODULE+"/UnidfnrSessionBean!org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal");
         } catch (NamingException e) {
             return null; // this is the common case, since unidfnr is an special module and is not included with EJBCA
         }

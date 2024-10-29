@@ -35,8 +35,9 @@ public class FileUtil {
     }
 
     public static List<File> findAllFiles(File dir, String name) {
+        File file = new File(dir, name);
         List<File> files = new ArrayList<>();
-        appendFiles(dir, name, files);
+        appendFiles(file.getParentFile(), file.getName(), files);
         return files;
     }
 
@@ -66,7 +67,11 @@ public class FileUtil {
         }
     }
 
-    public static File getUniqueFile(File dir, String name) throws IOException {
+    public static File getUniqueFile(String name) throws IOException {
+        return getUniqueFile(name, new File("."));
+    }
+
+    public static File getUniqueFile(String name, File dir) throws IOException {
         List<File> files = findAllFiles(dir, name);
         String fullDirName = getCanonicalPath(dir);
         if (files.size() == 0) {
@@ -82,8 +87,12 @@ public class FileUtil {
         return files.get(0);
     }
 
-    public static String getUniqueFilePath(File dir, String name) throws IOException {
-        return getCanonicalPath(getUniqueFile(dir, name));
+    public static String getUniqueFilePath(String name) throws IOException {
+        return getUniqueFilePath(name, new File("."));
+    }
+
+    public static String getUniqueFilePath(String name, File dir) throws IOException {
+        return getCanonicalPath(getUniqueFile(name, dir));
     }
 
 }

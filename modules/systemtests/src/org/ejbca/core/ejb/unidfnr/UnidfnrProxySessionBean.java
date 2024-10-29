@@ -28,13 +28,21 @@ public class UnidfnrProxySessionBean implements UnidfnrProxySessionRemote {
 
     private UnidfnrSessionLocal unidfnrSession = new EjbLocalHelper().getUnidfnrSession();
 
+    private void verifyUnidfnrSession() {
+        if (unidfnrSession == null) {
+            throw new NullPointerException("\"this.unidfnrSession\" is null. unidfnr is an special module and is not included with EJBCA");
+        }
+    }
+
     @Override
     public void removeUnidFnrDataIfPresent(final String unid) {
+        verifyUnidfnrSession();
         unidfnrSession.removeUnidFnrDataIfPresent(unid);
     }
 
     @Override
     public void storeUnidFnrData(final String unid, final String fnr) {
+        //verifyUnidfnrSession();
         unidfnrSession.storeUnidFnrData(unid, fnr);
     }
     
