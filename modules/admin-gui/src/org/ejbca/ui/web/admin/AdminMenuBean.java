@@ -269,7 +269,7 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
     
     public StreamedContent getHeaderLogoImage() {
 
-        if (headerLogoImage == null) {
+        if (headerLogoImage == null || headerLogoImage.getContentLength() == 0) {
 
             byte[] imageBytes = getGlobalConfiguration().getHeadBannerLogo();
 

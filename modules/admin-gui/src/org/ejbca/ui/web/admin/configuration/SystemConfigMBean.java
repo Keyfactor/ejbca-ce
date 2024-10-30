@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -109,7 +110,6 @@ import org.ejbca.ui.web.configuration.WebLanguage;
 import org.ejbca.ui.web.configuration.exception.CacheClearException;
 import org.primefaces.component.tabview.Tab;
 import org.primefaces.component.tabview.TabView;
-import org.primefaces.event.FileUploadEvent;
 import org.primefaces.event.TabChangeEvent;
 import org.primefaces.model.file.UploadedFile;
 
@@ -128,15 +128,34 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = -6653610614851741905L;
     private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
     
+    private static final long MAX_HEADER_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+    private static final String[] ALLOWED_HEADER_FILE_EXTENSIONS = {"jpg", "jpeg", "png"};
     
-    UploadedFile headerFile;
+    
+    private transient UploadedFile headerFile;
+    private boolean invalidHeaderSize = false;
 
     public UploadedFile getHeaderFile() {
         return headerFile;
     }
 
     public void setHeaderFile(UploadedFile headerFile) {
-        this.headerFile = headerFile;
+        if (headerFile.getSize() <= MAX_HEADER_FILE_SIZE) {
+            this.headerFile = headerFile;
+            this.invalidHeaderSize = false;
+        } else {
+            this.headerFile = null;
+            this.invalidHeaderSize = true;
+        }
+    }
+
+    private boolean isAllowedExtension(String extension) {
+        return Arrays.stream(ALLOWED_HEADER_FILE_EXTENSIONS).anyMatch(ext -> ext.equalsIgnoreCase(extension));
+    }
+
+    private String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
     }
     
     public class GuiInfo {
@@ -298,12 +317,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
         public boolean isRedactPiiEnforced() { return redactPiiEnforced; }
         public void setRedactPiiEnforced(boolean redactPiiEnforced) { this.redactPiiEnforced = redactPiiEnforced; }
-    }
-    
-    public void handleBannerUpload(FileUploadEvent event) {
-        // Get the uploaded file
-        this.headerFile = event.getFile();
-        
     }
 
     public class EKUInfo {
@@ -1028,24 +1041,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             try {
                 globalConfig.setEjbcaTitle(currentConfig.getTitle());
-                
-                try (InputStream inputStream = headerFile.getInputStream();
-                        ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-                       
-                       // Read the uploaded file into the byte array
-                       byte[] buffer = new byte[1024]; // Buffer for reading
-                       int bytesRead;
-                       while ((bytesRead = inputStream.read(buffer)) != -1) {
-                           outputStream.write(buffer, 0, bytesRead);
-                       }
-                       // Convert the output stream to byte array
-                       globalConfig.setHeadBannerLogo(outputStream.toByteArray());
-
-                   } catch (IOException e) {
-                       e.printStackTrace(); // Handle the exception properly
-                   }
-                
-                
+                saveCurrentHeaderFile();
                 globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
@@ -1128,6 +1124,41 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
+    private void saveCurrentHeaderFile() {
+        
+        if (invalidHeaderSize) {
+            super.addNonTranslatedErrorMessage("Header file size exceeds the 1MB limit.");
+            return; 
+        }
+        
+        if (headerFile != null) {
+
+            String fileName = headerFile.getFileName();
+            String fileExtension = getFileExtension(fileName);
+
+            if (!isAllowedExtension(fileExtension)) {
+                super.addNonTranslatedErrorMessage("Invalid header file type. Allowed types: jpg, jpeg, png.");
+                return;
+            }
+
+            try (InputStream inputStream = headerFile.getInputStream(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+                // Read the uploaded file into the byte array
+                byte[] buffer = new byte[1024]; // Buffer for reading
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                // Convert the output stream to byte array
+                globalConfig.setHeadBannerLogo(outputStream.toByteArray());
+
+            } catch (IOException e) {
+                e.printStackTrace(); // Handle the exception properly
+            }
+        }
+        
+    }
+    
     /** Invoked when admin saves the admin preferences */
     public void saveCurrentAdminPreferences() {
         if(currentConfig != null) {
