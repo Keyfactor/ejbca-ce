@@ -534,11 +534,6 @@ public final class ConfigurationHolder {
             } else if ("forbidden.characters".equals(key) && value != null && !value.toCharArray().equals(StringConfigurationCache.INSTANCE.getForbiddenCharacters())) {
                 StringConfigurationCache.INSTANCE.setForbiddenCharacters(value.toCharArray());
                 updated.add(key);
-            } else if ("ca.use_legacy_pkcs12_keystore".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isUseLegacyPkcs12Keystore())) {
-                // TODO: 'ca.use_legacy_pkcs12_keystore' not included in property files but used in StartupSingletonBean 
-                //       together with 'keystore.use_legacy_pkcs12' (see below). 
-                CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(Boolean.parseBoolean(value));
-                updated.add(key);
             } else if ("keystore.use_legacy_pkcs12".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isUseLegacyPkcs12Keystore())) {
                 CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(Boolean.parseBoolean(value));
                 updated.add(key);
