@@ -59,7 +59,7 @@
 			</h:panelGroup>
       <h:panelGroup>
        
-       <p:fileUpload fileUploadListener="#{systemConfigMBean.handleBannerUpload}"
+       <p:fileUpload
             value="#{systemConfigMBean.headerFile}"
             fileLimit="1" 
             mode="advanced"
@@ -71,7 +71,6 @@
             invalidSizeMessage="File is too large! Max size is 1MB."
             invalidFileMessage="Invalid file type! Only images are allowed."
             fileLimitMessage="You can only upload one file at a time."/>
-            <p:messages id="messages" autoUpdate="true" showDetail="true" keepAlive="true"/>
       </h:panelGroup>
 
       <h:panelGroup>
