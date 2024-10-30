@@ -109,8 +109,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL, 
- * for example "-DhttpCmpProxyURL=http://localhost:8080/cmpProxy-6.3.3", which can be set in Run Configurations if running the 
+ * You can run this test against a CMP Proxy instead of directly to the CA by setting the system property httpCmpProxyURL,
+ * for example "-DhttpCmpProxyURL=http://localhost:8080/cmpProxy-6.3.3", which can be set in Run Configurations if running the
  * test from Eclipse.
  */
 public class CrmfRARequestSystemTest extends CmpTestCase {
@@ -140,7 +140,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         caid = testx509ca.getCAId();
         cacert = (X509Certificate) testx509ca.getCACertificate();
         cmpConfiguration = (CmpConfiguration) globalConfSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
-        
+
         StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
 
     }
@@ -157,7 +157,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
         this.configurationSession.backupConfiguration();
-        
+
         // Configure CMP for this test
         cmpConfiguration.addAlias(cmpAlias);
         cmpConfiguration.setRAMode(cmpAlias, true);
@@ -177,18 +177,18 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        
+
         Assert.assertTrue("Unable to restore server configuration.", this.configurationSession.restoreConfiguration());
         cmpConfiguration.removeAlias(cmpAlias);
         globalConfSession.saveConfiguration(ADMIN, cmpConfiguration);
-        
+
         // Remove test profiles
         this.certProfileSession.removeCertificateProfile(ADMIN, "CMPTESTPROFILE");
         this.certProfileSession.removeCertificateProfile(ADMIN, "CMPKEYIDTESTPROFILE");
         this.endEntityProfileSession.removeEndEntityProfile(ADMIN, "CMPTESTPROFILE");
         this.endEntityProfileSession.removeEndEntityProfile(ADMIN, "CMPKEYIDTESTPROFILE");
     }
-    
+
 
     /**
      * @param userDN for new certificate.
@@ -254,7 +254,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
     /** Does some basic testing of CMP, using CRMF requests, with multiple users.
      * Enforcement of unique DN, mapping of serialNumber and surName DN attributes (which can both be abbreviated to SN), and Matter VID/PID
      * And some other basic tests
-     * 
+     *
      * @throws Exception on unhandled errors
      */
     @Test
@@ -301,15 +301,15 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             assertTrue("A user with "+userName1+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName1));
             String dn = cert1.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
-            // The "plain" string representation here is BC X500Name.toString, in which case DERBitString is an implementation of ASN1String, with the 
-            // ASn1ObjectIdentifier encoded as 060329012d becomes the BitString #030600060329012D and is then printed as \#030600060329012D. 
+            // The "plain" string representation here is BC X500Name.toString, in which case DERBitString is an implementation of ASN1String, with the
+            // ASn1ObjectIdentifier encoded as 060329012d becomes the BitString #030600060329012D and is then printed as \#030600060329012D.
             // This is a bit strange, but perhaps a testament to why it's not a good idea to jam arbitrary binary blobs into subjectDN
             // it becomes very implementation specific
             // While CertificationID below is a sequence, which is not an implementation of ASN1String, so it is without the backslash
             assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,1.3.6.1.4.1.37244.2.1=FFF1,UniqueIdentifier=N62892", dn);
             // getSubjectX500Principal returns another form though...
-            String principalDn = cert1.getSubjectX500Principal().getName();            
-            assertEquals("Not the expected Principal DN in issued cert", "2.5.4.45=#0c064e3632383932,1.3.6.1.4.1.37244.2.1=#0c0446464631,2.5.4.4=#0c0f636d7074657374317375726e616d65,2.5.4.5=#130e636d70746573743173657269616c,CN=cmptest1,O=PrimeKey,C=SE", principalDn);            
+            String principalDn = cert1.getSubjectX500Principal().getName();
+            assertEquals("Not the expected Principal DN in issued cert", "2.5.4.45=#0c064e3632383932,1.3.6.1.4.1.37244.2.1=#0c0446464631,2.5.4.4=#0c0f636d7074657374317375726e616d65,2.5.4.5=#130e636d70746573743173657269616c,CN=cmptest1,O=PrimeKey,C=SE", principalDn);
             assertEquals("Not the expected DN in issued cert", "UniqueIdentifier=N62892,VID=FFF1,CN=cmptest1,SN=cmptest1serial,SURNAME=cmptest1surname,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert1));
             cert2 = crmfHttpUserTest(userDN2, key2, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert2);
@@ -329,16 +329,16 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                     key2,
                     "User 'cmptest1' is not allowed to use same key as another user is using.",
                     null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
-            
-            // check that you can not issue a certificate with same DN as another user.            
+
+            // check that you can not issue a certificate with same DN as another user.
             EndEntityInformation user = new EndEntityInformation("samednuser1", "CN=SameDNUser,O=EJBCA Sample,C=SE", caid, null, "user1" + "@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
                     EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
             user.setPassword("foo123");
             try {
-                this.endEntityManagementSession.addUser(ADMIN, user, true); 
+                this.endEntityManagementSession.addUser(ADMIN, user, true);
                 log.debug("created user: samednuser1, foo123, CN=SameDNUser,O=EJBCA Sample,C=SE");
             } catch (Exception e) {/* Do nothing. */}
-            
+
             try {
                 user1Cert = this.signSession.createCertificate(ADMIN, "samednuser1", "foo123", new PublicKeyWrapper(key3.getPublic()));
             } catch(Exception e) {
@@ -350,9 +350,9 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             crmfHttpUserTest(
                     new X500Name("CN=SameDNUser,O=EJBCA Sample,C=SE"),
                     key4,
-                    "User 'SameDNUser' is not allowed to use same subject DN as the user(s) 'samednuser1' is/are using while issued by the same CA (even if CN postfix is used). See setting for 'Enforce unique DN' in the section Certification Authorities.", 
+                    "User 'SameDNUser' is not allowed to use same subject DN as the user(s) 'samednuser1' is/are using while issued by the same CA (even if CN postfix is used). See setting for 'Enforce unique DN' in the section Certification Authorities.",
                     null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
-            
+
         } finally {
             internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert1));
             internalCertStoreSession.removeCertificate(CertTools.getFingerprintAsString(cert2));
@@ -374,7 +374,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             } catch (NoSuchEndEntityException e) {// Do nothing.
             }
         }
-        
+
         // Also make a test with another DN component username generator, serialNumber as we remap this to SN
         try {
             cmpConfiguration.setRANameGenParams(cmpAlias, "SN");
@@ -413,7 +413,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             final byte[] nonce = CmpMessageHelper.createSenderNonce();
             final byte[] transid = CmpMessageHelper.createSenderNonce();
             final int reqId;
-            
+
             Calendar cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, 2);
             final PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, null, new Date(), cal.getTime(), null, null, null);
@@ -597,7 +597,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                 final byte[] resp3 = sendCmpHttp(ba3, 200, cmpAlias);
                 // do not check signing if we expect a failure (sFailMessage==null)
                 checkCmpResponseGeneral(resp3, ISSUER_DN, userDN, cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
-                checkCmpFailMessage(resp3, "End Entity Profile of name \"CMPKEYIDTESTPROFILEFAIL\" was not found", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId3, 
+                checkCmpFailMessage(resp3, "End Entity Profile of name \"CMPKEYIDTESTPROFILEFAIL\" was not found", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId3,
                         PKIFailureInfo.systemUnavail);
 
             } finally {
@@ -611,19 +611,19 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                 } catch (NoSuchEndEntityException e) {
                     // NOPMD
                 }
-            }      
+            }
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
-            globalConfSession.saveConfiguration(ADMIN, gc);            
+            globalConfSession.saveConfiguration(ADMIN, gc);
         }
 
     }
-    
+
     /**
      * Send a CMP request with SubjectAltName containing one OtherName OID that is supported by EJBCA,
      * and one OtherName OID that is not supported.
      * Expected to pass and a certificate containing the supported OID is returned, while the unsupported is dropped
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -631,31 +631,31 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
 
         ASN1EncodableVector vec = new ASN1EncodableVector();
         ASN1EncodableVector v = new ASN1EncodableVector();
-        
+
         v.add(new ASN1ObjectIdentifier(DnComponents.UPN_OBJECTID));
         v.add(new DERTaggedObject(true, 0, new DERUTF8String("boo@bar")));
         GeneralName gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
         vec.add(gn);
-        
+
         v = new ASN1EncodableVector();
         v.add(new ASN1ObjectIdentifier("2.5.5.6"));
         v.add(new DERTaggedObject(true, 0, new DERIA5String( "2.16.528.1.1007.99.8-1-993000027-N-99300011-00.000-00000000" )));
         gn = GeneralName.getInstance(new DERTaggedObject(false, 0, new DERSequence(v)));
         vec.add(gn);
-        
+
         GeneralNames san = GeneralNames.getInstance(new DERSequence(vec));
-        
+
         ExtensionsGenerator gen = new ExtensionsGenerator();
         gen.addExtension(Extension.subjectAlternativeName, false, san);
         Extensions exts = gen.generate();
-        
+
         final X500Name userDN = new X500Name("CN=TestAltNameUser");
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
         String fingerprint = null;
-        
+
         try {
             final PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, exts, null, null, null, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
@@ -692,9 +692,9 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             try{
                 internalCertStoreSession.removeCertificate(fingerprint);
             } catch(Exception e) {/*Do nothing*/}
-        }    
+        }
     }
-    
+
     @Test
     public void test05SubjectSerialNumber() throws Exception {
 
@@ -841,7 +841,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             // do not check signing if we expect a failure (sFailMessage==null)
-            checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
+            checkCmpResponseGeneral(resp, ISSUER_DN, new X500Name(StringTools.strip(sUserDN)), cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
             {
                 final CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
@@ -856,11 +856,11 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                 log.debug("Failed to delete user: " + escapedName);
             }
         }
-    } 
+    }
 
     @Test
     public void test08KeyUsageAndExtendedKeyUsageOverride() throws Exception {
-        
+
         final String username = "overidetestuser";
         final String sUserDN = "CN=" + username + ", C=SE";
         final X500Name userDN = new X500Name(sUserDN);
@@ -868,12 +868,12 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        
+
         try {
-            
+
             {
                 // Certificate Profile customizing
-                // Step 1 ->  Checking the default behavior. Extensions may not be overrideden if Allow Extension Override is setted to false. 
+                // Step 1 ->  Checking the default behavior. Extensions may not be overrideden if Allow Extension Override is setted to false.
                 final CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
                 cp.setAllowExtensionOverride(false);
                 cp.setUseExtendedKeyUsage(true);
@@ -891,9 +891,9 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                 eku.add(KeyPurposeId.id_kp_emailProtection.getId());
                 cp.setExtendedKeyUsage(eku);
                 cp.setExtendedKeyUsageCritical(false);
-                
+
                 this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
-                
+
             }
             // CRMF customizing
             int reqId;
@@ -904,13 +904,13 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             X509KeyUsage ku = new X509KeyUsage(bcku);
             extgen.addExtension(Extension.keyUsage, false, ku);
             // Extended Key Usage
-            List<KeyPurposeId> usage = new ArrayList<KeyPurposeId>();
+            List<KeyPurposeId> usage = new ArrayList<>();
             usage.add(KeyPurposeId.id_kp_codeSigning);
             ExtendedKeyUsage eku = new ExtendedKeyUsage(KeyPurposeId.id_kp_codeSigning);
             extgen.addExtension(Extension.extendedKeyUsage, false, eku);
             // Make the complete extension package
             Extensions exts = extgen.generate();
-            
+
             PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, exts, null, null, null, null, null);
             PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
@@ -925,7 +925,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
-            
+
             // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF.
             boolean[] kubits = cert.getKeyUsage();
             assertTrue(kubits[0]);
@@ -944,19 +944,19 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             assertEquals(KeyPurposeId.id_kp_clientAuth.getId(), s);
             s = l.get(1);
             assertEquals(KeyPurposeId.id_kp_emailProtection.getId(), s);
-            
+
             {
              // Step 2 ->  If Allow Extension Override is setted to true but the OIDs for these extensions were added in the lists OverridableExtensionOIDs and NonOverridableExtensionOIDs these extensions will not be overridden.
-                CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);             
+                CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
                 cp.setAllowExtensionOverride(true);
                 cp.getOverridableExtensionOIDs().add("2.5.29.15"); // <- keyUsage
                 cp.getOverridableExtensionOIDs().add("2.5.29.37"); // <- extendedKeyUsage
                 cp.getNonOverridableExtensionOIDs().add("2.5.29.15"); // <- keyUsage
                 cp.getNonOverridableExtensionOIDs().add("2.5.29.37"); // <- extendedKeyUsage
                 this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
-                
+
             }
-            
+
             one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, exts, null, null, null, null, null);
             req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
@@ -971,7 +971,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200, cmpAlias);
             checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
-            
+
             // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF.
             kubits = cert.getKeyUsage();
             assertTrue(kubits[0]);
@@ -990,18 +990,18 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             assertEquals(KeyPurposeId.id_kp_clientAuth.getId(), s);
             s = l.get(1);
             assertEquals(KeyPurposeId.id_kp_emailProtection.getId(), s);
-            
+
             {
                // Step 3 ->  Allow Extension Override is setted to true.
                //            Testing Key Usage as non overridable extension and
                //            Extended Key Usage as overridable extension.
-               CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);             
-               cp.setAllowExtensionOverride(true);               
+               CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
+               cp.setAllowExtensionOverride(true);
                cp.getNonOverridableExtensionOIDs().remove("2.5.29.37"); // <- extendedKeyUsage
                this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
-               
+
            }
-           
+
            one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, exts, null, null, null, null, null);
            req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
@@ -1016,8 +1016,8 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
            resp = sendCmpHttp(ba, 200, cmpAlias);
            checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
            cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
-           
-           // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF. 
+
+           // Checking key usage are digitalsignature, nonrepudiation and keyencipherment the values was not changed by CRMF.
            kubits = cert.getKeyUsage();
            assertTrue(kubits[0]);
            assertTrue(kubits[1]);
@@ -1033,18 +1033,18 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
            assertEquals(1, l.size());
            s = l.get(0);
            assertEquals(KeyPurposeId.id_kp_codeSigning.getId(), s);
-           
+
            {
               // Step 4 ->  Allow Extension Override is setted to true.
               //            Testing Key Usage as overridable extension and
               //            Extended Key Usage as overridable extension.
-              CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);             
-              cp.setAllowExtensionOverride(true);               
+              CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
+              cp.setAllowExtensionOverride(true);
               cp.getNonOverridableExtensionOIDs().remove("2.5.29.15"); // <- keyUsage
               this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
-              
+
           }
-          
+
           one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, exts, null, null, null, null, null);
           req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
@@ -1059,7 +1059,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
           resp = sendCmpHttp(ba, 200, cmpAlias);
           checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
           cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
-          
+
           // Checking key usage is decipherOnly the value was changed by CRMF.
           kubits = cert.getKeyUsage();
           assertFalse(kubits[0]);
@@ -1070,13 +1070,13 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
           assertFalse(kubits[5]);
           assertFalse(kubits[6]);
           assertFalse(kubits[7]);
-          assertTrue(kubits[8]);          
+          assertTrue(kubits[8]);
           // Checking Extended key usage is codeSigning the value was changed by CRMF.
           l = cert.getExtendedKeyUsage();
           assertEquals(1, l.size());
           s = l.get(0);
           assertEquals(KeyPurposeId.id_kp_codeSigning.getId(), s);
-            
+
         } finally {
             try {
                 endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -1084,9 +1084,9 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                 log.debug("Failed to delete user: " + username);
             }
         }
-            
+
     }
-    
+
     @Test
     public void test09CertificatePolicyOverwrite() throws Exception {
         final String username = "overidetestuser";
@@ -1096,11 +1096,11 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        
+
         try {
         {
             // Certificate Profile customizing
-            // Step 1 ->  Checking the default behavior. Extensions may not be overrideden if Allow Extension Override is setted to false. 
+            // Step 1 ->  Checking the default behavior. Extensions may not be overrideden if Allow Extension Override is setted to false.
             final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp.setAllowExtensionOverride(false);
             cp.setUseCertificatePolicies(true);
@@ -1128,14 +1128,14 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         // CRMF customizing
         int reqId;
         ExtensionsGenerator extgen = new ExtensionsGenerator();
-        
+
         final ASN1EncodableVector policyqualifyseq1 = new ASN1EncodableVector();
         PolicyQualifierInfo policyQualifierInfo1 = new PolicyQualifierInfo("https://ejbca.org/x1");
         policyqualifyseq1.add(policyQualifierInfo1);
         PolicyInformation pi1 = new PolicyInformation(new ASN1ObjectIdentifier("1.1.1.1"), new DERSequence(policyqualifyseq1));
         final ASN1EncodableVector policyseq = new ASN1EncodableVector();
         policyseq.add(pi1);
-        
+
         final ASN1EncodableVector qualifyseq = new ASN1EncodableVector();
         qualifyseq.add(new DERIA5String("My User X Notice Text"));
         PolicyQualifierInfo policyQualifierInfo2 = new PolicyQualifierInfo(new ASN1ObjectIdentifier("1.3.6.1.5.5.7.2.2"), new DERSequence(qualifyseq));
@@ -1143,17 +1143,17 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         policyqualifyseq2.add(policyQualifierInfo2);
         PolicyInformation pi2 = new PolicyInformation(new ASN1ObjectIdentifier("1.1.1.2"), new DERSequence(policyqualifyseq2));
         policyseq.add(pi2);
-        
+
         final ASN1EncodableVector policyqualifyseq3 = new ASN1EncodableVector();
         PolicyQualifierInfo policyQualifierInfo3 = new PolicyQualifierInfo("https://ejbca.org/x3");
         policyqualifyseq3.add(policyQualifierInfo3);
         PolicyInformation pi3 = new PolicyInformation(new ASN1ObjectIdentifier("1.1.1.3"), new DERSequence(policyqualifyseq3));
         policyseq.add(pi3);
         extgen.addExtension(Extension.certificatePolicies, false, new DERSequence(policyseq));
-                
+
         // Make the complete extension package
         Extensions exts = extgen.generate();
-        
+
         PKIMessage one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, exts, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
@@ -1168,13 +1168,13 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
 
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
-                        
+
         List<PolicyInformation> piList = CertTools.getCertificatePolicies(cert);
         assertEquals("Should be 3 Cert Policies", 3, piList.size());
         assertEquals("1.1.1.1", piList.get(0).getPolicyIdentifier().getId());
         assertEquals("1.1.1.2", piList.get(1).getPolicyIdentifier().getId());
         assertEquals("1.1.1.3", piList.get(2).getPolicyIdentifier().getId());
-        
+
         //The first Policy object has a CPS URI
         ASN1Encodable qualifier = piList.get(0).getPolicyQualifiers().getObjectAt(0);
         //System.out.println(ASN1Dump.dumpAsString(qualifier));
@@ -1184,7 +1184,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
         ASN1IA5String str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/1", str.getString());
-        
+
         // The second Policy object has a User Notice
         qualifier = piList.get(1).getPolicyQualifiers().getObjectAt(0);
         //System.out.println(ASN1Dump.dumpAsString(qualifier));
@@ -1194,7 +1194,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
         UserNotice un = UserNotice.getInstance(pqi.getQualifier());
         assertEquals("My User Notice Text", un.getExplicitText().getString());
-        
+
         // The third Policy object has both a CPS URI and a User Notice
         qualifier = piList.get(2).getPolicyQualifiers().getObjectAt(0);
         //System.out.println(ASN1Dump.dumpAsString(qualifier));
@@ -1204,7 +1204,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
         str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/3", str.getString());
-        
+
         {
             final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp.setAllowExtensionOverride(true);
@@ -1231,7 +1231,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             assertEquals("https://ejbca.org/3", policy3.getQualifier());
             this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
         }
-        
+
         // Make the complete extension package
         one = genCertReq(ISSUER_DN, userDN, keys, cacert, nonce, transid, true, exts, null, null, null, null, null);
         req = protectPKIMessage(one, false, PBEPASSWORD, 567);
@@ -1247,13 +1247,13 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
 
         checkCmpResponseGeneral(resp, ISSUER_DN, userDN, cacert, nonce, transid, true, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
         cert = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, new X500Name(StringTools.strip(sUserDN)), cacert, resp, reqId);
-                        
+
         piList = CertTools.getCertificatePolicies(cert);
         assertEquals("Should be 3 Cert Policies", 3, piList.size());
         assertEquals("1.1.1.1", piList.get(0).getPolicyIdentifier().getId());
         assertEquals("1.1.1.2", piList.get(1).getPolicyIdentifier().getId());
         assertEquals("1.1.1.3", piList.get(2).getPolicyIdentifier().getId());
-        
+
         //The first Policy object has a CPS URI
         qualifier = piList.get(0).getPolicyQualifiers().getObjectAt(0);
         //System.out.println(ASN1Dump.dumpAsString(qualifier));
@@ -1263,7 +1263,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
         str = ASN1IA5String.getInstance(pqi.getQualifier());
         assertEquals("https://ejbca.org/x1", str.getString());
-        
+
         // The secound Policy object has a User Notice
         qualifier = piList.get(1).getPolicyQualifiers().getObjectAt(0);
         //System.out.println(ASN1Dump.dumpAsString(qualifier));
@@ -1273,7 +1273,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         // When the qualifiedID is id_qt_unutice, we know this is a UserNotice
         un = UserNotice.getInstance(pqi.getQualifier());
         assertEquals("My User X Notice Text", un.getExplicitText().getString());
-        
+
         // The third Policy object has both a CPS URI and a User Notice
         qualifier = piList.get(2).getPolicyQualifiers().getObjectAt(0);
         //System.out.println(ASN1Dump.dumpAsString(qualifier));
@@ -1282,9 +1282,9 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
         assertEquals(PolicyQualifierId.id_qt_cps.getId(), pqi.getPolicyQualifierId().getId());
         // When the qualifiedID is id_qt_cps, we know this is a DERIA5String
         str = ASN1IA5String.getInstance(pqi.getQualifier());
-        assertEquals("https://ejbca.org/x3", str.getString());        
+        assertEquals("https://ejbca.org/x3", str.getString());
         //The first Policy object has a CPS URI
-        
+
         } finally {
             try {
                 this.endEntityManagementSession.revokeAndDeleteUser(ADMIN, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -1292,12 +1292,12 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
                 log.debug("Failed to delete user: " + username);
             }
         }
-            
+
     }
 
     /**
      * Send a CMP request with SubjectAltName containing one IPv4 and one IPv6 address.
-     * 
+     *
      * @throws Exception
      */
     @Test
@@ -1349,7 +1349,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             assertEquals("IPv6 address was wrong", "2001:db8:0:0:0:0:1234:5678", name2.get(1));
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
-            globalConfSession.saveConfiguration(ADMIN, gc);            
+            globalConfSession.saveConfiguration(ADMIN, gc);
             try {
                 endEntityManagementSession.revokeAndDeleteUser(ADMIN, "TestIPAltNameUser", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
             } catch (NoSuchEndEntityException e) {/*Do nothing*/}
@@ -1357,11 +1357,11 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             try{
                 internalCertStoreSession.removeCertificate(fingerprint);
             } catch(Exception e) {/*Do nothing*/}
-        }    
+        }
     }
 
     @Override
     public String getRoleName() {
-        return this.getClass().getSimpleName(); 
+        return this.getClass().getSimpleName();
     }
 }
