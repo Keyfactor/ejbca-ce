@@ -16,8 +16,8 @@ import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertJsonContentType
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonExceptionErrorResponse;
 import static org.ejbca.ui.web.rest.api.Assert.EjbcaAssert.assertProperJsonStatusResponse;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,17 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
-import java.util.Random;
-import java.util.List;
 import java.util.ArrayList;
-
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.EntityPart;
-import jakarta.ws.rs.core.GenericEntity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
+import java.util.List;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.cesecore.CaTestUtils;
@@ -57,6 +49,14 @@ import org.junit.Test;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.EntityPart;
+import jakarta.ws.rs.core.GenericEntity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.Response.Status;
+
 /**
  * A set of system tests for CaRestResource ('').
  */
@@ -69,16 +69,14 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     private static String TEST_ISSUER_DN_NO_PARTITION = "CN=CaRestResourceSystemTestNoPartition";
     private static String CRL_FILENAME = "CaRestResourceSystemTestCrlFile";
 
-
-    private static final CAAdminSessionRemote caAdminSession = 
-                            EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private static final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
     }
 
-    private static void removeCa(X509CAInfo cainfo) {
+    public static void removeCa(X509CAInfo cainfo) {
         try {
             CaTestUtils.removeCa(INTERNAL_ADMIN_TOKEN, cainfo);
         } catch (Exception e) {
@@ -137,7 +135,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         Files.deleteIfExists(Paths.get(CRL_FILENAME));
     }
 
-    private void assertTrue(String responseBody, String content) {
+    public static void assertTrue(String responseBody, String content) {
        Assert.assertTrue("does not contain: " + content, responseBody.contains(content));  
     }
 
@@ -174,7 +172,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         enableRestProtocolConfiguration();
     }
     
-    private String createCrl(String url) throws Exception {
+    public static String createCrl(String url) throws Exception {
         WebTarget request = newRequest(url);
         Response actualResponse = request.request().post(null);
         String responseBody = actualResponse.readEntity(String.class);
@@ -186,10 +184,8 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     
     @Test
     public void testCreateCrlWithoutDeltaCrl() throws Exception {
-        log.error("testCreateCrlWithoutDeltaCrl");
-
         // without delta
-        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl??deltacrl=false");
+        String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl?deltacrl=false");
 
         assertTrue(responseBody, ("\"all_success\":true"));
         assertTrue(responseBody, ("\"latest_partition_delta_crl_versions\":{\"partition_5\":0,"));
@@ -208,7 +204,6 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
     @Test
     public void testCreateCrlWithDeltaCrl() throws Exception {
-        log.error("testCreateCrlWithDeltaCrl");
         // without delta
         String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN2) + "/createcrl");
         assertTrue(responseBody, ("\"all_success\":true"));
@@ -241,8 +236,6 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
     @Test
     public void testCreateCrlNoPartition() throws Exception {
-        log.error("testCreateCrlNoPartition");
-
         // first we generate base CRL without delta
         String responseBody = createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN_NO_PARTITION) + "/createcrl?deltacrl=false");
         assertTrue(responseBody, ("\"all_success\":true"));
@@ -263,15 +256,12 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
 
     @Test
     public void testCreateCrlInvalidIssuer() throws Exception {
-        log.error("testCreateCrlInvalidIssuer");
-
         WebTarget request = newRequest("/v1/ca/" + encodeUrl("CN=InvalidCa") + "/createcrl?deltacrl=false");
         Response actualResponse = request.request().post(null);
         String responseBody = actualResponse.readEntity(String.class);
         log.error("responseBody: " + responseBody);
         actualResponse.close();
         assertEquals(400, actualResponse.getStatus());
-
     }
 
     @Test
@@ -324,7 +314,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     @Test
     public void crlImportShouldReturnBadRequestOnInvalidPartitionIndex() throws Exception {
         // given: with invalid partition indexes, and valid crl file.
-        String decimalCrlPartitionIndex = "3.14";
+        // String decimalCrlPartitionIndex = "3.14";
 
         createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl");
         final X509CRL x509Crl = getLatestCrl(TEST_ISSUER_DN1);
