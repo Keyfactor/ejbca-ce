@@ -5,7 +5,7 @@ val props: Properties = Properties().apply {
     if (file(propertiesFilePath).exists()) {
         load(file(propertiesFilePath).inputStream())
     } else {
-        load(file(propertiesFilePath + ".sample").inputStream())
+        load(file("$propertiesFilePath.sample").inputStream())
     }
 }
 
@@ -21,14 +21,37 @@ dependencies {
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.commons.lang)
     compileOnly(libs.x509.common.util)
+
+    testRuntimeOnly(libs.bundles.xstream)
+    testImplementation(libs.bundles.bouncy.castle)
+
+    if (project.extra["edition"] == "ee") {
+        testImplementation(project(":modules:ejbca-entity:cli"))
+    }
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
         }
     }
+}
+
+tasks.systemTest {
+    filter {
+        // TODO ECA-12480: Create custom test tasks similar to Ant's "test-dbschema" and "test-ocspmon" targets.
+        excludeTestsMatching("DatabaseSchemaSystemTest")
+        excludeTestsMatching("OcspMonitoringToolSystemTest")
+    }
+}
+
+tasks.processTestResources {
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from(sourceSets["test"].allSource){
+        include("**/test.xml")
+    }
+    into("${layout.buildDirectory}/resources/test/")
 }
 
 tasks.jar {

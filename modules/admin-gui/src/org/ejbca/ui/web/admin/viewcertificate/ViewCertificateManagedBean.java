@@ -338,16 +338,16 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
 
     private String composePublicKeyValue() {
         String publicKeyValue = certificateData.getPublicKeyAlgorithm() + " (" + certificateData.getKeySpec(ejbcaBean.getText("BITS")) + ")";
-        if (certificateData.getPublicKeyModulus() != null) {
-            publicKeyValue += ": " + certificateData.getPublicKeyModulus();  
+        if (certificateData.getPublicKeyHex(true) != null) {
+            publicKeyValue += ": " + certificateData.getPublicKeyHex(true);
         }
         return publicKeyValue;
     }
     
     private String composeAlternativeSigningKeyValue() {
         String alternativePublicKey = certificateData.getPublicAlternativeKeyAlgorithm() + " (" + certificateData.getAlternateKeySpec(ejbcaBean.getText("BITS")) + ")";
-        if (certificateData.getPublicAlternativeKeyModulus() != null) {
-            alternativePublicKey += ": " + certificateData.getPublicAlternativeKeyModulus();  
+        if (certificateData.getPublicAlternativeKeyHex(true) != null) {
+            alternativePublicKey += ": " + certificateData.getPublicAlternativeKeyHex(true);
         }
         return alternativePublicKey;
     }

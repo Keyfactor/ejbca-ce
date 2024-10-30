@@ -13,22 +13,26 @@ dependencies {
     compileOnly(libs.commons.lang3)
     compileOnly(libs.commons.collections4)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.impl) 
+    compileOnly(libs.bundles.cryptotokens)
+    testImplementation(project(":modules:cesecore-entity"))
+    testImplementation(libs.bundles.cryptotokens)
+    testImplementation(libs.bundles.xmlpull)
+    testRuntimeOnly(libs.cert.cvc)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(
                 listOf("src")
             )
+            resources {
+                srcDirs("resources")
+            }
         }
     }
 }
 
 tasks.jar {
     from(sourceSets["main"].output)
-    from("resources/META-INF/services") {
-        into("META-INF/services")
-    }
 }

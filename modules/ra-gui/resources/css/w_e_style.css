@@ -606,12 +606,29 @@ textarea#enrollWithRequestIdForm\:certificateRequest {
     margin: 2% 0 0 0;
 }
 
+#detailsForm\:certDetails\:showHideFullPublicKeysButton {
+    background: #e9af13;
+    color: #fff;
+    display: block;
+    margin: 2% 0 0 0;
+}
+
 #detailsForm\:certDetails\:showMoreCertificateDetails {
     width: 90%;
     margin: 0 0 5% 0 !important;
 }
 
 #detailsForm\:certDetails\:showMoreCertificateDetails > label {
+    display: block;
+    font-weight: bold;
+}
+
+#detailsForm\:certDetails\:showPublicKeys {
+    width: 90%;
+    margin: 0 0 5% 0 !important;
+}
+
+#detailsForm\:certDetails\:showPublicKeys > label {
     display: block;
     font-weight: bold;
 }
@@ -736,6 +753,8 @@ select#detailsForm\:certDetails\:newRevocationReason ~ input {
 #enrollWithRequestIdForm\:generateJks:focus,
 #detailsForm\:certDetails\:showMoreLessDetailsButton:hover,
 #detailsForm\:certDetails\:showMoreLessDetailsButton:focus,
+#detailsForm\:certDetails\:showHideFullPublicKeysButton:hover,
+#detailsForm\:certDetails\:showHideFullPublicKeysButton:focus,
 #searchCertsButton:hover,
 #searchCertsButton:focus,
 #requestStatusButton:hover,
@@ -1313,6 +1332,21 @@ span.approvalStep {
 
 @media (max-width: 47.99em) {
     #detailsForm\:certDetails\:showMoreCertificateDetails > span {
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+}
+
+#detailsForm\:certDetails\:showPublicKeys > span {
+    display: inline-block;
+    width: 95%;
+    color: #fff;
+    margin-bottom: 3%;
+}
+
+@media (max-width: 47.99em) {
+    #detailsForm\:certDetails\:showPublicKeys > span {
         white-space: nowrap;
         text-overflow: ellipsis;
         overflow: hidden;
@@ -2223,8 +2257,28 @@ table#contentForm\:searchCertTable > tbody > tr > td > input:hover, #contentForm
     #detailsForm\:certDetails\:showMoreCertificateDetails > span.pure-u-lg-1.pre {
         display: none;
     }
+    
+    #detailsForm\:certDetails\:showPublicKeys > span {
+        width: 60%;
+        margin-bottom: 0;
+        margin-left: 2.5%;
+    }
+
+    #detailsForm\:certDetails\:showPublicKeys > label {
+        display: inline-block;
+        margin-left: 2.5%;
+    }
+
+    #detailsForm\:certDetails\:showPublicKeys > span.pure-u-lg-1.pre {
+        display: none;
+    }
 
     #detailsForm\:certDetails\:showMoreLessDetailsButton {
+        width: 23%;
+        height: 35px;
+    }
+    
+    #detailsForm\:certDetails\:showHideFullPublicKeysButton {
         width: 23%;
         height: 35px;
     }

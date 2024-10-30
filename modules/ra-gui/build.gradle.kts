@@ -25,11 +25,11 @@ dependencies {
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.snakeyaml)
     compileOnly(libs.x509.common.util)
-    compileOnly(libs.cryptotokens.api)
+    compileOnly(libs.bundles.cryptotokens)
 }
 
 sourceSets {
-    val main by getting {
+    main {
         java {
             setSrcDirs(listOf("src"))
         }

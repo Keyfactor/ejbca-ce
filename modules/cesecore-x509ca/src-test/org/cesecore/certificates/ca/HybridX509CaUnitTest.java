@@ -12,10 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -36,6 +32,14 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Properties;
 
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -45,6 +49,7 @@ import org.bouncycastle.asn1.x9.X9ObjectIdentifiers;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.jcajce.spec.MLDSAParameterSpec;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -52,8 +57,6 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
-import org.bouncycastle.pqc.jcajce.provider.BouncyCastlePQCProvider;
-import org.bouncycastle.pqc.jcajce.spec.DilithiumParameterSpec;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
@@ -74,17 +77,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.pkcs11.NoSuchSlotException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for verifying EJBCA's behavior when the CA has an alternate keypair.
- * 
+ *
  */
 public class HybridX509CaUnitTest {
 
@@ -119,7 +118,7 @@ public class HybridX509CaUnitTest {
         cryptoToken.activate(cryptoTokenPassword.toCharArray());
 
         cryptoToken.generateKeyPair("secp256r1", CAToken.SOFTPRIVATESIGNKEYALIAS);
-        cryptoToken.generateKeyPair(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
+        cryptoToken.generateKeyPair(AlgorithmConstants.KEYALGORITHM_MLDSA44, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
 
         // Create CAToken
         Properties caTokenProperties = constructCaTokenProperties();
@@ -130,7 +129,7 @@ public class HybridX509CaUnitTest {
         caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-        caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_DILITHIUM2);
+        caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44);
 
         X509CAInfo cainfo = X509CAInfo.getDefaultX509CAInfo(caDn, "testHybridRootCa", CAConstants.CA_ACTIVE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "3650d", CAInfo.SELFSIGNED, null, caToken);
@@ -149,7 +148,7 @@ public class HybridX509CaUnitTest {
     }
 
     /**
-     * Construct a vanilla X509 root CA with an P256 key as primary and Dilithium2 as alternative
+     * Construct a vanilla X509 root CA with an P256 key as primary and ML-DSA-44 as alternative
      */
     @Test
     public void testHybridRootCa() throws CryptoTokenOfflineException, OperatorCreationException,
@@ -171,7 +170,7 @@ public class HybridX509CaUnitTest {
 
         X509CertificateHolder certHolder = new JcaX509CertificateHolder(caCertificate);
         PrivateKey alternativePrivateKey = cryptoToken.getPrivateKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
-        ContentSigner altSigGen = new JcaContentSignerBuilder("Dilithium2").setProvider(BouncyCastlePQCProvider.PROVIDER_NAME)
+        ContentSigner altSigGen = new JcaContentSignerBuilder("ML-DSA-44").setProvider(BouncyCastleProvider.PROVIDER_NAME)
                 .build(alternativePrivateKey);
         assertEquals("Incorrect alternative signature value", altSigGen.getAlgorithmIdentifier(),
                 AltSignatureAlgorithm.fromExtensions(certHolder.getExtensions()));
@@ -179,7 +178,7 @@ public class HybridX509CaUnitTest {
         assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativePublicKey.getEncoded()),
                 SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()));
         assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
-                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(alternativePublicKey)));
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(alternativePublicKey)));
     }
 
     @Test
@@ -193,15 +192,15 @@ public class HybridX509CaUnitTest {
         keyPairGenerator.initialize(new ECGenParameterSpec("P-256"));
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
 
-        KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_DILITHIUM,
+        KeyPairGenerator alternativeKeyPairGenerator = KeyPairGenerator.getInstance(AlgorithmConstants.KEYALGORITHM_MLDSA,
                 BouncyCastleProvider.PROVIDER_NAME);
-        alternativeKeyPairGenerator.initialize(DilithiumParameterSpec.dilithium2);
+        alternativeKeyPairGenerator.initialize(MLDSAParameterSpec.ml_dsa_44);
         KeyPair alternativeKeyPair = alternativeKeyPairGenerator.generateKeyPair();
 
         JcaPKCS10CertificationRequestBuilder jcaPKCS10CertificationRequestBuilder = new JcaPKCS10CertificationRequestBuilder(new X500Name(subjectDn),
                 keyPair.getPublic());
 
-        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_DILITHIUM2).setProvider(BouncyCastleProvider.PROVIDER_NAME)
+        ContentSigner altSigner = new JcaContentSignerBuilder(AlgorithmConstants.SIGALG_MLDSA44).setProvider(BouncyCastleProvider.PROVIDER_NAME)
                 .build(alternativeKeyPair.getPrivate());
 
         PKCS10CertificationRequest pkcs10CertificationRequest = jcaPKCS10CertificationRequestBuilder
@@ -220,8 +219,8 @@ public class HybridX509CaUnitTest {
 
         X509CertificateHolder certHolder = new JcaX509CertificateHolder(x509Certificate);
         PrivateKey caAlternativePrivateKey = cryptoToken.getPrivateKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
-        ContentSigner altSigGen = new JcaContentSignerBuilder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2)
-                .setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePrivateKey);
+        ContentSigner altSigGen = new JcaContentSignerBuilder(AlgorithmConstants.KEYALGORITHM_MLDSA44)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePrivateKey);
         assertEquals("Incorrect alternative signature value", altSigGen.getAlgorithmIdentifier(),
                 AltSignatureAlgorithm.fromExtensions(certHolder.getExtensions()));
 
@@ -236,7 +235,7 @@ public class HybridX509CaUnitTest {
         assertEquals("Incorrect alternative public key", alternativeKeyPair.getPublic(), alternativePublicKey);
         PublicKey caAlternativePublicKey = cryptoToken.getPublicKey(CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
         assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
-                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastlePQCProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
+                new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
 
     }
 

@@ -334,6 +334,13 @@ public class CryptoTools {
                 keypairclasses.add(org.bouncycastle.jcajce.interfaces.EdDSAPublicKey.class);
                 keypairclasses.add(java.security.interfaces.DSAPrivateKey.class);
                 keypairclasses.add(java.security.interfaces.DSAPublicKey.class);
+                // Add PQC classes.
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLDSAPrivateKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLDSAPublicKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLKEMPrivateKey.class);
+                keypairclasses.add(org.bouncycastle.jcajce.interfaces.MLKEMPublicKey.class);
+                keypairclasses.add(org.bouncycastle.pqc.jcajce.interfaces.FalconPrivateKey.class);
+                keypairclasses.add(org.bouncycastle.pqc.jcajce.interfaces.FalconPublicKey.class);
                 ois.setAcceptedClasses(keypairclasses);
                 // only allow BC to implement key classes, which should work since we use BC to read the CMS structure, which will create BC keys internally
                 ois.setEnabledInterfaceImplementations(true, "org.bouncycastle"); 
