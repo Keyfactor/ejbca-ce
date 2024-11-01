@@ -27,7 +27,44 @@
 	
 	<body>
 		<ui:composition>
-		
+		  <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">  
+            <h:panelGroup>
+                  <h:outputLabel for="settings" value="#{web.text.PKIMETAL_VALIDATOR_SETTINGS}" style="font-weight: bold;"/>&nbsp;
+            </h:panelGroup>     
+            <h:panelGroup id="settings" />                   
+            <h:outputLabel for="url" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_URL}"/>
+            <h:panelGroup>
+                <h:inputText id="url" size="60" value="#{validatorBean.validator.url}" disabled="#{validatorsBean.viewOnly}"/>
+                <h:commandButton value="#{web.text.PKIMETAL_VALIDATOR_PING}" action="#{validatorBean.validator.ping()}" disabled="#{validatorsBean.viewOnly}"/>
+            </h:panelGroup>	 
+            <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}" />     
+            <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}">
+              <h:outputLabel styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_NOT_CONNECTED}"/>
+            </h:panelGroup> 
+            <h:outputLabel for="profiles" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AVAILABLE_PROFILES}"/>
+            <h:panelGroup id="profiles">
+                <p:selectOneMenu value="#{validatorBean.validator.chosenProfile}" disabled="#{validatorsBean.viewOnly}">
+                    <f:selectItems value="#{validatorBean.getGroupList()}"/>
+                </p:selectOneMenu>
+            </h:panelGroup>
+		  </h:panelGrid>
+		  
+		  <h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0,Row1" columnClasses="editColumn1,editColumn2">  
+            <h:panelGroup>
+                  <h:outputLabel for="testMode" value="#{web.text.PKIMETAL_VALIDATOR_TEST_MODE}" style="font-weight: bold;"/>&nbsp;
+            </h:panelGroup>     
+            <h:panelGroup id="testMode" /> 
+            <h:outputLabel for="testFileUpload" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_TEST_CERTIFICATE}"/>
+            <h:panelGroup id="testFileUpload">
+                <p:fileUpload value="#{validatorBean.testFile}" mode="simple" auto="true" immediate="true"
+                           update="message" styleClass="ui-button-outlined ui-button-secondary"
+                          listener="#{validatorBean.handleFileUpload}"/>
+                <h:commandButton value="#{web.text.PKIMETAL_VALIDATOR_TEST}" action="#{validatorBean.testValidator()}"/>
+            </h:panelGroup>
+        </h:panelGrid>
+		  
+		  
+		  
 		</ui:composition>
 	</body>
 

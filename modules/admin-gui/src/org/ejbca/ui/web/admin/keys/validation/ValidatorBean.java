@@ -13,15 +13,20 @@
 
 package org.ejbca.ui.web.admin.keys.validation;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -38,7 +43,10 @@ import org.cesecore.keys.validation.KeyValidatorDoesntExistsException;
 import org.cesecore.keys.validation.KeyValidatorExistsException;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.KeyValidatorSettingsTemplate;
+import org.cesecore.keys.validation.LinterProfile;
 import org.cesecore.keys.validation.StaticUserInterfaceValidator;
+import org.cesecore.keys.validation.TestableValidator;
+import org.cesecore.keys.validation.UiCallBackList;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.keys.validation.ValidatorBase;
 import org.cesecore.keys.validation.ValidatorFactory;
@@ -49,9 +57,12 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.psm.jsf.JsfDynamicUiPsmFactory;
 import org.ejbca.ui.web.admin.BaseManagedBean;
+import org.primefaces.event.FileUploadEvent;
+import org.primefaces.model.file.UploadedFile;
 
 import com.keyfactor.CesecoreException;
 import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -62,6 +73,7 @@ import jakarta.faces.component.html.HtmlSelectOneMenu;
 import jakarta.faces.context.FacesContext;
 import jakarta.faces.event.AjaxBehaviorEvent;
 import jakarta.faces.model.SelectItem;
+import jakarta.faces.model.SelectItemGroup;
 import jakarta.faces.validator.ValidatorException;
 import jakarta.faces.view.ViewScoped;
 import jakarta.inject.Inject;
@@ -103,6 +115,11 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
 
     /** Dynamic UI PSM component. */
     private HtmlPanelGrid dataGrid;
+    
+    /** Test file */
+    private UploadedFile testFile;   
+    private String testResults = "";
+
 
     public ValidatorBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VALIDATORVIEW.resource());
@@ -710,7 +727,97 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
             return "";
         }
     }
+    
+    public List<SelectItem> getGroupList() {
+        if(stagedValidator instanceof UiCallBackList) {
+            UiCallBackList uiCallBackList = (UiCallBackList) stagedValidator;
+            Map<String, Set<LinterProfile>> linterProfileList = uiCallBackList.getProfileList().getProfiles();
+            List<SelectItem> groupedList = new ArrayList<>();
+            for(String key : linterProfileList.keySet()) {
+                SelectItemGroup group = new SelectItemGroup(key);
+                List<SelectItem> selectItems = new ArrayList<>();
+                for(LinterProfile profile : linterProfileList.get(key)) {
+                    selectItems.add(new SelectItem(profile.getName(), profile.getName()));
+                }
+                group.setSelectItems(selectItems);
+                groupedList.add(group);
+            }
+            return groupedList;
+        } else {
+            return new ArrayList<>();
+        }  
+    }
+    
+    /**
+     * Allows any validator that implements the TestableValidator interface to run a test 
+     */
+    public void testValidator() {
+        if(stagedValidator instanceof TestableValidator) {
+            if(testFile == null) {
+                FacesMessage message = new FacesMessage("Failure", "No file has been uploaded,");
+                FacesContext.getCurrentInstance().addMessage(null, message);
+            } else {
+                byte[] fileBytes;
+                try {
+                    fileBytes = IOUtils.toByteArray(testFile.getInputStream());
+                    X509Certificate testCertificate = CertTools.getCertfromByteArray(fileBytes, X509Certificate.class);
+                    List<String> result = ((TestableValidator) stagedValidator).test(testCertificate);
+                    //FacesMessage message;
+                    if (result.isEmpty()) {
+                       // message = new FacesMessage("Successful", "Test certificate was validated without error.");
+                        testResults = "Test certificate was validated without error.";
+                    } else {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        for (String errorMessage : result) {
+                            stringBuilder.append(errorMessage + "\n");
+                        }
+                       // message = new FacesMessage("Validation failure: " + stringBuilder.toString());
+                        testResults = "Validation failure:\n" + stringBuilder.toString();
+                    }
+                   // FacesContext.getCurrentInstance().addMessage(null, message);
+                } catch (IOException e) {
+                    FacesMessage message = new FacesMessage("Failure", "Could not parse uploaded file: " + e.getMessage());
+                    FacesContext.getCurrentInstance().addMessage(null, message);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Could not parse uploaded file: " + e.getMessage(), e);
+                    }
+                } catch (CertificateParsingException e) {
+                    FacesMessage message = new FacesMessage("Failure", "Could not parse file as an X509 Certificate: " + e.getMessage());
+                    FacesContext.getCurrentInstance().addMessage(null, message);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Could not parse file as an X509 Certificate: " + e.getMessage(), e);
+                    }
+                }
+            }
+        }
+    }
 
+    public UploadedFile getTestFile() {        
+        return testFile;
+    }
+
+    public void setTestFile(UploadedFile testFile) {
+        if (testFile != null) {
+            this.testFile = testFile;
+        }
+
+    }
+    
+    public void handleFileUpload(FileUploadEvent event) {
+        if(stagedValidator instanceof TestableValidator) {            
+            this.testFile = event.getFile();
+            FacesMessage message = new FacesMessage("Successful", event.getFile().getFileName() + " is uploaded.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+        }   
+    }
+    
+    public boolean hasTestResults() {
+        return StringUtils.isNotEmpty(testResults);
+    }
+    
+    public String getTestResults() {
+        return testResults;
+    }
 
     
 }
