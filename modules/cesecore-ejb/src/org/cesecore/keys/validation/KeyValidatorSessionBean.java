@@ -607,10 +607,10 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                             final ExternalScriptsAllowlist externalScriptsWhitelist = ExternalScriptsAllowlist.fromText(
                                     externalScriptsConfiguration.getExternalScriptsWhitelist(),
                                     externalScriptsConfiguration.getIsExternalScriptsWhitelistEnabled());
-                            messages = externalScriptCertificateValidator.validate(ca, certificate, externalScriptsWhitelist);
+                            messages = externalScriptCertificateValidator.validate(certificate, externalScriptsWhitelist);
                         } else if (baseValidator.getValidatorSubType().equals(CertificateValidator.class)) {
                             CertificateValidator certificateValidator = (CertificateValidator) baseValidator;
-                            messages = certificateValidator.validate(ca, certificate);
+                            messages = certificateValidator.validate(certificate);
                         } else {
                             throw new IllegalStateException("Validator was of unknown subtype: " + baseValidator.getValidatorSubType());
                         }

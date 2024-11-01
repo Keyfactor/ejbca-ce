@@ -28,7 +28,6 @@ import java.util.Map;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.ExternalProcessException;
@@ -188,7 +187,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
     }
 
     @Override
-    public List<String> validate(final CA ca, final Certificate certificate, final ExternalScriptsAllowlist externalScriptsAllowlist)
+    public List<String> validate(final Certificate certificate, final ExternalScriptsAllowlist externalScriptsAllowlist)
             throws ValidatorNotApplicableException, ValidationException, CertificateException {
         final List<String> messages = new ArrayList<>();
         if (log.isDebugEnabled()) {
