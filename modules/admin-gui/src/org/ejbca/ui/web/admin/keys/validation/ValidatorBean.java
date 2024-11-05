@@ -728,6 +728,9 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
         }
     }
     
+    //This method is written intentionally vague on context. While it's initially used to display a group of profiles
+    //as retrieved from the pkimetal validator, it could extended to be used for multiple different values by adding a differentiator
+    //as a oarameter. 
     public List<SelectItem> getGroupList() {
         if(stagedValidator instanceof UiCallBackList) {
             UiCallBackList uiCallBackList = (UiCallBackList) stagedValidator;
@@ -754,7 +757,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public void testValidator() {
         if(stagedValidator instanceof TestableValidator) {
             if(testFile == null) {
-                FacesMessage message = new FacesMessage("Failure", "No file has been uploaded,");
+                FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "No file has been uploaded.");
                 FacesContext.getCurrentInstance().addMessage(null, message);
             } else {
                 byte[] fileBytes;
@@ -762,27 +765,23 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
                     fileBytes = IOUtils.toByteArray(testFile.getInputStream());
                     X509Certificate testCertificate = CertTools.getCertfromByteArray(fileBytes, X509Certificate.class);
                     List<String> result = ((TestableValidator) stagedValidator).test(testCertificate);
-                    //FacesMessage message;
                     if (result.isEmpty()) {
-                       // message = new FacesMessage("Successful", "Test certificate was validated without error.");
                         testResults = "Test certificate was validated without error.";
                     } else {
                         StringBuilder stringBuilder = new StringBuilder();
                         for (String errorMessage : result) {
-                            stringBuilder.append(errorMessage + "\n");
+                            stringBuilder.append(errorMessage + "<br/>");
                         }
-                       // message = new FacesMessage("Validation failure: " + stringBuilder.toString());
-                        testResults = "Validation failure:\n" + stringBuilder.toString();
+                        testResults = "Validation failure(s):<br/><br/>" + stringBuilder.toString();
                     }
-                   // FacesContext.getCurrentInstance().addMessage(null, message);
                 } catch (IOException e) {
-                    FacesMessage message = new FacesMessage("Failure", "Could not parse uploaded file: " + e.getMessage());
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse uploaded file: " + e.getMessage());
                     FacesContext.getCurrentInstance().addMessage(null, message);
                     if (log.isDebugEnabled()) {
                         log.debug("Could not parse uploaded file: " + e.getMessage(), e);
                     }
                 } catch (CertificateParsingException e) {
-                    FacesMessage message = new FacesMessage("Failure", "Could not parse file as an X509 Certificate: " + e.getMessage());
+                    FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse file as an X509 Certificate: " + e.getMessage());
                     FacesContext.getCurrentInstance().addMessage(null, message);
                     if (log.isDebugEnabled()) {
                         log.debug("Could not parse file as an X509 Certificate: " + e.getMessage(), e);
@@ -806,7 +805,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     public void handleFileUpload(FileUploadEvent event) {
         if(stagedValidator instanceof TestableValidator) {            
             this.testFile = event.getFile();
-            FacesMessage message = new FacesMessage("Successful", event.getFile().getFileName() + " is uploaded.");
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, "Success!", event.getFile().getFileName() + " is uploaded.");
             FacesContext.getCurrentInstance().addMessage(null, message);
         }   
     }
