@@ -1426,7 +1426,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
 
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
         final String sDate = "2012-06-07T23:55:59+02:00";
 
@@ -1505,7 +1505,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         // Create a new user and certificate
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate("12345678");
-        String issuerdn = cert.getIssuerDN().toString();
+        String issuerdn = cert.getIssuerX500Principal().toString();
         String serno = cert.getSerialNumber().toString(16);
         
         // Newly issues, certificate is not revoked

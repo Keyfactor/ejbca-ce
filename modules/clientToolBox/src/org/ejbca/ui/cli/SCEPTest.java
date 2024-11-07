@@ -419,7 +419,7 @@ class SCEPTest extends ClientToolBox {
                 }
                 SignerId sinfo = signerInfo.getSID();
                 // Check that the signer is the expected CA
-                String raCertIssuer = DnComponents.stringToBCDNString(this.sessionData.certchain[0].getIssuerDN().getName());
+                String raCertIssuer = DnComponents.stringToBCDNString(this.sessionData.certchain[0].getIssuerX500Principal().getName());
                 String sinfoIssuer = DnComponents.stringToBCDNString(sinfo.getIssuer().toString());
                 if (!StringUtils.equals(raCertIssuer, sinfoIssuer)) {
                     StressTest.this.performanceTest.getLog().error("Issuers does not match: " + raCertIssuer + ", " + sinfoIssuer);
@@ -580,8 +580,8 @@ class SCEPTest extends ClientToolBox {
                     //                            fos.close();
                     //                        } catch (Exception e) {}
                     // check the returned CRL
-                    if (!StringUtils.equals(this.sessionData.certchain[1].getSubjectDN().getName(), retCrl.getIssuerDN().getName())) {
-                        StressTest.this.performanceTest.getLog().error("CRL issuerDN should be " + this.sessionData.certchain[1].getSubjectDN().getName() + " but was: " + retCrl.getIssuerDN().getName());
+                    if (!StringUtils.equals(this.sessionData.certchain[1].getSubjectDN().getName(), retCrl.getIssuerX500Principal().getName())) {
+                        StressTest.this.performanceTest.getLog().error("CRL issuerDN should be " + this.sessionData.certchain[1].getSubjectDN().getName() + " but was: " + retCrl.getIssuerX500Principal().getName());
                         return false;
                     }
                     retCrl.verify(this.sessionData.certchain[1].getPublicKey());
@@ -777,7 +777,7 @@ class SCEPTest extends ClientToolBox {
                 //      subject "the requester subject name as given in PKCS#10" 
                 //  } 
                 ASN1EncodableVector vec = new ASN1EncodableVector();
-                vec.add(new DERUTF8String(ca.getIssuerDN().getName()));
+                vec.add(new DERUTF8String(ca.getIssuerX500Principal().getName()));
                 vec.add(new DERUTF8String(dn));
                 DERSequence seq = new DERSequence(vec);
 
