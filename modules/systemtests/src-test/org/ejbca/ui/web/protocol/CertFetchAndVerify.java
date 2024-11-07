@@ -142,7 +142,7 @@ public class CertFetchAndVerify {
 			log.info("The certificate '"+bottomName+"' is not signed by '"+upperName+"'.");
 			return;
 		}
-		if ( upper.getSubjectDN().equals(upper.getIssuerDN()) ) {
+		if ( upper.getSubjectDN().equals(upper.getIssuerX500Principal()) ) {
 			log.info("The old CA '"+bottomName+"' is signed by the old CA '"+upperName+"' which is a root CA.");
 			return;
 		}

@@ -588,7 +588,7 @@ public class CrlGenerationUponRevocationSystemTest extends CaTestCase {
     
     private void assertRevocationStatus(final X509Certificate certificate, final int revokedCertificateStatus) {
         final BigInteger serial = CertTools.getSerialNumber(certificate);
-        final CertificateStatus status = certificateStoreSession.getStatus(certificate.getIssuerDN().getName(), serial);
+        final CertificateStatus status = certificateStoreSession.getStatus(certificate.getIssuerX500Principal().getName(), serial);
         assertEquals(revokedCertificateStatus, status.revocationReason);
     }
     

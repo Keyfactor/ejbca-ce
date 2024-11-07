@@ -327,7 +327,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		@Override
 		public boolean doIt() throws Exception {
 			for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++) {
-				this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+				this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 										this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 										REVOKATION_REASON_UNSPECIFIED);
 			}
@@ -352,14 +352,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		}
 		private void revokeBackdated( int i ) throws Exception {
 			this.ejbcaWS.revokeCertBackdated(
-					this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+					this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 					this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 					REVOKATION_REASON_UNSPECIFIED,
 					this.revoceTime);
 		}
 		private void revoke( int i ) throws Exception {
 			this.ejbcaWS.revokeCert(
-					this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+					this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 					this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 					REVOKATION_REASON_UNSPECIFIED);
 		}

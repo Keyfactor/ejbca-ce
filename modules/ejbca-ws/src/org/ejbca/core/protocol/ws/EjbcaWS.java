@@ -273,7 +273,7 @@ public class EjbcaWS implements IEjbcaWS {
         } else {
             final X509Certificate cert = ((X509CertificateAuthenticationToken) admin).getCertificate();
             logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectDN().toString());
-            logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerDN().toString());
+            logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerX500Principal().toString());
         }
             // Log IP address
             MessageContext msgCtx = wsContext.getMessageContext();

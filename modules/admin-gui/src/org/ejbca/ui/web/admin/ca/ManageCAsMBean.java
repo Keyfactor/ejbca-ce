@@ -169,7 +169,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                                 final Optional<CAInfo> issuer = caSession.getIssuerFor(getAdmin(), certificate);
                                 if (!issuer.isPresent()) {
                                     log.info("Ignoring certificate " + CertTools.getSubjectDN(certificate)
-                                            + " issued by " + certificate.getIssuerDN() + " not known by this instance.");
+                                            + " issued by " + certificate.getIssuerX500Principal() + " not known by this instance.");
                                     certificatesIgnored.incrementAndGet();
                                     return;
                                 }

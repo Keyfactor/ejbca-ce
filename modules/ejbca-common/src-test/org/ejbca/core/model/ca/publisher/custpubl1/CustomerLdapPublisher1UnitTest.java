@@ -486,8 +486,8 @@ public class CustomerLdapPublisher1UnitTest {
     public void testDoStoreCRL() throws Exception {
         // Precondition
         final X509CRL crl = CertTools.getCRLfromByteArray(CRL_BYTES);
-        if ("CN=TestCA, O=AnaTom, C=SE".equals(crl.getIssuerDN().getName())) {
-            throw new Exception("Test assumes the CRL to have the DN: CN=TestCA, O=AnaTom, C=SE but was: " + crl.getIssuerDN().getName());
+        if ("CN=TestCA, O=AnaTom, C=SE".equals(crl.getIssuerX500Principal().getName())) {
+            throw new Exception("Test assumes the CRL to have the DN: CN=TestCA, O=AnaTom, C=SE but was: " + crl.getIssuerX500Principal().getName());
         }
         
         // Test storage of an new entry

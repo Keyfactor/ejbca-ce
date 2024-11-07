@@ -527,7 +527,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 			}
 			if (cert.getIssuerX500Principal().hashCode() != this.cacert.getSubjectX500Principal().hashCode()) {
 				this.performanceTest.getLog().error(
-						"Issuer is '" + cert.getIssuerDN() + "' but should be '" + this.cacert.getSubjectDN() + '\'');
+						"Issuer is '" + cert.getIssuerX500Principal() + "' but should be '" + this.cacert.getSubjectDN() + '\'');
 				return null;
 			}
 			try {

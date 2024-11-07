@@ -58,6 +58,7 @@ public class SearchCertificatesRestResponseV2UnitTest {
     final Integer certificateProfileId = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
     final Integer endEntityProfileId = EndEntityConstants.NO_END_ENTITY_PROFILE;
     final Long expireDate = certificate.getNotAfter().getTime();
+    // getIssuerX500Principal() returns the incorrect order, so let this be a warning for the time being
     final String issuerDn = certificate.getIssuerDN().getName();
     final Long notBefore = certificate.getNotBefore().getTime();
     // CertificateData revocation date and reason are 0.

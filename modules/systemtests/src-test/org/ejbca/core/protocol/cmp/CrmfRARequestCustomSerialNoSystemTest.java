@@ -123,7 +123,7 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
             log.error("NO CACERT for caid " + this.caid);
             this.cacert = null;
         }
-        this.issuerDN = this.cacert != null ? this.cacert.getIssuerDN().getName() : "CN=ManagementCA,O=EJBCA Sample,C=SE";
+        this.issuerDN = this.cacert != null ? this.cacert.getIssuerX500Principal().getName() : "CN=ManagementCA,O=EJBCA Sample,C=SE";
     }
     @Override
     @Before
