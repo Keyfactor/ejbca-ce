@@ -140,7 +140,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_USERNAME_CONTAINS_INVALID_CHARACTERS = "enroll_username_contains_invalid_characters";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
-    private static final String ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD = "enroll_invalid_certificate_request_not_parsable_subject_dn_field";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
 
     private static final String ENROLL_INVALID_SSH_PUB_KEY = "enroll_invalid_ssh_pub_key";
@@ -1030,10 +1029,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
                         }
                     }
                 }
-            }
-            if (RequestFieldType.DN.equals(type) && getCertificateProfile().getAllowDNOverride()) {
-                raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField);
-                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
             }
             if (log.isDebugEnabled()) {
                 if (RequestFieldType.DN.equals(type)) {
