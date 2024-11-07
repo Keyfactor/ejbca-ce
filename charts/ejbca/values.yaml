@@ -15,7 +15,6 @@ ejbca:
     configMapName: # Option 1: Specify a ConfigMap containing your EJBCA ConfigDump JSON data
     configMapKey: # (Optional) The key in the ConfigMap where the EJBCA ConfigDump data is found (default: "configdump.json")
     inlineConfigdump: # Option 2: Directly insert your EJBCA ConfigDump JSON data here
-
   ## not recommended: applicable only when direct HTTP access to EJBCA is enabled
   importAppserverKeystore: false
   #appserverKeystoreSecret: keystore-secret
@@ -40,22 +39,18 @@ ejbca:
     # INFO, DEBUG, TRACE, ERROR
     LOG_LEVEL_APP: "INFO"
     LOG_LEVEL_SERVER: "INFO"
-    
     # Default Random Number Generator algorithm for certificate serial number generation.
     # Available algorithms are: BCSP800Hybrid, SHA1PRNG, default, defaultstrong
     EJBCA_RNGALGORITHM: "default"
-
     ## Observability
     # The IP address where port 8090 will listen for requests to /health, /health/ready,
     # /health/live and /metrics . Set this to 0.0.0.0 to bind to all container interfaces.
     OBSERVABLE_BIND: "127.0.0.1"
     # Set this to "true" to collect metrics and expose them at the /metrics endpoint for scraping.
     METRICS_ENABLED: false
-
     ## Global OCSP configurations
     OCSP_CHECK_SIGN_CERT_VALIDITY: true
     OCSP_NON_EXISTING_IS_GOOD: false
-
     ## SMTP configuration
     # Specify the FQDN or IP Address of the SMTP host for EJBCA to send email notifications.
     SMTP_DESTINATION: "localhost"
@@ -68,7 +63,6 @@ ejbca:
     SMTP_USERNAME: ejbca-mail
     # SMTP password should be given as secrets, see SMTP_PASSWORD secret in envRaw
     #SMTP_PASSWORD: ejbca
-
   #envRaw:
   #  - name: DATABASE_USER
   #    valueFrom:
@@ -108,9 +102,7 @@ ejbca:
   volumes: []
   # Extra volume mounts to be added to the deployment
   volumeMounts: []
-
 replicaCount: 1
-
 # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
 updateStrategy: {}
 #  type: RollingUpdate
@@ -120,7 +112,7 @@ image:
   # Application variant: not set for full EJBCA, "ra" or "va"
   #variant: ra
   repository: keyfactor/ejbca-ce
-  tag: latest
+  tag: 9.1.0
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""
@@ -139,7 +131,6 @@ podSecurityContext: {}
 # fsGroup: 2000
 # Annotations to add to the service EJBCA and nginx
 serviceAnnotations: {}
-
 securityContext: {}
 # capabilities:
 #   drop:
@@ -171,7 +162,6 @@ services:
   # Extra sidecar ports to be added to the service, optionally used when sidecarContainers
   # are defined and need to expose ports
   sidecarPorts: []
-
 # Recommended for cluster internal communications
 # Requires services.proxyHttp to be enabled
 nginx:
@@ -194,7 +184,6 @@ nginx:
     # create a load balancer service for each Pod with separate IP address
     enableReplicaSpecificAccess: false
   additionalHosts:
-
 # External communication from cluster
 # Requires services.proxyAJP or services.proxyHttp to be enabled for adminweb access
 ingress:
@@ -242,41 +231,33 @@ autoscaling:
   #     value: 4
   #     periodSeconds: 15
   #   selectPolicy: Max
-
 # https://kubernetes.io/docs/tasks/run-application/configure-pdb/
 podDisruptionBudget:
   create: false
   minAvailable: 1
   maxUnavailable: ""
-
 # https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
 nodeSelector: {}
 affinity: {}
-
 # https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
 tolerations: []
-
 # https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
 topologySpreadConstraints: []
-
 # https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/
 priorityClassName: ""
-
 # https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/
 schedulerName: ""
-
 # https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/
 terminationGracePeriodSeconds: ""
-
 # https://kubernetes.io/docs/concepts/services-networking/network-policies/
 networkPolicy:
-  # policyTypes:
-  #   - Ingress
-  #   - Egress
-  #   ingress:
-  #   - from:
-  #       ...
-  #   egress:
-  #   - to:
-  #       ...
-    
+
+# policyTypes:
+#   - Ingress
+#   - Egress
+#   ingress:
+#   - from:
+#       ...
+#   egress:
+#   - to:
+#       ...
