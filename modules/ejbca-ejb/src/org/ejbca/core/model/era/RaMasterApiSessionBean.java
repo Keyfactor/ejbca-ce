@@ -62,6 +62,7 @@ import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -1304,7 +1305,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                                                                        final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
         final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
         final boolean countOnly = request.getPageNumber() == -1;
-        final Query query = createQuery(entityManager, request, countOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
+        final boolean fingerPrintsOnly = CesecoreConfiguration.useBase64CertTable();
+        final Query query = createQuery(entityManager, request, countOnly, fingerPrintsOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
         int maxResults = -1;
         int offset = -1;
         if (!countOnly) {
@@ -1334,10 +1336,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     log.debug("Certificate search count: " + count + ". queryTimeout=" + queryTimeout + "ms");
                 }
             } else {
-                final List<?> resultList = query.getResultList();
-                for (final Object fingerprintRecord : resultList) {
-                    final String fingerprint = ValueExtractor.extractStringValue(fingerprintRecord);
-                    response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+				final List<?> resultList = query.getResultList();
+				if(fingerPrintsOnly) {
+					for (final Object fingerprintRecord : resultList) {
+                        final String fingerprint = ValueExtractor.extractStringValue(fingerprintRecord);
+                        response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+                    }
+                } else {
+					response.getCdws().addAll(resultList.stream()
+                            .map(certificateData -> new CertificateDataWrapper((CertificateData) certificateData, null))
+                            .collect(Collectors.toList()));
                 }
                 response.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
                 if (log.isDebugEnabled()) {
@@ -1377,6 +1385,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     static Query createQuery( final EntityManager entityManager,
                               final RaCertificateSearchRequestV2 request,
                               final boolean countOnly,
+                              final boolean fingerprintsOnly,
                               final List<String> issuerDns,
                               final List<Integer> authorizedCpIds,
                               final boolean accessAnyCpAvailable,
@@ -1391,8 +1400,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final StringBuilder sb = new StringBuilder("SELECT ");
         if (countOnly) {
             sb.append("count(*)");
-        } else {
+        } else if (fingerprintsOnly) {
             sb.append("a.fingerprint");
+        } else {
+            sb.append("a");
         }
         sb.append(" FROM CertificateData a");
         sb.append(" WHERE a.issuerDN IN (:issuerDN)");
@@ -1453,7 +1464,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
 
-        final Query query = entityManager.createNativeQuery(sb.toString());
+        final Query query;
+        if (countOnly || fingerprintsOnly) {
+            query = entityManager.createNativeQuery(sb.toString());
+        } else {
+            query = entityManager.createQuery(sb.toString(), CertificateData.class);
+        }
         query.setParameter("issuerDN", issuerDns);
         if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
             query.setParameter("certificateProfileId", authorizedCpIds);

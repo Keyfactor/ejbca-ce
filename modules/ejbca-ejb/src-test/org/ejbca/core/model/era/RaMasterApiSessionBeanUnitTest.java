@@ -15,6 +15,8 @@ package org.ejbca.core.model.era;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Query;
 
+import jakarta.persistence.TypedQuery;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.easymock.Capture;
 import org.easymock.CaptureType;
 import org.easymock.EasyMock;
@@ -58,13 +60,17 @@ public class RaMasterApiSessionBeanUnitTest {
     public void setupEntityManagerMock() {
         parameters = EasyMock.newCapture(CaptureType.ALL);
         Query query = EasyMock.createNiceMock(Query.class);
+        TypedQuery<CertificateData> typedQuery = EasyMock.createNiceMock(TypedQuery.class);
         EasyMock.expect(query.setParameter(EasyMock.capture(parameters), EasyMock.anyObject())).andReturn(query).anyTimes();
-        
+        EasyMock.expect(typedQuery.setParameter(EasyMock.capture(parameters), EasyMock.anyObject())).andReturn(typedQuery).anyTimes();
+
         entityManager = EasyMock.createNiceMock(EntityManager.class);
         queryString = EasyMock.newCapture();
         EasyMock.expect(entityManager.createNativeQuery(EasyMock.capture(queryString))).andReturn(query);
+        EasyMock.expect(entityManager.createQuery(EasyMock.capture(queryString), EasyMock.eq(CertificateData.class))).andReturn(typedQuery);
         replay(query);
-        replay(entityManager);  
+        replay(typedQuery);
+        replay(entityManager);
     }
     
     @Test
@@ -72,12 +78,24 @@ public class RaMasterApiSessionBeanUnitTest {
         RaCertificateSearchRequestV2 request = new RaCertificateSearchRequestV2();
         request.setSubjectAnSearchString("XYZ");
         request.setSubjectDnSearchString("ABC");
-        RaMasterApiSessionBean.createQuery(entityManager, request, false, null, null, false, null, false);
+        RaMasterApiSessionBean.createQuery(entityManager, request, false, true,null, null, false, null, false);
         
         assertTrue(queryString.getValue().contains("AND (UPPER(subjectDN) LIKE :subjectDN OR subjectAltName LIKE :subjectAltName)"));
         assertTrue(parameters.getValues().contains("subjectDN"));
         assertTrue(parameters.getValues().contains("subjectAltName"));
         
         assertFalse(parameters.getValues().contains("serialNumber"));
+    }
+
+    @Test
+    public void testCreateTypedQuery() throws Exception {
+        var request = new RaCertificateSearchRequestV2();
+        request.setSubjectAnSearchString("XYZ");
+        request.setSubjectDnSearchString("ABC");
+        var result = RaMasterApiSessionBean.createQuery(entityManager, request, false, false,null, null, false, null, false);
+
+        assertFalse(queryString.getValue().contains("SELECT a.fingerprint"));
+        assertTrue(queryString.getValue().contains("SELECT a "));
+        assertTrue(result instanceof TypedQuery);
     }
 }
