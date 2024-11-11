@@ -1721,7 +1721,7 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
         final OCSPReqBuilder ocspReqBuilder = new OCSPReqBuilder();
         if (ocspAuthenticationCertificate != null) {
             // Signed requests are required to have an OCSPRequest.TBSRequest.requestorName
-            ocspReqBuilder.setRequestorName(new X500Name(ocspAuthenticationCertificate.getSubjectDN().getName()));
+            ocspReqBuilder.setRequestorName(new X500Name(ocspAuthenticationCertificate.getSubjectX500Principal().getName()));
         }
         ocspReqBuilder.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, certificateSerialnumber));
         ocspReqBuilder.setRequestExtensions(new Extensions(new Extension[] {new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, nonce.getEncoded())}));

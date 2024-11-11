@@ -392,10 +392,10 @@ public abstract class ScepTestBase {
                 JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
                 while (it.hasNext()) {
                     X509Certificate retcert = jcaX509CertificateConverter.getCertificate(it.next());
-                    log.info("Got cert with DN: " + retcert.getSubjectDN().getName());
+                    log.info("Got cert with DN: " + retcert.getSubjectX500Principal().getName());
 
                     // check the returned certificate
-                    String subjectdn = DnComponents.stringToBCDNString(retcert.getSubjectDN().getName());
+                    String subjectdn = DnComponents.stringToBCDNString(retcert.getSubjectX500Principal().getName());
                     if (DnComponents.stringToBCDNString(userDN).equals(subjectdn)) {
                         // issued certificate
                         assertEquals(DnComponents.stringToBCDNString(userDN), subjectdn);

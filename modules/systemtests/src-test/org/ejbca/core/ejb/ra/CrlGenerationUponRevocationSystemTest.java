@@ -507,7 +507,7 @@ public class CrlGenerationUponRevocationSystemTest extends CaTestCase {
 
         // Re-factor.
         final String normalizedDN = DnComponents.stringToBCDNString("CN=" + caName);
-        final String normalizedCertDN = DnComponents.stringToBCDNString(cert.getSubjectDN().toString());
+        final String normalizedCertDN = DnComponents.stringToBCDNString(cert.getSubjectX500Principal().toString());
         String message = null;
         if (!normalizedCertDN.equals(normalizedDN)) {
             message = "CA certificate DN is not what it should. Is '" + normalizedDN + "'. Should be '" + normalizedCertDN + "'.";

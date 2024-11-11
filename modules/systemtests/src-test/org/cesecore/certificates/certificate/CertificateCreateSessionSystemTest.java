@@ -125,8 +125,6 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
     private CertificateProfileSessionRemote certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
-    private InternalCertificateCreateSessionRemote internalCertificateCreateSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateCreateSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(
             InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private KeyValidatorSessionRemote keyValidatorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyValidatorSessionRemote.class);
@@ -298,6 +296,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                 Certificate cert = resp.getCertificate();
                 finger1 = CertTools.getFingerprintAsString(cert);
                 assertNotNull("Failed to create certificate", cert);
+                //getSubjectX500Principal does not deliver the exact same order, so leave this for now
                 assertEquals("CN=dnoverride,SN=123456,SURNAME=surname,O=AnaTom,C=SE", ((X509Certificate) cert).getSubjectDN().toString());
             }
             // Make the call again, now allowing DN override
@@ -309,6 +308,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
             Certificate cert = resp.getCertificate();
             finger2 = CertTools.getFingerprintAsString(cert);
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("C=SE,O=PrimeKey,SN=123456,SURNAME=surname,CN=noUserData", ((X509Certificate) cert).getSubjectDN().toString());
             // Test reversing DN, should make no difference since we override with requestDN
             certprof.setUseLdapDnOrder(false);
@@ -881,6 +881,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp1 = CertTools.getFingerprintAsString(cert);
+                //getSubjectX500Principal does not deliver the exact same order, so leave this for now
                 assertEquals(failMessage, strippedSubjectDN1, cert.getSubjectDN().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
@@ -893,7 +894,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp2 = CertTools.getFingerprintAsString(cert);
-                assertEquals(failMessage, strippedSubjectDN2, cert.getSubjectDN().toString());
+                assertEquals(failMessage, strippedSubjectDN2, cert.getSubjectX500Principal().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -905,7 +906,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp3 = CertTools.getFingerprintAsString(cert);
-                assertEquals(failMessage, strippedSubjectDN3, cert.getSubjectDN().toString());
+                assertEquals(failMessage, strippedSubjectDN3, cert.getSubjectX500Principal().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -917,7 +918,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp4 = CertTools.getFingerprintAsString(cert);
-                assertEquals(failMessage, strippedSubjectDN4, cert.getSubjectDN().toString());
+                assertEquals(failMessage, strippedSubjectDN4, cert.getSubjectX500Principal().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -929,7 +930,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                         X509ResponseMessage.class, signSession.fetchCertGenParams());
                 X509Certificate cert = (X509Certificate) resp.getCertificate();
                 fp5 = CertTools.getFingerprintAsString(cert);
-                assertEquals(failMessage, strippedSubjectDN5, cert.getSubjectDN().toString());
+                assertEquals(failMessage, strippedSubjectDN5, cert.getSubjectX500Principal().toString());
             } catch (IllegalNameException e) {
                 // NOPMD: This is correct and we ignore it 
             }
@@ -965,6 +966,7 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
                     X509ResponseMessage.class, signSession.fetchCertGenParams());
             X509Certificate cert = (X509Certificate) resp.getCertificate();
             fp1 = CertTools.getFingerprintAsString(cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("The DN should have escaped < and >", "CN=\\<script\\>alert('cesecore')\\</script\\>", cert.getSubjectDN().toString());
         } finally {
             certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");

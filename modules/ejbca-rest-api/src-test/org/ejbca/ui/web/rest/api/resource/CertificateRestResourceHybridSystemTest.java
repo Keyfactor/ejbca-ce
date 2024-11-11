@@ -388,7 +388,7 @@ public class CertificateRestResourceHybridSystemTest extends RestResourceSystemT
         
         if (subjectDn != null) {
             // Assert End Entity DN is used. CSR subject should be ignored.
-            assertEquals("Returned certificate contained unexpected subject DN", subjectDn, responseCertificate.getSubjectDN().getName());
+            assertEquals("Returned certificate contained unexpected subject DN", subjectDn, responseCertificate.getSubjectX500Principal().getName());
         }
     } 
     

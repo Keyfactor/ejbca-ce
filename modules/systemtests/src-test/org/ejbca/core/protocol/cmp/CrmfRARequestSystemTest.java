@@ -299,6 +299,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             cert1 = crmfHttpUserTest(userDN1, key1, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert1);
             assertTrue("A user with "+userName1+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName1));
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             String dn = cert1.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
             // The "plain" string representation here is BC X500Name.toString, in which case DERBitString is an implementation of ASN1String, with the
@@ -314,6 +315,7 @@ public class CrmfRARequestSystemTest extends CmpTestCase {
             cert2 = crmfHttpUserTest(userDN2, key2, null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), cacert, ISSUER_DN);
             assertNotNull("Failed to create a certificate with CMP", cert2);
             assertTrue("A user with "+userName2+" should have been created by the CMP RA call", endEntityManagementSession.existsUser(userName2));
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             dn = cert2.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are no known by JDK so OIDs displayed
             assertEquals("Not the expected DN in issued cert", "C=SE,O=PrimeKey,CN=cmptest2,SN=cmptest2serial,SURNAME=cmptest2surname,1.3.6.1.4.1.37244.2.2=8000,0.4.0.127.0.7.3.10.1.2=#301702010113124253492d4b2d54522d313233342d32303233", dn);
