@@ -973,7 +973,8 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             try {
                 CertificateResponse response = ejbcaraws.certificateRequest(user, super.getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
                 X509Certificate cert = response.getCertificate();
-                assertEquals("SubjectDN should be multi-value RDN", "CN=Tomas+UID=12334,O=Test,C=SE", cert.getSubjectX500Principal().toString());
+                //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+                assertEquals("SubjectDN should be multi-value RDN", "CN=Tomas+UID=12334,O=Test,C=SE", cert.getSubjectDN().toString());
             } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
                 fail("Should be possible to create certificate with multi-value RDN when EE profile is configured correctly: "+e.getMessage());
             }
@@ -3554,8 +3555,8 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             alias = en.nextElement();
         }
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-
-        String resultingSubjectDN = cert.getSubjectX500Principal().toString();
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+        String resultingSubjectDN = cert.getSubjectDN().toString();
         // on RedHat 6.4 with OpenJDK-8 64-Bit '\r' symbol is automatically replaced with '\n'. So try to check again, if difference between expected and actual
         // is in that symbol then test succeeds, otherwise test fails
         try {

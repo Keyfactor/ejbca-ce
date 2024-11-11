@@ -1491,7 +1491,8 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
             assertNotNull("Failed to create certificate", cert);
-            assertEquals("CN=extoverride,C=SE", cert.getSubjectX500Principal().getName());
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+            assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
             // check altNames, should be one altName
             c = cert.getSubjectAlternativeNames();
             assertNotNull(c);
