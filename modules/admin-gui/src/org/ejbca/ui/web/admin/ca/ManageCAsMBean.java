@@ -155,7 +155,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                                     + " certificates.");
                             for (final X509Certificate certificate : certificates) {
                                 if (CertTools.isSelfSigned(certificate)) {
-                                    log.info("Ignoring CA certificate for " + certificate.getSubjectDN());
+                                    log.info("Ignoring CA certificate for " + certificate.getSubjectX500Principal());
                                     certificatesIgnored.incrementAndGet();
                                     continue;
                                 }

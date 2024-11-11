@@ -68,6 +68,7 @@ public class SearchCertificatesRestResponseV2UnitTest {
     final Integer status = CertificateConstants.CERT_ACTIVE;
     // Test with other certificate.
     final String subjectAn = null; 
+    //getSubjectX500Principal does not deliver the exact same order, so leave this for now
     final String subjectDn = certificate.getSubjectDN().getName();
     final String subjectKeyId = new String(Hex.encode(CertTools.getSubjectKeyId(certificate)));
     final String tag = "tag";

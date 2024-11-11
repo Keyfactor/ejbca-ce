@@ -399,7 +399,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         final CAInfo info = caSession.getCAInfo(internalAdmin, caName);
         final String normalizedDN = DnComponents.stringToBCDNString(dn);
         final X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-        final String normalizedCertDN = DnComponents.stringToBCDNString(cert.getSubjectDN().toString());
+        final String normalizedCertDN = DnComponents.stringToBCDNString(cert.getSubjectX500Principal().toString());
         if (!normalizedCertDN.equals(normalizedDN)) {
             log.error("CA certificate DN is not what it should. Is '" + normalizedDN + "'. Should be '" + normalizedCertDN + "'.");
             return CA_CREATION_FAIL;

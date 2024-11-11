@@ -210,7 +210,7 @@ public class CertificateRestResourceSearchCertificatesSystemTest extends RestRes
         X509Certificate certificate = createCertificate(username, expectedSubjectDn, keys.getPublic());
         String expectedSerialNumber = CertTools.getSerialNumberAsString(certificate);
         certificates.add(certificate);
-
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         assertEquals("Order problem", expectedSubjectDn, certificate.getSubjectDN().getName());
 
         final SearchCertificateCriteriaRestRequest searchCertificateCriteriaRestRequest = SearchCertificateCriteriaRestRequest.builder()

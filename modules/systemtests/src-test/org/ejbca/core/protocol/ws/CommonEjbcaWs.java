@@ -709,7 +709,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         assertNotNull(certenv);
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
         assertNotNull(cert);
-        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectX500Principal().toString());
         byte[] ext = cert.getExtensionValue("1.2.3.4");
         // Certificate profile did not allow extension override
         assertNull("no extension should exist", ext);
@@ -726,7 +726,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertNotNull(certenv);
             cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
             assertNotNull(cert);
-            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectX500Principal().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
             try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
@@ -762,7 +762,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         // as in the request.
         final X509Certificate cert = certificateResponse.getCertificate();
         assertNotNull(cert);
-        assertTrue(cert.getSubjectDN().toString().equals(userdata.getSubjectDN()));
+        assertTrue(cert.getSubjectX500Principal().toString().equals(userdata.getSubjectDN()));
 
         // Request a PKCS#7 via the WS API
         final CertificateResponse pkcs7Response = ejbcaraws.certificateRequest(userdata, requestdata, requesttype, null,
@@ -974,7 +974,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
             final X509Certificate x509Certificate = certificateResponse.getCertificate();
             assertNotNull(x509Certificate);
-            assertTrue(x509Certificate.getSubjectDN().toString().equals(userDataVOWS.getSubjectDN()));
+            assertTrue(x509Certificate.getSubjectX500Principal().toString().equals(userDataVOWS.getSubjectDN()));
             certificateFingerprint = CertTools.getFingerprintAsString(x509Certificate);
             // Verify that no UserData was written to the database
             assertFalse("UserData was persisted dispite the CA being told not to store it.", endEntityManagementSession.existsUser(username));
@@ -1044,7 +1044,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertTrue(certificateResponse.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
             final X509Certificate x509Certificate = certificateResponse.getCertificate();
             assertNotNull(x509Certificate);
-            assertTrue(x509Certificate.getSubjectDN().toString().equals(userDataVOWS.getSubjectDN()));
+            assertTrue(x509Certificate.getSubjectX500Principal().toString().equals(userDataVOWS.getSubjectDN()));
             certificateFingerprint = CertTools.getFingerprintAsString(x509Certificate);
             certSerNo = CertTools.getSerialNumber(x509Certificate);
             // The user, the CertificateData and the CertReqHistoryData should exist, but not the certificate itself.
@@ -1054,7 +1054,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             final List<CertificateDataWrapper> certDataList = certificateStoreSession.getCertificateDataBySerno(certSerNo);
             assertEquals("No CertificateData entry was created.", 1, certDataList.size());
             final CertificateDataWrapper certData = certDataList.get(0);
-            assertTrue("Wrong Subject DN in CertificateData", x509Certificate.getSubjectDN().toString().equals(userDataVOWS.getSubjectDN()));
+            assertTrue("Wrong Subject DN in CertificateData", x509Certificate.getSubjectX500Principal().toString().equals(userDataVOWS.getSubjectDN()));
             // Certificate itself should not exist
             assertNull("No certificate should exist.", certData.getCertificate());
             final java.security.cert.Certificate certificate = certificateStoreSession.findCertificateByFingerprint(certificateFingerprint);
@@ -1107,8 +1107,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         assertNotNull("No certificate response from CRMF request.", certificateResponse);
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certificateResponse.getData());
         assertNotNull("No certificate in response from CRMF request.", cert);
-        log.info(cert.getSubjectDN().toString());
-        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+        log.info(cert.getSubjectX500Principal().toString());
+        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectX500Principal().toString());
         // Certificate profile did not allow extension override
         assertNull("No extension should exist in response certificate.", cert.getExtensionValue(EXTENSION_OID));
         // Allow extension override
@@ -1125,7 +1125,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertNotNull("No certificate response from CRMF request.", certificateResponse);
             cert = (X509Certificate) CertificateHelper.getCertificate(certificateResponse.getData());
             assertNotNull("No certificate in response from CRMF request.", cert);
-            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectX500Principal().toString());
             final byte[] extensionValue = cert.getExtensionValue(EXTENSION_OID);
             assertNotNull("There should be an extension in the response certificate.", extensionValue);
             final ASN1OctetString extensionOctets = (DEROctetString)DEROctetString.fromByteArray(extensionValue);
@@ -1261,7 +1261,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
 
         assertNotNull(cert);
 
-        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+        assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectX500Principal().toString());
     }
 
     protected void generatePkcs12() throws Exception {
@@ -1322,9 +1322,9 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         Enumeration<String> en = ks.aliases();
         String alias = en.nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertEquals(cert.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
+        assertEquals(cert.getSubjectX500Principal().toString(), getDN(CA1_WSTESTUSER1));
         PrivateKey privK1 = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
-        log.info("test04GeneratePkcs12() Certificate " + cert.getSubjectDN().toString() + " equals " + getDN(CA1_WSTESTUSER1));
+        log.info("test04GeneratePkcs12() Certificate " + cert.getSubjectX500Principal().toString() + " equals " + getDN(CA1_WSTESTUSER1));
 
         // Generate a new one and make sure it is a new one and that key
         // recovery does not kick in by mistake
@@ -1347,7 +1347,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         en = ks2.aliases();
         alias = en.nextElement();
         X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
+        assertEquals(cert2.getSubjectX500Principal().toString(), getDN(CA1_WSTESTUSER1));
         PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
 
         // Compare certificates, must not be the same
@@ -1365,7 +1365,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         en = ks2.aliases();
         alias = en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
+        assertEquals(cert2.getSubjectX500Principal().toString(), getDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
 
         // Test the method for adding/editing and requesting a JKS KeyStore in a
@@ -1628,7 +1628,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
         assertNotNull(cert);
-        assertTrue(cert.getSubjectDN().toString().equals(getDN(CA1_WSTESTUSER1)));
+        assertTrue(cert.getSubjectX500Principal().toString().equals(getDN(CA1_WSTESTUSER1)));
 
         // 1.2 Test PKCS#10 request with PKCS#7 container returned.
         ejbcaraws.editUser(userdatas.get(0));
