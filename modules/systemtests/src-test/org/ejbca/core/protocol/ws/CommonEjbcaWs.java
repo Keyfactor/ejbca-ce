@@ -463,7 +463,7 @@ public abstract class CommonEjbcaWs extends CaTestCase {
     }
 
     private String getReversedDN(String userName) {
-        return "O=" + userName.charAt(userName.length() - 1) + "Test,CN=" + userName;
+        return "O=" + userName.charAt(userName.length() - 1) + "Test, CN=" + userName;
     }
 
     /** A simple host name verifier for passing HTTPS connections without verifying the hostname against the cert,
