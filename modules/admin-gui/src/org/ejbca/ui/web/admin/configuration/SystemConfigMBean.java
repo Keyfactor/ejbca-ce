@@ -389,6 +389,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             tabIndex++;
         }
+        flushCache();
     }
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
@@ -465,7 +466,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public SystemConfigurationOAuthKeyManager getOauthKeyManager() {
         if (oauthKeyManager == null) {
             this.oAuthConfiguration = null;
-            getEjbcaWebBean().reloadOAuthConfiguration();
             oauthKeyManager = new SystemConfigurationOAuthKeyManager(getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
                     @Override
