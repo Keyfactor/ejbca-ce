@@ -1373,7 +1373,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         en = ks2.aliases();
         alias = en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectX500Principal().toString(), getDN(CA1_WSTESTUSER1));
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+        assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
 
         // Test the method for adding/editing and requesting a JKS KeyStore in a
