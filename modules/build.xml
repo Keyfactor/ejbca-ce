@@ -312,7 +312,7 @@
 		<ant antfile="${mod.ejbca-properties.path}/build.xml" target="build-jar" inheritall="true" inheritrefs="true"/>
 	</target>
 
-	<target name="ejbca-ws" depends="cesecore-common, ejbca-properties" if="ejbcaws.enabled.true" description="Build EJBCA Web Services">
+	<target name="ejbca-ws" depends="cesecore-common, ejbca-properties" description="Build EJBCA Web Services">
 		<ant antfile="${mod.ejbca-ws.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
