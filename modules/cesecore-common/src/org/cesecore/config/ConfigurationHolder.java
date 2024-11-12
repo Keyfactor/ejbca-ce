@@ -506,8 +506,6 @@ public final class ConfigurationHolder {
      * - forbidden.characters
      * 
      * CryptoProviderConfigurationCache:
-     * - ca.use_legacy_pkcs12_keystore (See ECA-12740)
-     * - keystore.use_legacy_pkcs12
      * - pkcs11.disableHashingSignMechanisms
      * - cryptotoken.keystorecache
      * - ca.doPermitExtractablePrivateKeys
@@ -533,9 +531,6 @@ public final class ConfigurationHolder {
                 }
             } else if ("forbidden.characters".equals(key) && value != null && !value.toCharArray().equals(StringConfigurationCache.INSTANCE.getForbiddenCharacters())) {
                 StringConfigurationCache.INSTANCE.setForbiddenCharacters(value.toCharArray());
-                updated.add(key);
-            } else if ("keystore.use_legacy_pkcs12".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isUseLegacyPkcs12Keystore())) {
-                CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(Boolean.parseBoolean(value));
                 updated.add(key);
             } else if ("pkcs11.disableHashingSignMechanisms".equals(key) && !Boolean.valueOf(value).equals(CryptoProviderConfigurationCache.INSTANCE.isP11disableHashingSignMechanisms())) {
                 CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(Boolean.parseBoolean(value));
