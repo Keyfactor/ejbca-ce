@@ -727,7 +727,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
             assertNotNull(certenv);
             cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
             assertNotNull(cert);
-            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectX500Principal().toString());
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
             try (ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(ext))) {
@@ -1326,7 +1327,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         Enumeration<String> en = ks.aliases();
         String alias = en.nextElement();
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertEquals(cert.getSubjectX500Principal().toString(), getDN(CA1_WSTESTUSER1));
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+        assertEquals(cert.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         PrivateKey privK1 = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
         //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         log.info("test04GeneratePkcs12() Certificate " + cert.getSubjectDN().toString() + " equals " + getDN(CA1_WSTESTUSER1));
