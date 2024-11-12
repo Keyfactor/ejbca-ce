@@ -291,8 +291,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
     }
 
     /** Tests issuance of certificates with multi-value RDN using CMP.
-     * In order for this to success multi-value RDN must be enabled in the end entity profile and all DN components making up the RDN must be
-     * added as fields in the profile
+     * In order for this to success multi-value RDN must be enabled in the end entity profile
      */
     @Test
     public void testCrmfHttpOkUserWithMultiValueRDN() throws Exception {
@@ -341,7 +340,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
         assertEquals("Wrong error", "Subject DN has multi value RDNs, which is not allowed.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
 
-        // Enable multi-value RDNs in the EE profile and try again, should still fail due to no UID allowed in profile
+        // Enable multi-value RDNs in the EE profile and try again
         eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);
         eep.setAllowMultiValueRDNs(true);
         this.endEntityProfileSession.changeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME, eep);
