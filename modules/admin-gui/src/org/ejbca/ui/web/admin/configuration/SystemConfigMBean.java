@@ -131,9 +131,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private static final long MAX_HEADER_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
     private static final String[] ALLOWED_HEADER_FILE_EXTENSIONS = {"jpg", "jpeg", "png"};
     
-    
     private transient UploadedFile headerFile;
-    private boolean invalidHeaderSize = false;
 
     public UploadedFile getHeaderFile() {
         return headerFile;
@@ -141,11 +139,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     public void setHeaderFile(UploadedFile headerFile) {
         if (headerFile.getSize() <= MAX_HEADER_FILE_SIZE) {
+            super.addNonTranslatedInfoMessage("Header file uploaded successfully. Save the configuration to apply it in the Admin GUI.");
             this.headerFile = headerFile;
-            this.invalidHeaderSize = false;
         } else {
+            super.addNonTranslatedErrorMessage("Header file size exceeds the 1MB limit.");
             this.headerFile = null;
-            this.invalidHeaderSize = true;
         }
     }
 
@@ -1125,12 +1123,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     }
 
     private void saveCurrentHeaderFile() {
-        
-        if (invalidHeaderSize) {
-            super.addNonTranslatedErrorMessage("Header file size exceeds the 1MB limit.");
-            return; 
-        }
-        
         if (headerFile != null) {
 
             String fileName = headerFile.getFileName();
@@ -1153,10 +1145,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setHeadBannerLogo(outputStream.toByteArray());
 
             } catch (IOException e) {
-                e.printStackTrace(); // Handle the exception properly
+                log.error("Exception while trying to save the logo file in database.");
             }
         }
-        
     }
     
     /** Invoked when admin saves the admin preferences */
