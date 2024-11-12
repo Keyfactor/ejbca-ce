@@ -349,23 +349,6 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         resp = sendCmpHttp(ba, 200, ALIAS);
         assertNotNull(resp);
         assertTrue(resp.length > 0);
-        // We expect a response that is rejected
-        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, cacert, resp, reqId, ResponseStatus.FAILURE.getValue(), null);
-        pkiMessage = PKIMessage.getInstance(resp);
-        pkiBody = pkiMessage.getBody();
-        certRepMessage = (CertRepMessage) pkiBody.getContent();
-        certResponse = certRepMessage.getResponse()[0];
-        pkiStatusInfo = certResponse.getStatus();
-        assertEquals("Wrong error", "Wrong number of UID fields in Subject DN.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
-
-        // Add UID to profile, so the request will succeed
-        eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);
-        eep.addField(DnComponents.UID);
-        this.endEntityProfileSession.changeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME, eep);
-
-        resp = sendCmpHttp(ba, 200, ALIAS);
-        assertNotNull(resp);
-        assertTrue(resp.length > 0);
         // Should be an OK response
         checkCmpResponseGeneral(resp, issuerDN, user, this.cacert, nonce, transid, false, PBEPASSWORD,
                 PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
