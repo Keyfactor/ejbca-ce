@@ -1354,7 +1354,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         en = ks2.aliases();
         alias = en.nextElement();
         X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectX500Principal().toString(), getDN(CA1_WSTESTUSER1));
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+        assertEquals(cert2.getSubjectDN().toString(), getDN(CA1_WSTESTUSER1));
         PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
 
         // Compare certificates, must not be the same
@@ -1384,7 +1385,8 @@ public abstract class CommonEjbcaWs extends CaTestCase {
         en = ks2.aliases();
         alias = en.nextElement();
         cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectX500Principal().getName(), getReversedDN(CA1_WSTESTUSER1));
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+        assertEquals(cert2.getSubjectDN().getName(), getReversedDN(CA1_WSTESTUSER1));
         privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
         log.trace("<generatePkcs12");
     }
