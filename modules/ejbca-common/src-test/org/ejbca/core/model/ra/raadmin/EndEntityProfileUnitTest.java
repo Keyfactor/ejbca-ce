@@ -273,9 +273,9 @@ public class EndEntityProfileUnitTest {
     
     @Test(expected = EndEntityProfileValidationException.class)
     public void testUserFulfillEndEntityProfileWithoutDnOverrideWithExcessDnFields() throws EndEntityProfileValidationException {
-        CertificateProfile certProfileWithDnOverride = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        CertificateProfile certProfileWithoutDnOverride = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Set DN override as disabled
-        certProfileWithDnOverride.setAllowDNOverride(false);
+        certProfileWithoutDnOverride.setAllowDNOverride(false);
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COMMONNAME);
         profile.setRequired(DnComponents.COMMONNAME, 0, true);
@@ -287,14 +287,14 @@ public class EndEntityProfileUnitTest {
                 SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         // Should not fulfill, because EEP doesn't have all the DN fields present in userdata and DN override is not enabled
-        profile.doesUserFulfillEndEntityProfile(userdata, certProfileWithDnOverride, false, null);
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfileWithoutDnOverride, false, null);
     }
     
     @Test
     public void testUserFulfillEndEntityProfileWithoutDnOverrideWithoutExcessDnFields() throws EndEntityProfileValidationException {
-        CertificateProfile certProfileWithDnOverride = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        CertificateProfile certProfileWithoutDnOverride = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Set DN override as disabled
-        certProfileWithDnOverride.setAllowDNOverride(false);
+        certProfileWithoutDnOverride.setAllowDNOverride(false);
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COMMONNAME);
         profile.setRequired(DnComponents.COMMONNAME, 0, true);
@@ -306,7 +306,7 @@ public class EndEntityProfileUnitTest {
                 SecConst.TOKEN_SOFT_PEM, null);
         userdata.setPassword("foo123");
         // Should fulfill, this is pretty much the vanilla scenario
-        profile.doesUserFulfillEndEntityProfile(userdata, certProfileWithDnOverride, false, null);
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfileWithoutDnOverride, false, null);
     }
 
     @Test(expected = EndEntityProfileValidationException.class)
