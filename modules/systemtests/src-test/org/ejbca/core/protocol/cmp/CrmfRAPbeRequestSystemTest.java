@@ -341,6 +341,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         assertEquals("Wrong error", "Subject DN has multi value RDNs, which is not allowed.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
 
         // Enable multi-value RDNs in the EE profile and try again
+        // This will work even though UID is missing from the EEP, because Subject DN Override by CSR is enabled in the CP
         eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);
         eep.setAllowMultiValueRDNs(true);
         this.endEntityProfileSession.changeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME, eep);
