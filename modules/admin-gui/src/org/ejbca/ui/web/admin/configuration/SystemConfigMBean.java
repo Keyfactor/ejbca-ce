@@ -128,7 +128,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     private static final long serialVersionUID = -6653610614851741905L;
     private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
     
-    private static final long MAX_HEADER_FILE_SIZE = 1 * 1024 * 1024; // 1 MB
+    private static final long MAX_HEADER_FILE_SIZE = 250 * 1024L; // 1 MB
     private static final String[] ALLOWED_HEADER_FILE_EXTENSIONS = {"jpg", "jpeg", "png"};
     
     private transient UploadedFile headerFile;
