@@ -396,7 +396,8 @@ public class ApprovalRequestGUIInfo implements Serializable {
             editLogEntries.add(raLocaleBean.getMessage("view_request_page_edit_log_entry", editDate, adminName));
         }
         
-        if (endEntityInformation != null || approvalData.getApprovalType() == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE || approvalData.getApprovalType() == ApprovalDataVO.APPROVALTYPE_KEYRECOVERY) {
+        if (endEntityInformation != null || approvalData.getApprovalType() == ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE
+                || approvalData.getApprovalType() == ApprovalDataVO.APPROVALTYPE_REVOKEANDDELETEENDENTITY || approvalData.getApprovalType() == ApprovalDataVO.APPROVALTYPE_KEYRECOVERY) {
             authorizedToRequestType = raAccessBean.isAuthorizedToApproveEndEntityRequests();
         } else {
             authorizedToRequestType = raAccessBean.isAuthorizedToApproveCARequests();
