@@ -64,6 +64,14 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
             int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime, String accountBindingId) throws AuthorizationDeniedException;
 
     /**
+     * Stores a certificate in the same principle of <strong>storeCertificate</strong> method but creates a new transaction.
+     * 
+     */
+    CertificateDataWrapper storeCertificateNewTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status,
+            int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime, String accountBindingId)
+            throws AuthorizationDeniedException;
+    
+    /**
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to
      * the CA issuing the certificate has already been checked. For efficiency this method can then be used.
      * 
@@ -133,6 +141,12 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return true if the column was empty and is now populated.
      */
     boolean updateCertificateOnly(AuthenticationToken authenticationToken, Certificate certificate);
+    
+    /**
+     * Update the base64cert column if the database row exists, but the column is empty but within a new transaction.
+     * @return true if the column was empty and is now populated.
+     */
+    boolean updateCertificateOnlyNewTransaction(AuthenticationToken authenticationToken, Certificate certificate);
     
     /**
      * Update the base64cert column if the database row exists, but the column is empty.
@@ -369,4 +383,5 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      */
     Set<String> deleteExpiredCertificatesInSeparateTransactions(List<String> issuerDns, Date maximumExpirationDate, int batchSize,
             AuthenticationToken adminForLogging, Set<String> previousDeletedFingerprints);
+
 }
