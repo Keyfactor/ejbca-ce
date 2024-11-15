@@ -23,15 +23,22 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
 
 import jakarta.ejb.EJB;
 import jakarta.enterprise.context.RequestScoped;
+import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+
 
 /**
  * Backing bean for the menu on the left (in the default theme) in the AdminWeb.
- * @version $Id$
  */
 @RequestScoped
 @Named
@@ -234,14 +241,6 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
         return EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getUseSessionTimeout();
     }
     
-    public String getHeadBannerUrl() {
-        return EjbcaJSFHelper.getBean().getEjbcaWebBean().getBaseUrl() + getGlobalConfiguration().getHeadBanner();
-    }
-    
-    public boolean isNonDefaultHeadBanner() {
-        return getGlobalConfiguration().isNonDefaultHeadBanner();
-    }
-    
     public String getAppNameCapital() {
         return InternalConfiguration.getAppNameCapital();
     }
@@ -264,5 +263,36 @@ public class AdminMenuBean extends BaseManagedBean implements Serializable {
             url += "/";
         }
         return url;
+    }
+    
+    private transient StreamedContent headerLogoImage;
+    
+    public StreamedContent getHeaderLogoImage() {
+
+        if (headerLogoImage == null || headerLogoImage.getContentLength() == 0) {
+
+            byte[] imageBytes = getGlobalConfiguration().getHeadBannerLogo();
+
+            if (imageBytes == null || imageBytes.length == 0) {
+
+                FacesContext facesContext = FacesContext.getCurrentInstance();
+                ServletContext context = (ServletContext) facesContext.getExternalContext().getContext();
+                final String adminWebLogoPath = context.getRealPath("/") + getEjbcaWebBean().getImagePath(getEjbcaWebBean().getEditionFolder()
+                        + "/keyfactor-" + org.ejbca.config.InternalConfiguration.getAppNameLower() + "-logo.png");
+                imageBytes = getGlobalConfiguration().initHeadBannerLogo(adminWebLogoPath);
+            }
+
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(imageBytes); 
+            
+            // Set cache control headers to prevent browser caching
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+            HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1
+            response.setHeader("Pragma", "no-cache"); // HTTP 1.0
+            response.setDateHeader("Expires", 0); // Proxies
+
+            headerLogoImage = DefaultStreamedContent.builder().contentType("image/png").stream(() -> inputStream).build();
+        }
+        return headerLogoImage;
     }
 }
