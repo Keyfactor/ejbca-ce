@@ -52,20 +52,17 @@
 	        document.onkeypress=resetTimer("#{ejbcawebbean.sessionTimeoutTime}");
         </h:outputScript>
     <ui:insert name="banner">
-      <h:panelGroup layout="block" styleClass="banner-container" rendered="#{adminMenuBean.nonDefaultHeadBanner}">
-	      <iframe id="topFrame" name="topFrame" width="100%" height="100" scrolling="no" src="#{adminMenuBean.headBannerUrl}">
-	        <h1>Administration</h1>
-	      </iframe>
-      </h:panelGroup>
-      <h:panelGroup layout="block" styleClass="banner-container" rendered="#{not adminMenuBean.nonDefaultHeadBanner}">
+      
+      <h:panelGroup layout="block" styleClass="banner-container" >
         <div id="header">
           <div id="banner">
             <h:outputLink value="#{adminMenuBean.adminWebUrl}">
-              <h:graphicImage value="#{adminMenuBean.logoUrl}" alt="#{adminMenuBean.appNameCapital}"/>
+              <p:graphicImage value="#{adminMenuBean.headerLogoImage}" alt="#{adminMenuBean.appNameCapital}"/>
             </h:outputLink>
           </div>
         </div>
       </h:panelGroup>
+      
     </ui:insert>
     
      <p:menubar id="mainNavigation" autoDisplay="false">
