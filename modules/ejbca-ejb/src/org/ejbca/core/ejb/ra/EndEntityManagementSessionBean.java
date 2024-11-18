@@ -914,11 +914,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
             dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
 
-            log.error("Amin the dn from profile and before merge is  " + dn);
-
             dn = EndEntityInformationFiller.getDnEntriesUniqueOnly(dn, EndEntityInformationFiller.SUBJECT_DN);
-
-            log.error("Amin the dn after merge is  " + dn);
 
             try {
                 // SubjectAltName is not mandatory so
