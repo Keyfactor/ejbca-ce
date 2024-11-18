@@ -62,6 +62,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
@@ -368,7 +369,7 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
             ks = KeyTools.createBcfks(alias, keyPair.getPrivate(), cert, cachain);
         } else {
-            ks = KeyTools.createP12(alias, keyPair.getPrivate(), cert, cachain);
+            ks = KeyTools.createP12(alias, keyPair.getPrivate(), cert, cachain, KeyStoreCipher.PKCS12_AES256_AES128);
         }
 
         storeKeyStore(ks, username, password, keystoreType);
