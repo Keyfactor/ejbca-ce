@@ -166,7 +166,7 @@ public class SignLotsOfCertsSystemTest extends CaTestCase {
         caInfo.setDoEnforceUniquePublicKeys(false);
         caSession.editCA(admin, caInfo);
         X509Certificate cert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
-        assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals("CN=" + CANAME));
+        assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals("CN=" + CANAME));
         assertTrue("Creating CA failed", caInfo.getSubjectDN().equals("CN=" + CANAME));
         PublicKey pk = cert.getPublicKey();
         if (pk instanceof RSAPublicKey) {

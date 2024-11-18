@@ -516,6 +516,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             cert = certificateResponse.getCertificate();
             assertNotNull(cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
@@ -973,6 +974,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             try {
                 CertificateResponse response = ejbcaraws.certificateRequest(user, super.getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
                 X509Certificate cert = response.getCertificate();
+                //getSubjectX500Principal does not deliver the exact same order, so leave this for now
                 assertEquals("SubjectDN should be multi-value RDN", "CN=Tomas+UID=12334,O=Test,C=SE", cert.getSubjectDN().toString());
             } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
                 fail("Should be possible to create certificate with multi-value RDN when EE profile is configured correctly: "+e.getMessage());
@@ -1052,7 +1054,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     public void test060RevokeCert() throws Exception {
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
@@ -1162,7 +1164,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // revocation reason change" flag enabled:
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1191,7 +1193,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // revocation reason change" flag enabled:
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1246,7 +1248,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // Given that we have a certificate that is unrevoked
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1307,7 +1309,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // Given that we have a certificate that is unrevoked
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1368,7 +1370,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // Given that we have a certificate that is unrevoked
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1473,7 +1475,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             AuthenticationToken approvingAdmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
             try {
                 X509Certificate cert = createUserAndCert(username, caID, true);
-                String issuerdn = cert.getIssuerDN().toString();
+                String issuerdn = cert.getIssuerX500Principal().toString();
                 String serno = cert.getSerialNumber().toString(16);
                 // revoke via WS and verify response
                 try {
@@ -1694,7 +1696,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             alias = en.nextElement();
         }
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertEquals("CN=WSTESTUSERKEYREC1", cert.getSubjectDN().toString());
+        assertEquals("CN=WSTESTUSERKEYREC1", cert.getSubjectX500Principal().toString());
         PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
 
         // This should work now
@@ -1723,7 +1725,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             alias = en.nextElement();
         }
         X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC1");
+        assertEquals(cert2.getSubjectX500Principal().toString(), "CN=WSTESTUSERKEYREC1");
         PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
 
         // Compare certificates
@@ -1833,9 +1835,9 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     alias = en.nextElement();
                 }
                 X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-                assertEquals("CN="+username, cert.getSubjectDN().toString());
+                assertEquals("CN="+username, cert.getSubjectX500Principal().toString());
                 PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
-                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerDN().toString());
+                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerX500Principal().toString());
                 // recover key
                 setAccessRulesForWsAdmin(Arrays.asList(
                         AccessRulesConstants.ROLE_ADMINISTRATOR,
@@ -1846,7 +1848,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                         AccessRulesConstants.REGULAR_KEYRECOVERY,
                         AccessRulesConstants.REGULAR_VIEWENDENTITY
                         ), null);
-                ejbcaraws.keyRecover(username,cert.getSerialNumber().toString(16),cert.getIssuerDN().toString());
+                ejbcaraws.keyRecover(username,cert.getSerialNumber().toString(16),cert.getIssuerX500Principal().toString());
                 assertEquals("EjbcaWS.keyRecover failed to set status for end entity.", EndEntityConstants.STATUS_KEYRECOVERY, endEntityAccessSession.findUser(intAdmin, username).getStatus());
                 // A new PK12 request now should return the same key and certificate
                 setAccessRulesForWsAdmin(Arrays.asList(
@@ -1879,7 +1881,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     alias = en.nextElement();
                 }
                 X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-                assertEquals("CN="+username, cert2.getSubjectDN().toString());
+                assertEquals("CN="+username, cert2.getSubjectX500Principal().toString());
                 PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
                 // Compare certificates
                 assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
@@ -1898,12 +1900,12 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     alias = en.nextElement();
                 }
                 X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-                assertEquals("CN="+username, cert.getSubjectDN().toString());
+                assertEquals("CN="+username, cert.getSubjectX500Principal().toString());
                 PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
-                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerDN().toString());
+                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerX500Principal().toString());
 
                 // Try the single keyRecoverEnroll command
-                KeyStore ksenv = ejbcaraws.keyRecoverEnroll(username, cert.getSerialNumber().toString(16), cert.getIssuerDN().toString(), "foo456", null);
+                KeyStore ksenv = ejbcaraws.keyRecoverEnroll(username, cert.getSerialNumber().toString(16), cert.getIssuerX500Principal().toString(), "foo456", null);
                 java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
                 assertNotNull(ks2);
                 en = ks2.aliases();
@@ -1913,7 +1915,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     alias = en.nextElement();
                 }
                 X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-                assertEquals("CN="+username, cert2.getSubjectDN().toString());
+                assertEquals("CN="+username, cert2.getSubjectX500Principal().toString());
                 PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
                 // Compare certificates
                 assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
@@ -3554,7 +3556,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             alias = en.nextElement();
         }
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         String resultingSubjectDN = cert.getSubjectDN().toString();
         // on RedHat 6.4 with OpenJDK-8 64-Bit '\r' symbol is automatically replaced with '\n'. So try to check again, if difference between expected and actual
         // is in that symbol then test succeeds, otherwise test fails

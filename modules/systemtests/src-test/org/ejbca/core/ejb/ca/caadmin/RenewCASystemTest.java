@@ -161,11 +161,11 @@ public class RenewCASystemTest extends CaTestCase {
             assertEquals("The signature algorithm on the CA's token was changed and should be ECDSA", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, caToken.getSignatureAlgorithm());
 
             // Check the link cert's IssuerDN matches the original CA's SubjectDN
-            assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getIssuerDN());
+            assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectX500Principal(), linkCertificateAfterRenewal.getIssuerX500Principal());
 
             // Check the link cert's SubjectDN matches the original CA's SubjectDN
             // Note: Because there was not a Name change occurring
-            assertEquals("The SubjectDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getSubjectDN());
+            assertEquals("The SubjectDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectX500Principal(), linkCertificateAfterRenewal.getSubjectX500Principal());
 
             // Check validity period, notAfter in the link certificate should be same as notAfter in the old CA certificate
             assertEquals("notAfter in the link certificate should be the same as notAfter in the old CA certificate.", orgcert.getNotAfter(), linkCertificateAfterRenewal.getNotAfter());
@@ -209,11 +209,11 @@ public class RenewCASystemTest extends CaTestCase {
             assertEquals("The signature algorithm on the CA's token was changed and should be ECDSA", AlgorithmConstants.SIGALG_MLDSA44, caToken.getSignatureAlgorithm());
 
             // Check the link cert's IssuerDN matches the original CA's SubjectDN
-            assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getIssuerDN());
+            assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectX500Principal(), linkCertificateAfterRenewal.getIssuerX500Principal());
 
             // Check the link cert's SubjectDN matches the original CA's SubjectDN
             // Note: Because there was not a Name change occurring
-            assertEquals("The SubjectDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getSubjectDN());
+            assertEquals("The SubjectDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectX500Principal(), linkCertificateAfterRenewal.getSubjectX500Principal());
 
             // Check validity period, notAfter in the link certificate should be same as notAfter in the old CA certificate
             assertEquals("notAfter in the link certificate should be the same as notAfter in the old CA certificate.", orgcert.getNotAfter(), linkCertificateAfterRenewal.getNotAfter());
@@ -312,14 +312,14 @@ public class RenewCASystemTest extends CaTestCase {
             assertEquals("The signature algorithm on the CA's token was changed and should be ECDSA", AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, caToken.getSignatureAlgorithm());
 
             // Check the link certificates IssuerDN matches the original CA's SubjectDN
-            assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getIssuerDN());
+            assertEquals("The IssuerDN of the link certificate does not match the SubjectDN of the old CA certificate.", orgcert.getSubjectX500Principal(), linkCertificateAfterRenewal.getIssuerX500Principal());
 
             // Check the link certificates SubjectDN does not matches the original CA's SubjectDN
-            assertNotEquals("The SubjectDN of the link certificate should not match the SubjectDN of the old CA certificate.", orgcert.getSubjectDN(), linkCertificateAfterRenewal.getSubjectDN());
+            assertNotEquals("The SubjectDN of the link certificate should not match the SubjectDN of the old CA certificate.", orgcert.getSubjectX500Principal(), linkCertificateAfterRenewal.getSubjectX500Principal());
 
             // Check the link cert's SubjectDN matches the renewed CA's SubjectDN
             // Note: There is a Name change occurring
-            assertEquals("The SubjectDN of the link certificate should match the SubjectDN of the renewed CA certificate.", newcert.getSubjectDN(), linkCertificateAfterRenewal.getSubjectDN());
+            assertEquals("The SubjectDN of the link certificate should match the SubjectDN of the renewed CA certificate.", newcert.getSubjectX500Principal(), linkCertificateAfterRenewal.getSubjectX500Principal());
 
             // Check validity period, notAfter in the link certificate should be same as notAfter in the old CA certificate
             assertEquals("notAfter in the link certificate should be the same as notAfter in the old CA certificate.", orgcert.getNotAfter(), linkCertificateAfterRenewal.getNotAfter());
