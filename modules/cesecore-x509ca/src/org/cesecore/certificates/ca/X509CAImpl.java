@@ -47,6 +47,10 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.naming.NamingException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
@@ -1360,10 +1364,22 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
 
         final X500Name subjectDNName;
         if (certProfile.getAllowDNOverride() && (request != null) && (request.getRequestX500Name() != null)) {
-            subjectDNName = request.getRequestX500Name();
-            if (log.isDebugEnabled()) {
-                log.debug("Using X509Name from request instead of user's registered.");
+            String mergedDN = null;
+            LdapName combinedDn = null;
+            try {
+                LdapName dn2 = new LdapName(dn);
+                LdapName dn1 = new LdapName(request.getRequestX500Name().toString());
+
+                // Combine the DNs
+                combinedDn = combineLdapNames(dn1, dn2);
+
+            } catch (NamingException e) {
+                log.error("Exception while trying to construct LDAP names." + LogRedactionUtils.getRedactedException(e));
             }
+
+            mergedDN = combinedDn.toString();
+            subjectDNName = DnComponents.stringToBcX500Name(mergedDN, nameStyle, ldapdnorder, customDNOrder, applyLdapToCustomOrder);
+
         } else {
             if (certProfile.getAllowDNOverrideByEndEntityInformation() && ei!=null && ei.getRawSubjectDn()!=null) {
                 final String stripped = StringTools.strip(ei.getRawSubjectDn());
@@ -1956,6 +1972,31 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             log.debug("X509CA: generated certificate, CA " + this.getCAId() + " for DN: " + LogRedactionUtils.getSubjectDnLogSafe(subject.getCertificateDN(), subject.getEndEntityProfileId()) );
         }
         return cert;
+    }
+    
+    
+    /**
+     * Combines the LDAP names coming from the user's registered one and those from the EEP
+     * @param dn1
+     * @param dn2
+     * @return combined LDAP names
+     */
+    private static LdapName combineLdapNames(LdapName dn1, LdapName dn2) {
+
+        // Create a new LdapName to hold the combined RDNs
+        LdapName combinedLdapName = (LdapName) dn1.clone();
+
+        Set<String> existingAttributes = new HashSet<>();
+        for (Rdn rdn : dn1.getRdns()) {
+            existingAttributes.add(rdn.getType());
+        }
+
+        for (Rdn rdn : dn2.getRdns()) {
+            if (!existingAttributes.contains(rdn.getType())) {
+                combinedLdapName.add(rdn);
+            }
+        }
+        return combinedLdapName;
     }
 
     /**
