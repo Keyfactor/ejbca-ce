@@ -1130,7 +1130,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 SigningKeyContainer caSigningPackage = new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, provider);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), null, -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
                         certProfile, null, caSigningPackage, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
-                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
+                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerX500Principal().getName()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
                 throw e;

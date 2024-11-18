@@ -144,6 +144,7 @@ public class CertReqHistorySessionSystemTest {
     public void test02getCertReqHistByIssuerDNAndSerial() throws Exception {
         log.trace(">test10getCertReqHistByIssuerDNAndSerial()");
 
+        //getIssuerX500Principal delivers a different order than getIssuerDN. Fix later.
         CertReqHistory certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert1.getSerialNumber(), cert1.getIssuerDN().toString());
 
         assertNotNull("Error couldn't find the certificate request data stored previously", certreqhist);
@@ -205,10 +206,10 @@ public class CertReqHistorySessionSystemTest {
         certReqHistoryProxySession.removeCertReqHistoryData(CertTools.getFingerprintAsString(cert1));
         certReqHistoryProxySession.removeCertReqHistoryData(CertTools.getFingerprintAsString(cert2));
 
-        CertReqHistory certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert1.getSerialNumber(), cert1.getIssuerDN().toString());
+        CertReqHistory certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert1.getSerialNumber(), cert1.getIssuerX500Principal().toString());
         assertNull("Error removing cert req history data, cert1 data is still there", certreqhist);
 
-        certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert2.getSerialNumber(), cert2.getIssuerDN().toString());
+        certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert2.getSerialNumber(), cert2.getIssuerX500Principal().toString());
         assertNull("Error removing cert req history data, cert2 data is still there", certreqhist);
 
         log.trace("<test12removeCertReqHistData()");

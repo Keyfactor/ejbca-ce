@@ -270,7 +270,7 @@ public abstract class ScepTestBase {
         assertEquals(signerInfo.getDigestAlgOID(), digestOid);
         SignerId sinfo = signerInfo.getSID();
         // Check that the signer is the expected CA
-        assertEquals(DnComponents.stringToBCDNString(getCaCertificate().getIssuerDN().getName()), DnComponents.stringToBCDNString(sinfo.getIssuer().toString()));
+        assertEquals(DnComponents.stringToBCDNString(getCaCertificate().getIssuerX500Principal().getName()), DnComponents.stringToBCDNString(sinfo.getIssuer().toString()));
         // Verify the signature
         JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
         JcaSignerInfoVerifierBuilder jcaSignerInfoVerifierBuilder = new JcaSignerInfoVerifierBuilder(calculatorProviderBuilder.build()).setProvider(BouncyCastleProvider.PROVIDER_NAME);
@@ -369,7 +369,7 @@ public abstract class ScepTestBase {
                 final Iterator<X509CRLHolder> it = crls.iterator();
                 // CRL is first (and only)
                 final X509CRL retCrl = new JcaX509CRLConverter().getCRL(it.next());
-                log.info("Got CRL with DN: " + retCrl.getIssuerDN().getName());
+                log.info("Got CRL with DN: " + retCrl.getIssuerX500Principal().getName());
 
                 // check the returned CRL
                 assertEquals(CertTools.getSubjectDN(caCertToUse), CertTools.getIssuerDN(retCrl));
@@ -392,10 +392,10 @@ public abstract class ScepTestBase {
                 JcaX509CertificateConverter jcaX509CertificateConverter = new JcaX509CertificateConverter();
                 while (it.hasNext()) {
                     X509Certificate retcert = jcaX509CertificateConverter.getCertificate(it.next());
-                    log.info("Got cert with DN: " + retcert.getSubjectDN().getName());
+                    log.info("Got cert with DN: " + retcert.getSubjectX500Principal().getName());
 
                     // check the returned certificate
-                    String subjectdn = DnComponents.stringToBCDNString(retcert.getSubjectDN().getName());
+                    String subjectdn = DnComponents.stringToBCDNString(retcert.getSubjectX500Principal().getName());
                     if (DnComponents.stringToBCDNString(userDN).equals(subjectdn)) {
                         // issued certificate
                         assertEquals(DnComponents.stringToBCDNString(userDN), subjectdn);

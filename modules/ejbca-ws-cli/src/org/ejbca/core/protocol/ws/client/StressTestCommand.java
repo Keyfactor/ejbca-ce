@@ -208,13 +208,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			StressTestCommand.this.performanceTest.getLog().error("no certificate generated for user "+jobData.userName);
 			return false;
 		}
-		final String commonName = DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "CN");
+		final String commonName = DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "CN");
 		if (validateUsername && !commonName.equals(jobData.userName)) {
-			StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
+			StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectX500Principal()+"\".");
 			return false;
 		}
 		jobData.userCertsGenerated.add(cert);
-		StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
+		StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectX500Principal()+"\".");
 		StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
 		return true;
 	}
@@ -327,7 +327,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		@Override
 		public boolean doIt() throws Exception {
 			for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++) {
-				this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+				this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 										this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 										REVOKATION_REASON_UNSPECIFIED);
 			}
@@ -352,14 +352,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		}
 		private void revokeBackdated( int i ) throws Exception {
 			this.ejbcaWS.revokeCertBackdated(
-					this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+					this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 					this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 					REVOKATION_REASON_UNSPECIFIED,
 					this.revoceTime);
 		}
 		private void revoke( int i ) throws Exception {
 			this.ejbcaWS.revokeCert(
-					this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+					this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 					this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 					REVOKATION_REASON_UNSPECIFIED);
 		}

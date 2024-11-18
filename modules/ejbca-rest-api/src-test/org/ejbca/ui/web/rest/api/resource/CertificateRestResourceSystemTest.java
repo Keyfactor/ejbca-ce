@@ -1273,6 +1273,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         byte[] certBytes = Base64.decode(base64cert.getBytes());
         X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
         // Assert End Entity DN is used. CSR subject should be ignored.
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         assertEquals("Returned certificate contained unexpected subject DN", "O=PrimeKey,CN=" + testUsername, cert.getSubjectDN().getName());
     }
 

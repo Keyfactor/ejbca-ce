@@ -323,7 +323,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
-                    new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                    new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
@@ -385,7 +385,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
-                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
@@ -450,7 +450,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         final byte[] reqNonce = CmpMessageHelper.createSenderNonce();
         final byte[] reqTransid = CmpMessageHelper.createSenderNonce();
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
-                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(reqNonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(reqTransid));
@@ -505,7 +505,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(reqSubjectDN),
-                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
@@ -564,7 +564,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
-                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setRecipNonce(new DEROctetString(nonce));
@@ -637,7 +637,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         CertReqMessages certReqMessages = new CertReqMessages(certReqMsg);
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(SUBJECT_DN),
-                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
@@ -692,7 +692,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(reqSubjectDN),
-                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
@@ -753,7 +753,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(reqSubjectDN),
-                new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
@@ -817,7 +817,7 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(new X500Name(reqSubjectDN)),
-                    new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
+                    new GeneralName(new X500Name(this.cacert.getSubjectX500Principal().getName())));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
         pkiHeaderBuilder.setTransactionID(new DEROctetString(transid));
