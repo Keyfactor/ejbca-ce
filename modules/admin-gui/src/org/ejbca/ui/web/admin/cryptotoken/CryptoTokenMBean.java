@@ -1716,7 +1716,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (int size : SIZES_RSA) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_RSA + size, AlgorithmConstants.KEYALGORITHM_RSA + " " + size));
         }
-        final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getNamedEcCurvesMap();
+        final Map<String, List<String>> namedEcCurvesMap = AlgorithmTools.getOnlyNamedEcCurvesMap();
         final String[] keys = namedEcCurvesMap.keySet().toArray(new String[namedEcCurvesMap.size()]);
         Arrays.sort(keys);
         for (final String name : keys) {
