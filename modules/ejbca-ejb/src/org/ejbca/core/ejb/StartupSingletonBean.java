@@ -235,7 +235,7 @@ public class StartupSingletonBean {
         StringConfigurationCache.INSTANCE.setEncryptionKey(ConfigurationHolder.getString("password.encryption.key").toCharArray());
         
         //Check if legacy keystore format should be used
-        CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(ConfigurationHolder.getString("ca.use_legacy_pkcs12_keystore") == null ? false
+        CryptoProviderConfigurationCache.INSTANCE.setUseLegacyPkcs12Keystore(ConfigurationHolder.getString("keystore.use_legacy_pkcs12") == null ? false
                 : Boolean.valueOf(ConfigurationHolder.getString("keystore.use_legacy_pkcs12")));
         
         final String disableHashingSignMechanisms = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
