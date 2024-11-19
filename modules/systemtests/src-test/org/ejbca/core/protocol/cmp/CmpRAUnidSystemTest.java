@@ -20,6 +20,12 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.string.StringConfigurationCache;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -57,12 +63,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.string.StringConfigurationCache;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -70,11 +70,11 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 /**
- * FNR is the Norwegian equivalent of a SSN or personal number, i.e, a unique numerical identifier for a Norwegian national. Norwegian regulation 
- * requires that the FNR is not unduly exposed, so hence during enrollment the FNR is replaced in the request with a generated unique ID (UnID), 
+ * FNR is the Norwegian equivalent of a SSN or personal number, i.e, a unique numerical identifier for a Norwegian national. Norwegian regulation
+ * requires that the FNR is not unduly exposed, so hence during enrollment the FNR is replaced in the request with a generated unique ID (UnID),
  * which will be used as reference for future OCSP requests, which for this purpose will contain the UnID as opposed to the FNR as an extension
- * in the response. 
- * 
+ * in the response.
+ *
  * The UnID <> FNR mapping is handled and lookup up from a separate datasource.
  */
 public class CmpRAUnidSystemTest extends CmpTestCase {
@@ -108,14 +108,15 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
     private static final EnterpriseEditionEjbBridgeProxySessionRemote enterpriseEjbBridgeSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(EnterpriseEditionEjbBridgeProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final UnidfnrProxySessionRemote unidfnrProxySessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class,
-            EjbRemoteHelper.MODULE_TEST);    
+            EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void beforeClass() {
         assumeTrue(enterpriseEjbBridgeSession.isRunningEnterprise());
         CryptoProviderTools.installBCProvider();
-        // We must instantiate this after provider is installed as we set SN handling there 
-        SUBJECT_DN = new X500Name("C=SE,SN=" + SUBJECT_SN + ",CN=unid-fnr");
+        // We must instantiate this after provider is installed as we set SN handling there
+        SUBJECT_DN = new X500Name("CN=unid-fnr,SN=" + SUBJECT_SN + ",C=SE");
+        // The subject DN after UNID-FNR conversion, i.e. SUBJECT_SN is changed to the mapping value
         StringConfigurationCache.INSTANCE.setEncryptionKey("qhrnf.f8743;12%#75".toCharArray());
 
     }
@@ -144,7 +145,7 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
         cmpConfiguration.setRACAName(configAlias, testx509ca.getName());
         cmpConfiguration.setAuthenticationModule(configAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
         cmpConfiguration.setAuthenticationParameters(configAlias, "-;" + PBEPASSWORD);
-  
+
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration);
 
         // Configure a Certificate profile (CmpRA) using ENDUSER as template
@@ -168,7 +169,7 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
                 log.error("Could not create end entity profile.", e);
             }
         }
-        
+
 
     }
 
@@ -218,12 +219,12 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
     /**
      * This system test will attempt to enroll a certificate over CMP, with the UnIDFNR plugin enabled. This will result in the FNR value in the final certificate
      * being replaced with the UnID by manipulating the request, and verifies that the mapping has been created in the unid datasource.
-     * 
+     *
      */
     @Test
     public void testCmpEnrollment() throws Exception {
         //For the purposes of this system test, use UnidFnrHandlerMock instead of UnidFnrHandler. It's essentially the same but isn't
-        //reliant on the existence of a data source. 
+        //reliant on the existence of a data source.
         X509CAInfo testX509CaInfo = (X509CAInfo) testx509ca.getCAInfo();
         testX509CaInfo.setRequestPreProcessor(UnidFnrHandlerMock.class.getCanonicalName());
         testx509ca.updateCA(null, testX509CaInfo, null);
@@ -232,8 +233,6 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
         final String unid;
-        // In this test SUBJECT_DN contains special, escaped characters to verify
-        // that that works with CMP RA as well
         final PKIMessage one = genCertReq(issuerDN, SUBJECT_DN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
         final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, CPNAME, 567);
         assertNotNull(req);
@@ -252,17 +251,19 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
                 fail("CMP ErrorMsg received: " + errMsg);
                 unid = null;
             } else {
-                checkCmpResponseGeneral(resp, CmpRAUnidSystemTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
+                // We can't check the recipient as the SN with fnr has a random value generated on the server
+                checkCmpResponseGeneral(resp, CmpRAUnidSystemTest.issuerDN, null, cacert, nonce, transid, false, PBEPASSWORD,
                         PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
                 final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, SUBJECT_DN, cacert, resp, reqId);
                 final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
                 unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
                 log.debug("Unid received in certificate response: " + unid);
+                assertEquals("Returned DN with fnr is not the expected", "CN=unid-fnr,SN=" + unid + ",C=SE", x500Name.toString());
             }
         } finally {
             inputStream.close();
         }
-        
+
         String fnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(unid);
         assertNotNull("Unid value was not stored", fnr);
         assertEquals("FNR value was not correctly converted", FNR, fnr);
@@ -271,7 +272,7 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
         final PKIMessage confirm = genCertConfirm(SUBJECT_DN, cacert, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         final PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, CPNAME, 567);
-        
+
         // Send request and receive response
         resp = sendCmpHttp(encodePKIMessage(req1), 200, configAlias);
         checkCmpResponseGeneral(resp, CmpRAUnidSystemTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
@@ -279,10 +280,10 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(SUBJECT_DN, cacert, resp);
 
     }
-    
+
     /**
      * Test enrollment using the legacy configuration in the CMP alias in order to make sure that the upgrade still works
-     * 
+     *
      */
     @SuppressWarnings("deprecation")
     @Test
@@ -292,14 +293,12 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
         globalConfigurationSession.saveConfiguration(admin, cmpConfiguration);
 
         //For the purposes of this system test, use UnidFnrHandlerMock instead of UnidFnrHandler. It's essentially the same but isn't
-        //reliant on the existence of a data source. 
+        //reliant on the existence of a data source.
         caSession.addCA(admin, testx509ca);
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
         final String unid;
-        // In this test SUBJECT_DN contains special, escaped characters to verify
-        // that that works with CMP RA as well
         final PKIMessage one = genCertReq(issuerDN, SUBJECT_DN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
         final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, CPNAME, 567);
         assertNotNull(req);
@@ -318,18 +317,19 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
                 fail("CMP ErrorMsg received: " + errMsg);
                 unid = null;
             } else {
-                checkCmpResponseGeneral(resp, CmpRAUnidSystemTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
+                // We can't check the recipient as the SN with fnr has a random value generated on the server
+                checkCmpResponseGeneral(resp, CmpRAUnidSystemTest.issuerDN, null, cacert, nonce, transid, false, PBEPASSWORD,
                         PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
                 final X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, configAlias, SUBJECT_DN, cacert, resp, reqId);
                 final X500Name x500Name = X500Name.getInstance(cert.getSubjectX500Principal().getEncoded());
                 unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
-
                 log.debug("Unid received in certificate response: " + unid);
+                assertEquals("Returned DN with fnr is not the expected", "CN=unid-fnr,SN=" + unid + ",C=SE", x500Name.toString());
             }
         } finally {
             inputStream.close();
         }
-        
+
         String fnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(unid);
         assertNotNull("Unid value was not stored", fnr);
         assertEquals("FNR value was not correctly converted", FNR, fnr);
@@ -338,7 +338,7 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
         final PKIMessage confirm = genCertConfirm(SUBJECT_DN, cacert, nonce, transid, hash, reqId, null);
         assertNotNull(confirm);
         final PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, CPNAME, 567);
-        
+
         // Send request and receive response
         resp = sendCmpHttp(encodePKIMessage(req1), 200, configAlias);
         checkCmpResponseGeneral(resp, CmpRAUnidSystemTest.issuerDN, SUBJECT_DN, cacert, nonce, transid, false, PBEPASSWORD,
@@ -346,7 +346,7 @@ public class CmpRAUnidSystemTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(SUBJECT_DN, cacert, resp);
 
     }
-    
+
     private byte[] encodePKIMessage(final PKIMessage request) {
         final ByteArrayOutputStream bao = new ByteArrayOutputStream();
         ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);

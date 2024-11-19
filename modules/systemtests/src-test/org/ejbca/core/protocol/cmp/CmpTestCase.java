@@ -956,7 +956,7 @@ public abstract class CmpTestCase extends CaTestCase {
      *
      * @param retMsg the CMP response message to run checks on check
      * @param issuerDN the expected sender (issuerDN) of the response
-     * @param userDN the expected recipient (subjectDN) of the response
+     * @param userDN the expected recipient (subjectDN) of the response, or null if it should not be checked
      * @param cacert CA certificate that signed the response, if signed, used to verify the signature
      * @param senderNonce the nonce we used when sending the request, the recipientNonce in the response should match
      * @param transId the transactionID we used when sending the request, ID in the response should match
@@ -1040,7 +1040,9 @@ public abstract class CmpTestCase extends CaTestCase {
         X500Name actissuer = new X500Name(header.getSender().getName().toString());
         assertEquals("The sender in the response is not the expected", expissuer, actissuer);
         X500Name actrecipient = new X500Name(header.getRecipient().getName().toString());
-        assertEquals("The recipient in the response is not the expected", userDN, actrecipient);
+        if (userDN != null) {
+            assertEquals("The recipient in the response is not the expected", userDN, actrecipient);
+        }
         if (signed) {
             // Verify the signature
             byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
