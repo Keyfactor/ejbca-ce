@@ -1305,6 +1305,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                                                                        final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
         final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
         final boolean countOnly = request.getPageNumber() == -1;
+        /* If fingerPrintsOnly is true, the result list will contain only certificate fingerprints.
+         * This means that a second lookup is necessary to get the certificate data for all certificate fingerprints in the list.
+         */
         final boolean fingerPrintsOnly = CesecoreConfiguration.useBase64CertTable();
         final Query query = createQuery(entityManager, request, countOnly, fingerPrintsOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
         int maxResults = -1;
