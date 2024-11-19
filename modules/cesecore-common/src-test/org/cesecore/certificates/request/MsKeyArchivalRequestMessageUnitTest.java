@@ -35,6 +35,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
 
 public class MsKeyArchivalRequestMessageUnitTest {
@@ -272,7 +273,7 @@ public class MsKeyArchivalRequestMessageUnitTest {
                 msg.getKeyPairToArchive().getPublic(), "SHA256WithRSA", false);
         
         // these fails cause spec validation in BC
-         KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert); 
+         KeyTools.createP12("abcd", msg.getKeyPairToArchive().getPrivate(), eeCert, caCert, KeyStoreCipher.PKCS12_AES256_AES128); 
          EJBTools.unwrap(EJBTools.wrap(msg.getKeyPairToArchive())); 
          
          Properties.removeThreadOverride(CertificateConstants.ENABLE_UNSAFE_RSA_KEYS);

@@ -76,6 +76,7 @@ import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyStoreTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -510,7 +511,8 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 if (altKeys != null) { // TODO EJBCAINTER-789
                     throw new UnsupportedOperationException("Hybrid keystore support is not implemented yet");
                 }
-                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), /*altKeys != null ? altKeys.getPrivate() : null, TODO EJBCAINTER-789 */ cert, cachain);
+                // TODO: Allow cipher to be retrieved from CA configuration, see ECA-12501
+                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), /*altKeys != null ? altKeys.getPrivate() : null, TODO EJBCAINTER-789 */ cert, cachain, KeyStoreCipher.PKCS12_3DES_3DES);
             }
 
         } finally {
