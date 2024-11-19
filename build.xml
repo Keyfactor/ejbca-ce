@@ -371,12 +371,6 @@
 			replacement-context-root="/ejbca/doc"
 		/>
 		<jar-replacement-in-module
-			replacement-tag="!--@ejbca-ws-ejb.jar@-->"
-			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${ejbcaws.enabled}"
-			replacement-ejb="ejbca-ws-ejb.jar"
-		/>
-		<jar-replacement-in-module
 			replacement-tag="!--@ejbca-systemtest-ejb.jar@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
 			replacement-enabled="${in-test-mode}"
