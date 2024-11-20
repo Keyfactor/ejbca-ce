@@ -3,6 +3,41 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.File;
+import java.io.IOException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.RevocationReasons;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.cli.infrastructure.command.CommandResult;
+import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
+import org.ejbca.ui.cli.infrastructure.parameter.ParameterContainer;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
+import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
+
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 /**
  * Imports certificate files to the database for a given CA
@@ -14,7 +49,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     private static final Logger log = Logger.getLogger(CaImportCertDirCommand.class);
 
     public static final String DATE_FORMAT = "yyyy.MM.dd-HH:mm";
-    public static final String DATE_FORMAT_WINSAFE = "yyyy.MM.dd-HH.mm"; // The colon (:) character is not safe for Windows.
+    public static final String DATE_FORMAT_WINSAFE = "yyyy.MM.dd-HH.mm"; // The colon character (:) will cause issued within Windows filenames, so use a period instead. 
 
     private static final String USERNAME_FILTER_KEY = "--filter";
     private static final String CA_NAME_KEY = "--caname";
