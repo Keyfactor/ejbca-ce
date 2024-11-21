@@ -26,7 +26,10 @@ import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -151,18 +154,27 @@ public class HybridCertificateSystemTest {
         CryptoProviderTools.installBCProvider();
     }
 
+    private void deleteCryptoTokenIfItExists(String cryptoTokenName) throws AuthorizationDeniedException {
+        final var id = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (id != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, id);
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
         final String cryptoTokenPin = "foo123";
         final String cryptoTokenName = testName.getMethodName() + "CryptoToken";
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
+        deleteCryptoTokenIfItExists(cryptoTokenName);
+        tearDown();
         cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
                 KeyGenParams.builder("secp256r1").build());
-        cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS,
-                KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2).build());
+        var keyGenParams = KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_DILITHIUM2).build();
+        cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS, keyGenParams);
 
         final String caDn = "CN=" + testName.getMethodName() + "_CA";
 
