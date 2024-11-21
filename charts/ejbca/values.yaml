@@ -112,7 +112,7 @@ image:
   # Application variant: not set for full EJBCA, "ra" or "va"
   #variant: ra
   repository: keyfactor/ejbca-ce
-  tag: 9.1.0
+  tag: 9.1.1
   pullPolicy: IfNotPresent
 imagePullSecrets: []
 nameOverride: ""
