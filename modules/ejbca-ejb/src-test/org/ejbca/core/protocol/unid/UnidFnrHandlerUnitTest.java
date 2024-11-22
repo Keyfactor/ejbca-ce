@@ -13,8 +13,6 @@
 
 package org.ejbca.core.protocol.unid;
 
-import static org.junit.Assert.assertEquals;
-
 import java.lang.reflect.Field;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -30,6 +28,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.keyfactor.util.CeSecoreNameStyle;
+
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x509.Extensions;
@@ -39,14 +39,14 @@ import org.ejbca.core.ejb.unidfnr.UnidfnrSessionLocal;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.junit.Test;
 
-import com.keyfactor.util.CeSecoreNameStyle;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Testing of {@link UnidFnrHandler} .
  */
 public class UnidFnrHandlerUnitTest {
-	
-   
+
+
     /**
      * Tests basic conversion between Fnr and UnID using a mock session bean to retrieve the data.
      */
@@ -70,13 +70,13 @@ public class UnidFnrHandlerUnitTest {
                 serialNumber.subSequence(unidPrefix.length(), lra.length() + unidPrefix.length()));
         assertEquals("FNR was not stored correctly.", fnr, unidfnrSession.fetchUnidFnrData(serialNumber));
     }
-    
+
     /*
-     * Mock class to simulate the existence of a session bean 
+     * Mock class to simulate the existence of a session bean
      */
     private static class UnidfnrSessionMock implements UnidfnrSessionLocal {
         private Map<String, String> storage = new HashMap<>();
-        
+
         @Override
         public void storeUnidFnrData(String unid, String fnr) {
             storage.put(unid, fnr);
@@ -91,15 +91,15 @@ public class UnidFnrHandlerUnitTest {
         public void removeUnidFnrDataIfPresent(String unid) {
             storage.remove(unid);
         }
-        
+
     }
-    
+
 	private static class MyIRequestMessage implements ICrmfRequestMessage {
 		private static final long serialVersionUID = -2303591921932083436L;
         final X500Name dn;
         List<Certificate> additionalCaCertificates = new ArrayList<>();
         List<Certificate> additionalExtraCertsCertificates = new ArrayList<>();
-        
+
 		MyIRequestMessage(String serialNumber) {
 		    X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
 			nameBuilder.addRDN(CeSecoreNameStyle.SERIALNUMBER, serialNumber);
@@ -256,7 +256,7 @@ public class UnidFnrHandlerUnitTest {
         public KeyPair getServerGenKeyPair() {
             return null;
         }
-        
+
         @Override
         public List<Certificate> getAdditionalCaCertificates() {
             return additionalCaCertificates;
@@ -281,6 +281,10 @@ public class UnidFnrHandlerUnitTest {
         }
         @Override
         public void setRequestValidityNotAfter(Date notAfter) {
+        }
+        @Override
+        public int getPvno() {
+            return 2;
         }
 	}
 }

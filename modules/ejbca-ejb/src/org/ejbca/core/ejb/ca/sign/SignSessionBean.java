@@ -39,14 +39,17 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.Base64;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
@@ -188,17 +191,14 @@ import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.util.passgen.AllPrintableCharPasswordGenerator;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 
 /**
  * Creates and signs certificates.
@@ -378,7 +378,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
-    
+
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk, final PublicKey altPK)
             throws NoSuchEndEntityException, AuthorizationDeniedException, CADoesntExistsException, AuthStatusException, AuthLoginException,
@@ -417,7 +417,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return createCertificate(admin, username, password, pk.getPublicKey(), pk.getAltPublicKey(), keyusage, notBefore, notAfter,
                 CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
     }
-    
+
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert)
             throws NoSuchEndEntityException, AuthorizationDeniedException, SignRequestSignatureException, CADoesntExistsException,
@@ -425,7 +425,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException,
             InvalidAlgorithmException, CustomCertificateSerialNumberException {
 
-        // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
+        // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example
         Certificate bccert;
         try {
             bccert = CertTools.getCertfromByteArray(incert.getEncoded(), Certificate.class);
@@ -554,8 +554,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                         ret = createRequestFailedResponse(admin, req, responseClass, FailInfo.WRONG_AUTHORITY, failText);
                     } else {
                         final long updateTime = System.currentTimeMillis();
-                        //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
-                        //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
+                        //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal.
+                        //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing.
                         singleActiveCertificateConstraint(admin, endEntityInformation);
                         // Issue the certificate from the request
                         final CertificateGenerationParams certGenParams = fetchCertGenParams();
@@ -1401,8 +1401,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");
         }
         final long updateTime = System.currentTimeMillis();
-        //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal. 
-        //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing. 
+        //Specifically check for the Single Active Certificate Constraint property, which requires that revocation happen in conjunction with renewal.
+        //We have to perform this check here, in addition to the true check in CertificateCreateSession, in order to be able to perform publishing.
         singleActiveCertificateConstraint(admin, endEntityInformation);
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         CertificateDataWrapper certWrapper;
@@ -1410,7 +1410,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             certWrapper = certificateCreateSession.createCertificate(admin, endEntityInformation, ca, null, pk, altPK, keyusage, notBefore, notAfter,
                     extensions, sequence, certGenParams, updateTime);
-            
+
         } catch (CTLogException e) {
             if (e.getPreCertificate() != null) {
                 certWrapper = (CertificateDataWrapper) e.getPreCertificate();
@@ -1421,7 +1421,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         postCreateCertificate(admin, endEntityInformation, ca, certWrapper, false, certGenParams);
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");          
+            log.trace(">createCertificate(pk, " + (altPK != null ? ", altPK" : "") + ", ku, notAfter)");
         }
         return certWrapper.getCertificate();
     }
@@ -1455,8 +1455,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     cdw.getCertificateData().setRevocationDate(new Date());
                 }
             }
-            // Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth, 
-            // the certificate must be revoked nonetheless. 
+            // Go directly to RevocationSession and not via EndEntityManagementSession because we don't care about approval checks and so forth,
+            // the certificate must be revoked nonetheless.
             revocationSession.revokeCertificates(admin, cdws, publishers, RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
         }
         if (log.isTraceEnabled()) {
@@ -1515,7 +1515,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (ca.getCAType() == X509CAInfo.CATYPE_X509) {
                 final X509CA x509ca = (X509CA) ca;
                 final X509Certificate x509Certificate = (X509Certificate) certificateWrapper.getCertificate();
-                
+
                 if ((x509ca.isDoPreProduceOcspResponses() && x509ca.isDoPreProduceOcspResponseUponIssuanceAndRevocation())
                         && (x509Certificate != null && !x509ca.getCertificateChain().isEmpty())) {
                     ocspResponseGeneratorSession.preSignOcspResponse((X509Certificate) x509ca.getCertificateChain().get(0),
@@ -1555,7 +1555,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throw new IllegalStateException("Not possible to sign a payload using a CV CA", e);
         }
         final CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-        // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between Dilithium2 and Dilithium3            
+        // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between ML-DSA-44 and ML-DSA-65
         final String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(catoken.getSignatureAlgorithm(),
                 publicKey.getAlgorithm());
         try {
@@ -1685,7 +1685,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         return returnval;
     }
-    
+
     private byte[] createCmcFullPkiResponse(X509CA ca, CryptoToken cryptoToken, X509Certificate cert, MsKeyArchivalRequestMessage request) throws SignRequestSignatureException {
         // future add otherInfo when approval support is added over MSAE
         CMCStatusInfoBuilder cmcStatusInfoBuilder = null;
@@ -1694,33 +1694,33 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             cmcStatusInfoBuilder.setStatusString("Issued"); // human readble string
         } else {
             cmcStatusInfoBuilder = new CMCStatusInfoBuilder(CMCStatus.failed, new BodyPartID(0x01));
-            cmcStatusInfoBuilder.setStatusString("Failed"); 
+            cmcStatusInfoBuilder.setStatusString("Failed");
         }
-        
+
         TaggedAttribute taggedAttribute1 = new TaggedAttribute(new BodyPartID(0x01),
                 CMCObjectIdentifiers.id_cmc_statusInfo,
                 new DERSet(cmcStatusInfoBuilder.build()));
-        
+
         Attribute certHash = null;
         try {
-            certHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ISSUED_CERT_HASH, 
+            certHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ISSUED_CERT_HASH,
                                     new DERSet(new DEROctetString(CertTools.generateSHA1Fingerprint(cert.getEncoded()))));
         } catch (CertificateEncodingException e) {
             log.debug("Error during marshalling issued certificate hash", e);
             throw new IllegalStateException(e);
         }
-        
-        Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH, 
+
+        Attribute encryptedKeyHash = new Attribute(MsKeyArchivalRequestMessage.szOID_ENCRYPTED_KEY_HASH,
                 new DERSet(new DEROctetString(request.getEnvelopedPrivKeyHash())));
-        
+
         ASN1Encodable wrappedAttributes = new DERSequence(
-                new ASN1Encodable[]{new ASN1Integer(0),  
+                new ASN1Encodable[]{new ASN1Integer(0),
                         new DERSequence(new ASN1Integer(1)), new DERSet(new ASN1Encodable[]{certHash, encryptedKeyHash})});
-        
+
         TaggedAttribute taggedAttribute2 = new TaggedAttribute(new BodyPartID(0x02),
                 MsKeyArchivalRequestMessage.szOID_CMC_ADD_ATTRIBUTES,
-                new DERSet(wrappedAttributes)); 
-        
+                new DERSet(wrappedAttributes));
+
         DERSequence payload = new DERSequence(new ASN1Encodable[]{taggedAttribute1, taggedAttribute2});
         DERSequence pkiRespAsSequence = new DERSequence(
                         new ASN1Encodable[]{payload, new DERSequence(), new DERSequence()});
@@ -1729,28 +1729,28 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             String hashAlgorithm = AlgorithmTools.getHashAlgorithm(ca.getCAInfo().getCAToken().getSignatureAlgorithm());
             final MessageDigest md = MessageDigest.getInstance(hashAlgorithm); // may be sha256 always
             byte[] payloadHash = md.digest(pkiResponse.getEncoded());
-            
+
             // signerInfo
             JcaSignerInfoGeneratorBuilder signerInfobuilder = new JcaSignerInfoGeneratorBuilder(
                     new JcaDigestCalculatorProviderBuilder().setProvider("BC").build());
-            
-            Attribute contentTypeAttribute = new Attribute(MsKeyArchivalRequestMessage.szOID_PKCS_9_CONTENT_TYPE, 
+
+            Attribute contentTypeAttribute = new Attribute(MsKeyArchivalRequestMessage.szOID_PKCS_9_CONTENT_TYPE,
                                                         new DERSet(CMCObjectIdentifiers.id_cct_PKIResponse));
-            Attribute contentHashAttribute = new Attribute(MsKeyArchivalRequestMessage.szOID_PKCS_9_MESSAGE_DIGEST, 
+            Attribute contentHashAttribute = new Attribute(MsKeyArchivalRequestMessage.szOID_PKCS_9_MESSAGE_DIGEST,
                     new DERSet(new DEROctetString(payloadHash)));
-    
+
             AttributeTable attrTable = new AttributeTable(new DERSet(
-                    new ASN1Encodable[]{ contentTypeAttribute.toASN1Primitive(), 
+                    new ASN1Encodable[]{ contentTypeAttribute.toASN1Primitive(),
                                                     contentHashAttribute.toASN1Primitive()}));
             signerInfobuilder.setSignedAttributeGenerator(new SimpleAttributeTableGenerator(attrTable));
-            
+
             final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
             ContentSigner caSigner = new JcaContentSignerBuilder(ca.getCAInfo().getCAToken().getSignatureAlgorithm())
                                                         .setProvider(cryptoToken.getSignProviderName())
                                                                                 .build(caPrivateKey);
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
             gen.addSignerInfoGenerator(signerInfobuilder.build(caSigner, (X509Certificate) ca.getCACertificate()));
-            
+
             // add certificate chain
             List<X509CertificateHolder> certChain = new ArrayList<>();
             if (cert!=null) {
@@ -1764,14 +1764,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     throw new IllegalStateException(e);
                 }
             });
-            
+
             CollectionStore<X509CertificateHolder> store = new CollectionStore<>(certChain);
             gen.addCertificates(store);
-                        
+
             CMSTypedData data = new CMSProcessableByteArray(CMCObjectIdentifiers.id_cct_PKIResponse, pkiResponse.getEncoded());
             CMSSignedData cmsResponse = gen.generate(data, true);
             return cmsResponse.getEncoded();
-            
+
         } catch (Exception e) {
             log.info("CMC signing failed: ", e);
             throw new SignRequestSignatureException("CMC signing failed: ", e);

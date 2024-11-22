@@ -306,7 +306,7 @@ public class CaInitCommandSystemTest {
             random.nextBytes(serno);
             final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(msg.getRequestPublicKey().getEncoded());
             X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(
-                    DnComponents.stringToBcX500Name(externalCACert.getSubjectDN().toString()), new java.math.BigInteger(serno).abs(), firstDate,
+                    DnComponents.stringToBcX500Name(externalCACert.getSubjectX500Principal().toString()), new java.math.BigInteger(serno).abs(), firstDate,
                     lastDate, DnComponents.stringToBcX500Name(msg.getRequestDN()), pkinfo);
             BasicConstraints bc = new BasicConstraints(true);
             certbuilder.addExtension(Extension.basicConstraints, true, bc);

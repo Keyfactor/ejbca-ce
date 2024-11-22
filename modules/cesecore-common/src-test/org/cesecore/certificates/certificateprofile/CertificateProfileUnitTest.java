@@ -833,7 +833,7 @@ public class CertificateProfileUnitTest {
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
-        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
 
         certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA});
         certificateProfile.setAvailableEcCurves(new String[] {"secp256r1", "secp384r1"});
@@ -845,12 +845,12 @@ public class CertificateProfileUnitTest {
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp384r1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
-        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
         // Allow ED25519 as well
         certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_ED25519});
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED448, AlgorithmConstants.KEYALGORITHM_ED448));
-        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
 
         certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_ECDSA});
         certificateProfile.setAvailableEcCurves(new String[] {CertificateProfile.ANY_EC_CURVE});
@@ -861,7 +861,7 @@ public class CertificateProfileUnitTest {
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
-        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
 
         certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.SIGALG_ED25519});
         certificateProfile.setAvailableEcCurves(new String[] {CertificateProfile.ANY_EC_CURVE});
@@ -872,11 +872,11 @@ public class CertificateProfileUnitTest {
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
-        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
-        // Add dilithium as allowed
-        certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_DILITHIUM2});
-        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
-        // With Dilithium Specify only one EC curve
+        assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
+        // Add ML-DSA as allowed
+        certificateProfile.setAvailableKeyAlgorithms(new String[] {AlgorithmConstants.KEYALGORITHM_RSA, AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmConstants.KEYALGORITHM_MLDSA44});
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
+        // With ML-DSA Specify only one EC curve
         certificateProfile.setAvailableEcCurves(new String[] {"secp256r1"});
         certificateProfile.setAvailableBitLengths(new int[] {2048});
         assertFalse(certificateProfile.isKeyTypeAllowed("OTHER", "2048"));
@@ -885,7 +885,7 @@ public class CertificateProfileUnitTest {
         assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256r1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ECDSA, "secp256k1"));
         assertFalse(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519));
-        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_DILITHIUM2, AlgorithmConstants.KEYALGORITHM_DILITHIUM2));
+        assertTrue(certificateProfile.isKeyTypeAllowed(AlgorithmConstants.KEYALGORITHM_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
     }
 
     @Test

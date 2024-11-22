@@ -276,41 +276,140 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void shouldReturnCertificateProfileInfo() throws Exception {
-        //given
+        // Given
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
         final List<Integer> availableCas = new ArrayList<>();
         availableCas.add(x509TestCa.getCAId());
         certificateProfile.setAvailableCAs(availableCas);
+
         final int[] availableBitLengths = { 4096 };
         certificateProfile.setAvailableBitLengths(availableBitLengths);
+
         final String[] availableAlgorithms = { "RSA" };
         certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+
+        final String[] availableAltAlgorithms = {"KYBER768", "ML-DSA-65"};
+        certificateProfile.setUseAlternativeSignature(true);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(availableAltAlgorithms);
+
         int certProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
-        // when
+
+        // When
         final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+
         final String responseCertProfileId = actualJsonObject.get("certificate_profile_id").toString();
-        JSONArray jsonArrayAlgs = (JSONArray) actualJsonObject.get("available_key_algs");
-        String algorithms = (String) jsonArrayAlgs.get(0);
-        JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
-        long bitLengths = (long) jsonArrayBitLengths.get(0);
-        JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
-        String cas = (String) jsonArrayCas.get(0);
+
+        final JSONArray jsonArrayAlgorithms = (JSONArray) actualJsonObject.get("available_key_algs");
+        final String algorithms = (String) jsonArrayAlgorithms.get(0);
+
+        final JSONArray jsonArrayBitLengths = (JSONArray) actualJsonObject.get("available_bit_lenghts");
+        final long bitLengths = (long) jsonArrayBitLengths.get(0);
+
+        final JSONArray jsonArrayAlternativeAlgorithms = (JSONArray) actualJsonObject.get("available_alt_key_algs");
+        final String alternativeAlgorithm = (String) jsonArrayAlternativeAlgorithms.get(0);
+
+        final JSONArray jsonArrayCas = (JSONArray) actualJsonObject.get("available_cas");
+        final String cas = (String) jsonArrayCas.get(0);
+
         // then
         assertEquals(Integer.toString(certProfileId), responseCertProfileId);
         assertEquals("RSA", algorithms);
         assertEquals(4096, bitLengths);
+        assertEquals("KYBER768", alternativeAlgorithm);
         assertEquals(testCaName, cas);
         assertJsonContentType(actualResponse);
     }
 
+    @Test
+    @SuppressWarnings("unused")
+    public void shouldNotReturnAltKeysIfNotUsed() throws Exception {
+        // Given
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        final List<Integer> availableCas = new ArrayList<>();
+        availableCas.add(x509TestCa.getCAId());
+        certificateProfile.setAvailableCAs(availableCas);
+
+        final int[] availableBitLengths = { 4096 };
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
+
+        final String[] availableAlgorithms = { "RSA" };
+        certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+
+        final String[] availableAltAlgorithms = {"KYBER768", "ML-DSA-65"};
+        // Alternative signature is NOT used.
+        certificateProfile.setUseAlternativeSignature(false);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(availableAltAlgorithms);
+
+        final int certProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+
+        // When
+        final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+
+        final JSONArray jsonArrayAlternativeAlgorithms = (JSONArray) actualJsonObject.get("available_alt_key_algs");
+
+        // Then
+        assertNull("No alternative key algorithms should have been returned", jsonArrayAlternativeAlgorithms);
+    }
 
     @Test
-    public void shouldRevokeCertificate() throws Exception {
-        // Create test user & generate certificate
+    @SuppressWarnings("unused")
+    public void shouldReturnEmptyAltKeysListIfNoneSelected() throws Exception {
+        // Given
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+
+        final List<Integer> availableCas = new ArrayList<>();
+        availableCas.add(x509TestCa.getCAId());
+        certificateProfile.setAvailableCAs(availableCas);
+
+        final int[] availableBitLengths = { 4096 };
+        certificateProfile.setAvailableBitLengths(availableBitLengths);
+
+        final String[] availableAlgorithms = { "RSA" };
+        certificateProfile.setAvailableKeyAlgorithms(availableAlgorithms);
+
+        certificateProfile.setUseAlternativeSignature(true);
+        certificateProfile.setAlternativeAvailableKeyAlgorithms(new String[0]);
+
+        final int certProfileId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName, certificateProfile);
+
+        // When
+        final Response actualResponse = newRequest("/v2/certificate/profile/" + testCertProfileName).request().get();
+        final String actualJsonString = actualResponse.readEntity(String.class);
+        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+
+        final JSONArray jsonArrayAlternativeAlgorithms = (JSONArray) actualJsonObject.get("available_alt_key_algs");
+
+        // Then
+        assertNotNull("Alternative key algorithms should have been returned", jsonArrayAlternativeAlgorithms);
+        assertEquals("Alternative key algorithms list should be empty", 0, jsonArrayAlternativeAlgorithms.size());
+    }
+
+    @Test
+    public void shouldRevokeCertificateWithRsaKey() throws Exception {
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        revokeCertificate(createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA));
+    }
+    
+    @Test
+    public void shouldRevokeCertificateMLDSA44() throws Exception {
+        createTestEndEntity();
+        revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
+    }
+    
+    @Test
+    public void shouldRevokeCertificateFalcon512() throws Exception {
+        createTestEndEntity();
+        revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
+    }
+    
+    private void revokeCertificate(final KeyStore keyStore) throws Exception {
+        // Generate certificate
         String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
         // Attempt revocation through REST
@@ -334,14 +433,14 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
         assertEquals("KEY_COMPROMISE", databaseReason);
     }
-
+    
     @Test
     public void shouldRevokeCertificateWithInvalidityDate() throws Exception {
         // given
         enableInvalidityDate();
         // Create test user & generate certificate
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
         final String invalidityDateString = getRevocationRequestDate();
@@ -376,7 +475,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         enableInvalidityDate();
         // Create test user & generate certificate
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
         final String invalidityDateString = getRevocationRequestDate();
@@ -414,7 +513,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         enableInvalidityDate();
         // Create test user & generate certificate
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         final String invalidityDateString = getRevocationRequestDate();
         TimeUnit.MILLISECONDS.sleep(1200);
@@ -490,7 +589,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         enableInvalidityDate();
         // Create test user & generate certificate
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
         final String invalidityDateString = getRevocationRequestDate();
@@ -533,7 +632,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         enableInvalidityDate();
         // Create test user & generate certificate
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
         final int expectedErrorCode = 409;
@@ -579,7 +678,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         enableRevocationReasonChange();
         // User and certificate generation
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         String fingerPrint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
 
@@ -867,7 +966,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     public void shouldAllowReactivatingACertificateOnHold() throws Exception {
         // given
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         final String serialNumber = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         final String fingerprint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
         final String revocationReason = CERTIFICATEHOLD.getStringValue();
@@ -999,7 +1098,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         // given
         enableRevocationReasonChange();
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         final String serialNumber = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
         final String fingerprint = CertTools.getFingerprintAsString(keyStore.getCertificate(testUsername));
         final RevocationReasons initialRevocationReasonInDb = SUPERSEDED;
@@ -1174,6 +1273,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         byte[] certBytes = Base64.decode(base64cert.getBytes());
         X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
         // Assert End Entity DN is used. CSR subject should be ignored.
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         assertEquals("Returned certificate contained unexpected subject DN", "O=PrimeKey,CN=" + testUsername, cert.getSubjectDN().getName());
     }
 
@@ -1725,18 +1825,18 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                         .withEndEntityProfileSessionRemote(endEntityProfileSessionRemote)
                         .build());
     }
-
+    
     /**
      * Creates a keystore with a certificate for the test End Entity
      */
-    private KeyStore createKeystore() throws Exception {
+    private KeyStore createKeystore(final String keySpec, final String keyAlg) throws Exception {
         final byte[] keyStoreBytes = keyStoreCreateSession.generateOrKeyRecoverTokenAsByteArray(
                 INTERNAL_ADMIN_TOKEN,
                 testUsername,
                 "foo123",
                 x509TestCa.getCAId(),
-                "1024",
-                "RSA",
+                keySpec,
+                keyAlg,
                 SecConst.TOKEN_SOFT_P12,
                 false,
                 false,
@@ -1752,7 +1852,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
      */
     private String generateTestSerialNumber() throws Exception {
         createTestEndEntity();
-        final KeyStore keyStore = createKeystore();
+        final KeyStore keyStore = createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         return CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
     }
 

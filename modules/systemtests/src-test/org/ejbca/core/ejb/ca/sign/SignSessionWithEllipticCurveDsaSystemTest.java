@@ -12,11 +12,21 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ca.sign;
 
+import java.io.ByteArrayOutputStream;
+import java.lang.Runtime.Version;
+import java.security.KeyPair;
+import java.security.PublicKey;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.Collections;
+import java.util.Locale;
+
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1Integer;
@@ -58,15 +68,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.io.ByteArrayOutputStream;
-import java.lang.Runtime.Version;
-import java.security.KeyPair;
-import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.util.Collections;
-import java.util.Locale;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -158,12 +159,12 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             assertNotNull("Only ImplicitlyCA curves can have null spec", spec);
         } else {
             fail("Public key is not EC: "+pk.getClass().getName());
-        }        
+        }
     }
 
     /**
      * tests bouncy PKCS10
-     * 
+     *
      */
     @Test
     public void testBCPKCS10ECDSAWithRSACA() throws Exception {
@@ -315,7 +316,6 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(profileName);
         createEndEntity(endEntityName, eeprofile, cprofile, rsacaid);
         try {
-    
             EndEntityInformation user = new EndEntityInformation(endEntityName, requestedDn, rsacaid, null, null,
                     new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
@@ -323,6 +323,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             log.debug("created user: " + endEntityName + ", foo123, " + requestedDn);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             String dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are not known by JDK so OIDs displayed
             assertEquals("Not the expected DN in issued cert", expectedLdapOrderDn, dn);
@@ -334,6 +335,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
             assertEquals("Not the expected DN in issued cert", expectedX509OrderDn, dn);
@@ -387,6 +389,87 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
     }
 
     @Test
+    public void testMatterNoC() throws Exception {
+        log.trace(">testMatterNoC()");
+        final String profileName = "TESTMATTERNOC";
+        final String endEntityName = "TESTMATTERNOC";
+        final String caRcacName = "TESTMATTERRCAC";
+        final String caIcacName = "TESTMATTERICAC";
+
+        try {
+            // Matter CAs will always use EC P256, but CaTestCase isn't done to handle that today so go for RSA
+            assertTrue(createTestCA(caRcacName,1024,"RCACID=CA0000000000001D",CAInfo.SELFSIGNED,null));
+            final int rcaccaid = caSession.getCAInfo(internalAdmin, caRcacName).getCAId();
+            assertTrue(createTestCA(caIcacName,1024,"ICACID=CACACACA00000003",rcaccaid,null));
+            final int icaccaid = caSession.getCAInfo(internalAdmin, caIcacName).getCAId();
+
+            // Create a standard certificate profile (good enough)
+            certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
+            final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certificateProfileSession.addCertificateProfile(internalAdmin, profileName, certprof);
+            int cprofile = certificateProfileSession.getCertificateProfileId(profileName);
+
+            // Create a good end entity profile
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
+            EndEntityProfile profile = new EndEntityProfile();
+            profile.addField(DnComponents.COUNTRY);
+            profile.setRequired(DnComponents.COUNTRY, 0, false);
+            profile.addField(DnComponents.COMMONNAME);
+            profile.setRequired(DnComponents.COMMONNAME, 0, false);
+            profile.addField(DnComponents.NODEID);
+            profile.addField(DnComponents.FABRICID);
+            profile.addField(DnComponents.NOCCAT);
+            profile.setRequired(DnComponents.NOCCAT, 0, false);
+            profile.addField(DnComponents.NOCCAT);
+            profile.setRequired(DnComponents.NOCCAT, 1, false);
+            profile.addField(DnComponents.NOCCAT);
+            profile.setRequired(DnComponents.NOCCAT, 2, false);
+            profile.setAvailableCAs(Collections.singleton(SecConst.ALLCAS));
+            profile.setAvailableCertificateProfileIds(Collections.singleton(cprofile));
+            endEntityProfileSession.addEndEntityProfile(internalAdmin, profileName, profile);
+            KeyPair anotherKey = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
+            int eeprofile = endEntityProfileSession.getEndEntityProfileId(profileName);
+            createEndEntity(endEntityName, eeprofile, cprofile, icaccaid);
+            // See Matter core specification section 6.5.6.4 for Subject DN Example
+            EndEntityInformation user = new EndEntityInformation(endEntityName, "NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,NOCCAT=ABCD0002,NOCCAT=ABCE0018,NOCCAT=ABCF0002", icaccaid, null, null,
+                    new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            log.debug("created user: " + endEntityName + ", foo123, NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,NOCCAT=ABCD0002,NOCCAT=ABCE0018,NOCCAT=ABCF0002");
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
+            assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+            String dn = cert.getSubjectDN().getName();
+            // This is the reverse order than what is displayed by openssl, the fields are not known by JDK so OIDs displayed
+            assertEquals("Not the expected DN in issued cert", "OID.1.3.6.1.4.1.37244.1.6=ABCF0002, OID.1.3.6.1.4.1.37244.1.6=ABCE0018, OID.1.3.6.1.4.1.37244.1.6=ABCD0002, OID.1.3.6.1.4.1.37244.1.5=FAB000000000001D, OID.1.3.6.1.4.1.37244.1.1=DEDEDEDE00010001", dn);
+            assertEquals("Not the expected EJBCA ordered DN in issued cert", "NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,NOCCAT=ABCD0002,NOCCAT=ABCE0018,NOCCAT=ABCF0002", CertTools.getSubjectDN(cert));
+            assertEquals("Not the expected Issuer DN in issued cert", "ICACID=CACACACA00000003", CertTools.getIssuerDN(cert));
+
+            // Change to X509 DN order
+            certprof.setUseLdapDnOrder(false);
+            certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, certprof);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
+            assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+            dn = cert.getSubjectDN().getName();
+            // This is the reverse order than what is displayed by openssl
+            assertEquals("Not the expected DN in issued cert", "OID.1.3.6.1.4.1.37244.1.1=DEDEDEDE00010001, OID.1.3.6.1.4.1.37244.1.5=FAB000000000001D, OID.1.3.6.1.4.1.37244.1.6=ABCD0002, OID.1.3.6.1.4.1.37244.1.6=ABCE0018, OID.1.3.6.1.4.1.37244.1.6=ABCF0002", dn);
+            assertEquals("Not the expected EJBCA ordered DN in issued cert", "NODEID=DEDEDEDE00010001,FABRICID=FAB000000000001D,NOCCAT=ABCD0002,NOCCAT=ABCE0018,NOCCAT=ABCF0002", CertTools.getSubjectDN(cert));
+            assertEquals("Not the expected Issuer DN in issued cert", "ICACID=CACACACA00000003", CertTools.getIssuerDN(cert));
+        } finally {
+            // Clean up
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, profileName);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, profileName);
+            endEntityManagementSession.deleteUser(internalAdmin, endEntityName);
+            internalCertStoreSession.removeCertificatesByUsername(endEntityName);
+            removeTestCA(caRcacName);
+            removeTestCA(caIcacName);
+        }
+        log.trace("<testMatterNoC()");
+    }
+
+    @Test
     public void testUniqueIdentifierAndCertificationID() throws Exception {
         log.trace(">testUniqueIdentifierAndCertificationID()");
         final String profileName = "TESTUniqueIdentifierAndCertifictionID";
@@ -413,7 +496,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         int eeprofile = endEntityProfileSession.getEndEntityProfileId(profileName);
         createEndEntity(endEntityName, eeprofile, cprofile, rsacaid);
         try {
-    
+
             EndEntityInformation user = new EndEntityInformation(endEntityName, "C=SE,O=PrimeKey,CN=Some CN,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023", rsacaid, null, null,
                     new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_BROWSERGEN, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
@@ -421,6 +504,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             log.debug("created user: " + endEntityName + ", foo123, C=SE,O=PrimeKey,CN=Some CN,uniqueIdentifier=N62892,CertificationID=BSI-K-TR-1234-2023");
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             String dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl, the fields are not known by JDK so OIDs displayed
             assertEquals("Not the expected DN in issued cert", "C=SE, O=PrimeKey, CN=Some CN, OID.2.5.4.45=N62892, OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233"
@@ -437,7 +521,7 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             assertTrue("Value of uniqueIdenfier is not type UTF8String: " + value.getValue().toASN1Primitive().getClass().getName(), (value.getValue().toASN1Primitive() instanceof ASN1UTF8String));
             ASN1UTF8String utf8 = ASN1UTF8String.getInstance(value.getValue());
             assertEquals("UniqueIdentifier value is not the expected", "N62892", utf8.toString());
-            
+
             rdns = x500Name.getRDNs(new ASN1ObjectIdentifier("0.4.0.127.0.7.3.10.1.2")); // CertificationID
             assertEquals(1, rdns.length);
             value = rdns[0].getFirst();
@@ -450,21 +534,22 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
             assertTrue("Value of CertificationID.certificationID is not type ASN1PrintableString: " + sec.getObjectAt(1).toASN1Primitive().getClass().getName(), (sec.getObjectAt(1).toASN1Primitive() instanceof ASN1PrintableString));
             ASN1PrintableString certifationID = ASN1PrintableString.getInstance(sec.getObjectAt(1));
             assertEquals("CertificationID.certificationID is not the expected", "BSI-K-TR-1234-2023", certifationID.getString());
-            
+
             // Change to X509 DN order
             certprof.setUseLdapDnOrder(false);
             certificateProfileSession.changeCertificateProfile(internalAdmin, profileName, certprof);
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
             Version javaVersion = Runtime.version();
             if (javaVersion.feature() > 11) {
                 // Java 17 switched to lower case?
-                assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492d4b2d54522d313233342d32303233, OID.2.5.4.45=N62892, CN=Some CN, O=PrimeKey, C=SE", dn);                
+                assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492d4b2d54522d313233342d32303233, OID.2.5.4.45=N62892, CN=Some CN, O=PrimeKey, C=SE", dn);
             } else { // Java 11 caps
-                assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233, OID.2.5.4.45=N62892, CN=Some CN, O=PrimeKey, C=SE", dn);                
+                assertEquals("Not the expected DN in issued cert", "OID.0.4.0.127.0.7.3.10.1.2=#301702010113124253492D4B2D54522D313233342D32303233, OID.2.5.4.45=N62892, CN=Some CN, O=PrimeKey, C=SE", dn);
             }
             assertEquals("Not the expected EJBCA ordered DN in issued cert", "CertificationID=BSI-K-TR-1234-2023,UniqueIdentifier=N62892,CN=Some CN,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
         } finally {

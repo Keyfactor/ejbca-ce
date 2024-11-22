@@ -202,11 +202,12 @@
        value="#{subjectDnFieldAndData.fieldValue}" size="40"
        maxlength="255"
        title="Must match format specified in profile. / Technical detail - the regex is #{subjectDnFieldAndData.regex}"
+       validatorMessage="'#{subjectDnFieldAndData.label}' doesn't match format specified in profile"
        readonly="#{!resourceBean.allowedToAddEndEntity}"
        required="#{subjectDnFieldAndData.required}"
        styleClass="#{subjectDnFieldAndData.required ? 'mandatory' : ''}"
        label="#{subjectDnFieldAndData.label}">
-       <f:validateRegex pattern="#{subjectDnFieldAndData.regex}" />
+       <f:validateRegex pattern="(#{subjectDnFieldAndData.regex})?" />
       </h:inputText>
      </h:panelGroup>
      <h:panelGroup
@@ -398,11 +399,12 @@
        rendered="#{subjectAltNameFieldAndData.renderRegex}"
        value="#{subjectAltNameFieldAndData.fieldValue}"
        title="Must match format specified in profile. / Technical detail - the regex is #{subjectAltNameFieldAndData.regex}"
+       validatorMessage="'#{subjectAltNameFieldAndData.label}' doesn't match format specified in profile"
        label="#{subjectAltNameFieldAndData.label}"
        required="#{subjectAltNameFieldAndData.required}"
        styleClass="#{subjectAltNameFieldAndData.required ? 'mandatory' : ''}"
        readonly="#{!resourceBean.allowedToAddEndEntity}">
-       <f:validateRegex pattern="#{subjectAltNameFieldAndData.regex}" />
+       <f:validateRegex pattern="(#{subjectAltNameFieldAndData.regex})?" />
       </h:inputText>
      </h:panelGroup>
 
@@ -680,8 +682,9 @@
       value="#{resourceBean.cabfOrganizationIdentifier}"
       readonly="#{resourceBean.cabfOrganizationIdentifierReadOnly}"
       title="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER_FORMAT}"
-      styleClass="#{resourceBean.cabfOrganizationIdentifierRequired ? 'mandatory' : ''}">
-      <f:validateRegex pattern="[A-Z0-9]{5,5}(\+[A-Z0-9]+)?-.+" />
+      styleClass="#{resourceBean.cabfOrganizationIdentifierRequired ? 'mandatory' : ''}"
+      validatorMessage="#{web.text.EXT_CABF_ORGANIZATION_IDENTIFIER_BADFORMAT}">
+      <f:validateRegex pattern="([A-Z0-9]{5,5}(\+[A-Z0-9]+)?-.+)?" />
      </h:inputText>
     </h:panelGroup>
    </h:panelGrid>

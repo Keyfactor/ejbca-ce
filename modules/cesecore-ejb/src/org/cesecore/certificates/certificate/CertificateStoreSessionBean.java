@@ -162,6 +162,13 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, crlPartitionIndex, 
     	        endEntityProfileId, tag, updateTime, accountBindingId);
     }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public CertificateDataWrapper storeCertificateNewTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, 
+            final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, String accountBindingId) throws AuthorizationDeniedException {
+        return storeCertificate(admin, incert, username, cafp, status, type, certificateProfileId, endEntityProfileId, crlPartitionIndex, tag, updateTime, accountBindingId);
+    }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -372,6 +379,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, authenticationToken.toString(),
                 caId, serialNo, username, details);
         return true;
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public boolean updateCertificateOnlyNewTransaction(AuthenticationToken authenticationToken, Certificate certificate) {
+        return updateCertificateOnly(authenticationToken, certificate);
     }
 
     @Override

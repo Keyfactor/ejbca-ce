@@ -210,7 +210,6 @@ tasks.ear {
                     "<!--@crlstore.war@-->",
                     "<module><web><web-uri>crlstore.war</web-uri><context-root>/ejbca/publicweb/crls</context-root></web></module>"
                 )
-                .replace("<!--@ejbca-ws-ejb.jar@-->", "<module><ejb>ejbca-ws-ejb.jar</ejb></module>")
                 .replace(
                     "<!--@ra-gui.war@-->",
                     "<module><web><web-uri>ra-gui.war</web-uri><context-root>/ejbca/ra</context-root></web></module>"

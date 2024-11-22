@@ -37,7 +37,10 @@
         <delete dir="${dist.dir}" />
     	<delete dir="${reports.base.dir}" />
         <delete dir="${apidoc}" />
-        <delete dir="${tmp}"/>
+	<delete dir="${tmp}"/>
+	<delete>
+          <fileset dir="." includes="**/jacoco.exec"/>
+        </delete>
         <ant antfile="modules/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 	
@@ -56,7 +59,9 @@
 	<target name="cleanReports" description="Clean up this module">
 		<delete dir="${reports.base.dir}/images"/>
 		<delete file="${reports.base.dir}/QaEjbcaTestReport.html" />
-
+                <delete>
+                  <fileset dir="." includes="**/jacoco.exec"/>
+               </delete>
 	</target>
 	
     <!-- =================================================================== -->
@@ -364,12 +369,6 @@
 			replacement-enabled="${doc.war.enabled}"
 			replacement-web-uri="doc.war"
 			replacement-context-root="/ejbca/doc"
-		/>
-		<jar-replacement-in-module
-			replacement-tag="!--@ejbca-ws-ejb.jar@-->"
-			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${ejbcaws.enabled}"
-			replacement-ejb="ejbca-ws-ejb.jar"
 		/>
 		<jar-replacement-in-module
 			replacement-tag="!--@ejbca-systemtest-ejb.jar@-->"
@@ -974,7 +973,8 @@
 				<exclude name=".github/" />
 				<exclude name="OWNERS" />
 				<exclude name="OWNERS_ALIASES" />
-                <exclude name="src/package/" />
+				<exclude name="src/package/" />
+				<exclude name="lib/coverage/**" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />

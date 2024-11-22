@@ -35,6 +35,7 @@ import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
@@ -114,8 +115,10 @@ import org.bouncycastle.asn1.crmf.CertRequest;
 import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
 import org.bouncycastle.asn1.crmf.Controls;
 import org.bouncycastle.asn1.crmf.OptionalValidity;
+import org.bouncycastle.asn1.crmf.POPOPrivKey;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.asn1.crmf.ProofOfPossession;
+import org.bouncycastle.asn1.crmf.SubsequentMessage;
 import org.bouncycastle.asn1.pkcs.CertificationRequest;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
@@ -130,7 +133,10 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.cmp.CMPException;
+import org.bouncycastle.cert.crmf.CertificateRepMessage;
+import org.bouncycastle.cert.crmf.CertificateResponse;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cms.jcajce.JceKEMEnvelopedRecipient;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -251,9 +257,8 @@ public abstract class CmpTestCase extends CaTestCase {
         assertTrue("Certificate profile with name " + name + " already exists. Clear test data first.", this.certProfileSession.getCertificateProfile(name) == null);
         final CertificateProfile result = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         result.setAllowDNOverride(true);
-        // Add NTRU, just to demonstrate that it is possible in testCrmfHttpOkUserWithPQC
         List<String> algos = result.getAvailableKeyAlgorithmsAsList();
-        algos.add(AlgorithmConstants.KEYALGORITHM_DILITHIUM5);
+        algos.add(AlgorithmConstants.KEYALGORITHM_MLDSA87);
         result.setAvailableKeyAlgorithmsAsList(algos);
         int id = -1;
         try {
@@ -479,25 +484,36 @@ public abstract class CmpTestCase extends CaTestCase {
          * 9, 7, 3 })), new byte[] { 7, 7, 7, 4, 5, 6, 7, 7, 7 }));
          */
         ProofOfPossession proofOfPossession = null;
+        int pvno = PKIHeader.CMP_2000; // Default to CMOv2 but if using encrCert POP we have to use CMPv3
         if (raVerifiedPopo) {
             // raVerified POPO (meaning there is no POPO)
             proofOfPossession = new ProofOfPossession();
+            log.info("raVerified POP");
         } else if (keys != null) {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ASN1OutputStream mout = ASN1OutputStream.create(baos, ASN1Encoding.DER);
-            mout.writeObject(certRequest);
-            mout.close();
-            byte[] popoProtectionBytes = baos.toByteArray();
-            try {
-                final String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
-                final Signature signature = Signature.getInstance(sigalg, BouncyCastleProvider.PROVIDER_NAME);
-                signature.initSign(keys.getPrivate());
-                signature.update(popoProtectionBytes);
-                DERBitString bs = new DERBitString(signature.sign());
-                POPOSigningKey popoSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(new ASN1ObjectIdentifier(sigalg)), bs);
-                proofOfPossession = new ProofOfPossession(popoSigningKey);
-            } catch (NoSuchProviderException e) {
-               throw new IllegalStateException("BouncyCastle provider not found.", e);
+            if (keys.getPublic().getAlgorithm().startsWith("ML-KEM")) {
+                log.info("encrCert POP (public key is ML-KEM)");
+                // see JcaCertificateRequestMessageBuilder.setProofOfPossessionSubsequentMessage(SubsequentMessage.encrCert)
+                // setting the POP to request the CA to return the certificate encrypted, i.e. SubsequentMessage.encrCert
+                proofOfPossession = new ProofOfPossession(ProofOfPossession.TYPE_KEY_ENCIPHERMENT, new POPOPrivKey(SubsequentMessage.encrCert));
+                pvno = PKIHeader.CMP_2021;
+            } else {
+                log.info("Signature POP");
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ASN1OutputStream mout = ASN1OutputStream.create(baos, ASN1Encoding.DER);
+                mout.writeObject(certRequest);
+                mout.close();
+                byte[] popoProtectionBytes = baos.toByteArray();
+                try {
+                    final String sigalg = AlgorithmTools.getSignAlgOidFromDigestAndKey(null, keys.getPrivate().getAlgorithm()).getId();
+                    final Signature signature = Signature.getInstance(sigalg, BouncyCastleProvider.PROVIDER_NAME);
+                    signature.initSign(keys.getPrivate());
+                    signature.update(popoProtectionBytes);
+                    DERBitString bs = new DERBitString(signature.sign());
+                    POPOSigningKey popoSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(new ASN1ObjectIdentifier(sigalg)), bs);
+                    proofOfPossession = new ProofOfPossession(popoSigningKey);
+                } catch (NoSuchProviderException e) {
+                    throw new IllegalStateException("BouncyCastle provider not found.", e);
+                }
             }
         }
 
@@ -507,8 +523,8 @@ public abstract class CmpTestCase extends CaTestCase {
         CertReqMsg certReqMsg = new CertReqMsg(certRequest, proofOfPossession, avs);
         CertReqMessages certReqMessages = new CertReqMessages(certReqMsg);
 
-        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(senderDN), new GeneralName(new X500Name(
-                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
+        PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(pvno, new GeneralName(senderDN), new GeneralName(new X500Name(
+                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectX500Principal().getName())));
 
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
@@ -574,7 +590,7 @@ public abstract class CmpTestCase extends CaTestCase {
         }
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(senderDN), new GeneralName(new X500Name(
-                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
+                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectX500Principal().getName())));
 
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
@@ -636,7 +652,7 @@ public abstract class CmpTestCase extends CaTestCase {
         final GeneralName recipient;
         // Recipient can be empty according to RFC4210 section D.1
         if (cacert != null) {
-            recipient = new GeneralName(new X500Name(((X509Certificate) cacert).getSubjectDN().getName()));
+            recipient = new GeneralName(new X500Name(((X509Certificate) cacert).getSubjectX500Principal().getName()));
         } else {
             RDN[] emptyRDN = new RDN[0];
             recipient = new GeneralName(new X500Name(emptyRDN));
@@ -668,7 +684,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected static PKIMessage genCertConfirm(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId, ASN1ObjectIdentifier protectionAlg) {
         String issuerDN = "CN=foobarNoCA";
         if(cacert != null) {
-            issuerDN = ((X509Certificate) cacert).getSubjectDN().getName();
+            issuerDN = ((X509Certificate) cacert).getSubjectX500Principal().getName();
         }
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(userDN), new GeneralName(new X500Name(issuerDN)));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
@@ -931,12 +947,38 @@ public abstract class CmpTestCase extends CaTestCase {
     public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce, byte[] transId,
             boolean signed, String pbeSecret, String expectedSignAlg, boolean pbmac1) throws IOException, InvalidKeyException,
             NoSuchAlgorithmException, InvalidCmpProtectionException, CMPException {
-        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId, signed, pbeSecret, expectedSignAlg,
-                false, null, pbmac1);
+        return checkCmpResponseGeneral(retMsg, issuerDN, userDN, cacert, senderNonce, transId,
+                signed, pbeSecret, expectedSignAlg, false, null, pbmac1);
     }
 
+    /** Method to verify CMP messages with different options. Typically CMP requests and response can be protected with either signature
+     * or HMAC (password based).
+     *
+     * @param retMsg the CMP response message to run checks on check
+     * @param issuerDN the expected sender (issuerDN) of the response
+     * @param userDN the expected recipient (subjectDN) of the response, or null if it should not be checked
+     * @param cacert CA certificate that signed the response, if signed, used to verify the signature
+     * @param senderNonce the nonce we used when sending the request, the recipientNonce in the response should match
+     * @param transId the transactionID we used when sending the request, ID in the response should match
+     * @param signed true if we expect a s signed response, false if not (PBMAC)
+     * @param pbeSecret secret used to calculate the MAC, if MAC pased protection is used, use null if signatures are used
+     * @param expectedSignAlg if the message is signed, the expected signature algorithm
+     * @param implicitConfirm true if the request had implicitConfirm, then the response must have this as well
+     * @param requiredKeyId of pbe protection is used, we may require a specific keyID to be used, can be null in which case this is not checked
+     * @param pbmac1 if the HMAC authentication algorithm is PBMAC1 (newer than original in RFC4210, see ECA-10813)
+     * @return the parsed PKIMessage from retMsg bytes
+     *
+     * @throws IOException
+     * @throws InvalidKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidCmpProtectionException
+     * @throws CMPException
+     */
     public static PKIMessage checkCmpResponseGeneral(byte[] retMsg, String issuerDN, X500Name userDN, Certificate cacert, byte[] senderNonce,
-            byte[] transId, boolean signed, String pbeSecret, String expectedSignAlg, boolean implicitConfirm, String requiredKeyId, boolean pbmac1)
+            byte[] transId,
+            boolean signed,
+            String pbeSecret, String expectedSignAlg,
+            boolean implicitConfirm, String requiredKeyId, boolean pbmac1)
             throws IOException, InvalidKeyException, NoSuchAlgorithmException, InvalidCmpProtectionException, CMPException {
         assertNotNull("No response from server.", retMsg);
         assertTrue("Response was of 0 length.", retMsg.length > 0);
@@ -951,7 +993,7 @@ public abstract class CmpTestCase extends CaTestCase {
         PKIHeader header = respObject.getHeader();
 
         // Check that the message is signed with the correct digest alg
-        if(StringUtils.isEmpty(expectedSignAlg)) {
+        if (StringUtils.isEmpty(expectedSignAlg)) {
             expectedSignAlg = PKCSObjectIdentifiers.sha1WithRSAEncryption.getId();
         }
         if (signed) {
@@ -981,13 +1023,13 @@ public abstract class CmpTestCase extends CaTestCase {
             final AlgorithmIdentifier algId = header.getProtectionAlg();
             assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: " +
                     header.getFreeText(), algId);
-            assertEquals("Protection algorithm id: " + algId.getAlgorithm().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId
+            assertEquals("PBE protection algorithm id: " + algId.getAlgorithm().getId(), CMPObjectIdentifiers.passwordBasedMac.getId(), algId
                     .getAlgorithm().getId());
         } else if (pbe && pbmac1) {
             final AlgorithmIdentifier algId = header.getProtectionAlg();
             assertNotNull("Protection algorithm was null when expecting a pbe protected response, this was probably an unprotected error message: " +
                     header.getFreeText(), algId);
-            assertEquals("Protection algorithm id: " + algId.getAlgorithm().getId(), PKCSObjectIdentifiers.id_PBMAC1.getId(), algId
+            assertEquals("PBMAC protection algorithm id: " + algId.getAlgorithm().getId(), PKCSObjectIdentifiers.id_PBMAC1.getId(), algId
                     .getAlgorithm().getId());
         }
 
@@ -997,6 +1039,10 @@ public abstract class CmpTestCase extends CaTestCase {
         X500Name expissuer = new X500Name(issuerDN);
         X500Name actissuer = new X500Name(header.getSender().getName().toString());
         assertEquals("The sender in the response is not the expected", expissuer, actissuer);
+        X500Name actrecipient = new X500Name(header.getRecipient().getName().toString());
+        if (userDN != null) {
+            assertEquals("The recipient in the response is not the expected", userDN, actrecipient);
+        }
         if (signed) {
             // Verify the signature
             byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
@@ -1220,10 +1266,25 @@ public abstract class CmpTestCase extends CaTestCase {
     }
 
     protected X509Certificate checkCmpCertRepMessage(CmpConfiguration configuration, String alias, X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId) throws Exception {
-        return checkCmpCertRepMessage(configuration, alias, userDN, cacert, pkiMessageBytes, requestId, ResponseStatus.SUCCESS.getValue());
+        return checkCmpCertRepMessage(configuration, alias, userDN, cacert, pkiMessageBytes, requestId, ResponseStatus.SUCCESS.getValue(), null);
     }
 
-    protected X509Certificate checkCmpCertRepMessage(CmpConfiguration configuration, String alias, X500Name userDN, X509Certificate cacert, byte[] pkiMessageBytes, int requestId, int responseStatus) throws Exception {
+    /** Extracts a response certificate from a CMP certificate response message,
+    *
+    * @param configuration the CMP configuration used
+    * @param alias the CMP alias used, from the CMP configuration
+    * @param userDN the expected subjectDN in the issued certificate
+    * @param cacert the issuerDN expected in the issued certificate and in caPubs if configuration.getResponseCaPubsIssuingCA(alias) is true
+    * @param pkiMessageBytes the CMP response message itself
+    * @param requestId the requestID from the request message, must match the requestID in the response message
+    * @param responseStatus the expected response status, currently ResponseStatus.SUCCESS.getValue() or ResponseStatus.FAILURE.getValue() can be used
+    * @param encrCertDecryptionKey the private key to use to decrypt the certificate if encrCert subsequentMessage (explicit) POP is used (RFC4211 section 4.2)
+    *        for KEM keys, or null if encrCert is not used
+    * @return the certificate issued that we want to extract, is responseStatus if ResponseStatus.SUCCESS, or null of responseStatus is ResponseStatus.FAILURE
+    * @throws Exception
+    */
+    protected X509Certificate checkCmpCertRepMessage(CmpConfiguration configuration, String alias, X500Name userDN, X509Certificate cacert,
+            byte[] pkiMessageBytes, int requestId, int responseStatus, PrivateKey encrCertDecryptionKey) throws Exception {
         // Parse response message
         final PKIMessage pkiMessage = PKIMessage.getInstance(pkiMessageBytes);
         assertNotNull(pkiMessage);
@@ -1232,36 +1293,47 @@ public abstract class CmpTestCase extends CaTestCase {
 //        final int tag = pkiBody.getType();
 //        assertEquals(PKIBody.TYPE_INIT_REP, tag);
         // Verify the response
-        assertTrue("pkiBody.getContent() is an instance of \""+pkiBody.getContent().getClass().getName()+"\". It is expected to be an instance of \""+CertRepMessage.class.getName()+"\". ", pkiBody.getContent() instanceof CertRepMessage);
-        final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
-        assertNotNull(certRepMessage);
-        assertTrue("Too few elements. At least one is expected.", certRepMessage.getResponse().length > 0);
-        final CertResponse certResponse = certRepMessage.getResponse()[0];
-        assertNotNull(certResponse);
-        assertEquals(certResponse.getCertReqId().getValue().intValue(), requestId);
-        // Verify response status
-        final PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
-        assertNotNull(pkiStatusInfo);
-        assertEquals("Expected PKI response status " + responseStatus, responseStatus, pkiStatusInfo.getStatus().intValue());
-        if (ResponseStatus.FAILURE.getValue() != responseStatus) {
-            // Verify response certificate
-            final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
-            assertNotNull(certifiedKeyPair);
-            final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
-            assertNotNull(certOrEncCert);
-            final CMPCertificate cmpCertificate = certOrEncCert.getCertificate();
-            assertNotNull(cmpCertificate);
-            final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
-            checkDnIncludingAttributeOrder(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
-            assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
-            // Verify the issuer of cert
-            if (configuration.getResponseCaPubsIssuingCA(alias)) {
-                final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
-                final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
-                assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
-                assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
-                assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
-                return leafCertificate;
+        if (pkiBody.getContent() instanceof CertRepMessage) {
+            final CertRepMessage certRepMessage = (CertRepMessage) pkiBody.getContent();
+            assertNotNull(certRepMessage);
+            final CertResponse certResponse = certRepMessage.getResponse()[0];
+            assertNotNull(certResponse);
+            assertEquals(certResponse.getCertReqId().getValue().intValue(), requestId);
+            // Verify response status
+            final PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
+            assertNotNull(pkiStatusInfo);
+            assertEquals("Expected PKI response status " + responseStatus, responseStatus, pkiStatusInfo.getStatus().intValue());
+            if (ResponseStatus.FAILURE.getValue() != responseStatus) {
+                // Verify response certificate
+                final CertifiedKeyPair certifiedKeyPair = certResponse.getCertifiedKeyPair();
+                assertNotNull(certifiedKeyPair);
+                final CertOrEncCert certOrEncCert = certifiedKeyPair.getCertOrEncCert();
+                assertNotNull(certOrEncCert);
+                final CMPCertificate cmpCertificate;
+                if (encrCertDecryptionKey != null) {
+                    // this is the preferred way of recovering an encrypted certificate, note the usage of slightly different classes for messages
+                    // See BC "PQC Almanac.pdf" for sample code from the BC team
+                    final CertificateRepMessage certificateRepMessage = CertificateRepMessage.fromPKIBody(pkiBody);
+                    final CertificateResponse certificateResp = certificateRepMessage.getResponses()[0];
+                    cmpCertificate = certificateResp.getCertificate(new JceKEMEnvelopedRecipient(encrCertDecryptionKey));
+                } else {
+                    cmpCertificate = certOrEncCert.getCertificate();
+                }
+                assertNotNull(cmpCertificate);
+                final X509Certificate leafCertificate = CertTools.getCertfromByteArray(cmpCertificate.getEncoded(), X509Certificate.class);
+                checkDnIncludingAttributeOrder(userDN, new JcaX509CertificateHolder(leafCertificate).getSubject());
+                assertArrayEquals(leafCertificate.getIssuerX500Principal().getEncoded(), cacert.getSubjectX500Principal().getEncoded());
+                // Verify the issuer of cert
+                if (configuration.getResponseCaPubsIssuingCA(alias)) {
+                    final CMPCertificate respCmpCaCert = certRepMessage.getCaPubs()[0];
+                    final X509Certificate respCaCert = CertTools.getCertfromByteArray(respCmpCaCert.getEncoded(), X509Certificate.class);
+                    assertEquals(CertTools.getFingerprintAsString(cacert), CertTools.getFingerprintAsString(respCaCert));
+                    assertTrue(CertTools.verify(leafCertificate, Arrays.asList(cacert)));
+                    assertTrue(CertTools.verify(leafCertificate, Arrays.asList(respCaCert)));
+                    return leafCertificate;
+                } else {
+                    return null;
+                }
             } else {
                 return null;
             }
@@ -1319,7 +1391,7 @@ public abstract class CmpTestCase extends CaTestCase {
         final PKIHeader pkiHeader = pkiMessage.getHeader();
         assertEquals(4, pkiHeader.getSender().getTagNo());
         final X500Name senderDN = new X500Name(pkiHeader.getSender().getName().toString());
-        final X500Name expectedDN = new X500Name(((X509Certificate) cacert).getSubjectDN().getName().toString());
+        final X500Name expectedDN = new X500Name(((X509Certificate) cacert).getSubjectX500Principal().getName().toString());
         assertEquals(expectedDN, senderDN);
         final X500Name recipientDN = new X500Name(pkiHeader.getRecipient().getName().toString());
         assertEquals(userDN, recipientDN);
