@@ -390,7 +390,7 @@
                         rendered="#{cc.attrs.raEndEntityDetails.validityStartTimeUsed}"
                         styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
                     <h:outputText id="overridenotbefore" value="#{cc.attrs.raEndEntityDetails.validityStartTime}"
-                                  rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityDetails.validityStartTimeUsed and !cc.attrs.raEndEntityDetails.validityStartTimeModifiable}"
+                                  rendered="#{(not cc.attrs.editMode or !cc.attrs.raEndEntityDetails.validityStartTimeModifiable) and cc.attrs.raEndEntityDetails.validityStartTimeUsed}"
                                   styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                     <h:inputText id="certValidityStartTime"
                                  rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.validityStartTimeUsed and cc.attrs.raEndEntityDetails.validityStartTimeModifiable}"
@@ -411,7 +411,7 @@
                         styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd} ra-editEndEntity">
                     <h:outputText id="overridenotafter"
                                   value="#{cc.attrs.raEndEntityDetails.validityEndTime}"
-                                  rendered="#{not cc.attrs.editMode and cc.attrs.raEndEntityDetails.validityEndTimeUsed and !cc.attrs.raEndEntityDetails.validityEndTimeModifiable}"
+                                  rendered="#{(not cc.attrs.editMode or !cc.attrs.raEndEntityDetails.validityEndTimeModifiable) and cc.attrs.raEndEntityDetails.validityEndTimeUsed}"
                                   styleClass="#{cc.attrs.styleValue} #{cc.attrs.raEndEntityDetails.even ? cc.attrs.styleEven : cc.attrs.styleOdd}"/>
                     <h:inputText id="certValidityEndTime"
                                  rendered="#{cc.attrs.editMode and cc.attrs.raEndEntityDetails.validityEndTimeUsed and cc.attrs.raEndEntityDetails.validityEndTimeModifiable}"

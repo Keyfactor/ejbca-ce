@@ -70,8 +70,10 @@
             <context-root>/ejbca/adminweb</context-root>
         </web>
     </module>
+    <module>
+        <ejb>ejbca-ws-ejb.jar</ejb>
+    </module>
        <!--@ejbca-systemtest-ejb.jar@-->
-       <!--@ejbca-ws-ejb.jar@-->
        <!--@doc.war@-->
        <!--@doc_legacy.war@-->
        <!--@ejbca-cmp-tcp.war@-->

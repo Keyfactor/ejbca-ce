@@ -154,6 +154,7 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -1733,7 +1734,8 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             } else if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_BCFKS) {
                 ks = KeyTools.createBcfks(alias, kp.getPrivate(), cert, cachain);
             } else {
-                ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain);
+                // TODO: Allow cipher to be retrieved from CA configuration, see ECA-12501
+                ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain, KeyStoreCipher.PKCS12_3DES_3DES);
             }
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 ks.store(baos, endEntity.getPassword().toCharArray());

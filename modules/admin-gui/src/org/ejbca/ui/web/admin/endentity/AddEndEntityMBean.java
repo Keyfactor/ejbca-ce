@@ -1342,7 +1342,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             String fieldValue = StringUtils.trim(cabfOrganizationIdentifier);
             if (selectedEeProfile.isCabfOrganizationIdentifierRequired() && StringUtils.isEmpty(fieldValue)) {
                 throw new ParameterException(getEjbcaWebBean().getText("EXT_CABF_ORGANIZATION_IDENTIFIER_REQUIRED"));
-            } else if (fieldValue != null && !fieldValue.matches(CabForumOrganizationIdentifier.VALIDATION_REGEX)) {
+            } else if (StringUtils.isNotEmpty(fieldValue) && !fieldValue.matches(CabForumOrganizationIdentifier.VALIDATION_REGEX)) {
                 throw new ParameterException(getEjbcaWebBean().getText("EXT_CABF_ORGANIZATION_IDENTIFIER_BADFORMAT"));
             }
             ei.setCabfOrganizationIdentifier(fieldValue);

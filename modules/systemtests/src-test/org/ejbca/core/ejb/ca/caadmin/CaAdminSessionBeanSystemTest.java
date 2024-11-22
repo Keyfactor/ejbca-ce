@@ -73,6 +73,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -132,18 +133,29 @@ public class CaAdminSessionBeanSystemTest {
         
         String rootCaDn = "CN=myRootCa001";
         KeyPair rootCaKeyPair1 = KeyTools.genKeys("4096", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate rootCert1 = CertTools.genSelfCertForPurpose(rootCaDn, 30 * 365, null, rootCaKeyPair1.getPrivate(),
-                rootCaKeyPair1.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, 0, null, null, 
-                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        X509Certificate rootCert1 = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(rootCaDn)
+                .setIssuerDn(rootCaDn)
+                .setValidityDays(30 * 365)
+                .setIssuerPrivKey(rootCaKeyPair1.getPrivate())
+                .setEntityPubKey(rootCaKeyPair1.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         String rootCert1FingerPrint = CertTools.getFingerprintAsString(rootCert1);
         
         String clientCaSubjectDn = CertTools.getSubjectDN(caInfo.getCertificateChain().get(0));
         PublicKey caPublicKey = caInfo.getCertificateChain().get(0).getPublicKey();
-        X509Certificate subCaCertByRootCa1 = CertTools.genCertForPurpose(clientCaSubjectDn, rootCaDn, 
-                CertTools.getNotBefore(caInfo.getCertificateChain().get(0)),
-                CertTools.getNotAfter(caInfo.getCertificateChain().get(0)), null, 
-                rootCaKeyPair1.getPrivate(), caPublicKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, 0, null, null, 
-                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        X509Certificate subCaCertByRootCa1 = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(clientCaSubjectDn)
+                .setIssuerDn(rootCaDn)
+                .setFirstDate(CertTools.getNotBefore(caInfo.getCertificateChain().get(0)))
+                .setLastDate(CertTools.getNotAfter(caInfo.getCertificateChain().get(0)))
+                .setIssuerPrivKey(rootCaKeyPair1.getPrivate())
+                .setEntityPubKey(caPublicKey)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         String subCaCertFingerPrint = CertTools.getFingerprintAsString(subCaCertByRootCa1);
         
         List<Certificate> crossChain = new ArrayList<>();

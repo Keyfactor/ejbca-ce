@@ -104,6 +104,7 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -1707,8 +1708,17 @@ public class AuthenticationModulesSystemTest extends CmpTestCase {
         final PrivateKey privateKey = this.cryptoTokenManagementProxySession.getPrivateKey(cryptoTokenId,
                 catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         int keyusage = X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
-        X509Certificate ecdsaCaCert = CertTools.genSelfCertForPurpose(ecdsaCADN, 10L, "1.1.1.1", privateKey, publicKey, sigalg, true, keyusage, true);
-        assertNotNull(ecdsaCaCert);
+        X509Certificate ecdsaCaCert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(ecdsaCADN)
+                .setIssuerDn(ecdsaCADN)
+                .setValidityDays(10)
+                .setIssuerPrivKey(privateKey)
+                .setEntityPubKey(publicKey)
+                .setPolicyId("1.1.1.1")
+                .setSignatureAlgorithm(sigalg)
+                .setKeyUsage(keyusage)
+                .setLdapOrder(true)
+                .generateCertificate();                               
         cachain.add(ecdsaCaCert);
         ecdsaCA.setCertificateChain(cachain);
         this.caSession.addCA(ADMIN, ecdsaCA);

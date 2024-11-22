@@ -15,6 +15,8 @@ package org.ejbca.ui.web.admin.viewcertificate;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -97,6 +99,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     private String formattedCertSn;
     private String issuerDnUnescaped;
     private String subjectDnUnescaped;
+    private String urlEncodedIssuerDn;
     private String subjectDnEscapedWithLanguageConsideration;
     private List<String> subjectAltName;
     private String subjectDirAttributes;
@@ -170,6 +173,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
             caName = caBean.getName(caId);
             formattedCertSn = raBean.getFormatedCertSN(certificateData);
             issuerDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getIssuerDNUnEscaped());
+            urlEncodedIssuerDn = URLEncoder.encode(issuerDnUnescaped, StandardCharsets.UTF_8);
             subjectDnUnescaped = certificateData.getUnescapedRdnValue(certificateData.getSubjectDNUnescaped());
             subjectDnEscapedWithLanguageConsideration = certificateData.getUnescapedRdnValue(certificateData.getSubjectDnEscapedWithLanguageConsideration());
             subjectAltName = certificateData.getSubjectAltName() != null ? Stream.of(certificateData.getSubjectAltName().replace("\\,", ",").split(", ")).collect(Collectors.toCollection(ArrayList::new)) : new ArrayList<>();
@@ -338,16 +342,16 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
 
     private String composePublicKeyValue() {
         String publicKeyValue = certificateData.getPublicKeyAlgorithm() + " (" + certificateData.getKeySpec(ejbcaBean.getText("BITS")) + ")";
-        if (certificateData.getPublicKeyModulus() != null) {
-            publicKeyValue += ": " + certificateData.getPublicKeyModulus();  
+        if (certificateData.getPublicKeyHex(true) != null) {
+            publicKeyValue += ": " + certificateData.getPublicKeyHex(true);
         }
         return publicKeyValue;
     }
     
     private String composeAlternativeSigningKeyValue() {
         String alternativePublicKey = certificateData.getPublicAlternativeKeyAlgorithm() + " (" + certificateData.getAlternateKeySpec(ejbcaBean.getText("BITS")) + ")";
-        if (certificateData.getPublicAlternativeKeyModulus() != null) {
-            alternativePublicKey += ": " + certificateData.getPublicAlternativeKeyModulus();  
+        if (certificateData.getPublicAlternativeKeyHex(true) != null) {
+            alternativePublicKey += ": " + certificateData.getPublicAlternativeKeyHex(true);
         }
         return alternativePublicKey;
     }
@@ -467,6 +471,10 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
     
     public String getIssuerDnUnescaped() {
         return issuerDnUnescaped;
+    }
+    
+    public String getUrlEncodedIssuerDn() {
+        return urlEncodedIssuerDn;
     }
     
     public String getSubjectDnUnescaped() {

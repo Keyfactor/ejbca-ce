@@ -134,7 +134,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                 return CommandResult.FUNCTIONAL_FAILURE;
             }
             final X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
-            final String issuer = DnComponents.stringToBCDNString(cacert.getSubjectDN().toString());
+            final String issuer = DnComponents.stringToBCDNString(cacert.getSubjectX500Principal().toString());
             log.info("CA: " + issuer);
             // Read the supplied CRL and verify that it is issued by the specified CA
             final X509CRL x509crl = (X509CRL) CertTools.getCertificateFactory().generateCRL(new FileInputStream(crl_file));

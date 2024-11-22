@@ -200,8 +200,8 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     }
                     oldCert = (X509Certificate) eecmodule.getExtraCert();
                     
-                    subjectDN = oldCert.getSubjectDN().toString(); 
-                    issuerDN = oldCert.getIssuerDN().toString();
+                    subjectDN = oldCert.getSubjectX500Principal().toString(); 
+                    issuerDN = oldCert.getIssuerX500Principal().toString();
                 }
 
                 if(subjectDN == null) {

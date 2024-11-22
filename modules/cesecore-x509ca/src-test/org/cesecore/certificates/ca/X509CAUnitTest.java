@@ -12,13 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -52,6 +45,17 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
+
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -96,6 +100,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
 import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.asn1.x9.X962Parameters;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
@@ -143,16 +148,12 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.junit.Test;
 
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /** JUnit test for X.509 CA
  *
@@ -383,13 +384,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         reason = CRLReason.getInstance(obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
     }
-    
+
     @Test
     public void testFinalCRLDate() throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, null, null);
         Collection<RevokedCertInfo> revcerts = new ArrayList<>();
-        
+
         // Generate a CRL with default CRL period, should now not create a CRL with max date value
         X509CRLHolder crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
         assertNotNull(crl);
@@ -400,9 +401,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         cal.set(9999, 11, 31, 23, 59, 59);
         cal.set(Calendar.MILLISECOND, 0); // round to seconds
         assertTrue("nextUpdate of CRL should not be maxvalue from RFC5280, but it was " + xcrl.getNextUpdate(), xcrl.getNextUpdate().before(cal.getTime()));
-        
+
         // Generate a CRL with 9999y as CRL period, should now create a CRL with max date value
-        // 365 days per year, 24 hours per day, 3600 seconds per hour, 1000ms per second 
+        // 365 days per year, 24 hours per day, 3600 seconds per hour, 1000ms per second
         long l = 9999L*365L*24L*3600L*1000L;
         x509ca.setCRLPeriod(l);
         crl = x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
@@ -597,23 +598,23 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             return true;
         }
     }
-        
+
     /** Tests that pre-sign and CT pre-certificate validation works, that the validator is called on a pre-sign certificate (with the hard coded dummy keys)
      * and not signed with the CAs real keys. If validation fails, nothing more should be signed, neither CT pre-cert or a real cert
-     * Also tests the order that validations are performed by X509CA 
+     * Also tests the order that validations are performed by X509CA
      * @throws Exception on fatal error
      */
     @Test
     public void testPreCertValidation() throws Exception {
         // Test with CAs using different signature algorithms:
         // RSA, ECDSA, DSA
-        // The CA code will throw an exception if a key suitable will not be found, so pre certificate validation 
+        // The CA code will throw an exception if a key suitable will not be found, so pre certificate validation
 
         // Create a set of user keypairs for different algs
         KeyPair userKeyPairRSA = genTestKeyPair("SHA256WithRSA");
         KeyPair userKeyPairECDSA = genTestKeyPair("SHA256WithECDSA");
         KeyPair userKeyPairEd25519 = genTestKeyPair(AlgorithmConstants.SIGALG_ED25519);
-        KeyPair userKeyPairDilithium3 = genTestKeyPair(AlgorithmConstants.SIGALG_DILITHIUM3);
+        KeyPair userKeyPairMLDSA65 = genTestKeyPair(AlgorithmConstants.SIGALG_MLDSA65);
         KeyPair userKeyPairFalcon512 = genTestKeyPair(AlgorithmConstants.SIGALG_FALCON512);
 
         // Create a CA using SHA256WithRSA as sigAlg
@@ -623,7 +624,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
 
@@ -634,7 +635,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
 
@@ -645,7 +646,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
         // Create a CA using Ed25519 as sigAlg
@@ -655,17 +656,17 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
-        // Create a CA using Dilithium3 as sigAlg
+        // Create a CA using ML-DSA-65 as sigAlg
         {
             final CryptoToken cryptoToken = getNewCryptoToken();
-            final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_DILITHIUM3, null, null);
+            final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_MLDSA65, null, null);
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
         // Create a CA using Falcon-512 as sigAlg
@@ -675,11 +676,11 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
-            runValidatorTests(cryptoToken, x509ca, userKeyPairDilithium3);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
         }
     }
-    
+
     private void runValidatorTests(final CryptoToken cryptoToken, final X509CA x509ca, KeyPair userKeyPair)
             throws CryptoTokenOfflineException, CAOfflineException, InvalidAlgorithmException, IllegalValidityException, IllegalNameException,
             OperatorCreationException, CertificateExtensionException, SignatureException, IllegalKeyException, CertificateCreateException {
@@ -690,22 +691,22 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Date notBefore = null, notAfter = null;
 
         CertificateGenerationParams certGenParams = new CertificateGenerationParams();
-        certGenParams.setAuthenticationToken(new AlwaysAllowLocalAuthenticationToken("testPreSignValidation"));        
+        certGenParams.setAuthenticationToken(new AlwaysAllowLocalAuthenticationToken("testPreSignValidation"));
         certGenParams.setCertificateValidationDomainService(new TestValidator() {
             @Override
             public void validateCertificate(AuthenticationToken authenticationToken, IssuancePhase phase, CA ca,
                     EndEntityInformation endEntityInformation, X509Certificate certificate) throws ValidationException {
                 switch (phase) {
                 case DATA_VALIDATION:
-                    throw new ValidationException("DATA_VALIDATION");                    
+                    throw new ValidationException("DATA_VALIDATION");
                 case CERTIFICATE_VALIDATION:
-                    throw new ValidationException("CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("CERTIFICATE_VALIDATION");
                 case PRE_CERTIFICATE_VALIDATION:
-                    throw new ValidationException("PRE_CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("PRE_CERTIFICATE_VALIDATION");
                 case PRESIGN_CERTIFICATE_VALIDATION:
-                    throw new ValidationException("PRESIGN_CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("PRESIGN_CERTIFICATE_VALIDATION");
                 default:
-                    throw new ValidationException("default");                    
+                    throw new ValidationException("default");
                 }
             }
             @Override
@@ -713,7 +714,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 return false;
             }
 
-        });        
+        });
 
         {
             // Since we have willValidateInPhase == false above, nove pre certificate validation will be done and certificate should be issued
@@ -778,8 +779,8 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     throw new ValidationException("default");
                 }
             }
-        });        
-        
+        });
+
         try {
             x509ca.generateCertificate(cryptoToken, user, request, userKeyPair.getPublic(), 0, notBefore, notAfter, cp, extensions, "00000", certGenParams, cceConfig);
             fail("Should throw an exception from the Validator");
@@ -788,20 +789,20 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 ValidationException ve = (ValidationException)e.getCause();
                 assertEquals("PRESIGN_CERTIFICATE_VALIDATION should have been run first", "PRESIGN_CERTIFICATE_VALIDATION", ve.getMessage());
             } else {
-                fail("Exception cause was expected to be a ValidationException but was " + e.getCause().getClass().getName());                
+                fail("Exception cause was expected to be a ValidationException but was " + e.getCause().getClass().getName());
             }
         }
 
-        // Modify to "pass" PRESIGN_CERTIFICATE_VALIDATION, since we don't have CT configured, it will pass validation 
+        // Modify to "pass" PRESIGN_CERTIFICATE_VALIDATION, since we don't have CT configured, it will pass validation
         certGenParams.setCertificateValidationDomainService(new TestValidator() {
             @Override
             public void validateCertificate(AuthenticationToken authenticationToken, IssuancePhase phase, CA ca,
                     EndEntityInformation endEntityInformation, X509Certificate certificate) throws ValidationException {
                 switch (phase) {
                 case DATA_VALIDATION:
-                    throw new ValidationException("DATA_VALIDATION");                    
+                    throw new ValidationException("DATA_VALIDATION");
                 case CERTIFICATE_VALIDATION:
-                    throw new ValidationException("CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("CERTIFICATE_VALIDATION");
                 case PRE_CERTIFICATE_VALIDATION:
                     // check the certificate that it is signed with the CAs key, and has poison extension
                     try {
@@ -816,11 +817,11 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     JcaX509ExtensionUtils extensionUtils = new JcaX509ExtensionUtils(SHA1DigestCalculator.buildSha1Instance());
                     AuthorityKeyIdentifier aki = extensionUtils.createAuthorityKeyIdentifier(ca.getCACertificate().getPublicKey());
                     assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
-                    throw new ValidationException("PRE_CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("PRE_CERTIFICATE_VALIDATION");
                 case PRESIGN_CERTIFICATE_VALIDATION:
-                    break;                    
+                    break;
                 default:
-                    throw new ValidationException("default");                    
+                    throw new ValidationException("default");
                 }
             }
         });
@@ -836,7 +837,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             }
         }
 
-        
+
         // Add CT so that PRE_CERTIFICATE_VALIDATION is run
         // This will only work on Enterprise, since CT is an EE feature
         cp.setUseCertificateTransparencyInCerts(true);
@@ -844,7 +845,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             Certificate issuedcert = x509ca.generateCertificate(cryptoToken, user, request, userKeyPair.getPublic(), 0, notBefore, notAfter, cp, extensions, "00000", certGenParams, cceConfig);
             if (CertificateTransparencyFactory.getInstance() != null) {
                 log.info("EJBCA Enterprise includes CT, PRE_CERTIFICATE_VALIDATION can be done (and fail)");
-                fail("Should throw an exception from the Validator");                
+                fail("Should throw an exception from the Validator");
             } else {
                 log.info("EJBCA Community does not include CT so certificate is issued since no PRE_CERTIFICATE_VALIDATION can be done");
                 assertNotNull("Certificate should have been issued", issuedcert);
@@ -856,21 +857,21 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 ValidationException ve = (ValidationException)e.getCause();
                 assertEquals("PRE_CERTIFICATE_VALIDATION should have been run first", "PRE_CERTIFICATE_VALIDATION", ve.getMessage());
             } else {
-                fail("Exception cause was expected to be a ValidationException but was " + e.getCause().getClass().getName());                
+                fail("Exception cause was expected to be a ValidationException but was " + e.getCause().getClass().getName());
             }
         }
-        
+
         // Make CT pre-certificate, but do not fail validation, so we can issue a real certificate
-        // Modify to "pass" PRE_CERTIFICATE_VALIDATION, since we have CT configured, it will pass validation 
+        // Modify to "pass" PRE_CERTIFICATE_VALIDATION, since we have CT configured, it will pass validation
         certGenParams.setCertificateValidationDomainService(new TestValidator() {
             @Override
             public void validateCertificate(AuthenticationToken authenticationToken, IssuancePhase phase, CA ca,
                     EndEntityInformation endEntityInformation, X509Certificate certificate) throws ValidationException {
                 switch (phase) {
                 case DATA_VALIDATION:
-                    throw new ValidationException("DATA_VALIDATION");                    
+                    throw new ValidationException("DATA_VALIDATION");
                 case CERTIFICATE_VALIDATION:
-                    throw new ValidationException("CERTIFICATE_VALIDATION");                    
+                    throw new ValidationException("CERTIFICATE_VALIDATION");
                 case PRE_CERTIFICATE_VALIDATION:
                     // check the certificate that it is signed with the CAs key, and has poison extension
                     try {
@@ -887,9 +888,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                     assertEquals("authority key identifier should be from the CA key", Base64.toBase64String(aki.getKeyIdentifier()), Base64.toBase64String(certAuthKeyID));
                     break;
                 case PRESIGN_CERTIFICATE_VALIDATION:
-                    break;                    
+                    break;
                 default:
-                    throw new ValidationException("default");                    
+                    throw new ValidationException("default");
                 }
             }
         });
@@ -939,7 +940,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Certificate usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
         assertNotNull(usercert);
 
-        
+
         // Change CA keys, but not CA certificate, should not work to issue a certificate with this CA, when the
         // issued cert can not be verified by the CA certificate
         cryptoToken.generateKeyPair(getTestKeySpec(algName), CAToken.SOFTPRIVATESIGNKEYALIAS);
@@ -948,10 +949,10 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             usercert = x509ca.generateCertificate(cryptoToken, user, keypair.getPublic(), 0, null, "10d", cp, "00000", cceConfig);
             fail("should not work to issue this certificate");
         } catch (CertificateCreateException e) {
-            assertEquals("Error message should be what we expect", 
-                    "Public key in the CA certificate does not match the configured certSignKey, is the CA in renewal process? : certificate does not verify with supplied key", 
+            assertEquals("Error message should be what we expect",
+                    "Public key in the CA certificate does not match the configured certSignKey, is the CA in renewal process? : certificate does not verify with supplied key",
                     e.getMessage());
-        } 
+        }
         try {
             Collection<RevokedCertInfo> revcerts = new ArrayList<>();
             x509ca.generateCRL(cryptoToken, CertificateConstants.NO_CRL_PARTITION, revcerts, 1, null);
@@ -1384,7 +1385,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         X500Name name = X500Name.getInstance(princ.getEncoded());
         // From BC 1.65 we set our CeSecoreNameStyle as default style for X500Name, which makes EV DN components available
         // before 1.65 it would be
-        //assertEquals("Wrong DN name of Test CA", "1.3.6.1.4.1.311.60.2.1.3=DE,1.3.6.1.4.1.311.60.2.1.2=Stockholm,1.3.6.1.4.1.311.60.2.1.1=Solna,CN=foo CA,O=Bar,C=SE", name.toString());       
+        //assertEquals("Wrong DN name of Test CA", "1.3.6.1.4.1.311.60.2.1.3=DE,1.3.6.1.4.1.311.60.2.1.2=Stockholm,1.3.6.1.4.1.311.60.2.1.1=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
         assertEquals("Wrong DN name of Test CA", "JurisdictionCountry=DE,JurisdictionState=Stockholm,JurisdictionLocality=Solna,CN=foo CA,O=Bar,C=SE", name.toString());
 
         // Test generation by calling generateCertificate directly
@@ -1409,15 +1410,15 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         desiredDN = "JurisdictionCountry=NL,JurisdictionState=State,JurisdictionLocality=Åmål,BusinessCategory=Private Organization,SN=1234567890,C=SE,ST=Norrland,L=Åmål,O=MyOrg B.V.,OU=XY,CN=evssltest6.test.lan";
         assertEquals("Wrong DN order of issued certificate", desiredDN, name.toString());
     }
-    
+
 
     /**
-     * Regression test to make sure that a certificate can't be created with notBefore and notAfter both in the past. 
+     * Regression test to make sure that a certificate can't be created with notBefore and notAfter both in the past.
      */
     @Test
     public void testNotBeforeAndNotAfterInPast() throws InvalidAlgorithmParameterException, CertificateParsingException, CryptoTokenOfflineException,
             InvalidAlgorithmException, OperatorCreationException, CAOfflineException, IllegalValidityException, IllegalNameException,
-            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, CertIOException {
         final String caDn = "CN=testNotBeforeAndNotAfterInPastCA";
         final String username = "testNotBeforeAndNotAfterInPast";
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1444,14 +1445,14 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             //NOMPD: All is well
         }
     }
-    
+
     /**
      * Regression test to make sure that back dated revocation is still allowed
      */
     @Test
     public void testAllowBackdatedRevocation() throws InvalidAlgorithmParameterException, CertificateParsingException, CryptoTokenOfflineException,
             InvalidAlgorithmException, OperatorCreationException, CAOfflineException, IllegalValidityException, IllegalNameException,
-            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException {
+            CertificateCreateException, SignatureException, IllegalKeyException, CertificateExtensionException, CertIOException {
         final String caDn = "CN=testNotBeforeAndNotAfterInPastCA";
         final String username = "testNotBeforeAndNotAfterInPast";
         final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1477,7 +1478,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             fail("Back dated revoked certificate should have been created.");
         }
     }
-    
+
     /**
      * Regression test to make sure that back dated link certificates are still allowed
      */
@@ -1499,13 +1500,13 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
                 CertificateGenerationParams.class, AvailableCustomCertificateExtensionsConfiguration.class, boolean.class, boolean.class);
 
         generateCertificate.setAccessible(true);
-        CAToken caToken = testCa.getCAToken();       
+        CAToken caToken = testCa.getCAToken();
         final PublicKey previousCaPublicKey = cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
         final PrivateKey previousCaPrivateKey = cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
         final EndEntityInformation cadata = new EndEntityInformation("nobody", testCa.getSubjectDN(), testCa.getSubjectDN().hashCode(), testCa.getSubjectAltName(), null,
                 0, new EndEntityType(EndEntityTypes.INVALID), 0, testCa.getCertificateProfileId(), null, null, 0, null);
         try {
-            generateCertificate.invoke(testCa, cadata, null, cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)), 
+            generateCertificate.invoke(testCa, cadata, null, cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT)),
                     null, 0, notBefore, notAfter, certificateProfile,
                     null, new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, BouncyCastleProvider.PROVIDER_NAME), null, cceConfig, true, false);
 
@@ -1515,7 +1516,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             } else {
                 throw e.getCause();
             }
-       }      
+       }
     }
 
     /**
@@ -1559,15 +1560,15 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
     /**
      * Testing that the certificate's serial number is generated with the correct length, according to "serial number octet size" that is configured to CA.
      * "serial number octet size" is left to be default 20 bytes here
-     */ 
+     */
     @Test
     public void testCaSerialNumberWithDefaultOctetSize20() throws Exception {
         final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
-        
+
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        
+
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
@@ -1575,12 +1576,12 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Certificate usercert = x509ca.generateCertificate(cryptoToken, user, null, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
         assertNotNull(usercert);
         BigInteger serialNumber = CertTools.getSerialNumber(usercert);
-        
+
         BigInteger lowestBound = new BigInteger("0080000000000000000000000000000000000000", 16);
         BigInteger highestBound = new BigInteger("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
         assertTrue(serialNumber.compareTo(lowestBound) >= 0 && serialNumber.compareTo(highestBound) <= 0);
     }
-    
+
     /**
      * Testing that the certificate's serial number is generated with the correct length, according to "serial number octet size" that is configured to CA.
      * "serial number octet size" is configured to be 4 bytes here
@@ -1590,12 +1591,12 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
-        
+
         // set the octet size to 4 (overwriting the default value 20)
         x509ca.setCaSerialNumberOctetSize(4);
-        
+
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        
+
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
@@ -1603,12 +1604,12 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Certificate usercert = x509ca.generateCertificate(cryptoToken, user, null, keyPair.getPublic(), 0, null, null, cp, null, "00000", cceConfig);
         assertNotNull(usercert);
         BigInteger serialNumber = CertTools.getSerialNumber(usercert);
-        
+
         BigInteger lowestBound = new BigInteger("00800000", 16);
         BigInteger highestBound = new BigInteger("7FFFFFFF", 16);
         assertTrue(serialNumber.compareTo(lowestBound) >= 0 && serialNumber.compareTo(highestBound) <= 0);
     }
-    
+
     /**
      * Testing generating certificate with public key from providedRequestMessage (providedPublicKey and endEntityInformation.extendedInformation.certificateRequest must be null).
      */
@@ -1681,9 +1682,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertTrue("Our own generated CSR with full parameters does not verify POP, it definitely should", csrFullParams.verify(keyPair.getPublic()));
         assertTrue("Our own generated CSR with full parameters (JCA format) does not verify POP, it definitely should", csrFullParams.verify(new JcaPKCS10CertificationRequest(csrFullParams.getCertificationRequest()).getPublicKey()));
         assertEquals("CN=RequestMessageCn", csrFullParams.getRequestDN());
-        
+
         // Verify that the CSRs seem to be generated with the intended encoding
-        // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
+        // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed).
         // You'll never see 0.
         byte[] encoding = csrNamedNonCompressed.getCertificationRequest().getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
         assertEquals("The magic number is not for an uncomressed key", 4, encoding[0]);
@@ -1716,7 +1717,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertTrue("Public key is not encoded as a named curve", ecPub.getParams() instanceof ECNamedCurveSpec);
         X509CertificateHolder holder = new X509CertificateHolder(certNamedNonCompressed.getEncoded());
         byte[] pkBytes = holder.getSubjectPublicKeyInfo().getPublicKeyData().getBytes();
-        // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed). 
+        // the magic numbers for first bytes are 0x00 (infinity) 0x02 (compressed) 0x03 (compressed, negate Y), 0x04 (uncompressed).
         // You'll never see 0.
         assertEquals("The magic number is not for an uncomressed key", 4, pkBytes[0]);
         params = X962Parameters.getInstance(holder.getSubjectPublicKeyInfo().getAlgorithm().getParameters());
@@ -1724,7 +1725,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // 2. With named curve and compressed point
         Certificate certNamedCompressed = x509ca.generateCertificate(cryptoToken, endEntityInformation, csrNamedCompressed, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
-        assertNotNull("Compressed key certificate could not be created", certNamedCompressed);        
+        assertNotNull("Compressed key certificate could not be created", certNamedCompressed);
         certPub = certNamedCompressed.getPublicKey();
         assertEquals("Key algorithm is not as expected", "prime256v1", AlgorithmTools.getKeySpecification(certPub));
         assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(certPub));
@@ -1739,7 +1740,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
 
         // 3. With full curve parameters
         Certificate certFullParams = x509ca.generateCertificate(cryptoToken, endEntityInformation, csrFullParams, /*providedPublicKey=*/null, 0, null, null, cp, null, "00000", cceConfig);
-        assertNotNull("Full parameters key certificate could not be created", certFullParams);        
+        assertNotNull("Full parameters key certificate could not be created", certFullParams);
         certPub = certFullParams.getPublicKey();
         assertEquals("Key algorithm is not as expected", "P-256", AlgorithmTools.getKeySpecification(certPub)); // For full parameters P-256 is returned instead of prime256v1, but it's the same
         assertEquals(AlgorithmConstants.KEYALGORITHM_ECDSA, AlgorithmTools.getKeyAlgorithm(certPub));
@@ -1777,11 +1778,11 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
      * Testing that we fill in AlgorithmIdentifier parameters for RSA keys where this is missing. According to RFC 3279 we need to add DERNull
      * instead of just leaving out the AlgorithmID parameters. The params are not used but must be ASN.1 encoded correctly in order to comply with
      * RFC5280. Some client software has been known to generate CSRs where the parameters are missing (which is not invalid ASN.1 encoding, but violates RFC5280/RFC3279).
-     * 
+     *
      * SubjectPublicKeyInfo ::= SEQUENCE {
      *   algorithm AlgorithmIdentifier,
      *   subjectPublicKey BIT STRING }
-     *   
+     *
      * AlgorithmIdentifier ::= SEQUENCE {
      *   algorithm OBJECT IDENTIFIER,
      *   parameters ANY DEFINED BY algorithm OPTIONAL }
@@ -1791,9 +1792,9 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         final String algName = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
-        
+
         KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        
+
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, null, "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, null);
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // before starting to crap it up, double check that what we have is a compliant publicKey
@@ -1807,7 +1808,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // meddle with the public key to remove algorithmID parameters
         SubjectPublicKeyInfo keyinfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
         AlgorithmIdentifier id = new AlgorithmIdentifier(keyinfo.getAlgorithm().getAlgorithm(), null);
-        SubjectPublicKeyInfo keyinfoFinal = new SubjectPublicKeyInfo(id, keyinfo.parsePublicKey());        
+        SubjectPublicKeyInfo keyinfoFinal = new SubjectPublicKeyInfo(id, keyinfo.parsePublicKey());
         X509EncodedKeySpec xspec = new X509EncodedKeySpec(keyinfoFinal.getEncoded());
         KeyFactory kFact = KeyFactory.getInstance("RSA", "BC");
         PublicKey pubKeyFinal = kFact.generatePublic(xspec);
@@ -1943,8 +1944,8 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             return KeyTools.genKeys("brainpoolp224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
         } else if(algName.equals(AlgorithmConstants.SIGALG_ED25519)) {
             return KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);
-        } else if(algName.equals(AlgorithmConstants.SIGALG_DILITHIUM3)) {
-            return KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_DILITHIUM3, AlgorithmConstants.KEYALGORITHM_DILITHIUM3);
+        } else if(algName.equals(AlgorithmConstants.SIGALG_MLDSA65)) {
+            return KeyTools.genKeys(AlgorithmConstants.KEYALGORITHM_MLDSA65, AlgorithmConstants.KEYALGORITHM_MLDSA65);
         } else if(algName.equals(AlgorithmConstants.SIGALG_FALCON512)) {
             return KeyTools.genKeys(AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.SIGALG_FALCON512);
         } else {
