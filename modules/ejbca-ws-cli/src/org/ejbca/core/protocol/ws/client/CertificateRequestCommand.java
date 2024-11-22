@@ -203,6 +203,9 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 		if(requestype.equals("SPKAC")){
 			return CertificateHelper.CERT_REQ_TYPE_SPKAC;
 		}
+		if(requestype.equals("PUBKEY")){
+			return CertificateHelper.CERT_REQ_TYPE_PUBLICKEY;
+		}
 		usage();
 		System.exit(-1); // NOPMD, it's not a JEE app
 		return 0;
