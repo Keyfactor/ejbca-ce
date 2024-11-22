@@ -13,6 +13,8 @@
 package org.ejbca.core.ejb.audit;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -107,7 +109,9 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
         params.add(EventTypes.ACCESS_CONTROL.toString());
         List<? extends AuditLogEntry> entries = 
                 ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 1, "a.eventType != ?1", "a.timeStamp DESC", params);
-        
+
+        assertNotNull(entries);
+        assertFalse("No audit log entries where received", entries.isEmpty());
         assertEquals("Authtoken was not trimmed where subject is too big.", 
                 entries.get(0).getAuthToken(), "[trimmed] " + upn.substring(0, 235));
         assertEquals("Authtoken is not part of additional details when subject is too big.", 
