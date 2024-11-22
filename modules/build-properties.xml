@@ -144,6 +144,8 @@
     <property name="mod.est-war.path" location="${mod.path}/est" />
     <property name="mod.est.war" location="${mod.dist.path}/est.war" />
     <property name="mod.ejbca-rest-api.path" location="${mod.path}/ejbca-rest-api" />
+    <property name="mod.ejbca-cli-common.path" location="${mod.path}/ejbca-cli-common" />
+    <property name="mod.ejbca-cli-common.lib" location="${mod.dist.path}/ejbca-cli-common.jar" />
     <property name="mod.ejbca-rest-common.path" location="${mod.path}/ejbca-rest-common" />
     <property name="mod.ejbca-rest-common.lib" location="${mod.dist.path}/ejbca-rest-common.jar" />
     <property name="mod.ejbca-rest-certificate.path" location="${mod.path}/ejbca-rest-certificate" />
@@ -566,6 +568,10 @@
         <available file="${mod.ejbca-rest-api.path}/build.xml"/>
     </condition>
 	
+    <condition property="mod.ejbca-cli-common.exists">
+        <available file="${mod.ejbca-cli-common.path}/build.xml"/>
+    </condition>
+
     <condition property="mod.ejbca-rest-common.exists">
         <available file="${mod.ejbca-rest-common.path}/build.xml"/>
     </condition>

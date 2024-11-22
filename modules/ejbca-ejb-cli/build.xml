@@ -128,6 +128,7 @@
     		<path refid="lib.jpa.classpath"/>
     		<path refid="lib.javassist.classpath"/>
        		<path refid="lib.jee-client.classpath"/>
+            <path location="${mod.ejbca-cli-common.lib}"/>
     		<!-- slf4j-log4j.jar is needed just to avoid errors when running the CLI with later versions of JBoss -->
        		<path refid="lib.slf4jlog4j.classpath"/>
        		<path refid="lib.jacknji.classpath"/>
