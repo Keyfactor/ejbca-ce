@@ -55,7 +55,6 @@ import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.oscp.OcspResponseData;
 import org.cesecore.util.ExternalScriptsAllowlist;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ocsp.OcspDataSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -611,66 +610,50 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionLocal {
     @Override
     public List<Object> publishCertificateNonTransactionalInternal(final List<BasePublisher> publishers, final AuthenticationToken admin,
             final CertificateDataWrapper certWrapper, final String password, final String userDN, final ExtendedInformation extendedinformation) {
-        final List<Object> publisherResults = new ArrayList<Object>();
-        final boolean parallel = EjbcaConfiguration.isPublishParallelEnabled();
-        // Are we doing parallel publishing (only meaningful if there is more than one publisher configured)?
-        if (parallel && publishers.size() > 1) {
-            final List<Future<Boolean>> futures = new ArrayList<Future<Boolean>>();
-            BasePublisher publisherFirst = null;
-            for (final BasePublisher publisher : publishers) {
-                if (publisherFirst == null) {
-                    // We will execute the first of the publishers in the main thread...
-                    publisherFirst = publisher;
-                } else {
-                    // ...and the rest of the publishers will be executed in new threads
-                    final Future<Boolean> future = getExecutorService().submit(new Callable<Boolean>() {
-                        @Override
-                        public Boolean call() throws Exception {
-                            if (!publishCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
-                                throw new PublisherException("Return code from publisher is false.");
-                            }
-                            return Boolean.TRUE;
+        final List<Object> publisherResults = new ArrayList<>();
+        final List<Future<Boolean>> futures = new ArrayList<>();
+        BasePublisher publisherFirst = null;
+        for (final BasePublisher publisher : publishers) {
+            if (publisherFirst == null) {
+                // We will execute the first of the publishers in the main thread...
+                publisherFirst = publisher;
+            } else {
+                // ...and the rest of the publishers will be executed in new threads
+                final Future<Boolean> future = getExecutorService().submit(new Callable<>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        if (!publishCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
+                            throw new PublisherException("Return code from publisher is false.");
                         }
-                    });
-                    futures.add(future);
-                }
-            }
-            // Wait at most 300 seconds in total for all the publishers to complete.
-            final long deadline = System.currentTimeMillis() + 300000L;
-            // Execute the first publishing in the calling thread
-            Object publisherResultFirst;
-            try {
-                if (!publishCertificateNonTransactional(publisherFirst, admin, certWrapper, password, userDN, extendedinformation)) {
-                    throw new PublisherException("Return code from publisher is false.");
-                }
-                publisherResultFirst = Boolean.TRUE;
-            } catch (Exception e) {
-                publisherResultFirst = getAsPublisherException(e);
-            }
-            publisherResults.add(publisherResultFirst);
-            // Wait for all the background threads to finish and get the result from each invocation
-            for (final Future<Boolean> future : futures) {
-                Object publisherResult;
-                try {
-                    final long maxTimeToWait = Math.max(1000L, deadline - System.currentTimeMillis());
-                    publisherResult = Boolean.valueOf(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
-                } catch (Exception e) {
-                    publisherResult = getAsPublisherException(e);
-                }
-                publisherResults.add(publisherResult);
-            }
-        } else {
-            // Perform publishing sequentially (old fall back behavior)
-            for (final BasePublisher publisher : publishers) {
-                try {
-                    if (!publishCertificateNonTransactional(publisher, admin, certWrapper, password, userDN, extendedinformation)) {
-                        throw new PublisherException("Return code from publisher is false.");
+                        return Boolean.TRUE;
                     }
-                    publisherResults.add(Boolean.TRUE);
-                } catch (Exception e) {
-                    publisherResults.add(getAsPublisherException(e));
-                }
+                });
+                futures.add(future);
             }
+        }
+        // Wait at most 300 seconds in total for all the publishers to complete.
+        final long deadline = System.currentTimeMillis() + 300000L;
+        // Execute the first publishing in the calling thread
+        Object publisherResultFirst;
+        try {
+            if (!publishCertificateNonTransactional(publisherFirst, admin, certWrapper, password, userDN, extendedinformation)) {
+                throw new PublisherException("Return code from publisher is false.");
+            }
+            publisherResultFirst = Boolean.TRUE;
+        } catch (PublisherException e) {
+            publisherResultFirst = getAsPublisherException(e);
+        }
+        publisherResults.add(publisherResultFirst);
+        // Wait for all the background threads to finish and get the result from each invocation
+        for (final Future<Boolean> future : futures) {
+            Object publisherResult;
+            try {
+                final long maxTimeToWait = Math.max(1000L, deadline - System.currentTimeMillis());
+                publisherResult = Boolean.valueOf(future.get(maxTimeToWait, TimeUnit.MILLISECONDS));
+            } catch (Exception e) {
+                publisherResult = getAsPublisherException(e);
+            }
+            publisherResults.add(publisherResult);
         }
         return publisherResults;
     }

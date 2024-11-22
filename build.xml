@@ -20,7 +20,7 @@
     <!-- this import is used by the modules scheme-->
     <import file="${ejbca.home}/modules/build-properties.xml"/>
 
-	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
+	<import file="bin/jboss.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<property name="reports.base.dir" location="${ejbca.home}/reports/"/>
 	<property name="reports.dir" location="${reports.base.dir}/test"/>		
 	<import file="./test.xml" />
