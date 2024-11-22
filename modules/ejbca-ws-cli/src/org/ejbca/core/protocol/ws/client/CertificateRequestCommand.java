@@ -216,7 +216,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	@Override
     protected void usage() {
 		getPrintStream().println("Command used to generate a users certificate. If the user does not exist it will be created, and if it exists it will be edited. This command uses a single WS call, certificateRequest.");
-        getPrintStream().println("Usage : certreq <username> <subjectdn> <subjectaltname or NULL> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF)> <encoding (DER|PEM)> <outputpath (optional)> \n\n");       
+        getPrintStream().println("Usage : certreq <username> <subjectdn> <subjectaltname or NULL> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF|PUBKEY)> <encoding (DER|PEM)> <outputpath (optional)> \n\n"); 
         getPrintStream().println("outputpath : directory where certificate is written in form outputpath/username+.cer|.pem ");
    }
 
