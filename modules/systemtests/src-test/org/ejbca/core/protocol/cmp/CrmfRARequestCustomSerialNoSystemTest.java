@@ -60,56 +60,46 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
 
     final private static Logger log = Logger.getLogger(CrmfRARequestCustomSerialNoSystemTest.class);
 
-    final private static String PBEPASSWORD = "password";
-    final private String issuerDN;
-    final private int caid;
-    final private X509Certificate cacert;
-    final private CmpConfiguration cmpConfiguration;
-    final private static String cmpAlias = "CmpCustomSerialNoTestAlias";
+    final private static String PBE_PASSWORD = "password";
+    final private static String CMP_ALIAS = "CmpCustomSerialNoTestAlias";
 
-    final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    final private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private String issuerDN;
+    private CAInfo caInfo;
+    private X509Certificate cacert;
+    private CmpConfiguration cmpConfiguration;
+
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
     }
 
-    public CrmfRARequestCustomSerialNoSystemTest() throws Exception {
-        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+
+        this.caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        this.globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
 
         // Try to use ManagementCA if it exists
-        final CAInfo managementca;
-
-        managementca = this.caSession.getCAInfo(ADMIN, "ManagementCA");
-
-        if (managementca == null) {
-            final Collection<Integer> caids;
-
-            caids = this.caSession.getAuthorizedCaIds(ADMIN);
-
-            final Iterator<Integer> iter = caids.iterator();
-            int tmp = 0;
-            while (iter.hasNext()) {
-                tmp = iter.next().intValue();
-            }
-            this.caid = tmp;
+        final CAInfo managementCA = this.caSession.getCAInfo(ADMIN, "ManagementCA");
+        if (managementCA == null) {
+            var list = this.caSession.getAuthorizedCaInfos(ADMIN);
+            assertFalse("No active CA! Must have at least one active CA to run tests!", list.isEmpty());
+            this.caInfo = list.get(list.size() - 1);
         } else {
-            this.caid = managementca.getCAId();
+            this.caInfo = managementCA;
         }
-        if (this.caid == 0) {
-            assertTrue("No active CA! Must have at least one active CA to run tests!", false);
-        }
-        final CAInfo cainfo;
 
-        cainfo = this.caSession.getCAInfo(ADMIN, this.caid);
-
-        Collection<Certificate> certs = cainfo.getCertificateChain();
+        Collection<Certificate> certs = caInfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator<Certificate> certiter = certs.iterator();
-            Certificate cert = certiter.next();
+            Iterator<Certificate> caIter = certs.iterator();
+            Certificate cert = caIter.next();
             String subject = CertTools.getSubjectDN(cert);
-            if (StringUtils.equals(subject, cainfo.getSubjectDN())) {
+            if (StringUtils.equals(subject, caInfo.getSubjectDN())) {
                 // Make sure we have a BC certificate
                 try {
                     this.cacert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
@@ -120,29 +110,29 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
                 this.cacert = null;
             }
         } else {
-            log.error("NO CACERT for caid " + this.caid);
+            log.error("NO CACERT for caid " + this.caInfo.getCAId());
             this.cacert = null;
         }
-        this.issuerDN = this.cacert != null ? this.cacert.getIssuerX500Principal().getName() : "CN=ManagementCA,O=EJBCA Sample,C=SE";
-    }
-    @Override
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
-        
+        this.issuerDN = this.cacert != null &&
+                        this.cacert.getIssuerX500Principal() != null &&
+                        StringUtils.isEmpty(this.cacert.getIssuerX500Principal().getName()) ?
+                this.cacert.getIssuerX500Principal().getName() :
+                "CN=ManagementCA,O=EJBCA Sample,C=SE";
+
         // Configure CMP for this test
-        this.cmpConfiguration.addAlias(cmpAlias);
-        this.cmpConfiguration.setRAMode(cmpAlias, true);
-        this.cmpConfiguration.setAllowRAVerifyPOPO(cmpAlias, true);
-        this.cmpConfiguration.setResponseProtection(cmpAlias, "signature");
-        this.cmpConfiguration.setRAEEProfile(cmpAlias, String.valueOf(eepDnOverrideId));
-        this.cmpConfiguration.setRACertProfile(cmpAlias, CP_DN_OVERRIDE_NAME);
-        this.cmpConfiguration.setRACAName(cmpAlias, "ManagementCA");
-        this.cmpConfiguration.setRANameGenScheme(cmpAlias, "DN");
-        this.cmpConfiguration.setRANameGenParams(cmpAlias, "CN");
-        this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, false);
-        this.cmpConfiguration.setAuthenticationModule(cmpAlias, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
-        this.cmpConfiguration.setAuthenticationParameters(cmpAlias, "-;" + PBEPASSWORD);
+        this.cmpConfiguration = (CmpConfiguration) this.globalConfigurationSession.getCachedConfiguration(CmpConfiguration.CMP_CONFIGURATION_ID);
+        this.cmpConfiguration.addAlias(CMP_ALIAS);
+        this.cmpConfiguration.setRAMode(CMP_ALIAS, true);
+        this.cmpConfiguration.setAllowRAVerifyPOPO(CMP_ALIAS, true);
+        this.cmpConfiguration.setResponseProtection(CMP_ALIAS, "signature");
+        this.cmpConfiguration.setRAEEProfile(CMP_ALIAS, String.valueOf(eepDnOverrideId));
+        this.cmpConfiguration.setRACertProfile(CMP_ALIAS, CP_DN_OVERRIDE_NAME);
+        this.cmpConfiguration.setRACAName(CMP_ALIAS, "ManagementCA");
+        this.cmpConfiguration.setRANameGenScheme(CMP_ALIAS, "DN");
+        this.cmpConfiguration.setRANameGenParams(CMP_ALIAS, "CN");
+        this.cmpConfiguration.setAllowRACustomSerno(CMP_ALIAS, false);
+        this.cmpConfiguration.setAuthenticationModule(CMP_ALIAS, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        this.cmpConfiguration.setAuthenticationParameters(CMP_ALIAS, "-;" + PBE_PASSWORD);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
 
@@ -165,7 +155,7 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
         final int reqId;
         {
             final PKIMessage one = genCertReq(this.issuerDN, userDN, keys, this.cacert, nonce, transid, true, null, null, null, customCertSerno, null, null);
-            final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+            final PKIMessage req = protectPKIMessage(one, false, PBE_PASSWORD, 567);
 
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
@@ -175,11 +165,11 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
             out.writeObject(req);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
-            final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+            final byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, sFailMessage == null, null, PKCSObjectIdentifiers.sha256WithRSAEncryption.getId(), false);
             if (sFailMessage == null) {
-            	ret = checkCmpCertRepMessage(cmpConfiguration, cmpAlias, userDN, this.cacert, resp, reqId);
+            	ret = checkCmpCertRepMessage(cmpConfiguration, CMP_ALIAS, userDN, this.cacert, resp, reqId);
                 // verify if custom cert serial number was used
                 if (customCertSerno != null) {
                 	assertTrue(ret.getSerialNumber().toString(16)+" is not same as expected "+customCertSerno.toString(16), ret.getSerialNumber().equals(customCertSerno));
@@ -193,13 +183,13 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
             final String hash = "foo123";
             final PKIMessage con = genCertConfirm(userDN, this.cacert, nonce, transid, hash, reqId, null);
             assertNotNull(con);
-            PKIMessage confirm = protectPKIMessage(con, false, PBEPASSWORD, 567);
+            PKIMessage confirm = protectPKIMessage(con, false, PBE_PASSWORD, 567);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
             final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(confirm);
             final byte[] ba = bao.toByteArray();
             // Send request and receive response
-            final byte[] resp = sendCmpHttp(ba, 200, cmpAlias);
+            final byte[] resp = sendCmpHttp(ba, 200, CMP_ALIAS);
             checkCmpResponseGeneral(resp, this.issuerDN, userDN, this.cacert, nonce, transid, false, null, PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
             checkCmpPKIConfirmMessage(userDN, this.cacert, resp);
         }
@@ -213,29 +203,30 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
     	final X500Name userDN1 = new X500Name("C=SE,O=PrimeKey,CN=" + userName1);
     	try {
     		// check that several certificates could be created for one user and one key.
-    		long serno = RandomUtils.nextLong();
-    		BigInteger bint = BigInteger.valueOf(serno);
+    		long serialNumber = RandomUtils.nextLong();
+    		BigInteger bigInteger = BigInteger.valueOf(serialNumber);
             // First it should fail because the CMP RA does not even look for, or parse, requested custom certificate serial numbers
             // Actually it does not fail here, but returns good answer
     		X509Certificate cert = crmfHttpUserTest(userDN1, key1, null, null);
-    		assertFalse("SerialNumbers should not be equal when custom serialnumbers are not allowed.", bint.equals(cert.getSerialNumber()));
+            assertNotNull("Failed to create cert", cert);
+    		assertFalse("SerialNumbers should not be equal when custom serial numbers are not allowed.", bigInteger.equals(cert.getSerialNumber()));
     		
     		
             // Second it should fail when the certificate profile does not allow serial number override
             // crmfHttpUserTest checks the returned serno if bint parameter is not null
-    		this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, true);
+    		this.cmpConfiguration.setAllowRACustomSerno(CMP_ALIAS, true);
     		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
-    		crmfHttpUserTest(userDN1, key1, "Used certificate profile ('"+this.cpDnOverrideId+"') is not allowing certificate serial number override.", bint);
+    		crmfHttpUserTest(userDN1, key1, "Used certificate profile ('"+this.cpDnOverrideId+"') is not allowing certificate serial number override.", bigInteger);
     		
     		
     		// Third it should succeed and we should get our custom requested serialnumber
-    		this.cmpConfiguration.setAllowRACustomSerno(cmpAlias, true);
+    		this.cmpConfiguration.setAllowRACustomSerno(CMP_ALIAS, true);
     		this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     		CertificateProfile cp = this.certProfileSession.getCertificateProfile(this.cpDnOverrideId);
     		cp.setAllowCertSerialNumberOverride(true);
     		// Now when the profile allows serial number override it should work
     		this.certProfileSession.changeCertificateProfile(ADMIN, CP_DN_OVERRIDE_NAME, cp);
-    		crmfHttpUserTest(userDN1, key1, null, bint);
+    		crmfHttpUserTest(userDN1, key1, null, bigInteger);
     	} finally {
     		try {
     			this.endEntityManagementSession.deleteUser(ADMIN, userName1);
@@ -247,7 +238,7 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
     	super.tearDown();
-        this.cmpConfiguration.removeAlias(cmpAlias);
+        this.cmpConfiguration.removeAlias(CMP_ALIAS);
         this.globalConfigurationSession.saveConfiguration(ADMIN, this.cmpConfiguration);
     }
     

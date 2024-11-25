@@ -1164,15 +1164,21 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected static String getProperty(String key, String defaultValue) {
         //If being run from command line
+        log.info("*** key = " + key);
+        log.info("*** defaultValue = " + defaultValue);
         String result = System.getProperty(key);
         log.debug("System.getProperty("+key+"): " + result);
         if (result == null) {
             //If being run from Eclipse
             final String testProperties = System.getProperty("sun.java.command");
+            log.info("*** testProperties =" + testProperties);
             int cutFrom = testProperties.indexOf(key + "=");
+            log.info("*** cutFrom =" + cutFrom);
             if (cutFrom >= 0) {
                 int to = testProperties.indexOf(" ", cutFrom + key.length() + 1);
+                log.info("*** to =" + cutFrom);
                 result = testProperties.substring(cutFrom + key.length() + 1, (to >= 0 ? to : testProperties.length())).trim();
+                log.info("*** result =" + cutFrom);
             }
         }
         return StringUtils.defaultIfEmpty(result, defaultValue);
