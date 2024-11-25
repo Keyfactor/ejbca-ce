@@ -362,15 +362,4 @@ public class EjbcaWsFindMethodsSystemTest extends CommonEjbcaWs {
         return "EjbcaWsFindMethodsTest";
     }
 
-    @Test
-    public void showFiles() throws IOException {
-        final String path="/home/gustav-hallen/projects/ejbca/modules/systemtests/p12";
-        File dir = new File(path);
-        System.out.println("showFiles: "+dir.exists());
-        System.out.println("showFiles: count = "+dir.listFiles().length);
-        for (File f : dir.listFiles()) {
-            System.out.println("showFiles: "+f.getCanonicalFile());
-        }
-    }
-
 }
