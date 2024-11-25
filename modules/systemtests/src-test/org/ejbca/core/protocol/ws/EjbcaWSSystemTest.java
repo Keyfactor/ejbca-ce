@@ -3596,8 +3596,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a PEM file by the class path. */
     private String readPemFile(final String filename) throws IOException {
-        final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
-        assertNotNull("Cannot find the file: \""+filename+"\"", stream);
+        final InputStream stream = getClass().getResourceAsStream(filename);
         final StringWriter writer = new StringWriter();
         IOUtils.copy(stream, writer, StandardCharsets.UTF_8);
         IOUtils.closeQuietly(stream);
@@ -3606,8 +3605,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a DER file by the class path. */
     private byte[] readDerFile(final String filename) throws IOException {
-        final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
-        assertNotNull("Cannot find the file: \""+filename+"\"", stream);
+        final InputStream stream = getClass().getResourceAsStream(filename);
         final byte[] data = new byte[stream.available()];
         stream.read(data);
         IOUtils.closeQuietly(stream);
