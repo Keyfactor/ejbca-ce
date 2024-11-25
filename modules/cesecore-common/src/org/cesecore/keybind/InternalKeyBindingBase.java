@@ -15,10 +15,13 @@ package org.cesecore.keybind;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +45,10 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     public static final String PROP_OCSP_EXTENSION = "ocspExtensions";
     public static final String BASECLASS_PREFIX = "BASECLASS_";
     public static final String SUBCLASS_PREFIX = "SUBCLASS_";
+    
+    public static final Set<String> ACCEPTED_SIGNATURE_ALGORITHMS = new TreeSet<>(
+            Arrays.asList("SHA256WithRSA", "SHA256withRSAandMGF1", "SHA384WithRSA", "SHA512WithRSA", "SHA224withECDSA", "SHA256withECDSA",
+                    "SHA384withECDSA", "SHA512withECDSA", "Ed25519", "Ed448", "ML-DSA-44", "ML-DSA-65;ML-DSA-87"));
     
     private int internalKeyBindingId;
     private String name;

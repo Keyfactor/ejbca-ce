@@ -652,10 +652,7 @@
     </condition>
     
     <condition property="status.war.enabled" value="true">
-        <and>
-            <istrue value="${ocsp.enabled}"/>
-            <istrue value="${variant.va.enabled}"/>
-        </and>
+        <istrue value="${variant.va.enabled}"/>
     </condition>
     
     <condition property="swagger-ui.exists">
