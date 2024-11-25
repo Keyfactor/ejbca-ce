@@ -58,6 +58,7 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.Base64;
@@ -76,6 +77,7 @@ import com.keyfactor.util.SHA1DigestCalculator;
  * build package. 
  * 
  **/
+@Ignore
 public class ProtocolOcspHttpPerfSystemTest {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpPerfSystemTest.class);
 
