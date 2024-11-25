@@ -122,7 +122,6 @@
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
 
-	<property name="ocsp.enabled" value="true" />
 	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
 	<property name="crlstore.enabled" value="true" />
     <property name="crlstore.contextroot" value="/ejbca/publicweb/crls" />
