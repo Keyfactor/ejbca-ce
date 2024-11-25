@@ -1167,6 +1167,7 @@ public abstract class CmpTestCase extends CaTestCase {
         log.info("*** key = " + key);
         log.info("*** defaultValue = " + defaultValue);
         String result = System.getProperty(key);
+        log.info("*** result = " + result);
         log.debug("System.getProperty("+key+"): " + result);
         if (result == null) {
             //If being run from Eclipse
