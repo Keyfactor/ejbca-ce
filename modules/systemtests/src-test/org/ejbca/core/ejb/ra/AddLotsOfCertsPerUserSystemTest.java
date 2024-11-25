@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -42,6 +43,8 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -106,6 +109,21 @@ public class AddLotsOfCertsPerUserSystemTest extends CaTestCase {
         return baseUsername + userNo;
     }
 
+    private int getOrCreateEndEntityProfile(String endEntityProfileName, int certificateProfileId) throws EndEntityProfileExistsException, EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        try {
+            return endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+        }
+        catch (EndEntityProfileNotFoundException e) {
+            EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+            endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + certificateProfileId);
+            endEntityProfile.setUse(EndEntityProfile.ENDTIME, 0, true);
+            // endEntityProfile.setValue(EndEntityProfile.ENDTIME, 0,
+            // "0:0:10");
+            endEntityProfileSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
+            return endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+        }
+    }
+
     /**
      * tests creating 10 users, each with 50 active, 50 revoked, 50 expired and
      * 50 expired and "archived"
@@ -162,16 +180,7 @@ public class AddLotsOfCertsPerUserSystemTest extends CaTestCase {
             }
 
             int cid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-            int eid = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
-            if (eid == 0) {
-                EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-                endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cid);
-                endEntityProfile.setUse(EndEntityProfile.ENDTIME, 0, true);
-                // endEntityProfile.setValue(EndEntityProfile.ENDTIME, 0,
-                // "0:0:10");
-                endEntityProfileSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
-                eid = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
-            }
+            int eid = getOrCreateEndEntityProfile(endEntityProfileName, cid);
             userdata.setEndEntityProfileId(eid);
             ExtendedInformation extendedInformation = new ExtendedInformation();
             extendedInformation.setCustomData(EndEntityProfile.ENDTIME, "0:0:10");
