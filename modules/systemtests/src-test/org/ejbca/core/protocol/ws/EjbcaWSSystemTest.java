@@ -57,8 +57,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -3596,45 +3594,8 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         return (X509Certificate) userCerts.iterator().next();
     }
 
-    private void showEnvironmentVariables() {
-        System.out.println();
-        System.out.println("showEnvironmentVariables()");
-        int length = System.getenv()
-                .keySet()
-                .stream()
-                .map(String::length)
-                .reduce(Math::max)
-                .orElse(0);
-        String format = "%-"+length+"s = %s";
-        new TreeMap<>(System.getenv())
-                .entrySet()
-                .stream()
-                .map(entry->String.format(format, entry.getKey(), entry.getValue()))
-                .forEach(System.out::println);
-    }
-
-    private void showProperties() {
-        System.out.println();
-        System.out.println("showProperties()");
-        int length = System.getProperties()
-                .keySet()
-                .stream()
-                .map(Object::toString)
-                .map(String::length)
-                .reduce(Math::max)
-                .orElse(0);
-        String format = "%-"+length+"s = %s";
-        new TreeMap<>(System.getProperties())
-                .entrySet()
-                .stream()
-                .map(entry->String.format(format, ""+entry.getKey(), ""+entry.getValue()))
-                .forEach(System.out::println);
-    }
-
     /** Reads a PEM file by the class path. */
     private String readPemFile(final String filename) throws IOException {
-        showProperties();
-        showEnvironmentVariables();
         final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
         assertNotNull("Cannot find the file: \""+filename+"\"", stream);
         final StringWriter writer = new StringWriter();
@@ -3645,13 +3606,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a DER file by the class path. */
     private byte[] readDerFile(final String filename) throws IOException {
-        var enumeration = getClass().getClassLoader().getResources(".");
-        System.out.println("Resources:");
-        while (enumeration.hasMoreElements()) {
-            System.out.println(enumeration.nextElement());
-        }
-        showProperties();
-        showEnvironmentVariables();
         final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
         assertNotNull("Cannot find the file: \""+filename+"\"", stream);
         final byte[] data = new byte[stream.available()];
