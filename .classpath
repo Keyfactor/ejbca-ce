@@ -119,8 +119,9 @@
 	<classpathentry kind="lib" path="lib/csrfguard-extension-session-4.3.0-jakarta.jar"/>
 	<classpathentry kind="lib" path="lib/csrfguard-jsp-tags-4.3.0-jakarta.jar"/>
 	<classpathentry kind="lib" path="lib/commons-beanutils-1.9.4.jar"/>
-	<classpathentry kind="lib" path="lib/httpclient-4.5.13.jar"/>
-	<classpathentry kind="lib" path="lib/httpmime-4.5.13.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-4.5.14.jar"/>
+	<classpathentry kind="lib" path="lib/httpcore-4.4.16.jar"/>
+	<classpathentry kind="lib" path="lib/httpmime-4.5.14.jar"/>
 	<classpathentry kind="lib" path="lib/json-simple-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/jna-5.12.1.jar"/>
 	<classpathentry kind="lib" path="lib/jacknji11-1.3.1.jar"/>
@@ -145,8 +146,8 @@
 	<classpathentry kind="lib" path="lib/ext/resteasy-jaxrs-lib/jakarta.servlet-api-6.1.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/system-rules-1.19.0.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc-1.6.2.jar"/>
-	<classpathentry kind="lib" path="lib/commons-configuration2-2.10.1.jar"/>
-	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.20.jar"/>
+	<classpathentry kind="lib" path="lib/commons-configuration2-2.11.0.jar"/>
+	<classpathentry kind="lib" path="lib/xstream/xstream-1.4.21.jar"/>
 	<classpathentry kind="lib" path="lib/kerb4j-server-common-0.1.2.jar"/>
 	<classpathentry kind="lib" path="lib/kerb-core-2.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/kerby-asn1-2.0.3.jar"/>
@@ -168,7 +169,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.0.2.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.0.3.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.3.1.jar"/>
@@ -179,7 +180,7 @@
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="lib" path="lib/commons-io-2.16.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.17.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-api-2.0.16.jar"/>
 	<classpathentry kind="lib" path="lib/ext/slf4j-reload4j-2.0.16.jar"/>
@@ -230,10 +231,10 @@
 	<classpathentry kind="lib" path="lib/ext/test/easymock-5.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/test/objenesis-3.3.jar"/>
 	<classpathentry kind="lib" path="lib/commons-text-1.10.0.jar"/>
-	<classpathentry kind="lib" path="lib/commons-codec-1.15.jar"/>
+	<classpathentry kind="lib" path="lib/commons-codec-1.17.1.jar"/>
 	<classpathentry kind="lib" path="lib/nimbus-jose-jwt-9.37.3.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations-1.0-1.jar"/>
-	<classpathentry kind="lib" path="lib/commons-lang3-3.12.0.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.17.0.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload2-jakarta-2.0.0-M1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload2-core-2.0.0-M2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-fileupload-1.5.jar"/>
@@ -254,7 +255,6 @@
 	<classpathentry kind="lib" path="lib/log4j-1.2-api-2.20.0.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-api-2.20.0.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-core-2.20.0.jar"/>
-	<classpathentry kind="lib" path="lib/httpcore-4.4.13.jar"/>
 	<classpathentry kind="lib" path="lib/el-impl-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.jakartaee-api-10.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.servlet.jsp.jstl-api-3.0.0.jar"/>
