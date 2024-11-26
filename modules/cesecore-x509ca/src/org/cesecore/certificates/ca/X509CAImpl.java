@@ -1378,7 +1378,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
 
             mergedDN = combinedDn.toString();
-            subjectDNName = DnComponents.stringToBcX500Name(mergedDN, false);
+            subjectDNName = new X500Name(mergedDN);
 
         } else {
             if (certProfile.getAllowDNOverrideByEndEntityInformation() && ei!=null && ei.getRawSubjectDn()!=null) {
