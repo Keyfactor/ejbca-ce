@@ -15,8 +15,6 @@ package org.ejbca.ui.web.rest.api.resource;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -80,7 +78,6 @@ import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 public class CaRestResource extends BaseRestResource {
 
     private static final Logger log = Logger.getLogger(CaRestResource.class);
-    private static final int MAX_CRL_FILE_SIZE = 1024 * 1024 * 50; // 50MB
     
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApiProxy;
