@@ -13,16 +13,19 @@
 
 package org.ejbca.core.ejb.config;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Properties;
+
+import org.cesecore.config.ConfigurationHolder;
+import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.EjbcaConfigurationHolder;
+import org.ejbca.peerconnector.client.PeerConnectorPool;
 
 import jakarta.ejb.EJBException;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
-
-import org.cesecore.config.ConfigurationHolder;
-import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.EjbcaConfigurationHolder;
 
 /**
  * This bean handles configuration changes for system tests.
@@ -98,5 +101,12 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
     public Properties getAllProperties() {
         assertIsNotInProductionMode();
         return EjbcaConfigurationHolder.getAsProperties();
+    }
+
+    @Override
+    public void setPeerConnectorPoolTimeout(int timeout) {
+        PeerConnectorPool.INSTANCE.setSocketTimeout(timeout);
+
+
     }
 }
