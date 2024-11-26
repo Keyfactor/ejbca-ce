@@ -183,13 +183,17 @@ public class CaAdminSessionBeanSystemTest {
         }
         
         KeyPair randomKeypair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        subCaCertByRootCa1 = CertTools.genCertForPurpose(clientCaSubjectDn, rootCaDn, 
-                CertTools.getNotBefore(caInfo.getCertificateChain().get(0)),
-                CertTools.getNotAfter(caInfo.getCertificateChain().get(0)), null, 
-                rootCaKeyPair1.getPrivate(), randomKeypair.getPublic(), 
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, 0, null, null, 
-                BouncyCastleProvider.PROVIDER_NAME, true, null);
-        
+        subCaCertByRootCa1 = SimpleCertGenerator.forTESTLeafCert()
+                                .setSubjectDn(clientCaSubjectDn)
+                                .setIssuerDn(rootCaDn)
+                                .setFirstDate(CertTools.getNotBefore(caInfo.getCertificateChain().get(0)))
+                                .setLastDate(CertTools.getNotAfter(caInfo.getCertificateChain().get(0)))
+                                .setIssuerPrivKey(rootCaKeyPair1.getPrivate())
+                                .setEntityPubKey(randomKeypair.getPublic())
+                                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                                .setLdapOrder(true)
+                                .generateCertificate();        
         crossChain.clear();
         crossChain.add(subCaCertByRootCa1);
         crossChain.add(rootCert1);
@@ -198,11 +202,17 @@ public class CaAdminSessionBeanSystemTest {
             fail("updated cross chain with wrong CA key");
         } catch (Exception e) { }
         
-        subCaCertByRootCa1 = CertTools.genCertForPurpose("CN=xxxxxxx", rootCaDn, 
-                CertTools.getNotBefore(caInfo.getCertificateChain().get(0)),
-                CertTools.getNotAfter(caInfo.getCertificateChain().get(0)), null, 
-                rootCaKeyPair1.getPrivate(), caPublicKey, AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, 0, null, null, 
-                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        subCaCertByRootCa1 = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=xxxxxxx")
+                .setIssuerDn(rootCaDn)
+                .setFirstDate(CertTools.getNotBefore(caInfo.getCertificateChain().get(0)))
+                .setLastDate(CertTools.getNotAfter(caInfo.getCertificateChain().get(0)))
+                .setIssuerPrivKey(rootCaKeyPair1.getPrivate())
+                .setEntityPubKey(caPublicKey)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .setLdapOrder(true)
+                .generateCertificate();    
         crossChain.clear();
         crossChain.add(subCaCertByRootCa1);
         crossChain.add(rootCert1);
@@ -306,8 +316,16 @@ public class CaAdminSessionBeanSystemTest {
             final KeyPair keypair = KeyTools.genKeys("brainpoolP224r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
             
             final Collection<Certificate> certs = new ArrayList<Certificate>();
-            final Certificate brainpoolCert = CertTools.genSelfCert("CN=" + TEST_BC_CERT_CA, 1, null, keypair.getPrivate(), keypair.getPublic(),
-                    AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA, true);
+            final Certificate brainpoolCert = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn("CN=" + TEST_BC_CERT_CA)
+                    .setIssuerDn("CN=" + TEST_BC_CERT_CA)
+                    .setValidityDays(1)
+                    .setIssuerPrivKey(keypair.getPrivate())
+                    .setEntityPubKey(keypair.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA224_WITH_ECDSA)
+                    .setLdapOrder(true)
+                    .generateCertificate();
+                    
             certs.add(brainpoolCert);
             
             caAdminSession.importCACertificate(alwaysAllowToken, TEST_BC_CERT_CA, EJBTools.wrapCertCollection(certs));
