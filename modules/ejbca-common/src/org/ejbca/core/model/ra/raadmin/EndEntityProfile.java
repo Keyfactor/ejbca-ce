@@ -2134,7 +2134,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             throw new EndEntityProfileValidationException("Unsupported Subject Directory Attribute Field found in:" + subjectDirAttr);
         }
         // Make sure that all required fields exist
-        checkIfAllRequiredFieldsExists(subjectDnFields, subjectAltNames, subjectDirAttrs, username, email);
+        checkIfAllRequiredFieldsExists(subjectDnFields, subjectAltNames, subjectDirAttrs, username, email, allowDnOverrideByCsr);
         // Make sure that there are enough fields to cover all required in profile
         checkIfForIllegalNumberOfFields(subjectDnFields, subjectAltNames, subjectDirAttrs, allowDnOverrideByCsr);
         // Check that all fields pass the validators (e.g. regex), if any
@@ -2437,11 +2437,11 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                                 DnComponents.dnIdToProfileName(dnId) + " with value \"" + subjectsToProcess[j] + "\".");
                     }
                 }
-            }
-            // If not all required fields in profile were found in subject
-            for (int j = 0; j < getNumberOfField(profileID); j++) {
-                if (profileCrossOffList[j] >= REQUIRED_FIELD) {
-                    throw new EndEntityProfileValidationException("Data does not contain required " + DnComponents.dnIdToProfileName(dnId) + " field.");
+                // If not all required fields in profile were found in subject
+                for (int j = 0; j < getNumberOfField(profileID); j++) {
+                    if (profileCrossOffList[j] >= REQUIRED_FIELD) {
+                        throw new EndEntityProfileValidationException("Data does not contain required " + DnComponents.dnIdToProfileName(dnId) + " field.");
+                    }
                 }
             }
         }
@@ -2978,35 +2978,37 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     private void checkIfAllRequiredFieldsExists(final DNFieldExtractor subjectDnFields, final DNFieldExtractor subjectAltNames, final DNFieldExtractor subjectDirAttrs,
-            final String username, final String email) throws EndEntityProfileValidationException {
+            final String username, final String email, final boolean allowDnOverrideByCsr) throws EndEntityProfileValidationException {
     	// Check if Username exists (if not modifiable skip the check)
     	if (isRequired(USERNAME, 0) && isModifyable(USERNAME, 0) && (username == null || username.trim().isEmpty())) {
     		throw new EndEntityProfileValidationException("Username cannot be empty or null.");
     	}
-    	// Check if required Email fields exists.
+    	// Check if required Email fields exist.
     	if (isRequired(EMAIL, 0) && StringUtils.isBlank(email)) {
     		throw new EndEntityProfileValidationException("Email address cannot be empty or null.");
     	}
-    	// Check if all required subjectdn fields exists.
-    	final List<String> dnFields = DnComponents.getDnProfileFields();
-    	final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
-    	for (int i = 0; i < dnFields.size(); i++) {
-    		final String currentDnField = dnFields.get(i);
-    		if (getReverseFieldChecks()) {
-    			final int nof = subjectDnFields.getNumberOfFields(dnFieldExtractorIds.get(i));
-    			final int numRequiredFields = getNumberOfRequiredFields(currentDnField);
-    			if (nof < numRequiredFields) {
-    				throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
-    			}
-    		} else {
-    			final int size = getNumberOfField(currentDnField);
-    			for (int j = 0; j < size; j++) {
-    				if (isRequired(currentDnField, j) && StringUtils.isBlank(subjectDnFields.getField(dnFieldExtractorIds.get(i), j))) {
-    					throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
-    				}
-    			}
-    		}
-    	}
+    	// Check if all required subjectdn fields exist.
+        if (!allowDnOverrideByCsr) {
+            final List<String> dnFields = DnComponents.getDnProfileFields();
+            final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
+            for (int i = 0; i < dnFields.size(); i++) {
+                final String currentDnField = dnFields.get(i);
+                if (getReverseFieldChecks()) {
+                    final int nof = subjectDnFields.getNumberOfFields(dnFieldExtractorIds.get(i));
+                    final int numRequiredFields = getNumberOfRequiredFields(currentDnField);
+                    if (nof < numRequiredFields) {
+                        throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
+                    }
+                } else {
+                    final int size = getNumberOfField(currentDnField);
+                    for (int j = 0; j < size; j++) {
+                        if (isRequired(currentDnField, j) && StringUtils.isBlank(subjectDnFields.getField(dnFieldExtractorIds.get(i), j))) {
+                            throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
+                        }
+                    }
+                }
+            }
+        }
     	
     	if (subjectAltNames != null) {
         	// Check if all required subject alternate name fields exists.

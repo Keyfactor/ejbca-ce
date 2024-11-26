@@ -232,6 +232,25 @@ public class EndEntityProfileUnitTest {
         }
         
     }
+
+    @Test
+    public void testUserFulfillEndEntityProfileWithDnOverrideWithMissingRequiredDnField() throws EndEntityProfileValidationException {
+        CertificateProfile certProfileWithDnOverride = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        // Set DN override as enabled
+        certProfileWithDnOverride.setAllowDNOverride(true);
+        EndEntityProfile profile = new EndEntityProfile();
+        profile.addField(DnComponents.COMMONNAME);
+        profile.setRequired(DnComponents.COMMONNAME, 0, true);
+        profile.setCopy(DnComponents.COMMONNAME, 0, true);
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        // Userdata does not have the required DN field, but DN Override by CSR is enabled so should work anyway
+        EndEntityInformation userdata = new EndEntityInformation("foo", "O=testorg", 123, "", "", new EndEntityType(EndEntityTypes.ENDUSER),
+                123, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+                SecConst.TOKEN_SOFT_PEM, null);
+        userdata.setPassword("foo123");
+        // Should fulfill, because DN Override by CSR is enabled
+        profile.doesUserFulfillEndEntityProfile(userdata, certProfileWithDnOverride, false, null);
+    }
     
     @Test
     public void testUserFulfillEndEntityProfileWithDnOverrideWithExcessDnFields() throws EndEntityProfileValidationException {
