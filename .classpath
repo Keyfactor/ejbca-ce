@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-17">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="src" path="modules/acme/src"/>
 	<classpathentry kind="src" path="modules/admin-gui/resources"/>
 	<classpathentry kind="src" path="conf"/>
@@ -254,6 +259,5 @@
 	<classpathentry kind="lib" path="lib/jee/jakarta.jakartaee-api-10.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.servlet.jsp.jstl-api-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/jakarta.servlet.jsp-api-3.1.1.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
