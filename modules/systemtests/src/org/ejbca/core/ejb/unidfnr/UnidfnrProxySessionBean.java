@@ -35,6 +35,11 @@ public class UnidfnrProxySessionBean implements UnidfnrProxySessionRemote {
     }
 
     @Override
+    public boolean isUnidFnrAvailable() {
+        return unidfnrSession != null;
+    }
+
+    @Override
     public void removeUnidFnrDataIfPresent(final String unid) {
         verifyUnidfnrSession();
         unidfnrSession.removeUnidFnrDataIfPresent(unid);

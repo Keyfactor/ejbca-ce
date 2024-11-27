@@ -62,10 +62,12 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.model.era.TestRaMasterApiProxySessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -99,6 +101,9 @@ public class CertificateStoreSessionSystemTest extends RoleUsingTestCase {
     private TestRaMasterApiProxySessionRemote raMasterApiProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(TestRaMasterApiProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateStoreSessionSystemTest"));
+
+	@ClassRule
+	public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @BeforeClass
     public static void setUpProvider() throws Exception {

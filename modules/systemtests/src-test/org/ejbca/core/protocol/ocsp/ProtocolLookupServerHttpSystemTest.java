@@ -77,14 +77,17 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.unidfnr.UnidfnrProxySessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.protocol.ocsp.extension.unid.FnrFromUnidExtension;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -137,7 +140,6 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
     private static final String TEST_USER_SUBJECTDN_BAD_SERIAL = "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456,CN=UNIDTest";
     private static final String TEST_USER_SUBJECTDN_NO_SERIAL = "C=SE,O=AnaTom,surname=Jansson,CN=UNIDTest";
 
-    
     private String httpReqPath;
     private String resourceOcsp;
 
@@ -151,6 +153,9 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
     private SignSessionRemote signSession;
     private static UnidfnrProxySessionRemote unidfnrProxySessionBean;
 
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @BeforeClass
     public static void beforeClass() {
         TRUSTED_CA_NAME = CaTestUtils.getClientCertCaName(admin); // Defaults to ManagementCA but can be overridden with target.clientcert.ca
@@ -158,13 +163,16 @@ public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
         unidfnrProxySessionBean = EjbRemoteHelper.INSTANCE.getRemoteSession(UnidfnrProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        unidfnrProxySessionBean.removeUnidFnrDataIfPresent(SAMPLE_UNID);
-        unidfnrProxySessionBean.storeUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
+        if (unidfnrProxySessionBean.isUnidFnrAvailable()) {
+            unidfnrProxySessionBean.removeUnidFnrDataIfPresent(SAMPLE_UNID);
+            unidfnrProxySessionBean.storeUnidFnrData(SAMPLE_UNID, SAMPLE_FNR);
+        }
     }
 
     @Override
     @Before
     public void setUp() throws Exception {
+        Assume.assumeTrue("unidfnr is an special module and is not included with EJBCA", unidfnrProxySessionBean.isUnidFnrAvailable());
         super.setUp();
         endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
