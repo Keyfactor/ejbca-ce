@@ -352,7 +352,7 @@ public class CrlCreateSessionSystemTest {
             final X509Certificate rootcacert = SimpleCertGenerator.forTESTCaCert()
                     .setSubjectDn(rootcadn)
                     .setIssuerDn(rootcadn)
-                    .setValidityDays(2650)
+                    .setValidityDays(3650)
                     .setIssuerPrivKey(rootcakp.getPrivate())
                     .setEntityPubKey(rootcakp.getPublic())
                     .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)

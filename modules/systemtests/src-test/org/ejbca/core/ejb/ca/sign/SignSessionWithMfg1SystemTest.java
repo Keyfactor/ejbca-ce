@@ -50,6 +50,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -109,8 +110,14 @@ public class SignSessionWithMfg1SystemTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // user that we know exists...
-        X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, false);
+        X509Certificate selfcert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(rsakeys.getPrivate())
+                .setEntityPubKey(rsakeys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1)
+                .generateCertificate();  
         try {
             selfcert.verify(selfcert.getPublicKey());
         } catch (Exception e) {

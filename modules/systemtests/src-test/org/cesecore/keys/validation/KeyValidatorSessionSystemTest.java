@@ -96,6 +96,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -383,9 +384,15 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         
         // Check validation of an external call with x.509 RSA public key during the phase specified as an argument.
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert(
-                "C=Test,O=Test,OU=Test,CN=testValidateCertificteWithExternalCommand", 365, null,
-                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=Test,O=Test,OU=Test,CN=testValidateCertificteWithExternalCommand")
+                .setIssuerDn("C=Test,O=Test,OU=Test,CN=testValidateCertificteWithExternalCommand")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         ExternalCommandCertificateValidator validator = (ExternalCommandCertificateValidator) createCertificateValidator(ExternalCommandCertificateValidator.class, "§", null, null, -1, null, -1,
                 KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex(), certificateProfileSession.getCertificateProfileId(TEST_CP_NAME));
         validator.setFailedAction(KeyValidationFailedActions.ABORT_CERTIFICATE_ISSUANCE.getIndex());
@@ -806,8 +813,15 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
         log.trace(">testAuthorization()");
         // AuthenticationToken that does not have privileges to edit a Validator
         KeyPair keys = KeyTools.genKeys("1024",  "RSA");
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test KeyValidatorSessionSystemTest", 365, null, keys.getPrivate(),
-                keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test KeyValidatorSessionSystemTest")
+                .setIssuerDn("C=SE,O=Test,CN=Test KeyValidatorSessionSystemTest")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
 
         final String name = "testKeyValidatorAuthorization";

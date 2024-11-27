@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+
 import org.apache.log4j.Logger;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
@@ -257,8 +259,15 @@ public class ApprovalSessionSystemTest extends CaTestCase {
         reqUserData.setPassword("foo123");
         endEntityManagementSession.addUser(intadmin, reqUserData, true);
 
-        externalcert = CertTools.genSelfCert("CN=externalCert,C=SE", 30, null, externalAdminRsaKey.getPrivate(), externalAdminRsaKey.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        externalcert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=externalCert,C=SE")
+                .setIssuerDn("CN=externalCert,C=SE")
+                .setValidityDays(30)
+                .setIssuerPrivKey(externalAdminRsaKey.getPrivate())
+                .setEntityPubKey(externalAdminRsaKey.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();  
+        
         externaladmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(externalcert));
 
         fileHandles.addAll(BatchCreateTool.createAllNew(intadmin, new File(P12_FOLDER_NAME)));

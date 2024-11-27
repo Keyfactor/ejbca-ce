@@ -61,6 +61,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
@@ -314,7 +315,15 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
                 sigAlg = AlgorithmConstants.SIGALG_ED448;
             } 
 
-            X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, keyPair.getPrivate(), keyPair.getPublic(), sigAlg, false);
+            X509Certificate selfcert = SimpleCertGenerator.forTESTLeafCert()
+                    .setSubjectDn("CN=selfsigned")
+                    .setIssuerDn("CN=selfsigned")
+                    .setValidityDays(1)
+                    .setIssuerPrivKey(keyPair.getPrivate())
+                    .setEntityPubKey(keyPair.getPublic())
+                    .setSignatureAlgorithm(sigAlg)
+                    .generateCertificate();
+                    
             cert = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).createCertificate(getAuthenticationToken(),
                     username, password, selfcert);
         }

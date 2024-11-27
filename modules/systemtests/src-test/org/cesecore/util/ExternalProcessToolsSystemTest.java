@@ -32,9 +32,9 @@ import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -363,9 +363,15 @@ public class ExternalProcessToolsSystemTest {
 
     private final X509Certificate createSelfSignedX509TestCertificate(final String cn) throws Exception {
         final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        return CertTools.genSelfCert(
-                "C=Test,O=Test,OU=Test,CN="+cn, 365, null, 
-                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        return SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=Test,O=Test,OU=Test,CN="+cn)
+                .setIssuerDn("C=Test,O=Test,OU=Test,CN="+cn)
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
     }
     
     /**
