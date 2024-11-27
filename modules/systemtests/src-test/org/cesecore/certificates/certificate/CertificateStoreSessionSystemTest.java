@@ -556,8 +556,14 @@ public class CertificateStoreSessionSystemTest extends RoleUsingTestCase {
 	@Test
 	public void test10Authorization() throws Exception {
 
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertStoreSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test CertStoreSessionNoAuth")
+                .setIssuerDn("C=SE,O=Test,CN=Test CertStoreSessionNoAuth")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
 
         // Try to create a cert with an admin that does not have access to CA
@@ -631,8 +637,14 @@ public class CertificateStoreSessionSystemTest extends RoleUsingTestCase {
 
 	@Test
 	public void test13TestXss() throws Exception {
-        X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo<tag>mytag</tag>", 24, null, keys.getPrivate(),
-        		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        X509Certificate xcert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo<tag>mytag</tag>")
+                .setIssuerDn("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo<tag>mytag</tag>")
+                .setValidityDays(24)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();
 		try {
 			final String fp = CertTools.getFingerprintAsString(xcert);
 			final String username = "foouser<tag>mytag</mytag>!";
@@ -696,7 +708,14 @@ public class CertificateStoreSessionSystemTest extends RoleUsingTestCase {
     @Test
     public void testLimitedCertificateDataAddUpdateRemove() throws Exception {
         final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=testLimitedCertificateDataCA", 3600, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=testLimitedCertificateDataCA")
+                .setIssuerDn("CN=testLimitedCertificateDataCA")
+                .setValidityDays(3600)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();        
         final String issuerDn = CertTools.getSubjectDN(caCertificate);
         final String caFingerprint = CertTools.getFingerprintAsString(caCertificate);
         final BigInteger serialNumber = new BigInteger("1234567890");
@@ -779,11 +798,20 @@ public class CertificateStoreSessionSystemTest extends RoleUsingTestCase {
     @Test
     public void testLimitedCertificateDataUpdateRemoveInvalidityDate() throws Exception {
         final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=testLimitedCertificateDataCA2", 3600, null, keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=testLimitedCertificateDataCA2")
+                .setIssuerDn("CN=testLimitedCertificateDataCA2")
+                .setValidityDays(3600)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();        
         final String issuerDn = CertTools.getSubjectDN(caCertificate);
         final String caFingerprint = CertTools.getFingerprintAsString(caCertificate);
         final BigInteger serialNumber = new BigInteger("1234567890");
-        final Date invalidityDate = new Date(2023, 12, 15);
+        final Calendar calendar = Calendar.getInstance();
+        calendar.set(2023, 12, 15);
+        final Date invalidityDate = calendar.getTime(); 
         // Remove any previous entry created due to a failed test
         internalCertStoreSession.updateLimitedCertificateDataStatus(alwaysAllowToken, issuerDn.hashCode(), issuerDn, serialNumber, new Date(),
                 RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL, caFingerprint);
@@ -1028,11 +1056,17 @@ public class CertificateStoreSessionSystemTest extends RoleUsingTestCase {
         
         KeyPair eeKeyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
         String userName = "testCrossCertEE";
-        X509Certificate eeLeafCert = CertTools.genCertForPurpose("CN=" + userName, "CN="+CROSS_CERT_CA_NAME, 
-                new Date(System.currentTimeMillis() - (1 * 86400 * 1000)),
-                new Date(System.currentTimeMillis() + (15 * 86400 * 1000)), null, 
-                caKeyPair.getPrivate(), eeKeyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false, 0, null, null, 
-                BouncyCastleProvider.PROVIDER_NAME, true, null);
+        X509Certificate eeLeafCert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=" + userName)
+                .setIssuerDn("CN="+CROSS_CERT_CA_NAME)
+                .setFirstDate(new Date(System.currentTimeMillis() - (1 * 86400 * 1000)))
+                .setLastDate(new Date(System.currentTimeMillis() + (15 * 86400 * 1000)))
+                .setIssuerPrivKey(caKeyPair.getPrivate())
+                .setEntityPubKey(eeKeyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();
         String eeLeafCertFingerPrint = CertTools.getFingerprintAsString(eeLeafCert);
         certificateStoreSession.storeCertificateRemote(alwaysAllowToken, EJBTools.wrap(eeLeafCert), USERNAME, 
                 subCaCertFingerPrint, CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
