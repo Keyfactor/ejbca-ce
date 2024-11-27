@@ -971,6 +971,7 @@
 				<exclude name=".lighthouse/" />
 				<exclude name=".jx/" />
 				<exclude name=".github/" />
+				<exclude name=".gitlab-ci.yml" />
 				<exclude name="OWNERS" />
 				<exclude name="OWNERS_ALIASES" />
 				<exclude name="src/package/" />
