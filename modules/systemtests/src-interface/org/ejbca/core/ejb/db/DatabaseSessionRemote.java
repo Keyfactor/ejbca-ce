@@ -10,24 +10,40 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.unidfnr;
+package org.ejbca.core.ejb.db;
 
 import jakarta.ejb.Remote;
 
 /**
+ * Remote interface to allow access to local methods from system tests
  * 
  * @version $Id$
  *
  */
 @Remote
-public interface UnidfnrProxySessionRemote {
+public interface DatabaseSessionRemote {
 
-    boolean isUnidFnrAvailable();
+    /**
+     * Removes all records in a number of tables and stores them locally.
+     * Removes and returns the content of the database except for the following tables:
+     *   AuditRecordData
+     *   CAData
+     *   CRLData
+     *   CertificateData
+     *   CryptoTokenData
+     *   GlobalConfigurationData
+     *   RoleData
+     *   RoleMemberData
+     *   UserData
+     *
+     * @return
+     */
+    DatabaseContent clearTables(boolean clearProtectedTables);
 
-    void removeUnidFnrDataIfPresent(final String unid);
 
-    void storeUnidFnrData(final String unid, final String fnr);
-    
-    String fetchUnidFnrDataFromMock(String serialNumber);
-    
+    /**
+     * Restores all records in the tables that were cleared.
+     */
+    void restoreTables(DatabaseContent databaseContent);
+
 }

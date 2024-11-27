@@ -37,10 +37,12 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -75,6 +77,9 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
     }
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @Override
     @Before
