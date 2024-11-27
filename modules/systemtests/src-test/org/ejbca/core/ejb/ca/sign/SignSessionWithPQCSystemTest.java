@@ -21,6 +21,7 @@ import java.security.cert.X509Certificate;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -137,8 +138,14 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of " + RSA_USERNAME + " to NEW");
         // user that we know exists...
-        X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, falcon512keys.getPrivate(), falcon512keys.getPublic(),
-                AlgorithmConstants.SIGALG_FALCON512, false);
+        X509Certificate selfcert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(falcon512keys.getPrivate())
+                .setEntityPubKey(falcon512keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_FALCON512)
+                .generateCertificate();  
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", selfcert);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -159,8 +166,14 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of " + RSA_USERNAME + " to NEW");
         // user that we know exists...
-        X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, mldsa44keys.getPrivate(), mldsa44keys.getPublic(),
-                AlgorithmConstants.SIGALG_MLDSA44, false);
+        X509Certificate selfcert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(mldsa44keys.getPrivate())
+                .setEntityPubKey(mldsa44keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44)
+                .generateCertificate();  
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", selfcert);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -205,8 +218,14 @@ public class SignSessionWithPQCSystemTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, username, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + username + "' to NEW");
         // user that we know exists...
-        X509Certificate requestcert = CertTools.genSelfCert("CN=selfsigned", 1, null, keys.getPrivate(), keys.getPublic(),
-                sigAlg, false);
+        X509Certificate requestcert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(sigAlg)
+                .generateCertificate();  
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", requestcert);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());

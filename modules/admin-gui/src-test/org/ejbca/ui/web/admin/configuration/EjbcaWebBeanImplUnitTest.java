@@ -69,6 +69,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -123,8 +124,25 @@ public final class EjbcaWebBeanImplUnitTest {
         final KeyPair kp = KeyTools.genKeys(AlgorithmConstants.SIGALG_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519);
         allAdminCerts = new X509Certificate[2];
         // Serial numbers are randomized, so these certs are random 
-        allAdminCerts[0] = CertTools.genSelfCert(CERT_DN, 7, null, kp.getPrivate(), kp.getPublic(), AlgorithmConstants.SIGALG_ED25519, false);
-        allAdminCerts[1] = CertTools.genSelfCert(CERT_DN, 7, null, kp.getPrivate(), kp.getPublic(), AlgorithmConstants.SIGALG_ED25519, false);
+        allAdminCerts[0] = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn(CERT_DN)
+                .setIssuerDn(CERT_DN)
+                .setValidityDays(7)
+                .setIssuerPrivKey(kp.getPrivate())
+                .setEntityPubKey(kp.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_ED25519)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
+        allAdminCerts[1] = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn(CERT_DN)
+                .setIssuerDn(CERT_DN)
+                .setValidityDays(7)
+                .setIssuerPrivKey(kp.getPrivate())
+                .setEntityPubKey(kp.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_ED25519)
+                .setLdapOrder(true)
+                .generateCertificate();
     }
 
     @Before

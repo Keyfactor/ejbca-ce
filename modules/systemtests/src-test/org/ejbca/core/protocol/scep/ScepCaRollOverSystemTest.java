@@ -100,6 +100,7 @@ import org.junit.runners.Parameterized.Parameters;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -386,8 +387,14 @@ public class ScepCaRollOverSystemTest extends ScepTestBase {
         this.rand.nextBytes(randBytes);
         byte[] digest = CertTools.generateMD5Fingerprint(randBytes);
         transId = new String(Base64.encode(digest));
-        final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null,
-                keyTestRollover.getPrivate(), keyTestRollover.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        final X509Certificate senderCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=SenderCertificate")
+                .setIssuerDn("CN=SenderCertificate")
+                .setValidityDays(24 * 60 * 60 * 1000)
+                .setIssuerPrivKey(keyTestRollover.getPrivate())
+                .setEntityPubKey(keyTestRollover.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate(); 
         final byte[] msgBytes = gen.generateCertReq(userDN, "foo123", transId, caRolloverCert, senderCertificate, keyTestRollover.getPrivate(),
                 PKCSObjectIdentifiers.rsaEncryption, SMIMECapability.dES_CBC);
         assertNotNull(msgBytes);

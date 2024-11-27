@@ -37,6 +37,7 @@ import jakarta.ejb.FinderException;
 import jakarta.ejb.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -79,6 +80,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
@@ -247,6 +249,7 @@ public abstract class BatchCreateTool {
      * @throws UnrecoverableKeyException 
      * @throws NoSuchEndEntityException 
      * @throws FileNotFoundException 
+     * @throws CertIOException if the self signed certificate could not be generated
      */
     public static File createUser(AuthenticationToken authenticationToken, File mainStoreDir, String username) throws AuthorizationDeniedException,
             ApprovalException, WaitingForApprovalException, UnrecoverableKeyException, InvalidAlgorithmParameterException,
@@ -254,7 +257,7 @@ public abstract class BatchCreateTool {
             AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
             CustomCertificateSerialNumberException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, InvalidKeySpecException,
-            EndEntityProfileValidationException, NoSuchEndEntityException, FileNotFoundException {
+            EndEntityProfileValidationException, NoSuchEndEntityException, FileNotFoundException, CertIOException {
       if (log.isTraceEnabled()) {
             log.trace(">createUser(" + username + ")");
         }
@@ -286,7 +289,7 @@ public abstract class BatchCreateTool {
             SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException,
             IllegalValidityException, CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, KeyStoreException,
-            NoSuchAlgorithmException, InvalidKeySpecException, FileNotFoundException {
+            NoSuchAlgorithmException, InvalidKeySpecException, FileNotFoundException, CertIOException {
         File ret = null;
         // get users Token Type.
         int tokentype = data.getTokenType();
@@ -366,6 +369,7 @@ public abstract class BatchCreateTool {
      * @throws NoSuchEndEntityException 
      * @throws CADoesntExistsException 
      * @throws UnrecoverableKeyException 
+     * @throws CertIOException if the self signed certificate could not be generated
      */
     private static File processUser(AuthenticationToken authenticationToken, File mainStoreDir, EndEntityInformation data, boolean createJKS,
             boolean createPEM, boolean keyrecoverflag)
@@ -373,7 +377,7 @@ public abstract class BatchCreateTool {
             NoSuchEndEntityException, OperatorCreationException, CertificateException, SignRequestSignatureException, AuthStatusException,
             AuthLoginException, IllegalKeyException, CertificateCreateException, IllegalNameException, CertificateRevokeException,
             CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException, CAOfflineException, InvalidAlgorithmException,
-            CustomCertificateSerialNumberException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, FileNotFoundException {
+            CustomCertificateSerialNumberException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, FileNotFoundException, CertIOException {
         KeyPair rsaKeys;
         X509Certificate orgCert = null;
         if (useKeyRecovery && keyrecoverflag) {
@@ -451,6 +455,7 @@ public abstract class BatchCreateTool {
      * @throws UnrecoverableKeyException 
      * @throws InvalidKeySpecException 
      * @throws FileNotFoundException 
+     * @throws CertIOException if generating the self signed certificate failed
      */
 
     private static File createUser(AuthenticationToken authenticationToken, File mainStoreDir, String username, String password, int caid,
@@ -459,7 +464,7 @@ public abstract class BatchCreateTool {
             SignRequestSignatureException, AuthStatusException, AuthLoginException, IllegalKeyException, CertificateCreateException,
             IllegalNameException, CertificateRevokeException, CertificateSerialNumberException, CryptoTokenOfflineException, IllegalValidityException,
             CAOfflineException, InvalidAlgorithmException, CustomCertificateSerialNumberException, NoSuchAlgorithmException, InvalidKeySpecException,
-            KeyStoreException, UnrecoverableKeyException, FileNotFoundException {
+            KeyStoreException, UnrecoverableKeyException, FileNotFoundException, CertIOException {
         if (log.isTraceEnabled()) {
             log.trace(">createUser: username=" + username);
         }
@@ -484,7 +489,16 @@ public abstract class BatchCreateTool {
                 sigAlg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
             }
 
-            X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsaKeys.getPrivate(), rsaKeys.getPublic(), sigAlg, false);
+            X509Certificate selfcert = SimpleCertGenerator.forTESTLeafCert()
+                    .setSubjectDn("CN=selfsigned")
+                    .setIssuerDn("CN=selfsigned")
+                    .setValidityDays(1)
+                    .setIssuerPrivKey(rsaKeys.getPrivate())
+                    .setEntityPubKey(rsaKeys.getPublic())
+                    .setSignatureAlgorithm(sigAlg)
+                    .generateCertificate();  
+
+                    
             cert = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).createCertificate(authenticationToken,
                     username, password, selfcert);
         }

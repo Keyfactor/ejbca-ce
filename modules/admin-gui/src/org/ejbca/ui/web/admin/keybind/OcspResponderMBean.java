@@ -75,6 +75,7 @@ import org.ejbca.core.ejb.ocsp.OcspResponseGeneratorSessionLocal;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -432,8 +433,16 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             ocspConfiguration.setOcspAuditLogValues(ocspAuditLogValues);
             ocspConfiguration.setOcspAuditLogPattern(ocspAuditLogPattern);
             final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            final X509Certificate dummyCertificate = CertTools.genSelfCert("CN=Dummy Certificate", 10L, "1.1.1.1", keys.getPrivate(),
-                    keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, BouncyCastleProvider.PROVIDER_NAME);
+            final X509Certificate dummyCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn("CN=Dummy Certificate")
+                    .setIssuerDn("CN=Dummy Certificate")
+                    .setValidityDays(10)
+                    .setPolicyId("1.1.1.1")
+                    .setIssuerPrivKey(keys.getPrivate())
+                    .setEntityPubKey(keys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                    .generateCertificate();   
             final byte[] requestBytes = new OCSPReqBuilder()
                     .addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), dummyCertificate, dummyCertificate.getSerialNumber()))
                     .build().getEncoded();
@@ -458,8 +467,17 @@ public class OcspResponderMBean extends InternalKeyBindingMBeanBase {
             ocspConfiguration.setOcspTransactionLogValues(ocspTransactionLogValues);
             ocspConfiguration.setOcspTransactionLogPattern(ocspTransactionLogPattern);
             final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            final X509Certificate dummyCertificate = CertTools.genSelfCert("CN=Dummy Certificate", 10L, "1.1.1.1", keys.getPrivate(),
-                    keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true, BouncyCastleProvider.PROVIDER_NAME);
+            final X509Certificate dummyCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn("CN=Dummy Certificate")
+                    .setIssuerDn("CN=Dummy Certificate")
+                    .setValidityDays(10)
+                    .setPolicyId("1.1.1.1")
+                    .setIssuerPrivKey(keys.getPrivate())
+                    .setEntityPubKey(keys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                    .generateCertificate();   
+
             new OCSPReqBuilder()
                     .addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), dummyCertificate, dummyCertificate.getSerialNumber()))
                     .build().getEncoded();
