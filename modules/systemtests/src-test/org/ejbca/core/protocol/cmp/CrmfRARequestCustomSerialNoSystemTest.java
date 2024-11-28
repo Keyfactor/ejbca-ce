@@ -160,11 +160,12 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
         final int reqId;
         {
             final PKIMessage one = genCertReq(this.issuerDN, userDN, keys, this.cacert, nonce, transid, true, null, null, null, customCertSerno, null, null);
+            assertNotNull(one);
             final PKIMessage req = protectPKIMessage(one, false, PBE_PASSWORD, 567);
+            assertNotNull(req);
 
             CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
             reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
-            assertNotNull(req);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
             final ASN1OutputStream out = ASN1OutputStream.create(bao, ASN1Encoding.DER);
             out.writeObject(req);
