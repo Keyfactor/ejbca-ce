@@ -24,7 +24,7 @@ public class DatabaseContentRule extends TestWatcher {
     DatabaseContent databaseContent = null;
 
     private boolean isActive() {
-        return "true".equalsIgnoreCase(System.getProperty("ejbca.databasecontent.rule", "false"));
+        return "true".equalsIgnoreCase(System.getProperty("ejbca.databasecontent.rule", "true"));
     }
 
     @Override
