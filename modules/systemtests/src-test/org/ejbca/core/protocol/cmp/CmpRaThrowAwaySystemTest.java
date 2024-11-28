@@ -328,7 +328,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         random.nextBytes(transactionId);
         random.nextBytes(senderNonce);
         final String subjectDn = "C=SE,O=PrimeKey,OU=Labs,CN=Sec_"+serialNumber;
-        final X500Name subjectX500Name = DnComponents.stringToBcX500Name(subjectDn, false);
+        final X500Name subjectX500Name = DnComponents.stringToBcX500Name(subjectDn, new TeletexNamingStyle(), false);
         certTemplate.setSubject(subjectX500Name);
         final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(keyPair.getPublic().getEncoded());
         certTemplate.setPublicKey(keyInfo);
@@ -395,6 +395,51 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         certificateProfile.setAllowDNOverride(allowDNOverride);
         certificateProfile.setAllowCertSerialNumberOverride(allowCertSerialNumberOverride);
         certificateProfileSession.changeCertificateProfile(ADMIN, CERTPROFILE_NAME, certificateProfile);
+    }
+    
+    /** Legacy teletex encoding for testing purpose. */
+    private static class TeletexNamingStyle extends BCStyle {
+
+        static final String DER_PRINTABLE_STRING_WHITELIST = " \\()+-.:=?";
+
+        @Override 
+        public ASN1Encodable stringToValue(final ASN1ObjectIdentifier oid, final String value) {
+            if (value.length() != 0 && value.charAt(0) == '#') {
+                ASN1InputStream inputStream = new ASN1InputStream(Hex.decode(value.substring(1)));
+                try {                    
+                    return inputStream.readObject();
+                } catch (IOException e) {
+                    throw new IllegalStateException("Unable to recode value for oid " + oid.getId());
+                } finally {
+                    try {
+                        inputStream.close();
+                    } catch (IOException e) {
+                        throw new IllegalStateException(e);
+                    }
+                }
+            } else if (oid.equals(BCStyle.EmailAddress) || oid.equals(BCStyle.DC)) {
+                return new DERIA5String(value);
+            } else if (canBePrintable(value)) {
+                return new DERPrintableString(value);
+            }
+            return new DERT61String(value);
+        }
+        
+        boolean canBePrintable(final String value) {
+            for (final char current : value.toCharArray()) {
+                if (current > 0x007f) {
+                    return false;
+                }
+                if (('a' <= current && current <= 'z') || ('A' <= current && current <= 'Z') || ('0' <= current && current <= '9')) {
+                    continue;
+                }
+                if (DER_PRINTABLE_STRING_WHITELIST.indexOf(current)!=-1) {
+                    continue;
+                }
+                return false;
+            }
+            return true;
+        }
     }
 
 }
