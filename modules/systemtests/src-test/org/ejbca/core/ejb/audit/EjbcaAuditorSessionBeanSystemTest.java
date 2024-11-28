@@ -113,7 +113,7 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
         assertNotNull(entries);
         assertFalse("No audit log entries where received", entries.isEmpty());
         assertEquals("Authtoken was not trimmed where subject is too big.", 
-                entries.get(0).getAuthToken(), "[trimmed] " + upn.substring(0, 235));
+                "[trimmed] " + upn.substring(0, 235), entries.get(0).getAuthToken());
         assertEquals("Authtoken is not part of additional details when subject is too big.", 
                                    entries.get(0).getMapAdditionalDetails().get("authToken"), upn);
         

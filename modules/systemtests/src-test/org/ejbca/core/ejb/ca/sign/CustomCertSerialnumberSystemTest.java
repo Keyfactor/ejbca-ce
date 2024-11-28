@@ -32,6 +32,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
+import jakarta.ejb.EJBTransactionRolledbackException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -73,6 +74,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.CesecoreException;
@@ -86,7 +88,11 @@ import com.keyfactor.util.keys.KeyTools;
 /**
  * 
  * @version $Id$
+ *
+ * To make this test succeed, it is needed to open an SQL-prompt and run the following script:
+ * ALTER TABLE CertificateData ADD CONSTRAINT unique_serialNumber_issuerDN UNIQUE (serialNumber, issuerDN);
  */
+@Ignore
 public class CustomCertSerialnumberSystemTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberSystemTest.class);
@@ -278,6 +284,9 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
             log.debug(e.getMessage());
             assertTrue("Unexpected exception.",
                     e.getMessage().startsWith("There is already a certificate stored in 'CertificateData' with the serial number"));
+        }
+        catch (EJBTransactionRolledbackException rolledbackException) {
+            assertTrue(rolledbackException.getMessage().contains("Could not commit"));
         }
         assertNull(resp);
     }
