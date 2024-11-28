@@ -88,7 +88,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
                 clearTable(AdminGroupData.class, true),
                 clearTable(AdminPreferencesData.class, true),
                 clearTable(ApprovalData.class, true),
-                clearTable(AuditRecordData.class, clearProtectedTables),
+                clearTable(AuditRecordData.class, true),
                 clearTable(Base64CertData.class, true),
                 clearTable(BlacklistData.class, true),
                 clearTable(CAData.class, clearProtectedTables),

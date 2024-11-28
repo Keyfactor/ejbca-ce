@@ -23,18 +23,26 @@ public class DatabaseContentRule extends TestWatcher {
     private static final DatabaseSessionRemote databaseSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(DatabaseSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     DatabaseContent databaseContent = null;
 
+    private boolean isActive() {
+        return "true".equalsIgnoreCase(System.getProperty("ejbca.databasecontent.rule", "false"));
+    }
+
     @Override
     protected void starting(Description description) {
-        log.info("Removing database records");
-        databaseContent = databaseSessionRemote.clearTables(false);
+        if (isActive()) {
+            log.info("Removing database records");
+            databaseContent = databaseSessionRemote.clearTables(false);
+        }
         super.starting(description);
     };
 
     @Override
     protected void finished(Description description) {
-        log.info("Restoring database records");
-        databaseSessionRemote.clearTables(true);
-        databaseSessionRemote.restoreTables(databaseContent);
+        if (isActive()) {
+            log.info("Restoring database records");
+            databaseSessionRemote.clearTables(true);
+            databaseSessionRemote.restoreTables(databaseContent);
+        }
         super.finished(description);
     }
 
