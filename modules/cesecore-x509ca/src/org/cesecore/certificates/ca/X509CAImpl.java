@@ -1394,21 +1394,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         X500Name subjectDNName = null;
         if (certProfile.getAllowDNOverride() && (request != null) && (request.getRequestX500Name() != null)) {
 
-            AtomicBoolean isTeletexString = new AtomicBoolean(false);
-
-            X500Name x500Name = request.getRequestX500Name();
-            RDN[] rdns = x500Name.getRDNs();
-
-            for (int i = 0; i < rdns.length; i++) {
-                RDN rdn = rdns[i];
-                ASN1Encodable value = rdn.getFirst().getValue();
-
-                if ((value instanceof ASN1String) &&  (value instanceof DERT61String)) {
-                        isTeletexString.set(true);
-                }
-            }
-
-            if (isTeletexString.get()) {
+            if (isLegacyTeletexEncoding(request.getRequestX500Name())) {
                 // To support legacy TeletexNamingStyle or other legacy formats (see #CmpRaThrowAwaySystemTest #testLegacyEncodedRequestOverride)
                 subjectDNName = request.getRequestX500Name();
                 if (log.isDebugEnabled()) {
@@ -2025,6 +2011,22 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         return cert;
     }
 
+    private boolean isLegacyTeletexEncoding(final X500Name requestX500Name) {
+
+        final AtomicBoolean isTeletexString = new AtomicBoolean(false);
+
+        RDN[] rdns = requestX500Name.getRDNs();
+
+        for (int i = 0; i < rdns.length; i++) {
+            RDN rdn = rdns[i];
+            ASN1Encodable value = rdn.getFirst().getValue();
+
+            if ((value instanceof ASN1String) && (value instanceof DERT61String)) {
+                isTeletexString.set(true);
+            }
+        }
+        return isTeletexString.get();
+    }
 
     /**
      * Check if we have AlgorithmIdentifier parameters for RSA keys. According to RFC 3279 it must be DERNull, and not missing
