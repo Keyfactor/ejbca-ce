@@ -1879,7 +1879,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         }
     	
     	if(getProfileType()==PROFILE_TYPE_DEFAULT) {
-    	    validateDefaultProfileData(username, dn, subjectAltName, subjectDirAttr, email, certProfile.getAllowDNOverride());
+    	    validateDefaultProfileData(username, dn, subjectAltName, subjectDirAttr, email);
     	} else {
         	validateSshCertificateData(subjectAltName, ei);
     	}
@@ -2104,7 +2104,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     private void validateDefaultProfileData(final String username, final String dn, final String subjectAltName, final String subjectDirAttr,
-            String email, final boolean allowDnOverrideByCsr) throws EndEntityProfileValidationException {
+            String email) throws EndEntityProfileValidationException {
         // get a DNFieldExtractor used to validate DN fields. Multi-value RDNs are "converted" into non-multi-value RDNs
         // just to re-use standard validation mechanisms.
         // DNFieldextractor validates (during construction) that only components valid for multi-value use are used.
@@ -2134,17 +2134,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             throw new EndEntityProfileValidationException("Unsupported Subject Directory Attribute Field found in:" + subjectDirAttr);
         }
         // Make sure that all required fields exist
-        checkIfAllRequiredFieldsExists(subjectDnFields, subjectAltNames, subjectDirAttrs, username, email, allowDnOverrideByCsr);
+        checkIfAllRequiredFieldsExists(subjectDnFields, subjectAltNames, subjectDirAttrs, username, email);
         // Make sure that there are enough fields to cover all required in profile
-        checkIfForIllegalNumberOfFields(subjectDnFields, subjectAltNames, subjectDirAttrs, allowDnOverrideByCsr);
+        checkIfForIllegalNumberOfFields(subjectDnFields, subjectAltNames, subjectDirAttrs);
         // Check that all fields pass the validators (e.g. regex), if any
         checkWithValidators(subjectDnFields, subjectAltNames);
         
-        // If DN override by CSR is enabled in the CP then the number of DN fields is allowed to be greater than what is defined in the EEP
-        checkIfFieldsMatch(subjectDnFields, DNFieldExtractor.TYPE_SUBJECTDN, email, null, allowDnOverrideByCsr);
+        checkIfFieldsMatch(subjectDnFields, DNFieldExtractor.TYPE_SUBJECTDN, email, null);
         final String commonName = subjectDnFields.getField(DNFieldExtractor.CN, 0);
         
-        checkIfFieldsMatch(subjectAltNames, DNFieldExtractor.TYPE_SUBJECTALTNAME, email, commonName, false);
+        checkIfFieldsMatch(subjectAltNames, DNFieldExtractor.TYPE_SUBJECTALTNAME, email, commonName);
         // Check contents of Subject Directory Attributes fields.
         final HashMap<Integer,Integer> subjectDirAttrNumbers = subjectDirAttrs.getNumberOfFields();
         final List<Integer> dirAttrIds = DNFieldExtractor.getUseFields(DNFieldExtractor.TYPE_SUBJECTDIRATTR);
@@ -2323,8 +2322,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      * @param email The end entity's email address
      * @throws EndEntityProfileValidationException End entity profile validation exception
      */
-    private void checkIfFieldsMatch(final DNFieldExtractor fields, final int type, final String email, final String commonName, final boolean extraFieldsAllowed) 
-            throws EndEntityProfileValidationException {
+    private void checkIfFieldsMatch(final DNFieldExtractor fields, final int type, final String email, final String commonName) throws EndEntityProfileValidationException {
     	final int REQUIRED_FIELD		= 2;
     	final int NONMODIFYABLE_FIELD	= 1;
     	final int MATCHED_FIELD			= -1;
@@ -2428,20 +2426,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                     }
                 }
             }
-            // If not all fields in profile were found. Skip if extra fields are allowed. This is the case when override DN by CSR is enabled in the CP.
-            // With the override it is ok if the CSR has more DN fields than the EEP.
-            if (!extraFieldsAllowed) {
-                for (int j = 0; j < nof; j++) {
-                    if (subjectsToProcess[j] != null) {
-                        throw new EndEntityProfileValidationException("End entity profile does not contain matching field for " +
-                                DnComponents.dnIdToProfileName(dnId) + " with value \"" + subjectsToProcess[j] + "\".");
-                    }
+            // If not all fields in profile were found
+            for (int j = 0; j < nof; j++) {
+                if (subjectsToProcess[j] != null) {
+                    throw new EndEntityProfileValidationException("End entity profile does not contain matching field for " +
+                            DnComponents.dnIdToProfileName(dnId) + " with value \"" + subjectsToProcess[j] + "\".");
                 }
-                // If not all required fields in profile were found in subject
-                for (int j = 0; j < getNumberOfField(profileID); j++) {
-                    if (profileCrossOffList[j] >= REQUIRED_FIELD) {
-                        throw new EndEntityProfileValidationException("Data does not contain required " + DnComponents.dnIdToProfileName(dnId) + " field.");
-                    }
+            }
+            // If not all required fields in profile were found in subject
+            for (int j = 0; j < getNumberOfField(profileID); j++) {
+                if (profileCrossOffList[j] >= REQUIRED_FIELD) {
+                    throw new EndEntityProfileValidationException("Data does not contain required " + DnComponents.dnIdToProfileName(dnId) + " field.");
                 }
             }
         }
@@ -2978,39 +2973,37 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     private void checkIfAllRequiredFieldsExists(final DNFieldExtractor subjectDnFields, final DNFieldExtractor subjectAltNames, final DNFieldExtractor subjectDirAttrs,
-            final String username, final String email, final boolean allowDnOverrideByCsr) throws EndEntityProfileValidationException {
+            final String username, final String email) throws EndEntityProfileValidationException {
     	// Check if Username exists (if not modifiable skip the check)
     	if (isRequired(USERNAME, 0) && isModifyable(USERNAME, 0) && (username == null || username.trim().isEmpty())) {
     		throw new EndEntityProfileValidationException("Username cannot be empty or null.");
     	}
-    	// Check if required Email fields exist.
+    	// Check if required Email fields exists.
     	if (isRequired(EMAIL, 0) && StringUtils.isBlank(email)) {
     		throw new EndEntityProfileValidationException("Email address cannot be empty or null.");
     	}
-    	// Check if all required subjectdn fields exist.
-        if (!allowDnOverrideByCsr) {
-            final List<String> dnFields = DnComponents.getDnProfileFields();
-            final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
-            for (int i = 0; i < dnFields.size(); i++) {
-                final String currentDnField = dnFields.get(i);
-                if (getReverseFieldChecks()) {
-                    final int nof = subjectDnFields.getNumberOfFields(dnFieldExtractorIds.get(i));
-                    final int numRequiredFields = getNumberOfRequiredFields(currentDnField);
-                    if (nof < numRequiredFields) {
-                        throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
-                    }
-                } else {
-                    final int size = getNumberOfField(currentDnField);
-                    for (int j = 0; j < size; j++) {
-                        if (isRequired(currentDnField, j) && StringUtils.isBlank(subjectDnFields.getField(dnFieldExtractorIds.get(i), j))) {
-                            throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
-                        }
-                    }
-                }
-            }
-        }
+    	// Check if all required subjectdn fields exists.
+    	final List<String> dnFields = DnComponents.getDnProfileFields();
+    	final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
+    	for (int i = 0; i < dnFields.size(); i++) {
+    		final String currentDnField = dnFields.get(i);
+    		if (getReverseFieldChecks()) {
+    			final int nof = subjectDnFields.getNumberOfFields(dnFieldExtractorIds.get(i));
+    			final int numRequiredFields = getNumberOfRequiredFields(currentDnField);
+    			if (nof < numRequiredFields) {
+    				throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
+    			}
+    		} else {
+    			final int size = getNumberOfField(currentDnField);
+    			for (int j = 0; j < size; j++) {
+    				if (isRequired(currentDnField, j) && StringUtils.isBlank(subjectDnFields.getField(dnFieldExtractorIds.get(i), j))) {
+    					throw new EndEntityProfileValidationException("Subject DN field '" + currentDnField + "' must exist.");
+    				}
+    			}
+    		}
+    	}
     	
-    	if (subjectAltNames != null) {
+    	if(subjectAltNames!=null) {
         	// Check if all required subject alternate name fields exists.
         	final List<String> altNameFields = DnComponents.getAltNameFields();
         	final List<Integer> altNameFieldExtractorIds = DnComponents.getAltNameDnIds();
@@ -3062,19 +3055,16 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return retval;
     }
 
-    private void checkIfForIllegalNumberOfFields(final DNFieldExtractor subjectdnfields, final DNFieldExtractor subjectaltnames, final DNFieldExtractor subjectdirattrs,
-            final boolean allowDnOverrideByCsr) throws EndEntityProfileValidationException {
+    private void checkIfForIllegalNumberOfFields(final DNFieldExtractor subjectdnfields, final DNFieldExtractor subjectaltnames, final DNFieldExtractor subjectdirattrs) throws EndEntityProfileValidationException {
     	// Check number of subjectdn fields.
-        if (!allowDnOverrideByCsr) {
-        	final List<String> dnFields = DnComponents.getDnProfileFields();
-        	final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
-        	for (int i = 0; i < dnFields.size(); i++) {
-        		if (getNumberOfField(dnFields.get(i)) < subjectdnfields.getNumberOfFields(dnFieldExtractorIds.get(i))) {
-        			throw new EndEntityProfileValidationException("Wrong number of " + dnFields.get(i) + " fields in Subject DN.");
-        		}
-        	}
-        }
-    	if (subjectaltnames != null) {
+    	final List<String> dnFields = DnComponents.getDnProfileFields();
+    	final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
+    	for (int i = 0; i < dnFields.size(); i++) {
+    		if (getNumberOfField(dnFields.get(i)) < subjectdnfields.getNumberOfFields(dnFieldExtractorIds.get(i))) {
+    			throw new EndEntityProfileValidationException("Wrong number of " + dnFields.get(i) + " fields in Subject DN.");
+    		}
+    	}
+    	if(subjectaltnames!=null) {
         	// Check number of subject alternate name fields.
         	final List<String> altNameFields = DnComponents.getAltNameFields();
         	final List<Integer> altNameFieldExtractorIds = DnComponents.getAltNameDnIds();
