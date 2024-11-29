@@ -179,6 +179,12 @@ public class ApprovalSessionSystemTest extends CaTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        try {
+            afterClass();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
 
         createTestCA();
 
@@ -238,6 +244,12 @@ public class ApprovalSessionSystemTest extends CaTestCase {
 
     @Before
     public void createTestCAWithEndEntity() throws Exception {
+        try {
+            tearDown();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
         EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_P12, null);
