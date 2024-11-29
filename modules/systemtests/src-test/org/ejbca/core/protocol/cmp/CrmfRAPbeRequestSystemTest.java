@@ -291,7 +291,8 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
     }
 
     /** Tests issuance of certificates with multi-value RDN using CMP.
-     * In order for this to success multi-value RDN must be enabled in the end entity profile
+     * In order for this to success multi-value RDN must be enabled in the end entity profile and all DN components making up the RDN must be
+     * added as fields in the profile
      */
     @Test
     public void testCrmfHttpOkUserWithMultiValueRDN() throws Exception {
@@ -340,10 +341,26 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         PKIStatusInfo pkiStatusInfo = certResponse.getStatus();
         assertEquals("Wrong error", "Subject DN has multi value RDNs, which is not allowed.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
 
-        // Enable multi-value RDNs in the EE profile and try again
-        // This will work even though UID is missing from the EEP, because Subject DN Override by CSR is enabled in the CP
+        // Enable multi-value RDNs in the EE profile and try again, should still fail due to no UID allowed in profile
         eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);
         eep.setAllowMultiValueRDNs(true);
+        this.endEntityProfileSession.changeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME, eep);
+
+        resp = sendCmpHttp(ba, 200, ALIAS);
+        assertNotNull(resp);
+        assertTrue(resp.length > 0);
+        // We expect a response that is rejected
+        checkCmpCertRepMessage(cmpConfiguration, ALIAS, userDN, cacert, resp, reqId, ResponseStatus.FAILURE.getValue(), null);
+        pkiMessage = PKIMessage.getInstance(resp);
+        pkiBody = pkiMessage.getBody();
+        certRepMessage = (CertRepMessage) pkiBody.getContent();
+        certResponse = certRepMessage.getResponse()[0];
+        pkiStatusInfo = certResponse.getStatus();
+        assertEquals("Wrong error", "Wrong number of UID fields in Subject DN.", pkiStatusInfo.getStatusString().getStringAtUTF8(0).toString());
+
+        // Add UID to profile, so the request will succeed
+        eep = this.endEntityProfileSession.getEndEntityProfile(EEP_DN_OVERRIDE_NAME);
+        eep.addField(DnComponents.UID);
         this.endEntityProfileSession.changeEndEntityProfile(ADMIN, EEP_DN_OVERRIDE_NAME, eep);
 
         resp = sendCmpHttp(ba, 200, ALIAS);

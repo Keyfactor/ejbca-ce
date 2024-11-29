@@ -3058,14 +3058,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
         }
     }
 
-    /**
-     * @return true if Subject DN Override by CSR is enabled in the current certificate profile
-     */
-    public boolean isSubjectDnOverrideByCsrEnabled() {
-        return StringUtils.isNotEmpty(getSelectedCertificateProfile())
-                && this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile())).getAllowDNOverride();
-    }
-
     public String getSshKeyId() {
         return sshKeyId;
     }

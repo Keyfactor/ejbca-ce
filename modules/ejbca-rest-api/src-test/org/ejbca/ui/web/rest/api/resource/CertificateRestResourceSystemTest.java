@@ -160,9 +160,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private String testIssuerDn = "C=SE,CN=" + testCaName;
     private String testUsername = "CertificateRestSystemTestUser";
     private String testCertProfileName = "CertificateRestSystemTestCertProfile";
-    private String testCertProfileNameDnOverride = "CertificateRestSystemTestCertProfileDnOverride";
     private String testEeProfileName = "CertificateRestSystemTestEeProfile";
-    private String testEeProfileNameDnOverride = "CertificateRestSystemTestEeProfileDnOverride";
 
     private CvcCA cvcTestCa = null; // Don't create this for every test
     private String testCaNameCVC = "TESTCVC";
@@ -189,22 +187,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                     + "xQux6UsxQabuaTrHpExMgYjwJsekEVe13epUq5OiEh7xTJaSnsZm+Ja+MV2pn0gF\n"
                     + "3V1hMBajTMGN9emWLR6pfj5P7QpVR4hkv3LvgCPf474pWA9l/4WiKBzrI76T5yz1\n"
                     + "KoobCZQ2UrqnKFGEbdoNFchb2CDgdLnFu6Tbf6MW5zO5ypOIUih61Zf9Qyo=";
-
-    private static final String CSR_WITH_CN_C_O_postalCode =
-            "MIIChTCCAW0CAQAwQDEOMAwGA1UEAwwFYWJjMTkxEDAOBgNVBAoMB3NvbWVvcmcx\n" +
-                    "DDAKBgNVBAYTA1NXRTEOMAwGA1UEEQwFMTIzNDUwggEiMA0GCSqGSIb3DQEBAQUA\n" +
-                    "A4IBDwAwggEKAoIBAQDnCZnJVBuJbThaConnq1mvGRijDhtg1JCWctPARUpuHoeO\n" +
-                    "5RGcjYiMv1r5zUKBUN5iXlGefGPmkEkE69bI9JAzCnuRqzYe4qtEcWk7Xr4/RtVD\n" +
-                    "lo+LOnOIHQhSB3eR76RmHudYLlnuAbJAZjpya7ulSL4I6klk5KmfOwYzmRJIXIv9\n" +
-                    "iUd3NU5GcZgULKUf6xsuxmmxyjwPNmeM6P1H5crJ0+oBMwyEBus5QpjjSpHBkM4K\n" +
-                    "ym3xcu60t2vrJJJPhfz4T3Wc0V7JwDm3ry68EyVI7Zw99UEDGRWHAM8/sEskPdjy\n" +
-                    "UBSCE8cenu6Fv2V2wFJaSLAAVw0j3zRwYB+NE6RvAgMBAAGgADANBgkqhkiG9w0B\n" +
-                    "AQsFAAOCAQEAF+31ScOV6ZVvVUgSOFzvODbXA55vVjL6vjYRlpZyfYQPulnA5bmN\n" +
-                    "4LkmPCLiI+/fgZ7aM+4G6VZiHMCgprUX0XSWmVhWEilex0L9eQCkHYewOZXuLFbV\n" +
-                    "84WjmQj8oxdCyvXsff20S2hTCw2nxpJODRlSRfEyWsiHLCUPNxg1CaNcCk29ZeFy\n" +
-                    "XGCAADk27/acL0Yyf515iQ5NbMoqSuC6cz32ewZefNm4STgLagvylPR2i9o6tILR\n" +
-                    "WtMvfbp/IFnmPnM1lz0VhzgOUyHPTeF5TZZSGoN8co/+5JwQ/XkEMyXpc/WPDhLv\n" +
-                    "dPxdZfK8rGCqWi8Iq4dUTDxg6jUCnGR/ZA==";
 
     private static final String CSR_WITH_HEADERS =
             BEGIN_CSR
@@ -254,9 +236,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         testIssuerDn += randomSuffix;
         testUsername += randomSuffix;
         testCertProfileName += randomSuffix;
-        testCertProfileNameDnOverride += randomSuffix;
         testEeProfileName += randomSuffix;
-        testEeProfileNameDnOverride += randomSuffix;
         CryptoProviderTools.installBCProvider();
         x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testIssuerDn);
     }
@@ -276,9 +256,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         }
         internalCertificateStoreSession.removeCertificatesByUsername(testUsername);
         certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName);
-        certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileNameDnOverride);
         endEntityProfileSessionRemote.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileName);
-        endEntityProfileSessionRemote.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameDnOverride);
     }
 
     @Test
@@ -1296,51 +1274,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
         // Assert End Entity DN is used. CSR subject should be ignored.
         assertEquals("Returned certificate contained unexpected subject DN", "O=PrimeKey,CN=" + testUsername, cert.getSubjectDN().getName());
-    }
-
-    @Test
-    public void certificateRequestExpectCsrSubjectUsed() throws Exception {
-        CertificateProfile certificateProfileSdnOverride = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfileSdnOverride.setAllowDNOverride(true);
-        int certificateProfileSdnOverrideId =
-                certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileNameDnOverride, certificateProfileSdnOverride);
-        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-        endEntityProfile.setDefaultCertificateProfile(certificateProfileSdnOverrideId);
-        endEntityProfile.setAvailableCertificateProfileIds(List.of(certificateProfileSdnOverrideId));
-        int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(
-                INTERNAL_ADMIN_TOKEN, testEeProfileNameDnOverride, endEntityProfile);
-        // Add End Entity
-        EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=abc,ST=Louisiana", x509TestCa.getCAId(), null,
-                null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileSdnOverrideId,
-                SecConst.TOKEN_SOFT_BROWSERGEN, new ExtendedInformation());
-        userdata.setPassword("foo123");
-        userdata.setStatus(EndEntityConstants.STATUS_NEW);
-        userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-        userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-        endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
-        // Create CSR REST request
-        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
-                certificateAuthorityName(testCaName).
-                username(testUsername).
-                password("foo123").
-                certificateRequest(CSR_WITH_CN_C_O_postalCode).build();
-        // Construct POST  request
-        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
-        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
-        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
-
-        // Send request
-        final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
-        final String actualJsonString = actualResponse.readEntity(String.class);
-        // Verify response
-        assertJsonContentType(actualResponse);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final String base64cert = (String) actualJsonObject.get("certificate");
-        assertNotNull(base64cert);
-        byte[] certBytes = Base64.decode(base64cert.getBytes());
-        X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
-        // Assert CSR DN is used. End Entity DN Should be overwritten.
-        assertEquals("Returned certificate contained unexpected subject DN", "CN=abc19,O=someorg,C=SWE,PostalCode=12345", cert.getSubjectDN().getName());
     }
 
     @Test
