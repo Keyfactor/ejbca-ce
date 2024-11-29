@@ -28,6 +28,11 @@ public class InternalCertificateCreateSessionBean implements InternalCertificate
 
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
+
+    @Override
+    public void assertSubjectNotEmpty(EndEntityInformation endEntityInformation) throws CertificateCreateException {
+        certificateCreateSession.assertSubjectNotEmpty(endEntityInformation);
+    }
     
     @Override
     public void assertSubjectEnforcements(CAInfo caInfo, EndEntityInformation endEntityInformation) throws CertificateCreateException {
