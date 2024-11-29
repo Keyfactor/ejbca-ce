@@ -77,7 +77,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
 
     @Override
     public DatabaseContent clearTables(boolean clearProtectedTables) {
-        return new DatabaseContent(
+        var databaseContent = new DatabaseContent(
                 clearTable(AccessRuleData.class, true),
                 clearTable(AccessTreeUpdateData.class, true),
                 clearTable(AccessUserAspectData.class, true),
@@ -88,7 +88,6 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
                 clearTable(AdminGroupData.class, true),
                 clearTable(AdminPreferencesData.class, true),
                 clearTable(ApprovalData.class, true),
-                clearTable(AuditRecordData.class, true),
                 clearTable(Base64CertData.class, true),
                 clearTable(BlacklistData.class, true),
                 clearTable(CAData.class, clearProtectedTables),
@@ -115,6 +114,8 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
                 clearTable(UserData.class, clearProtectedTables),
                 clearTable(UserDataSourceData.class, true)
         );
+        entityManager.flush();
+        return databaseContent;
     }
 
     @Override
@@ -129,7 +130,6 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
         databaseContent.adminGroupData().forEach(entityManager::persist);
         databaseContent.adminPreferencesData().forEach(entityManager::persist);
         databaseContent.approvalData().forEach(entityManager::persist);
-        databaseContent.auditRecordData().forEach(entityManager::persist);
         databaseContent.base64CertData().forEach(entityManager::persist);
         databaseContent.blacklistData().forEach(entityManager::persist);
         databaseContent.caData().forEach(entityManager::persist);
@@ -155,6 +155,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
         databaseContent.serviceData().forEach(entityManager::persist);
         databaseContent.userData().forEach(entityManager::persist);
         databaseContent.userDataSourceData().forEach(entityManager::persist);
+        entityManager.flush();
     }
 
 }

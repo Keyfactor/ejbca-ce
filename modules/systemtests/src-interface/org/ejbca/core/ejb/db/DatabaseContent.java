@@ -63,7 +63,6 @@ public record DatabaseContent(
         List<AdminGroupData> adminGroupData,
         List<AdminPreferencesData> adminPreferencesData,
         List<ApprovalData> approvalData,
-        List<AuditRecordData> auditRecordData,
         List<Base64CertData> base64CertData,
         List<BlacklistData> blacklistData,
         List<CAData> caData,
