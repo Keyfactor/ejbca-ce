@@ -36,8 +36,10 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
@@ -55,9 +57,18 @@ public class EjbcaAuditorSessionBeanSystemTest extends RoleUsingTestCase {
     private RoleSessionRemote roleSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleSessionRemote.class);
     
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaAuditorSessionBeanSystemTest"));
-    
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @Before
     public void setup() throws RoleExistsException, RoleNotFoundException {
+        try {
+            tearDown();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
         super.setUpAuthTokenAndRole(null, ROLE_NAME, Arrays.asList(AuditLogRules.VIEW.resource()), null);
     }
 
