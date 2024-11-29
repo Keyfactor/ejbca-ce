@@ -1409,6 +1409,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             }
 
             if (isTeletexString.get()) {
+                // To support legacy TeletexNamingStyle or other legacy formats (see #CmpRaThrowAwaySystemTest #testLegacyEncodedRequestOverride)
                 subjectDNName = request.getRequestX500Name();
                 if (log.isDebugEnabled()) {
                     log.debug("Using X509Name from request instead of user's registered and X500Name style is TeletexNamingStyle.");
