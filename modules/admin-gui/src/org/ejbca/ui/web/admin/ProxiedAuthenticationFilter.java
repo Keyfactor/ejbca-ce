@@ -32,6 +32,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.util.ThreadContext;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -60,48 +61,57 @@ public class ProxiedAuthenticationFilter implements Filter {
 
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain filterChain) throws IOException, ServletException {
-		if (request.getAttribute(ATTR_X509CERTIFICATE) == null) {
-			if (proxiedAuthenticationEnabled) {
-				final String username = (String) request.getAttribute(ATTR_PROXIED_AUTH_TOKEN_STRING);
-				if (username != null) {
-				    final EjbLocalHelper ejb = new EjbLocalHelper();
-				    if (log.isDebugEnabled()) {
-	                    log.debug("No client certificate supplied through SSL/TLS. Trying alternative certificate emulation lookup for subject '" + username + "'.");
-				    }
-					final Collection<Certificate> userCerts = ejb.getCertificateStoreSession().findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
-					Date latestestIssuance = null;
-					final X509Certificate[] tempCerts = new X509Certificate[1];
-					for (final Certificate cert : userCerts) {
-						if (cert instanceof X509Certificate) {
-							final Date thisIssuance = ((X509Certificate)cert).getNotBefore();
-							if (latestestIssuance == null || latestestIssuance.after(thisIssuance)) {
-								latestestIssuance = thisIssuance;
-								tempCerts[0] = (X509Certificate) cert;
+		final boolean containsRequestId = ThreadContext.containsRequestId();
+		try {
+			ThreadContext.createRequestIdIfAbsent();
+			if (request.getAttribute(ATTR_X509CERTIFICATE) == null) {
+				if (proxiedAuthenticationEnabled) {
+					final String username = (String) request.getAttribute(ATTR_PROXIED_AUTH_TOKEN_STRING);
+					if (username != null) {
+						final EjbLocalHelper ejb = new EjbLocalHelper();
+						if (log.isDebugEnabled()) {
+							log.debug("No client certificate supplied through SSL/TLS. Trying alternative certificate emulation lookup for subject '" + username + "'.");
+						}
+						final Collection<Certificate> userCerts = ejb.getCertificateStoreSession().findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
+						Date latestestIssuance = null;
+						final X509Certificate[] tempCerts = new X509Certificate[1];
+						for (final Certificate cert : userCerts) {
+							if (cert instanceof X509Certificate) {
+								final Date thisIssuance = ((X509Certificate)cert).getNotBefore();
+								if (latestestIssuance == null || latestestIssuance.after(thisIssuance)) {
+									latestestIssuance = thisIssuance;
+									tempCerts[0] = (X509Certificate) cert;
+								}
+							}
+						}
+						if (tempCerts[0] == null) {
+							final String msg = "Authentication failed. No certificate found for admin with subject '"+username+"'.";
+							log.info(msg);
+							showError((HttpServletResponse)response, msg);
+							return;
+						} else {
+							// Create a temporary Admin/AuthenticationToken to make sure it is NOT authorized with Superadmin rights.
+							final AuthenticationToken admin = new X509CertificateAuthenticationToken(tempCerts[0]);
+							if (ejb.getAuthorizationSession().isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
+								final String msg = "Authentication failed. Superadmin login is only allowed using client certificate. Subject was '"+username+"'.";
+								log.info(msg);
+								showError((HttpServletResponse)response, msg);
+								return;
+							} else {
+								log.info("Using client certificate emulation for subject '" + username + "'.");
+								request.setAttribute(ATTR_X509CERTIFICATE, tempCerts);
 							}
 						}
 					}
-					if (tempCerts[0] == null) {
-					    final String msg = "Authentication failed. No certificate found for admin with subject '"+username+"'.";
-					    log.info(msg);
-					    showError((HttpServletResponse)response, msg);
-					    return;
-					} else {
-	                    // Create a temporary Admin/AuthenticationToken to make sure it is NOT authorized with Superadmin rights.
-	                    final AuthenticationToken admin = new X509CertificateAuthenticationToken(tempCerts[0]);
-	                    if (ejb.getAuthorizationSession().isAuthorizedNoLogging(admin, StandardRules.ROLE_ROOT.resource())) {
-	                        final String msg = "Authentication failed. Superadmin login is only allowed using client certificate. Subject was '"+username+"'.";
-	                        log.info(msg);
-	                        showError((HttpServletResponse)response, msg);
-	                        return;
-	                    } else {
-	                        log.info("Using client certificate emulation for subject '" + username + "'.");
-	                        request.setAttribute(ATTR_X509CERTIFICATE, tempCerts);
-	                    }
-					}
 				}
 			}
+			filterChain.doFilter(request, response);
 		}
-    	filterChain.doFilter(request, response);
+		finally {
+			if (!containsRequestId) {
+				ThreadContext.removeRequestId();
+			}
+		}
 	}
 	
 	private void showError(final HttpServletResponse httpServletResponse, final String content) throws IOException {

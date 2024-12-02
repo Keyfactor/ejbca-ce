@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.util.ThreadContext;
 
 /**
  * Filter that prevents a browser to cache everything except resources like java script, css and images.
@@ -56,16 +57,25 @@ public class NoCacheFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) req;
-        HttpServletResponse response = (HttpServletResponse) res;
+        final boolean containsRequestId = ThreadContext.containsRequestId();
+        try {
+            ThreadContext.createRequestIdIfAbsent();
+            HttpServletRequest request = (HttpServletRequest) req;
+            HttpServletResponse response = (HttpServletResponse) res;
 
-        if (!cacheURI(request)) {
-            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
-            response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
-            response.setDateHeader("Expires", 0); // Proxies.
+            if (!cacheURI(request)) {
+                response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+                response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+                response.setDateHeader("Expires", 0); // Proxies.
+            }
+
+            chain.doFilter(req, res);
         }
-
-        chain.doFilter(req, res);
+        finally {
+            if (!containsRequestId) {
+                ThreadContext.removeRequestId();
+            }
+        }
     }
 
     @Override

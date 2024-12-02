@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.util.ThreadContext;
 import org.ejbca.ui.web.RequestHelper;
 
 /**
@@ -45,37 +46,46 @@ public class EncodingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException,IOException {
-        final HttpServletRequest httpreq = (HttpServletRequest) request;
-        
-        // The way we use OWASP CSRF Guard makes all POST requests to our form in the last remaining jsp pages protected against csrf attacks
-        // it does however not protect GET requests to jsp pages, and service methods in jsp pages will respond to both GET and POST
-        // therefore we will not allow any actions to jsp pages, that tries to perform anything (i.e. edituser etc) using anything else than POST
-        // GET is still required in order to link to the pages to display them 
-        log.trace("Using EncodingFilter to ensure that JSP actions can only be performed using HTTP POST");
-        if (!httpreq.getMethod().equalsIgnoreCase("post")) {
-            // It's not a POST request, check if it is an operation that tries to do something
-            final Enumeration<String> params = httpreq.getParameterNames();
-            while (params.hasMoreElements()) {
-                final String param = (String) params.nextElement();
-                if (StringUtils.contains(param, "button")) {
-                    // It is an action to a JSP page clicking a button, i.e. trying to perform some action not just viewing the page
-                    // for performing actions we require POST, so disallow this
-                    log.warn("Refusing HTTP GET request containing parameter named '" + param + "'. Requests with parameters matching *button* must be done with HTTP POST.");
-                    ((HttpServletResponse) response).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-                    return; // don't continue on down the chain
+        final boolean containsRequestId = ThreadContext.containsRequestId();
+        try {
+            ThreadContext.createRequestIdIfAbsent();
+            final HttpServletRequest httpreq = (HttpServletRequest) request;
+
+            // The way we use OWASP CSRF Guard makes all POST requests to our form in the last remaining jsp pages protected against csrf attacks
+            // it does however not protect GET requests to jsp pages, and service methods in jsp pages will respond to both GET and POST
+            // therefore we will not allow any actions to jsp pages, that tries to perform anything (i.e. edituser etc) using anything else than POST
+            // GET is still required in order to link to the pages to display them
+            log.trace("Using EncodingFilter to ensure that JSP actions can only be performed using HTTP POST");
+            if (!httpreq.getMethod().equalsIgnoreCase("post")) {
+                // It's not a POST request, check if it is an operation that tries to do something
+                final Enumeration<String> params = httpreq.getParameterNames();
+                while (params.hasMoreElements()) {
+                    final String param = (String) params.nextElement();
+                    if (StringUtils.contains(param, "button")) {
+                        // It is an action to a JSP page clicking a button, i.e. trying to perform some action not just viewing the page
+                        // for performing actions we require POST, so disallow this
+                        log.warn("Refusing HTTP GET request containing parameter named '" + param + "'. Requests with parameters matching *button* must be done with HTTP POST.");
+                        ((HttpServletResponse) response).sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+                        return; // don't continue on down the chain
+                    }
+
                 }
-                
+            }
+            log.trace("Using EncodingFilter to set HTTP request character encoding");
+            try {
+                RequestHelper.setDefaultCharacterEncoding(httpreq);
+            } catch (UnsupportedEncodingException e) {
+                log.error("UnsupportedEncodingException: ", e);
+            }
+            //WARNING: do NOT swallow any Exception!!! If container can not see any exception, it will not redirect client to related error page.
+            //You can catch Exceptions and print them, and you must throw them at last!
+            chain.doFilter(request, response);
+        }
+        finally {
+            if (!containsRequestId) {
+                ThreadContext.removeRequestId();
             }
         }
-        log.trace("Using EncodingFilter to set HTTP request character encoding");
-        try {
-            RequestHelper.setDefaultCharacterEncoding(httpreq);
-        } catch (UnsupportedEncodingException e) {
-            log.error("UnsupportedEncodingException: ", e);
-        }
-        //WARNING: do NOT swallow any Exception!!! If container can not see any exception, it will not redirect client to related error page.
-        //You can catch Exceptions and print them, and you must throw them at last!
-        chain.doFilter(request, response);
     }
 
     @Override
