@@ -16,6 +16,8 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
+import org.apache.logging.log4j.ThreadContext;
+
 public class Log4jLogRedactionRedactHandler extends Handler {
 
     @Override
@@ -27,7 +29,16 @@ public class Log4jLogRedactionRedactHandler extends Handler {
     }
 
     @Override
-    public void publish(LogRecord logRecord) {        
+    public void publish(LogRecord logRecord) {   
+        
+        String requestId = ThreadContext.get("REQUEST_ID");
+        
+        if (requestId!=null) {
+            // pretend StringBuilder does not exist
+            logRecord.setMessage("[" + requestId + "]" + logRecord.getMessage());
+            // also logRecord.setThrown(
+        }
+        
         // skip messages from INFO or DEBUG i.e. most server logs
         // @see org.ejbca.util.Log4jHandler
         if ( logRecord.getLevel().intValue() >= Level.FINE.intValue() // DEBUG

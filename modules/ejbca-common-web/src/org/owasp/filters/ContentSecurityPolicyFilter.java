@@ -21,6 +21,7 @@
 package org.owasp.filters;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.logging.log4j.ThreadContext;
 import org.ejbca.config.WebConfiguration;
 
 import jakarta.servlet.Filter;
@@ -29,6 +30,7 @@ import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -148,7 +150,11 @@ public class ContentSecurityPolicyFilter implements Filter {
         httpResponse.setHeader("Feature-Policy", "vibrate 'none'; autoplay 'none'; camera 'none'; microphone 'none'; midi 'none'; gyroscope 'none'; accelerometer 'none'; magnetometer 'none'; payment 'none'" );
         // Referrer policy: https://www.w3.org/TR/referrer-policy/
         httpResponse.setHeader("Referrer-Policy", "no-referrer-when-downgrade" );
+	String sessionId = ((HttpServletRequest) request).getRequestedSessionId(); 
+        ThreadContext.put("REQUEST_ID", "request-id-session-" + sessionId.substring(0, sessionId.length()-4));
         fchain.doFilter(request, response);
+        ThreadContext.put("REQUEST_ID", null);
+        
     }
 
     private String normalizePolicies(List<String> cspPolicies) {
