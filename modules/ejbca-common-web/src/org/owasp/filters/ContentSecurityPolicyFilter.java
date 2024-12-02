@@ -150,8 +150,10 @@ public class ContentSecurityPolicyFilter implements Filter {
         httpResponse.setHeader("Feature-Policy", "vibrate 'none'; autoplay 'none'; camera 'none'; microphone 'none'; midi 'none'; gyroscope 'none'; accelerometer 'none'; magnetometer 'none'; payment 'none'" );
         // Referrer policy: https://www.w3.org/TR/referrer-policy/
         httpResponse.setHeader("Referrer-Policy", "no-referrer-when-downgrade" );
-	String sessionId = ((HttpServletRequest) request).getRequestedSessionId(); 
-        ThreadContext.put("REQUEST_ID", "request-id-session-" + sessionId.substring(0, sessionId.length()-4));
+	String sessionId = ((HttpServletRequest) request).getRequestedSessionId();
+        if (sessionId!=null){	
+        	ThreadContext.put("REQUEST_ID", "request-id-session-" + sessionId.substring(0, sessionId.length()-4));
+	}
         fchain.doFilter(request, response);
         ThreadContext.put("REQUEST_ID", null);
         

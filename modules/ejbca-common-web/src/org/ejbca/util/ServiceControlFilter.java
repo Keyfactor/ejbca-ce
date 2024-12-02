@@ -68,7 +68,7 @@ public class ServiceControlFilter implements Filter {
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
     
-    // randoms are never secure ;-)
+    // use secure random or uuid generator
     Random random;
 
     @Override
