@@ -80,6 +80,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
@@ -545,7 +546,7 @@ public abstract class BatchCreateTool {
         if (createJKS) {
             ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
         } else {
-            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
+            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain, KeyStoreCipher.PKCS12_AES256_AES128);
         }
 
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.createkeystore", username);

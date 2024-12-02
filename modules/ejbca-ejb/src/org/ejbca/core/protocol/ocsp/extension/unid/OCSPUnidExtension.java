@@ -100,7 +100,7 @@ public class OCSPUnidExtension implements OCSPExtension {
         }
         
         // The Unid is in the DN component serialNumber
-        serialNumber = DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "SN");
+        serialNumber = DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "SN");
         if (serialNumber != null) {
             if (log.isDebugEnabled()) {
                 log.debug("Found serialNumber: " + serialNumber);
@@ -115,7 +115,7 @@ public class OCSPUnidExtension implements OCSPExtension {
             fnr = unidfnrSession.fetchUnidFnrData(serialNumber);
         } else {
             String errMsg = intres.getLocalizedMessage("ocsp.errorunidnosnindn",
-                    LogRedactionUtils.getSubjectDnLogSafe(cert.getSubjectDN().getName()));
+                    LogRedactionUtils.getSubjectDnLogSafe(cert.getSubjectX500Principal().getName()));
             log.error(errMsg);
             errCode = UnidFnrOCSPExtensionCode.ERROR_NO_SERIAL_IN_DN.getValue();
             return null;

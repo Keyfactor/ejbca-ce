@@ -144,7 +144,6 @@ public class EjbcaWSNonAdminSystemTest extends CommonEjbcaWs {
         int approvalProfileId = approvalProfileSession.addApprovalProfile(intadmin, approvalProfile);
         approvalProfile.setProfileId(approvalProfileId);
         configurationSession.backupConfiguration();
-        configurationSession.updateProperty("jaxws.approvalprofileid", String.valueOf(approvalProfileId));
     }
 
     @Override

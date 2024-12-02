@@ -272,8 +272,8 @@ public class EjbcaWS implements IEjbcaWS {
             logger.paramPut(TransactionTags.OAUTH_ISSUER.toString(), token.getClaims().getIssuer());
         } else {
             final X509Certificate cert = ((X509CertificateAuthenticationToken) admin).getCertificate();
-            logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectDN().toString());
-            logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerDN().toString());
+            logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectX500Principal().toString());
+            logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerX500Principal().toString());
         }
             // Log IP address
             MessageContext msgCtx = wsContext.getMessageContext();
@@ -1851,7 +1851,7 @@ public class EjbcaWS implements IEjbcaWS {
 			final AuthenticationToken tmp = getAdmin(true);
 			// We know client certificate is needed, so no other authentication tokens can exist
 			X509Certificate adminCert = ((X509CertificateAuthenticationToken)tmp).getCertificate();
-			admin = new AlwaysAllowLocalAuthenticationToken(adminCert.getSubjectDN().getName());
+			admin = new AlwaysAllowLocalAuthenticationToken(adminCert.getSubjectX500Principal().getName());
 		}else{
 			admin = getAdmin();
 		}

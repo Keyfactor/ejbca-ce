@@ -305,7 +305,7 @@ public class PrivateKeyUsageSignSessionSystemTest extends SignSessionCommon {
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123",
                 new PublicKeyWrapper(rsakeyPrivKeyUsagePeriod.getPublic()), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
-        String dn = cert.getSubjectDN().getName();
+        String dn = cert.getSubjectX500Principal().getName();
         assertEquals(DnComponents.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), DnComponents.stringToBCDNString(dn));
         return cert;
     }

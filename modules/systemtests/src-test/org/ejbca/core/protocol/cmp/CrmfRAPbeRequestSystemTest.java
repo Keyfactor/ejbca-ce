@@ -371,6 +371,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
                 PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), false);
         X509Certificate cert = checkCmpCertRepMessage(cmpConfiguration, ALIAS, user, this.cacert, resp, reqId);
         // Get the returned certificate and verify that it is multi-value
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         assertEquals("DN should be with multi-value RDN", mvdn, cert.getSubjectDN().toString());
     }
 
@@ -716,7 +717,7 @@ public class CrmfRAPbeRequestSystemTest extends CmpTestCase {
         int approvedRevocations = 0;
         while (i.hasNext()) {
             X509Certificate cert = (X509Certificate) i.next();
-            final String issuer = cert.getIssuerDN().toString();
+            final String issuer = cert.getIssuerX500Principal().toString();
             BigInteger serialNumber = cert.getSerialNumber();
             boolean isRevoked = certificateStoreSession.isRevoked(issuer, serialNumber);
             if ((reason != RevokedCertInfo.NOT_REVOKED && !isRevoked) || (reason == RevokedCertInfo.NOT_REVOKED && isRevoked)) {

@@ -387,7 +387,7 @@ public class RevocationApprovalSystemTest extends CaTestCase {
             createUser(internalAdmin, username, approvalCAID);
             X509Certificate usercert = (X509Certificate) EJBTools.unwrapCertCollection(certificateStoreSession.findCertificatesByUsername(username)).iterator().next();
             try {
-                endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
+                endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerX500Principal().toString(),
                         RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                 fail(ERRORNOTSENTFORAPPROVAL);
             } catch (ApprovalException e) {
@@ -395,7 +395,7 @@ public class RevocationApprovalSystemTest extends CaTestCase {
             } catch (WaitingForApprovalException e) {
             }
             try {
-                endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
+                endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerX500Principal().toString(),
                         RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
                 fail(ERRORNOTSENTFORAPPROVAL);
             } catch (ApprovalException e) {
@@ -410,7 +410,7 @@ public class RevocationApprovalSystemTest extends CaTestCase {
             assertEquals("Certificate was not revoked.", CertificateStatus.REVOKED, certificateStoreSession.getStatus(CertTools.getIssuerDN(usercert), CertTools.getSerialNumber(usercert)));
             // Unrevoke
             try {
-                endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
+                endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerX500Principal().toString(),
                         RevokedCertInfo.NOT_REVOKED);
                 fail(ERRORNOTSENTFORAPPROVAL);
             } catch (ApprovalException e) {
@@ -418,7 +418,7 @@ public class RevocationApprovalSystemTest extends CaTestCase {
             } catch (WaitingForApprovalException e) {
             }
             try {
-                endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerDN().toString(),
+                endEntityManagementSession.revokeCert(requestingAdmin, usercert.getSerialNumber(), usercert.getIssuerX500Principal().toString(),
                         RevokedCertInfo.NOT_REVOKED);
                 fail(ERRORNOTSENTFORAPPROVAL);
             } catch (ApprovalException e) {
@@ -566,7 +566,7 @@ public class RevocationApprovalSystemTest extends CaTestCase {
         try {
             //Revoke certificate with new back dated revocation date. Should be possible 
             endEntityManagementSession.revokeCert(requestingAdmin, usercertTest06.getSerialNumber(), newBackdatedRevocationDate, null,
-                    usercertTest06.getIssuerDN().toString(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, true);
+                    usercertTest06.getIssuerX500Principal().toString(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, true);
             fail("WaitingForApprovalException should have been thrown to show that this action is waiting for approval.");
         } catch (ApprovalException e) {
             fail("Reporting that approval request exists, when it does not.");

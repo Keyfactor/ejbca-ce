@@ -19,7 +19,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -31,11 +30,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import jakarta.xml.bind.DatatypeConverter;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
 
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.crypto.params.Ed25519KeyGenerationParameters;
-import org.bouncycastle.crypto.params.Ed448KeyGenerationParameters;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -56,8 +54,7 @@ import org.ejbca.util.PerformanceTest.CommandFactory;
 import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import org.ejbca.util.query.BasicMatch;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
+import jakarta.xml.bind.DatatypeConverter;
 
 /**
  * @version $Id$
@@ -83,9 +80,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		final private String keyAlgorithm;
         final private int keySize;
         final private String curve;
-        
+
 		MyCommandFactory( String _caName, String _endEntityProfileName, String _certificateProfileName,
-						  TestType _testType, int _maxCertificateSN, String _subjectDN, 
+						  TestType _testType, int _maxCertificateSN, String _subjectDN,
 						  String keyAlgorithm, int keySize, String curve ) {
 			this.testType = _testType;
 			this.caName = _caName;
@@ -97,17 +94,17 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             this.keySize = keySize;
             this.curve = curve;
 		}
-		
+
 		@Override
 		public Command[] getCommands() throws Exception {
 		    // create the key pair generator for P10 requests
-			final KeyPairGenerator kpg = KeyPairGenerator.getInstance(keyAlgorithm);
+			final KeyPairGenerator kpg = KeyPairGenerator.getInstance(keyAlgorithm, BouncyCastleProvider.PROVIDER_NAME);
 			if (keyAlgorithm.equals("EC")) {
 			    kpg.initialize(new ECGenParameterSpec(curve));
 			} else if (keyAlgorithm.equals("RSA")) {
 			    kpg.initialize(keySize);
 			}
-			
+
 			final EjbcaWS ejbcaWS = getEjbcaRAWSFNewReference();
 			final JobData jobData = new JobData(this.subjectDN);
 			switch (this.testType) {
@@ -158,7 +155,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		}
 		@Override
 		public String toString() {
-			return "Username '"+this.userName+"' with password '"+this.passWord+"'."; 
+			return "Username '"+this.userName+"' with password '"+this.passWord+"'.";
 		}
 	}
 	private class BaseCommand {
@@ -208,13 +205,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			StressTestCommand.this.performanceTest.getLog().error("no certificate generated for user "+jobData.userName);
 			return false;
 		}
-		final String commonName = DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "CN");
+		final String commonName = DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "CN");
 		if (validateUsername && !commonName.equals(jobData.userName)) {
-			StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
+			StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectX500Principal()+"\".");
 			return false;
 		}
 		jobData.userCertsGenerated.add(cert);
-		StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
+		StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectX500Principal()+"\".");
 		StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
 		return true;
 	}
@@ -327,7 +324,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		@Override
 		public boolean doIt() throws Exception {
 			for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++) {
-				this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+				this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 										this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 										REVOKATION_REASON_UNSPECIFIED);
 			}
@@ -352,14 +349,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		}
 		private void revokeBackdated( int i ) throws Exception {
 			this.ejbcaWS.revokeCertBackdated(
-					this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+					this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 					this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 					REVOKATION_REASON_UNSPECIFIED,
 					this.revoceTime);
 		}
 		private void revoke( int i ) throws Exception {
 			this.ejbcaWS.revokeCert(
-					this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+					this.jobData.userCertsToBeRevoked[i].getIssuerX500Principal().getName(),
 					this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
 					REVOKATION_REASON_UNSPECIFIED);
 		}
@@ -425,9 +422,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			return "Relative time spent setting status of user to NEW";
 		}
 	} // EditUserCommand
-	
+
 	/**
-	 * Command for using the "single transaction" certificateRequest method from EjbcaWS 
+	 * Command for using the "single transaction" certificateRequest method from EjbcaWS
 	 */
 	private class CertificateRequestCommand extends BaseCommand implements Command {
 		final private EjbcaWS ejbcaWS;
@@ -457,7 +454,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 this.jobData.userName = "WSTESTUSER_REUSE_"+StressTestCommand.this.performanceTest.nextLong();
             }
             String signAlgorithm = "SHA256WithRSA";
-            if (keys.getPublic().getAlgorithm().equals("ECDSA")) {
+            if (keys.getPublic().getAlgorithm().startsWith("EC")) {
                 signAlgorithm = "SHA256withECDSA";
             } else if(keys.getPublic().getAlgorithm().equalsIgnoreCase("Ed25519")) {
                 signAlgorithm = "ed25519";
@@ -466,7 +463,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
             }
 			try {
                 this.pkcs10 = CertTools.genPKCS10CertificationRequest(
-                        signAlgorithm, 
+                        signAlgorithm,
                         DnComponents.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
             } catch (OperatorCreationException e) {
                 getPrintStream().println(e.getLocalizedMessage());
@@ -503,7 +500,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			return "Relative time spent setting status of user to NEW";
 		}
 	} // CertificateRequestCommand
-	
+
 	/**
 	 * @param _args
 	 */
@@ -577,9 +574,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			}
 			final String keyAlgorithm = System.getProperty("keyAlgorithm", "RSA");
 			final String curve = System.getProperty("curve", "secp192r1");
-            final int keySize = Integer.parseInt(System.getProperty("keySize", 
+            final int keySize = Integer.parseInt(System.getProperty("keySize",
                     keyAlgorithm.equals("RSA") ? "1024" : "571"));
-			
+
 			this.performanceTest.execute(new MyCommandFactory(
 			        caName, endEntityProfileName, certificateProfileName, testType, maxCertificateSN, subjectDN,
 			        keyAlgorithm, keySize, curve),

@@ -22,9 +22,6 @@ import jakarta.xml.bind.annotation.XmlAccessType;
 import jakarta.xml.bind.annotation.XmlAccessorType;
 import jakarta.xml.bind.annotation.XmlType;
 
-import org.bouncycastle.util.Properties;
-import org.cesecore.certificates.certificate.CertificateConstants;
-
 import com.keyfactor.util.Base64;
 
 /**

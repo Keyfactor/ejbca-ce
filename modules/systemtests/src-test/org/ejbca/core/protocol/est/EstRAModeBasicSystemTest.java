@@ -164,7 +164,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             final Collection<X509CertificateHolder> certs = certstore.getMatches(null);
             assertEquals("EST test CA has a single CA certificate", 1, certs.size());
             final X509Certificate testcacert = (X509Certificate) getTestCACert(TESTCA_NAME);
-            assertEquals("cacerts response subjectDN must be our EST test CAs subjectDN", testcacert.getSubjectDN().getName(), certs.iterator().next().getSubject().toString());
+            assertEquals("cacerts response subjectDN must be our EST test CAs subjectDN", testcacert.getSubjectX500Principal().getName(), certs.iterator().next().getSubject().toString());
         } finally {
         }
         log.trace("<testGetCACerts()");
@@ -225,6 +225,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("simpleenroll response certifciate must verify with CA certificate");
             }
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
 
@@ -249,6 +250,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("serverkeygen response certifciate must verify with CA certificate");
             }
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertNotEquals("serverkeygen response public key must be the differant than the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
 
@@ -268,6 +270,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("serverkeygen response certifciate must verify with CA certificate");
             }
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertNotEquals("serverkeygen response public key must be the differant than the PKCS#10 request", Base64.toBase64String(ec256New.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
             assertNotEquals("serverkeygen response public key must be the differant than the old key", Base64.toBase64String(oldCert.getPublicKey().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
@@ -359,6 +362,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("simpleenroll response certifciate must verify with CA certificate");
             }
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
 
@@ -372,6 +376,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("serverkeygen response certifciate must verify with CA certificate");
             }
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertNotEquals("serverkeygen response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
 
@@ -464,6 +469,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("simpleenroll response certifciate must verify with CA certificate");
             }
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request", Base64.toBase64String(ec256New.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
             // Checking for enrollment with the same public key only compares the TLS cert (reenroll authentication) with the CSR, it does not loop through all existing client certificates
@@ -565,6 +571,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("simpleenroll response certifciate must verify with CA certificate");
             }
+          //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("simpleenroll response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertEquals("simpleenroll response public key must be the same as the PKCS#10 request",
                     Base64.toBase64String(mldsa44.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
@@ -591,6 +598,7 @@ public class EstRAModeBasicSystemTest extends EstTestCase {
             } catch (SignatureException e) {
                 fail("serverkeygen response certifciate must verify with CA certificate");
             }
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("serverkeygen response subjectDN must be our PKCS#10 request DN", requestDN, cert.getSubjectDN().toString());
             assertNotEquals("serverkeygen response public key must be the differant than the PKCS#10 request",
                     Base64.toBase64String(mldsa44.getPublic().getEncoded()), Base64.toBase64String(cert.getPublicKey().getEncoded()));
