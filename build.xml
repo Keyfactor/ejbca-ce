@@ -974,6 +974,9 @@
 				<exclude name=".gitlab-ci.yml" />
 				<exclude name="OWNERS" />
 				<exclude name="OWNERS_ALIASES" />
+				<exclude name="SEMVER" />
+				<exclude name="VERSION" />
+				<exclude name="TAGS" />
 				<exclude name="src/package/" />
 				<exclude name="lib/coverage/**" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
