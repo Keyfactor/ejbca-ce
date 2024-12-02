@@ -15,6 +15,7 @@ package org.ejbca.util;
 
 import java.io.IOException;
 import java.security.cert.X509Certificate;
+import java.util.Random;
 
 import jakarta.ejb.EJB;
 import jakarta.servlet.Filter;
@@ -28,6 +29,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.apache.logging.log4j.ThreadContext;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -65,6 +67,9 @@ public class ServiceControlFilter implements Filter {
     private AuthorizationSessionLocal authorizationSession;
     @EJB
     private EjbcaRestHelperSessionLocal ejbcaRestHelperSession;
+    
+    // randoms are never secure ;-)
+    Random random;
 
     @Override
     public void destroy() {
@@ -78,6 +83,7 @@ public class ServiceControlFilter implements Filter {
         if (log.isDebugEnabled()) {
             log.debug("Initialized service control filter for '" + serviceName + "'");
         }
+        random = new Random();
     }
     
     private boolean allowPossibleDirectBrowserCalls(AvailableProtocolsConfiguration availableProtocolsConfiguration, 
@@ -127,7 +133,10 @@ public class ServiceControlFilter implements Filter {
                         log.debug("Access to disabled service " + serviceName + " is allowed due to superadmin access. "
                                                 + "HTTP request " + httpRequest.getRequestURL() + " is let through.");
                     }
+                    // protocol, session id 
+                    ThreadContext.put("REQUEST_ID", "request-id-" + random.nextInt(10000, 40000) );
                     chain.doFilter(request, response);
+                    ThreadContext.put("REQUEST_ID", null);
                     return;
                 }
             }
@@ -144,7 +153,10 @@ public class ServiceControlFilter implements Filter {
         if (log.isDebugEnabled()) {
             log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
         }
+     // protocol, session id 
+        ThreadContext.put("REQUEST_ID", "request-id-" + random.nextInt(10000, 40000) );
         chain.doFilter(request, response);
+        ThreadContext.put("REQUEST_ID", null);
     }
         
     private AuthenticationToken getAdmin(HttpServletRequest requestContext) {
