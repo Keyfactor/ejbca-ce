@@ -13,14 +13,17 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -108,6 +111,7 @@ import org.ejbca.ui.web.configuration.exception.CacheClearException;
 import org.primefaces.component.tabview.Tab;
 import org.primefaces.component.tabview.TabView;
 import org.primefaces.event.TabChangeEvent;
+import org.primefaces.model.file.UploadedFile;
 
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.StreamSizeLimitExceededException;
@@ -123,11 +127,42 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
     private static final long serialVersionUID = -6653610614851741905L;
     private static final Logger log = Logger.getLogger(SystemConfigMBean.class);
+    
+    private static final long MAX_HEADER_FILE_SIZE = 250 * 1024L; // 1 MB
+    private static final String[] ALLOWED_HEADER_FILE_EXTENSIONS = {"jpg", "jpeg", "png"};
+    
+    private transient UploadedFile headerFile;
 
+    public UploadedFile getHeaderFile() {
+        return headerFile;
+    }
+
+    public void setHeaderFile(UploadedFile headerFile) {
+        if (headerFile.getSize() <= MAX_HEADER_FILE_SIZE) {
+            super.addNonTranslatedInfoMessage("Header file uploaded successfully. Save the configuration to apply it in the Admin GUI.");
+            this.headerFile = headerFile;
+        } else {
+            super.addNonTranslatedErrorMessage("Header file size exceeds the 1MB limit.");
+            this.headerFile = null;
+        }
+    }
+
+    private boolean isAllowedExtension(String extension) {
+        return Arrays.stream(ALLOWED_HEADER_FILE_EXTENSIONS).anyMatch(ext -> ext.equalsIgnoreCase(extension));
+    }
+
+    private String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+        return (dotIndex == -1) ? "" : fileName.substring(dotIndex + 1);
+    }
+    
     public class GuiInfo {
         private String title;
         private String headBanner;
         private String footBanner;
+
+        // Getter for imageBytes
+        
         private boolean enableEndEntityProfileLimitations;
         private boolean enableKeyRecovery;
         private boolean localKeyRecovery;
@@ -139,7 +174,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private Set<String> nodesInCluster;
         private boolean enableCommandLine;
         private boolean enableCommandLineDefaultUser;
-        private boolean enableExternalScripts;
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
@@ -172,8 +206,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
 
             try {
                 this.title = globalConfig.getEjbcaTitle();
-                this.headBanner = globalConfig.getHeadBanner();
-                this.footBanner = globalConfig.getFootBanner();
                 this.enableEndEntityProfileLimitations = globalConfig.getEnableEndEntityProfileLimitations();
                 this.enableKeyRecovery = globalConfig.getEnableKeyRecovery();
                 this.localKeyRecovery = globalConfig.getLocalKeyRecovery();
@@ -182,7 +214,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.nodesInCluster = globalConfig.getNodesInCluster();
                 this.enableCommandLine = globalConfig.getEnableCommandLineInterface();
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
-                this.enableExternalScripts = globalConfig.getEnableExternalScripts();
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
@@ -218,6 +249,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setHeadBanner(String banner) { this.headBanner=banner; }
         public String getFootBanner() { return this.footBanner; }
         public void setFootBanner(String banner) { this.footBanner=banner; }
+
         public boolean getEnableEndEntityProfileLimitations() { return this.enableEndEntityProfileLimitations; }
         public void setEnableEndEntityProfileLimitations(boolean enableLimitations) { this.enableEndEntityProfileLimitations=enableLimitations; }
         public boolean getEnableKeyRecovery() { return this.enableKeyRecovery; }
@@ -236,8 +268,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableCommandLine(boolean enableCommandLine) { this.enableCommandLine=enableCommandLine; }
         public boolean getEnableCommandLineDefaultUser() { return this.enableCommandLineDefaultUser; }
         public void setEnableCommandLineDefaultUser(boolean enableCommandLineDefaultUser) { this.enableCommandLineDefaultUser=enableCommandLineDefaultUser; }
-        public boolean getEnableExternalScripts() { return this.enableExternalScripts; }
-        public void setEnableExternalScripts(boolean enableExternalScripts) { this.enableExternalScripts=enableExternalScripts; }
         public List<CTLogInfo> getCtLogs() { return this.ctLogs; }
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs = ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
@@ -281,7 +311,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
         public boolean isRedactPiiEnforced() { return redactPiiEnforced; }
         public void setRedactPiiEnforced(boolean redactPiiEnforced) { this.redactPiiEnforced = redactPiiEnforced; }
-        
     }
 
     public class EKUInfo {
@@ -1006,8 +1035,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             try {
                 globalConfig.setEjbcaTitle(currentConfig.getTitle());
-                globalConfig.setHeadBanner(currentConfig.getHeadBanner());
-                globalConfig.setFootBanner(currentConfig.getFootBanner());
+                saveCurrentHeaderFile();
                 globalConfig.setEnableEndEntityProfileLimitations(currentConfig.getEnableEndEntityProfileLimitations());
                 globalConfig.setEnableKeyRecovery(currentConfig.getEnableKeyRecovery());
                 globalConfig.setLocalKeyRecovery(currentConfig.getLocalKeyRecovery());
@@ -1016,7 +1044,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setNodesInCluster(currentConfig.getNodesInCluster());
                 globalConfig.setEnableCommandLineInterface(currentConfig.getEnableCommandLine());
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
-                globalConfig.setEnableExternalScripts(currentConfig.getEnableExternalScripts());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
@@ -1090,6 +1117,34 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
     }
 
+    private void saveCurrentHeaderFile() {
+        if (headerFile != null) {
+
+            String fileName = headerFile.getFileName();
+            String fileExtension = getFileExtension(fileName);
+
+            if (!isAllowedExtension(fileExtension)) {
+                super.addNonTranslatedErrorMessage("Invalid header file type. Allowed types: jpg, jpeg, png.");
+                return;
+            }
+
+            try (InputStream inputStream = headerFile.getInputStream(); ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+
+                // Read the uploaded file into the byte array
+                byte[] buffer = new byte[1024]; // Buffer for reading
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                // Convert the output stream to byte array
+                globalConfig.setHeadBannerLogo(outputStream.toByteArray());
+
+            } catch (IOException e) {
+                log.error("Exception while trying to save the logo file in database.");
+            }
+        }
+    }
+    
     /** Invoked when admin saves the admin preferences */
     public void saveCurrentAdminPreferences() {
         if(currentConfig != null) {

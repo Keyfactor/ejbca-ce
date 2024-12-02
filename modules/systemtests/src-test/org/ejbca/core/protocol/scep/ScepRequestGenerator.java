@@ -113,7 +113,7 @@ public class ScepRequestGenerator {
             final PrivateKey signatureKey, ASN1ObjectIdentifier encryptionAlg) throws CertificateEncodingException, CMSException, IOException {
         this.cacert = ca;
         this.reqdn = dn;
-        X500Name name = DnComponents.stringToBcX500Name(cacert.getIssuerDN().getName());
+        X500Name name = DnComponents.stringToBcX500Name(cacert.getIssuerX500Principal().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());       
         // wrap message in pkcs#7
         return wrap(ias.getEncoded(), Integer.toString(ScepRequestMessage.SCEP_TYPE_GETCRL), transactionId, senderCertificate, signatureKey, PKCSObjectIdentifiers.rsaEncryption, encryptionAlg);        
@@ -176,7 +176,7 @@ public class ScepRequestGenerator {
         //	    subject "the requester subject name as given in PKCS#10" 
         //	} 
         ASN1EncodableVector vec = new ASN1EncodableVector();
-        vec.add(DnComponents.stringToBcX500Name(caCertificate.getIssuerDN().getName()));
+        vec.add(DnComponents.stringToBcX500Name(caCertificate.getIssuerX500Principal().getName()));
         vec.add(DnComponents.stringToBcX500Name(dn));
         DERSequence seq = new DERSequence(vec);
 

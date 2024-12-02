@@ -172,7 +172,7 @@ public class CrlStoreServletSystemTest extends CaTestCase {
         default:
             throw new IllegalStateException("this should never happen");
         }
-        final String caSubjectDN = caCert.getSubjectDN().getName();
+        final String caSubjectDN = caCert.getSubjectX500Principal().getName();
         {
             final String sURI = urlType.appendQueryToURL(getBaseUrl(false), id, crlPartitionIndex, isDelta);
             testUri(pw, sURI, caSubjectDN, crlPartitionIndex, isDelta);

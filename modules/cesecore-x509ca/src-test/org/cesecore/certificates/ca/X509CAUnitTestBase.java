@@ -36,7 +36,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.SimpleCertGenerator;
