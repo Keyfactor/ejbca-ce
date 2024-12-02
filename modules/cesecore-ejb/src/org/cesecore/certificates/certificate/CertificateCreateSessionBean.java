@@ -845,7 +845,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         final String username = endEntityInformation.getUsername();
         if (StringUtils.isEmpty(subjectDN) && StringUtils.isEmpty(subjectAltName)) {
             final String msg = intres.getLocalizedMessage("createcert.sdn_and_san_missing", username);
-            throw new CertificateCreateException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALREADY_EXISTS_FOR_ANOTHER_USER, LogRedactionUtils.getRedactedMessage(msg));
+            throw new CertificateCreateException(ErrorCode.SUBJECTDN_AND_SAN_EMPTY, LogRedactionUtils.getRedactedMessage(msg));
         }
     }
 
