@@ -29,11 +29,11 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.apache.logging.log4j.ThreadContext;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.util.ThreadContext;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
@@ -112,51 +112,55 @@ public class ServiceControlFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        final HttpServletRequest httpRequest = (HttpServletRequest) request;
-        final HttpServletResponse httpResponse = (HttpServletResponse) response;
-        AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
-                .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
-        
-        // Note: Swagger gets serviceName == AvailableProtocols.REST_CERTIFICATE_MANAGEMENT
-        if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
-            }
-            
-            if(serviceName.equalsIgnoreCase(
-                    AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())
-                    && allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
-                AuthenticationToken authenticationToken = getAdmin(httpRequest);
-                if(authenticationToken!=null &&
-                        authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Access to disabled service " + serviceName + " is allowed due to superadmin access. "
-                                                + "HTTP request " + httpRequest.getRequestURL() + " is let through.");
-                    }
-                    // protocol, session id 
-                    ThreadContext.put("REQUEST_ID", "request-id-" + random.nextInt(10000, 40000) );
-                    chain.doFilter(request, response);
-                    ThreadContext.put("REQUEST_ID", null);
-                    return;
-                }
-            }
-            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
-            return;
-        }
-        
-        // service is enabled
-        if(!allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
-            httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
-            return;
-        }
+        boolean containsRequestId = ThreadContext.containsRequestId();
+        ThreadContext.createRequestIdIfAbsent();
+        try {
+            final HttpServletRequest httpRequest = (HttpServletRequest) request;
+            final HttpServletResponse httpResponse = (HttpServletResponse) response;
+            AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(AvailableProtocolsConfiguration.CONFIGURATION_ID);
 
-        if (log.isDebugEnabled()) {
-            log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
+            // Note: Swagger gets serviceName == AvailableProtocols.REST_CERTIFICATE_MANAGEMENT
+            if (!availableProtocolsConfiguration.getProtocolStatus(serviceName)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Access to service " + serviceName + " is disabled. HTTP request " + httpRequest.getRequestURL() + " is filtered.");
+                }
+
+                if(serviceName.equalsIgnoreCase(
+                        AvailableProtocolsConfiguration.AvailableProtocols.REST_CONFIGDUMP.getName())
+                        && allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
+                    AuthenticationToken authenticationToken = getAdmin(httpRequest);
+                    if(authenticationToken!=null &&
+                            authorizationSession.isAuthorized(authenticationToken, StandardRules.ROLE_ROOT.resource())) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Access to disabled service " + serviceName + " is allowed due to superadmin access. "
+                                                    + "HTTP request " + httpRequest.getRequestURL() + " is let through.");
+                        }
+                        // protocol, session id
+                        chain.doFilter(request, response);
+                        return;
+                    }
+                }
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
+                return;
+            }
+
+            // service is enabled
+            if(!allowPossibleDirectBrowserCalls(availableProtocolsConfiguration, httpRequest)) {
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "This service has been disabled.");
+                return;
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
+            }
+            chain.doFilter(request, response);
         }
-     // protocol, session id 
-        ThreadContext.put("REQUEST_ID", "request-id-" + random.nextInt(10000, 40000) );
-        chain.doFilter(request, response);
-        ThreadContext.put("REQUEST_ID", null);
+        finally {
+            if (!containsRequestId) {
+                ThreadContext.removeRequestId();
+            }
+        }
     }
         
     private AuthenticationToken getAdmin(HttpServletRequest requestContext) {

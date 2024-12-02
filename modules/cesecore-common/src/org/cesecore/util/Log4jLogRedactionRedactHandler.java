@@ -16,8 +16,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-import org.apache.logging.log4j.ThreadContext;
-
 public class Log4jLogRedactionRedactHandler extends Handler {
 
     @Override
@@ -30,12 +28,11 @@ public class Log4jLogRedactionRedactHandler extends Handler {
 
     @Override
     public void publish(LogRecord logRecord) {   
-        
-        String requestId = ThreadContext.get("REQUEST_ID");
+        String requestId = ThreadContext.getRequestId();
         
         if (requestId!=null) {
             // pretend StringBuilder does not exist
-            logRecord.setMessage("[" + requestId + "]" + logRecord.getMessage());
+            logRecord.setMessage("[" + requestId + "] " + logRecord.getMessage());
             // also logRecord.setThrown(
         }
         

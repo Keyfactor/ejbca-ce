@@ -30,6 +30,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.util.ThreadContext;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
@@ -51,67 +52,76 @@ public class AuthenticationFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        final HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
-        boolean hasAuthenticationError = false;
-        String authenticationErrorMessage = "";
-        String authenticationErrorPublicMessage = "Authorization Denied";
-        final String accessResourcesByRequestURI = getAccessResourcesByRequestURI(httpServletRequest.getRequestURI());
-        if (log.isTraceEnabled()) {
-            log.trace("Access rule for '" + httpServletRequest.getRequestURI() + "' is " + accessResourcesByRequestURI + " (if null, then the page should do authorization checks by itself)");
-        }
+        final boolean containsRequestId = ThreadContext.containsRequestId();
         try {
-            // Check whether AuthenticationFilter has binding
-            if (StringUtils.isNotBlank(accessResourcesByRequestURI)) {
-                final EjbcaWebBean ejbcaWebBean = SessionBeans.getEjbcaWebBean(httpServletRequest);
-                final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
-                try {
-                    // creates admin token and does access rules check
-                    ejbcaWebBean.initialize(httpServletRequest, accessResourcesByRequestURI);
-                } catch (AuthenticationFailedException e) {
-                    if (oauthBearerToken != null) {
+            ThreadContext.createRequestIdIfAbsent();
+            final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
+            final HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
+            boolean hasAuthenticationError = false;
+            String authenticationErrorMessage = "";
+            String authenticationErrorPublicMessage = "Authorization Denied";
+            final String accessResourcesByRequestURI = getAccessResourcesByRequestURI(httpServletRequest.getRequestURI());
+            if (log.isTraceEnabled()) {
+                log.trace("Access rule for '" + httpServletRequest.getRequestURI() + "' is " + accessResourcesByRequestURI + " (if null, then the page should do authorization checks by itself)");
+            }
+            try {
+                // Check whether AuthenticationFilter has binding
+                if (StringUtils.isNotBlank(accessResourcesByRequestURI)) {
+                    final EjbcaWebBean ejbcaWebBean = SessionBeans.getEjbcaWebBean(httpServletRequest);
+                    final String oauthBearerToken = HttpTools.extractBearerAuthorization(httpServletRequest.getHeader(HttpTools.AUTHORIZATION_HEADER));
+                    try {
+                        // creates admin token and does access rules check
+                        ejbcaWebBean.initialize(httpServletRequest, accessResourcesByRequestURI);
+                    } catch (AuthenticationFailedException e) {
+                        if (oauthBearerToken != null) {
+                            hasAuthenticationError = true;
+                            authenticationErrorMessage = e.getMessage();
+                            authenticationErrorPublicMessage = authenticationErrorMessage;
+                        } else {
+                            throw e;
+                        }
+                    } catch (AuthorizationDeniedException e) {
                         hasAuthenticationError = true;
                         authenticationErrorMessage = e.getMessage();
-                        authenticationErrorPublicMessage = authenticationErrorMessage;
-                    } else {
-                        throw e;
+                        authenticationErrorPublicMessage = "You are not authorized to view this page.";
                     }
-                } catch (AuthorizationDeniedException e) {
-                    hasAuthenticationError = true;
-                    authenticationErrorMessage = e.getMessage();
-                    authenticationErrorPublicMessage = "You are not authorized to view this page.";
+                    final X509Certificate x509Certificate = ejbcaWebBean.getClientX509Certificate(httpServletRequest);
+                    final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
+                    if (admin != null && !hasAuthenticationError) {
+                        // let through only if admin token exists AND no auth error
+                        httpServletRequest.setAttribute("authenticationtoken", admin);
+                        filterChain.doFilter(servletRequest, servletResponse);
+                    } else {
+                        hasAuthenticationError = true;
+                        if (x509Certificate != null || oauthBearerToken != null) {
+                            authenticationErrorMessage = oauthBearerToken != null ? "Authentication failed using OAuth Bearer Token"
+                                    : "Authorization denied for certificate: " + CertTools.getSubjectDN(x509Certificate);
+                            authenticationErrorPublicMessage = authenticationErrorMessage;
+                        } else {
+                            authenticationErrorMessage = "No client certificate sent.";
+                            authenticationErrorPublicMessage = "This operation requires certificate authentication!";
+                        }
+                    }
                 }
-                final X509Certificate x509Certificate = ejbcaWebBean.getClientX509Certificate(httpServletRequest);
-                final AuthenticationToken admin = ejbcaWebBean.getAdminObject();
-                if (admin != null && !hasAuthenticationError) {
-                    // let through only if admin token exists AND no auth error
-                    httpServletRequest.setAttribute("authenticationtoken", admin);
+                // No binding defined, pass the request along the filter chain
+                else {
                     filterChain.doFilter(servletRequest, servletResponse);
-                } else {
-                    hasAuthenticationError = true;
-                    if (x509Certificate != null || oauthBearerToken != null) {
-                        authenticationErrorMessage = oauthBearerToken != null ? "Authentication failed using OAuth Bearer Token"
-                                : "Authorization denied for certificate: " + CertTools.getSubjectDN(x509Certificate);
-                        authenticationErrorPublicMessage = authenticationErrorMessage;
-                    } else {
-                        authenticationErrorMessage = "No client certificate sent.";
-                        authenticationErrorPublicMessage = "This operation requires certificate authentication!";
-                    }
                 }
             }
-            // No binding defined, pass the request along the filter chain
-            else {
-                filterChain.doFilter(servletRequest, servletResponse);
+            catch (Exception ex) {
+                log.info("Could not initialize for client " + httpServletRequest.getRemoteAddr());
+                log.debug("Client initialization failed", ex);
+                throw new ServletException("Cannot process the request.");
+            }
+            if (hasAuthenticationError) {
+                log.info("Client " + httpServletRequest.getRemoteAddr() + " was denied. " + authenticationErrorMessage);
+                httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, authenticationErrorPublicMessage);
             }
         }
-        catch (Exception ex) {
-            log.info("Could not initialize for client " + httpServletRequest.getRemoteAddr());
-            log.debug("Client initialization failed", ex);
-            throw new ServletException("Cannot process the request.");
-        }
-        if (hasAuthenticationError) {
-            log.info("Client " + httpServletRequest.getRemoteAddr() + " was denied. " + authenticationErrorMessage);
-            httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, authenticationErrorPublicMessage);
+        finally {
+            if (!containsRequestId) {
+                ThreadContext.removeRequestId();
+            }
         }
     }
 
