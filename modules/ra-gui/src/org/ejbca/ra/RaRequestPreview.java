@@ -33,6 +33,7 @@ public class RaRequestPreview {
     private String issuerDn = "";
     private String subjectDn = "";
     private String csrSubjectDn = "";
+    private boolean sdnOverrideByCsr = false;
     private String publicKeyAlgorithm = "";
     private String subjectAlternativeName = "";
     private String subjectDirectoryAttributes = "";
@@ -162,6 +163,14 @@ public class RaRequestPreview {
         styleRowCallCounter = 0; // Reset
     }
 
+    public final boolean isSdnOverrideByCsr() {
+        return sdnOverrideByCsr;
+    }
+
+    public final void setSdnOverrideByCsr(boolean sdnOverrideByCsr) {
+        this.sdnOverrideByCsr = sdnOverrideByCsr;
+    }
+
     /** @return true every twice starting with every forth call */
     public final boolean isEven() {
         styleRowCallCounter++;
@@ -229,7 +238,7 @@ public class RaRequestPreview {
     }
 
     public boolean isAnyRequestDataPresent() {
-        return !StringUtils.isEmpty(subjectDn) || !StringUtils.isEmpty(csrSubjectDn)
+        return !StringUtils.isEmpty(subjectDn) || (isSdnOverrideByCsr() && !StringUtils.isEmpty(csrSubjectDn))
                 || !StringUtils.isEmpty(subjectAlternativeName) || !StringUtils.isEmpty(subjectDirectoryAttributes);
     }
 

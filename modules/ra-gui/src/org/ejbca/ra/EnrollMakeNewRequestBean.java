@@ -2852,6 +2852,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         RaRequestPreview requestPreview = new RaRequestPreview();
         requestPreview.updateSubjectDn(getSubjectDn());
         requestPreview.updateCsrSubjectDn(csrSubjectDnString);
+        requestPreview.setSdnOverrideByCsr(isSubjectDnOverrideByCsrEnabled());
         requestPreview.updateSubjectAlternativeName(getSubjectAlternativeName(), getEndEntityProfile());
         requestPreview.updateSubjectDirectoryAttributes(getSubjectDirectoryAttributes());
         requestPreview.setPublicKeyAlgorithm(getAlgorithmUiRepresentation());
