@@ -32,6 +32,8 @@ public class CertificateRequestRestRequest {
     private boolean includeChain;
     @Schema(description = "Certificate Authority (CA) name", example = "ExampleCA")
     private String certificateAuthorityName;
+    @Schema(description = "Certificate Request Type", example = "PUBLICKEY, PKCS10, CRMF, SPKAC, or CVC")
+    private String certificateRequestType;
     
     public CertificateRequestRestRequest() {
     }
@@ -76,6 +78,13 @@ public class CertificateRequestRestRequest {
         this.certificateAuthorityName = certificateAuthorityName;
     }
 
+    public String getCertificateRequestType() {
+        return certificateRequestType;
+    }
+
+    public void setCertificateRequestType(String certificateRequestType) {
+        this.certificateRequestType = certificateRequestType;
+    }
 
     /**
      * Returns a converter instance for this class.
@@ -99,12 +108,16 @@ public class CertificateRequestRestRequest {
          * @return EnrollCertificateRestRequest instance.
          */
         public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final CertificateRequestRestRequest certificateRequestRestRequest) {
+            String certificateRequestData =
+                    certificateRequestRestRequest.getCertificateRequestType() == null || certificateRequestRestRequest.getCertificateRequestType().equals("PKCS10") ?
+                    CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest()) : certificateRequestRestRequest.certificateRequest;
             return new EnrollPkcs10CertificateRequest.Builder()
-                    .certificateRequest(CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest()))
+                    .certificateRequest(certificateRequestData)
                     .username(certificateRequestRestRequest.getUsername())
                     .password(certificateRequestRestRequest.getPassword())
                     .includeChain(certificateRequestRestRequest.getIncludeChain())
                     .certificateAuthorityName(certificateRequestRestRequest.getCertificateAuthorityName())
+                    .requestFormat(certificateRequestRestRequest.getCertificateRequestType())
                     .build();
         }
     }

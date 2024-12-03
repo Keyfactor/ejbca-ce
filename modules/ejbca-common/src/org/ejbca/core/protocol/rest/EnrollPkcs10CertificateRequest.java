@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.rest;
 
 import java.io.Serializable;
+import org.cesecore.certificates.certificate.CertificateConstants;
 
 /**
  * A DTO class representing the input for certificate enrollment.
@@ -32,6 +33,8 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
     
     private String email;
     private String responseFormat;
+
+    private int requestType;
 
     public String getCertificateRequest() {
         return certificateRequest;
@@ -71,6 +74,10 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         return responseFormat;
     }
 
+    public int getRequestType() {
+        return requestType;
+    }
+
     public static class Builder {
         private String certificateRequest;
         private String certificateProfileName;
@@ -82,6 +89,7 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         private boolean includeChain;
         private String email;
         private String responseFormat;
+        private int requestType;
 
         public Builder certificateRequest(final String certificateRequest) {
             this.certificateRequest = certificateRequest;
@@ -137,6 +145,32 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             this.responseFormat = responseFormat;
             return this;
         }
+
+        public Builder requestFormat(String requestFormat) {
+            if (requestFormat == null) {
+                this.requestType = CertificateConstants.CERT_REQ_TYPE_PKCS10;
+                return this;
+            }
+            switch (requestFormat) {
+                case "PUBLICKEY":
+                    this.requestType = CertificateConstants.CERT_REQ_TYPE_PUBLICKEY;
+                    break;
+                case "CRMF":
+                    this.requestType = CertificateConstants.CERT_REQ_TYPE_CRMF;
+                    break;
+                case "SPKAC":
+                    this.requestType = CertificateConstants.CERT_REQ_TYPE_SPKAC;
+                    break;
+                case "CVC":
+                    this.requestType = CertificateConstants.CERT_REQ_TYPE_CVC;
+                    break;
+                case "PKCS10":
+                default:
+                    this.requestType = CertificateConstants.CERT_REQ_TYPE_PKCS10;
+                    break;
+            }
+            return this;
+        }
     }
     
     private EnrollPkcs10CertificateRequest(final Builder builder) {
@@ -150,5 +184,6 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         this.includeChain = builder.includeChain;
         this.email = builder.email;
         this.responseFormat = builder.responseFormat;
+        this.requestType = builder.requestType;
     }
 }
