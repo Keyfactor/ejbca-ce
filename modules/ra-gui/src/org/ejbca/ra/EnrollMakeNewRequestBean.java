@@ -232,6 +232,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String extensionData;
     private String accountBindingId;
     private SubjectDn subjectDn;
+    private String csrSubjectDnString;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
     private EndEntityInformation endEntityInformation;
@@ -1791,6 +1792,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
         try {
             final PublicKey publicKey = certRequest.getRequestPublicKey();
+            csrSubjectDnString = certRequest.getRequestDN();
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
             if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
@@ -2849,6 +2851,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public RaRequestPreview getRequestPreview() {
         RaRequestPreview requestPreview = new RaRequestPreview();
         requestPreview.updateSubjectDn(getSubjectDn());
+        requestPreview.updateCsrSubjectDn(csrSubjectDnString);
         requestPreview.updateSubjectAlternativeName(getSubjectAlternativeName(), getEndEntityProfile());
         requestPreview.updateSubjectDirectoryAttributes(getSubjectDirectoryAttributes());
         requestPreview.setPublicKeyAlgorithm(getAlgorithmUiRepresentation());
