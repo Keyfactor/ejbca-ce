@@ -72,11 +72,6 @@ httpsserver.tokentype=P12
 # The private port JBoss will listen to https on, client cert required
 # Default 8443
 #httpserver.privhttps=8443
-
-# The private port exposed externally, i.e. if you run an Apache proxy in front of JBoss
-# the port may be 443 instead.
-# Default same as httpserver.privhttps
-#httpserver.external.privhttps=443
  
 # The fully qualified domain name (FQDN) of the front-end, e.g. an Apache proxy
 #   In order to build absolute URL, the server name is got from the web client request.
@@ -89,19 +84,6 @@ httpsserver.tokentype=P12
 #httpserver.external.fqdn=
 #httpserver.external.fqdn=${httpsserver.hostname}
  
-# Defines the available languages by ISO 639-1 language codes separated with a comma (example: en,fr).
-# If you are not sure that you know how to add a new language (languagefile.xx.properties, etc.), 
-# we suggest you stick with the default the first time you install if you wan't to add your own language.
-# Note: Some available languages are incompletely translated (<50%); before adding them, check completeness with the following command:
-#       modules/admin-gui/resources/languages/language-tool.sh -s
-# When adding languages to this do _NOT_ change the order as this affects the already configured languages for admins, i.e. it's based on index in this list.
-# Default: en,bs,cs,de,fr,ja,pt,sv,uk,zh,vi
-#web.availablelanguages=en,bs,cs,de,fr,ja,pt,sv,uk,zh,vi
-
-# Default content encoding used to display JSP pages, for example ISO-8859-1, UTF-8 or GBK.
-# Default: UTF-8
-#web.contentencoding=UTF-8
-
 # The language configuration that should be used internally for logging, exceptions and approval
 # notifications has been moved to cesecore.properties from EJBCA 5.
 
@@ -132,17 +114,6 @@ httpsserver.tokentype=P12
 # this option, or wrap them in a "service" JAR file (see the Admin Guide).
 # Default = false
 #web.manualclasspathsenabled=true
-
-# Presentation of the an exception on the web error page.
-#
-# General error message to be presented to the user when an exception occur.
-# Note: If you specify this message (not using default) your message will be used as is, and not localized.
-# Default: a localized text of "An exception has occurred."
-#web.errorpage.notification=An exception has occurred.
-#
-# Print the stacktrace of the exception back to the web browser
-# Default: false
-#web.errorpage.stacktrace=false
 
 # Custom Servlet filter for emulation of client certificate authentication to the Admin GUI
 # using a Tomcat Valve or similar proxy.
@@ -312,42 +283,9 @@ httpsserver.tokentype=P12
 #cryptotoken.pqc.enabled=true
 
 #
-# Enable usage of Azure Key Vault Crypto Token in the Admin UI
-# Default: true (enabled)
-#keyvault.cryptotoken.enabled=true
-
-#
-# Enable usage of AWS KMS Crypto Token in the Admin UI
-# Default: true (enabled)
-#awskms.cryptotoken.enabled=true
-
-#
-# Enable usage of Fortanix DSM Crypto Token in the Admin UI
-# Default: true  (enabled)
-#fortanix.cryptotoken.enabled=true
-
-#
-# Enable usage of Securosys Primus REST API Crypto Token in the Admin UI
-# Default: true  (enabled)
-#securosys.cryptotoken.enabled=true
-
-#
-# Enable usage of P11NG Crypto Token in the Admin UI
-# Default: true (enabled)
-#p11ng.cryptotoken.enabled=true
-
-#
 # Utimaco CP5 specific functions are disabled in the Admin UI
 
 #
 # Enable usage of SunP11 Crypto Token in the Admin UI
 # Default: true (enabled)
 #sunp11.cryptotoken.enabled=false
-
-#
-# Enable usage of legacy RA API for EST. Only needed if this is a CA that
-# accepts EST requests from an RA older than version 7.4.1.1, 7.4.3 or 7.5.0.
-# This legacy API does not check the access rules of the peer connector, i.e.
-# domain security restrictions (such as restricted CAs) of the RA peer are not enforced.
-# Default: false (not enabled)
-#raapi.legacyest.enabled=true

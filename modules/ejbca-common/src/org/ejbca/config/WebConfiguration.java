@@ -34,7 +34,6 @@ public class WebConfiguration {
 	public static final String CONFIG_HTTPSERVERPUBHTTP    = "httpserver.pubhttp";
     public static final String CONFIG_HTTPSERVERPUBHTTPS   = "httpserver.pubhttps";
 	public static final String CONFIG_HTTPSSERVERPRIVHTTPS = "httpserver.privhttps";
-	public static final String CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS = "httpserver.external.privhttps";
     public static final String CONFIG_DOCBASEURI = "web.docbaseuri";
     // web.reqcert is replaced by "web.reqauth" but still may be used by existing customers.
     public static final String CONFIG_REQCERT = "web.reqcert";
@@ -98,29 +97,9 @@ public class WebConfiguration {
         }
         return value;
     }
-
-	/**
-	 * Port used by EJBCA public web to construct a correct url.
-	 */
-	public static int getExternalPrivateHttpsPort() {
-		int value = getPrivateHttpsPort();
-		try {
-			value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS));
-		} catch( NumberFormatException e ) {
-			log.warn("\"httpserver.external.privhttps\" is not a decimal number. Using default value: " + value);
-		}
-		return value;
-	}
-
+    
 	public static String getContentSecurityPolicy() {
 		return EjbcaConfigurationHolder.getString("web.header.content_security_policy");
-	}
-
-	/**
-	 * Defines the available languages by language codes separated with a comma
-	 */
-	public static String getAvailableLanguages() {
-		return EjbcaConfigurationHolder.getExpandedString("web.availablelanguages");
 	}
 	
 	/**
@@ -175,30 +154,6 @@ public class WebConfiguration {
      */
     public static boolean getRequireAdminCertificateInDatabase() {
         return Boolean.valueOf(EjbcaConfigurationHolder.getExpandedString(CONFIG_REQCERTINDB));
-    }
-
-	/**
-	 * Default content encoding used to display JSP pages
-	 */
-	public static String getWebContentEncoding() {
-	   	return EjbcaConfigurationHolder.getString("web.contentencoding");
-	}
-
-    public static boolean doShowStackTraceOnErrorPage(){
-        final String s=EjbcaConfigurationHolder.getString ("web.errorpage.stacktrace");
-        return s==null || s.toLowerCase().contains("true");
-	}
-
-    public static String notification(String sDefault){        
-        String result= EjbcaConfigurationHolder.getString ("web.errorpage.notification");
-        if(result == null) {
-           return sDefault;            
-        } else if(result.equals("")) {
-           return sDefault;
-        } else {
-            return result;
-        }
-        
     }
 
     /** @return true if we allow proxied authentication to the Admin GUI. */
@@ -316,26 +271,6 @@ public class WebConfiguration {
         return availableP11AttributeFiles;
     }
 
-    /** @return true if we have Azure Crypto Token enabled in the Admin GUI. */
-    public static boolean isAzureKeyVaultEnabled(){
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("keyvault.cryptotoken.enabled"));
-    }
-
-    /** @return true if we have Securosys Crypto Token enabled in the Admin GUI. */
-    public static boolean isSecurosysPrimusHsmEnabled() {
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("securosys.cryptotoken.enabled"));
-    }
-
-    /** @return true if we have AWS KMS Crypto Token enabled in the Admin GUI. */
-    public static boolean isAWSKMSEnabled(){
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("awskms.cryptotoken.enabled"));
-    }
-
-    /** @return true if we have Fortanix DSM Crypto Token enabled in the Admin GUI. */
-    public static boolean isFortanixEnabled(){
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("fortanix.cryptotoken.enabled"));
-    }
-
     /** @return true if we have SunP11 Crypto Token enabled in the Admin GUI. */
     public static boolean isSunP11Enabled(){
         return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("sunp11.cryptotoken.enabled")); // default true
@@ -353,9 +288,5 @@ public class WebConfiguration {
 
     public static String getStatedumpTemplatesBasedir() {
         return EjbcaConfigurationHolder.getString("statedump.templatebasedir");
-    }
-
-    public static boolean isLegacyEstRaApiAllowed() {
-        return Boolean.valueOf(EjbcaConfigurationHolder.getString("raapi.legacyest.enabled"));
     }
 }
