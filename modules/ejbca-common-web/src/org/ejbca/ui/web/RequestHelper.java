@@ -16,15 +16,12 @@ package org.ejbca.ui.web;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
-
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -54,6 +51,10 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Helper class for handling certificate request from browsers or general PKCS#10
@@ -380,7 +381,7 @@ public class RequestHelper {
     public static void setDefaultCharacterEncoding(HttpServletRequest request) throws UnsupportedEncodingException {
         String encoding = request.getCharacterEncoding();
         if(StringUtils.isEmpty(encoding)) {
-            encoding = org.ejbca.config.WebConfiguration.getWebContentEncoding();
+            encoding = StandardCharsets.UTF_8.name();
             if (log.isDebugEnabled()) {
                 log.debug("Setting encoding to default value: "+encoding);
             }
