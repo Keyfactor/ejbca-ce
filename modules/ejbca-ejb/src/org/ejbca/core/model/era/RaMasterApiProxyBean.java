@@ -4061,4 +4061,18 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         }
         return null;
     }
+
+    @Override
+    public Long getCertificateCount(AuthenticationToken authenticationToken, Boolean isActive) throws AuthorizationDeniedException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 19) {
+                try {
+                    return raMasterApi.getCertificateCount(authenticationToken, isActive);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return Long.valueOf(0);
+    }
 }
