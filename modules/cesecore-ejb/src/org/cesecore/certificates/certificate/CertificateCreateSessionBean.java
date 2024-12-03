@@ -513,7 +513,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 final String msg = intres.getLocalizedMessage("createcert.usertypeinvalid", endEntityInformation.getUsername());
                 throw new CertificateCreateException(ErrorCode.INTERNAL_ERROR, msg);
             }
-
+            
             assertSubjectEnforcements(ca.getCAInfo(), endEntityInformation);
             assertSubjectKeyIdEnforcements(ca.getCAInfo(), endEntityInformation, pk);
             assertSubjectKeyIdRenewalEnforcement(ca.getCAInfo(), endEntityInformation, pk);
