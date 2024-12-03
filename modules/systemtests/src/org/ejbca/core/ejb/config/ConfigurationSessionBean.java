@@ -13,8 +13,6 @@
 
 package org.ejbca.core.ejb.config;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.Properties;
 
 import org.cesecore.config.ConfigurationHolder;
