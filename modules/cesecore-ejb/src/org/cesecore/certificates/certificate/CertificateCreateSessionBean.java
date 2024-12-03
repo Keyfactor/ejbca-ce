@@ -514,7 +514,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 throw new CertificateCreateException(ErrorCode.INTERNAL_ERROR, msg);
             }
 
-            assertSubjectNotEmpty(endEntityInformation);
             assertSubjectEnforcements(ca.getCAInfo(), endEntityInformation);
             assertSubjectKeyIdEnforcements(ca.getCAInfo(), endEntityInformation, pk);
             assertSubjectKeyIdRenewalEnforcement(ca.getCAInfo(), endEntityInformation, pk);
@@ -834,18 +833,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                             CertTools.getSerialNumberAsString(precert), subject.getUsername(), issuedetails);
                 }
             });
-        }
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public void assertSubjectNotEmpty(final EndEntityInformation endEntityInformation) throws CertificateCreateException {
-        final String subjectDN = endEntityInformation.getCertificateDN();
-        final String subjectAltName = endEntityInformation.getSubjectAltName();
-        final String username = endEntityInformation.getUsername();
-        if (StringUtils.isEmpty(subjectDN) && StringUtils.isEmpty(subjectAltName)) {
-            final String msg = intres.getLocalizedMessage("createcert.sdn_and_san_missing", username);
-            throw new CertificateCreateException(ErrorCode.SUBJECTDN_AND_SAN_EMPTY, LogRedactionUtils.getRedactedMessage(msg));
         }
     }
 

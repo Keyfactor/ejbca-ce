@@ -188,14 +188,6 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
             Builder certificateBuilder, CertificateId certifcateId, PublicVerificationKey verificationKey) throws AuthorizationDeniedException, CryptoTokenOfflineException, CertificateCreateException;
 
     /**
-     * Checks that SDN and SAN both aren't empty, throws CertificateCreateException if they are
-     * @param endEntityInformation user data
-     * @throws CertificateCreateException if the certificate couldn't be created.
-     */
-    void assertSubjectNotEmpty(EndEntityInformation endEntityInformation)
-            throws CertificateCreateException;
-
-    /**
      * Performs SubjectDN checks
      * @param caInfo non-sensitive information
      * @param endEntityInformation user data

@@ -1122,7 +1122,7 @@
 						    </h:panelGroup>
 						    </h:panelGroup>
 						</h:panelGroup>
-						<h:outputText value="#{msg.enroll_note_request_sdn_san_empty}" rendered="#{!enrollMakeNewRequestBean.requestPreview.sdnOrSanPresent}" styleClass="warning-note"/>
+						<h:outputText value="#{msg.enroll_note_request_subject_empty}" rendered="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}" styleClass="warning-note"/>
 						<h:panelGroup 
 						    id="enrollButtons"
 						    layout="block"
@@ -1131,7 +1131,7 @@
 								value="#{msg.enroll_add_end_endtity}"
 								action="#{enrollMakeNewRequestBean.addEndEntity}"
 								rendered="#{enrollMakeNewRequestBean.addEndEntityButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.renderSshEnrolmentFields or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent) or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!(enrollMakeNewRequestBean.renderSshEnrolmentFields or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent) or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -1147,8 +1147,7 @@
 								value="#{msg.enroll_generate_jks}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateJks}"
 								rendered="#{enrollMakeNewRequestBean.generateJksButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-                                	or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -1156,8 +1155,7 @@
 								value="#{msg.enroll_generate_p12}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateP12}"
 								rendered="#{enrollMakeNewRequestBean.generateP12ButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-                                	or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -1165,8 +1163,7 @@
 											 value="#{msg.enroll_generate_bcfks}"
 											 action="#{enrollMakeNewRequestBean.addEndEntityAndgenerateBcfks}"
 											 rendered="#{enrollMakeNewRequestBean.generateBcfksButtonRendered}"
-											 disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-											 	or !enrollMakeNewRequestBean.validityValid}"
+											 disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 											 styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -1174,8 +1171,7 @@
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGeneratePem}"
 								rendered="#{enrollMakeNewRequestBean.generatePemButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-                                	or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -1183,8 +1179,7 @@
 								value="#{msg.enroll_generate_pem}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePem}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-                                	or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -1192,8 +1187,7 @@
 								value="#{msg.enroll_generate_pem_full_chain}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePemFullChain}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-                                	or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -1201,8 +1195,7 @@
 								value="#{msg.enroll_generate_pkcs7}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificatePkcs7}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-                                	or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
@@ -1210,16 +1203,14 @@
 								value="#{msg.enroll_generate_der}"
 								action="#{enrollMakeNewRequestBean.addEndEntityAndGenerateCertificateDer}"
 								rendered="#{enrollMakeNewRequestBean.generateFromCsrButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-                                	or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>
 							<h:commandButton id="confirmRequestButton" value="#{msg.enroll_confirm_request}"
 								action="#{enrollMakeNewRequestBean.confirmRequest}"
 								rendered="#{enrollMakeNewRequestBean.confirmRequestButtonRendered}"
-                                disabled="#{!(enrollMakeNewRequestBean.subjectDnOverrideByCsrEnabled or enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent)
-                                	or !enrollMakeNewRequestBean.validityValid}"
+                                disabled="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent or !enrollMakeNewRequestBean.validityValid}"
 								styleClass="pure-button ra-button">
 								<f:param name="validationRequiredFromRequest" value="true" />
 							</h:commandButton>

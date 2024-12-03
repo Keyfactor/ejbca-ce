@@ -32,6 +32,7 @@ public class RaRequestPreview {
     
     private String issuerDn = "";
     private String subjectDn = "";
+    private String csrSubjectDn = "";
     private String publicKeyAlgorithm = "";
     private String subjectAlternativeName = "";
     private String subjectDirectoryAttributes = "";
@@ -92,6 +93,13 @@ public class RaRequestPreview {
             return;
         }
         this.subjectDn = subjectDn.getUpdatedValue();
+    }
+
+    public final void updateCsrSubjectDn(String subjectDnString) {
+        if (csrSubjectDn == null) {
+            return;
+        }
+        this.csrSubjectDn = subjectDnString;
     }
     
     public final void updateSubjectAlternativeName(SubjectAlternativeName subjectAlternativeName, final EndEntityProfile profile){
@@ -220,12 +228,9 @@ public class RaRequestPreview {
         return !subjectAlternativeName.isEmpty();
     }
 
-    public boolean isSdnOrSanPresent() {
-        return !subjectDn.isEmpty() || !subjectAlternativeName.isEmpty();
-    }
-
     public boolean isAnyRequestDataPresent() {
-        return isSdnOrSanPresent() || !subjectDirectoryAttributes.isEmpty();
+        return !StringUtils.isEmpty(subjectDn) || !StringUtils.isEmpty(csrSubjectDn)
+                || !StringUtils.isEmpty(subjectAlternativeName) || !StringUtils.isEmpty(subjectDirectoryAttributes);
     }
 
     /**
