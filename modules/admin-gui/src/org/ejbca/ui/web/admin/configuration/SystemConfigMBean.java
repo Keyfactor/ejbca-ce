@@ -198,6 +198,9 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         //redact pii
         private boolean redactPiiByDefault;
         private boolean redactPiiEnforced;
+        
+        //Global CT Settings
+        private boolean ctCacheEnabled;
 
         private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
             if(globalConfig == null) {
@@ -238,6 +241,8 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 
                 this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
                 this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
+                
+                this.ctCacheEnabled = globalConfig.getCtCacheEnabled();
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -311,6 +316,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setRedactPiiByDefault(boolean redactPiiByDefault) { this.redactPiiByDefault = redactPiiByDefault; }
         public boolean isRedactPiiEnforced() { return redactPiiEnforced; }
         public void setRedactPiiEnforced(boolean redactPiiEnforced) { this.redactPiiEnforced = redactPiiEnforced; }
+        
+        //Global CT Settings
+        public boolean isCtCacheEnabled() { return ctCacheEnabled; }
+        public void setCtCacheEnabled(boolean cacheEnabled) { this.ctCacheEnabled = cacheEnabled; }
     }
 
     public class EKUInfo {
@@ -2205,6 +2214,14 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     
     public boolean renderStatedumpTab() {
         return authorizationSession.isAuthorizedNoLogging(getAdmin(), StandardRules.ROLE_ROOT.resource()) && isStatedumpAvailable();
+    }
+    
+    public boolean isCtCacheEnabled() {
+        return getCurrentConfig().isCtCacheEnabled();
+    }
+    
+    public void setCtCacheEnabled(final boolean cacheEnabled) {
+        getCurrentConfig().setCtCacheEnabled(cacheEnabled);
     }
 
 }
