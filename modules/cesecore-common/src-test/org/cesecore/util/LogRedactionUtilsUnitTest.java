@@ -124,7 +124,7 @@ public class LogRedactionUtilsUnitTest {
         final String federalAgencySmartCredentialNumberPattern = DnComponents.getDnIdFromAltName("FASCN") == null ? "" : "|(FASCN=)";
         assertEquals("SubjectAltName redaction pattern mismatch", LogRedactionUtils.getSubjectAltNameRedactionPattern(),
                 "((OTHERNAME=)|(RFC822NAME=)|(DNSNAME=)|(IPADDRESS=)|(X400ADDRESS=)|(DIRECTORYNAME=)|(EDIPARTYNAME=)|"
-                        + "(UNIFORMRESOURCEID=)|(REGISTEREDID=)|(UPN=)|(GUID=)|(KRB5PRINCIPAL=)|(PERMANENTIDENTIFIER=)|(XMPPADDR=)|"
+                        + "(UNIFORMRESOURCEID=)|(REGISTEREDID=)|(UPN=)|(GUID=)|(KRB5PRINCIPAL=)|(PERMANENTIDENTIFIER=)|(HARDWAREMODULENAME=)|(XMPPADDR=)|"
                         + "(SRVNAME=)|(SUBJECTIDENTIFICATIONMETHOD=)" + federalAgencySmartCredentialNumberPattern
                         + "|(UNIFORMRESOURCEIDENTIFIER=)|(URI=)).*");
     }
