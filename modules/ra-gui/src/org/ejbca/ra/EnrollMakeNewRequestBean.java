@@ -3070,6 +3070,14 @@ public class EnrollMakeNewRequestBean implements Serializable {
                 && this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile())).getAllowDNOverride();
     }
 
+    /**
+     * @return true if the SDN Override enabled not should be shown in the UI. Only show it when relevant.
+     */
+    public boolean isDisplaySdnOverrideNote() {
+        return isSubjectDnOverrideByCsrEnabled() && (getSelectedKeyPairGenerationEnum() == KeyPairGeneration.PROVIDED_BY_USER
+                || getSelectedKeyPairGenerationEnum() == KeyPairGeneration.POSTPONE);
+    }
+
     public String getSshKeyId() {
         return sshKeyId;
     }

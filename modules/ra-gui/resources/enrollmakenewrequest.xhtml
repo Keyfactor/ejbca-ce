@@ -1122,6 +1122,7 @@
 						    </h:panelGroup>
 						    </h:panelGroup>
 						</h:panelGroup>
+						<h:outputText value="#{msg.enroll_note_dn_override_enabled}" rendered="#{enrollMakeNewRequestBean.displaySdnOverrideNote}" styleClass="warning-note"/>
 						<h:outputText value="#{msg.enroll_note_request_subject_empty}" rendered="#{!enrollMakeNewRequestBean.requestPreview.anyRequestDataPresent}" styleClass="warning-note"/>
 						<h:panelGroup 
 						    id="enrollButtons"
