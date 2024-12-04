@@ -172,6 +172,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
     private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
+    
+    private static final String CT_CACHE_ENABLED_KEY = "ct_cache_enabled";
 
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
@@ -366,6 +368,9 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
+    
+    public boolean getCtCacheEnabled() { return getBoolean(CT_CACHE_ENABLED_KEY, true); }
+    public void setCtCacheEnabled(final boolean value) { data.put(CT_CACHE_ENABLED_KEY, value); } 
 
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
