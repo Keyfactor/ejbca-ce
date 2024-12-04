@@ -271,6 +271,26 @@ public class WebConfiguration {
         return availableP11AttributeFiles;
     }
 
+    /** @return true if we have Azure Crypto Token enabled in the Admin GUI. */
+    public static boolean isAzureKeyVaultEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("keyvault.cryptotoken.enabled"));
+    }
+
+    /** @return true if we have Securosys Crypto Token enabled in the Admin GUI. */
+    public static boolean isSecurosysPrimusHsmEnabled() {
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("securosys.cryptotoken.enabled"));
+    }
+
+    /** @return true if we have AWS KMS Crypto Token enabled in the Admin GUI. */
+    public static boolean isAWSKMSEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("awskms.cryptotoken.enabled"));
+    }
+
+    /** @return true if we have Fortanix DSM Crypto Token enabled in the Admin GUI. */
+    public static boolean isFortanixEnabled(){
+        return Boolean.valueOf(EjbcaConfigurationHolder.getString("fortanix.cryptotoken.enabled"));
+    }
+    
     /** @return true if we have SunP11 Crypto Token enabled in the Admin GUI. */
     public static boolean isSunP11Enabled(){
         return !Boolean.FALSE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("sunp11.cryptotoken.enabled")); // default true

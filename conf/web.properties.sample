@@ -283,6 +283,31 @@ httpsserver.tokentype=P12
 #cryptotoken.pqc.enabled=true
 
 #
+# Enable usage of Azure Key Vault Crypto Token in the Admin UI
+# Default: true (enabled)
+#keyvault.cryptotoken.enabled=true
+
+#
+# Enable usage of AWS KMS Crypto Token in the Admin UI
+# Default: true (enabled)
+#awskms.cryptotoken.enabled=true
+
+#
+# Enable usage of Fortanix DSM Crypto Token in the Admin UI
+# Default: true  (enabled)
+#fortanix.cryptotoken.enabled=true
+
+#
+# Enable usage of Securosys Primus REST API Crypto Token in the Admin UI
+# Default: true  (enabled)
+#securosys.cryptotoken.enabled=true
+
+#
+# Enable usage of P11NG Crypto Token in the Admin UI
+# Default: true (enabled)
+#p11ng.cryptotoken.enabled=true
+
+#
 # Utimaco CP5 specific functions are disabled in the Admin UI
 
 #
