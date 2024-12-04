@@ -97,7 +97,7 @@ public class RaRequestPreview {
     }
 
     public final void updateCsrSubjectDn(String subjectDnString) {
-        if (csrSubjectDn == null) {
+        if (subjectDnString == null) {
             return;
         }
         this.csrSubjectDn = subjectDnString;
