@@ -14,6 +14,7 @@ dependencies {
     compileOnly(project(":modules:edition-specific:interface"))
     compileOnly(project(":modules:systemtests:interface"))
     compileOnly(project(":modules:systemtests:common"))
+    compileOnly(project(":modules:peerconnector:common"))
     implementation(libs.bcpkix)
     implementation(libs.bcprov)
     implementation(libs.bctls)
