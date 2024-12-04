@@ -16,6 +16,8 @@ package org.ejbca.core.model.ra.raadmin;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyStoreCipher;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
@@ -105,7 +107,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private static final float LATEST_VERSION = 18;
+    private static final float LATEST_VERSION = 19;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -148,6 +150,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String CERTSERIALNR       = ExtendedInformation.CERTSERIALNR; //CERTSERIALNR
     private static final String NAMECONSTRAINTS_PERMITTED = "NAMECONSTRAINTS_PERMITTED";
     private static final String NAMECONSTRAINTS_EXCLUDED  = "NAMECONSTRAINTS_EXCLUDED";
+    //Cipher algorithm if this EEP allows for server generated PKCS#12s
+    private static final String P12_CIPHER = "P12CIPHER";
     /** A maximum value of the (optional) counter specifying how many certificate requests can be processed
      * before user is finalized (status set to GENERATED). Counter is only used when finishUser is
      * enabled in the CA (by default it is)
@@ -172,7 +176,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     /** CA/B Forum Organization Identifier extension */
     private static final String CABFORGANIZATIONIDENTIFIER = "CABFORGANIZATIONIDENTIFIER";    
-
+    
     // Default values
     // These must be in a strict order that can never change
     // Custom values configurable in a properties file (profilemappings.properties)
@@ -395,6 +399,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         	setUse(NAMECONSTRAINTS_EXCLUDED,0,false);
         	setUse(CABFORGANIZATIONIDENTIFIER,0,false);
             setUse(RENEWDAYSBEFOREEXPIRATION,0,false);
+           
             
         } else {
         	// initialize profile data
@@ -429,6 +434,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         setModifyable(SSH_CRITICAL_OPTION_FORCE_COMMAND, 0, true);
         setModifyable(SSH_CRITICAL_OPTION_SOURCE_ADDRESS, 0, true);
         setModifyable(SSH_CRITICAL_OPTION_VERIFY_REQUIRED, 0, true);
+        setP12Cipher(KeyStoreCipher.PKCS12_AES256_AES128);
     }
 
     /** Add a field with value="", required=false, use=true, modifyable=true, if the parameter exists, ignored otherwise */
@@ -1584,6 +1590,18 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             setRequired(DnComponents.RFC822NAME, 0, false);
         }
     }
+    
+    public void setP12Cipher(final KeyStoreCipher cipher) {
+        data.put(P12_CIPHER, cipher);
+    }
+    
+    public KeyStoreCipher getP12Cipher() {
+        if (data.get(P12_CIPHER) == null) {
+            setP12Cipher(KeyStoreCipher.PKCS12_3DES_3DES);
+        }
+        return (KeyStoreCipher) data.get(P12_CIPHER);
+    }
+    
 
     @SuppressWarnings("unchecked")
     public void addUserNotification(final UserNotification notification) {
@@ -2744,6 +2762,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
             if (getVersion() < 17) {
                 setProfileType(PROFILE_TYPE_DEFAULT);
+            }
+            if(getVersion() < 19) {
+                //Since the old value was 3DES, set it here so it can be manually changed later
+                setP12Cipher(KeyStoreCipher.PKCS12_3DES_3DES);
             }
 
         	// Finally, update the version stored in the map to the current version

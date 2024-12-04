@@ -1213,6 +1213,30 @@
                         </h:selectManyListbox>
                     </h:panelGroup>
                 </h:panelGrid>
+                <!-- Selection menu for P12 Cipher type -->
+                 <h:panelGroup>
+                        &nbsp;
+                </h:panelGroup>
+                <h:panelGrid id="p12cipherleft" columns="1" width="100%"
+                    columnClasses="column-align-right">
+                    <h:panelGroup>
+                        <h:outputLabel for="p12cipher"
+                            value="#{web.text.P12_CIPHER_TYPE}" />
+                    </h:panelGroup>
+                </h:panelGrid>
+                <h:panelGrid id="p12cipherright" columns="1">
+                    <h:panelGroup>
+                        <h:selectOneMenu id="p12cipher"
+                            size="7"
+                            value="#{endEntityProfileMBean.p12Cipher}"
+                            disabled="#{endEntityProfileMBean.viewOnly}">
+                            <f:selectItems id="chosenP12Cipher"
+                                value="#{endEntityProfileMBean.availableP12Ciphers}" />
+                        </h:selectOneMenu>
+                    </h:panelGroup>
+                </h:panelGrid>
+                
+                
             </h:panelGrid>
 
 
