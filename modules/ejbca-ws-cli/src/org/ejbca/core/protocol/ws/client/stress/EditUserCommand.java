@@ -9,16 +9,14 @@ import org.ejbca.util.PerformanceTest;
 import java.math.BigInteger;
 
 public class EditUserCommand extends BaseCommand implements PerformanceTest.Command {
-    final private EjbcaWS ejbcaWS;
     final private UserDataVOWS user;
     final private boolean doCreateNewUser;
     final private int bitsInCertificateSN;
 
     public EditUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName,
                     JobData _jobData, boolean _doCreateNewUser, int _bitsInCertificateSN) {
-        super(_jobData);
+        super(_ejbcaWS, _jobData, null);
         this.doCreateNewUser = _doCreateNewUser;
-        this.ejbcaWS = _ejbcaWS;
         this.user = new UserDataVOWS();
         this.user.setClearPwd(true);
         this.user.setCaName(caName);
