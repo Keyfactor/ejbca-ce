@@ -19,7 +19,6 @@ public class RevokeCertCommand extends BaseCommand implements PerformanceTest.Co
     }
     @Override
     public boolean doIt() throws Exception {
-        log.info("---------- Revoking Certificate...");
         for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++) {
             Certificate certificate = jobData.userCertsToBeRevoked[i];
             String issuerDN = CertTools.getIssuerDN(certificate);
