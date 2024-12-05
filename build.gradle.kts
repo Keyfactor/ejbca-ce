@@ -171,6 +171,8 @@ dependencies {
         earlib(project(path = ":modules:proxy-ca", configuration = "archives"))
         earlib(project(path = ":modules:caa", configuration = "archives"))
         earlib(project(path = ":modules:ct", configuration = "archives"))
+        earlib(project(path = ":modules:iodef", configuration = "archives"))
+        earlib(project(path = ":modules:mpic", configuration = "archives"))
     }
     if (!props.getProperty("ejbca.productionmode", "true").toBoolean()) {
         "earlibanddeploy"(project(":modules:systemtests:common"))

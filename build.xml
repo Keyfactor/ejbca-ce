@@ -624,6 +624,8 @@
         		<include name="plugins.jar" />
         		<include name="plugins-ee.jar" />
         		<include name="caa.jar" />
+                <include name="iodef.jar" />
+                <include name="mpic.jar" />
 	            <include name="unidfnr-ejb.jar" />
 	            <include name="ejbca-ejb.jar" />
 				<include name="acme-common.jar" />
