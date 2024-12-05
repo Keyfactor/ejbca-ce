@@ -73,17 +73,7 @@ public abstract class StressTestCommandBase extends EJBCAWSRABaseCommand impleme
             final int keySize = Integer.parseInt(System.getProperty("keySize",
                     keyAlgorithm.equals("RSA") ? "1024" : "571"));
 
-            getPrintStream().println(
-                    "---- StressTestCommandBase ---- :: caName=" + caName + " :: "
-                            + " :: endEntityProfileName=" + endEntityProfileName + " :: "
-                            + " certificateProfileName=" + certificateProfileName + " :: "
-                            + " :: testType=" + testType + " :: "
-                            + " maxCertificateSN=" + maxCertificateSN + " :: "
-                            + " subjectDN=" + subjectDN + " :: "
-                            + " keyAlgorithm=" + keyAlgorithm + " :: "
-                            + " keySize=" + keySize + " :: "
-                            + " curve=" + curve + " :: "
-            );
+
             this.PERFORMANCE_TEST.execute(
                     getCommandFactory(
                             caName,
@@ -116,6 +106,10 @@ public abstract class StressTestCommandBase extends EJBCAWSRABaseCommand impleme
 
     public static long nextLong() {
         return PERFORMANCE_TEST.nextLong();
+    }
+
+    public static long nextCvcLong() {
+        return PERFORMANCE_TEST.nextCvcLong();
     }
 
     public static PerformanceTest.Log getLog() {

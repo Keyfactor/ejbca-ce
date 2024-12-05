@@ -34,7 +34,11 @@ public class EditUserCommand extends BaseCommand implements PerformanceTest.Comm
     public boolean doIt() throws Exception {
         if ( this.doCreateNewUser ) {
             this.jobData.passWord = "foo123";
-            this.jobData.userName = "WSTESTUSER"+ StressTestCommandBase.nextLong();
+            if (jobData.forCvc) {
+                this.jobData.userName = "S"+ StressTestCommandBase.nextCvcLong();
+            } else {
+                this.jobData.userName = "WS_STRESS_TEST_USER"+ StressTestCommandBase.nextLong();
+            }
         }
         if ( this.bitsInCertificateSN>0 && this.doCreateNewUser ) {
             this.user.setCertificateSerialNumber(new BigInteger(this.bitsInCertificateSN, StressTestCommandBase.getRandom()));
