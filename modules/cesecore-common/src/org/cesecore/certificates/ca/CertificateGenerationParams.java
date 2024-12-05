@@ -54,6 +54,9 @@ public final class CertificateGenerationParams implements Serializable {
     private CertificateValidationDomainService certificateValidationDomainService;
 
     private boolean wasAddedToIncompleteIssuanceJournal = false;
+    
+    private boolean ctCacheFastFailEnabled;
+    private long ctCacheFastFailBackoff;
 
 
     /**
@@ -75,6 +78,22 @@ public final class CertificateGenerationParams implements Serializable {
 
     public CTSubmissionConfigParams getCTSubmissionConfigParams() {
         return ctSubmissionConfigParams;
+    }
+    
+    public boolean getCtCacheFastFailEnabled() {
+        return ctCacheFastFailEnabled;
+    }
+    
+    public void setCtCacheFastFailEnabled(final boolean ctCacheFastFailEnabled) {
+        this.ctCacheFastFailEnabled = ctCacheFastFailEnabled;
+    }
+    
+    public long getCtCacheFastFailBackoff() {
+        return ctCacheFastFailBackoff;
+    }
+    
+    public void setCtCacheFastFailBackoff(final long backoff) {
+        this.ctCacheFastFailBackoff = backoff;
     }
 
     public CTAuditLogCallback getCTAuditLogCallback() {

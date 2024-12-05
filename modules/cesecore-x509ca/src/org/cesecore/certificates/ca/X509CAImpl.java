@@ -1792,7 +1792,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                    // Submit to logs and get signed timestamps
                    byte[] sctlist = null;
                    try {
-                       sctlist = ct.fetchSCTList(chain, certProfile, certGenParams.getCTSubmissionConfigParams(), certGenParams.getSctDataCallback());
+                       sctlist = ct.fetchSCTList(chain, certProfile, certGenParams.getCTSubmissionConfigParams(), certGenParams.getSctDataCallback(),
+                               certGenParams.getCtCacheFastFailEnabled(), certGenParams.getCtCacheFastFailBackoff());
                    } catch (CTLogException e) {
                        e.setPreCertificate(EJBTools.wrap(cert));
                        throw e;

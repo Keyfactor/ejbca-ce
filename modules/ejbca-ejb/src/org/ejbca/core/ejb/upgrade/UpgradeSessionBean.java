@@ -79,6 +79,7 @@ import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
@@ -2610,6 +2611,33 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             globalConfigurationSession.saveConfiguration(authenticationToken, globalOcspConfiguration);
         } catch (AuthorizationDeniedException e) {
             log.error("Always allow token was denied authoriation to global configuration table.", e);
+        }
+    }
+    
+    @SuppressWarnings("deprecation")
+    @Override
+    public void migrateDatabase920() throws UpgradeFailedException{
+        //Shift various CT-related values from cesecore.properties into Global Configuration
+        {
+            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            boolean ctCacheEnabled = CesecoreConfiguration.getCTCacheEnabled();
+            globalConfiguration.setCtCacheEnabled(ctCacheEnabled);
+            long ctCacheSize = CesecoreConfiguration.getCTCacheMaxEntries();
+            globalConfiguration.setCtCacheSize(ctCacheSize);
+            long ctCacheCleanupInterval = CesecoreConfiguration.getCTCacheCleanupInterval();
+            globalConfiguration.setCtCacheCleanupInterval(ctCacheCleanupInterval);
+            boolean ctCacheFastFailEnabled = CesecoreConfiguration.getCTFastFailEnabled();
+            globalConfiguration.setCtCacheFastFailEnabled(ctCacheFastFailEnabled);
+            long ctCacheFastFailBackoff = CesecoreConfiguration.getCTFastFailBackOff();
+            globalConfiguration.setCtCacheFastFailBackoff(ctCacheFastFailBackoff);
+            
+            try {
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+            } catch (AuthorizationDeniedException e) {
+                String msg = "Always allow token was denied authoriation to global configuration table.";
+                log.error(msg, e);
+                throw new UpgradeFailedException(msg, e);
+            }
         }
     }
     
