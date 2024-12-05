@@ -62,6 +62,24 @@ public class PerformanceTest {
         }
     }
 
+    public long nextCvcLong() {
+        synchronized (this.random) {
+            while (this.isSomeThreadUsingRandom) {
+                try {
+                    this.random.wait();
+                } catch (InterruptedException e) {
+                    // should never ever happen
+                    throw new IllegalStateException(e);
+                }
+            }
+            this.isSomeThreadUsingRandom = true;
+            final long result = this.random.nextLong(1, 99999999);
+            this.isSomeThreadUsingRandom = false;
+            this.random.notifyAll();
+            return result;
+        }
+    }
+
     public Log getLog() {
         return this.log;
     }

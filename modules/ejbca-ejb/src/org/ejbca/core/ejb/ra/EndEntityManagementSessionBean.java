@@ -1996,7 +1996,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             AuthenticationToken authenticationToken, CertRevocationDto certRevocationDto
     ) throws AuthorizationDeniedException, NoSuchEndEntityException, ApprovalException, WaitingForApprovalException,
             RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException, CertificateProfileDoesNotExistException {
-        BigInteger certificateSn = new BigInteger(certRevocationDto.getCertificateSN(), 16);
+        String serialNo = certRevocationDto.getCertificateSN(); // Cvc Stress Test generated certificate serial number length is 5
+        BigInteger certificateSn = serialNo.length() > 5 ? new BigInteger(serialNo, 16) : new BigInteger(serialNo);
         
         revokeCert(authenticationToken, certificateSn, certRevocationDto.getRevocationDate(), certRevocationDto.getInvalidityDate(), 
                 certRevocationDto.getIssuerDN(), certRevocationDto.getReason(), certRevocationDto.isCheckDate(), null, 0, null, 
