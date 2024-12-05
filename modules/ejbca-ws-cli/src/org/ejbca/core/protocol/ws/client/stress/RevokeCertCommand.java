@@ -9,13 +9,9 @@ import java.security.cert.Certificate;
 import static org.ejbca.core.protocol.ws.client.EJBCAWSRABaseCommand.REVOKATION_REASON_UNSPECIFIED;
 
 public class RevokeCertCommand extends BaseCommand implements PerformanceTest.Command {
-    final private EjbcaWS ejbcaWS;
-    final private PerformanceTest.Log log;
 
     public RevokeCertCommand(EjbcaWS ejbcaWS, JobData jobData, PerformanceTest.Log log) {
-        super(jobData);
-        this.ejbcaWS = ejbcaWS;
-        this.log = log;
+        super(ejbcaWS, jobData, log);
     }
     @Override
     public boolean doIt() throws Exception {

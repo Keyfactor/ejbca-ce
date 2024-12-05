@@ -4,6 +4,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
 import org.bouncycastle.util.encoders.Base64;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.util.PerformanceTest;
 
 import java.io.ByteArrayInputStream;
@@ -12,9 +13,14 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 public class BaseCommand {
+    final protected EjbcaWS ejbcaWS;
     final protected JobData jobData;
-    BaseCommand(JobData _jobData) {
-        this.jobData = _jobData;
+    final protected PerformanceTest.Log log;
+
+    BaseCommand(EjbcaWS ejbcaWS, JobData jobData, PerformanceTest.Log log) {
+        this.ejbcaWS = ejbcaWS;
+        this.jobData = jobData;
+        this.log = log;
     }
     @Override
     public String toString() {
@@ -27,8 +33,8 @@ public class BaseCommand {
      */
     protected boolean checkAndLogCertificateResponse(
             final CertificateResponse certificateResponse,
-            final JobData jobData, final boolean validateUsername,
-            final PerformanceTest.Log log
+            final JobData jobData,
+            final boolean validateUsername
     ) throws CertificateException {
         X509Certificate cert = null;
         for ( final java.security.cert.Certificate tmp : CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))) ) {
