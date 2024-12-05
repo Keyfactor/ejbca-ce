@@ -107,7 +107,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private static final float LATEST_VERSION = 19;
+    private static final float LATEST_VERSION = 20;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -1592,14 +1592,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
     
     public void setP12Cipher(final KeyStoreCipher cipher) {
-        data.put(P12_CIPHER, cipher);
+        data.put(P12_CIPHER, cipher.getLabel());
     }
     
     public KeyStoreCipher getP12Cipher() {
         if (data.get(P12_CIPHER) == null) {
             setP12Cipher(KeyStoreCipher.PKCS12_3DES_3DES);
         }
-        return (KeyStoreCipher) data.get(P12_CIPHER);
+        return KeyStoreCipher.fromLabel((String) data.get(P12_CIPHER));
     }
     
 
@@ -2763,9 +2763,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             if (getVersion() < 17) {
                 setProfileType(PROFILE_TYPE_DEFAULT);
             }
-            if(getVersion() < 19) {
-                //Since the old value was 3DES, set it here so it can be manually changed later
-                setP12Cipher(KeyStoreCipher.PKCS12_3DES_3DES);
+            //Skipping 19 due to an inter-release refactoring
+            if(getVersion() < 20) {
+                KeyStoreCipher keyStoreCipher = (KeyStoreCipher) data.get(P12_CIPHER);
+                if(keyStoreCipher == null) {
+                    setP12Cipher(KeyStoreCipher.PKCS12_3DES_3DES);
+                } else {
+                    //Setter converts it into a string
+                    setP12Cipher(keyStoreCipher);
+                }
             }
 
         	// Finally, update the version stored in the map to the current version
