@@ -33,7 +33,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.util.ThreadContext;
+import org.cesecore.util.RequestId;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
@@ -112,8 +112,7 @@ public class ServiceControlFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        boolean containsRequestId = ThreadContext.containsRequestId();
-        ThreadContext.createRequestIdIfAbsent();
+        final RequestId requestId = new RequestId();
         try {
             final HttpServletRequest httpRequest = (HttpServletRequest) request;
             final HttpServletResponse httpResponse = (HttpServletResponse) response;
@@ -157,9 +156,7 @@ public class ServiceControlFilter implements Filter {
             chain.doFilter(request, response);
         }
         finally {
-            if (!containsRequestId) {
-                ThreadContext.removeRequestId();
-            }
+            requestId.clear();
         }
     }
         

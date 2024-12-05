@@ -30,7 +30,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.util.ThreadContext;
+import org.cesecore.util.RequestId;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.bean.SessionBeans;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
@@ -52,9 +52,8 @@ public class AuthenticationFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        final boolean containsRequestId = ThreadContext.containsRequestId();
+        final RequestId requestId = new RequestId();
         try {
-            ThreadContext.createRequestIdIfAbsent();
             final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             final HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             boolean hasAuthenticationError = false;
@@ -119,9 +118,7 @@ public class AuthenticationFilter implements Filter {
             }
         }
         finally {
-            if (!containsRequestId) {
-                ThreadContext.removeRequestId();
-            }
+            requestId.clear();
         }
     }
 
