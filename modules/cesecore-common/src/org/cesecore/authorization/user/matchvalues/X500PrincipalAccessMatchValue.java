@@ -25,7 +25,7 @@ import org.cesecore.authorization.user.AccessMatchType;
  *
  */
 public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
-    @Deprecated // Will never match anything which makes it rather useless keep around long term. (Deprecated in 6.8.0.) 
+    @Deprecated // Will never match anything which makes it rather useless keep around long term. (Deprecated in 6.8.0.)
     NONE(0),
     WITH_COUNTRY(1),
     WITH_DOMAINCOMPONENT(2),
@@ -43,9 +43,9 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     WITH_UPN(14),
     WITH_FULLDN(15),
     WITH_ANY(16);
-    
+
     private final int numericValue;
-    
+
     private X500PrincipalAccessMatchValue(int numericValue) {
         this.numericValue = numericValue;
     }
@@ -80,10 +80,26 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
         if (numericValue == 16) {
             return Collections.emptyList();
         } else {
-            return Arrays.asList(AccessMatchType.TYPE_EQUALCASE);
+            return Arrays.asList(getAccessMatchType(this));
         }
     }
-    
+
+    /**
+     * Get the appropriate Access match type based on the access match value.
+     * @param accessMatchValue
+     * @return Equal Case sensitive unless access match value forces something else.
+     */
+    public static final AccessMatchType getAccessMatchType(AccessMatchValue accessMatchValue) {
+        if (accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER)
+                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_COUNTRY)
+                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_DNEMAILADDRESS)
+                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_STATEORPROVINCE)
+                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_RFC822NAME)){
+            return AccessMatchType.TYPE_EQUALCASEINS;
+        }
+        return AccessMatchType.TYPE_EQUALCASE;
+    }
+
     @Override
     public String normalizeMatchValue(final String value) {
         if (value == null) {
