@@ -32,7 +32,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.util.ThreadContext;
+import org.cesecore.util.RequestId;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -61,9 +61,8 @@ public class ProxiedAuthenticationFilter implements Filter {
 
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain filterChain) throws IOException, ServletException {
-		final boolean containsRequestId = ThreadContext.containsRequestId();
+		RequestId requestId = new RequestId();
 		try {
-			ThreadContext.createRequestIdIfAbsent();
 			if (request.getAttribute(ATTR_X509CERTIFICATE) == null) {
 				if (proxiedAuthenticationEnabled) {
 					final String username = (String) request.getAttribute(ATTR_PROXIED_AUTH_TOKEN_STRING);
@@ -108,9 +107,7 @@ public class ProxiedAuthenticationFilter implements Filter {
 			filterChain.doFilter(request, response);
 		}
 		finally {
-			if (!containsRequestId) {
-				ThreadContext.removeRequestId();
-			}
+			requestId.clear();
 		}
 	}
 	

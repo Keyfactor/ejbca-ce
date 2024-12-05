@@ -34,7 +34,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.ThreadContext;
+import org.cesecore.util.RequestId;
 
 /**
  * Use this filter to synchronize requests to your web application and
@@ -139,9 +139,8 @@ public class RequestControlFilter implements Filter {
             ServletResponse response,
             FilterChain chain)
                     throws IOException, ServletException {
-        final boolean containsRequestId = ThreadContext.containsRequestId();
+        final RequestId requestId = new RequestId();
         try {
-            ThreadContext.createRequestIdIfAbsent();
             HttpServletRequest httpRequest = (HttpServletRequest)request;
             HttpSession session = httpRequest.getSession();
 
@@ -187,9 +186,7 @@ public class RequestControlFilter implements Filter {
             }
         }
         finally {
-            if (!containsRequestId) {
-                ThreadContext.removeRequestId();
-            }
+            requestId.clear();
         }
     }
 

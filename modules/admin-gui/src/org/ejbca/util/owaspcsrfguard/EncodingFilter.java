@@ -27,7 +27,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.ThreadContext;
+import org.cesecore.util.RequestId;
 import org.ejbca.ui.web.RequestHelper;
 
 /**
@@ -46,9 +46,8 @@ public class EncodingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException,IOException {
-        final boolean containsRequestId = ThreadContext.containsRequestId();
+        final RequestId requestId = new RequestId();
         try {
-            ThreadContext.createRequestIdIfAbsent();
             final HttpServletRequest httpreq = (HttpServletRequest) request;
 
             // The way we use OWASP CSRF Guard makes all POST requests to our form in the last remaining jsp pages protected against csrf attacks
@@ -82,9 +81,7 @@ public class EncodingFilter implements Filter {
             chain.doFilter(request, response);
         }
         finally {
-            if (!containsRequestId) {
-                ThreadContext.removeRequestId();
-            }
+            requestId.clear();
         }
     }
 

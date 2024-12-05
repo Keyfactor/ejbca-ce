@@ -21,7 +21,7 @@
 package org.owasp.filters;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.util.ThreadContext;
+import org.cesecore.util.RequestId;
 import org.ejbca.config.WebConfiguration;
 
 import jakarta.servlet.Filter;
@@ -128,7 +128,7 @@ public class ContentSecurityPolicyFilter implements Filter {
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain fchain) throws IOException, ServletException {
-        final boolean containsRequestId = ThreadContext.containsRequestId();
+        RequestId requestId = null;
         try {
             HttpServletResponse httpResponse = ((HttpServletResponse) response);
             StringBuilder policiesBuffer = new StringBuilder(this.policies);
@@ -153,12 +153,12 @@ public class ContentSecurityPolicyFilter implements Filter {
             // Referrer policy: https://www.w3.org/TR/referrer-policy/
             httpResponse.setHeader("Referrer-Policy", "no-referrer-when-downgrade" );
             String sessionId = ((HttpServletRequest) request).getRequestedSessionId();
-            ThreadContext.createRequestIdIfAbsent(sessionId);
+            requestId = new RequestId(sessionId);
             fchain.doFilter(request, response);
         }
         finally {
-            if (!containsRequestId) {
-                ThreadContext.removeRequestId();
+            if (requestId != null) {
+                requestId.clear();
             }
         }
     }

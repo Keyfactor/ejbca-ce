@@ -34,7 +34,7 @@ import jakarta.servlet.http.HttpServletResponseWrapper;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
 import org.cesecore.util.LogRedactionUtils;
-import org.cesecore.util.ThreadContext;
+import org.cesecore.util.RequestId;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 
 /**
@@ -145,9 +145,8 @@ public class RestLoggingFilter implements Filter {
 
     @Override
     public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
-        final boolean containsRequestId = ThreadContext.containsRequestId();
+        final RequestId requestId = new RequestId();
         try {
-            ThreadContext.createRequestIdIfAbsent();
             final long startTime = System.currentTimeMillis();
             final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             final StringBuilder sbInfo = new StringBuilder(200);
@@ -220,9 +219,7 @@ public class RestLoggingFilter implements Filter {
             }
         }
         finally {
-            if (!containsRequestId) {
-                ThreadContext.removeRequestId();
-            }
+            requestId.clear();
         }
     }
 }
