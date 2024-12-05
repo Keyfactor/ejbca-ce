@@ -201,6 +201,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         
         //Global CT Settings
         private boolean ctCacheEnabled;
+        private long ctCacheSize;
+        private long ctCacheCleanupInterval;
+        private boolean ctCacheFastFailEnabled;
+        private long ctCacheFastFailBackoff;
 
         private GuiInfo(GlobalConfiguration globalConfig, GlobalCesecoreConfiguration globalCesecoreConfiguration, AdminPreference adminPreference) {
             if(globalConfig == null) {
@@ -243,6 +247,10 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
                 
                 this.ctCacheEnabled = globalConfig.getCtCacheEnabled();
+                this.ctCacheSize = globalConfig.getCtCacheSize();
+                this.ctCacheCleanupInterval = globalConfig.getCtCacheCleanupInterval();
+                this.ctCacheFastFailEnabled = globalConfig.getCtCacheFastFailEnabled();
+                this.ctCacheFastFailBackoff = globalConfig.getCtCacheFastFailBackoff();
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -319,7 +327,15 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         
         //Global CT Settings
         public boolean isCtCacheEnabled() { return ctCacheEnabled; }
-        public void setCtCacheEnabled(boolean cacheEnabled) { this.ctCacheEnabled = cacheEnabled; }
+        public void setCtCacheEnabled(boolean cacheEnabled) { this.ctCacheEnabled = cacheEnabled; }        
+        public long getCtCacheSize() { return ctCacheSize; }
+        public void setCtCacheSize(final long ctCacheSize) { this.ctCacheSize = ctCacheSize; }
+        public long getCtCacheCleanupInterval() { return ctCacheCleanupInterval; }
+        public void setCtCacheCleanupInterval(final long interval) { this.ctCacheCleanupInterval = interval; }
+        public boolean getCtCacheFastFailEnabled() { return  ctCacheFastFailEnabled; }
+        public void setCtCacheFastFailEnabled(boolean fastFailEnabled) { this.ctCacheFastFailEnabled = fastFailEnabled; }
+        public long getCtCacheFastFailBackoff() { return ctCacheFastFailBackoff; }
+        public void setCtCacheFastFailBackoff(final long backoff) { this.ctCacheFastFailBackoff = backoff; }
     }
 
     public class EKUInfo {
@@ -1058,6 +1074,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
+                globalConfig.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
+                globalConfig.setCtCacheSize(currentConfig.getCtCacheSize());
+                globalConfig.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
+                globalConfig.setCtCacheFastFailEnabled(currentConfig.getCtCacheFastFailEnabled());
+                globalConfig.setCtCacheFastFailBackoff(currentConfig.getCtCacheFastFailBackoff());
 
                 if (isValidOcspCleanupSettings()) {
                     globalConfig.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
@@ -2223,5 +2244,37 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public void setCtCacheEnabled(final boolean cacheEnabled) {
         getCurrentConfig().setCtCacheEnabled(cacheEnabled);
     }
+    
+    public long getCtCacheSize() {
+        return getCurrentConfig().getCtCacheSize();
+    }
+    
+    public void setCtCacheSize(final long ctCacheSize) {
+        getCurrentConfig().setCtCacheSize(ctCacheSize);
+    }
+    
+    public long getCtCacheCleanupInterval() {
+        return getCurrentConfig().getCtCacheCleanupInterval();
+    }
+    
+    public void setCtCacheCleanupInterval(final long interval) {
+        getCurrentConfig().setCtCacheCleanupInterval(interval);
+    }
+    
+    public boolean getCtCacheFastFailEnabled() {
+        return getCurrentConfig().getCtCacheFastFailEnabled();
+    }
+    
+    public void setCtCacheFastFailEnabled(final boolean fastFailEnabled) {
+        getCurrentConfig().setCtCacheFastFailEnabled(fastFailEnabled);
+    }
 
+    
+    public long getCtCacheFastFailBackoff() {
+        return getCurrentConfig().getCtCacheFastFailBackoff();
+    }
+    
+    public void setCtCacheFastFailBackoff(final long backoffTime) {
+        getCurrentConfig().setCtCacheFastFailBackoff(backoffTime);
+    }
 }

@@ -109,6 +109,7 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.ValidationException;
 import org.cesecore.util.LogRedactionUtils;
+import org.ejbca.config.GlobalConfiguration;
 
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.Base64;
@@ -504,6 +505,9 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 return sctDataSession.getThreadPool();
             }
         });
+        GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+        certGenParams.setCtCacheFastFailEnabled(globalConfiguration.getCtCacheEnabled());
+        certGenParams.setCtCacheFastFailBackoff(globalConfiguration.getCtCacheFastFailBackoff());
         certGenParams.setIncompleteIssuanceJournalCallbacks(incompleteIssuanceJournalDataSession);
 
         try {
