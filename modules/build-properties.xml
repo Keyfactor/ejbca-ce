@@ -169,6 +169,10 @@
 	<property name="mod.ssh.path" location="${mod.path}/ssh" />
 	<property name="mod.ssh.lib" location="${mod.dist.path}/ejbca-ssh.jar" />
 	<property name="mod.ssh.war" location="${mod.dist.path}/ssh.war" />
+	<property name="mod.iodef.path" location="${mod.path}/iodef" />
+	<property name="mod.iodef.lib" location="${mod.dist.path}/iodef.jar" />
+	<property name="mod.mpic.path" location="${mod.path}/mpic" />
+	<property name="mod.mpic.lib" location="${mod.dist.path}/mpic.jar" />
 	<property name="mod.msae.path" location="${mod.path}/msae" />
 	<property name="mod.msae.war" location="${mod.dist.path}/msae.war" />
 	<property name="mod.cits.path" location="${mod.path}/cits" />
@@ -668,6 +672,14 @@
 	
 	<condition property="mod.ct.exists">
 		<available file="${mod.ct.path}/build.xml" />
+    </condition>
+
+	<condition property="mod.iodef.exists">
+		<available file="${mod.iodef.path}/build.xml" />
+    </condition>
+
+	<condition property="mod.mpic.exists">
+		<available file="${mod.mpic.path}/build.xml" />
     </condition>
 
 	<condition property="mod.proxy-ca.exists">
