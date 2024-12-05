@@ -1475,6 +1475,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         ctConfig.setConfiguredCTLogs(globalConfiguration.getCTLogs());
         ctConfig.setValidityPolicy(globalConfiguration.getGoogleCtPolicy());
         certGenParams.setCTSubmissionConfigParams(ctConfig);
+        certGenParams.setCtCacheFastFailEnabled(globalConfiguration.getCtCacheFastFailEnabled());
+        certGenParams.setCtCacheFastFailBackoff(globalConfiguration.getCtCacheFastFailBackoff());
         return certGenParams;
     }
 
