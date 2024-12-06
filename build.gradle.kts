@@ -1,4 +1,16 @@
 import java.net.Socket
+import org.gradle.api.services.BuildService
+import org.gradle.api.services.BuildServiceParameters
+
+abstract class SystemTestLockResource : BuildService<BuildServiceParameters.None>
+
+// Register a shared resource used to prevent parallel execution of system test tasks
+val sharedSystemTestLockResource = gradle.sharedServices.registerIfAbsent(
+    "systemTestLockResource",
+    SystemTestLockResource::class.java
+) {
+    parameters {}
+}
 
 val edition: String by extra
 val appServerHome: String? by extra
@@ -327,7 +339,8 @@ subprojects {
             tasks.register<Test>("systemTest") {
                 description = "Runs system tests."
                 group = "verification"
-                forkEvery = 0
+                forkEvery = 1
+                maxParallelForks = 1
 
                 dependsOn(":checkIfAppServerIsRunning")
                 shouldRunAfter("test")
@@ -350,12 +363,8 @@ subprojects {
                     !isProductionMode
                 }
 
-                // Prevent parallel execution of system tests across modules
-                doLast {
-                    synchronized(rootProject) {
-                        logger.lifecycle("Running systemTest in module: ${project.name}")
-                    }
-                }
+                // Prevent parallel execution of system tests across all modules/subprojects
+                usesService(sharedSystemTestLockResource)
             }
 
             // Add common system test dependencies.
