@@ -31,7 +31,7 @@ public abstract class StressTestCommandBase extends EJBCAWSRABaseCommand impleme
             String caName,
             String endEntityProfileName,
             String certificateProfileName,
-            StressTestCommand.TestType testType, // TODO: fix after StressTestCommand is refactored
+            TestType testType,
             int maxCertificateSN,
             String subjectDN,
             String keyAlgorithm,
@@ -52,7 +52,7 @@ public abstract class StressTestCommandBase extends EJBCAWSRABaseCommand impleme
             final String caName = this.args[1];
             final String endEntityProfileName = this.args.length>4 ? this.args[4] : "EMPTY";
             final String certificateProfileName = this.args.length>5 ? this.args[5] : "ENDUSER";
-            final StressTestCommand.TestType testType = this.args.length>6 ? StressTestCommand.TestType.valueOf(this.args[6]) : StressTestCommand.TestType.BASIC;
+            final TestType testType = this.args.length>6 ? TestType.valueOf(this.args[6]) : TestType.BASIC;
             if (notanot.getTests() == -1) {
                 notanot.setTests(this.args.length>7 ? Integer.parseInt(this.args[7]) : -1);
             }
