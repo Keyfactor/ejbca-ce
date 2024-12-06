@@ -68,15 +68,22 @@ public class EjbcaStressTestCommand  extends StressTestCommandBase {
         final private int keySize;
         final private String curve;
 
-        EjbcaStressCommandFactory(String _caName, String _endEntityProfileName, String _certificateProfileName,
-                                TestType _testType, int _maxCertificateSN, String _subjectDN,
-                                String keyAlgorithm, int keySize, String curve ) {
-            this.testType = _testType;
-            this.caName = _caName;
-            this.endEntityProfileName = _endEntityProfileName;
-            this.certificateProfileName = _certificateProfileName;
-            this.maxCertificateSN = _maxCertificateSN;
-            this.subjectDN = _subjectDN;
+        EjbcaStressCommandFactory(
+                String caName,
+                String endEntityProfileName,
+                String certificateProfileName,
+                TestType testType,
+                int maxCertificateSN,
+                String subjectDN,
+                String keyAlgorithm,
+                int keySize, String curve
+        ) {
+            this.testType = testType;
+            this.caName = caName;
+            this.endEntityProfileName = endEntityProfileName;
+            this.certificateProfileName = certificateProfileName;
+            this.maxCertificateSN = maxCertificateSN;
+            this.subjectDN = subjectDN;
             this.keyAlgorithm = keyAlgorithm;
             this.keySize = keySize;
             this.curve = curve;
