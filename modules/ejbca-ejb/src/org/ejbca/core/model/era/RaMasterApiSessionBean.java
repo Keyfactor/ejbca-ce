@@ -3213,7 +3213,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException,
             AuthenticationFailedException {
         log.info(
-                "RA tried to use legacy RA API call for EST, which is disabled by default for security reasons. Please upgrade the RA, or set raapi.legacyest.enabled=true in web.properties to allow this.");
+                "RA tried to use legacy RA API call for EST, which is disabled since 9.2.0.");
         throw new NoSuchAliasException("CA configuration does not allow RA to use legacy API for EST."); // No better exception. We can't change an existing API.
     }
 
