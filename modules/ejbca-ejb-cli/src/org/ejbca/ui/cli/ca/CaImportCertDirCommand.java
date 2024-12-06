@@ -104,7 +104,9 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         registerParameter(new Parameter(CACERT, "CA Certificate File", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "Specify an alternate CA certificate file (in PEM). Use this option when importing certificates that were issued by the previous CA certificate. Please note that the supplied certificate is not verified."));
         registerParameter(new Parameter(REVOKEDETAILS, "Revocation Details", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.FLAG,
-                "Revocation details are to be derived from the filename of the certificate. The filename must end with '!<REASON>!<INVALIDITY_TIME>'. The REASON can be the value or label as described in RFC5280 section 5.3.1. INVALIDITY_TIME is formatted as '"+DATE_FORMAT_WINSAFE+"' and assumed to be the local timezone. Note: Filename extensions are not supported."));
+                "Revocation details are to be derived from the filename of the certificate. The filename must end with '!<REASON>!<INVALIDITY_TIME>'. The REASON can be the value or label as described in RFC5280 section 5.3.1. "
+                + "INVALIDITY_TIME is formatted as '"+DATE_FORMAT_WINSAFE+"' and assumed to be the local timezone. Note: Filename extensions (ie., '.crt. or '.pem') are not supported. Please also note that any file without "
+                + "revocation details will not be imported."));
     }
 
     @Override
@@ -129,7 +131,6 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
         final String revocationTimeString = parameters.get(REVOCATION_TIME);
         final int threadCount = parameters.get(THREAD_COUNT) == null ? 1 : Integer.valueOf(StringUtils.strip(parameters.get(THREAD_COUNT)));
         final String caCertFile = parameters.get(CACERT);
-        final boolean bRevokeDetailsInFilename = parameters.containsKey(REVOKEDETAILS);
         
 
         if (threadCount > 1 && !usernameFilter.equalsIgnoreCase("FILE")) {
@@ -197,13 +198,19 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
             if ( caCertFile != null) {
                 final File fileCaCertFile = new File(caCertFile);
                 if (!fileCaCertFile.isFile()) {
-                    log.error("CA Certificate file '" + caCertFile + "' is not found. Will use current certificate for the CA.");
+                    log.error("CA Certificate file '" + caCertFile + "' is not found. Please check the supplied parameters.");
+                    return CommandResult.CLI_FAILURE;
                 } else {
-                    log.warn("The certificate for the CA has been overidden. This certificate has not been verified.");
-                    cacert = (X509Certificate) loadCertificateFromFile(fileCaCertFile.getCanonicalPath());
+                    log.warn("The certificate for the CA has been overidden. This certificate has not been verified. Use at your own risk.");
+                    List<X509Certificate> certsInFile = CertTools.getCertsFromPEM( fileCaCertFile.getCanonicalPath(), X509Certificate.class);
+                    if ( (certsInFile == null) || (certsInFile.size()<1)) {
+                        log.error("CA Certificate file '" + caCertFile + "' could not be processed. Please check the file.");
+                        return CommandResult.CLI_FAILURE;
+                    }
+                    // Assume the first certificate, if more than one provided.
+                    cacert = certsInFile.get(0);
                 }
             }
-
 
             final String issuer = DnComponents.stringToBCDNString(cacert.getSubjectDN().toString());
             log.info("CA: " + issuer);
@@ -246,7 +253,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
             for (final File file : files) {
                 
                 // Check if revocation details are to be derived from the filename. Only do this if status is REVOKED
-                if ( (status == CertificateConstants.CERT_REVOKED) &&  bRevokeDetailsInFilename) {
+                if ( (status == CertificateConstants.CERT_REVOKED) &&  parameters.containsKey(REVOKEDETAILS)) {
                     // Find the revocation details from the filename. The details are separated with an exclamation (!) character.
                     final String[] sa = file.getName().split("!");
                     if (sa.length <3) {
@@ -260,7 +267,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                             final int iRevCode = Integer.parseInt(sRevCode);
                             revocationReason = RevocationReasons.getFromDatabaseValue(iRevCode);
                             if(revocationReason == null) {
-                                log.error("ERROR: '" + iRevCode + "' is not a valid revocation reason code. Ignoring this file.");
+                                log.error("ERROR: '" + iRevCode + "' is not a valid revocation reason code. Ignoring this file '"+file.getName()+"'.");
                                 continue;
                             }
                             
@@ -277,7 +284,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                                                              
                             revocationReason = RevocationReasons.getFromCliValue(sRevCode.toUpperCase());
                             if(revocationReason == null) {
-                                log.error("ERROR: '" + sRevCode + "' is not a valid revocation reason. Ignoring this file.");
+                               log.error("ERROR: '" + sRevCode + "' is not a valid revocation reason. Ignoring this file '"+file.getName()+"'.");
                                 continue;
                             }
                        }
@@ -287,7 +294,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                        try {
                             revocationTime = new SimpleDateFormat(DATE_FORMAT_WINSAFE).parse( sRevTime);
                         } catch (ParseException e) {
-                            log.error("ERROR: '" + sRevTime + "' was not a valid revocation time. Use this time format '"+DATE_FORMAT_WINSAFE+"'. Ignoring this file");
+                            log.error("ERROR: '" + sRevTime + "' was not a valid revocation time. Use this time format '"+DATE_FORMAT_WINSAFE+"'. Ignoring this file '"+file.getName()+"'.");
                             continue;
                         }
                     }
@@ -401,11 +408,4 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     protected Logger getLogger() {
         return log;
     }
-    
-    private Certificate loadCertificateFromFile(final String filename) throws IOException, CertificateParsingException {
-        final byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(filename), "-----BEGIN CERTIFICATE-----",
-                "-----END CERTIFICATE-----");
-        return CertTools.getCertfromByteArray(bytes, Certificate.class);
-    }
-
 }
