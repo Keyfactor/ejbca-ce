@@ -174,7 +174,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private Set<String> nodesInCluster;
         private boolean enableCommandLine;
         private boolean enableCommandLineDefaultUser;
-        private boolean enableExternalScripts;
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
@@ -215,7 +214,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.nodesInCluster = globalConfig.getNodesInCluster();
                 this.enableCommandLine = globalConfig.getEnableCommandLineInterface();
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
-                this.enableExternalScripts = globalConfig.getEnableExternalScripts();
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
@@ -270,8 +268,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableCommandLine(boolean enableCommandLine) { this.enableCommandLine=enableCommandLine; }
         public boolean getEnableCommandLineDefaultUser() { return this.enableCommandLineDefaultUser; }
         public void setEnableCommandLineDefaultUser(boolean enableCommandLineDefaultUser) { this.enableCommandLineDefaultUser=enableCommandLineDefaultUser; }
-        public boolean getEnableExternalScripts() { return this.enableExternalScripts; }
-        public void setEnableExternalScripts(boolean enableExternalScripts) { this.enableExternalScripts=enableExternalScripts; }
         public List<CTLogInfo> getCtLogs() { return this.ctLogs; }
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs = ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
@@ -422,6 +418,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             tabIndex++;
         }
+        flushCache();
     }
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
@@ -498,7 +495,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public SystemConfigurationOAuthKeyManager getOauthKeyManager() {
         if (oauthKeyManager == null) {
             this.oAuthConfiguration = null;
-            getEjbcaWebBean().reloadOAuthConfiguration();
             oauthKeyManager = new SystemConfigurationOAuthKeyManager(getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
                     @Override
@@ -1048,7 +1044,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setNodesInCluster(currentConfig.getNodesInCluster());
                 globalConfig.setEnableCommandLineInterface(currentConfig.getEnableCommandLine());
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
-                globalConfig.setEnableExternalScripts(currentConfig.getEnableExternalScripts());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());

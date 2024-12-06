@@ -5,8 +5,4 @@
 		<echo message="${customejbca.message}"/>
 	</target>
 
-	<target name="appserver.error.message" unless="appserver.type">
-		<echo message="${appserver.type.detected.errormessage}"/>
-	</target>
-	
 </project>

@@ -270,7 +270,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         final String issuerDn = "CN=InvalidCa";
 
         // when: importing CRL into a CA that doesn't exist.
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlPartitionIndex().build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(issuerDn));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -283,7 +283,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     @Test
     public void crlImportShouldReturnBadRequestOnMissingFile() throws Exception {
         // when
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlPartitionIndex().build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -301,7 +301,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         CaTestUtils.removeCrlByIssuerDn(TEST_ISSUER_DN1);
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl, "invalidFormFieldName").withCrlPartitionIndex().build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl, "invalidFormFieldName").withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -322,7 +322,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
         // when: negative number
-        Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("-1").build();
+        Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withInvalidCrlPartitionIndex("-1").build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -347,7 +347,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     @Test
     public void crlImportShouldReturnBadRequestOnInvalidFileContent() throws Exception {
         // given: that we have invalid file contents and import
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFileContent("invalid").withCrlPartitionIndex().build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFileContent("invalid").withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -359,7 +359,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
     @Test
     public void crlImportShouldReturnExceptionWithEmptyFileContent() throws Exception {
         // given: that we have an empty file contents and import
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withEmptyCrlFile().withCrlPartitionIndex().build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withEmptyCrlFile().withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -375,7 +375,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         final X509CRL x509CrlForOtherCA = getLatestCrl(TEST_ISSUER_DN2);
 
         // when: we try importing the CRL to CA "B"
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509CrlForOtherCA).withCrlPartitionIndex().build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509CrlForOtherCA).withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
         final String actualJsonString = crlImportResponse.readEntity(String.class);
@@ -393,7 +393,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         createCrl("/v1/ca/" + encodeUrl(TEST_ISSUER_DN1) + "/createcrl"); // CRL #2 - latest in DB
 
         // when: we try to import old CRL
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(oldX509Crl).withCrlPartitionIndex().build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(oldX509Crl).withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
 
@@ -413,7 +413,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
         // when: we import previously created CRL file
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withCrlPartitionIndex().build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withCrlPartitionIndex().build();
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
 
@@ -434,7 +434,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
         assertNull(getLatestCrl(TEST_ISSUER_DN1));
 
         // when: we import previously created CRL file
-        final Entity crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withCrlPartitionIndex(crlPartitionIndex).build();
+        final Entity<GenericEntity<List<EntityPart>>> crlImportRequestEntity = new CrlImportEntityBuilder().withCrlFile(x509Crl).withCrlPartitionIndex(crlPartitionIndex).build();
         System.out.println("---- " + crlImportRequestEntity.toString());
         final WebTarget crlImportRequest = newRequest(getImportCrlPath(TEST_ISSUER_DN1));
         final Response crlImportResponse = crlImportRequest.request().post(crlImportRequestEntity);
@@ -486,7 +486,7 @@ public class CaRestResourceSystemTest extends RestResourceSystemTestBase {
             return this;
         }
 
-        public Entity build(){
+        public Entity<GenericEntity<List<EntityPart>>> build(){
             final List<EntityPart> entityParts = new ArrayList<>();
 
             if (crlFileEP != null) {
