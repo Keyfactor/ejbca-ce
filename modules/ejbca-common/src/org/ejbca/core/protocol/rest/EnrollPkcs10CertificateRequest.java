@@ -146,12 +146,12 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             return this;
         }
 
-        public Builder requestFormat(String requestFormat) {
-            if (requestFormat == null) {
+        public Builder requestType(String requestType) {
+            if (requestType == null) {
                 this.requestType = CertificateConstants.CERT_REQ_TYPE_PKCS10;
                 return this;
             }
-            switch (requestFormat) {
+            switch (requestType) {
                 case "PUBLICKEY":
                     this.requestType = CertificateConstants.CERT_REQ_TYPE_PUBLICKEY;
                     break;
