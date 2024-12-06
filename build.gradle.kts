@@ -349,6 +349,13 @@ subprojects {
                     }
                     !isProductionMode
                 }
+
+                // Prevent parallel execution of system tests across modules
+                doLast {
+                    synchronized(rootProject) {
+                        logger.lifecycle("Running systemTest in module: ${project.name}")
+                    }
+                }
             }
 
             // Add common system test dependencies.
