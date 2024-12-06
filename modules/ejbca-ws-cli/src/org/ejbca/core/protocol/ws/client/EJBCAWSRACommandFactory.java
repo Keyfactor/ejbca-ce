@@ -74,7 +74,7 @@ public class EJBCAWSRACommandFactory {
         } else if (args[0].equals("customlog")) {
             return new CustomLogCommand(args);
         } else if (args[0].equals("stress")) {
-            return new StressTestCommand(args);
+            return new EjbcaStressTestCommand(args);
         } else if (args[0].equals("cvcgetchain")) {
             return new CvcGetChainCommand(args);
         } else if (args[0].equals("cvcrequest")) {

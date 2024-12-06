@@ -13,10 +13,18 @@ public class EditUserCommand extends BaseCommand implements PerformanceTest.Comm
     final private boolean doCreateNewUser;
     final private int bitsInCertificateSN;
 
-    public EditUserCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName,
-                    JobData _jobData, boolean _doCreateNewUser, int _bitsInCertificateSN) {
-        super(_ejbcaWS, _jobData, null);
-        this.doCreateNewUser = _doCreateNewUser;
+    public EditUserCommand(
+            EjbcaWS ejbcaWS,
+            String caName,
+            String endEntityProfileName,
+            String certificateProfileName,
+            JobData jobData,
+            boolean doCreateNewUser,
+            int bitsInCertificateSN,
+            PerformanceTest.Log log
+    ) {
+        super(ejbcaWS, jobData, log);
+        this.doCreateNewUser = doCreateNewUser;
         this.user = new UserDataVOWS();
         this.user.setClearPwd(true);
         this.user.setCaName(caName);
@@ -26,7 +34,7 @@ public class EditUserCommand extends BaseCommand implements PerformanceTest.Comm
         this.user.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         this.user.setEndEntityProfileName(endEntityProfileName);
         this.user.setCertificateProfileName(certificateProfileName);
-        this.bitsInCertificateSN = _bitsInCertificateSN;
+        this.bitsInCertificateSN = bitsInCertificateSN;
     }
     @Override
     public boolean doIt() throws Exception {
