@@ -246,11 +246,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.redactPiiByDefault = globalCesecoreConfiguration.getRedactPiiByDefault();
                 this.redactPiiEnforced = globalCesecoreConfiguration.getRedactPiiEnforced();
                 
-                this.ctCacheEnabled = globalConfig.getCtCacheEnabled();
-                this.ctCacheSize = globalConfig.getCtCacheSize();
-                this.ctCacheCleanupInterval = globalConfig.getCtCacheCleanupInterval();
-                this.ctCacheFastFailEnabled = globalConfig.getCtCacheFastFailEnabled();
-                this.ctCacheFastFailBackoff = globalConfig.getCtCacheFastFailBackoff();
+                this.ctCacheEnabled = globalCesecoreConfiguration.getCtCacheEnabled();
+                this.ctCacheSize = globalCesecoreConfiguration.getCtCacheSize();
+                this.ctCacheCleanupInterval = globalCesecoreConfiguration.getCtCacheCleanupInterval();
+                this.ctCacheFastFailEnabled = globalCesecoreConfiguration.getCtCacheFastFailEnabled();
+                this.ctCacheFastFailBackoff = globalCesecoreConfiguration.getCtCacheFastFailBackoff();
             } catch (RuntimeException e) {
                 log.error(e.getMessage(), e);
             }
@@ -1074,11 +1074,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
                 globalConfig.setVaStatusTimeConstraint(currentConfig.getVaStatusTimeConstraint());
                 globalConfig.setEnableIcaoCANameChange(currentConfig.getEnableIcaoCANameChange());
-                globalConfig.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
-                globalConfig.setCtCacheSize(currentConfig.getCtCacheSize());
-                globalConfig.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
-                globalConfig.setCtCacheFastFailEnabled(currentConfig.getCtCacheFastFailEnabled());
-                globalConfig.setCtCacheFastFailBackoff(currentConfig.getCtCacheFastFailBackoff());
+                
 
                 if (isValidOcspCleanupSettings()) {
                     globalConfig.setOcspCleanupSchedule(currentConfig.getOcspCleanupSchedule());
@@ -1107,6 +1103,11 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalCesecoreConfiguration.setMaximumQueryTimeout(currentConfig.getMaximumQueryTimeout());
                 globalCesecoreConfiguration.setRedactPiiByDefault(currentConfig.isRedactPiiByDefault());
                 globalCesecoreConfiguration.setRedactPiiEnforced(currentConfig.isRedactPiiEnforced());
+                globalCesecoreConfiguration.setCtCacheEnabled(currentConfig.isCtCacheEnabled());
+                globalCesecoreConfiguration.setCtCacheSize(currentConfig.getCtCacheSize());
+                globalCesecoreConfiguration.setCtCacheCleanupInterval(currentConfig.getCtCacheCleanupInterval());
+                globalCesecoreConfiguration.setCtCacheFastFailEnabled(currentConfig.getCtCacheFastFailEnabled());
+                globalCesecoreConfiguration.setCtCacheFastFailBackoff(currentConfig.getCtCacheFastFailBackoff());
                 getEjbcaWebBean().getEjb().getGlobalConfigurationSession().saveConfiguration(getAdmin(), globalCesecoreConfiguration);
                 // Purge access rule for key recovery from all roles if key recovery is disabled
                 // This is done after the configuration has been saved successfully, thus making
