@@ -81,6 +81,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.OcspConfiguration;
@@ -637,6 +638,13 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         if (isLesserThan(oldVersion, "8.3.0")) {
             try {
                 upgradeSession.migrateDatabase830();
+            } catch (UpgradeFailedException e) {
+                return false;
+            }
+        }        
+        if (isLesserThan(oldVersion, "9.2.0")) {
+            try {
+                upgradeSession.migrateDatabase920();
             } catch (UpgradeFailedException e) {
                 return false;
             }
@@ -2619,20 +2627,21 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     public void migrateDatabase920() throws UpgradeFailedException{
         //Shift various CT-related values from cesecore.properties into Global Configuration
         {
-            GlobalConfiguration globalConfiguration = (GlobalConfiguration) globalConfigurationSession.getCachedConfiguration(GlobalConfiguration.GLOBAL_CONFIGURATION_ID);
+            final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
             boolean ctCacheEnabled = CesecoreConfiguration.getCTCacheEnabled();
-            globalConfiguration.setCtCacheEnabled(ctCacheEnabled);
+            globalCesecoreConfiguration.setCtCacheEnabled(ctCacheEnabled);
             long ctCacheSize = CesecoreConfiguration.getCTCacheMaxEntries();
-            globalConfiguration.setCtCacheSize(ctCacheSize);
+            globalCesecoreConfiguration.setCtCacheSize(ctCacheSize);
             long ctCacheCleanupInterval = CesecoreConfiguration.getCTCacheCleanupInterval();
-            globalConfiguration.setCtCacheCleanupInterval(ctCacheCleanupInterval);
+            globalCesecoreConfiguration.setCtCacheCleanupInterval(ctCacheCleanupInterval);
             boolean ctCacheFastFailEnabled = CesecoreConfiguration.getCTFastFailEnabled();
-            globalConfiguration.setCtCacheFastFailEnabled(ctCacheFastFailEnabled);
+            globalCesecoreConfiguration.setCtCacheFastFailEnabled(ctCacheFastFailEnabled);
             long ctCacheFastFailBackoff = CesecoreConfiguration.getCTFastFailBackOff();
-            globalConfiguration.setCtCacheFastFailBackoff(ctCacheFastFailBackoff);
+            globalCesecoreConfiguration.setCtCacheFastFailBackoff(ctCacheFastFailBackoff);
             
             try {
-                globalConfigurationSession.saveConfiguration(authenticationToken, globalConfiguration);
+                globalConfigurationSession.saveConfiguration(authenticationToken, globalCesecoreConfiguration);
             } catch (AuthorizationDeniedException e) {
                 String msg = "Always allow token was denied authoriation to global configuration table.";
                 log.error(msg, e);

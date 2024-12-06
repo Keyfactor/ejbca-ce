@@ -173,12 +173,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
     private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
     
-    private static final String CT_CACHE_ENABLED_KEY = "ct_cache_enabled";
-    private static final String CT_CACHE_SIZE_KEY = "ct_cache_size";
-    private static final String CT_CACHE_CLEANUP_INTERVAL_KEY = "ct_cache_cleanup_interval";
-    private static final String CT_CACHE_FAST_FAIL_ENABLED_KEY = "ct_cache_fast_fail_enabled";
-    private static final String CT_CACHE_FAST_FAIL_BACKOFF_KEY = "ct_cache_fast_fail_backoff";
-
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
@@ -373,53 +367,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
     
-    public boolean getCtCacheEnabled() { return getBoolean(CT_CACHE_ENABLED_KEY, true); }
-    public void setCtCacheEnabled(final boolean value) { data.put(CT_CACHE_ENABLED_KEY, value); } 
-    
-    public long getCtCacheSize() { 
-        Long value = (Long) data.get(CT_CACHE_SIZE_KEY);
-        if(value == null) {
-            setCtCacheSize(1000000L);
-        }
-        return (Long) data.get(CT_CACHE_SIZE_KEY);
-    }
-    public void setCtCacheSize(final long ctCacheSize) {
-        data.put(CT_CACHE_SIZE_KEY, ctCacheSize);
-    }
-    
-    public long getCtCacheCleanupInterval() {
-        Long value = (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
-        if(value == null) {
-            setCtCacheCleanupInterval(10000L);
-        }
-        return (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
-    }
-    
-    public void setCtCacheCleanupInterval(final long interval) {
-        data.put(CT_CACHE_CLEANUP_INTERVAL_KEY, interval);
-    }
-    
-    public boolean getCtCacheFastFailEnabled() {
-        return getBoolean(CT_CACHE_FAST_FAIL_ENABLED_KEY, true);
-    }
-    
-    public void setCtCacheFastFailEnabled(final boolean fastFailEnabled) {
-        data.put(CT_CACHE_FAST_FAIL_ENABLED_KEY, fastFailEnabled);
-    }
-    
-    public long getCtCacheFastFailBackoff() {
-        Long value = (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
-        if(value == null) {
-            setCtCacheFastFailBackoff(1000L);
-        }
-        return (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
-    }
-    
-    public void setCtCacheFastFailBackoff(final long backoff) {
-        data.put(CT_CACHE_FAST_FAIL_BACKOFF_KEY, backoff);
-    }
-    
-
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
      public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }
