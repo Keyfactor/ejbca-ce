@@ -170,9 +170,9 @@ public class DnFieldExtractorUnitTest {
     	DNFieldExtractor extractor = new DNFieldExtractor(dn, DNFieldExtractor.TYPE_SUBJECTALTNAME);
     	final HashMap<Integer, Integer> i = extractor.getNumberOfFields();
         if (DnComponents.enterpriseMappingsExist()) {
-            assertEquals(17,i.size());
+            assertEquals(18,i.size());
         } else {
-            assertEquals(16,i.size());
+            assertEquals(17,i.size());
         }
     	final String dns = extractor.getField(DNFieldExtractor.DNSNAME, 0);
     	assertEquals("foo.bar.se", dns);

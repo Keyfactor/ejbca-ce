@@ -178,7 +178,6 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     private MSAutoEnrollmentConfiguration msAutoenrollmentConfigForEdit = null;
     private AvailableExtendedKeyUsagesConfiguration availableExtendedKeyUsagesConfig = null;
     private AvailableCustomCertificateExtensionsConfiguration availableCustomCertExtensionsConfig = null;
-    private OAuthConfiguration oAuthConfiguration = null;
     private EABConfiguration eabConfiguration = null;
     private ServletContext servletContext = null;
     private WebLanguagesImpl adminsweblanguage;
@@ -347,12 +346,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                 }
             }
             if (oauthBearerToken != null && stagingState.administrator == null) {
+                OAuthConfiguration oAuthConfiguration = getOAuthConfiguration();
                 try {
-                    stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, oauthIdToken);
+                    stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(oAuthConfiguration, oauthBearerToken, oauthIdToken);
                 } catch (TokenExpiredException e) {
                     String refreshToken = getRefreshToken(httpServletRequest);
                     if (refreshToken != null) {
-                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(getOAuthConfiguration(), oauthBearerToken, oauthIdToken, refreshToken);
+                        OAuthGrantResponseInfo token = authenticationSession.refreshOAuthBearerToken(oAuthConfiguration, oauthBearerToken, oauthIdToken, refreshToken);
                         if (token != null) {
                             httpServletRequest.getSession(true).setAttribute("ejbca.bearer.token", token.getAccessToken());
                             if (token.getIdToken() != null) {
@@ -361,7 +361,7 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
                             if (token.getRefreshToken() != null) {
                                 httpServletRequest.getSession(true).setAttribute("ejbca.refresh.token", token.getRefreshToken());
                             }
-                            stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(getOAuthConfiguration(),
+                            stagingState.administrator = authenticationSession.authenticateUsingOAuthBearerToken(oAuthConfiguration,
                                     token.getAccessToken(), token.getIdToken());
                         }
                     }
@@ -2141,22 +2141,13 @@ public class EjbcaWebBeanImpl implements EjbcaWebBean {
     //*************************************************
     @Override
     public OAuthConfiguration getOAuthConfiguration() {
-        if (oAuthConfiguration == null) {
-            reloadOAuthConfiguration();
-        }
-        return oAuthConfiguration;
-    }
-
-    @Override
-    public void reloadOAuthConfiguration() {
-        oAuthConfiguration = (OAuthConfiguration) globalConfigurationSession
+        return (OAuthConfiguration) globalConfigurationSession
                 .getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID);
     }
 
     @Override
     public void saveOAuthConfiguration(final OAuthConfiguration oAuthConfig) throws AuthorizationDeniedException {
         globalConfigurationSession.saveConfiguration(authState.administrator, oAuthConfig);
-        oAuthConfiguration = oAuthConfig;
     }
     //*************************************************
     //      External Account Binding  configurations
