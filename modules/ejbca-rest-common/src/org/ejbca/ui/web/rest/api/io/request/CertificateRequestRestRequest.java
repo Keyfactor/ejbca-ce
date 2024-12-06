@@ -108,17 +108,26 @@ public class CertificateRequestRestRequest {
          * @return EnrollCertificateRestRequest instance.
          */
         public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final CertificateRequestRestRequest certificateRequestRestRequest) {
-            String certificateRequestData =
-                    certificateRequestRestRequest.getCertificateRequestType() == null || certificateRequestRestRequest.getCertificateRequestType().equals("PKCS10") ?
-                    CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest()) : certificateRequestRestRequest.certificateRequest;
             return new EnrollPkcs10CertificateRequest.Builder()
-                    .certificateRequest(certificateRequestData)
+                    .certificateRequest(getFormatedRequestString(certificateRequestRestRequest))
                     .username(certificateRequestRestRequest.getUsername())
                     .password(certificateRequestRestRequest.getPassword())
                     .includeChain(certificateRequestRestRequest.getIncludeChain())
                     .certificateAuthorityName(certificateRequestRestRequest.getCertificateAuthorityName())
-                    .requestFormat(certificateRequestRestRequest.getCertificateRequestType())
+                    .requestType(certificateRequestRestRequest.getCertificateRequestType())
                     .build();
+        }
+
+        private static String getFormatedRequestString(CertificateRequestRestRequest certificateRequestRestRequest) {
+            String certificateRequestData = switch (certificateRequestRestRequest.getCertificateRequestType()) {
+                case "PUBLICKEY", "CRMF" -> certificateRequestRestRequest.certificateRequest;
+                case "SPKAC" -> certificateRequestRestRequest.certificateRequest.replace("SPKAC=", "");
+                case "CVC" -> certificateRequestRestRequest.certificateRequest
+                        .replace("-----BEGIN CERTIFICATE-----", "")
+                        .replace("-----END CERTIFICATE-----", "");
+                default -> CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
+            };
+            return certificateRequestData;
         }
     }
 }

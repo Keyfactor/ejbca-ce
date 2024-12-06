@@ -59,6 +59,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -216,7 +217,12 @@ public class CertificateRestResource extends BaseRestResource {
             final byte[] certificateBytes = raMasterApi.processCertificateRequest(authenticationToken, requestData.getUsername(), requestData.getPassword(),
                     requestData.getCertificateRequest(), requestData.getRequestType(), null, "CERTIFICATE");
 
-            final X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            Certificate certificate = null;
+            if (requestData.getRequestType() == CertificateConstants.CERT_REQ_TYPE_CVC) {
+                certificate = CertTools.getCertfromByteArray(certificateBytes, CardVerifiableCertificate.class);
+            } else {
+                certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            }
 
             final List<Certificate> certificateChain = fetchCaCertificateChain(
                     authenticationToken,
