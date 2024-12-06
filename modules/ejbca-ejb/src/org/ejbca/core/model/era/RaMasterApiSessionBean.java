@@ -1376,7 +1376,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setStatus(RaCertificateSearchResponseV2.Status.ERROR);
             log.info("Requested search query by " + authenticationToken + " failed, possibly due to timeout. " + e.getMessage());
         }
-        return response;
+		return response;
     }
 
     /**

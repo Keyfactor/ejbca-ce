@@ -60,6 +60,7 @@ import org.ejbca.util.mail.MailSender;
 
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyStoreCipher;
 
 /**
  *
@@ -935,6 +936,22 @@ public class EndEntityProfileMBean extends BaseManagedBean implements Serializab
 
     public void setAvailableTokenTypes(final Collection<Integer> tokenTypes) {
         profiledata.setAvailableTokenTypes(tokenTypes);
+    }
+    
+    public List<SelectItem> getAvailableP12Ciphers() {
+        final List<SelectItem> ciphers = new ArrayList<>();
+        for(KeyStoreCipher keyStoreCipher : KeyStoreCipher.values()) {
+            ciphers.add(new SelectItem(keyStoreCipher, keyStoreCipher.getLabel()));
+        }
+        return ciphers;
+    }
+    
+    public void setP12Cipher(final KeyStoreCipher keyStoreCipher) {
+        profiledata.setP12Cipher(keyStoreCipher);
+    }
+    
+    public KeyStoreCipher getP12Cipher() {
+        return profiledata.getP12Cipher();
     }
 
     // OTHER CERTIFICATE DATA
