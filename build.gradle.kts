@@ -392,8 +392,8 @@ subprojects {
         tasks.withType(Test::class) {
             doLast {
                 // print module's report location
-                val reportDir = reports.html.outputLocation.get().asFile.absolutePath;
-                val separator = File.separator;
+                val reportDir = reports.html.outputLocation.get().asFile.absolutePath
+                val separator = File.separator
                 logger.lifecycle("'${project.name}' test report: file:${separator}${separator}$reportDir${separator}index.html")
             }
             // print a summary derived from all test reports
