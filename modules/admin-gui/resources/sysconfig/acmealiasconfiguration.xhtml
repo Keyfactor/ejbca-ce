@@ -324,6 +324,19 @@
                     </h:panelGroup>
                     
                     <h:panelGroup>
+                    	<h:outputLabel for="challengeResponseTimout" value="#{web.text.ACME_CHALLENGE_RESPONSE_TIMOUT}" styleClass="titles"/>
+                    	<br />
+                    	<h:outputText value="#{web.text.ACME_CHALLENGE_RESPONSE_TIMOUT_HELP}" styleClass="help" style="font-size: smaller"/>
+                    </h:panelGroup>
+                    <h:panelGroup id="challengeResponseTimout" >
+                        <h:inputText title="#{web.text.FORMAT_SECONDS}" value="#{acmeAliasConfigMBean.currentAlias.challengeResponseTimout}" 
+                        			 validatorMessage="#{web.text.ONLYNUMBERS_INRETRYAFTER}" rendered="#{acmeAliasConfigMBean.currentAliasEditMode}">
+                            <f:validateLongRange minimum="0" maximum="2147483647"/>
+                        </h:inputText>
+                        <h:outputText value="#{acmeAliasConfigMBean.currentAlias.challengeResponseTimout}" rendered="#{!acmeAliasConfigMBean.currentAliasEditMode}"/>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup>
                     	<h:outputLabel for="authorizedRedirectPorts" value="#{web.text.ACME_AUTHORIZED_REDIRECT_PORTS}" styleClass="titles"/>
                     	<br />
 						<h:outputText value="#{web.text.ACME_AUTHORIZED_REDIRECT_PORTS_HELP}" styleClass="help" style="font-size: smaller"/>
