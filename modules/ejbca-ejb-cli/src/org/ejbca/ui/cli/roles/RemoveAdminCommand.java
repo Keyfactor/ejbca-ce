@@ -86,7 +86,7 @@ public class RemoveAdminCommand extends BaseRolesCommand {
         }
         final String matchWithKeyParam = parameters.get(MATCH_WITH_KEY);
         if (StringUtils.isEmpty(matchWithKeyParam)) {
-            getLogger().error("No such thing to match with as '" + parameters.get(MATCH_WITH_KEY) + "'.");
+            getLogger().error("Match with parameter is mandatory '" + parameters.get(MATCH_WITH_KEY) + "'.");
             return CommandResult.FUNCTIONAL_FAILURE;
         }
         final String tokenType;

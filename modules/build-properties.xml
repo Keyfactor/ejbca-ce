@@ -182,9 +182,6 @@
     <property name="java.target.version" value="${java.specification.version}"/>
 
 	<!-- Files of global interest -->
-	<!-- Depends on load of propertyDefaults.xml...therefore put in the end
-    <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
-    -->
     <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
     <property name="profilemappings_enterprise.properties.file" location="${ejbca.home}/src/java/profilemappings_enterprise.properties" />
     <property name="log4j.test.file" location="${mod.common.path}/resources/log4j-test.xml" />
@@ -524,7 +521,7 @@
     <condition property="jndi.properties.file" value="${ejbca.home}/conf/jndi.properties.${appserver.subtype}">
         <available file="${ejbca.home}/conf/jndi.properties.${appserver.subtype}"/>
     </condition>
-    <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
+    <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.jboss7" />
     <!-- jboss-ejb-client.properties is only used in JBoss 7 (or higher?), but it does not hurt to simply copy it for earlier versions either -->
     <property name="jboss-ejb-client.properties" location="${ejbca.home}/src/appserver/jboss/jboss7/jboss-ejb-client.properties" />
 	<!-- This is mainly useful for debugging and normally not needed
@@ -536,12 +533,7 @@
 		<available file="${mod.peerconnector.path}/build.xml" />
     </condition>
 	<condition property="mod.peerconnector-rar.exists">
-		<and>
-			<available file="${mod.peerconnector.path}/build.xml"/>
-			<not>
-				<istrue value="${peerconnector.rar.disabled}"/>
-			</not>
-		</and>
+	    <available file="${mod.peerconnector.path}/build.xml"/>
     </condition>
 	
     <condition property="mod.cesecore-x509ca.exists">
