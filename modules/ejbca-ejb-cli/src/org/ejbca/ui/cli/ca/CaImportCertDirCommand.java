@@ -201,14 +201,17 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
                     log.error("CA Certificate file '" + caCertFile + "' is not found. Please check the supplied parameters.");
                     return CommandResult.CLI_FAILURE;
                 } else {
-                    log.warn("The certificate for the CA has been overidden. This certificate has not been verified. Use at your own risk.");
                     List<X509Certificate> certsInFile = CertTools.getCertsFromPEM( fileCaCertFile.getCanonicalPath(), X509Certificate.class);
                     if ( (certsInFile == null) || (certsInFile.size()<1)) {
                         log.error("CA Certificate file '" + caCertFile + "' could not be processed. Please check the file.");
                         return CommandResult.CLI_FAILURE;
                     }
-                    // Assume the first certificate, if more than one provided.
+                    if ( certsInFile.size()>1) {
+                        log.warn("CA Certificate file '" + caCertFile + "' contains more than one certificate. Assuming the first certificate.");
+                    }
+                   // Assume the first certificate, in case more than one provided.
                     cacert = certsInFile.get(0);
+                    log.warn("The certificate for the CA has been overidden. This certificate has not been verified. Use at your own risk. Certificate details: "+cacert.toString());
                 }
             }
 
