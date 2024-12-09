@@ -59,4 +59,11 @@ public interface ConfigurationSessionRemote {
 
     /** @return all currently used properties */
     Properties getAllProperties();
+    
+    /**
+     * Allows changing the timeout for the peer connection pool for tests. 
+     * 
+     * @param timeout the desired timeout
+     */
+    void setPeerConnectorPoolTimeout(final int timeout);
 }

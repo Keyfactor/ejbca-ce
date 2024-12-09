@@ -1529,6 +1529,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     continue;
                 }
             }
+            
             if (availableCryptoToken.getClassPath().equals(AzureCryptoToken.class.getName())) {
                 // Never expose the AzureCryptoToken when creating new tokens if it is not enabled in web.properties
                 if (!WebConfiguration.isAzureKeyVaultEnabled()) {

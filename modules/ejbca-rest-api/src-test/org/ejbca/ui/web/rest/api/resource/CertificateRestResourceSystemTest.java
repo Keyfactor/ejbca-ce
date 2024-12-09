@@ -12,6 +12,32 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.resource;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyPair;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.X509CRL;
+import java.security.cert.X509CRLEntry;
+import java.security.cert.X509Certificate;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
+import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CeSecoreNameStyle;
@@ -20,9 +46,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.EntityPart;
-import jakarta.ws.rs.core.GenericEntity;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
@@ -82,33 +106,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.EntityPart;
+import jakarta.ws.rs.core.GenericEntity;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.xml.bind.DatatypeConverter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.KeyPair;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.X509CRL;
-import java.security.cert.X509CRLEntry;
-import java.security.cert.X509Certificate;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import static org.cesecore.certificates.crl.RevocationReasons.AACOMPROMISE;
 import static org.cesecore.certificates.crl.RevocationReasons.AFFILIATIONCHANGED;
@@ -136,7 +139,7 @@ import static org.junit.Assume.assumeTrue;
  * A unit test class for CertificateRestResource to test its content.
  */
 public class CertificateRestResourceSystemTest extends RestResourceSystemTestBase {
-    
+
     private static final Logger log = Logger.getLogger(CertificateRestResourceSystemTest.class);
 
     private static final String CRL_FILENAME = "CertificateRestSystemTestCrlFile";
@@ -161,6 +164,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     private String testUsername = "CertificateRestSystemTestUser";
     private String testCertProfileName = "CertificateRestSystemTestCertProfile";
     private String testEeProfileName = "CertificateRestSystemTestEeProfile";
+    private String testCertProfileNameWithSan = "CertificateRestSystemTestCertProfileWithSan";
+    private String testEeProfileNameWithSan = "CertificateRestSystemTestEeProfileWithSan";
 
     private CvcCA cvcTestCa = null; // Don't create this for every test
     private String testCaNameCVC = "TESTCVC";
@@ -219,6 +224,42 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                     + "\n"
                     + END_CSR;
 
+    // A CSR with secp256r1 keys and several subject alternative names
+    //
+    // DNS Name
+    // IP
+    // HardwareModuleName (RFC4108)
+    // PermanentIdentifier (RFC)
+    // User Principal Name (MS UPN)
+    // Globally Unique ID (MS GUID)
+    // XmppAddr
+    // UNIFORMRESOURCEIDENTIFIER
+    // URI
+    // REGISTEREDID
+    // rfc822Name
+    //
+    // ./bin/ejbca.sh gencsr --sigalg SHA256WithRSA --keyalg RSA --keyspec 2048 --subjectdn 'CN=test' \
+    // --subjectaltname 'dNSName=www.primekey.se,ipAddress=127.0.0.1,hardwareModuleName=1.2.3.4.99/serial1,permanentIdentifier=ident1/1.2.3.4.99,upn=abc123@abc,guid=6d736775696431,xmppAddr=xmppAddr1,UNIFORMRESOURCEIDENTIFIER=www.keyfactor.com,URI=uri.primekey.se,REGISTEREDID=2.2.3.4.99,rfc822Name=mail@primekey.se'
+    private static final String CSR_WITH_SAN_WITHOUT_HEADERS =
+            "MIIDVDCCAjwCAQAwDzENMAsGA1UEAwwEdGVzdDCCASIwDQYJKoZIhvcNAQEBBQAD"
+            + "ggEPADCCAQoCggEBALHsVjOW8dcRlm24YXwdVx7COqyMm1E0VlWyV2ohJBIEUHL+"
+            + "otgc9m8g38lwn6t6VMF6el3d8FC5pPYaA5bZJaLpxSJA9E1Uipm1ZnPP75R7t0wm"
+            + "SBSAyhbZ0HuwMvWtwtwgcDSdkWLWVyo1eTy3+XO1v13kKpr0c+041AEteJAj3+My"
+            + "8saFtPyagAa4dt2ARzk0QFAuPs3M+zQooBpMsUxu+vanmnXkMup/ZKyxwPoEWOLN"
+            + "w6p3Mdtb0ZzcB+YID1EAE7bDrBWWJBQmk26T/j/hhA4zcii6lts0r9MDkKmdzkQv"
+            + "9DLsBrWYHGpKvml94I0FMGM49XRyRRle9jZ8TGMCAwEAAaCB/zCB/AYJKoZIhvcN"
+            + "AQkOMYHuMIHrMIHoBgNVHREEgeAwgd2CD3d3dy5wcmltZWtleS5zZYcEfwAAAaAd"
+            + "BggrBgEFBQcIBKARMA8GBCoDBGMEB3NlcmlhbDGgHAYIKwYBBQUHCAOgEDAODAZp"
+            + "ZGVudDEGBCoDBGOgGgYKKwYBBAGCNxQCA6AMDAphYmMxMjNAYWJjoBYGCSsGAQQB"
+            + "gjcZAaAJBAdtc2d1aWQxoBcGCCsGAQUFBwgFoAsMCXhtcHBBZGRyMYYRd3d3Lmtl"
+            + "eWZhY3Rvci5jb22GD3VyaS5wcmltZWtleS5zZYgEUgMEY4EQbWFpbEBwcmltZWtl"
+            + "eS5zZTANBgkqhkiG9w0BAQsFAAOCAQEALHjnqwnmhhS7ordquXnTbICY9CHTFXXs"
+            + "CMS9Hx6muXGkmbggH5bw85PkE1mHuQM5sOo9uXh8WldR4zTdZpTsnilMSxDYzwup"
+            + "IfNKGGQIKVb/Vk5UOCqKPwCL64BarTjVVx3tRQ3z3Gj+kOu/QRKo/FQQFlKSPEpj"
+            + "4dSrgvWbMXRr6N3ppNDI/nIPhwBTKf5e0bfFisXAxd07nIpRdWrxfpE45sUj67YG"
+            + "hKyNv2RBgfyehJioap8wLA0dCe1oJIz9Jy4WNGTNSXSB/Okj/3dZhDjB+qfnXe/k"
+            + "GesEGlVKuoZFbjVE06+a0ja/0QlDjSW6xBdrtECWhD7rHZvPid1OdA==";
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         RestResourceSystemTestBase.beforeClass();
@@ -237,6 +278,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         testUsername += randomSuffix;
         testCertProfileName += randomSuffix;
         testEeProfileName += randomSuffix;
+        testEeProfileNameWithSan += randomSuffix;
+        testCertProfileNameWithSan += randomSuffix;
         CryptoProviderTools.installBCProvider();
         x509TestCa = CryptoTokenTestUtils.createTestCAWithSoftCryptoToken(INTERNAL_ADMIN_TOKEN, testIssuerDn);
     }
@@ -257,6 +300,8 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         internalCertificateStoreSession.removeCertificatesByUsername(testUsername);
         certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileName);
         endEntityProfileSessionRemote.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileName);
+        endEntityProfileSessionRemote.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameWithSan);
+        certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileNameWithSan);
     }
 
     @Test
@@ -395,19 +440,19 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         createTestEndEntity();
         revokeCertificate(createKeystore("1024", AlgorithmConstants.KEYALGORITHM_RSA));
     }
-    
+
     @Test
     public void shouldRevokeCertificateMLDSA44() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_MLDSA44, AlgorithmConstants.KEYALGORITHM_MLDSA44));
     }
-    
+
     @Test
     public void shouldRevokeCertificateFalcon512() throws Exception {
         createTestEndEntity();
         revokeCertificate(createKeystore(AlgorithmConstants.SIGALG_FALCON512, AlgorithmConstants.KEYALGORITHM_FALCON512));
     }
-    
+
     private void revokeCertificate(final KeyStore keyStore) throws Exception {
         // Generate certificate
         String serialNr = CertTools.getSerialNumberAsString(keyStore.getCertificate(testUsername));
@@ -433,7 +478,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         String databaseReason = RevocationReasons.getFromDatabaseValue(certificateData.getRevocationReason()).getStringValue();
         assertEquals("KEY_COMPROMISE", databaseReason);
     }
-    
+
     @Test
     public void shouldRevokeCertificateWithInvalidityDate() throws Exception {
         // given
@@ -535,7 +580,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String responseRevocationDate = (String) actualJsonObject.get("revocation_date");
         final String responseInvalidityDate = (String) actualJsonObject.get("invalidity_date");
 
-        // Get invalidity date and revocation date from 2nd response 
+        // Get invalidity date and revocation date from 2nd response
         final String responseInvalidityDateUpdate = (String) actualJsonObject2.get("invalidity_date");
         final String responseRevocationDateAfterUpdate = (String) actualJsonObject2.get("revocation_date");
 
@@ -547,7 +592,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals(responseRevocationDate, responseRevocationDateAfterUpdate);
         // Assert that we have given different dates at revoke and update
         assertNotEquals(invalidityDateString, invalidityDateUpdateString);
-        // Assert that the date from the 1st response is not the same date as the date from the 2nd response 
+        // Assert that the date from the 1st response is not the same date as the date from the 2nd response
         assertNotEquals(responseInvalidityDate, responseInvalidityDateUpdate);
         // Assert that the date we wanted to update to is the same as the date in the response
         assertEquals(invalidityDateUpdateString, responseInvalidityDateUpdate);
@@ -611,7 +656,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final String responseSerialNr = (String) actualJsonObject.get("serial_number");
         final boolean responseStatus = (boolean) actualJsonObject.get("revoked");
         //final String responseInvalidityDate = (String) actualJsonObject.get("invalidity_date");
-        // Get invalidity date from 2nd response 
+        // Get invalidity date from 2nd response
         final String responseInvalidityDateUpdate = (String) actualJsonObject2.get("invalidity_date");
         // Get invalidity date value from database
         CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
@@ -658,7 +703,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final JSONObject actualJsonObject2 = (JSONObject) jsonParser.parse(actualJsonString2);
 
         // then
-        // Verify expected failure         
+        // Verify expected failure
         assertProperJsonExceptionErrorResponse(expectedErrorCode, expectedErrorMessage, actualJsonObject2.toJSONString());
         CertificateData certificateData2 = internalCertificateStoreSession.getCertificateData(fingerPrint);
         long dataBasenvalidityDateAfterFailedRevocationReasonChange = certificateData2.getInvalidityDateNeverNull();
@@ -1194,22 +1239,71 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void enrollPkcs10ExpectResponseFormatPKCS7() throws Exception {
-        String responseFormat = "PKCS7";
+        enrollPkcs10("ENDUSER", "EMPTY", "PKCS7", CSR_WITHOUT_HEADERS, 201, null);
+    }
 
-        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
+    @Test
+    public void enrollPkcs10WithSan() throws Exception {
+    	// given
+        final EndEntityProfile eep = new EndEntityProfile(false);
+        eep.setDefaultCertificateProfile(1);
+        eep.setAvailableCertificateProfileIds(List.of(1));
+        eep.setDefaultCA(x509TestCa.getCAId());
+        eep.setAvailableCAs(List.of(x509TestCa.getCAId()));
+        endEntityProfileSession.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameWithSan, eep);
+
+        // when
+        X509Certificate certificate = (X509Certificate) enrollPkcs10("ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS,
+                400, "Wrong number of RFC822NAME fields in Subject Alternative Name.");
+        // then
+        assertNull("No certificate must habe been generated after an end entity profile exception.", certificate);
+
+        // Add SANs to the end entity profile.
+        eep.addField(DnComponents.DNSNAME);
+        eep.addField(DnComponents.IPADDRESS);
+        eep.addField(DnComponents.HARDWAREMODULENAME);
+        eep.addField(DnComponents.PERMANENTIDENTIFIER);
+        eep.addField(DnComponents.UPN);
+        eep.addField(DnComponents.GUID);
+        eep.addField(DnComponents.XMPPADDR);
+        eep.addField(DnComponents.UNIFORMRESOURCEID);
+        eep.addField(DnComponents.UNIFORMRESOURCEID);
+        eep.addField(DnComponents.REGISTEREDID);
+        eep.addField(DnComponents.RFC822NAME);
+        endEntityProfileSession.changeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameWithSan, eep);
+
+        certificate = (X509Certificate) enrollPkcs10("ENDUSER", testEeProfileNameWithSan, "PKCS7", CSR_WITH_SAN_WITHOUT_HEADERS, 201, null);
+        assertNotNull("The certificate generated must not be null.", certificate);
+        assertSansPkcs10Enroll(certificate);
+    }
+
+    private Certificate enrollPkcs10(final String cpName, final String eepName, final String responseFormat, final String pemCsrWithoutHeaders, final int responseStatus, final String error) throws Exception {
+        final EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
                 certificateAuthorityName(testCaName).
-                certificateProfileName("ENDUSER").
-                endEntityProfileName("EMPTY").
+                certificateProfileName(cpName).
+                endEntityProfileName(eepName).
                 username(testUsername).
                 password("foo123").includeChain(false).responseFormat(responseFormat).
-                certificateRequest(CSR_WITHOUT_HEADERS).build();
+                certificateRequest(pemCsrWithoutHeaders).build();
 
-        // Construct POST  request
+        // Construct POST request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
         final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
         // Send request
         final Response actualResponse = newRequest("/v1/certificate/pkcs10enroll").request().post(requestEntity);
+        assertEquals("Unexpected HTTP response code.", responseStatus, actualResponse.getStatus());
+
+        // Certificate enrollment has failed.
+        if (actualResponse.getStatus() == 400) {
+            final String actualJsonString = actualResponse.readEntity(String.class);
+            // Verify response
+            assertJsonContentType(actualResponse);
+            final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
+            assertEquals("The response error message does not match.", error, actualJsonObject.get("error_message"));
+            return null;
+        }
+
         final String actualJsonString = actualResponse.readEntity(String.class);
         // Verify response
         assertJsonContentType(actualResponse);
@@ -1218,17 +1312,18 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         assertEquals("The response format is not PKCS7", responseFormat, responseFormatREST);
         final String responseCertificate = (String) actualJsonObject.get("certificate");
         assertNotNull(responseCertificate);
-        //Verify certificate is a pkcs7
+        // Verify certificate is a pkcs7
         String pkcs7CertificatePem = new String(Base64.decode(responseCertificate.getBytes()), StandardCharsets.UTF_8);
         assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.BEGIN_PKCS7));
         assertTrue("The response is not a pkcs7", pkcs7CertificatePem.contains(CertTools.END_PKCS7));
-        //Varify certificate
+        // Verify certificate
         pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("^-----BEGIN PKCS7-----","");
         pkcs7CertificatePem = pkcs7CertificatePem.replaceFirst("-----END PKCS7-----$", "");
-        byte[] certBytes = Base64.decode(pkcs7CertificatePem.getBytes());
-        Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
-        String responseSerialNo = (String) actualJsonObject.get("serial_number");
-        assertEquals("", CertTools.getSerialNumber(cert), CertTools.getSerialNumberFromString(responseSerialNo));
+        final byte[] certBytes = Base64.decode(pkcs7CertificatePem.getBytes());
+        final Certificate cert = CertTools.getCertfromByteArray(certBytes, Certificate.class);
+        final String responseSerialNo = (String) actualJsonObject.get("serial_number");
+        assertEquals("The certificate serial number does not match.", CertTools.getSerialNumber(cert), CertTools.getSerialNumberFromString(responseSerialNo));
+        return cert;
     }
 
     @Test
@@ -1242,21 +1337,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
     }
 
     private void certificateRequestExpectCsrSubjectIgnored(boolean withHeader) throws Exception {
-        // Add End Entity
-        EndEntityInformation userdata = new EndEntityInformation(testUsername, "O=PrimeKey,CN=" + testUsername, x509TestCa.getCAId(), null,
-                null, new EndEntityType(EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                SecConst.TOKEN_SOFT_BROWSERGEN, new ExtendedInformation());
-        userdata.setPassword("foo123");
-        userdata.setStatus(EndEntityConstants.STATUS_NEW);
-        userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-        userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-        endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
-        // Create CSR REST request
-        EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
+        // Add end entity and create certificate request.
+        final EndEntityInformation user = addEndEntity(testUsername, "O=PrimeKey,CN=" + testUsername, x509TestCa.getCAId(),
+                EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        assertNotNull("End entity must not be null.", user);
+
+        final EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder().
                 certificateAuthorityName(testCaName).
                 username(testUsername).
                 password("foo123").
                 certificateRequest(withHeader? CSR_WITH_HEADERS: CSR_WITHOUT_HEADERS).build();
+
         // Construct POST  request
         final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
         final String requestBody = objectMapper.writeValueAsString(pkcs10req);
@@ -1264,17 +1355,22 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
         // Send request
         final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
-        final String actualJsonString = actualResponse.readEntity(String.class);
+        verifyCertificateRequestResponse(actualResponse, "O=PrimeKey,CN=" + testUsername);
+    }
+
+    private X509Certificate verifyCertificateRequestResponse(final Response response, final String subjectDn) throws Exception {
+        final String jsonString = response.readEntity(String.class);
         // Verify response
-        assertJsonContentType(actualResponse);
-        final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
-        final String base64cert = (String) actualJsonObject.get("certificate");
+        assertJsonContentType(response);
+        final JSONObject jsonObject = (JSONObject) jsonParser.parse(jsonString);
+        final String base64cert = (String) jsonObject.get("certificate");
         assertNotNull(base64cert);
-        byte[] certBytes = Base64.decode(base64cert.getBytes());
-        X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
+        final byte[] certBytes = Base64.decode(base64cert.getBytes());
+        final X509Certificate cert = CertTools.getCertfromByteArray(certBytes, X509Certificate.class);
         // Assert End Entity DN is used. CSR subject should be ignored.
         //getSubjectX500Principal does not deliver the exact same order, so leave this for now
-        assertEquals("Returned certificate contained unexpected subject DN", "O=PrimeKey,CN=" + testUsername, cert.getSubjectDN().getName());
+        assertEquals("Returned certificate contained unexpected subject DN", subjectDn, cert.getSubjectDN().getName());
+        return cert;
     }
 
     @Test
@@ -1286,37 +1382,37 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final Object certificatesToExpire = actualJsonObject.get("certificates_rest_response");
         assertNotNull(certificatesToExpire);
     }
-    
+
     @Test
     public void testGetCertificateAboutToExpireDetailedSearch() throws Exception {
-        
+
         final String issuerDN = "CN=CaSigningForVariedValidity";
-        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false, 
+        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false,
                             X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
         X509CAInfo caInfo = (X509CAInfo) testX509Ca.getCAInfo();
         caInfo.setDoEnforceUniquePublicKeys(false);
         testX509Ca.setCAInfo(caInfo);
         caSession.addCA(INTERNAL_ADMIN_TOKEN, testX509Ca);
-        
+
         final String profilePrefix = "CertProfileVariedValidity";
         // there is always a 10min in past offset
         CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfile.setEncodedValidity("30m");
-        int certificateProfile30mId = 
+        int certificateProfile30mId =
                 certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "30m", certificateProfile);
 
         certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfile.setEncodedValidity("5d");
-        int certificateProfile5dId = 
+        int certificateProfile5dId =
                 certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "5d", certificateProfile);
 
         certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certificateProfile.setEncodedValidity("15d");
         certificateProfile.setAvailableCAs(Arrays.asList(issuerDN.hashCode()));
-        int certificateProfile15dId = 
+        int certificateProfile15dId =
                 certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "15d", certificateProfile);
 
-        
+
         final String eeProfileName = "EeProfileVariedValidity";
         final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
         endEntityProfile.setDefaultCertificateProfile(certificateProfile30mId);
@@ -1324,10 +1420,10 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                                     certificateProfile30mId, certificateProfile5dId, certificateProfile15dId));
         endEntityProfile.setAvailableCAs(Arrays.asList(issuerDN.hashCode()));
         int endEntityProfileId = endEntityProfileSession.addEndEntityProfile(
-                                INTERNAL_ADMIN_TOKEN, eeProfileName, endEntityProfile);        
-        
+                                INTERNAL_ADMIN_TOKEN, eeProfileName, endEntityProfile);
+
         List<String> addedUserNames = new ArrayList<>();
-        
+
         try {
             // there is no limit for offset or max results today
             int created30mCerts = 50;
@@ -1340,7 +1436,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                     created30mCerts--;
                 }
             }
-            
+
             int created5dCerts = 75;
             for (int i=0; i<75; i++) {
                 String username = addAndEnrollEntity(issuerDN,  profilePrefix + "5d", certificateProfile5dId,
@@ -1351,7 +1447,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                     created5dCerts--;
                 }
             }
-            
+
             int created15dCerts = 60;
             for (int i=0; i<60; i++) {
                 String username = addAndEnrollEntity(issuerDN,  profilePrefix + "15d", certificateProfile15dId,
@@ -1362,7 +1458,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                     created15dCerts--;
                 }
             }
-            
+
             // test vectors
             // 1d offset: 0, 10
             searchToBeExpiredCerts(1, 0, 0, created30mCerts);
@@ -1373,7 +1469,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             // 16d offset: 0, 10
             searchToBeExpiredCerts(16, 0, 0, created30mCerts + created5dCerts + created15dCerts);
             searchToBeExpiredCerts(16, 10, 0, created30mCerts + created5dCerts + created15dCerts - 10);
-            
+
             // 1d offset: 10, max: 10,50  offset: 40, max: 10,50
             searchToBeExpiredCerts(1, 10, 10, created30mCerts - 10);
             searchToBeExpiredCerts(1, 10, 50, created30mCerts - 10, false);
@@ -1389,36 +1485,36 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             searchToBeExpiredCerts(16, 10, 50, created30mCerts + created5dCerts + created15dCerts - 10);
             searchToBeExpiredCerts(16, 40, 10, created30mCerts + created5dCerts + created15dCerts - 40);
             searchToBeExpiredCerts(16, 40, 50, created30mCerts + created5dCerts + created15dCerts - 40);
-            
+
             // negative integers are possible as input, please be gentle
-            
+
         } catch (Exception e) {
             log.error("Exception while testing expired certificate search: ", e);
             fail("Exception while testing expired certificate search");
         } finally {
-        
+
             for (String user: addedUserNames) {
                 endEntityManagementSession.revokeAndDeleteUser(INTERNAL_ADMIN_TOKEN, user, 0);
                 internalCertificateStoreSession.removeCertificatesByUsername(user);
             }
-            
+
             endEntityProfileSession.removeEndEntityProfile(INTERNAL_ADMIN_TOKEN, eeProfileName);
             certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "30m");
             certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "5d");
             certificateProfileSession.removeCertificateProfile(INTERNAL_ADMIN_TOKEN, profilePrefix + "15d");
             caSession.removeCA(INTERNAL_ADMIN_TOKEN, issuerDN.hashCode());
         }
-        
+
     }
-    
-    private void searchToBeExpiredCerts(int days, int offset, int maxResult, 
+
+    private void searchToBeExpiredCerts(int days, int offset, int maxResult,
             int minimumResultsExpected) throws Exception {
         searchToBeExpiredCerts(days, offset, maxResult, minimumResultsExpected, true);
     }
-    
-    private void searchToBeExpiredCerts(int days, int offset, int maxResult, 
+
+    private void searchToBeExpiredCerts(int days, int offset, int maxResult,
                                                 int minimumResultsExpected, boolean expectedMoreResults) throws Exception {
-        
+
         String url = "/v1/certificate/expire?days=" + days;
         if (offset!=0) {
             url += "&offset=" + offset;
@@ -1428,7 +1524,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         }
         url += "&maxNumberOfResults=" + maxResult;
         int expectedEntries = maxResult;
-        
+
         log.error("searchToBeExpiredCerts url: " + url);
         final Response actualResponse = newRequest(url).request().get();
         final String actualJsonString = actualResponse.readEntity(String.class);
@@ -1436,17 +1532,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final JSONObject actualJsonObject = (JSONObject) jsonParser.parse(actualJsonString);
         final JSONObject certificatesToExpire = (JSONObject) actualJsonObject.get("certificates_rest_response");
         assertNotNull(certificatesToExpire);
-        
+
         final JSONObject pagination = (JSONObject) actualJsonObject.get("pagination_rest_response_component");
         assertNotNull(pagination);
-        
+
         assertTrue(pagination.containsKey("more_results"));
         assertTrue(pagination.containsKey("number_of_results"));
         assertTrue(pagination.containsKey("next_offset"));
-        
-        assertTrue("number_of_results is lower than expected", 
+
+        assertTrue("number_of_results is lower than expected",
                 (long) pagination.get("number_of_results") >= minimumResultsExpected - expectedEntries);
-        
+
         assertTrue(certificatesToExpire.containsKey("certificates"));
         JSONArray certificates = (JSONArray) certificatesToExpire.get("certificates");
         if (expectedMoreResults) {
@@ -1454,17 +1550,17 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         } else {
             assertFalse("certificates has mismatched number of entries with no next page", certificates.isEmpty());
         }
-        
+
         return;
     }
-    
+
     @Test
     public void testCreateCertificateNonExistingCa() throws Exception {
-        
+
         final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         PKCS10CertificationRequest pkcs10CertificationRequest = CertTools.genPKCS10CertificationRequest(
                 AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
-                DnComponents.stringToBcX500Name("CN=DUMMY_USER"), 
+                DnComponents.stringToBcX500Name("CN=DUMMY_USER"),
                 keys.getPublic(), null, keys.getPrivate(), null);
 
         String caName = "testCreateCertificateNonExistingCa_DUMMY_CA";
@@ -1485,27 +1581,184 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         String responseBody = actualResponse.readEntity(String.class);
         assertTrue(responseBody.contains("CA with name " + caName + " doesn't exist."));
     }
-    
-    private String addAndEnrollEntity(String caDn, String certProfileName, int certProfileId,
-                                                            String eeProfileName, int eeProfileId) {
-        String userName = "expireSearchTest" + RANDOM.nextLong();
-        
+
+    @Test
+    public void testCreateCertificateRequestWithSan() throws Exception {
+        // given
+        // TODO: The UNIFORMRESOURCEIDENTIFIER does not get into the certificate.
+        final String sanFromCsr =
+            "dNSName=www.primekey.se,"
+           + "ipAddress=127.0.0.1,"
+           + "hardwareModuleName=1.2.3.4.99/serial1,"
+           + "permanentIdentifier=ident1/1.2.3.4.99,"
+           + "upn=abc123@abc,"
+           + "guid=6d736775696431,"
+           + "xmppAddr=xmppAddr1,"
+           // + "UNIFORMRESOURCEIDENTIFIER=www.keyfactor.com,"
+           + "URI=uri.primekey.se,"
+           + "REGISTEREDID=2.2.3.4.99,"
+           + "rfc822Name=mail@primekey.se";
+        EndEntityProfile eep = new EndEntityProfile(false);
+        eep.setDefaultCertificateProfile(1);
+        eep.setAvailableCertificateProfileIds(List.of(1));
+        eep.setDefaultCA(x509TestCa.getCAId());
+        eep.setAvailableCAs(List.of(x509TestCa.getCAId()));
+        endEntityProfileSession.addEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameWithSan, eep);
+
+        // If we add the SAN to the end entity, the certificate enrolled contains the SANs in order.
+        X509Certificate certificate = testCreateCertificateCertificateRequest("CN=test", sanFromCsr, "testCertProfileNameWithSan", "testEeProfileNameWithSan", CSR_WITH_SAN_WITHOUT_HEADERS);
+        assertNotNull("The certificate generated must not be null.", certificate);
+        assertSansCertificateRequest(certificate);
+
+        // If we do not add the SAN to the end entity, the certificate enrolled does not contain any SAN.
+        certificate = testCreateCertificateCertificateRequest("CN=test", "", "ENDUSER", "testEeProfileNameWithSan", CSR_WITH_SAN_WITHOUT_HEADERS);
+        assertNotNull("The certificate generated must not be null.", certificate);
+        assertNull("The certificate generated must not contain a SAN.", certificate.getSubjectAlternativeNames());
+
+        // Add SANs to the end entity profile.
+        eep = endEntityProfileSession.getEndEntityProfile(testEeProfileNameWithSan);
+        eep.addField(DnComponents.DNSNAME);
+        eep.addField(DnComponents.IPADDRESS);
+        eep.addField(DnComponents.HARDWAREMODULENAME);
+        eep.addField(DnComponents.PERMANENTIDENTIFIER);
+        eep.addField(DnComponents.UPN);
+        eep.addField(DnComponents.GUID);
+        eep.addField(DnComponents.XMPPADDR);
+        eep.addField(DnComponents.URI);
+        eep.addField(DnComponents.UNIFORMRESOURCEID);
+        eep.addField(DnComponents.REGISTEREDID);
+        eep.addField(DnComponents.RFC822NAME);
+        endEntityProfileSession.changeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameWithSan, eep);
+
+        // If we do not add the SAN to the end entity, the certificate enrolled does not contain any SAN.
+        certificate = testCreateCertificateCertificateRequest("CN=test", "", "ENDUSER", "testEeProfileNameWithSan", CSR_WITH_SAN_WITHOUT_HEADERS);
+        assertNotNull("The certificate generated must not be null.", certificate);
+        assertNull("The certificate generated must not contain a SAN.", certificate.getSubjectAlternativeNames());
+
+        // Allow extension override (not required, same result without).
+        final CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        cp.setAllowExtensionOverride(true);
+        cp.setOverridableExtensionOIDs(Set.of("2.5.29.17"));
+        cp.setAvailableCAs(List.of(x509TestCa.getCAId()));
+        final int cpId = certificateProfileSession.addCertificateProfile(INTERNAL_ADMIN_TOKEN, testCertProfileNameWithSan, cp);
+
+        eep = endEntityProfileSession.getEndEntityProfile(testEeProfileNameWithSan);
+        eep.setDefaultCertificateProfile(cpId);
+        eep.setAvailableCertificateProfileIds(List.of(cpId));
+        endEntityProfileSession.changeEndEntityProfile(INTERNAL_ADMIN_TOKEN, testEeProfileNameWithSan, eep);
+
+        // If we do not add the SAN to the end entity, the certificate enrolled does not contain any SAN.
+        certificate = testCreateCertificateCertificateRequest("CN=test", "", "testCertProfileNameWithSan", "testEeProfileNameWithSan", CSR_WITH_SAN_WITHOUT_HEADERS);
+        assertNotNull("The certificate generated must not be null.", certificate);
+        assertNull("The certificate generated must not contain a SAN.", certificate.getSubjectAlternativeNames());
+    }
+
+    private X509Certificate testCreateCertificateCertificateRequest(final String subjectDn, final String subjectAltName, final String cpName, final String eepName, final String pemCsrWithoutHeaders) throws Exception {
+        // Add or reset end entity and create certificate request.
+
+        EndEntityInformation eei = endEntityAccessSession.findUser(INTERNAL_ADMIN_TOKEN, testUsername);
+        if (eei == null) {
+            final EndEntityInformation user = addEndEntity(testUsername, "CN=test", subjectAltName, x509TestCa.getCAId(),
+                    EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            assertNotNull("End entity must not be null.", user);
+        } else {
+            eei.setStatus(EndEntityConstants.STATUS_NEW);
+            eei.setSubjectAltName(subjectAltName);
+            endEntityManagementSession.changeUser(INTERNAL_ADMIN_TOKEN, eei, false);
+        }
+        final EnrollPkcs10CertificateRequest pkcs10req = new EnrollPkcs10CertificateRequest.Builder()
+                .certificateAuthorityName(testCaName)
+                .username(testUsername)
+                .password("foo123")
+                .certificateProfileName(cpName)
+                .endEntityProfileName(eepName)
+                .certificateRequest(pemCsrWithoutHeaders).build();
+
+        // Construct POST request
+        final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
+        final String requestBody = objectMapper.writeValueAsString(pkcs10req);
+        final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
+
+        // Send request
+        final Response response = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
+        return verifyCertificateRequestResponse(response, subjectDn);
+    }
+
+    private final void assertSansCertificateRequest(final X509Certificate certificate) {
+        final String[] san = DnComponents.getSubjectAlternativeName(certificate).split(",");
+        assertEquals("SAN DNS Name does not match.", "dNSName=www.primekey.se", san[0].trim());
+        assertEquals("SAN IP address does not match.", "iPAddress=127.0.0.1", san[1].trim());
+        assertEquals("SAN Hardware Module Name does not match.", "HARDWAREMODULENAME=1.2.3.4.99/serial1", san[2].trim());
+        assertEquals("SAN Permanent Identifier does not match.", "PERMANENTIDENTIFIER=ident1/1.2.3.4.99", san[3].trim());
+        assertEquals("SAN User Principal Name (MS UPN) does not match.", "UPN=abc123@abc", san[4].trim());
+        assertEquals("SAN Globally Unique Identifier (MS GUID) does not match.", "guid=6d736775696431", san[5].trim());
+        assertEquals("SAN XMPP Address does not match.", "XMPPADDR=xmppAddr1", san[6].trim());
+        // TODO: Needs to be investigated why UNIFORMRESOURCEIDENTIFIER is missing.
+        // assertEquals("SAN uniform resource identifier does not match.", "UNIFORMRESOURCEIDENTIFIER=www.keyfactor.com", san[7].trim());
+        assertEquals("SAN URI does not match.", "UNIFORMRESOURCEIDENTIFIER=uri.primekey.se", san[7].trim());
+        assertEquals("SAN registered OID does not match.", "REGISTEREDID=2.2.3.4.99", san[8].trim());
+        assertEquals("SAN RFC 822 Name does not match.", "rfc822name=mail@primekey.se", san[9].trim());
+    }
+
+    private final void assertSansPkcs10Enroll(final X509Certificate certificate) {
+        final String[] san = DnComponents.getSubjectAlternativeName(certificate).split(",");
+        assertEquals("SAN DNS Name does not match.", "dNSName=www.primekey.se", san[0].trim());
+        assertEquals("SAN IP address does not match.", "iPAddress=127.0.0.1", san[1].trim());
+        assertEquals("SAN Hardware Module Name does not match.", "HARDWAREMODULENAME=1.2.3.4.99/serial1", san[2].trim());
+        assertEquals("SAN Permanent Identifier does not match.", "PERMANENTIDENTIFIER=ident1/1.2.3.4.99", san[3].trim());
+        assertEquals("SAN User Principal Name (MS UPN) does not match.", "UPN=abc123@abc", san[4].trim());
+        assertEquals("SAN Globally Unique Identifier (MS GUID) does not match.", "guid=6d736775696431", san[5].trim());
+        assertEquals("SAN XMPP Address does not match.", "XMPPADDR=xmppAddr1", san[6].trim());
+        assertEquals("SAN uniform resource identifier does not match.", "UNIFORMRESOURCEIDENTIFIER=www.keyfactor.com", san[7].trim());
+        assertEquals("SAN URI does not match.", "UNIFORMRESOURCEIDENTIFIER=uri.primekey.se", san[8].trim());
+        assertEquals("SAN registered OID does not match.", "REGISTEREDID=2.2.3.4.99", san[9].trim());
+        assertEquals("SAN RFC 822 Name does not match.", "rfc822name=mail@primekey.se", san[10].trim());
+    }
+
+    private EndEntityInformation addEndEntity(final String username, final String subjectDn, final int caId, final int endEntityProfileId, final int certificateProfileId) {
+        return addEndEntity(username, subjectDn, null, caId, endEntityProfileId, certificateProfileId);
+    }
+
+    private EndEntityInformation addEndEntity(final String username, final String subjectDn, final String subjectAltName, final int caId, final int endEntityProfileId, final int certificateProfileId) {
         try {
-            EndEntityInformation userdata = new EndEntityInformation(
-                    userName, "CN=" + userName, caDn.hashCode(), null,
-                    null, new EndEntityType(EndEntityTypes.ENDUSER), 
-                    eeProfileId, certProfileId,
-                    SecConst.TOKEN_SOFT_BROWSERGEN, new ExtendedInformation());
-            userdata.setPassword("foo123");
-            userdata.setStatus(EndEntityConstants.STATUS_NEW);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
-            userdata.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
-            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, userdata, false);
-            
+            final EndEntityInformation user = new EndEntityInformation(
+                username,
+                subjectDn,
+                caId,
+                subjectAltName,
+                null,
+                new EndEntityType(EndEntityTypes.ENDUSER),
+                endEntityProfileId,
+                certificateProfileId,
+                SecConst.TOKEN_SOFT_BROWSERGEN,
+                new ExtendedInformation());
+            user.setPassword("foo123");
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.getExtendedInformation().setKeyStoreAlgorithmType(AlgorithmConstants.KEYALGORITHM_RSA);
+            user.getExtendedInformation().setKeyStoreAlgorithmSubType("1024");
+            endEntityManagementSession.addUser(INTERNAL_ADMIN_TOKEN, user, false);
+            return user;
+        } catch (Exception e) {
+            final String msg = "Failed to create end entity: " + e.getMessage();
+            fail(msg);
+            if (log.isTraceEnabled()) {
+                log.trace(msg, e);
+            }
+        }
+        return null;
+    }
+
+    private String addAndEnrollEntity(String caDn, String certProfileName, int certProfileId, String eeProfileName, int eeProfileId) {
+        final String userName = "expireSearchTest" + RANDOM.nextLong();
+
+        try {
+            final EndEntityInformation user = addEndEntity(userName, "CN=" + userName, caDn.hashCode(), eeProfileId, certProfileId);
+            assertNotNull("End entity must not be null.", user);
+
             final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
             PKCS10CertificationRequest pkcs10CertificationRequest = CertTools.genPKCS10CertificationRequest(
                     AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
-                    DnComponents.stringToBcX500Name("CN=" + userName), 
+                    DnComponents.stringToBcX500Name("CN=" + userName),
                     keys.getPublic(), null, keys.getPrivate(), null);
 
             // Create CSR REST request
@@ -1520,7 +1773,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             final ObjectMapper objectMapper = objectMapperContextResolver.getContext(null);
             final String requestBody = objectMapper.writeValueAsString(pkcs10req);
             final Entity<String> requestEntity = Entity.entity(requestBody, MediaType.APPLICATION_JSON);
-    
+
             // Send request
             final Response actualResponse = newRequest("/v1/certificate/certificaterequest").request().post(requestEntity);
             if (actualResponse.getStatus()!=201) {
@@ -1530,10 +1783,10 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
             log.error("Exception while adding: " + userName, e);
             return null;
         }
-        
+
         return userName;
     }
-    
+
     @Test
     public void enrollPkcs10WithUnidFnr() throws Exception {
 
@@ -1572,7 +1825,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                 certificateProfileName(profileName).
                 endEntityProfileName(profileName).
                 username(username).
-                password(password). responseFormat("DER").
+                password(password).responseFormat("DER").
                 certificateRequest(unidFnrCsr).build();
 
         // Construct POST  request
@@ -1826,7 +2079,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
                         .withEndEntityProfileSessionRemote(endEntityProfileSessionRemote)
                         .build());
     }
-    
+
     /**
      * Creates a keystore with a certificate for the test End Entity
      */
@@ -1936,7 +2189,7 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
         final EntityPart crlPartitionIndexEP = EntityPart.withName("crlPartitionIndex").content(0, Integer.class).build();
         final List<EntityPart> entityParts = Arrays.asList(fileEP, crlPartitionIndexEP);
 
-        final Entity requestEntity = Entity.entity(new GenericEntity<>(entityParts){}, MediaType.MULTIPART_FORM_DATA);
+        final Entity<?> requestEntity = Entity.entity(new GenericEntity<>(entityParts){}, MediaType.MULTIPART_FORM_DATA);
 
         final WebTarget crlImportRequest = newRequest("/v1/ca/" + DnComponents.stringToBCDNString(testIssuerDn) + "/importcrl");
         final Response crlImportResponse = crlImportRequest.request().post(requestEntity);
