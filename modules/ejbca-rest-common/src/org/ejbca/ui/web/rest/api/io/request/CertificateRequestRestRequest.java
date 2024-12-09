@@ -119,15 +119,19 @@ public class CertificateRequestRestRequest {
         }
 
         private static String getFormatedRequestString(CertificateRequestRestRequest certificateRequestRestRequest) {
-            String certificateRequestData = switch (certificateRequestRestRequest.getCertificateRequestType()) {
-                case "PUBLICKEY", "CRMF" -> certificateRequestRestRequest.certificateRequest;
-                case "SPKAC" -> certificateRequestRestRequest.certificateRequest.replace("SPKAC=", "");
-                case "CVC" -> certificateRequestRestRequest.certificateRequest
-                        .replace("-----BEGIN CERTIFICATE-----", "")
-                        .replace("-----END CERTIFICATE-----", "");
-                default -> CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
-            };
-            return certificateRequestData;
+            if (certificateRequestRestRequest.getCertificateRequestType() != null) {
+                String certificateRequestData = switch (certificateRequestRestRequest.getCertificateRequestType()) {
+                    case "PUBLICKEY", "CRMF" -> certificateRequestRestRequest.certificateRequest;
+                    case "SPKAC" -> certificateRequestRestRequest.certificateRequest.replace("SPKAC=", "");
+                    case "CVC" -> certificateRequestRestRequest.certificateRequest
+                            .replace("-----BEGIN CERTIFICATE-----", "")
+                            .replace("-----END CERTIFICATE-----", "");
+                    default -> CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
+                };
+                return certificateRequestData;
+            } else {
+                return CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
+            }
         }
     }
 }
