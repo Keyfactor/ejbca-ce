@@ -13,9 +13,6 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.File;
-import java.io.IOException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -46,7 +43,6 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.FileTools;
 import com.keyfactor.util.certificate.DnComponents;
 
 /**
