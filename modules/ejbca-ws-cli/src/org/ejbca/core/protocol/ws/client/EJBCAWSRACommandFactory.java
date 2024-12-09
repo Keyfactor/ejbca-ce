@@ -13,6 +13,8 @@
  
 package org.ejbca.core.protocol.ws.client;
 
+import java.lang.reflect.InvocationTargetException;
+
 import org.ejbca.ui.cli.IAdminCommand;
 
 /**
@@ -34,7 +36,12 @@ public class EJBCAWSRACommandFactory {
      *
      * @return Command object or null if args[0] does not specify a valid command.
      */
-    public static IAdminCommand getCommand(String[] args) {
+    public static IAdminCommand getCommand(String[] args)
+            throws ClassNotFoundException,
+            NoSuchMethodException,
+            InstantiationException,
+            IllegalAccessException,
+            InvocationTargetException {
         if (args.length < 1) {
             return null;
         }        
@@ -84,7 +91,8 @@ public class EJBCAWSRACommandFactory {
         } else if (args[0].equals("cvcpem")) {
             return new CvcPemCommand(args);
         } else if (args[0].equals("cvcstress")) {
-            return new CvcStressTestCommand(args);
+            Class<?> cvcStressTestCommand = Class.forName("org.ejbca.core.protocol.ws.client.CvcStressTestCommand");
+            return (StressTestCommandBase)cvcStressTestCommand.getConstructor(String[].class).newInstance((Object)args);
         } else if (args[0].equals("createcryptotoken")) {
             return new CreateCryptoTokenCommand(args);
         } else if (args[0].equals("generatectkeys")) {
