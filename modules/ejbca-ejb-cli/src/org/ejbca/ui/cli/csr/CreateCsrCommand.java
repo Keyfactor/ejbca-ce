@@ -91,7 +91,7 @@ public class CreateCsrCommand extends EjbcaCommandBase {
     private  static final String DESTINATION_ARG = "--destination";
 
     private static final Set<String> RSA_KEY_SIZES = new LinkedHashSet<>(Arrays.asList("1024", "1536", "2048", "3072", "4096", "6144", "8192"));
-    private static final Set<String> EC_CURVES = AlgorithmTools.getNamedEcCurvesMap().keySet();
+    private static final Set<String> EC_CURVES = AlgorithmTools.getOnlyNamedEcCurvesMap().keySet();
 
     private static final Logger log = Logger.getLogger(CreateCsrCommand.class);
 
@@ -471,16 +471,17 @@ public class CreateCsrCommand extends EjbcaCommandBase {
     private PrivateKey readPrivateKey(final String filename) throws IOException {
         try (FileReader keyReader = new FileReader(new File(filename))) {
 
-            PEMParser pemParser = new PEMParser(keyReader);
-            Object pemObject = pemParser.readObject();
-            PrivateKeyInfo privateKeyInfo;
-            if (pemObject instanceof PEMKeyPair) {
-                privateKeyInfo = ((PEMKeyPair) pemObject).getPrivateKeyInfo();
-            } else {
-                privateKeyInfo = PrivateKeyInfo.getInstance(pemParser.readObject());
+            try (PEMParser pemParser = new PEMParser(keyReader)) {
+                Object pemObject = pemParser.readObject();
+                PrivateKeyInfo privateKeyInfo;
+                if (pemObject instanceof PEMKeyPair) {
+                    privateKeyInfo = ((PEMKeyPair) pemObject).getPrivateKeyInfo();
+                } else {
+                    privateKeyInfo = PrivateKeyInfo.getInstance(pemParser.readObject());
+                }
+                JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
+                return converter.getPrivateKey(privateKeyInfo);
             }
-            JcaPEMKeyConverter converter = new JcaPEMKeyConverter();
-            return converter.getPrivateKey(privateKeyInfo);
         }
     }
 
