@@ -17,7 +17,6 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.authorization.cache.AccessTreeUpdateData;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -47,12 +46,14 @@ import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryData;
 import org.ejbca.core.ejb.ca.validation.BlacklistData;
+import org.ejbca.core.ejb.config.ClearCacheSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoveryData;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData;
 import org.ejbca.core.ejb.services.ServiceData;
+import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.peerconnector.PeerData;
 
 import java.util.List;
@@ -73,6 +74,16 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
             entityManager.createQuery("delete from "+clazz.getSimpleName()+" c").executeUpdate();
         }
         return list;
+    }
+
+    private ClearCacheSessionLocal clearCacheSessionLocal;
+
+    private ClearCacheSessionLocal getClearCacheSessionLocal() {
+        if (clearCacheSessionLocal == null) {
+            clearCacheSessionLocal = new EjbLocalHelper()
+                    .getClearCacheSession();
+        }
+        return clearCacheSessionLocal;
     }
 
     @Override
@@ -115,6 +126,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
                 clearTable(UserDataSourceData.class, true)
         );
         entityManager.flush();
+        getClearCacheSessionLocal().clearCaches(false);
         return databaseContent;
     }
 
@@ -155,6 +167,7 @@ public class DatabaseSessionBean implements DatabaseSessionRemote {
         databaseContent.serviceData().forEach(entityManager::persist);
         databaseContent.userData().forEach(entityManager::persist);
         databaseContent.userDataSourceData().forEach(entityManager::persist);
+        getClearCacheSessionLocal().clearCaches(false);
         entityManager.flush();
     }
 

@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.db;
 
 import org.apache.log4j.Logger;
+import org.cesecore.SystemTestsConfiguration;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
@@ -21,24 +22,21 @@ public class DatabaseContentRule extends TestWatcher {
 
     private static final Logger log = Logger.getLogger(DatabaseContentRule.class);
     private static final DatabaseSessionRemote databaseSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(DatabaseSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    DatabaseContent databaseContent = null;
 
-    private boolean isActive() {
-        return "true".equalsIgnoreCase(System.getProperty("ejbca.database.content.rule", "true"));
-    }
+    DatabaseContent databaseContent = null;
 
     @Override
     protected void starting(Description description) {
-        if (isActive()) {
+        if (SystemTestsConfiguration.getClearDatabase()) {
             log.info("Removing database records");
             databaseContent = databaseSessionRemote.clearTables(false);
         }
         super.starting(description);
-    };
+    }
 
     @Override
     protected void finished(Description description) {
-        if (isActive()) {
+        if (SystemTestsConfiguration.getClearDatabase()) {
             log.info("Restoring database records");
             databaseSessionRemote.clearTables(true);
             databaseSessionRemote.restoreTables(databaseContent);
