@@ -66,6 +66,7 @@ public abstract class SystemTestsConfiguration {
         "/usr/lib/softhsm/libsofthsm2.so", // SoftHSM 2 (Linux)
         "/usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so", // SoftHSM 2 (Linux multiarch, 64-bit)
     };
+    private static final String CLEAR_DATABASE = "clear.database";
 
     private static final Logger log = Logger.getLogger(SystemTestsConfiguration.class);
     private static final String PROPERTYFILE = "/systemtests.properties";
@@ -261,4 +262,9 @@ public abstract class SystemTestsConfiguration {
         }
         return ret;
     }
+
+    public static boolean getClearDatabase() {
+        return Boolean.parseBoolean(StringUtils.trim(getProperties().getProperty(CLEAR_DATABASE, "true")));
+    }
+
 }

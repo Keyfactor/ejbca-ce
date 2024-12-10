@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.ejb.db;
 
-import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.authorization.cache.AccessTreeUpdateData;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspectData;
