@@ -329,7 +329,6 @@ subprojects {
                 group = "verification"
                 forkEvery = 1
                 maxParallelForks = 1
-                ignoreFailures = true
 
                 dependsOn(":checkIfAppServerIsRunning")
                 shouldRunAfter("test")
