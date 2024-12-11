@@ -22,14 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
+import com.keyfactor.util.StringTools;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -61,11 +54,18 @@ import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 
-import com.keyfactor.util.StringTools;
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 /**
  * Managed Bean for the Role Member manage/view page.
- * 
+ *
  */
 @ViewScoped
 @Named
@@ -107,7 +107,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
 
     private ListDataModel<RoleMember> roleMembers = null;
     private RoleMember roleMemberToDelete = null;
-    
+
     private Map<Integer, String> caIdToNameMap = null;
 
     @PostConstruct
@@ -115,30 +115,14 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
         // Read HTTP param "roleId" that should be interpreted as an integer
         roleIdParam = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get("roleId");
     }
-    
+
     public RoleMembersBean() {
         super(AccessRulesConstants.ROLE_ADMINISTRATOR, StandardRules.VIEWROLES.resource());
     }
-    
+
     /** Redirect back to this page with the correct roleId for non-ajax requests */
     private void nonAjaxPostRedirectGet() {
         super.nonAjaxPostRedirectGet("?roleId="+roleIdParam);
-    }
-    
-    /**
-     * Get the appropriate Access match type based on the access match value.
-     * @param accessMatchValue
-     * @return Equal Case sensitive unless access match value forces something else.
-     */
-    private AccessMatchType getAccessMatchType(AccessMatchValue accessMatchValue) {
-        if (accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER)
-                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_COUNTRY)
-                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_DNEMAILADDRESS)
-                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_STATEORPROVINCE)
-                || accessMatchValue.equals(X500PrincipalAccessMatchValue.WITH_RFC822NAME)){
-            return AccessMatchType.TYPE_EQUALCASEINS;
-        }
-        return AccessMatchType.TYPE_EQUALCASE;
     }
 
     /** @return true when admin is authorized to edit members of this role */
@@ -214,7 +198,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                     for (final AccessMatchValue accessMatchValue : authenticationTokenMetaData.getAccessMatchValues()) {
                         // Special exclusion of this rather useless match value that will never match anything
                         if (!X500PrincipalAccessMatchValue.NONE.equals(accessMatchValue)) {
-                            matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.getNumericValue(), 
+                            matchWithItems.add(new SelectItem(tokenType + ":" + accessMatchValue.getNumericValue(),
                                     getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(accessMatchValue.name())));
                         }
                     }
@@ -361,7 +345,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
     public String getTokenMatchValue() { return tokenMatchValue; }
     /** Set the current tokenMatchValue */
     public void setTokenMatchValue(final String tokenMatchValue) { this.tokenMatchValue = tokenMatchValue.trim(); }
-    
+
     /** @return true if the currently selected tokenType and tokenMatchKey combo implies that the tokenMatchValue is a hex certificate serial number */
     public boolean isRenderCertificateLink(final RoleMember roleMember) {
         return X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE.equals(roleMember.getTokenType()) &&
@@ -402,7 +386,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
             if (accessMatchValue.getAvailableAccessMatchTypes().isEmpty()) {
                 accessMatchType = AccessMatchType.TYPE_UNUSED;
             } else {
-                accessMatchType = getAccessMatchType(accessMatchValue);
+                accessMatchType = X500PrincipalAccessMatchValue.getAccessMatchType(accessMatchValue);
             }
 
             if (AccessMatchType.TYPE_UNUSED.equals(accessMatchType)) {
@@ -441,7 +425,7 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                             return;
                         }
                     }
-                    
+
                 } catch (NumberFormatException e) {
                     super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "HEXREQUIRED");
                     return;
@@ -462,11 +446,11 @@ public class RoleMembersBean extends BaseManagedBean implements Serializable {
                 // Persist the new role member
                 final RoleMember roleMember = new RoleMember(tokenType, tokenIssuerId, tokenProviderId, tokenMatchKey,
                         accessMatchType.getNumericValue(), tokenMatchValue, role.getRoleId(), description);
-                roleMemberSession.persist(getAdmin(), roleMember);                
+                roleMemberSession.persist(getAdmin(), roleMember);
             } catch (AuthorizationDeniedException e) {
                 super.addGlobalMessage(FacesMessage.SEVERITY_ERROR, "AUTHORIZATIONDENIED");
             }
-            
+
             // Only reset this one, since admin might want to add additional matches of the same type
             tokenMatchValue = "";
             // Trigger a reload of the RoleMember list (if this is an AJAX requests and no new viewscope will be created)

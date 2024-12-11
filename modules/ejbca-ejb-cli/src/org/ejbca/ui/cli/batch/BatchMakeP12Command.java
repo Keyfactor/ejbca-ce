@@ -22,7 +22,6 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryInformation;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.ejbca.ui.cli.infrastructure.command.EjbcaCliUserCommandBase;
 import org.ejbca.ui.cli.infrastructure.parameter.Parameter;
@@ -62,7 +62,6 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
@@ -291,14 +290,14 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         }
 
         X509Certificate cert = null;
-
+        EndEntityInformation userdata = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
+                getAuthenticationToken(), username);
         if (orgCert != null) {
             cert = orgCert;
             boolean finishUser = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAuthenticationToken(), caId)
                     .getFinishUser();
             if (finishUser) {
-                EndEntityInformation userdata = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(
-                        getAuthenticationToken(), username);
+                
                 EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSession.class).finishUser(userdata);
             }
 
@@ -320,13 +319,13 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         }
 
         // Make a certificate chain from the certificate and the CA-certificate
-        Certificate[] cachain = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).getCertificateChain(caId).toArray(new Certificate[0]);
+        X509Certificate[] cachain = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class).getCertificateChain(caId).toArray(new X509Certificate[0]);
         // Verify CA-certificate
         if (CertTools.isSelfSigned(cachain[cachain.length - 1])) {
             try {
                 // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1
                 // will not verify (at least not as of jdk6)
-                Certificate cacert = CertTools.getCertfromByteArray(cachain[cachain.length - 1].getEncoded(), Certificate.class);
+                X509Certificate cacert = CertTools.getCertfromByteArray(cachain[cachain.length - 1].getEncoded(), X509Certificate.class);
                 cacert.verify(cacert.getPublicKey());
             } catch (GeneralSecurityException se) {
                 String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorrootnotverify");
@@ -341,8 +340,8 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         try {
             // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1 will
             // not verify (at least not as of jdk6)
-            Certificate cacert = CertTools.getCertfromByteArray(cachain[0].getEncoded(), Certificate.class);
-            Certificate usercert = CertTools.getCertfromByteArray(cert.getEncoded(), Certificate.class);
+            X509Certificate cacert = CertTools.getCertfromByteArray(cachain[0].getEncoded(), X509Certificate.class);
+            X509Certificate usercert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             usercert.verify(cacert.getPublicKey());
         } catch (GeneralSecurityException se) {
             String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorgennotverify");
@@ -369,7 +368,8 @@ public class BatchMakeP12Command extends EjbcaCliUserCommandBase {
         } else if (keystoreType == SecConst.TOKEN_SOFT_BCFKS) {
             ks = KeyTools.createBcfks(alias, keyPair.getPrivate(), cert, cachain);
         } else {
-            ks = KeyTools.createP12(alias, keyPair.getPrivate(), cert, cachain, KeyStoreCipher.PKCS12_AES256_AES128);
+            EndEntityProfile endEntityProfile = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(userdata.getEndEntityProfileId());            
+            ks = KeyTools.createP12(alias, keyPair.getPrivate(), cert, cachain, endEntityProfile.getP12Cipher());
         }
 
         storeKeyStore(ks, username, password, keystoreType);

@@ -726,22 +726,46 @@ public class EndEntityInformationFillerUnitTest {
         p.setValue(DnComponents.DNSNAME, 2, "server.bad.com");
         p.setValue(DnComponents.DNSNAME, 3, "server.superbad.com");
         p.addField(DnComponents.DIRECTORYNAME);
+        p.addField(DnComponents.HARDWAREMODULENAME);
         
-        String san = "DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,RFC822NAME=foo@bar.com,DIRECTORYNAME=CN=yyyy\\,OU=abcd";
+        String san = "DNSNAME=foo.bar.com,"
+                + "DNSNAME=foo1.bar.com,"
+                + "RFC822NAME=foo@bar.com,"
+                + "DIRECTORYNAME=CN=yyyy\\,"
+                + "OU=abcd,"                
+                + "HARDWAREMODULENAME=1.2.3.99.1/serial1,"
+                + "PERMANENTIDENTIFIER=permId";
         EndEntityInformation user = new EndEntityInformation();
         user.setSubjectAltName(san);
         user.setEmail("");
         EndEntityInformationFiller.fillUserDataWithDefaultValues(user, p);
-        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
-                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,DIRECTORYNAME=CN=yyyy\\,OU=abcd", user.getSubjectAltName());
+        assertEquals("DNSNAME=foo.bar.com," 
+                + "DNSNAME=foo1.bar.com," 
+                + "DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com," 
+                + "RFC822NAME=foo@bar.com," 
+                + "DIRECTORYNAME=CN=yyyy\\," 
+                + "OU=abcd,"
+                + "HARDWAREMODULENAME=1.2.3.99.1/serial1,"
+                + "PERMANENTIDENTIFIER=permId", user.getSubjectAltName());
         
-        String sanInChangeuser = new DistinguishedName(user.getSubjectAltName()).mergeDN(
-                new DistinguishedName("dnsName=foo.bar.com,dnsName=foo1.bar.com,dnsName=server.bad.com,"
-                + "dnsName=server.superbad.com,rfc822Name=foo@bar.com"), false, null).toString();
-        String san2 = EndEntityInformationFiller.getDnEntriesUniqueOnly(sanInChangeuser, 
-                                        EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME);
-        assertEquals("DNSNAME=foo.bar.com,DNSNAME=foo1.bar.com,DNSNAME=server.bad.com,"
-                + "DNSNAME=server.superbad.com,RFC822NAME=foo@bar.com,DIRECTORYNAME=CN=yyyy\\,OU=abcd", san2);
+        String sanInChangeuser = new DistinguishedName(user.getSubjectAltName()).mergeDN(new DistinguishedName(
+                "dnsName=foo.bar.com," 
+                + "dnsName=foo1.bar.com," 
+                + "dnsName=server.bad.com,"
+                + "dnsName=server.superbad.com," 
+                + "rfc822Name=foo@bar.com"), false, null).toString();
+        
+        String san2 = EndEntityInformationFiller.getDnEntriesUniqueOnly(sanInChangeuser, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME);
+        assertEquals("DNSNAME=foo.bar.com," 
+                + "DNSNAME=foo1.bar.com," 
+                + "DNSNAME=server.bad.com,"
+                + "DNSNAME=server.superbad.com,"
+                + "RFC822NAME=foo@bar.com,"
+                + "DIRECTORYNAME=CN=yyyy\\,"
+                + "OU=abcd,"
+                + "HARDWAREMODULENAME=1.2.3.99.1/serial1,"
+                + "PERMANENTIDENTIFIER=permId", san2);
     }
     
     @Test

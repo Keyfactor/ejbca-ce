@@ -213,8 +213,6 @@
      <h:selectBooleanCheckbox id="checkBoxUseBatchGenerationPassword"
       value="#{resourceBean.useClearTextPasswordStorage}"
       disabled="#{resourceBean.requiredClearTextPasswordStorage}">
-      <f:ajax event="change" render="@this"
-       listener="#{resourceBean.checkUseInBatch()}" />
      </h:selectBooleanCheckbox>
      <h:outputLabel for="checkBoxUseBatchGenerationPassword"
       value="#{web.text.USE}" />
