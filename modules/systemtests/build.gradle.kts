@@ -73,6 +73,33 @@ sourceSets {
     }
 }
 
+tasks.systemTest {
+    filter {
+        // Tests that require TestCAs to setup CAs
+        excludeTestsMatching("CAsSystemTest")
+        excludeTestsMatching("SignSessionSystemTest")
+        excludeTestsMatching("RemoveCASystemTest")
+        // Tests that take a very long time to complete
+        excludeTestsMatching("SignLotsOfCertsSystemTest")
+        excludeTestsMatching("LoggingStressSystemTest")
+        excludeTestsMatching("AddLotsOfCertsPerUserSystemTest")
+        excludeTestsMatching("AddLotsOfUsersSystemTest")
+        excludeTestsMatching("RaMasterApiStressSystemTest")
+        // Tests that require special configuration to work
+        excludeTestsMatching("AutoEnrollServletSystemTest")
+        excludeTestsMatching("CrmfRAPbeMultipleKeyIdRequestSystemTest")
+        excludeTestsMatching("ProtocolLookupServerHttpSystemTest")
+        excludeTestsMatching("ProtocolOcspHttpPerfSystemTest")
+        // Tests that require unique index in the database to work
+        excludeTestsMatching("CustomCertSerialnumberSystemTest")
+        excludeTestsMatching("CrmfRARequestCustomSerialNoSystemTest")
+        // Exclude profiling test, since we want to run it later.
+        // Note: ProfilingSystemTest test does not produce any output when executed in Jenkins using Ant,
+        // so setup to execute it last has been skipped it in Gradle for now.
+        excludeTestsMatching("ProfilingSystemTest")
+    }
+}
+
 tasks.processTestResources {
     from("${rootProject.projectDir}/conf") {
         include("jndi.properties.jboss7")
