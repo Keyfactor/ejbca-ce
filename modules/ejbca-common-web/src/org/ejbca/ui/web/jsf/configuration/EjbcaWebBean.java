@@ -621,7 +621,6 @@ public interface EjbcaWebBean extends Serializable {
 
     OAuthConfiguration getOAuthConfiguration();
 
-    void reloadOAuthConfiguration();
 
     void saveOAuthConfiguration(final OAuthConfiguration oAuthConfig) throws AuthorizationDeniedException;
 

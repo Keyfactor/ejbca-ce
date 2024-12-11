@@ -51,7 +51,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     protected static final InternalResources intres = InternalResources.getInstance();
 
-    protected static final float LATEST_VERSION = 11;
+    protected static final float LATEST_VERSION = 12;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
@@ -81,6 +81,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DNS_RESOLVER_DEFAULT = "8.8.8.8";
     private static final int DNS_SERVER_PORT_DEFAULT = 53;
     private static final String KEY_RETRY_AFTER = "retryAfter";
+    private static final String KEY_CHALLENGE_RESPONSE_TIMOUT = "challengeResponseTimout";
     private static final String KEY_AUTHORIZED_REDIRECT_PORTS = "authorizedRedirectPorts";
     private static final String KEY_APPROVAL_FOR_NEW_ACCOUNT_ID = "approvalForNewAccountId";
     private static final String KEY_APPROVAL_FOR_KEY_CHANGE_ID = "approvalForKeyChangeId";
@@ -104,6 +105,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String DEFAULT_TERMS_OF_SERVICE_CHANGE_URL = "https://example.com/acme/termsChanged";
     private static final String DEFAULT_WEBSITE_URL = "https://www.example.com/";
     private static final long DEFAULT_ORDER_VALIDITY = 3600000L;
+    public static final int DEFAULT_CHALLENGE_RESPONSE_TIMOUT = 30;
     private static final String DEFAULT_AUTHORIZED_REDIRECT_PORTS = "22,25,80,443";
     private static final boolean DEFAULT_USE_DNSSEC_VALIDATION = true;
 
@@ -136,10 +138,15 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
             // New version of the class, upgrade.
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
-            // v10. Added client authentication required.
+            // v12. Added challenge response timout.
+            if (data.get(KEY_CHALLENGE_RESPONSE_TIMOUT) == null) {
+                data.put(KEY_CHALLENGE_RESPONSE_TIMOUT, DEFAULT_CHALLENGE_RESPONSE_TIMOUT);
+            }
+            // v11. Added client authentication required.
             if (data.get(KEY_CLIENT_AUTHENTICATION_REQUIRED) == null) {
                 data.put(KEY_CLIENT_AUTHENTICATION_REQUIRED, String.valueOf(DEFAULT_CLIENT_AUTHENTICATION_REQUIRED));
             }
+            // v10. Added preferred root CA subject DN.
             if (data.get(KEY_PREFERRED_ROOT_CA_SUBJECTDN) == null) {
                 data.put(KEY_PREFERRED_ROOT_CA_SUBJECTDN, String.valueOf(DEFAULT_PREFERRED_ROOT_CA_SUBJECTDN));
             }
@@ -594,6 +601,15 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         data.put(KEY_RETRY_AFTER, retryAfter);
     }
 
+    public int getChallengeResponseTimout() {
+        final Integer seconds = (Integer) data.get(KEY_CHALLENGE_RESPONSE_TIMOUT);
+        return Objects.isNull(seconds) ? DEFAULT_CHALLENGE_RESPONSE_TIMOUT : seconds.intValue();
+    }
+
+    public void setChallengeResponseTimout(final int seconds) {
+        data.put(KEY_CHALLENGE_RESPONSE_TIMOUT, seconds);
+    }
+    
     public String getAuthorizedRedirectPorts() {
         return (String) super.data.get(KEY_AUTHORIZED_REDIRECT_PORTS);
     }
