@@ -264,7 +264,7 @@ public abstract class SystemTestsConfiguration {
     }
 
     public static boolean getClearDatabase() {
-        return Boolean.parseBoolean(StringUtils.trim(getProperties().getProperty(CLEAR_DATABASE, "true")));
+        return Boolean.parseBoolean(StringUtils.trim(getProperties().getProperty(CLEAR_DATABASE, "false")));
     }
 
 }
