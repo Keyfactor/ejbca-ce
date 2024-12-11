@@ -20,8 +20,6 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
@@ -78,28 +76,6 @@ public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
-        System.out.println("*** System properties ***");
-        Map<String, String> map = new TreeMap<String, String>();
-        int length = 0;
-        for (var key : System.getProperties().keySet()) {
-            String s = key.toString();
-            length = Math.max(length, s.length());
-            map.put(s, System.getProperty(key.toString()));
-        }
-        final String propertyFormat = "%-" + length + "s = %s";
-        map.entrySet().stream().forEach(entry ->
-            System.out.println(String.format(propertyFormat, entry.getKey(), entry.getValue())));
-        System.out.println();
-        System.out.println("*** Environment variables ***");
-        map = new TreeMap<String, String>(System.getenv());
-        length = map.keySet()
-                .stream()
-                .map(String::length)
-                .reduce(Math::max)
-                .orElse(0);
-        final String envFormat = "%-" + length + "s = %s";
-        map.entrySet().stream().forEach(entry ->
-                System.out.println(String.format(envFormat, entry.getKey(), entry.getValue())));
     }
 
     @ClassRule
