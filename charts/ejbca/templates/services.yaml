@@ -1,3 +1,10 @@
+# Configuration for Services meant for internal access
+# proxyHttp - recommended for ingress or nginx reverse proxy
+# proxyAJP - recommended for Apache httpd reverse proxy
+# directHttp - not recommended, should only be used for debugging purpose
+# sidecarPorts - Extra sidecar ports to be added to the service, optionally used when sidecarContainers
+# are defined and need to expose ports
+{{- if or (.Values.services.directHttp.enabled) (.Values.services.proxyAJP.enabled) (.Values.services.proxyHttp.enabled) (.Values.ingress.enabled)}}
 apiVersion: v1
 kind: Service
 metadata:
@@ -47,7 +54,7 @@ spec:
   selector:
     {{- include "ejbca.selectorLabels" . | nindent 4 }}
 {{- end }}
-{{- if .Values.services.proxyHttp.enabled }}
+{{- if or .Values.services.proxyHttp.enabled .Values.ingress.enabled }}
 spec:
   type: {{ .Values.services.proxyHttp.type }}
   ports:
@@ -69,4 +76,5 @@ spec:
       name: proxy-https
   selector:
     {{- include "ejbca.selectorLabels" . | nindent 4 }}
+{{- end }}
 {{- end }}

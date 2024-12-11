@@ -26,6 +26,8 @@ Define port that EJBCA redirects for HTTPS
 {{- define "ejbca.ejbcaHttpsPort" -}}
 {{- if .Values.nginx.enabled }}
 {{- .Values.nginx.service.httpsPort }}
+{{- else if .Values.httpd.enabled }}
+{{- .Values.httpd.service.httpsPort }}
 {{- else if .Values.services.directHttp.enabled }}
 {{- .Values.services.directHttp.httpsPort }}
 {{- else }}
@@ -39,6 +41,8 @@ Define port that EJBCA redirects for HTTP
 {{- define "ejbca.ejbcaPubhttpPort" -}}
 {{- if .Values.nginx.enabled }}
 {{- .Values.nginx.service.httpPort }}
+{{- else if .Values.httpd.enabled }}
+{{- .Values.httpd.service.httpPort }}
 {{- else if .Values.services.directHttp.enabled }}
 {{- .Values.services.directHttp.httpPort }}
 {{- else }}

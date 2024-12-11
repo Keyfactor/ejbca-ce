@@ -1,9 +1,5 @@
 apiVersion: apps/v1
-{{- if eq (int .Values.replicaCount) 1 }}
-kind: Deployment
-{{- else }}
 kind: StatefulSet
-{{- end }}
 metadata:
   name: {{ include "ejbca.fullname" . }}
   labels:
@@ -38,9 +34,21 @@ spec:
       serviceAccountName: {{ include "ejbca.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      {{- if or .Values.nginx.enabled .Values.ejbca.initContainers }}
+      {{- if or (.Values.nginx.enabled) (.Values.httpd.enabled) (.Values.ejbca.initContainers) }}
       initContainers:
+        {{- $proxyType := "" }}
+        {{- $proxyMntPath := "" }}
+        {{- $proxyHost := "" }}
         {{- if and .Values.nginx.enabled (not .Values.nginx.mountInternalNginxCert) (not .Values.nginx.initializeWithSelfSignedTls) }}
+        {{- $proxyType = "nginx" }}
+        {{- $proxyMntPath := "" }}
+        {{- $proxyHost := ".Values.nginx.host" }}
+        {{- else if and .Values.httpd.enabled (not .Values.httpd.mountInternalHttpdCert) (not .Values.httpd.initializeWithSelfSignedTls) }}
+        {{- $proxyType = "httpd" }}
+        {{- $proxyMntPath := "" }}
+        {{- $proxyHost := ".Values.httpd.host" }}
+        {{- end}}
+        {{- if $proxyType }}
         - name: {{ .Chart.Name }}-init
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -59,13 +67,13 @@ spec:
               until [ -f /opt/keyfactor/appserver/standalone/deployments/ejbca.ear.deployed ]; do sleep 5; done
               until [[ $(/opt/keyfactor/bin/ejbca.sh roles listadmins --role "Super Administrator Role" | grep -v 'USERNAME TYPE_EQUALCASE "ejbca"') ]]; do sleep 5; done
               sleep 5
-              /opt/keyfactor/bin/ejbca.sh ra addendentity --username '{{ .Values.nginx.host }}' --dn 'CN={{ .Values.nginx.host }}' --caname 'ManagementCA' --type 1 --token PEM --altname 'dNSName={{ .Values.nginx.host }}' --certprofile SERVER --password NOTUSED
-              /opt/keyfactor/bin/ejbca.sh ra setendentitystatus --username '{{ .Values.nginx.host }}' -S 10
-              /opt/keyfactor/bin/ejbca.sh ra setclearpwd '{{ .Values.nginx.host }}' NOTUSED
-              /opt/keyfactor/bin/ejbca.sh batch '{{ .Values.nginx.host }}' -dir /tmp/nginx/ssl/
+              /opt/keyfactor/bin/ejbca.sh ra addendentity --username '{{ $proxyHost }}' --dn 'CN={{ $proxyHost }}' --caname 'ManagementCA' --type 1 --token PEM --altname 'dNSName={{ $proxyHost }}' --certprofile SERVER --password NOTUSED
+              /opt/keyfactor/bin/ejbca.sh ra setendentitystatus --username '{{ $proxyHost }}' -S 10
+              /opt/keyfactor/bin/ejbca.sh ra setclearpwd '{{ $proxyHost }}' NOTUSED
+              /opt/keyfactor/bin/ejbca.sh batch '{{ $proxyHost }}' -dir /tmp/$proxyType/ssl/
           volumeMounts:
-          - name: nginx-cert
-            mountPath: /tmp/nginx/ssl
+          - name: $proxyType-cert
+            mountPath: /tmp/$proxyType/ssl
           {{- if .Values.ejbca.useH2Persistence }}
           - name: ejbca-h2-persistence
             mountPath: /mnt/persistent/
@@ -117,17 +125,55 @@ spec:
               mountPath: /etc/nginx/ssl/
             {{- end }}
         {{- end }}
+        {{- if .Values.httpd.enabled }}
+        - name: {{ .Chart.Name }}-httpd
+          image: {{ .Values.httpd.image }}
+          {{- if and .Values.httpd.initializeWithSelfSignedTls (not .Values.httpd.mountInternalHttpdCert)}}
+          command:
+            - "/bin/bash"
+            - "-c"
+            - |
+              mkdir -p /etc/httpd/ssl/
+              openssl req -x509 -newkey rsa:4096 -keyout /etc/httpd/ssl/{{ .Values.httpd.host }}-Key.pem -out /etc/httpd/ssl/pem/{{ .Values.httpd.host }}.pem -sha256 -days 7 -nodes -subj '/CN={{ .Values.httpd.host }}-selfsigned'
+          {{- end }}
+          ports:
+          {{- if .Values.httpd.service.httpPort }}
+          - name: httpd-http
+            containerPort: 80
+          {{- end }}
+          - name: httpd-https
+            containerPort: 443
+          startupProbe:
+            tcpSocket:
+              port: 443
+          livenessProbe:
+            tcpSocket:
+              port: 443
+          volumeMounts:
+            - name: httpd-config
+              mountPath: /usr/local/apache2/conf/httpd.conf
+              subPath: httpd.conf
+            {{- if .Values.httpd.mountInternalHttpdCert }}
+            - name: httpd-cert-provided
+              mountPath: /etc/httpd/ssl/
+            {{- else }}
+            - name: httpd-cert
+              mountPath: /etc/httpd/ssl/
+            {{- end }}
+         {{- end }}
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: {{ include "ejbca.imageRepository" . }}:{{ .Values.image.tag | default .Chart.AppVersion }}
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
           env: {{- include "ejbca.ejbcaDeploymentParameters" . | nindent 12 }}
-            {{- if .Values.services.proxyAJP.enabled }}
+            {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
             - name: PROXY_AJP_BIND
               value: {{ .Values.services.proxyAJP.bindIP }}
             {{- end }}
-            {{- if .Values.services.proxyHttp.enabled }}
+            {{- if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) }}
             - name: PROXY_HTTP_BIND
               value: {{ .Values.services.proxyHttp.bindIP }}
             {{- end }}
@@ -165,13 +211,13 @@ spec:
               containerPort: 8443
               protocol: TCP
             {{- end }}
-            {{- if .Values.services.proxyAJP.enabled }}
+            {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
             - name: ajp
               containerPort: 8009
               protocol: TCP
             {{- end }}
-            {{- if .Values.services.proxyHttp.enabled }}
-            {{- if .Values.services.proxyHttp.httpPort }}
+            {{- if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
+            {{- if or (.Values.services.proxyHttp.httpPort) (.Values.nginx.httpPort) }}
             - name: proxy-http
               containerPort: 8081
               protocol: TCP
@@ -184,9 +230,11 @@ spec:
             tcpSocket:
               {{- if .Values.services.directHttp.enabled }}
               port: 8443
-              {{- else if .Values.services.proxyAJP.enabled }}
+              {{- end }}
+              {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
               port: 8009
-              {{- else if .Values.services.proxyHttp.enabled }}
+              {{- end }}
+              {{- if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
               port: 8082
               {{- end }}
             initialDelaySeconds: 15
@@ -196,9 +244,11 @@ spec:
             tcpSocket:
               {{- if .Values.services.directHttp.enabled }}
               port: 8443
-              {{- else if .Values.services.proxyAJP.enabled }}
+              {{- end }}
+              {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
               port: 8009
-              {{- else if .Values.services.proxyHttp.enabled }}
+              {{- end }}
+              {{- if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
               port: 8082
               {{- end }}
           resources:
@@ -207,6 +257,18 @@ spec:
             {{- if .Values.ejbca.useH2Persistence }}
             - name: ejbca-h2-persistence
               mountPath: /mnt/persistent/
+            {{- end }}
+            {{- if .Values.httpd.enabled }}
+            - name: httpd-config
+              configMap:
+                name: {{ include "ejbca.fullname" . }}-httpd-config
+            - name: httpd-cert
+              emptyDir: {}
+            {{- if .Values.httpd.mountInternalHttpdCert }}
+            - name: httpd-cert-provided
+              secret:
+                secretName: {{ .Values.nginx.secretInternalNginxCert }}
+            {{- end }}
             {{- end }}
             {{- if .Values.ejbca.importExternalCas }}
             - name: ejbca-config-external-cas

@@ -1,0 +1,190 @@
+# Configuration for Apache HTTPD meant for cluster internal/external communication
+{{- if .Values.httpd.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ejbca.fullname" . }}-httpd-config
+data:
+  {{- if .Values.httpd.externalConfiguration }}
+  httpd.conf: {{- tpl (.Values.httpd.externalConfiguration | toYaml | indent 1) . }}
+  {{- else }}
+  httpd.conf: |
+    LoadModule mpm_event_module modules/mod_mpm_event.so
+    LoadModule headers_module modules/mod_headers.so
+    LoadModule authz_core_module modules/mod_authz_core.so
+    LoadModule access_compat_module modules/mod_access_compat.so
+    LoadModule log_config_module modules/mod_log_config.so
+    #LoadModule mime_module modules/mod_mime.so
+    LoadModule proxy_module modules/mod_proxy.so
+    LoadModule proxy_http_module modules/mod_proxy_http.so
+    LoadModule proxy_ajp_module modules/mod_proxy_ajp.so
+    LoadModule unixd_module modules/mod_unixd.so
+    LoadModule filter_module modules/mod_filter.so
+    LoadModule substitute_module modules/mod_substitute.so
+    LoadModule rewrite_module modules/mod_rewrite.so
+    LoadModule socache_shmcb_module modules/mod_socache_shmcb.so
+    LoadModule ssl_module modules/mod_ssl.so
+    MaxKeepAliveRequests 1000
+    KeepAlive On
+    KeepAliveTimeout 180
+    <IfModule unixd_module>
+        User daemon
+        Group daemon
+    </IfModule>
+    ErrorLog /proc/self/fd/2
+    LogLevel info
+    <IfModule log_config_module>
+        LogFormat "%h %A:%p %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
+        LogFormat "%h %A:%p %l %u %t \"%r\" %>s %b" common
+        CustomLog /proc/self/fd/1 common
+    </IfModule>
+    ServerRoot "/usr/local/apache2"
+    Listen 443
+    Listen 80
+    <Directory />
+        AllowOverride none
+        Require all denied
+    </Directory>
+    <VirtualHost *:443>
+        ServerName {{ .Values.httpd.host }}
+        KeepAlive on
+        TraceEnable off
+        DocumentRoot /var/www/html/
+        # Disallow any HTTP method that is not HEAD, GET or POST
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} !^(HEAD|GET|POST|PUT|DELETE)$ [NC]
+        RewriteRule .* - [F,L]
+        SSLEngine on
+        SSLCipherSuite HIGH:!ADH:!aDSS:!aDH
+        SSLProtocol all -SSLv2 -SSLv3 -TLSv1 +TLSv1.2 +TLSv1.3
+        # SSLProtocol -all +TLSv1.2
+        SSLOptions +ExportCertData +StdEnvVars
+        SSLCertificateFile /etc/httpd/ssl/{{ .Values.httpd.host }}.pem
+        SSLCertificateKeyFile /etc/httpd/ssl/{{ .Values.httpd.host }}-Key.pem
+        SSLVerifyClient optional
+        SSLVerifyDepth 3
+        SSLCACertificateFile /etc/httpd/ssl/{{ .Values.httpd.host }}-CA.pem
+        <Location /ejbca/ejbcaws>
+            SSLVerifyClient require
+        </Location>
+        <Location /ejbca/adminweb>
+            SSLVerifyClient optional
+        </Location>
+        <Location /ejbca/ejbca-rest-api>
+            SSLVerifyClient optional
+        </Location>
+        # Allow encoded slashes for OCSP GET
+        AllowEncodedSlashes On
+        ProxyPass /        ajp://localhost:8009/ keepalive=On ping=500ms retry=1 timeout=300
+    </VirtualHost>
+    <VirtualHost *:80>
+        ServerName {{ .Values.httpd.host }}
+        DocumentRoot /var/www/html/
+        # Disallow any HTTP method that is not HEAD, GET or POST
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} !^(HEAD|GET|POST)$ [NC]
+        RewriteRule .* - [F,L]
+        # Redirect legacy EJBCA enrollment to HTTPS
+        RewriteCond %{HTTPS} !=on
+        RewriteRule ^/?ejbca/enrol/(.*) https://%{SERVER_NAME}/ejbca/enrol/$1 [R,L]
+        # Allow encoded slashes for OCSP GET
+        AllowEncodedSlashes On
+        ProxyPass /ocsp         ajp://localhost:8009/ejbca/publicweb/status/ocsp
+        #Vanity CRL URLs
+        #RewriteMap vanityCrlLC int:tolower
+        #RewriteMap vanityCrls "txt:/etc/httpd/rewriteMaps/crlmapping.txt"
+        #RewriteRule "^.*/CRL/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?iHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+        #RewriteRule "^.*/CRLs/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?iHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+        #RewriteRule "^.*/crl/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?iHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+        #RewriteRule "^.*/crls/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?iHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+        #Header unset Content-disposition env=vanityCr
+        #RewriteMap vanityAiaLC int:tolower
+        #RewriteMap vanityAias "txt:/etc/httpd/rewriteMaps/aiamapping.txt"
+        #RewriteRule "^.*/aia/(.+)\.crt" "/ejbca/publicweb/certificates/search.cgi?sHash=${vanityAias:${vanityAiaLC:$1}|$1}" [PT,QSA,E=vanityAia:$1]
+        #RewriteRule "^.*/AIA/(.+)\.crt" "/ejbca/publicweb/certificates/search.cgi?sHash=${vanityAias:${vanityAiaLC:$1}|$1}" [PT,QSA,E=vanityAia:$1]
+        #Header unset Content-disposition env=vanityAia
+        ProxyPass /      ajp://localhost:8009/ keepalive=On ping=500ms retry=1 timeout=300 nocanon
+        # Redirect /, /ejbca, /signserver and non-proxied URLs to /ejbca/
+        #AIA directory access for Base64 PEM CA Cert retrieval
+        RewriteCond %{THE_REQUEST} !(/ejbca/.*|/CRLs/.*|/crls/.*|/crl/.*|/AIA/.*|/aia/.*|/ocsp.*) [OR]
+        RewriteCond %{THE_REQUEST} (/ejbca/ejbcaws.*)
+        RewriteRule (.*) http://%{HTTP_HOST}/ejbca/
+        RewriteCond %{THE_REQUEST} (/ejbca/ejbcaws.*|/ejbca/adminweb.*)
+        RewriteRule (.*) https://%{HTTP_HOST}/ejbca/
+    </VirtualHost>
+  {{- end }}
+  {{- if .Values.httpd.additionalHosts }}
+  {{- range $i := .Values.httpd.additionalHosts }}
+
+  {{- if $.Values.httpd.service.httpPort }}
+    <VirtualHost *:80>
+        ServerName {{ $i }}
+        DocumentRoot /var/www/html/
+        # Disallow any HTTP method that is not HEAD, GET or POST
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} !^(HEAD|GET|POST)$ [NC]
+        RewriteRule .* - [F,L]
+        # Redirect legacy EJBCA enrollment to HTTPS
+        RewriteCond %{HTTPS} !=on
+        RewriteRule ^/?ejbca/enrol/(.*) https://%{SERVER_NAME}/ejbca/enrol/$1 [R,L]
+        # Allow encoded slashes for OCSP GET
+        AllowEncodedSlashes On
+        ProxyPass /ocsp         ajp://localhost:8009/ejbca/publicweb/status/ocsp
+        #Vanity CRL URLs
+        #RewriteMap vanityCrlLC int:tolower
+        #RewriteMap vanityCrls "txt:/etc/httpd/rewriteMaps/crlmapping.txt"
+        #RewriteRule "^.*/CRL/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?iHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+        #RewriteRule "^.*/CRLs/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?iHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+        #RewriteRule "^.*/crl/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?iHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+        #RewriteRule "^.*/crls/(.+)\.crl" "/ejbca/publicweb/crls/search.cgi?iHash=${vanityCrls:${vanityCrlLC:$1}|$1}" [PT,QSA,E=vanityCrl:$1]
+        #Header unset Content-disposition env=vanityCr
+        #RewriteMap vanityAiaLC int:tolower
+        #RewriteMap vanityAias "txt:/etc/httpd/rewriteMaps/aiamapping.txt"
+        #RewriteRule "^.*/aia/(.+)\.crt" "/ejbca/publicweb/certificates/search.cgi?sHash=${vanityAias:${vanityAiaLC:$1}|$1}" [PT,QSA,E=vanityAia:$1]
+        #RewriteRule "^.*/AIA/(.+)\.crt" "/ejbca/publicweb/certificates/search.cgi?sHash=${vanityAias:${vanityAiaLC:$1}|$1}" [PT,QSA,E=vanityAia:$1]
+        #Header unset Content-disposition env=vanityAia
+        ProxyPass /      ajp://localhost:8009/ keepalive=On ping=500ms retry=1 timeout=300 nocanon
+        # Redirect /, /ejbca, /signserver and non-proxied URLs to /ejbca/
+        #AIA directory access for Base64 PEM CA Cert retrieval
+        RewriteCond %{THE_REQUEST} !(/ejbca/.*|/CRLs/.*|/crls/.*|/crl/.*|/AIA/.*|/aia/.*|/ocsp.*) [OR]
+        RewriteCond %{THE_REQUEST} (/ejbca/ejbcaws.*)
+        RewriteRule (.*) http://%{HTTP_HOST}/ejbca/
+        RewriteCond %{THE_REQUEST} (/ejbca/ejbcaws.*|/ejbca/adminweb.*)
+        RewriteRule (.*) https://%{HTTP_HOST}/ejbca/
+    </VirtualHost>
+  {{- end }}
+    <VirtualHost *:443>
+        ServerName {{ $i }}
+        KeepAlive on
+        TraceEnable off
+        DocumentRoot /var/www/html/
+        # Disallow any HTTP method that is not HEAD, GET or POST
+        RewriteEngine On
+        RewriteCond %{REQUEST_METHOD} !^(HEAD|GET|POST|PUT|DELETE)$ [NC]
+        RewriteRule .* - [F,L]
+        SSLEngine on
+        SSLCipherSuite HIGH:!ADH:!aDSS:!aDH
+        SSLProtocol all -SSLv2 -SSLv3 -TLSv1 +TLSv1.2 +TLSv1.3
+        # SSLProtocol -all +TLSv1.2
+        SSLOptions +ExportCertData +StdEnvVars
+        SSLCertificateFile /etc/httpd/ssl/{{ $i }}.pem
+        SSLCertificateKeyFile /etc/httpd/ssl/{{ $i }}-Key.pem
+        SSLVerifyClient optional
+        SSLVerifyDepth 3
+        SSLCACertificateFile /etc/httpd/ssl/{{ $i }}-CA.pem
+        <Location /ejbca/ejbcaws>
+            SSLVerifyClient require
+        </Location>
+        <Location /ejbca/adminweb>
+            SSLVerifyClient optional
+        </Location>
+        <Location /ejbca/ejbca-rest-api>
+            SSLVerifyClient optional
+        </Location>
+        # Allow encoded slashes for OCSP GET
+        AllowEncodedSlashes On
+        ProxyPass /        ajp://localhost:8009/ keepalive=On ping=500ms retry=1 timeout=300
+    </VirtualHost>
+  {{end}}
+  {{end}}  
+{{- end }}
