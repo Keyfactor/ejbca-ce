@@ -32,7 +32,7 @@ data:
         Group daemon
     </IfModule>
     ErrorLog /proc/self/fd/2
-    LogLevel info
+    LogLevel trace8
     <IfModule log_config_module>
         LogFormat "%h %A:%p %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
         LogFormat "%h %A:%p %l %u %t \"%r\" %>s %b" common
@@ -59,11 +59,13 @@ data:
         SSLProtocol all -SSLv2 -SSLv3 -TLSv1 +TLSv1.2 +TLSv1.3
         # SSLProtocol -all +TLSv1.2
         SSLOptions +ExportCertData +StdEnvVars
-        SSLCertificateFile /etc/httpd/ssl/{{ .Values.httpd.host }}.pem
-        SSLCertificateKeyFile /etc/httpd/ssl/{{ .Values.httpd.host }}-Key.pem
+        SSLCertificateFile /etc/httpd/ssl/pem/{{ .Values.httpd.host }}.pem
+        SSLCertificateKeyFile /etc/httpd/ssl/pem/{{ .Values.httpd.host }}-Key.pem
         SSLVerifyClient optional
         SSLVerifyDepth 3
-        SSLCACertificateFile /etc/httpd/ssl/{{ .Values.httpd.host }}-CA.pem
+        {{- if not .Values.httpd.initializeWithSelfSignedTls }}
+        SSLCACertificateFile /etc/httpd/ssl/pem/{{ .Values.httpd.host }}-CA.pem
+        {{- end}}
         <Location /ejbca/ejbcaws>
             SSLVerifyClient require
         </Location>

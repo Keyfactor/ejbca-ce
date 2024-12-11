@@ -40,7 +40,7 @@ spec:
   selector:
     {{- include "ejbca.selectorLabels" . | nindent 4 }}
 {{- end }}
-{{- if .Values.services.proxyAJP.enabled }}
+{{- if or .Values.services.proxyAJP.enabled .Values.httpd.enabled }}
 spec:
   type: {{ .Values.services.proxyAJP.type }}
   ports:
@@ -53,8 +53,7 @@ spec:
       name: ajp
   selector:
     {{- include "ejbca.selectorLabels" . | nindent 4 }}
-{{- end }}
-{{- if or .Values.services.proxyHttp.enabled .Values.ingress.enabled }}
+{{- else if or .Values.services.proxyHttp.enabled .Values.ingress.enabled }}
 spec:
   type: {{ .Values.services.proxyHttp.type }}
   ports:

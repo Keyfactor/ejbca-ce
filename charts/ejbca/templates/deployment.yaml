@@ -42,11 +42,11 @@ spec:
         {{- if and .Values.nginx.enabled (not .Values.nginx.mountInternalNginxCert) (not .Values.nginx.initializeWithSelfSignedTls) }}
         {{- $proxyType = "nginx" }}
         {{- $proxyMntPath := "" }}
-        {{- $proxyHost := ".Values.nginx.host" }}
+        {{- $proxyHost = .Values.nginx.host -}}
         {{- else if and .Values.httpd.enabled (not .Values.httpd.mountInternalHttpdCert) (not .Values.httpd.initializeWithSelfSignedTls) }}
         {{- $proxyType = "httpd" }}
         {{- $proxyMntPath := "" }}
-        {{- $proxyHost := ".Values.httpd.host" }}
+        {{- $proxyHost = .Values.httpd.host -}}
         {{- end}}
         {{- if $proxyType }}
         - name: {{ .Chart.Name }}-init
@@ -70,10 +70,10 @@ spec:
               /opt/keyfactor/bin/ejbca.sh ra addendentity --username '{{ $proxyHost }}' --dn 'CN={{ $proxyHost }}' --caname 'ManagementCA' --type 1 --token PEM --altname 'dNSName={{ $proxyHost }}' --certprofile SERVER --password NOTUSED
               /opt/keyfactor/bin/ejbca.sh ra setendentitystatus --username '{{ $proxyHost }}' -S 10
               /opt/keyfactor/bin/ejbca.sh ra setclearpwd '{{ $proxyHost }}' NOTUSED
-              /opt/keyfactor/bin/ejbca.sh batch '{{ $proxyHost }}' -dir /tmp/$proxyType/ssl/
+              /opt/keyfactor/bin/ejbca.sh batch '{{ $proxyHost }}' -dir /tmp/{{ $proxyType }}/ssl/
           volumeMounts:
-          - name: $proxyType-cert
-            mountPath: /tmp/$proxyType/ssl
+          - name: {{ $proxyType }}-cert
+            mountPath: /tmp/{{ $proxyType }}/ssl
           {{- if .Values.ejbca.useH2Persistence }}
           - name: ejbca-h2-persistence
             mountPath: /mnt/persistent/
@@ -133,8 +133,11 @@ spec:
             - "/bin/bash"
             - "-c"
             - |
-              mkdir -p /etc/httpd/ssl/
-              openssl req -x509 -newkey rsa:4096 -keyout /etc/httpd/ssl/{{ .Values.httpd.host }}-Key.pem -out /etc/httpd/ssl/pem/{{ .Values.httpd.host }}.pem -sha256 -days 7 -nodes -subj '/CN={{ .Values.httpd.host }}-selfsigned'
+              mkdir -p /etc/httpd/ssl/pem/
+              openssl req -x509 -newkey rsa:4096 -keyout /etc/httpd/ssl/pem/{{ .Values.httpd.host }}-Key.pem -out /etc/httpd/ssl/pem/{{ .Values.httpd.host }}.pem -sha256 -days 7 -nodes -subj '/CN={{ .Values.httpd.host }}-selfsigned'
+              ls -l /etc/httpd/ssl/
+              cat /usr/local/apache2/conf/httpd.conf
+              httpd-foreground
           {{- end }}
           ports:
           {{- if .Values.httpd.service.httpPort }}
@@ -172,8 +175,7 @@ spec:
             {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
             - name: PROXY_AJP_BIND
               value: {{ .Values.services.proxyAJP.bindIP }}
-            {{- end }}
-            {{- if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) }}
+            {{- else if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
             - name: PROXY_HTTP_BIND
               value: {{ .Values.services.proxyHttp.bindIP }}
             {{- end }}
@@ -215,8 +217,7 @@ spec:
             - name: ajp
               containerPort: 8009
               protocol: TCP
-            {{- end }}
-            {{- if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
+            {{- else if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
             {{- if or (.Values.services.proxyHttp.httpPort) (.Values.nginx.httpPort) }}
             - name: proxy-http
               containerPort: 8081
@@ -233,8 +234,7 @@ spec:
               {{- end }}
               {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
               port: 8009
-              {{- end }}
-              {{- if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
+              {{- else if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
               port: 8082
               {{- end }}
             initialDelaySeconds: 15
@@ -247,8 +247,7 @@ spec:
               {{- end }}
               {{- if or (.Values.services.proxyAJP.enabled) (.Values.httpd.enabled) }}
               port: 8009
-              {{- end }}
-              {{- if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
+              {{- else if or (.Values.services.proxyHttp.enabled) (.Values.nginx.enabled) (.Values.ingress.enabled) }}
               port: 8082
               {{- end }}
           resources:
@@ -257,18 +256,6 @@ spec:
             {{- if .Values.ejbca.useH2Persistence }}
             - name: ejbca-h2-persistence
               mountPath: /mnt/persistent/
-            {{- end }}
-            {{- if .Values.httpd.enabled }}
-            - name: httpd-config
-              configMap:
-                name: {{ include "ejbca.fullname" . }}-httpd-config
-            - name: httpd-cert
-              emptyDir: {}
-            {{- if .Values.httpd.mountInternalHttpdCert }}
-            - name: httpd-cert-provided
-              secret:
-                secretName: {{ .Values.nginx.secretInternalNginxCert }}
-            {{- end }}
             {{- end }}
             {{- if .Values.ejbca.importExternalCas }}
             - name: ejbca-config-external-cas
@@ -305,6 +292,18 @@ spec:
         - name: ejbca-h2-persistence
           persistentVolumeClaim:
             claimName: {{ .Values.ejbca.existingH2PersistenceClaim }}
+        {{- end }}
+        {{- if .Values.httpd.enabled }}
+        - name: httpd-config
+          configMap:
+            name: {{ include "ejbca.fullname" . }}-httpd-config
+        - name: httpd-cert
+          emptyDir: {}
+        {{- if .Values.httpd.mountInternalHttpdCert }}
+        - name: httpd-cert-provided
+          secret:
+            secretName: {{ .Values.httpd.secretInternalHttpdCert }}
+        {{- end }}
         {{- end }}
         {{- if .Values.nginx.enabled }}
         - name: nginx-config
