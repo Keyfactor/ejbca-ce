@@ -48,7 +48,7 @@ public abstract class InternalKeyBindingBase extends UpgradeableDataHashMap impl
     
     public static final Set<String> ACCEPTED_SIGNATURE_ALGORITHMS = new TreeSet<>(
             Arrays.asList("SHA256WithRSA", "SHA256withRSAandMGF1", "SHA384WithRSA", "SHA512WithRSA", "SHA224withECDSA", "SHA256withECDSA",
-                    "SHA384withECDSA", "SHA512withECDSA", "Ed25519", "Ed448", "ML-DSA-44", "ML-DSA-65;ML-DSA-87"));
+                    "SHA384withECDSA", "SHA512withECDSA", "Ed25519", "Ed448", "ML-DSA-44", "ML-DSA-65", "ML-DSA-87"));
     
     private int internalKeyBindingId;
     private String name;
