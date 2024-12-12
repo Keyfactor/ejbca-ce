@@ -102,13 +102,9 @@ public abstract class DatabaseIndexUtil {
 
     /** @return true if there exists an index on the specified table exactly matches the requested columns and optionally is unique. null if the check was inconclusive. */
     public static Boolean isIndexPresentOverColumns(final DataSource dataSource, final String tableName, final List<String> columnNames, final boolean requireUnique) {
-        log.info("isIndexPresentOverColumns: tableName = "+tableName);
-        log.info("isIndexPresentOverColumns: columnNames = "+String.join(", ", columnNames));
-        log.info("isIndexPresentOverColumns: requireUnique = "+requireUnique);
         if (dataSource!=null) {
             try {
                 final List<DatabaseIndex> databaseIndexes = getDatabaseIndexFromTable(dataSource, tableName, requireUnique);
-                log.info("isIndexPresentOverColumns: databaseIndexes.size() = "+databaseIndexes.size());
                 if (databaseIndexes.isEmpty()) {
                     if (log.isDebugEnabled()) {
                         log.debug("Failed to read any index meta data from the database for table '" + tableName + "'. At least a primary key index was expected.");
@@ -116,11 +112,9 @@ public abstract class DatabaseIndexUtil {
                 } else {
                     for (final DatabaseIndex databaseIndex : databaseIndexes) {
                         if (databaseIndex.isExactlyOverColumns(columnNames)) {
-                            log.info("isIndexPresentOverColumns: true");
                             return Boolean.TRUE;
                         }
                     }
-                    log.info("isIndexPresentOverColumns: false");
                     return Boolean.FALSE;
                 }
             } catch (SQLException e) {
@@ -129,7 +123,6 @@ public abstract class DatabaseIndexUtil {
                 }
             }
         }
-        log.info("isIndexPresentOverColumns: null");
         return null;
     }
 

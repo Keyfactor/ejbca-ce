@@ -47,7 +47,6 @@ public class UnidfnrProxySessionBean implements UnidfnrProxySessionRemote {
 
     @Override
     public void storeUnidFnrData(final String unid, final String fnr) {
-        //verifyUnidfnrSession();
         unidfnrSession.storeUnidFnrData(unid, fnr);
     }
     

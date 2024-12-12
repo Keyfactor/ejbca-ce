@@ -150,7 +150,7 @@ public abstract class SystemTestsConfiguration {
     public static char[] getPkcs11SlotPin(String defaultValue) {
         String token = getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue);
         if (token == null || StringUtils.trim(token) == null) {
-            throw new IllegalStateException("PKCS11(Ng) systemtest settings are not properly configured. Property '"+PKCS11_SLOT_PIN+"' is missing");
+            throw new IllegalStateException("PKCS11(NG) systemtest settings are not properly configured. Property '"+PKCS11_SLOT_PIN+"' is missing");
         }
         return StringUtils.trim(token).toCharArray();
     }

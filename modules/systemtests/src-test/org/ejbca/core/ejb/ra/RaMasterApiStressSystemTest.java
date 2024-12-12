@@ -16,11 +16,7 @@ package org.ejbca.core.ejb.ra;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -59,6 +55,7 @@ import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.Base64;
@@ -72,6 +69,7 @@ import com.keyfactor.util.keys.KeyTools;
  *
  * @version $Id$
  */
+@Ignore("Takes a very long time to complete")
 public class RaMasterApiStressSystemTest extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(RaMasterApiStressSystemTest.class);

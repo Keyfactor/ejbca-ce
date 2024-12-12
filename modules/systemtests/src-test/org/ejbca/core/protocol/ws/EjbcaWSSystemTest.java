@@ -301,9 +301,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     private GlobalConfiguration originalGlobalConfiguration = null;
 
-    //@ClassRule
-    //public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
-
     @BeforeClass
     public static void beforeClass() throws Exception {
         adminBeforeClass();

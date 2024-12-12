@@ -88,6 +88,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -120,6 +121,7 @@ import com.keyfactor.util.keys.KeyTools;
     rowVersion INT(11) NOT NULL,
     PRIMARY KEY (unid);
  */
+@Ignore("Requires special configuration to work")
 public class ProtocolLookupServerHttpSystemTest extends CaTestCase {
     private static Logger log = Logger.getLogger(ProtocolLookupServerHttpSystemTest.class);
 

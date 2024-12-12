@@ -4,6 +4,7 @@ plugins {
 
 dependencies {
     implementation(libs.cert.cvc)
+    implementation(libs.jaxb.core)
     implementation(libs.jldap)
     testImplementation(project(":modules:cesecore-common"))
     testImplementation(project(":modules:cesecore-cvcca"))
@@ -28,22 +29,6 @@ dependencies {
     testImplementation(project(":modules:systemtests:ejb"))
     testImplementation(project(":modules:systemtests:interface"))
     testImplementation(project(":modules:va:extensions"))
-    testImplementation(libs.angus.activation)
-    testImplementation(libs.bundles.bouncy.castle)
-    testImplementation(libs.bundles.resteasy.jaxrs)
-    testImplementation(libs.bundles.xstream)
-    testImplementation(libs.cert.cvc)
-    testImplementation(libs.bundles.cryptotokens)
-    testImplementation(libs.ejbca.ws.client.gen)
-    testImplementation(libs.hibernate.core)
-    testImplementation(libs.jakarta.xml.bind.api)
-    testImplementation(libs.jakartaee.api)
-    testImplementation(libs.jakarta.xml.ws.api)
-    testImplementation(libs.json.simple)
-    testImplementation(libs.keyfactor.commons.cli)
-    testImplementation(libs.nimbus.jose.jwt)
-    testImplementation(libs.x509.common.util)
-    testImplementation(libs.caffeine)
 
     if (project.extra["edition"] == "ee") {
         testImplementation(project(":modules:acme:common"))
@@ -52,17 +37,31 @@ dependencies {
         testImplementation(project(":modules:peerconnector:publ"))
     }
 
-    implementation(libs.jaxb.core)
-    testRuntimeOnly(libs.jaxb.impl)
+    testImplementation(libs.angus.activation)
+    testImplementation(libs.bundles.bouncy.castle)
+    testImplementation(libs.bundles.cryptotokens)
+    testImplementation(libs.bundles.resteasy.jaxrs)
+    testImplementation(libs.bundles.xstream)
+    testImplementation(libs.caffeine)
+    testImplementation(libs.cert.cvc)
+    testImplementation(libs.ejbca.ws.client.gen)
+    testImplementation(libs.hibernate.core)
+    testImplementation(libs.jakarta.xml.bind.api)
+    testImplementation(libs.jakarta.xml.ws.api)
+    testImplementation(libs.jakartaee.api)
+    testImplementation(libs.json.simple)
+    testImplementation(libs.keyfactor.commons.cli)
+    testImplementation(libs.nimbus.jose.jwt)
+    testImplementation(libs.x509.common.util)
 
-    // System test specific
-    testRuntimeOnly(libs.bundles.resteasy.jaxrs) // TODO: ECA-12372 - check if the dependency is really needed
+    testRuntimeOnly(libs.bundles.resteasy.jaxrs)
+    testRuntimeOnly(libs.ctlog)
+    testRuntimeOnly(libs.gmbal.api)
     testRuntimeOnly(libs.jakarta.mail)
-    testRuntimeOnly(libs.gmbal.api) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
-    testRuntimeOnly(libs.jaxws.rt) // TODO: check if the lib is actually required here. In Ant it's part of the soapclient bundle.
+    testRuntimeOnly(libs.jaxb.impl)
+    testRuntimeOnly(libs.jaxws.rt)
     testRuntimeOnly(libs.stax.ex)
     testRuntimeOnly(libs.streambuffer)
-    testRuntimeOnly(libs.ctlog)
 }
 
 sourceSets {
@@ -70,31 +69,6 @@ sourceSets {
         resources {
             srcDirs("resources")
         }
-    }
-}
-
-tasks.systemTest {
-    filter {
-        // Tests that require TestCAs to setup CAs
-        excludeTestsMatching("SignSessionSystemTest")
-        // Tests that take a very long time to complete
-        excludeTestsMatching("SignLotsOfCertsSystemTest")
-        excludeTestsMatching("LoggingStressSystemTest")
-        excludeTestsMatching("AddLotsOfCertsPerUserSystemTest")
-        excludeTestsMatching("AddLotsOfUsersSystemTest")
-        excludeTestsMatching("RaMasterApiStressSystemTest")
-        // Tests that require special configuration to work
-        excludeTestsMatching("AutoEnrollServletSystemTest")
-        excludeTestsMatching("CrmfRAPbeMultipleKeyIdRequestSystemTest")
-        excludeTestsMatching("ProtocolLookupServerHttpSystemTest")
-        excludeTestsMatching("ProtocolOcspHttpPerfSystemTest")
-        // Tests that require unique index in the database to work
-        excludeTestsMatching("CustomCertSerialnumberSystemTest")
-        excludeTestsMatching("CrmfRARequestCustomSerialNoSystemTest")
-        // Exclude profiling test, since we want to run it later.
-        // Note: ProfilingSystemTest test does not produce any output when executed in Jenkins using Ant,
-        // so setup to execute it last has been skipped it in Gradle for now.
-        excludeTestsMatching("ProfilingSystemTest")
     }
 }
 

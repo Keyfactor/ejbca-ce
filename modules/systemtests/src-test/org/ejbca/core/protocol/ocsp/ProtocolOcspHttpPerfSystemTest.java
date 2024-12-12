@@ -77,7 +77,7 @@ import com.keyfactor.util.SHA1DigestCalculator;
  * build package. 
  * 
  **/
-@Ignore
+@Ignore("Requires special configuration to work")
 public class ProtocolOcspHttpPerfSystemTest {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpPerfSystemTest.class);
 

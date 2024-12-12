@@ -96,17 +96,8 @@ public class VerifyPKIMessage {
         final String[] modules = authModules.split(";");
         final String[] params = authparameters.split(";");
         if (modules.length != params.length) {
-            StringBuilder sb = new StringBuilder("The number of authentication modules does not match the number of authentication parameters.\n");
-            sb.append("Authentication modules:\n");
-            for (int i = 0; i < modules.length; i++) {
-                sb.append(String.format("   %d: %s\n", i, modules[i]));
-            }
-            sb.append("Authentication parameters:\n");
-            for (int i = 0; i < params.length; i++) {
-                sb.append(String.format("   %d: %s\n", i, params[i]));
-            }
-            sb.append("\n");
-            log.error(sb.toString());
+            log.error("The number of authentication modules does not match the number of authentication parameters. " +
+                    modules.length + " modules - " + params.length + " parameters");
             this.errorMessage = "CMP module configuration error.";
             return null;
         }
