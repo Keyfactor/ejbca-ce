@@ -15,6 +15,7 @@ package org.ejbca.core.model;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
@@ -47,7 +48,9 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.pinning.TrustEntry;
 import org.cesecore.keybind.InternalKeyBindingInfo;
@@ -59,6 +62,7 @@ import org.cesecore.keybind.impl.ClientX509TrustManager;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.util.ExternalScriptsAllowlist;
 import org.cesecore.util.LogRedactionUtils;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.ca.publisher.CustomPublisherProperty;
 import org.ejbca.core.model.ca.publisher.CustomPublisherUiBase;
 import org.ejbca.core.model.ca.publisher.ICustomPublisher;
@@ -97,7 +101,13 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
     public static final String JSON_STATUS = "status";
     public static final String JSON_REVOCATION_DATE = "revocationDate";
     public static final String JSON_CERTIFICATE = "pem";
-    
+    public static final String JSON_REVOCATION_DATE = "revocationDate";
+    public static final String JSON_USERNAME = "username";
+    public static final String JSON_CERTIFICATE_PROFILE_ID = "certificateProfileId";
+    public static final String JSON_CERTIFICATE_PROFILE_NAME = "certificateProfileName";
+    public static final String JSON_END_ENTITY_PROFILE_ID = "endEntityProfileId";
+    public static final String JSON_END_ENTITY_PROFILE_NAME = "endEntityProfileName";
+	
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private CertificateStoreSessionLocal certificateStoreSession;
@@ -214,7 +224,19 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
             throw new PublisherException(msg);
         }
 
-        final String jsonObject = getJSONString(incert, status, revocationReason, revocationDate);
+        CertificateProfileSessionLocal certificateProfileSession = new EjbLocalHelper().getCertificateProfileSession();
+        EndEntityProfileSessionLocal endEntityProfileSession = new EjbLocalHelper().getEndEntityProfileSession();
+        CertificateStoreSessionLocal certificateStoreSession = new EjbLocalHelper().getCertificateStoreSession();
+
+        BigInteger certSerial = CertTools.getSerialNumber(incert);
+        String issuerDn = CertTools.getIssuerDN(incert);
+        CertificateDataWrapper certData = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, certSerial);
+        Integer endEntityProfileId = certData.getCertificateData().getEndEntityProfileId();
+
+        String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
+        String certProfileName = certificateProfileSession.getCertificateProfileName(certificateProfileId);
+
+        final String jsonObject = getJSONString(incert, status, revocationReason, revocationDate, username, certificateProfileId, certProfileName, endEntityProfileId, endEntityProfileName);
 
         // Make the HTTPS connection and send the request
         HttpsURLConnection con = null;
@@ -460,7 +482,8 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
      * @throws PublisherException
      */
     @SuppressWarnings("unchecked") // JsonSimple is not parameterized
-    private String getJSONString(Certificate incert, int status, int revocationReason, long revocationDate) throws PublisherException {
+    private String getJSONString(Certificate incert, int status, int revocationReason, long revocationDate, String username,
+                                 int certificateProfileId, String certProfileName, int endEntityProfileId, String endEntityProfileName) throws PublisherException {
 
         JSONObject json = new JSONObject();
         String stat = "";
@@ -476,7 +499,12 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
             stat = "active";
         }
         json.put(JSON_STATUS, stat);
-
+        json.put(JSON_USERNAME, username);
+        json.put(JSON_CERTIFICATE_PROFILE_ID, certificateProfileId);
+        json.put(JSON_CERTIFICATE_PROFILE_NAME, certProfileName);
+        json.put(JSON_END_ENTITY_PROFILE_ID, endEntityProfileId);
+        json.put(JSON_END_ENTITY_PROFILE_NAME, endEntityProfileName);
+        
         //Add the certificate to the JSON object
         ArrayList<Certificate> certs =  new ArrayList<Certificate>();
         certs.add(incert);
