@@ -76,7 +76,6 @@ sourceSets {
 tasks.systemTest {
     filter {
         // Tests that require TestCAs to setup CAs
-        excludeTestsMatching("CAsSystemTest")
         excludeTestsMatching("SignSessionSystemTest")
         excludeTestsMatching("RemoveCASystemTest")
         // Tests that take a very long time to complete
