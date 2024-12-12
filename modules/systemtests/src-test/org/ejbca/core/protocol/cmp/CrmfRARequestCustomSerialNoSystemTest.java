@@ -43,6 +43,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -58,6 +59,7 @@ import static org.junit.Assert.assertTrue;
  * System tests for handling CRMF messages requests with custom certificate 
  * serial number.
  */
+@Ignore("Requires a unique index in the database to work")
 public class CrmfRARequestCustomSerialNoSystemTest extends CmpTestCase {
 
     final private static Logger log = Logger.getLogger(CrmfRARequestCustomSerialNoSystemTest.class);

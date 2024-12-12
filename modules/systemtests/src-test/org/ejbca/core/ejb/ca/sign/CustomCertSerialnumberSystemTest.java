@@ -92,7 +92,7 @@ import com.keyfactor.util.keys.KeyTools;
  * To make this test succeed, it is needed to open an SQL-prompt and run the following script:
  * ALTER TABLE CertificateData ADD CONSTRAINT unique_serialNumber_issuerDN UNIQUE (serialNumber, issuerDN);
  */
-@Ignore
+@Ignore("Requires a unique index in the database to work")
 public class CustomCertSerialnumberSystemTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberSystemTest.class);

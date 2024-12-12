@@ -48,6 +48,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -58,6 +59,7 @@ import com.keyfactor.util.keys.KeyTools;
 /**
  * Add a lot of users and a lot of certificates for each user
  */
+@Ignore("Takes a very long time to complete")
 public class AddLotsOfCertsPerUserSystemTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AddLotsOfCertsPerUserSystemTest.class);
 
@@ -117,8 +119,6 @@ public class AddLotsOfCertsPerUserSystemTest extends CaTestCase {
             EndEntityProfile endEntityProfile = new EndEntityProfile(true);
             endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + certificateProfileId);
             endEntityProfile.setUse(EndEntityProfile.ENDTIME, 0, true);
-            // endEntityProfile.setValue(EndEntityProfile.ENDTIME, 0,
-            // "0:0:10");
             endEntityProfileSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
             return endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
         }
