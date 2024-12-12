@@ -1023,6 +1023,10 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
         }
         
+        if (caSession.getAuthorizedCaIds(getAdmin()) == null || caSession.getAuthorizedCaIds(getAdmin()).isEmpty()) {
+            throw new EndEntityException(getEjbcaWebBean().getText("NOCAAVAILABLEFORTHEADMIN"));
+        }
+        
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
         this.maxLoginAttemptsStatus = selectedEeProfile.getValue(EndEntityProfile.MAXFAILEDLOGINS, 0).equals("-1") ? "unlimited" : "specified";
         
