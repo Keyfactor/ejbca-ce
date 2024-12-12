@@ -101,7 +101,13 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
     public static final String JSON_STATUS = "status";
     public static final String JSON_REVOCATION_DATE = "revocationDate";
     public static final String JSON_CERTIFICATE = "pem";
-    
+    public static final String JSON_REVOCATION_DATE = "revocationDate";
+    public static final String JSON_USERNAME = "username";
+    public static final String JSON_CERTIFICATE_PROFILE_ID = "certificateProfileId";
+    public static final String JSON_CERTIFICATE_PROFILE_NAME = "certificateProfileName";
+    public static final String JSON_END_ENTITY_PROFILE_ID = "endEntityProfileId";
+    public static final String JSON_END_ENTITY_PROFILE_NAME = "endEntityProfileName";
+	
     private InternalKeyBindingMgmtSessionLocal internalKeyBindingMgmtSession;
     private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private CertificateStoreSessionLocal certificateStoreSession;
@@ -219,17 +225,17 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
         }
 
         CertificateProfileSessionLocal certificateProfileSession = new EjbLocalHelper().getCertificateProfileSession();
-	    EndEntityProfileSessionLocal endEntityProfileSession = new EjbLocalHelper().getEndEntityProfileSession();
-	    CertificateStoreSessionLocal certificateStoreSession = new EjbLocalHelper().getCertificateStoreSession();
+        EndEntityProfileSessionLocal endEntityProfileSession = new EjbLocalHelper().getEndEntityProfileSession();
+        CertificateStoreSessionLocal certificateStoreSession = new EjbLocalHelper().getCertificateStoreSession();
 
-	    BigInteger certSerial = CertTools.getSerialNumber(incert);
-	    String issuerDn = CertTools.getIssuerDN(incert);
-	    CertificateDataWrapper certData = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, certSerial);
-	    Integer endEntityProfileId = certData.getCertificateData().getEndEntityProfileId();
+        BigInteger certSerial = CertTools.getSerialNumber(incert);
+        String issuerDn = CertTools.getIssuerDN(incert);
+        CertificateDataWrapper certData = certificateStoreSession.getCertificateDataByIssuerAndSerno(issuerDn, certSerial);
+        Integer endEntityProfileId = certData.getCertificateData().getEndEntityProfileId();
 
-	    String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
+        String endEntityProfileName = endEntityProfileSession.getEndEntityProfileName(endEntityProfileId);
         String certProfileName = certificateProfileSession.getCertificateProfileName(certificateProfileId);
-        
+
         final String jsonObject = getJSONString(incert, status, revocationReason, revocationDate, username, certificateProfileId, certProfileName, endEntityProfileId, endEntityProfileName);
 
         // Make the HTTPS connection and send the request
@@ -493,11 +499,11 @@ public class CertSafePublisher extends CustomPublisherUiBase implements ICustomP
             stat = "active";
         }
         json.put(JSON_STATUS, stat);
-        json.put("username", username);
-	    json.put("certificateProfileId", certificateProfileId);
-	    json.put("certificateProfileName", certProfileName);
-	    json.put("endEntityProfileId", endEntityProfileId);
-	    json.put("endEntityProfileName", endEntityProfileName);
+        json.put(JSON_USERNAME, username);
+        json.put(JSON_CERTIFICATE_PROFILE_ID, certificateProfileId);
+        json.put(JSON_CERTIFICATE_PROFILE_NAME, certProfileName);
+        json.put(JSON_END_ENTITY_PROFILE_ID, endEntityProfileId);
+        json.put(JSON_END_ENTITY_PROFILE_NAME, endEntityProfileName);
         
         //Add the certificate to the JSON object
         ArrayList<Certificate> certs =  new ArrayList<Certificate>();
