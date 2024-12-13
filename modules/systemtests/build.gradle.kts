@@ -35,6 +35,7 @@ dependencies {
         testImplementation(project(":modules:ct"))
         testImplementation(project(":modules:ejbca-entity:cli"))
         testImplementation(project(":modules:peerconnector:publ"))
+        testImplementation(libs.p11ng)
     }
 
     testImplementation(libs.angus.activation)
