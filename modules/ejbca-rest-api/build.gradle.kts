@@ -56,7 +56,9 @@ dependencies {
     testRuntimeOnly(project(":modules:systemtests:ejb"))
     testRuntimeOnly(project(":modules:cesecore-common"))
     testRuntimeOnly(project(":modules:cesecore-x509ca"))
-    testRuntimeOnly(project(":modules:cesecore-cvcca"))
+    if (project.extra["edition"] == "ee") {
+        testRuntimeOnly(project(":modules:cesecore-cvcca"))
+    }
     testRuntimeOnly(project(":modules:ejbca-ws:common"))
     testRuntimeOnly(project(":modules:ejbca-ejb"))
     testRuntimeOnly(project(":modules:ejbca-entity"))
