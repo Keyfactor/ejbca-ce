@@ -1789,7 +1789,6 @@ public class CertificateRestResourceSystemTest extends RestResourceSystemTestBas
 
     @Test
     public void enrollPkcs10WithUnidFnr() throws Exception {
-
         final String username = "enrollPkcs10WithUnidFnr";
         final String password = "foo123";
         final String fnr = "90123456789";

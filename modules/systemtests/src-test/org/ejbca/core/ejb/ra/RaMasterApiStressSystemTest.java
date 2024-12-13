@@ -55,6 +55,7 @@ import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.Base64;
@@ -68,15 +69,17 @@ import com.keyfactor.util.keys.KeyTools;
  *
  * @version $Id$
  */
+@Ignore("Takes a very long time to complete")
 public class RaMasterApiStressSystemTest extends CaTestCase {
 
 	private static final Logger log = Logger.getLogger(RaMasterApiStressSystemTest.class);
 
 	private static final String USERNAME_PREFIX = "RaMasterApiStressSystemTest";
-	private static final int NUMBER_OF_THREADS = 10;
-	private static final int USERS_PER_THREAD = 100;
-	private static final int NUMBER_OF_ROLE_MEMBERS = 10000;
-	
+    private static final String PASSWORD = USERNAME_PREFIX;
+    private static final int NUMBER_OF_THREADS = 10;
+    private static final int USERS_PER_THREAD = 100;
+    private static final int NUMBER_OF_ROLE_MEMBERS = 10000;
+
     private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RaMasterApiStressSystemTest"));
 
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -137,7 +140,7 @@ public class RaMasterApiStressSystemTest extends CaTestCase {
         List<Callable<String[]>> tasks = new ArrayList<>();
         List<String> createdUsers = new ArrayList<>();
         for(int i = 0; i < NUMBER_OF_THREADS; i++) {
-            //Pregenerate PKCS10 requests
+            //Pre-generate PKCS10 requests
             String[] requests = new String[USERS_PER_THREAD];
             for(int j = 0; j < USERS_PER_THREAD; j++) {
                 requests[j] = generatePkcs10();
@@ -254,7 +257,13 @@ public class RaMasterApiStressSystemTest extends CaTestCase {
                 usernames[i] = username;
                 EndEntityInformation endEntity = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, EndEntityTypes.ENDUSER.toEndEntityType(), 
                         EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, null);
-                
+                endEntity.setPassword(PASSWORD);
+                try {
+                    endEntityManagementSession.deleteUser(alwaysAllowToken, username);
+                }
+                catch (Exception e) {
+                    // The user doesn't exist. Ignore it.
+                }
                 testRaMasterApiProxySession.addUser(roleMgmgToken, endEntity, false);
 
             }

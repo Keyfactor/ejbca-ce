@@ -66,6 +66,7 @@ public abstract class SystemTestsConfiguration {
         "/usr/lib/softhsm/libsofthsm2.so", // SoftHSM 2 (Linux)
         "/usr/lib/x86_64-linux-gnu/softhsm/libsofthsm2.so", // SoftHSM 2 (Linux multiarch, 64-bit)
     };
+    private static final String CLEAR_DATABASE = "clear.database";
 
     private static final Logger log = Logger.getLogger(SystemTestsConfiguration.class);
     private static final String PROPERTYFILE = "/systemtests.properties";
@@ -147,7 +148,11 @@ public abstract class SystemTestsConfiguration {
     }
     
     public static char[] getPkcs11SlotPin(String defaultValue) {
-        return StringUtils.trim(getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue)).toCharArray();
+        String token = getProperties().getProperty(PKCS11_SLOT_PIN, defaultValue);
+        if (token == null || StringUtils.trim(token) == null) {
+            throw new IllegalStateException("PKCS11(NG) systemtest settings are not properly configured. Property '"+PKCS11_SLOT_PIN+"' is missing");
+        }
+        return StringUtils.trim(token).toCharArray();
     }
     
     public static String getPkcs11SecurityProvider(String defaultValue) {
@@ -257,4 +262,9 @@ public abstract class SystemTestsConfiguration {
         }
         return ret;
     }
+
+    public static boolean getClearDatabase() {
+        return Boolean.parseBoolean(StringUtils.trim(getProperties().getProperty(CLEAR_DATABASE, "false")));
+    }
+
 }

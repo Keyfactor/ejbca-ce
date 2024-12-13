@@ -33,3 +33,10 @@ sourceSets {
 tasks.jar {
     from(sourceSets["main"].output)
 }
+
+// Required by ProtectedDataPKCS11UnitTest.testProtectionDigSigPKCS11
+tasks.withType<Test> {
+    jvmArgs(
+        "--add-exports", "jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED"
+    )
+}

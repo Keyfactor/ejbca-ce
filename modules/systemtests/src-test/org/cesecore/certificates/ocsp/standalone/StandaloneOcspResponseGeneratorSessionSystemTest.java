@@ -219,7 +219,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     @Before
     public void setUp() throws Exception {
         assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
-
         if (cryptoTokenRunner.canRun()) {
             x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
             originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
