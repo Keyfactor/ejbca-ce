@@ -7,7 +7,6 @@ dependencies {
     implementation(libs.jaxb.core)
     implementation(libs.jldap)
     testImplementation(project(":modules:cesecore-common"))
-    testImplementation(project(":modules:cesecore-cvcca"))
     testImplementation(project(":modules:cesecore-ejb-interface"))
     testImplementation(project(":modules:cesecore-entity"))
     testImplementation(project(":modules:cesecore-x509ca"))
@@ -22,8 +21,6 @@ dependencies {
     testImplementation(project(":modules:ejbca-rest-common"))
     testImplementation(project(":modules:ejbca-ws"))
     testImplementation(project(":modules:ejbca-ws:common"))
-    testImplementation(project(":modules:peerconnector:common"))
-    testImplementation(project(":modules:peerconnector:interface"))
     testImplementation(project(":modules:plugins"))
     testImplementation(project(":modules:systemtests:common"))
     testImplementation(project(":modules:systemtests:ejb"))
@@ -35,6 +32,9 @@ dependencies {
         testImplementation(project(":modules:ct"))
         testImplementation(project(":modules:ejbca-entity:cli"))
         testImplementation(project(":modules:peerconnector:publ"))
+        testImplementation(project(":modules:cesecore-cvcca"))
+        testImplementation(project(":modules:peerconnector:common"))
+        testImplementation(project(":modules:peerconnector:interface"))
         testImplementation(libs.p11ng)
     }
 
@@ -55,8 +55,12 @@ dependencies {
     testImplementation(libs.nimbus.jose.jwt)
     testImplementation(libs.x509.common.util)
 
+    if (project.extra["edition"] == "ee") {
+        testRuntimeOnly(project(":modules:peerconnector:common"))
+        testRuntimeOnly(libs.ctlog)
+    }
+
     testRuntimeOnly(libs.bundles.resteasy.jaxrs)
-    testRuntimeOnly(libs.ctlog)
     testRuntimeOnly(libs.gmbal.api)
     testRuntimeOnly(libs.jakarta.mail)
     testRuntimeOnly(libs.jaxb.impl)

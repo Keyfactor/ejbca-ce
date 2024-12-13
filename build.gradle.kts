@@ -389,19 +389,19 @@ subprojects {
 
 // If system tests in certain modules are executed before others, they cause test failures in unrelated modules.
 // This should be fixed, but for now, we can work around the issue by enforcing the same order as used in Ant.
-val systemTestTasksOrder = listOf(
-    project(":modules:systemtests").tasks.named("systemTest"),
-    project(":modules:ejbca-ws").tasks.named("systemTest"),
-    project(":modules:statedump").tasks.named("systemTest"),
-    project(":modules:peerconnector").tasks.named("systemTest"),
-    project(":modules:plugins").tasks.named("systemTest"),
-    project(":modules:plugins-ee").tasks.named("systemTest"),
-    project(":modules:acme").tasks.named("systemTest"),
-    project(":modules:ejbca-rest-api").tasks.named("systemTest"),
-    project(":modules:caa").tasks.named("systemTest"),
-    project(":modules:ssh").tasks.named("systemTest"),
-    project(":modules:cits").tasks.named("systemTest"),
-    project(":modules:ejbca-entity").tasks.named("systemTest")
+val systemTestTasksOrder = listOfNotNull(
+    project.findProject(":modules:systemtests")?.tasks?.named("systemTest"),
+    project.findProject(":modules:ejbca-ws")?.tasks?.named("systemTest"),
+    project.findProject(":modules:statedump")?.tasks?.named("systemTest"),
+    project.findProject(":modules:peerconnector")?.tasks?.named("systemTest"),
+    project.findProject(":modules:plugins")?.tasks?.named("systemTest"),
+    project.findProject(":modules:plugins-ee")?.tasks?.named("systemTest"),
+    project.findProject(":modules:acme")?.tasks?.named("systemTest"),
+    project.findProject(":modules:ejbca-rest-api")?.tasks?.named("systemTest"),
+    project.findProject(":modules:caa")?.tasks?.named("systemTest"),
+    project.findProject(":modules:ssh")?.tasks?.named("systemTest"),
+    project.findProject(":modules:cits")?.tasks?.named("systemTest"),
+    project.findProject(":modules:ejbca-entity")?.tasks?.named("systemTest")
 )
 
 // Add mustRunAfter dependencies to systemTest tasks to enforce the "correct order".
