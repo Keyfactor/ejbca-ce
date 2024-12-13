@@ -32,11 +32,13 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
  * Stress test security audit logging. (This will not measure real performance we run over RMI.)
  */
+@Ignore("Takes a very long time to complete")
 public class LoggingStressSystemTest {
 	
 	private static Logger log = Logger.getLogger(LoggingStressSystemTest.class);

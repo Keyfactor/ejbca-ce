@@ -48,6 +48,7 @@ import org.cesecore.roles.member.RoleMemberSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ui.DynamicUiProperty;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -66,6 +67,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.protocol.ws.BatchCreateTool;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
@@ -110,9 +112,18 @@ public class PartitionedApprovalProfilesSystemTest extends CaTestCase {
     private static final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
             new UsernamePrincipal(ApprovalSessionSystemTest.class.getSimpleName()));
 
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        try {
+            afterClass();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
         createTestCA();
         adminusername1 = "PartitionedApprovalProfileUnitTest" + "1";
         adminusername2 = "PartitionedApprovalProfileUnitTest" + "2";
