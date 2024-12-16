@@ -63,7 +63,7 @@ public class CertificateRequestCommand extends BaseCommand implements Performanc
         this.bitsInCertificateSN = bitsInCertificateSN;
         if (!doCreateNewUser) {
             this.jobData.passWord = "foo123";
-            this.jobData.userName = "WSTESTUSER_REUSE_"+ StressTestCommandBase.nextLong();
+            this.jobData.userName = "WSTESTUSER_REUSE_"+ StressTestCommandBase.nextLong(false);
         }
         String signAlgorithm = "SHA256WithRSA";
         if (keys.getPublic().getAlgorithm().equals("ECDSA")) {
@@ -87,13 +87,13 @@ public class CertificateRequestCommand extends BaseCommand implements Performanc
     public boolean doIt() throws Exception {
         if ( this.doCreateNewUser ) {
             this.jobData.passWord = "foo123";
-            this.jobData.userName = "WSTESTUSER"+ StressTestCommandBase.nextLong();
+            this.jobData.userName = "WSTESTUSER"+ StressTestCommandBase.nextLong(false);
         }
         if ( this.bitsInCertificateSN>0 && this.doCreateNewUser ) {
             this.user.setCertificateSerialNumber(new BigInteger(this.bitsInCertificateSN, StressTestCommandBase.getRandom()));
         }
         if (randomizeDn) {
-            this.user.setSubjectDN(this.jobData.getDN() + "_" + StressTestCommandBase.nextLong());
+            this.user.setSubjectDN(this.jobData.getDN() + "_" + StressTestCommandBase.nextLong(false));
         } else {
             this.user.setSubjectDN(this.jobData.getDN());
         }

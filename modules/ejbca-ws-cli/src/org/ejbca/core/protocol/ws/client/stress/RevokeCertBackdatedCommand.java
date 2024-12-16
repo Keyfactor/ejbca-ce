@@ -64,6 +64,6 @@ public class RevokeCertBackdatedCommand extends BaseCommand implements Performan
 
     @Override
     public String getJobTimeDescription() {
-        return "";
+        return "Relative time spent revoking certs using backdate";
     }
 }

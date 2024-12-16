@@ -43,6 +43,6 @@ public class Pkcs10RequestCommand extends BaseCommand implements PerformanceTest
 
     @Override
     public String getJobTimeDescription() {
-        return "";
+        return "Relative time spent for creating certificate";
     }
 }

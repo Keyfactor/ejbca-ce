@@ -51,6 +51,6 @@ public class ListCertsCommand extends BaseCommand implements PerformanceTest.Com
 
     @Override
     public String getJobTimeDescription()  {
-        return "Relative time spent finding certs for user.";
+        return "Relative time spent finding certs for user";
     }
 }
