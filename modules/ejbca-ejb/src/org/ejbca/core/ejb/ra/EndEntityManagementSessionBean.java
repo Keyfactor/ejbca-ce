@@ -41,6 +41,7 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Inject;
 import javax.naming.InvalidNameException;
+
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
@@ -780,7 +781,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException,
             CustomFieldException {
-        changeUser(authenticationToken, endEntityInformation, clearPwd, false, approvalRequestId, lastApprovingAdmin, null, false);
+        changeUser(authenticationToken, endEntityInformation, clearPwd, approvalRequestId, lastApprovingAdmin, null, false);
     }
 
     @Override
@@ -792,7 +793,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             CustomFieldException {
         String newUsername = endEntityInformation.getUsername();
         endEntityInformation.setUsername(oldUsername);
-        changeUser(authenticationToken, endEntityInformation, clearPwd, false, approvalRequestId, lastApprovingAdmin, newUsername, false);
+        changeUser(authenticationToken, endEntityInformation, clearPwd, approvalRequestId, lastApprovingAdmin, newUsername, false);
     }
 
     @Override
@@ -811,7 +812,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException,
             CustomFieldException {
-        changeUser(authenticationToken, endEntityInformation, clearPwd, fromWebService, 0, null, null, false);
+        changeUser(authenticationToken, endEntityInformation, clearPwd, 0, null, null, false);
     }
 
 
@@ -822,7 +823,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException,
             ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException,
             CustomFieldException {
-        changeUser(authenticationToken, userdata, clearPwd, false, 0, null, newUsername, false);
+        changeUser(authenticationToken, userdata, clearPwd, 0, null, newUsername, false);
     }
     
     @Override
@@ -831,7 +832,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     ) throws ApprovalException, CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException,
             CustomFieldException, AuthorizationDeniedException, EndEntityProfileValidationException,
             WaitingForApprovalException {
-        changeUser(admin, endEntityInformation, clearPwd, false, 0, null, null, true);
+        changeUser(admin, endEntityInformation, clearPwd, 0, null, null, true);
     }
 
     /**
@@ -856,7 +857,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      */
     private void changeUser(
             final AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation,
-            final boolean clearPwd, final boolean fromWebService, final int approvalRequestId,
+            final boolean clearPwd, final int approvalRequestId,
             final AuthenticationToken lastApprovingAdmin, final String newUsername, final boolean force
     ) throws AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException,
             CertificateSerialNumberException, IllegalNameException, NoSuchEndEntityException, CustomFieldException {
@@ -899,31 +900,22 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             log.info(msg);
             throw new NoSuchEndEntityException(msg);
         }
-        final EndEntityInformation originalCopy = new EndEntityInformation(userData.toEndEntityInformation());
+        EndEntityInformation originalCopy = new EndEntityInformation(userData.toEndEntityInformation());
         
         // Merge all DN and SAN values from previously saved end entity
         if (profile.getAllowMergeDn()) {
-            try {
-                // SubjectDN is not mandatory so
-                if (dn == null) {
-                    dn = "";
-                }
-                final Map<String, String> sdnMap = new HashMap<>();
-                if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
-                    sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
-                }
-                              
-                dn = new DistinguishedName(userData.getSubjectDnNeverNull()).mergeDN(new DistinguishedName(dn), true, sdnMap).toString();
-                dn = EndEntityInformationFiller.getDnEntriesUniqueOnly(dn, EndEntityInformationFiller.SUBJECT_DN);
 
-            } catch (InvalidNameException e) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Invalid Subject DN when merging '" + LogRedactionUtils.getSubjectDnLogSafe(dn, endEntityProfileId) + "' with '"
-                            + LogRedactionUtils.getSubjectAltNameLogSafe(userData.getSubjectDnNeverNull(), endEntityProfileId)
-                            + "'. Setting it to empty. Exception was: " + LogRedactionUtils.getRedactedMessage(e.getMessage()));
-                }
-                dn = "";
+            final Map<String, String> sdnMap = new HashMap<>();
+            if (profile.getUse(DnComponents.DNEMAILADDRESS, 0)) {
+                sdnMap.put(DnComponents.DNEMAILADDRESS, endEntityInformation.getEmail());
             }
+
+            endEntityInformation = EndEntityInformationFiller.fillUserDataWithDefaultValues(endEntityInformation, profile);
+
+            dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformation.getDN()));
+
+            dn = EndEntityInformationFiller.getDnEntriesUniqueOnly(dn, EndEntityInformationFiller.SUBJECT_DN);
+
             try {
                 // SubjectAltName is not mandatory so
                 if (altName == null) {
@@ -933,17 +925,17 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 if (profile.getUse(DnComponents.RFC822NAME, 0)) {
                     sanMap.put(DnComponents.RFC822NAME, endEntityInformation.getEmail());
                 }
-                altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap).toString();
+                altName = new DistinguishedName(userData.getSubjectAltNameNeverNull()).mergeDN(new DistinguishedName(altName), true, sanMap)
+                        .toString();
                 altName = EndEntityInformationFiller.getDnEntriesUniqueOnly(altName, EndEntityInformationFiller.SUBJECT_ALTERNATIVE_NAME);
             } catch (InvalidNameException e) {
                 if (log.isDebugEnabled()) {
                     log.debug("Invalid Subject AN when merging '" + LogRedactionUtils.getSubjectAltNameLogSafe(altName, endEntityProfileId)
-                    + "' with '" + userData.getSubjectAltNameNeverNull() + "'. Setting it to empty. Exception was: "
-                    + LogRedactionUtils.getRedactedMessage(e.getMessage()));
+                            + "' with '" + userData.getSubjectAltNameNeverNull() + "'. Setting it to empty. Exception was: "
+                            + LogRedactionUtils.getRedactedMessage(e.getMessage()));
                 }
                 altName = "";
             }
-
         }
         
         altName = copyCnToAltName(dn, altName, profile, DnComponents.DNSNAME);

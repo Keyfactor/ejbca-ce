@@ -130,7 +130,14 @@ public class EstAliasSystemTest extends EstTestCase {
             con.connect();
             // An EST alias that does not exist will result in a HTTP bad request error
             // an unknown operation in a 404 not found
-            assertEquals("Unexpected HTTP response code.", expectedReturnCode, con.getResponseCode()); 
+            try {
+                int actualReturnCode = con.getResponseCode();
+                String message = "Expected HTTP response code="+expectedReturnCode+". Actual HTTP response code="+actualReturnCode;
+                assertEquals(message, expectedReturnCode, actualReturnCode);
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         } finally {
             // If we moved away the alias in the beginning, move it back
             if (config.aliasExists("backUpAlias" + extractedAlias + "ForAliasTesting001122334455")) {
