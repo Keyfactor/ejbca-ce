@@ -14,6 +14,7 @@ dependencies {
     compileOnly(libs.commons.lang)
     compileOnly(libs.log4j.v12.api)
     compileOnly(libs.x509.common.util)
+    testRuntimeOnly(libs.bundles.resteasy.jaxrs)
 }
 
 sourceSets {

@@ -97,10 +97,10 @@ public class CertificateExtensionSystemTest extends CommonEjbcaWs {
     private static final int nrOfValues = 3;
     private static final Random random = new Random();
 
-    private final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession;
+    private EndEntityManagementSessionRemote endEntityManagementSession;
+    private EndEntityProfileSessionRemote endEntityProfileSession;
+    private GlobalConfigurationSessionRemote globalConfigurationSession;
 
     private AvailableCustomCertificateExtensionsConfiguration cceConfigBackup;
     private static List<File> fileHandles = new ArrayList<>();
@@ -122,6 +122,10 @@ public class CertificateExtensionSystemTest extends CommonEjbcaWs {
     @Override
     @Before
     public void setUp() throws Exception {
+        certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
         adminSetUpAdmin();
         cceConfigBackup = (AvailableCustomCertificateExtensionsConfiguration) globalConfigurationSession.
                 getCachedConfiguration(AvailableCustomCertificateExtensionsConfiguration.CONFIGURATION_ID);
