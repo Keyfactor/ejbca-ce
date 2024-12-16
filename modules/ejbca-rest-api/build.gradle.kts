@@ -38,20 +38,33 @@ dependencies {
     runtimeOnly(libs.swagger.integration)
     runtimeOnly(libs.classgraph)
     runtimeOnly(libs.javassist)
-    testCompileOnly(libs.bundles.cryptotokens)
-    testCompileOnly(project(":modules:ejbca-common-web"))
-    testCompileOnly(project(":modules:systemtests:common"))
     testImplementation(project(":modules:cesecore-entity"))
+    testImplementation(project(":modules:ejbca-common-web"))
     testImplementation(project(":modules:systemtests").dependencyProject.sourceSets["test"].output)
+    testImplementation(project(":modules:systemtests:common"))
     testImplementation(project(":modules:systemtests:interface"))
+    testImplementation(libs.bundles.cryptotokens)
+    testImplementation(libs.cryptotokens.api)
     testImplementation(libs.bundles.jackson)
     testImplementation(libs.bundles.resteasy.jaxrs)
     testImplementation(libs.bundles.hibernate.validator)
     testImplementation(libs.jakarta.xml.bind.api)
     testImplementation(libs.json.simple)
+    testImplementation(libs.hibernate.commons.annotations)
+    testImplementation(libs.hibernate.core)
+    testImplementation(libs.hibernate.validator)
+    testRuntimeOnly(project(":modules:systemtests:ejb"))
+    testRuntimeOnly(project(":modules:cesecore-common"))
+    testRuntimeOnly(project(":modules:cesecore-x509ca"))
+    if (project.extra["edition"] == "ee") {
+        testRuntimeOnly(project(":modules:cesecore-cvcca"))
+    }
     testRuntimeOnly(project(":modules:ejbca-ws:common"))
+    testRuntimeOnly(project(":modules:ejbca-ejb"))
+    testRuntimeOnly(project(":modules:ejbca-entity"))
+    testRuntimeOnly(libs.jldap)
     testRuntimeOnly(libs.classmate)
-    testRuntimeOnly(libs.jboss.logging)
+    testRuntimeOnly(libs.commons.lang3)
 }
 
 sourceSets {
@@ -73,6 +86,9 @@ tasks.war {
 }
 
 tasks.processTestResources {
+    from("${rootProject.projectDir}/src") {
+        include("internal.properties")
+    }
     from("resources/WEB-INF") {
         include("ValidationMessages.properties")
     }
