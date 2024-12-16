@@ -111,7 +111,6 @@ public final class EjbcaWebBeanImplUnitTest {
     
     private byte[] tlsSession;
     private boolean alreadyInitialized;
-    private boolean alreadyFetchedOauthConfig;
     private String bearerToken;
     private String bearerTokenFingerprint;
     private String idToken;
@@ -142,7 +141,6 @@ public final class EjbcaWebBeanImplUnitTest {
         mockedAuthToken = null;
         tlsSession = TLS_SESSION_1;
         alreadyInitialized = false;
-        alreadyFetchedOauthConfig = false;
         setClientCertNumber(1);
         setBearerTokenNumber(1);
         idToken = null;
@@ -242,10 +240,7 @@ public final class EjbcaWebBeanImplUnitTest {
         allMockObjects.add(oauthToken);
         expect(oauthToken.getClaims()).andReturn(TEST_CLAIMS);
         expect(oauthToken.getPublicKeyBase64Fingerprint()).andReturn(bearerTokenFingerprint);
-        if (!alreadyFetchedOauthConfig) {
-            expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
-            alreadyFetchedOauthConfig = true;
-        }
+        expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
         expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken), eq(idToken))).andReturn(oauthToken);
         expect(oauthToken.getProviderLabel()).andReturn(OAUTH_PROVIDER_NAME).anyTimes();
         expect(ejbs.getRoleSession().getRolesAuthenticationTokenIsMemberOf(oauthToken)).andReturn(ADMIN_ROLES);

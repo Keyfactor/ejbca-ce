@@ -10,24 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.unidfnr;
 
-import jakarta.ejb.Remote;
+package org.cesecore.util;
 
-/**
- * 
- * @version $Id$
- *
- */
-@Remote
-public interface UnidfnrProxySessionRemote {
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
 
-    boolean isUnidFnrAvailable();
+public class FileUtil {
 
-    void removeUnidFnrDataIfPresent(final String unid);
+    public static File getPwd() throws IOException {
+        return new File(".").getCanonicalFile();
+    }
 
-    void storeUnidFnrData(final String unid, final String fnr);
-    
-    String fetchUnidFnrDataFromMock(String serialNumber);
-    
+    public static File getResourceAsFile(String name) throws IOException {
+        System.out.println("*** name = " + name);
+        System.out.println("*** pwd  = " + getPwd());
+        URL url = FileUtil.class.getClassLoader().getResource(name);
+        if (url == null) {
+            throw new FileNotFoundException(name);
+        }
+        File file = new File(url.getFile()).getCanonicalFile();
+        if (!file.exists()) {
+            throw new FileNotFoundException(name);
+        }
+        return file;
+    }
+
 }

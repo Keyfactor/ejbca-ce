@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -42,9 +43,12 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -55,6 +59,7 @@ import com.keyfactor.util.keys.KeyTools;
 /**
  * Add a lot of users and a lot of certificates for each user
  */
+@Ignore("Takes a very long time to complete")
 public class AddLotsOfCertsPerUserSystemTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AddLotsOfCertsPerUserSystemTest.class);
 
@@ -104,6 +109,19 @@ public class AddLotsOfCertsPerUserSystemTest extends CaTestCase {
     private String genUserName(String baseUsername) {
         userNo++;
         return baseUsername + userNo;
+    }
+
+    private int getOrCreateEndEntityProfile(String endEntityProfileName, int certificateProfileId) throws EndEntityProfileExistsException, EndEntityProfileNotFoundException, AuthorizationDeniedException {
+        try {
+            return endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+        }
+        catch (EndEntityProfileNotFoundException e) {
+            EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+            endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + certificateProfileId);
+            endEntityProfile.setUse(EndEntityProfile.ENDTIME, 0, true);
+            endEntityProfileSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
+            return endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+        }
     }
 
     /**
@@ -162,16 +180,7 @@ public class AddLotsOfCertsPerUserSystemTest extends CaTestCase {
             }
 
             int cid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-            int eid = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
-            if (eid == 0) {
-                EndEntityProfile endEntityProfile = new EndEntityProfile(true);
-                endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cid);
-                endEntityProfile.setUse(EndEntityProfile.ENDTIME, 0, true);
-                // endEntityProfile.setValue(EndEntityProfile.ENDTIME, 0,
-                // "0:0:10");
-                endEntityProfileSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
-                eid = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
-            }
+            int eid = getOrCreateEndEntityProfile(endEntityProfileName, cid);
             userdata.setEndEntityProfileId(eid);
             ExtendedInformation extendedInformation = new ExtendedInformation();
             extendedInformation.setCustomData(EndEntityProfile.ENDTIME, "0:0:10");

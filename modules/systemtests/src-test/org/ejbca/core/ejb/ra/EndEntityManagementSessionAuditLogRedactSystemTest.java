@@ -49,6 +49,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherTestSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
@@ -59,6 +60,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -96,6 +98,9 @@ public class EndEntityManagementSessionAuditLogRedactSystemTest extends CaTestCa
     private static final ArrayList<String> usernames = new ArrayList<>();
     
     private final int caId = getTestCAId();
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @Override
     public String getRoleName() {
@@ -230,7 +235,7 @@ public class EndEntityManagementSessionAuditLogRedactSystemTest extends CaTestCa
         endEntityManagementSession.changeUser(admin, endEntityInformation, false);
         log.info("updated user: " + userName);
 
-        if(redact) {
+        if (redact) {
             assertAuditLogRedacted(startTime, subjectDn, san, redact);
         }
         
@@ -254,7 +259,7 @@ public class EndEntityManagementSessionAuditLogRedactSystemTest extends CaTestCa
         endEntityManagementSession.deleteUser(admin, newUserName);
         log.info("deleted user: " + userName + ", renamed to:  " + newUserName);
 
-        if(redact) {
+        if (redact) {
             assertAuditLogRedacted(startTime, subjectDn, san, redact);
         }
         

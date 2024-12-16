@@ -141,6 +141,7 @@ import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -190,6 +191,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -346,7 +348,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             globalConfigurationSession.saveConfiguration(intAdmin, originalGlobalConfiguration);
         }
     }
-
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
      * EJBCA Admin Web and verify returned security headers.
@@ -3596,7 +3597,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a PEM file by the class path. */
     private String readPemFile(final String filename) throws IOException {
-        final InputStream stream = getClass().getResourceAsStream(filename);
+        final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
         final StringWriter writer = new StringWriter();
         IOUtils.copy(stream, writer, StandardCharsets.UTF_8);
         IOUtils.closeQuietly(stream);
@@ -3605,7 +3606,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a DER file by the class path. */
     private byte[] readDerFile(final String filename) throws IOException {
-        final InputStream stream = getClass().getResourceAsStream(filename);
+        final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
         final byte[] data = new byte[stream.available()];
         stream.read(data);
         IOUtils.closeQuietly(stream);
