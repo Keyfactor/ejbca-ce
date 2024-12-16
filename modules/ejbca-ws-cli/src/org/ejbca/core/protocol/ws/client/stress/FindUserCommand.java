@@ -51,6 +51,6 @@ public class FindUserCommand extends BaseCommand implements PerformanceTest.Comm
 
     @Override
     public String getJobTimeDescription() {
-        return "";
+        return "Relative time spent finding end entities";
     }
 }

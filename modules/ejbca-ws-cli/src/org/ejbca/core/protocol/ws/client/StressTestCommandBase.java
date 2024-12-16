@@ -117,12 +117,8 @@ public abstract class StressTestCommandBase extends EJBCAWSRABaseCommand impleme
         }
     }
 
-    public static long nextLong() {
-        return PERFORMANCE_TEST.nextLong();
-    }
-
-    public static long nextCvcLong() {
-        return PERFORMANCE_TEST.nextCvcLong();
+    public static long nextLong(boolean forCvc) {
+        return PERFORMANCE_TEST.nextLong(forCvc);
     }
 
     public static PerformanceTest.Log getLog() {
