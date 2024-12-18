@@ -44,7 +44,7 @@ public class PerformanceTest {
         this.isSomeThreadUsingRandom = false;
     }
 
-    public long nextLong() {
+    public long nextLong(boolean forCvc) {
         synchronized (this.random) {
             while (this.isSomeThreadUsingRandom) {
                 try {
@@ -55,7 +55,7 @@ public class PerformanceTest {
                 }
             }
             this.isSomeThreadUsingRandom = true;
-            final long result = this.random.nextLong();
+            final long result = forCvc ? this.random.nextLong(1, 99999999) : this.random.nextLong();
             this.isSomeThreadUsingRandom = false;
             this.random.notifyAll();
             return result;
