@@ -44,6 +44,16 @@ public class PerformanceTest {
         this.isSomeThreadUsingRandom = false;
     }
 
+    /**
+     * Returns a random long >= min and < max
+     * @param min Inclusive
+     * @param max Exclusive
+     * @return A random long >= min and < max
+     */
+    protected long nextLong(long min, long max) {
+        return min + Math.abs(random.nextLong()) % (max - min);
+    }
+
     public long nextLong(boolean forCvc) {
         synchronized (this.random) {
             while (this.isSomeThreadUsingRandom) {
@@ -55,7 +65,7 @@ public class PerformanceTest {
                 }
             }
             this.isSomeThreadUsingRandom = true;
-            final long result = forCvc ? this.random.nextLong(1, 99999999) : this.random.nextLong();
+            final long result = forCvc ? this.nextLong(1, 99999999) : this.random.nextLong();
             this.isSomeThreadUsingRandom = false;
             this.random.notifyAll();
             return result;
