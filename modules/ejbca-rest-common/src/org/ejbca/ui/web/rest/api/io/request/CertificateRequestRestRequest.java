@@ -16,7 +16,9 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.keyfactor.util.CertTools;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.ws.rs.core.Response;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.ui.web.rest.api.exception.RestException;
 
 /**
  * A class representing the input for certificate request REST method.
@@ -107,7 +109,7 @@ public class CertificateRequestRestRequest {
          *
          * @return EnrollCertificateRestRequest instance.
          */
-        public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final CertificateRequestRestRequest certificateRequestRestRequest) {
+        public EnrollPkcs10CertificateRequest toEnrollPkcs10CertificateRequest(final CertificateRequestRestRequest certificateRequestRestRequest) throws RestException {
             return new EnrollPkcs10CertificateRequest.Builder()
                     .certificateRequest(getFormatedRequestString(certificateRequestRestRequest))
                     .username(certificateRequestRestRequest.getUsername())
@@ -118,7 +120,7 @@ public class CertificateRequestRestRequest {
                     .build();
         }
 
-        private static String getFormatedRequestString(CertificateRequestRestRequest certificateRequestRestRequest) {
+        private static String getFormatedRequestString(CertificateRequestRestRequest certificateRequestRestRequest) throws RestException {
             if (certificateRequestRestRequest.getCertificateRequestType() != null) {
                 String certificateRequestData = switch (certificateRequestRestRequest.getCertificateRequestType()) {
                     case "PUBLICKEY", "CRMF" -> certificateRequestRestRequest.certificateRequest;
@@ -126,7 +128,8 @@ public class CertificateRequestRestRequest {
                     case "CVC" -> certificateRequestRestRequest.certificateRequest
                             .replace("-----BEGIN CERTIFICATE-----", "")
                             .replace("-----END CERTIFICATE-----", "");
-                    default -> CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
+                    case "PKCS10" -> CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
+                    default -> throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "An unsupported certificate request type has been passed: " + certificateRequestRestRequest.getCertificateRequestType());
                 };
                 return certificateRequestData;
             } else {
