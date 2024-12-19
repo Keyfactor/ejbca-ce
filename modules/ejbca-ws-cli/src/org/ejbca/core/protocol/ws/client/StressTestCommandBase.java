@@ -121,7 +121,7 @@ public abstract class StressTestCommandBase extends EJBCAWSRABaseCommand impleme
         return PERFORMANCE_TEST.nextLong(forCvc);
     }
 
-    public static String generateUniqueUsernameNumber() {
+    public static long generateUniqueUsernameNumber() {
         return PERFORMANCE_TEST.generateUniqueUsernameNumber();
     }
 

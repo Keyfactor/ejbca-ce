@@ -75,14 +75,14 @@ public class PerformanceTest {
         }
     }
 
-    public String generateUniqueUsernameNumber() {
+    public Long generateUniqueUsernameNumber() {
         synchronized (generatedUsernameNumbers) {
             long nextUsernameNumber = nextLong(true);
             while (generatedUsernameNumbers.contains(nextUsernameNumber)) {
                 nextUsernameNumber = nextLong(true);
             }
             generatedUsernameNumbers.add(nextUsernameNumber);
-            return "S"+nextUsernameNumber;
+            return nextUsernameNumber;
         }
     }
 
