@@ -27,7 +27,7 @@ public class PerformanceTestUnitTest {
     }
 
     @Test
-    public void testNextLong_long_long() {
+    public void testNextLongBoundary() {
         long min = 3;
         long max = 10;
         for (int i = 0; i < 100; i++) {
