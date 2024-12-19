@@ -22,10 +22,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * @version $Id$
@@ -37,6 +39,7 @@ public class PerformanceTest {
     private final Log log;
     private final Random random;
     private boolean isSomeThreadUsingRandom;
+    private final Set<Long> generatedUsernameNumbers = new HashSet<>();
 
     public PerformanceTest() {
         this.log = new Log();
@@ -69,6 +72,17 @@ public class PerformanceTest {
             this.isSomeThreadUsingRandom = false;
             this.random.notifyAll();
             return result;
+        }
+    }
+
+    public String generateUniqueUsernameNumber() {
+        synchronized (generatedUsernameNumbers) {
+            long nextUsernameNumber = nextLong(true);
+            while (generatedUsernameNumbers.contains(nextUsernameNumber)) {
+                nextUsernameNumber = nextLong(true);
+            }
+            generatedUsernameNumbers.add(nextUsernameNumber);
+            return "S"+nextUsernameNumber;
         }
     }
 
