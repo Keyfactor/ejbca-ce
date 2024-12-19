@@ -15,6 +15,7 @@ package org.ejbca.ui.web.rest.api.resource;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.ejb.EJB;
@@ -39,6 +40,7 @@ import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
 import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
@@ -171,6 +173,17 @@ public class CertificateRestResourceV2 extends BaseRestResource {
         // Using same logic as in the web service code.
         raMasterApi.keyRecoverWS(authenticationToken, userName, certificateSerialNumber, issuerDN);
 
+        return Response.ok().build();
+    }
+
+    /**
+     * Import keystores into a CA for key management takeover
+     * @param requestContext
+     * @param issuerDN
+     * @param request
+     * @return
+     */
+    public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequest request) {
         return Response.ok().build();
     }
     
