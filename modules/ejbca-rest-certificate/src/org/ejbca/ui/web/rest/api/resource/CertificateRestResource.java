@@ -202,7 +202,7 @@ public class CertificateRestResource extends BaseRestResource {
     }
 
     public Response certificateRequest(final HttpServletRequest requestContext, final CertificateRequestRestRequest certificateRequestRestRequest)
-            throws RestException, AuthorizationDeniedException, CesecoreException, IOException, SignatureException, NoSuchFieldException {
+            throws RestException, AuthorizationDeniedException, CesecoreException, SignatureException, NoSuchFieldException {
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
             final EnrollPkcs10CertificateRequest requestData = CertificateRequestRestRequest.converter().toEnrollPkcs10CertificateRequest(certificateRequestRestRequest);
@@ -243,7 +243,8 @@ public class CertificateRestResource extends BaseRestResource {
         } catch (CertificateExtensionException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
         } catch (IOException e) {
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to malformed CSR.");
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to malformed certificate requet for type "
+                    + certificateRequestRestRequest.getCertificateRequestType() + ".");
         } catch (CertificateCreateException e) {
             throw makeCertificateCreationException(e);
         }
