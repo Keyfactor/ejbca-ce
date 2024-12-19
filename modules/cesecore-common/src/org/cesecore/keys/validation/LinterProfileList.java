@@ -19,7 +19,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
- *
+ * This POJO provides a list of profile, mapped by source. 
  */
 public class LinterProfileList{
     

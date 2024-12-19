@@ -73,7 +73,6 @@ import jakarta.ejb.TransactionAttributeType;
 /**
  * Handles management of key validators.
  *
- * @version $Id$
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
