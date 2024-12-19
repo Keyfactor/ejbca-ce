@@ -34,7 +34,7 @@
 		<p:ajax event="tabChange" listener="#{systemConfigMBean.onTabChange}"/>
 
 		<p:tab title="Basic Configurations" rendered="#{systemConfigMBean.renderSystemConfiguration()}" >
-			<h:form id="systemconfiguration" >
+			<h:form id="systemconfiguration" enctype="multipart/form-data" >
 
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
@@ -52,15 +52,28 @@
 			<h:inputText id="title" value="#{systemConfigMBean.currentConfig.title}" size="45" title="#{web.text.FORMAT_STRING}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
 
 			<h:panelGroup>
-				<h:outputLabel for="headbanner" value="#{web.text.HEADBANNER}" styleClass="titles"/>
+				<h:outputLabel for="headbanner" value="#{web.text.HEADLOGO}" styleClass="titles"/>
                 <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Customizing_the_User_Interface.html')}" escape="false"/>
 				<br/>
-				<h:outputText value="#{web.text.HEADBANNER_HELP}" styleClass="help"/>
+				<h:outputText value="#{web.text.HEADLOGO_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="headbanner" value="#{systemConfigMBean.currentConfig.headBanner}" size="45" title="#{web.text.FORMAT_FILENAME}"
-				disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+      <h:panelGroup>
+       
+       <p:fileUpload
+            value="#{systemConfigMBean.headerFile}"
+            fileLimit="1" 
+            mode="advanced"
+            auto="true"
+            sizeLimit="250000" 
+            label="Choose a header logo"
+            allowTypes = "/(\.|\/)(jpg|jpeg|png)$/"
+            update="messages"
+            invalidSizeMessage="File is too large! Max size is 250KB."
+            invalidFileMessage="Invalid file type! Only images are allowed."
+            fileLimitMessage="You can only upload one file at a time."/>
+      </h:panelGroup>
 
-			<h:panelGroup>
+      <h:panelGroup>
 				<h:outputLabel for="enableeeplimit" value="#{web.text.ENABLEENDENTITYPROFILELIM}" styleClass="titles"/>
 				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Overview.html')}" escape="false"/>
 				<br/>

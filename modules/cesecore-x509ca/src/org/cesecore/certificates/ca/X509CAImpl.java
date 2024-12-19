@@ -44,8 +44,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SimpleTimeZone;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.naming.NamingException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CeSecoreNameStyle;
@@ -71,15 +76,18 @@ import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.DERT61String;
 import org.bouncycastle.asn1.icao.ICAOObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x509.AccessDescription;
@@ -1130,7 +1138,7 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 SigningKeyContainer caSigningPackage = new SigningKeyContainer(previousCaPublicKey, previousCaPrivateKey, provider);
                 final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), null, -1, currentCaCert.getNotBefore(), ((X509Certificate) oldCaCert).getNotAfter(),
                         certProfile, null, caSigningPackage, null, cceConfig, /*createLinkCertificate=*/true, caNameChange);
-                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerDN().getName()));
+                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), ((X509Certificate)retcert).getIssuerX500Principal().getName()));
                 ret = retcert.getEncoded();
             } catch (CryptoTokenOfflineException e) {
                 throw e;
@@ -1221,7 +1229,32 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                 certGenParams, cceConfig, /*linkCertificate=*/false, /*caNameChange=*/false);
     }
 
+    
+    /**
+     * Combines the LDAP names coming from the user's registered one and those from the EEP
+     * @param dn1
+     * @param dn2
+     * @return combined LDAP names
+     */
+    private static String combineLdapNames(LdapName dn1, LdapName dn2) {
 
+        // Create a new LdapName to hold the combined RDNs
+        LdapName combinedLdapName = (LdapName) dn1.clone();
+
+        Set<String> existingAttributes = new HashSet<>();
+        for (Rdn rdn : dn1.getRdns()) {
+            existingAttributes.add(rdn.getType());
+        }
+
+        for (Rdn rdn : dn2.getRdns()) {
+            if (!existingAttributes.contains(rdn.getType())) {
+                combinedLdapName.add(rdn);
+            }
+        }
+        
+        return combinedLdapName.toString();
+    }
+    
     /**
      * Sequence is ignored by X509CA. The ctParams argument will NOT be kept after the function call returns,
      * and is allowed to contain references to session beans.
@@ -1358,12 +1391,32 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
         }
         final boolean applyLdapToCustomOrder = certProfile.getUseCustomDnOrderWithLdap();
 
-        final X500Name subjectDNName;
+        X500Name subjectDNName = null;
         if (certProfile.getAllowDNOverride() && (request != null) && (request.getRequestX500Name() != null)) {
-            subjectDNName = request.getRequestX500Name();
-            if (log.isDebugEnabled()) {
-                log.debug("Using X509Name from request instead of user's registered.");
+
+            if (isLegacyTeletexEncoding(request.getRequestX500Name())) {
+                // To support legacy TeletexNamingStyle or other legacy formats (see #CmpRaThrowAwaySystemTest #testLegacyEncodedRequestOverride)
+                subjectDNName = request.getRequestX500Name();
+                if (log.isDebugEnabled()) {
+                    log.debug("Using X509Name from request instead of user's registered and X500Name style is TeletexNamingStyle.");
+                }
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Using X509Name from request instead of user's registered.");
+                }
+                LdapName dn2 = null;
+                LdapName dn1 = null;
+                try {
+                    dn2 = new LdapName(dn);
+                    dn1 = new LdapName(request.getRequestX500Name().toString());
+
+                } catch (NamingException e) {
+                    log.error("Exception while trying to construct LDAP names." + LogRedactionUtils.getRedactedException(e));
+                }
+
+                subjectDNName = new X500Name(combineLdapNames(dn1, dn2));
             }
+
         } else {
             if (certProfile.getAllowDNOverrideByEndEntityInformation() && ei!=null && ei.getRawSubjectDn()!=null) {
                 final String stripped = StringTools.strip(ei.getRawSubjectDn());
@@ -1956,6 +2009,23 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             log.debug("X509CA: generated certificate, CA " + this.getCAId() + " for DN: " + LogRedactionUtils.getSubjectDnLogSafe(subject.getCertificateDN(), subject.getEndEntityProfileId()) );
         }
         return cert;
+    }
+
+    private boolean isLegacyTeletexEncoding(final X500Name requestX500Name) {
+
+        final AtomicBoolean isTeletexString = new AtomicBoolean(false);
+
+        RDN[] rdns = requestX500Name.getRDNs();
+
+        for (int i = 0; i < rdns.length; i++) {
+            RDN rdn = rdns[i];
+            ASN1Encodable value = rdn.getFirst().getValue();
+
+            if ((value instanceof ASN1String) && (value instanceof DERT61String)) {
+                isTeletexString.set(true);
+            }
+        }
+        return isTeletexString.get();
     }
 
     /**

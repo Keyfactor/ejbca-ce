@@ -40,6 +40,10 @@ ejbca:
     # INFO, DEBUG, TRACE, ERROR
     LOG_LEVEL_APP: "INFO"
     LOG_LEVEL_SERVER: "INFO"
+    
+    # Default Random Number Generator algorithm for certificate serial number generation.
+    # Available algorithms are: BCSP800Hybrid, SHA1PRNG, default, defaultstrong
+    EJBCA_RNGALGORITHM: "default"
 
     ## Observability
     # The IP address where port 8090 will listen for requests to /health, /health/ready,

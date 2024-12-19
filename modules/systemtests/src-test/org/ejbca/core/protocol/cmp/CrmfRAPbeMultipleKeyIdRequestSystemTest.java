@@ -110,7 +110,7 @@ import com.keyfactor.util.keys.KeyTools;
  * 
  * @version $Id$
  */
-@Ignore
+@Ignore("Requires special configuration to work")
 public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
 	
     private static final Logger log = Logger.getLogger(CrmfRAPbeMultipleKeyIdRequestSystemTest.class);
@@ -303,7 +303,7 @@ public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1
-        assertEquals("SE", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("SE", DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -386,7 +386,7 @@ public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1
-        assertEquals("SE", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("SE", DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -440,7 +440,7 @@ public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1 and NO for KeyId2
-        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -494,7 +494,7 @@ public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1 and NO for KeyId2
-        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";
@@ -568,7 +568,7 @@ public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
         assertFalse(ku[7]);
         assertFalse(ku[8]);
         // Check DN that must be SE for KeyId1 and NO for KeyId2
-        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectDN().getName(), "C"));
+        assertEquals("NO", DnComponents.getPartFromDN(cert.getSubjectX500Principal().getName(), "C"));
 
         // Send a confirm message to the CA
         String hash = "foo123";

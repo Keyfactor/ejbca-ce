@@ -1113,7 +1113,12 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throws AuthorizationDeniedException, CertificateImportException {
         // First check if the certificate row has been published without the actual certificate
         // if so, we only need to import the actual certificate
-        if (certificateStoreSession.updateCertificateOnly(authenticationToken, certificate)) {
+        try {
+            if (certificateStoreSession.updateCertificateOnlyNewTransaction(authenticationToken, certificate)) {
+                return;
+            }
+        } catch (jakarta.ejb.EJBTransactionRolledbackException e) {
+            log.info("Certificate was already stored in database. We only need to update the Key Binding.");
             return;
         }
         // Set some values for things we cannot know
@@ -1179,9 +1184,13 @@ public class InternalKeyBindingMgmtSessionBean implements InternalKeyBindingMgmt
             throw new CertificateImportException("No CA certificate for " + issuerDn
                     + " was found on the system. You must import the CA as an external CA before activating the internal key binding.");
         }
-        certificateStoreSession.storeCertificate(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
+        try {
+            certificateStoreSession.storeCertificateNewTransaction(authenticationToken, certificate, username, caFingerprint, CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.NO_CERTIFICATE_PROFILE, EndEntityConstants.NO_END_ENTITY_PROFILE,
                 CertificateConstants.NO_CRL_PARTITION, null, System.currentTimeMillis(), null);
+        } catch (jakarta.ejb.EJBTransactionRolledbackException e) {
+            log.info("Certificate was already stored in database. We only need to update the Key Binding.");
+        } 
     }
 
     /** Helper method for audit logging changes */

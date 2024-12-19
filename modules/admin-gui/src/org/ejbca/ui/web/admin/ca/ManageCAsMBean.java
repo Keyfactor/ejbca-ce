@@ -155,7 +155,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                                     + " certificates.");
                             for (final X509Certificate certificate : certificates) {
                                 if (CertTools.isSelfSigned(certificate)) {
-                                    log.info("Ignoring CA certificate for " + certificate.getSubjectDN());
+                                    log.info("Ignoring CA certificate for " + certificate.getSubjectX500Principal());
                                     certificatesIgnored.incrementAndGet();
                                     continue;
                                 }
@@ -169,7 +169,7 @@ public class ManageCAsMBean extends BaseManagedBean implements Serializable {
                                 final Optional<CAInfo> issuer = caSession.getIssuerFor(getAdmin(), certificate);
                                 if (!issuer.isPresent()) {
                                     log.info("Ignoring certificate " + CertTools.getSubjectDN(certificate)
-                                            + " issued by " + certificate.getIssuerDN() + " not known by this instance.");
+                                            + " issued by " + certificate.getIssuerX500Principal() + " not known by this instance.");
                                     certificatesIgnored.incrementAndGet();
                                     return;
                                 }

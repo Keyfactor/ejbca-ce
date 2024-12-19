@@ -18,11 +18,14 @@ import java.security.InvalidKeyException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -52,10 +55,12 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.CryptoTokenNameInUseException;
 import org.cesecore.keys.token.KeyPairInfo;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.util.PublicKeyWrapper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.BeforeClass;
@@ -68,6 +73,8 @@ import org.junit.runner.Description;
 import jakarta.ejb.EJBException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -111,7 +118,7 @@ public class CaAdminSessionHybridSystemTest {
     }
 
     @Test
-    public void testCreateRootCertificate()
+    public void testCreateRootCertificateMLDSA44()
             throws CAExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException, InvalidKeyException,
             InvalidAlgorithmParameterException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException,
             CADoesntExistsException, CertificateEncodingException, IOException, OperatorCreationException, CertException {
@@ -123,7 +130,7 @@ public class CaAdminSessionHybridSystemTest {
         Integer cryptoTokenId = null;
         X509CAInfo hybridRoot = null;
         try {
-            cryptoTokenId = createCryptoTokenAndKeypairs(cryptoTokenName, cryptoTokenPin);
+            cryptoTokenId = createCryptoTokenAndKeypairs(cryptoTokenName, cryptoTokenPin, "secp256r1", AlgorithmConstants.KEYALGORITHM_MLDSA44);
             hybridRoot = constructCa(cryptoTokenId, caName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, true);
 
             X509Certificate rootCertificate = (X509Certificate) caSession.getCaChain(alwaysAllowToken, caName).get(0).getCertificate();
@@ -155,7 +162,7 @@ public class CaAdminSessionHybridSystemTest {
     }
 
     @Test
-    public void testCreateSubCaCertificate()
+    public void testCreateSubCaCertificateMLDSA44()
             throws AuthorizationDeniedException, InvalidKeyException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
             CryptoTokenNameInUseException, InvalidAlgorithmParameterException, NoSuchSlotException, CAExistsException, InvalidAlgorithmException,
             CADoesntExistsException, IOException, CertificateEncodingException, OperatorCreationException, CertException {
@@ -168,9 +175,9 @@ public class CaAdminSessionHybridSystemTest {
         final String rootCaName = testName.getMethodName() + "RootCa";
         final String subCaName = testName.getMethodName() + "SubCa";
         try {
-            rootCryptoTokenId = createCryptoTokenAndKeypairs(rootCryptoTokenName, "foo123");
+            rootCryptoTokenId = createCryptoTokenAndKeypairs(rootCryptoTokenName, "foo123", "secp256r1", AlgorithmConstants.KEYALGORITHM_MLDSA44);
 
-            subCryptoTokenId = createCryptoTokenAndKeypairs(subCryptoTokenName, "foo123");
+            subCryptoTokenId = createCryptoTokenAndKeypairs(subCryptoTokenName, "foo123", "secp256r1", AlgorithmConstants.KEYALGORITHM_MLDSA44);
 
             hybridRoot = constructCa(rootCryptoTokenId, rootCaName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, true);
 
@@ -212,6 +219,50 @@ public class CaAdminSessionHybridSystemTest {
             }
         }
     }
+    
+    @Test
+    public void testCreateRootCertificateFalcon512()
+            throws CAExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, AuthorizationDeniedException, InvalidKeyException,
+            InvalidAlgorithmParameterException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, NoSuchSlotException,
+            CADoesntExistsException, CertificateEncodingException, IOException, OperatorCreationException, CertException {
+
+        final String cryptoTokenPin = "foo123";
+        final String cryptoTokenName = testName.getMethodName() + "CryptoToken";
+        final String caName = testName.getMethodName() + "RootCa";
+
+        Integer cryptoTokenId = null;
+        X509CAInfo hybridRoot = null;
+        try {
+            cryptoTokenId = createCryptoTokenAndKeypairs(cryptoTokenName, cryptoTokenPin, "secp256r1", AlgorithmConstants.KEYALGORITHM_FALCON512);
+            hybridRoot = constructCa(cryptoTokenId, caName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, true);
+
+            X509Certificate rootCertificate = (X509Certificate) caSession.getCaChain(alwaysAllowToken, caName).get(0).getCertificate();
+
+            X509CertificateHolder certHolder = new JcaX509CertificateHolder(rootCertificate);
+
+            PublicKey alternativePublicKey = cryptoTokenManagementSession
+                    .getPublicKey(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
+
+            assertEquals("Incorrect alternative public key", ASN1Primitive.fromByteArray(alternativePublicKey.getEncoded()),
+                    SubjectAltPublicKeyInfo.fromExtensions(certHolder.getExtensions()));
+
+            PublicKey caAlternativePublicKey = cryptoTokenManagementSession
+                    .getPublicKey(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS).getPublicKey();
+            assertTrue("Alternative signature does not verify", certHolder.isAlternativeSignatureValid(
+                    new JcaContentVerifierProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME).build(caAlternativePublicKey)));
+        } finally {
+            //Delete the CA
+            deleteCryptoTokenAndKeys(cryptoTokenId);
+
+            if (hybridRoot != null) {
+                CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, hybridRoot.getCAId());
+                if (caInfo != null) {
+                    internalCertificateStoreSession.removeCertificate(caInfo.getCertificateChain().get(0));
+                }
+                caSession.removeCA(alwaysAllowToken, hybridRoot.getCAId());
+            }
+        }
+    }
 
     @Test
     public void testCreateProhibitedSubCaCertificateUnderHybridRootShouldFail()
@@ -228,7 +279,7 @@ public class CaAdminSessionHybridSystemTest {
         final String subCaName = testName.getMethodName() + "SubCa";
         try {
             // given
-            rootCryptoTokenId = createCryptoTokenAndKeypairs(rootCryptoTokenName, "foo123");
+            rootCryptoTokenId = createCryptoTokenAndKeypairs(rootCryptoTokenName, "foo123", "secp256r1", AlgorithmConstants.KEYALGORITHM_MLDSA44);
             subCryptoTokenId = createCryptoTokenAndKeypairsForNonHybridCA(subCryptoTokenName, "foo123");
             try {
                 // when
@@ -275,10 +326,11 @@ public class CaAdminSessionHybridSystemTest {
         X509CAInfo hybridSub = null;
         final String rootCaName = testName.getMethodName() + "RootCa";
         final String subCaName = testName.getMethodName() + "SubCa";
+        boolean success = false;
         try {
             // given
             rootCryptoTokenId = createCryptoTokenAndKeypairsForNonHybridCA(rootCryptoTokenName, "foo123");
-            subCryptoTokenId = createCryptoTokenAndKeypairs(subCryptoTokenName, "foo123");
+            subCryptoTokenId = createCryptoTokenAndKeypairs(subCryptoTokenName, "foo123", "secp256r1", AlgorithmConstants.KEYALGORITHM_MLDSA44);
             try {
                 // when
                 hybridRoot = constructCa(rootCryptoTokenId, rootCaName, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, CAInfo.SELFSIGNED, false);
@@ -288,11 +340,15 @@ public class CaAdminSessionHybridSystemTest {
                 String msg = "InvalidConfigurationException: Sub CA '" + subCaName+ "' should be hybrid CA if and only if Root CA is hybrid CA.";
                 // then
                 assertTrue(e.getMessage().endsWith(msg));
+                success = true;
             }
         } finally {
-            deleteCryptoTokenAndKeys(rootCryptoTokenId);
-            deleteCryptoTokenAndKeys(subCryptoTokenId);
-
+            if (rootCryptoTokenId != null) {
+                deleteCryptoTokenAndKeys(rootCryptoTokenId);
+            }
+            if (subCryptoTokenId != null) {
+                deleteCryptoTokenAndKeys(subCryptoTokenId);
+            }
             if (hybridRoot != null) {
                 CAInfo caInfo = caSession.getCAInfo(alwaysAllowToken, hybridRoot.getCAId());
                 if (caInfo != null) {
@@ -309,6 +365,7 @@ public class CaAdminSessionHybridSystemTest {
                 caSession.removeCA(alwaysAllowToken, hybridSub.getCAId());
             }
         }
+        assertTrue("Expected EJBException was not thrown", success);
     }
 
     private X509CAInfo constructCa(final int cryptoTokenId, final String caName, final int certificateProfileId, final int signedBy, boolean hybrid)
@@ -328,7 +385,7 @@ public class CaAdminSessionHybridSystemTest {
         return x509caInfo;
     }
 
-    private CAToken createCaToken(int cryptoTokenId, Properties caTokenProperties, boolean hybrid) {
+    private CAToken createCaToken(int cryptoTokenId, Properties caTokenProperties, boolean hybrid) throws CryptoTokenOfflineException, AuthorizationDeniedException {
         CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
         // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
         caToken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
@@ -336,7 +393,10 @@ public class CaAdminSessionHybridSystemTest {
         caToken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
         if (hybrid) {
-            caToken.setAlternativeSignatureAlgorithm(AlgorithmConstants.SIGALG_MLDSA44);
+            final PublicKeyWrapper altPub = cryptoTokenManagementSession.getPublicKey(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS);
+            List<String> sigAlgs = AlgorithmTools.getSignatureAlgorithms(altPub.getPublicKey());
+            assertNotEquals("we should be able to figure out a signature algorithm for public key with alg " + altPub.getPublicKey().getAlgorithm(), 0, sigAlgs.size());
+            caToken.setAlternativeSignatureAlgorithm(sigAlgs.get(0));
         }
         return caToken;
     }
@@ -354,18 +414,30 @@ public class CaAdminSessionHybridSystemTest {
         }
     }
 
-    private int createCryptoTokenAndKeypairs(final String cryptoTokenName, final String cryptoTokenPin)
+    private int createCryptoTokenAndKeypairs(final String cryptoTokenName, final String cryptoTokenPin, String keyAlg, String alternativeKeyAlg)
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException, AuthorizationDeniedException,
             NoSuchSlotException, InvalidKeyException, InvalidAlgorithmParameterException {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
+        deleteCryptoTokenIfItExists(cryptoTokenName);
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
-                KeyGenParams.builder("secp256r1").build());
+                KeyGenParams.builder(keyAlg).build());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.ALTERNATE_SOFT_PRIVATE_SIGNKEY_ALIAS,
-                KeyGenParams.builder(AlgorithmConstants.KEYALGORITHM_MLDSA44).build());
+                KeyGenParams.builder(alternativeKeyAlg).build());
         return cryptoTokenId;
+    }
+
+    private void deleteCryptoTokenIfItExists(final String cryptoTokenName) throws AuthorizationDeniedException {
+        var idList = cryptoTokenManagementSession.getCryptoTokenInfos(alwaysAllowToken)
+                .stream()
+                .filter(cryptoToken -> cryptoToken.getName().equals(cryptoTokenName))
+                .map(CryptoTokenInfo::getCryptoTokenId)
+                .collect(Collectors.toUnmodifiableList());
+        for (var id : idList) {
+            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, id);
+        }
     }
 
     private int createCryptoTokenAndKeypairsForNonHybridCA(final String cryptoTokenName, final String cryptoTokenPin)
@@ -373,6 +445,7 @@ public class CaAdminSessionHybridSystemTest {
             NoSuchSlotException, InvalidKeyException, InvalidAlgorithmParameterException {
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
+        deleteCryptoTokenIfItExists(cryptoTokenName);
         int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,

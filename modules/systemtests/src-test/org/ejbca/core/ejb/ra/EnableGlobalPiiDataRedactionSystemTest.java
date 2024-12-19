@@ -47,6 +47,7 @@ import org.ejbca.ServerLogCheckUtil.ServerLogRecord;
 import org.ejbca.core.ejb.audit.EjbcaAuditorTestSessionRemote;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -80,7 +81,10 @@ public class EnableGlobalPiiDataRedactionSystemTest {
     public static void isEnabledAuditLogRedactionTest() {
         assertEquals("New cesecore audit event may need to tested for PII redaction.", EventTypes.values().length, 71);
         assertEquals("New ejbca audit event may need to tested for PII redaction.", EjbcaEventTypes.values().length, 65);
-        
+    }
+
+    @Before
+    public void checkIfTestCanBeRun() {
         // set enable.log.redact=true in conf/systemtest.properties
         assumeTrue("Skipping this test as it is not meant for normal system tests", SystemTestsConfiguration.getEnableLogRedact());
     }

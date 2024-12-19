@@ -105,6 +105,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -128,7 +129,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -216,7 +219,10 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
 
     private static KeyPair rsakeys;
     private static int rsacaid;
-    
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         // Install BouncyCastle provider
@@ -799,7 +805,8 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
 
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", new PublicKeyWrapper(anotheKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
-            String dn = cert.getSubjectDN().getName();
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
+            String dn = cert.getSubjectX500Principal().getName();
             assertEquals(DnComponents.stringToBCDNString("cn=qc,c=SE"), DnComponents.stringToBCDNString(dn));
             // Since we do not have pkixQCSyntax_v1 or pkixQCSyntax_v2, no semanticsId will be added
             assertNull("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
@@ -821,7 +828,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
 
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", new PublicKeyWrapper(anotheKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
-            dn = cert.getSubjectDN().getName();
+            dn = cert.getSubjectX500Principal().getName();
             assertEquals(DnComponents.stringToBCDNString("cn=qc,c=SE"), DnComponents.stringToBCDNString(dn));
             // Since we have pkixQCSyntax_v2, a semanticsId will be added
             assertEquals("rfc822name=qc@primekey.se", QCStatementExtension.getQcStatementAuthorities(cert));
@@ -962,7 +969,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123",
                     new PublicKeyWrapper(anotherKey.getPublic()), -1, null, cal.getTime());
             assertNotNull("Failed to create certificate", cert);
-            String dn = cert.getSubjectDN().getName();
+            String dn = cert.getSubjectX500Principal().getName();
             assertEquals(DnComponents.stringToBCDNString("cn=validityoverride,c=SE"), DnComponents.stringToBCDNString(dn));
             Date notAfter = cert.getNotAfter();
             cal = Calendar.getInstance();
@@ -1125,6 +1132,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             log.debug("created user: foo, foo123, C=SE,O=PrimeKey,CN=dnorder");
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             String dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
             assertEquals("C=SE, O=PrimeKey, CN=dnorder", dn);
@@ -1135,6 +1143,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, endEntityName, "foo123", new PublicKeyWrapper(anotherKey.getPublic()));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             dn = cert.getSubjectDN().getName();
             // This is the reverse order than what is displayed by openssl
             assertEquals("CN=dnorder, O=PrimeKey, C=SE", dn);
@@ -1269,6 +1278,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
         // Change so that we can override signature algorithm
@@ -1279,6 +1289,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
         assertNotNull("Failed to create certificate", cert);
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmTools.getSignatureAlgorithm(cert));
         } finally {
@@ -1356,6 +1367,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             X509Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
             // check altNames, should be none
             Collection<List<?>> c = cert.getSubjectAlternativeNames();
@@ -1372,6 +1384,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
             // check altNames, should be one altName
             c = cert.getSubjectAlternativeNames();
@@ -1484,6 +1497,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             cert = CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             issuedFingerprints.add(CertTools.getFingerprintAsString(cert));
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
             // check altNames, should be one altName
             c = cert.getSubjectAlternativeNames();
@@ -1639,6 +1653,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
             X509Certificate cert =  CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
             // Change so that we allow override of validity time
             CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
@@ -1648,6 +1663,7 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
             resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
             cert =  CertTools.getCertfromByteArray(resp.getResponseMessage(), X509Certificate.class);
             assertNotNull("Failed to create certificate", cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert.getSubjectDN().getName());
         } finally {
             endEntityManagementSession.deleteUser(internalAdmin, dnOverrideEndEntityName);

@@ -1,3 +1,4 @@
+
 <project name="ejbca" default="build" basedir=".">
 
 	<!-- Import build specific info, like version number -->
@@ -20,7 +21,7 @@
     <!-- this import is used by the modules scheme-->
     <import file="${ejbca.home}/modules/build-properties.xml"/>
 
-	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
+	<import file="bin/jboss.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<property name="reports.base.dir" location="${ejbca.home}/reports/"/>
 	<property name="reports.dir" location="${reports.base.dir}/test"/>		
 	<import file="./test.xml" />
@@ -37,7 +38,10 @@
         <delete dir="${dist.dir}" />
     	<delete dir="${reports.base.dir}" />
         <delete dir="${apidoc}" />
-        <delete dir="${tmp}"/>
+	<delete dir="${tmp}"/>
+	<delete>
+          <fileset dir="." includes="**/jacoco.exec"/>
+        </delete>
         <ant antfile="modules/build.xml" target="clean" inheritall="true" inheritrefs="true"/>
     </target>
 	
@@ -56,7 +60,9 @@
 	<target name="cleanReports" description="Clean up this module">
 		<delete dir="${reports.base.dir}/images"/>
 		<delete file="${reports.base.dir}/QaEjbcaTestReport.html" />
-
+                <delete>
+                  <fileset dir="." includes="**/jacoco.exec"/>
+               </delete>
 	</target>
 	
     <!-- =================================================================== -->
@@ -364,12 +370,6 @@
 			replacement-enabled="${doc.war.enabled}"
 			replacement-web-uri="doc.war"
 			replacement-context-root="/ejbca/doc"
-		/>
-		<jar-replacement-in-module
-			replacement-tag="!--@ejbca-ws-ejb.jar@-->"
-			replacement-file="${eardd.src}/META-INF/application.xml"
-			replacement-enabled="${ejbcaws.enabled}"
-			replacement-ejb="ejbca-ws-ejb.jar"
 		/>
 		<jar-replacement-in-module
 			replacement-tag="!--@ejbca-systemtest-ejb.jar@-->"
@@ -920,10 +920,10 @@
 	            <tokenfilter>
 	                <replacestring from="#sunp11.cryptotoken.enabled=false" to="sunp11.cryptotoken.enabled=false"/>
 	            </tokenfilter>
-                <tokenfilter>
-                    <replacestring from="#p11ng.cryptotoken.enabled=true" to="p11ng.cryptotoken.enabled=true"/>
-                </tokenfilter>
-                <tokenfilter>
+	        	<tokenfilter>
+	        	    <replacestring from="#p11ng.cryptotoken.enabled=true" to="p11ng.cryptotoken.enabled=true"/>
+	        	</tokenfilter>
+	        	<tokenfilter>
                     <replacestring from="#p11ng.utimacocp5.enabled=true" to="p11ng.utimacocp5.enabled=true"/>
                 </tokenfilter>
 	        </filterchain>
@@ -972,9 +972,11 @@
 				<exclude name=".lighthouse/" />
 				<exclude name=".jx/" />
 				<exclude name=".github/" />
+				<exclude name=".gitlab-ci.yml" />
 				<exclude name="OWNERS" />
 				<exclude name="OWNERS_ALIASES" />
-                <exclude name="src/package/" />
+				<exclude name="src/package/" />
+				<exclude name="lib/coverage/**" />
                 <!-- Exclude directories from release that are built after "clean" as dependency to documentation -->
                 <exclude name="modules/dist/**" />
                 <exclude name="modules/buildtools/build/**" />

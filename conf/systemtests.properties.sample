@@ -64,3 +64,7 @@
 #enable.log.redact=true
 # Absolute file name of the server log file. Default value is "/opt/wildfly/standalone/log/server.log". This is only relevant for testing PII redaction in server logs. 
 #server.log.path=
+
+# Uncomment to enable database table cleanup after each test. The default value is false.
+# !!! This is an experimental feature that can wipe your database. Use with caution !!!
+#clear.database=true

@@ -141,6 +141,7 @@ import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -190,6 +191,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
@@ -346,7 +348,6 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             globalConfigurationSession.saveConfiguration(intAdmin, originalGlobalConfiguration);
         }
     }
-
 
     /** This test is not a WebService test, but for simplicity it re-uses the created administrator certificate in order to connect to the
      * EJBCA Admin Web and verify returned security headers.
@@ -516,6 +517,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     CertificateHelper.RESPONSETYPE_CERTIFICATE);
             cert = certificateResponse.getCertificate();
             assertNotNull(cert);
+            //getSubjectX500Principal does not deliver the exact same order, so leave this for now
             assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
@@ -630,8 +632,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     keys.getPublic(), null, keys.getPrivate(), null);
             //Yeah, what happens, Shoresy?
             CertificateResponse response = ejbcaraws.pkcs10Request(username, password, new String(Base64.encode(request.getEncoded())), null,
-                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
-            //I hit you, you hit the floor, your mom spends the night. 
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE); 
             X509Certificate certificate = response.getCertificate();
             final X500Name x500Name = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
             final String unidFromCertificate = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
@@ -647,6 +648,87 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             } catch (NoSuchEndEntityException e) {
                 //NOPMD
             } 
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+        }
+    }
+    
+    /**
+     * Test running a certificate request (including creating an end entity) using the UnidFnr plugin for ML-DSA-44 Protocol
+     */
+    @Test
+    public void testEditUserWithUnidFnrUsingMlDsa()
+            throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateProfileExistsException, AuthorizationDeniedException,
+            EndEntityProfileExistsException, CryptoTokenOfflineException, InvalidAlgorithmException, CAExistsException, ApprovalException_Exception,
+            AuthorizationDeniedException_Exception, EjbcaException_Exception, NotFoundException_Exception,
+            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IOException, CertificateException,
+            CouldNotRemoveEndEntityException, CADoesntExistsException_Exception, CesecoreException_Exception {
+        final KeyPair keys = KeyTools.genKeys("ML-DSA-44", AlgorithmConstants.KEYALGORITHM_MLDSA44);
+        final String username = "testEditUserWithUnidFnrUsingMlDsa";
+        final String password = "foo123";
+        final String fnr = "90123456789";
+        final String lra = "01234";
+        final String serialNumber = fnr + '-' + lra;
+        final String subjectDn = "C=SE, serialnumber=" + serialNumber + ", CN=" + username;
+
+        final String profileNameUnidPrefix = "1234-5678-";
+        final String profileName = profileNameUnidPrefix + "testEditUserWithUnidFnrUsingMlDsa";
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        int certificateProfileId = certificateProfileSession.addCertificateProfile(intAdmin, profileName, certificateProfile);
+
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfileSession.addEndEntityProfile(intAdmin, profileName, endEntityProfile);
+
+        final String issuerDN = "CN=testEditUserWithUnidFnrUsingMlDsaCa";
+        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false,
+                X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        X509CAInfo testX509CaInfo = (X509CAInfo) testX509Ca.getCAInfo();
+        testX509CaInfo.setRequestPreProcessor(UnidFnrHandlerMock.class.getCanonicalName());
+        testX509Ca.updateCA(null, testX509CaInfo, null);
+        caSession.addCA(intAdmin, testX509Ca);
+        final UserDataVOWS endEntity = new UserDataVOWS();
+        endEntity.setUsername(username);
+        endEntity.setPassword(password);
+        endEntity.setClearPwd(false);
+        endEntity.setSubjectDN(subjectDn);
+        endEntity.setCaName(testX509CaInfo.getName());
+        endEntity.setEmail(null);
+        endEntity.setSubjectAltName(null);
+        endEntity.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        endEntity.setEndEntityProfileName(profileName);
+        endEntity.setCertificateProfileName(profileName);
+        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+
+        try {
+            ejbcaraws.editUser(endEntity);
+            EndEntityInformation createdUser = endEntityAccessSession.findUser(intAdmin, username);
+            final String endEntityInformationUnid = IETFUtils.valueToString(
+                    DnComponents.stringToBcX500Name(createdUser.getCertificateDN()).getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+            final String resultingFnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(endEntityInformationUnid);
+            assertNotNull("Unid value was not stored", resultingFnr);
+            assertEquals("FNR value was not correctly converted", fnr, resultingFnr);
+            //Generate a certificate, see what happens. 
+            PKCS10CertificationRequest request = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.KEYALGORITHM_MLDSA44,
+                    DnComponents.stringToBcX500Name(subjectDn), keys.getPublic(), null, keys.getPrivate(), null);
+            //Yeah, what happens, Shoresy?
+            CertificateResponse response = ejbcaraws.pkcs10Request(username, password, new String(Base64.encode(request.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            X509Certificate certificate = response.getCertificate();
+            final X500Name x500Name = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
+            final String unidFromCertificate = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+            assertEquals("serialNumber value in certificate was not the same as in end entity", endEntityInformationUnid, unidFromCertificate);
+
+        } finally {
+            CaTestUtils.removeCa(intAdmin, testX509CaInfo);
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, profileName);
+            certificateProfileSession.removeCertificateProfile(intAdmin, profileName);
+            try {
+                endEntityManagementSession.deleteUser(intAdmin, username);
+            } catch (NoSuchEndEntityException e) {
+                //NOPMD
+            }
             internalCertificateStoreSession.removeCertificatesByUsername(username);
         }
     }
@@ -717,6 +799,77 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             } catch (NoSuchEndEntityException e) {
                 //NOPMD
             } 
+            internalCertificateStoreSession.removeCertificatesByUsername(username);
+        }
+    }
+    
+    /**
+     * Test running a certificate request (including creating an end entity) using the UnidFnr plugin for ML-DSA-44 Protocol
+     */
+    @Test
+    public void testCertificateRequestWithUnidFnrUsingMlDsa() throws InvalidAlgorithmParameterException, OperatorCreationException,
+            CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileExistsException, CryptoTokenOfflineException,
+            InvalidAlgorithmException, CAExistsException, ApprovalException_Exception, AuthorizationDeniedException_Exception,
+            EjbcaException_Exception, NotFoundException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
+            WaitingForApprovalException_Exception, IOException, CertificateException, CouldNotRemoveEndEntityException {
+        final KeyPair keys = KeyTools.genKeys("ML-DSA-44", AlgorithmConstants.KEYALGORITHM_MLDSA44);
+        final String username = "testCertificateRequestWithUnidFnrUsingMlDsa";
+        final String password = "foo123";
+        final String fnr = "90123456789";
+        final String lra = "01234";
+        final String serialNumber = fnr + '-' + lra;
+        final String subjectDn = "C=SE, serialnumber=" + serialNumber + ", CN=" + username;
+        PKCS10CertificationRequest request = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.KEYALGORITHM_MLDSA44,
+                DnComponents.stringToBcX500Name(subjectDn), keys.getPublic(), null, keys.getPrivate(), null);
+
+        final String profileNameUnidPrefix = "1234-5678-";
+        final String profileName = profileNameUnidPrefix + "testCertificateRequestWithUnidFnrUsingMlDsa";
+        final CertificateProfile certificateProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        int certificateProfileId = certificateProfileSession.addCertificateProfile(intAdmin, profileName, certificateProfile);
+
+        final EndEntityProfile endEntityProfile = new EndEntityProfile(true);
+        endEntityProfile.setDefaultCertificateProfile(certificateProfileId);
+        endEntityProfile.setAvailableCertificateProfileIds(Arrays.asList(certificateProfileId));
+        endEntityProfileSession.addEndEntityProfile(intAdmin, profileName, endEntityProfile);
+
+        final String issuerDN = "CN=testCertificateRequestWithUnidFnrUsingMlDsaCa";
+        X509CA testX509Ca = CaTestUtils.createTestX509CA(issuerDN, null, false,
+                X509KeyUsage.digitalSignature + X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign);
+        X509CAInfo testX509CaInfo = (X509CAInfo) testX509Ca.getCAInfo();
+        testX509CaInfo.setRequestPreProcessor(UnidFnrHandlerMock.class.getCanonicalName());
+        testX509Ca.updateCA(null, testX509CaInfo, null);
+        caSession.addCA(intAdmin, testX509Ca);
+        final UserDataVOWS endEntity = new UserDataVOWS();
+        endEntity.setUsername(username);
+        endEntity.setPassword(password);
+        endEntity.setClearPwd(false);
+        endEntity.setSubjectDN(subjectDn);
+        endEntity.setCaName(testX509CaInfo.getName());
+        endEntity.setEmail(null);
+        endEntity.setSubjectAltName(null);
+        endEntity.setStatus(EndEntityConstants.STATUS_NEW);
+        endEntity.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        endEntity.setEndEntityProfileName(profileName);
+        endEntity.setCertificateProfileName(profileName);
+        endEntity.setExtendedInformation(new ArrayList<ExtendedInformationWS>());
+        try {
+            CertificateResponse certificateResponse = ejbcaraws.certificateRequest(endEntity, new String(Base64.encode(request.getEncoded())),
+                    CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            X509Certificate certificate = certificateResponse.getCertificate();
+            final X500Name x500Name = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
+            final String unid = IETFUtils.valueToString(x500Name.getRDNs(CeSecoreNameStyle.SERIALNUMBER)[0].getFirst().getValue());
+            final String resultingFnr = unidfnrProxySessionRemote.fetchUnidFnrDataFromMock(unid);
+            assertNotNull("Unid value was not stored", fnr);
+            assertEquals("FNR value was not correctly converted", fnr, resultingFnr);
+        } finally {
+            CaTestUtils.removeCa(intAdmin, testX509CaInfo);
+            endEntityProfileSession.removeEndEntityProfile(intAdmin, profileName);
+            certificateProfileSession.removeCertificateProfile(intAdmin, profileName);
+            try {
+                endEntityManagementSession.deleteUser(intAdmin, username);
+            } catch (NoSuchEndEntityException e) {
+                //NOPMD
+            }
             internalCertificateStoreSession.removeCertificatesByUsername(username);
         }
     }
@@ -822,6 +975,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             try {
                 CertificateResponse response = ejbcaraws.certificateRequest(user, super.getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
                 X509Certificate cert = response.getCertificate();
+                //getSubjectX500Principal does not deliver the exact same order, so leave this for now
                 assertEquals("SubjectDN should be multi-value RDN", "CN=Tomas+UID=12334,O=Test,C=SE", cert.getSubjectDN().toString());
             } catch (UserDoesntFullfillEndEntityProfile_Exception e) {
                 fail("Should be possible to create certificate with multi-value RDN when EE profile is configured correctly: "+e.getMessage());
@@ -901,7 +1055,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     public void test060RevokeCert() throws Exception {
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         this.ejbcaraws.revokeCert(issuerdn, serno, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
@@ -1011,7 +1165,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // revocation reason change" flag enabled:
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1040,7 +1194,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // revocation reason change" flag enabled:
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1095,7 +1249,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // Given that we have a certificate that is unrevoked
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1156,7 +1310,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // Given that we have a certificate that is unrevoked
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1217,7 +1371,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
         // Given that we have a certificate that is unrevoked
         final P12TestUser p12TestUser = new P12TestUser();
         final X509Certificate cert = p12TestUser.getCertificate(null);
-        final String issuerdn = cert.getIssuerDN().toString();
+        final String issuerdn = cert.getIssuerX500Principal().toString();
         final String serno = cert.getSerialNumber().toString(16);
 
         final RevokeStatus initialRevocationStatus = ejbcaraws.checkRevokationStatus(issuerdn, serno);
@@ -1322,7 +1476,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             AuthenticationToken approvingAdmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
             try {
                 X509Certificate cert = createUserAndCert(username, caID, true);
-                String issuerdn = cert.getIssuerDN().toString();
+                String issuerdn = cert.getIssuerX500Principal().toString();
                 String serno = cert.getSerialNumber().toString(16);
                 // revoke via WS and verify response
                 try {
@@ -1543,7 +1697,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             alias = en.nextElement();
         }
         X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-        assertEquals("CN=WSTESTUSERKEYREC1", cert.getSubjectDN().toString());
+        assertEquals("CN=WSTESTUSERKEYREC1", cert.getSubjectX500Principal().toString());
         PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
 
         // This should work now
@@ -1572,7 +1726,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             alias = en.nextElement();
         }
         X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-        assertEquals(cert2.getSubjectDN().toString(), "CN=WSTESTUSERKEYREC1");
+        assertEquals(cert2.getSubjectX500Principal().toString(), "CN=WSTESTUSERKEYREC1");
         PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
 
         // Compare certificates
@@ -1682,9 +1836,9 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     alias = en.nextElement();
                 }
                 X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-                assertEquals("CN="+username, cert.getSubjectDN().toString());
+                assertEquals("CN="+username, cert.getSubjectX500Principal().toString());
                 PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
-                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerDN().toString());
+                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerX500Principal().toString());
                 // recover key
                 setAccessRulesForWsAdmin(Arrays.asList(
                         AccessRulesConstants.ROLE_ADMINISTRATOR,
@@ -1695,7 +1849,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                         AccessRulesConstants.REGULAR_KEYRECOVERY,
                         AccessRulesConstants.REGULAR_VIEWENDENTITY
                         ), null);
-                ejbcaraws.keyRecover(username,cert.getSerialNumber().toString(16),cert.getIssuerDN().toString());
+                ejbcaraws.keyRecover(username,cert.getSerialNumber().toString(16),cert.getIssuerX500Principal().toString());
                 assertEquals("EjbcaWS.keyRecover failed to set status for end entity.", EndEntityConstants.STATUS_KEYRECOVERY, endEntityAccessSession.findUser(intAdmin, username).getStatus());
                 // A new PK12 request now should return the same key and certificate
                 setAccessRulesForWsAdmin(Arrays.asList(
@@ -1728,7 +1882,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     alias = en.nextElement();
                 }
                 X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-                assertEquals("CN="+username, cert2.getSubjectDN().toString());
+                assertEquals("CN="+username, cert2.getSubjectX500Principal().toString());
                 PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
                 // Compare certificates
                 assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
@@ -1747,12 +1901,12 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     alias = en.nextElement();
                 }
                 X509Certificate cert = (X509Certificate) ks.getCertificate(alias);
-                assertEquals("CN="+username, cert.getSubjectDN().toString());
+                assertEquals("CN="+username, cert.getSubjectX500Principal().toString());
                 PrivateKey privK = (PrivateKey) ks.getKey(alias, "foo456".toCharArray());
-                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerDN().toString());
+                log.info("recovering key. sn "+ cert.getSerialNumber().toString(16) + " issuer "+ cert.getIssuerX500Principal().toString());
 
                 // Try the single keyRecoverEnroll command
-                KeyStore ksenv = ejbcaraws.keyRecoverEnroll(username, cert.getSerialNumber().toString(16), cert.getIssuerDN().toString(), "foo456", null);
+                KeyStore ksenv = ejbcaraws.keyRecoverEnroll(username, cert.getSerialNumber().toString(16), cert.getIssuerX500Principal().toString(), "foo456", null);
                 java.security.KeyStore ks2 = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo456");
                 assertNotNull(ks2);
                 en = ks2.aliases();
@@ -1762,7 +1916,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
                     alias = en.nextElement();
                 }
                 X509Certificate cert2 = (X509Certificate) ks2.getCertificate(alias);
-                assertEquals("CN="+username, cert2.getSubjectDN().toString());
+                assertEquals("CN="+username, cert2.getSubjectX500Principal().toString());
                 PrivateKey privK2 = (PrivateKey) ks2.getKey(alias, "foo456".toCharArray());
                 // Compare certificates
                 assertEquals(cert.getSerialNumber().toString(16), cert2.getSerialNumber().toString(16));
@@ -3403,7 +3557,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
             alias = en.nextElement();
         }
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-
+        //getSubjectX500Principal does not deliver the exact same order, so leave this for now
         String resultingSubjectDN = cert.getSubjectDN().toString();
         // on RedHat 6.4 with OpenJDK-8 64-Bit '\r' symbol is automatically replaced with '\n'. So try to check again, if difference between expected and actual
         // is in that symbol then test succeeds, otherwise test fails
@@ -3443,7 +3597,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a PEM file by the class path. */
     private String readPemFile(final String filename) throws IOException {
-        final InputStream stream = getClass().getResourceAsStream(filename);
+        final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
         final StringWriter writer = new StringWriter();
         IOUtils.copy(stream, writer, StandardCharsets.UTF_8);
         IOUtils.closeQuietly(stream);
@@ -3452,7 +3606,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
 
     /** Reads a DER file by the class path. */
     private byte[] readDerFile(final String filename) throws IOException {
-        final InputStream stream = getClass().getResourceAsStream(filename);
+        final InputStream stream = getClass().getClassLoader().getResourceAsStream(filename);
         final byte[] data = new byte[stream.available()];
         stream.read(data);
         IOUtils.closeQuietly(stream);
