@@ -166,7 +166,7 @@ class RESTTest extends ClientToolBox {
 
             final String restUrl = new StringBuilder().append("https://").append(hostName).append("/ejbca/ejbca-rest-api/v1/certificate/pkcs10enroll").toString();
 
-            final String username = "RESTTESTUSER-" + StressTest.this.performanceTest.nextLong();
+            final String username = "RESTTESTUSER-" + StressTest.this.performanceTest.nextLong(false);
             final StringWriter pemout = new StringWriter();
             JcaPEMWriter pm = new JcaPEMWriter(pemout);
             pm.writeObject(pkcs10);

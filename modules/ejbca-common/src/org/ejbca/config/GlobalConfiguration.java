@@ -13,7 +13,11 @@
 
 package org.ejbca.config;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -29,7 +33,6 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.ExternalScriptsConfiguration;
 import org.cesecore.configuration.ConfigurationBase;
 import org.ejbca.util.URIUtil;
-
 
 /**
  * This is a  class containing global configuration parameters.
@@ -68,10 +71,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     // Path added to baseurl used as default value in OCSP Service Locator URI field in Certificate Profile definitions.
 	private static final  String   DEFAULTOCSPSERVICELOCATORURIPATH = "publicweb/status/ocsp";
 
-    // Default name of headbanner in web interface.
-    public static final  String   DEFAULTHEADBANNER             = "head_banner.jsp";
-    // Default name of footbanner page in web interface.
-    public static final  String   DEFAULTFOOTBANNER             = "foot_banner.jsp";
+    public static byte[] DEFAULT_HEADER_LOGO = new byte[0];
 
     // Default list of nodes in cluster
     private static final Set<String> NODESINCLUSTER_DEFAULT      = new LinkedHashSet<>();
@@ -129,7 +129,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public static final  String DOCWINDOW           = "_ejbcaDocWindow"; // Name of browser window used to display help
 
     // Private constants
-    private static final   String AVAILABLELANGUAGES    = "availablelanguages";
     private static final   String AVAILABLETHEMES       = "availablethemes";
     private static final   String PUBLICPORT            = "publicport";
     private static final   String PRIVATEPORT           = "privateport";
@@ -137,8 +136,8 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
       // Title
     private static final   String TITLE              = "title";
       // Banner files.
-    private static final   String HEADBANNER         = "headbanner";
-    private static final   String FOOTBANNER         = "footbanner";
+    private static final   String HEADLOGO         = "headlogo";
+
       // Other configuration.
     private static final   String ENABLEEEPROFILELIMITATIONS   = "endentityprofilelimitations";
     private static final   String ENABLEAUTHENTICATEDUSERSONLY = "authenticatedusersonly";
@@ -178,37 +177,44 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
        super();
 
        setEjbcaTitle(DEFAULTEJBCATITLE);
-       setHeadBanner(DEFAULTHEADBANNER);
-       setFootBanner(DEFAULTFOOTBANNER);
+       setHeadBannerLogo(DEFAULT_HEADER_LOGO);
        setEnableEndEntityProfileLimitations(true);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableAuthenticatedUsersOnly(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableKeyRecovery(false);  // Still needed for 100% up-time upgrade from before EJBCA 6.3.0
        setEnableIcaoCANameChange(false);
     }
+    
+    public byte[] initHeadBannerLogo(String path) {
+        try {
+            Path logoPath = Paths.get(path);
+            GlobalConfiguration.DEFAULT_HEADER_LOGO = Files.readAllBytes(logoPath);
+            return DEFAULT_HEADER_LOGO;
+        } catch (IOException e) {
+            LOG.error("Error while reading adminweb default logo from file system.");
+            throw new IllegalStateException(e);
+        }
+    }
 
     /** Initializes a new global configuration with data used in ra web interface. */
-    private void initialize(String availablelanguages, String availablethemes,
+    private void initialize(String availablethemes,
                             String publicport, String privateport){
 
-       data.put(AVAILABLELANGUAGES,availablelanguages.trim());
        data.put(AVAILABLETHEMES,availablethemes.trim());
        data.put(PUBLICPORT,publicport.trim());
        data.put(PRIVATEPORT,privateport.trim());
     }
 
     public void initializeAdminWeb() {
-        initialize(WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
-                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort());
+        initialize("default_theme.css,second_theme.css", "" + WebConfiguration.getPublicHttpPort(), "" + WebConfiguration.getPrivateHttpsPort());
     }
     
     public void initializeRaWeb() {
-        initialize(WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css",
-                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort());
+        initialize("default_theme.css,second_theme.css", "" + WebConfiguration.getPublicHttpPort(), "" + WebConfiguration.getPrivateHttpsPort());
     }
 
     /** Checks if global data configuration have been initialized. */
     public boolean isInitialized(){
-      return data.get(AVAILABLELANGUAGES)!=null;
+      return data.get(PUBLICPORT)!=null;
     }
 
     /**
@@ -304,31 +310,13 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public String getDefaultAvailableTheme(){
       return getAvailableThemes()[0];
     }
-
-
-
-    // Methods for manipulating the headbanner filename.
-    public   String getHeadBanner() {return fullHeadBannerPath((String) data.get(HEADBANNER));}
-    public   void setHeadBanner(String head){
-      data.put(HEADBANNER, fullHeadBannerPath(head));
+    
+    public byte[] getHeadBannerLogo() {
+        return (byte[]) data.get(HEADLOGO);
     }
-    public boolean isNonDefaultHeadBanner() {
-        return !fullHeadBannerPath(DEFAULTHEADBANNER).equals(fullHeadBannerPath((String) data.get(HEADBANNER)));
-    }
-    private String fullHeadBannerPath(final String head) {
-        return getAdminWebPath() + getBannersPath() + "/" +
-                (StringUtils.isNotBlank(head) ? head.substring(head.lastIndexOf('/')+1) : DEFAULTHEADBANNER);
-    }
-
-
-    // Methods for manipulating the headbanner filename.
-    public   String getFootBanner() {return fullFootBannerPath((String) data.get(FOOTBANNER));}
-    public   void setFootBanner(String foot){
-      data.put(FOOTBANNER, fullFootBannerPath(foot));
-    }
-    private String fullFootBannerPath(final String foot) {
-        return "/" + getBannersPath() + "/" +
-                (StringUtils.isNotBlank(foot) ? foot.substring(foot.lastIndexOf('/')+1) : DEFAULTFOOTBANNER);
+    
+    public void setHeadBannerLogo(byte[] logo) {
+        data.put(HEADLOGO, logo);
     }
 
     // Methods for manipulating the title.
@@ -354,7 +342,6 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     public   String[] getPossibleEntiresPerPage(){return DEFAULTPOSSIBLEENTRIESPERPAGE;}
     public   String[] getPossibleLogEntiresPerPage(){return DEFAULTPOSSIBLELOGENTRIESPERPAGE;}
 
-    public   String getAvailableLanguagesAsString(){return (String) data.get(AVAILABLELANGUAGES);}
     public   String getAvailableThemesAsString(){return (String) data.get(AVAILABLETHEMES);}
 
     public boolean getEnableEndEntityProfileLimitations() { return getBoolean(ENABLEEEPROFILELIMITATIONS, true); }

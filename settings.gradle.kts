@@ -1,32 +1,56 @@
+import java.util.Properties
+
 rootProject.name = "ejbca"
+
+val ejbcaProperties: Properties = loadPropertiesFromFiles(
+    "conf/ejbca.properties",
+    "conf/database.properties",
+    "conf/systemtests.properties"
+)
+
+// specify what edition you want to build by passing -Pedition=ee or =ce (default: ee)
 val editionProp = providers.gradleProperty("edition").getOrElse("ee")
 val eeModuleExists = file("modules/edition-specific-ee").exists()
 val edition = if (editionProp == "ce" || !eeModuleExists) "ce" else "ee"
 
+val appServerHome: String? = ejbcaProperties.getProperty("appserver.home", System.getenv("APPSRV_HOME"))
+val isProductionMode = ejbcaProperties.getProperty("ejbca.productionmode", "true").toBoolean()
+
+// share project properties with other build files
+gradle.allprojects {
+    extra["isProductionMode"] = isProductionMode
+    extra["edition"] = edition
+    extra["appServerHome"] = appServerHome
+    // add other properties loaded from EJBCA configuration files
+    ejbcaProperties.forEach { (key, value) ->
+        extra["$key"] = value
+    }
+}
+
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            library("bcprov", ":bcprov:jdk18on-1.79-20241009.092052-3")
-            library("bcpkix", ":bcpkix:jdk18on-1.79-20241009.092036-3")
-            library("bctls", ":bctls:jdk18on-1.79-20241009.092109-3")
-            library("bcutil", ":bcutil:jdk18on-1.79-20241009.092126-3")
+            library("bcprov", ":bcprov:jdk18on-1.79")
+            library("bcpkix", ":bcpkix:jdk18on-1.79")
+            library("bctls", ":bctls:jdk18on-1.79")
+            library("bcutil", ":bcutil:jdk18on-1.79")
             library("ejbca-ws-client-gen", ":ejbca-ws-client-gen:1")
             library("caffeine", ":caffeine:3.1.6")
             library("jakartaee-api", ":jakarta.jakartaee-api:10.0.0")
             library("jakarta.xml.ws-api", ":jakarta.xml.ws-api:4.0.1")
             library("jaxb-runtime", ":jaxb-runtime:4.0.5")
-            library("cert-cvc", ":cert-cvc:1.6.2")
+            library("cert.cvc", ":cert-cvc:1.6.2")
             library("guava", ":guava:33.0.0-jre")
             library("log4j-v12-api", ":log4j-1.2-api:2.20.0")
             library("log4j-api", ":log4j-api:2.20.0")
             library("log4j-core", ":log4j-core:2.20.0")
             library("commons-lang", ":commons-lang:2.6")
-            library("commons-lang3", ":commons-lang3:3.12.0")
+            library("commons-lang3", ":commons-lang3:3.17.0")
             library("commons-lang3-old", ":commons-lang3:3.14.0")
-            library("commons-configuration2", ":commons-configuration2:2.10.1")
+            library("commons-configuration2", ":commons-configuration2:2.11.0")
             library("commons-collections4", ":commons-collections4:4.4")
             library("nimbus-jose-jwt", ":nimbus-jose-jwt:9.37.3")
-            library("x509-common-util", ":x509-common-util:4.1.4")
+            library("x509-common-util", ":x509-common-util:5.0.7")
             library("cryptotokens-api", ":cryptotokens-api:2.3.1")
             library("cryptotokens-impl", ":cryptotokens-impl:2.3.1")
             library("cryptotokens-impl-ee", ":cryptotokens-impl-ee:2.3.1")
@@ -34,11 +58,11 @@ dependencyResolutionManagement {
             library("jakarta.jws-api", ":jakarta.jws-api:3.0.0")
             library("jakarta.xml.soap-api", ":jakarta.xml.soap-api:3.0.2")
             library("commons-logging", ":commons-logging:1.2")
-            library("commons-codec", ":commons-codec:1.15")
-            library("commons-io", ":commons-io:2.16.1")
-            library("httpclient", ":httpclient:4.5.13")
-            library("httpcore", ":httpcore:4.4.13")
-            library("httpmime", ":httpmime:4.5.13")
+            library("commons-codec", ":commons-codec:1.17.1")
+            library("commons-io", ":commons-io:2.17.0")
+            library("httpclient", ":httpclient:4.5.14")
+            library("httpcore", ":httpcore:4.4.16")
+            library("httpmime", ":httpmime:4.5.14")
             library("jldap", ":jldap:4.6.0")
             library("json-simple", ":json-simple:1.1.1")
             library("xmlpull", ":xmlpull:1.1.3.1")
@@ -75,9 +99,9 @@ dependencyResolutionManagement {
             library("kerb-core", ":kerb-core:2.0.3")
             library("kerb-crypto", ":kerb-crypto:2.0.3")
             library("kerby-asn1", ":kerby-asn1:2.0.3")
-            library("keyfactor-commons-cli",":keyfactor-commons-cli:2.0.0")
+            library("keyfactor-commons-cli", ":keyfactor-commons-cli:2.0.0")
             library("jsch", ":jsch:0.2.11")
-            library("xstream", ":xstream:1.4.20")
+            library("xstream", ":xstream:1.4.21")
             library("xpp3_min", ":xpp3_min:1.1.4c")
             library("istack-commons-runtime", ":istack-commons-runtime:3.0.11")
             library("saaj-impl", ":saaj-impl:3.0.0")
@@ -86,12 +110,14 @@ dependencyResolutionManagement {
             library("wsdl4j", ":wsdl4j:1.6.3")
             library("jcip-annotations", ":jcip-annotations:1.0-1")
             library("jna", ":jna:5.12.1")
+            library("slf4j.api", ":slf4j-api:2.0.16")
+            library("slf4j.reload4j", ":slf4j-reload4j:2.0.16")
             // hibernate
             library("antlr4-runtime", ":antlr4-runtime:4.13.0")
             library("byte-buddy", ":byte-buddy:1.14.15")
             library("classmate", ":classmate:1.5.1")
             library("fastInfoset", ":FastInfoset:1.2.15")
-            library("hibernate-community-dialects",":hibernate-community-dialects:6.5.2.Final")
+            library("hibernate-community-dialects", ":hibernate-community-dialects:6.5.2.Final")
             library("hibernate-commons-annotations", ":hibernate-commons-annotations:6.0.6.Final")
             library("hibernate-core", ":hibernate-core:6.5.2.Final")
             library("hibernate-validator", ":hibernate-validator:8.0.1.Final")
@@ -105,7 +131,6 @@ dependencyResolutionManagement {
             library("stax-ex", ":stax-ex:1.8")
             library("txw2", ":txw2:2.3.1")
             library("yasson", ":yasson:3.0.4")
-            library("slf4j.api", ":slf4j-api:2.0.16")
             // test dependencies
             library("junit", ":junit:4.13.2")
             library("easymock", ":easymock:5.2.0")
@@ -134,6 +159,17 @@ dependencyResolutionManagement {
             library("jackson-module-jaxb-annotations", ":jackson-module-jaxb-annotations:2.17.2")
             library("jboss-logging", ":jboss-logging:3.6.0.Final")
             library("el-impl", ":el-impl:2.2")
+            library("jakarta.mail", ":jakarta.mail:2.0.3")
+            library("jaxb.core", ":jaxb-core:4.0.2")
+            library("jaxb.impl", ":jaxb-impl:4.0.2")
+            library("gmbal.api", ":gmbal-api-only:4.0.3")
+            library("jaxws.rt", ":jaxws-rt:4.0.1")
+            library("stax2.api", ":stax2-api:4.2.1")
+
+            if (!isProductionMode) {
+                library("jboss.client", ":jboss:client")
+            }
+
             // bundles
             bundle(
                 "test",
@@ -308,3 +344,17 @@ include(
     "modules:systemtests:common",
     "modules:systemtests:ejb",
 )
+
+fun loadPropertiesFromFiles(vararg filePaths: String): Properties {
+    val properties = Properties()
+    for (filePath in filePaths) {
+        // load sample properties first, then override values with the user defined ones
+        if (file("$filePath.sample").exists()) {
+            properties.load(file("$filePath.sample").inputStream())
+        }
+        if (file(filePath).exists()) {
+            properties.load(file(filePath).inputStream())
+        }
+    }
+    return properties
+}

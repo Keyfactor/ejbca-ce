@@ -524,7 +524,7 @@ public abstract class CmpTestCase extends CaTestCase {
         CertReqMessages certReqMessages = new CertReqMessages(certReqMsg);
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(pvno, new GeneralName(senderDN), new GeneralName(new X500Name(
-                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
+                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectX500Principal().getName())));
 
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
@@ -590,7 +590,7 @@ public abstract class CmpTestCase extends CaTestCase {
         }
 
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(senderDN), new GeneralName(new X500Name(
-                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectDN().getName())));
+                issuerDN!=null? issuerDN : ((X509Certificate) cacert).getSubjectX500Principal().getName())));
 
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
         pkiHeaderBuilder.setSenderNonce(new DEROctetString(nonce));
@@ -652,7 +652,7 @@ public abstract class CmpTestCase extends CaTestCase {
         final GeneralName recipient;
         // Recipient can be empty according to RFC4210 section D.1
         if (cacert != null) {
-            recipient = new GeneralName(new X500Name(((X509Certificate) cacert).getSubjectDN().getName()));
+            recipient = new GeneralName(new X500Name(((X509Certificate) cacert).getSubjectX500Principal().getName()));
         } else {
             RDN[] emptyRDN = new RDN[0];
             recipient = new GeneralName(new X500Name(emptyRDN));
@@ -684,7 +684,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected static PKIMessage genCertConfirm(X500Name userDN, Certificate cacert, byte[] nonce, byte[] transid, String hash, int certReqId, ASN1ObjectIdentifier protectionAlg) {
         String issuerDN = "CN=foobarNoCA";
         if(cacert != null) {
-            issuerDN = ((X509Certificate) cacert).getSubjectDN().getName();
+            issuerDN = ((X509Certificate) cacert).getSubjectX500Principal().getName();
         }
         PKIHeaderBuilder pkiHeaderBuilder = new PKIHeaderBuilder(PKIHeader.CMP_2000, new GeneralName(userDN), new GeneralName(new X500Name(issuerDN)));
         pkiHeaderBuilder.setMessageTime(new ASN1GeneralizedTime(new Date()));
@@ -956,7 +956,7 @@ public abstract class CmpTestCase extends CaTestCase {
      *
      * @param retMsg the CMP response message to run checks on check
      * @param issuerDN the expected sender (issuerDN) of the response
-     * @param userDN the expected recipient (subjectDN) of the response
+     * @param userDN the expected recipient (subjectDN) of the response, or null if it should not be checked
      * @param cacert CA certificate that signed the response, if signed, used to verify the signature
      * @param senderNonce the nonce we used when sending the request, the recipientNonce in the response should match
      * @param transId the transactionID we used when sending the request, ID in the response should match
@@ -1040,7 +1040,9 @@ public abstract class CmpTestCase extends CaTestCase {
         X500Name actissuer = new X500Name(header.getSender().getName().toString());
         assertEquals("The sender in the response is not the expected", expissuer, actissuer);
         X500Name actrecipient = new X500Name(header.getRecipient().getName().toString());
-        assertEquals("The recipient in the response is not the expected", userDN, actrecipient);
+        if (userDN != null) {
+            assertEquals("The recipient in the response is not the expected", userDN, actrecipient);
+        }
         if (signed) {
             // Verify the signature
             byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
@@ -1389,7 +1391,7 @@ public abstract class CmpTestCase extends CaTestCase {
         final PKIHeader pkiHeader = pkiMessage.getHeader();
         assertEquals(4, pkiHeader.getSender().getTagNo());
         final X500Name senderDN = new X500Name(pkiHeader.getSender().getName().toString());
-        final X500Name expectedDN = new X500Name(((X509Certificate) cacert).getSubjectDN().getName().toString());
+        final X500Name expectedDN = new X500Name(((X509Certificate) cacert).getSubjectX500Principal().getName().toString());
         assertEquals(expectedDN, senderDN);
         final X500Name recipientDN = new X500Name(pkiHeader.getRecipient().getName().toString());
         assertEquals(userDN, recipientDN);

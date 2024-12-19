@@ -29,7 +29,6 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -70,6 +69,7 @@ import org.junit.rules.TemporaryFolder;
 import com.keyfactor.CesecoreException;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -193,9 +193,17 @@ public class InternalKeyBindingImportCertificateCommandSystemTest {
         int keyusage = X509KeyUsage.digitalSignature;
         final ASN1Encodable usage = KeyPurposeId.getInstance(KeyPurposeId.id_kp_OCSPSigning);
         final ASN1Sequence seq = ASN1Sequence.getInstance(new DERSequence(usage));
-        Certificate certificate = CertTools.genSelfCertForPurpose("C=SE,O=foo,CN=testImportWithWrongCertificate", 365, null, keyPair.getPrivate(),
-                keyPair.getPublic(), "SHA256WithRSA", false, keyusage, null, null, BouncyCastleProvider.PROVIDER_NAME, true,
-                Arrays.asList(new Extension(Extension.extendedKeyUsage, true, seq.getEncoded())));           
+        Certificate certificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("C=SE,O=foo,CN=testImportWithWrongCertificate")
+                .setIssuerDn("C=SE,O=foo,CN=testImportWithWrongCertificate")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setKeyUsage(keyusage)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .setAdditionalExtensions(Arrays.asList(new Extension(Extension.extendedKeyUsage, true, seq.getEncoded())))
+                .generateCertificate();      
         FileOutputStream fileOutputStream = new FileOutputStream(certificateFile);
         try {
             fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(certificate)));

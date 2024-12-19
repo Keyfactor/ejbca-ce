@@ -480,7 +480,7 @@ public class LdapPublisher extends BasePublisher {
 		try {
 			// Extract the users DN from the crl. Use the least number of encodings...
 			final X509CRL crl = CertTools.getCRLfromByteArray(incrl);
-			crldn = DnComponents.stringToBCDNString(crl.getIssuerDN().toString());
+			crldn = DnComponents.stringToBCDNString(crl.getIssuerX500Principal().toString());
 			// Is it a delta CRL?
 			if (crl.getExtensionValue(Extension.deltaCRLIndicator.getId()) != null) {
 				isDeltaCRL = true;

@@ -21,7 +21,9 @@ import jakarta.ejb.Remote;
  */
 @Remote
 public interface UnidfnrProxySessionRemote {
-    
+
+    boolean isUnidFnrAvailable();
+
     void removeUnidFnrDataIfPresent(final String unid);
 
     void storeUnidFnrData(final String unid, final String fnr);

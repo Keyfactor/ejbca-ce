@@ -26,15 +26,11 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.List;
-
-import jakarta.ejb.FinderException;
-import jakarta.ejb.ObjectNotFoundException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -80,8 +76,12 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.ejb.FinderException;
+import jakarta.ejb.ObjectNotFoundException;
 
 /**
  * Test tool so that tests stop using the batch command.
@@ -489,14 +489,14 @@ public abstract class BatchCreateTool {
         }
 
         // Make a certificate chain from the certificate and the CA-certificate
-        Certificate[] cachain = (Certificate[]) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class)
-                .getCertificateChain(caid).toArray(new Certificate[0]);
+        X509Certificate[] cachain = (X509Certificate[]) EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class)
+                .getCertificateChain(caid).toArray(new X509Certificate[0]);
         // Verify CA-certificate
         if (CertTools.isSelfSigned((X509Certificate) cachain[cachain.length - 1])) {
 
                 // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1
                 // will not verify (at least not as of jdk6)
-                Certificate cacert = CertTools.getCertfromByteArray(cachain[cachain.length - 1].getEncoded(), Certificate.class);
+            X509Certificate cacert = CertTools.getCertfromByteArray(cachain[cachain.length - 1].getEncoded(), X509Certificate.class);
                 try {
                     cacert.verify(cacert.getPublicKey());
                 } catch (InvalidKeyException e) {
@@ -519,8 +519,8 @@ public abstract class BatchCreateTool {
         try {
             // Make sure we have BC certs, otherwise SHA256WithRSAAndMGF1 will
             // not verify (at least not as of jdk6)
-            Certificate cacert = CertTools.getCertfromByteArray(cachain[0].getEncoded(), Certificate.class);
-            Certificate usercert = CertTools.getCertfromByteArray(cert.getEncoded(), Certificate.class);
+            X509Certificate cacert = CertTools.getCertfromByteArray(cachain[0].getEncoded(), X509Certificate.class);
+            X509Certificate usercert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);
             usercert.verify(cacert.getPublicKey());
         } catch (GeneralSecurityException se) {
             String errMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.errorgennotverify");
@@ -545,7 +545,7 @@ public abstract class BatchCreateTool {
         if (createJKS) {
             ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
         } else {
-            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
+            ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain, KeyStoreCipher.PKCS12_AES256_AES128);
         }
 
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("batch.createkeystore", username);

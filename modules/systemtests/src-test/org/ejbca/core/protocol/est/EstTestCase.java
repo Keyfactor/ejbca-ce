@@ -162,7 +162,7 @@ public abstract class EstTestCase extends CaTestCase {
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and
         // check "Allow validity override".
         this.cpId = addCertificateProfile(CP_NAME);
-        this.eepId = addEndEntityProfile(EEP_NAME, this.cpId);
+        this.eepId = addEndEntityProfile(EEP_NAME, this.cpId, true);
     } 
     
     @Override
@@ -204,11 +204,12 @@ public abstract class EstTestCase extends CaTestCase {
      * 
      * @param name the name of the end entity profile.
      * @param certificateProfileId the default certificate profiles ID.
+     * @param emptyProfile if true the profile is initialized as 'EMPTY' profile.
      * @return the ID of the newly created end entity profile. 
      */
-    protected final int addEndEntityProfile(final String name, final int certificateProfileId) {
+    protected final int addEndEntityProfile(final String name, final int certificateProfileId, final boolean emptyProfile) {
         assertTrue("End entity profile with name " + name + " already exists. Clear test data first.", this.endEntityProfileSession.getEndEntityProfile(name)  == null);
-        final EndEntityProfile result = new EndEntityProfile(true);
+        final EndEntityProfile result = new EndEntityProfile(emptyProfile);
         result.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileId));
         int id = 0;
         try {
@@ -381,7 +382,7 @@ public abstract class EstTestCase extends CaTestCase {
     }
 
     protected PKCS10CertificationRequest generateCertReq(String dn, String challengePassword, String changeToSubjectDN, String changeToSubjectAltName, 
-            Extensions exts, final KeyPair keys) throws OperatorCreationException {
+            Extensions exts, final KeyPair keys, String signatureAlgorithm) throws OperatorCreationException {
         // Generate keys
 
         // Create challenge password attribute for PKCS10
@@ -450,7 +451,7 @@ public abstract class EstTestCase extends CaTestCase {
         // Complete the Attribute section of the request, the set (Attributes) contains two sequences (Attribute)
         DERSet attributes = new DERSet(attributesVec);
         // Create PKCS#10 certificate request
-        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA",
+        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest(signatureAlgorithm,
                 DnComponents.stringToBcX500Name(dn), keys.getPublic(), attributes, keys.getPrivate(), null);
         return p10request;
     }

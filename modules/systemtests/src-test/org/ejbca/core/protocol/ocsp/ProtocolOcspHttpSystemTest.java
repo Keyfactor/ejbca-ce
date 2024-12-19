@@ -1804,7 +1804,7 @@ Content-Type: text/html; charset=iso-8859-1
             info = caSession.getCAInfo(admin, dn);
 
             X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
-            assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
+            assertTrue("Error in created ca certificate", cert.getSubjectX500Principal().toString().equals(dn));
             assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
             X509Certificate bccert = CertTools.getCertfromByteArray(cert.getEncoded(), X509Certificate.class);

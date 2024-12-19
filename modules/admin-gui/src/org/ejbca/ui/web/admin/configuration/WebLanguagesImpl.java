@@ -46,7 +46,7 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
     private final int userspreferedlanguage;
     private final int userssecondarylanguage;
 
-    private String[] availablelanguages;
+    private final String[] AVAILABLE_LANGUAGES = new String[] { "en", "bs", "cs", "de", "fr", "ja", "pt", "sv", "uk", "zh", "vi" };
     private LanguageProperties[] languages = null;
     private List<WebLanguage> webLanguages;
 
@@ -58,26 +58,22 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
      */
     private void init(final ServletContext servletContext, final GlobalConfiguration globalconfiguration) {
         if(languages == null){
-            // Get available languages.
-            availablelanguages=null;
-            final String availablelanguagesstring = globalconfiguration.getAvailableLanguagesAsString();
-            availablelanguages =  availablelanguagesstring.split(",");
-            for(int i=0; i < availablelanguages.length;i++){
-                availablelanguages[i] = availablelanguages[i].trim().toLowerCase();
-                if (availablelanguages[i].equalsIgnoreCase("se")) {  /* For compatibility with EJBCA 6.2.x and before */
-                    availablelanguages[i] = "sv";
+            for(int i=0; i < AVAILABLE_LANGUAGES.length; i++){
+                AVAILABLE_LANGUAGES[i] = AVAILABLE_LANGUAGES[i].trim().toLowerCase();
+                if (AVAILABLE_LANGUAGES[i].equalsIgnoreCase("se")) {  /* For compatibility with EJBCA 6.2.x and before */
+                    AVAILABLE_LANGUAGES[i] = "sv";
                 }
-                if (availablelanguages[i].equalsIgnoreCase("ua")) {  /* For compatibility with EJBCA 6.2.x and before */
-                    availablelanguages[i] = "uk";
+                if (AVAILABLE_LANGUAGES[i].equalsIgnoreCase("ua")) {  /* For compatibility with EJBCA 6.2.x and before */
+                    AVAILABLE_LANGUAGES[i] = "uk";
                 }
             }
             // Load available languages
-            languages = new LanguageProperties[availablelanguages.length];
-            for(int i = 0; i < availablelanguages.length; i++){
+            languages = new LanguageProperties[AVAILABLE_LANGUAGES.length];
+            for(int i = 0; i < AVAILABLE_LANGUAGES.length; i++){
                 languages[i] = new LanguageProperties();
                 final String propsfile = "/" + globalconfiguration.getLanguagePath() + "/"
                 + globalconfiguration.getLanguageFilename() + "."
-                + availablelanguages[i] +".properties";
+                + AVAILABLE_LANGUAGES[i] +".properties";
 
                 InputStream is = null;
                 try {
@@ -105,7 +101,7 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
                 // Look if we have any custom publishers that include language files, and load those if there are any
                 final ServiceLoader<ICustomPublisher> serviceLoaderForCustomPublishers = ServiceLoader.load(ICustomPublisher.class);
                 for (final ICustomPublisher customPublisher : serviceLoaderForCustomPublishers) {
-                    final String languageFile = String.format("languages/languagefile.%s.properties", availablelanguages[i]);
+                    final String languageFile = String.format("languages/languagefile.%s.properties", AVAILABLE_LANGUAGES[i]);
                     if (customPublisher.getClass().getClassLoader().getResource(languageFile) == null) {
                         // It is expected that custom publishers typically do not contain language files so don't log anything
                         continue;
@@ -123,10 +119,10 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
 
             webLanguages = new ArrayList<WebLanguage>();
 
-            for(int i = 0; i < availablelanguages.length; i++){
+            for(int i = 0; i < AVAILABLE_LANGUAGES.length; i++){
                 final String englishName = languages[i].getProperty("LANGUAGE_ENGLISHNAME");
                 final String nativeName = languages[i].getProperty("LANGUAGE_NATIVENAME");
-                final String abbreviation = availablelanguages[i];
+                final String abbreviation = AVAILABLE_LANGUAGES[i];
 
                 webLanguages.add(new WebLanguage(i, englishName, nativeName, abbreviation));
             }
@@ -163,7 +159,7 @@ public class WebLanguagesImpl implements Serializable, WebLanguages {
      */
     @Override
     public String[] getAvailableLanguages(){
-      return availablelanguages;
+      return AVAILABLE_LANGUAGES;
     }
 
     /**

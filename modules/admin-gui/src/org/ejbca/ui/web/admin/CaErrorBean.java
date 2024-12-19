@@ -12,26 +12,23 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin;
 
-import java.io.PrintWriter;
 import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
-
-import jakarta.faces.application.ViewExpiredException;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.view.ViewScoped;
-import jakarta.inject.Named;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.ParameterException;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.faces.application.ViewExpiredException;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.view.ViewScoped;
+import jakarta.inject.Named;
 
 
 /**
@@ -126,12 +123,6 @@ public class CaErrorBean extends BaseManagedBean implements Serializable {
                     // Log the entire exception stack trace
                     if (log.isDebugEnabled()) {
                         log.debug("Client got the following error message: " + cause.getMessage(), throwable);
-                    }
-                    if (WebConfiguration.doShowStackTraceOnErrorPage()) {
-                        StringWriter stringWriter = new StringWriter();
-                        PrintWriter printWriter = new PrintWriter(stringWriter, true);
-                        throwable.printStackTrace(printWriter);
-                        stackTrace = stringWriter.toString();
                     }
                 }
             }

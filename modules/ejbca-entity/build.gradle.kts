@@ -1,14 +1,3 @@
-import java.util.Properties
-
-val props: Properties = Properties().apply {
-    val propertiesFilePath = "${rootProject.projectDir}/conf/database.properties"
-    if (file(propertiesFilePath).exists()) {
-        load(file(propertiesFilePath).inputStream())
-    } else {
-        load(file("$propertiesFilePath.sample").inputStream())
-    }
-}
-
 plugins {
     java
 }
@@ -41,8 +30,14 @@ sourceSets {
 tasks.systemTest {
     filter {
         // TODO ECA-12480: Create custom test tasks similar to Ant's "test-dbschema" and "test-ocspmon" targets.
-        excludeTestsMatching("DatabaseSchemaSystemTest")
-        excludeTestsMatching("OcspMonitoringToolSystemTest")
+        val includeDbSchema = providers.gradleProperty("includeDbSchema")
+        if (!includeDbSchema.isPresent || includeDbSchema.get() == "false") {
+            excludeTestsMatching("DatabaseSchemaSystemTest")
+        }
+        val includeOcspMonitoringTool = providers.gradleProperty("includeOcspMonitoringTool")
+        if (!includeOcspMonitoringTool.isPresent || includeOcspMonitoringTool.get() == "false") {
+            excludeTestsMatching("OcspMonitoringToolSystemTest")
+        }
     }
 }
 
@@ -55,6 +50,9 @@ tasks.processTestResources {
 }
 
 tasks.jar {
+    val jndiName = findProperty("datasource.jndi-name") as String? ?: "EjbcaDS"
+    val databaseName = findProperty("database.name") as String? ?: "mysql"
+
     from(sourceSets["main"].output)
     from("resources") {
         include("orm-ejbca-mysql.xml")
@@ -66,8 +64,8 @@ tasks.jar {
         into("META-INF")
         filter { line: String ->
             line.replace("\${datasource.jndi-name-prefix}", "java:/")
-                .replace("\${datasource.jndi-name}", props.getProperty("datasource.jndi-name", "EjbcaDS"))
-                .replace("\${database.name}", props.getProperty("database.name", "mysql"))
+                .replace("\${datasource.jndi-name}", jndiName)
+                .replace("\${database.name}", databaseName)
         }
     }
 }

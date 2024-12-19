@@ -12,15 +12,43 @@
  *************************************************************************/
 package org.ejbca.core.model.era;
 
-import com.keyfactor.CesecoreException;
-import com.keyfactor.ErrorCode;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.EJBTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.CertificateWrapper;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PublicKey;
+import java.security.SignatureException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -62,6 +90,7 @@ import org.cesecore.certificates.ca.ssh.SshCaInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateDataWrapper;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStatus;
@@ -119,7 +148,6 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.GlobalCustomCssConfiguration;
 import org.ejbca.config.MSAutoEnrollmentConfiguration;
 import org.ejbca.config.ScepConfiguration;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalProfileSessionLocal;
@@ -208,6 +236,16 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.IllegalQueryException;
 
+import com.keyfactor.CesecoreException;
+import com.keyfactor.ErrorCode;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
@@ -217,42 +255,6 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceException;
 import jakarta.persistence.Query;
 import jakarta.persistence.QueryTimeoutException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateExpiredException;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509Certificate;
-import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Implementation of the RaMasterApi that invokes functions at the local node.
@@ -1304,7 +1306,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                                                                        final Collection<Integer> authorizedEepIds, final boolean accessAnyEepAvailable) {
         final RaCertificateSearchResponseV2 response = new RaCertificateSearchResponseV2();
         final boolean countOnly = request.getPageNumber() == -1;
-        final Query query = createQuery(entityManager, request, countOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
+        /* If fingerPrintsOnly is true, the result list will contain only certificate fingerprints.
+         * This means that a second lookup is necessary to get the certificate data for all certificate fingerprints in the list.
+         */
+        final boolean fingerPrintsOnly = CesecoreConfiguration.useBase64CertTable();
+        final Query query = createQuery(entityManager, request, countOnly, fingerPrintsOnly, issuerDns, authorizedCpIds, accessAnyCpAvailable, authorizedEepIds, accessAnyEepAvailable);
         int maxResults = -1;
         int offset = -1;
         if (!countOnly) {
@@ -1334,10 +1340,16 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                     log.debug("Certificate search count: " + count + ". queryTimeout=" + queryTimeout + "ms");
                 }
             } else {
-                final List<?> resultList = query.getResultList();
-                for (final Object fingerprintRecord : resultList) {
-                    final String fingerprint = ValueExtractor.extractStringValue(fingerprintRecord);
-                    response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+				final List<?> resultList = query.getResultList();
+				if(fingerPrintsOnly) {
+					for (final Object fingerprintRecord : resultList) {
+                        final String fingerprint = ValueExtractor.extractStringValue(fingerprintRecord);
+                        response.getCdws().add(certificateStoreSession.getCertificateData(fingerprint));
+                    }
+                } else {
+					response.getCdws().addAll(resultList.stream()
+                            .map(certificateData -> new CertificateDataWrapper((CertificateData) certificateData, null))
+                            .collect(Collectors.toList()));
                 }
                 response.setStatus(RaCertificateSearchResponseV2.Status.SUCCESSFUL);
                 if (log.isDebugEnabled()) {
@@ -1365,7 +1377,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             response.setStatus(RaCertificateSearchResponseV2.Status.ERROR);
             log.info("Requested search query by " + authenticationToken + " failed, possibly due to timeout. " + e.getMessage());
         }
-        return response;
+		return response;
     }
 
     /**
@@ -1377,6 +1389,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     static Query createQuery( final EntityManager entityManager,
                               final RaCertificateSearchRequestV2 request,
                               final boolean countOnly,
+                              final boolean fingerprintsOnly,
                               final List<String> issuerDns,
                               final List<Integer> authorizedCpIds,
                               final boolean accessAnyCpAvailable,
@@ -1391,8 +1404,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         final StringBuilder sb = new StringBuilder("SELECT ");
         if (countOnly) {
             sb.append("count(*)");
-        } else {
+        } else if (fingerprintsOnly) {
             sb.append("a.fingerprint");
+        } else {
+            sb.append("a");
         }
         sb.append(" FROM CertificateData a");
         sb.append(" WHERE a.issuerDN IN (:issuerDN)");
@@ -1453,7 +1468,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             }
         }
 
-        final Query query = entityManager.createNativeQuery(sb.toString());
+        final Query query;
+        if (countOnly || fingerprintsOnly) {
+            query = entityManager.createNativeQuery(sb.toString());
+        } else {
+            query = entityManager.createQuery(sb.toString(), CertificateData.class);
+        }
         query.setParameter("issuerDN", issuerDns);
         if (!accessAnyCpAvailable || !request.getCpIds().isEmpty()) {
             query.setParameter("certificateProfileId", authorizedCpIds);
@@ -3190,17 +3210,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
     @Override
     public byte[] estDispatch(String operation, String alias, X509Certificate cert, String username, String password, byte[] requestBody)
-            throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException, AuthenticationFailedException {
-        // throws UnsupportedOperationException if EST is not available (Community);
-        if (!WebConfiguration.isLegacyEstRaApiAllowed()) { // default is off
-            log.info("RA tried to use legacy RA API call for EST, which is disabled by default for security reasons. Please upgrade the RA, or set raapi.legacyest.enabled=true in web.properties to allow this.");
-            throw new NoSuchAliasException("CA configuration does not allow RA to use legacy API for EST."); // No better exception. We can't change an existing API.
-        }
-        try {
-            return estOperationsSessionLocal.dispatchRequest(new AlwaysAllowLocalAuthenticationToken("EST - Call using legacy RA API call"), operation, alias, cert, username, password, requestBody);
-        } catch (AuthorizationDeniedException e) {
-            throw new IllegalStateException("Should not get AuthorizationDeniedException with AlwaysAllowLocalAuthenticationToken");
-        }
+            throws NoSuchAliasException, CADoesntExistsException, CertificateCreateException, CertificateRenewalException,
+            AuthenticationFailedException {
+        log.info(
+                "RA tried to use legacy RA API call for EST, which is disabled since 9.2.0.");
+        throw new NoSuchAliasException("CA configuration does not allow RA to use legacy API for EST."); // No better exception. We can't change an existing API.
     }
 
     @Override
