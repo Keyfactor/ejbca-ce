@@ -27,6 +27,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
+import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
@@ -159,4 +160,20 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
         return super.markCertificateForKeyRecovery(requestContext, certificateSerialNumber, issuerDN);
     }
 
+    @Override
+    @POST
+    @Path("/{issuer_dn}/keyimport")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(description = "Import keystores to CA in base64 format")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Keystores imported successfully"),
+            @ApiResponse(responseCode = "500", description = "Something went wrong"),
+    })
+    public Response importKeystores(@Context HttpServletRequest requestContext,
+                                    @Parameter(description = "Subject DN of CA that will take over key management") @PathParam("issuer_dn") String issuerDN,
+                                    @Parameter(name = "request") KeyImportRestRequest request) {
+
+        return super.importKeystores(requestContext, issuerDN, request);
+    }
 }
