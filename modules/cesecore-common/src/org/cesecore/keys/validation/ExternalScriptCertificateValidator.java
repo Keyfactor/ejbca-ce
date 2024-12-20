@@ -10,28 +10,35 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.cesecore.keys.validation;
 
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.List;
 
-/**
- * Base interface for certificate validators. All certificate validators must implement this interface.
- *
- *
- */
-public interface CertificateValidator extends Validator, ValidityAwareValidator {
+import org.cesecore.util.ExternalScriptsAllowlist;
 
+/**
+ * Marker inteface for certificate validators that run on external scripts.
+ */
+
+public interface ExternalScriptCertificateValidator extends Validator, ValidityAwareValidator {
+    
     /**
      * Method that validates the public key.
      *
      * @param certificate the certificate to validate.
+     * @param allowList an allow list containing all scripts permitted to be executed
+     * 
      * @return the error messages or an empty list if the certificate was validated successfully.
+     * 
      * @throws ValidatorNotApplicableException when this validator is not applicable for the input, for example CVC certificate instead of X.509 or other type
      * @throws ValidationException if the certificate could not be validated by the external command (exit code > 0).
      * @throws CertificateException if one of the certificates could not be parsed.
      */
-    List<String> validate(Certificate certificate)
+    List<String> validate(final Certificate certificate, final ExternalScriptsAllowlist allowList)
             throws ValidatorNotApplicableException, ValidationException, CertificateException;
+
+
 }
