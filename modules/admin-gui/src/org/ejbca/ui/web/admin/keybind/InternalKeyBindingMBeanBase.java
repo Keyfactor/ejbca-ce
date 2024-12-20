@@ -33,14 +33,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.faces.application.FacesMessage;
-import jakarta.faces.context.FacesContext;
-import jakarta.faces.model.ListDataModel;
-import jakarta.faces.model.SelectItem;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.Part;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
@@ -54,9 +46,9 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keybind.CertificateImportException;
 import org.cesecore.keybind.InternalKeyBinding;
+import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.keybind.InternalKeyBindingCache;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -79,6 +71,14 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.faces.application.FacesMessage;
+import jakarta.faces.context.FacesContext;
+import jakarta.faces.model.ListDataModel;
+import jakarta.faces.model.SelectItem;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 
 /**
  * JavaServer Faces Managed Bean for managing InternalKeyBindings.
@@ -960,13 +960,12 @@ public abstract class InternalKeyBindingMBeanBase extends BaseManagedBean implem
                 final PublicKey currentPublicKey = cryptoTokenManagementSession.getPublicKey(authenticationToken, currentCryptoToken.intValue(),
                         currentKeyPairAlias).getPublicKey();
                 for (final String signatureAlgorithm : AlgorithmTools.getSignatureAlgorithms(currentPublicKey)) {
-                    if (OcspConfiguration.isAcceptedSignatureAlgorithm(signatureAlgorithm)) {
+                    if (InternalKeyBindingBase.ACCEPTED_SIGNATURE_ALGORITHMS.contains(signatureAlgorithm)) {
                         availableSignatureAlgorithms.add(new SelectItem(signatureAlgorithm));
                     }
                 }
                 // If we have a currently selected signature algorithm, but it's not one of the ones we would choose, add it so we don't hide the current selection
-                if (currentSignatureAlgorithm != null && !OcspConfiguration.isAcceptedSignatureAlgorithm(currentSignatureAlgorithm)) {
-                    log.error("Adding '"+currentSignatureAlgorithm+"' because it was not one of '"+OcspConfiguration.getSignatureAlgorithm()+"'");
+                if (currentSignatureAlgorithm != null && !InternalKeyBindingBase.ACCEPTED_SIGNATURE_ALGORITHMS.contains(currentSignatureAlgorithm)) {
                     availableSignatureAlgorithms.add(new SelectItem(currentSignatureAlgorithm));
                 }
                 if (currentSignatureAlgorithm == null && !availableSignatureAlgorithms.isEmpty()) {

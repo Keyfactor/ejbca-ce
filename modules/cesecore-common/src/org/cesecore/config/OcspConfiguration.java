@@ -15,9 +15,7 @@ package org.cesecore.config;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.ex.ConversionException;
@@ -70,40 +68,7 @@ public class OcspConfiguration {
     public static final int RESPONDERIDTYPE_NAME = 1;
     @Deprecated //Remove this value once upgrading to 6.7.0 has been dropped
     public static final int RESPONDERIDTYPE_KEYHASH = 2;
-
-    public static Set<String> acceptedSignatureAlgorithms = new HashSet<>();
-    
-    /**
-     * Algorithm used by server to generate signature on OCSP responses
-     */
-    public static String getSignatureAlgorithm() {
-        return ConfigurationHolder.getString("ocsp.signaturealgorithm");
-    }
-
-    /**
-     * Returns if the specified signature algorithm is among the signature algorithms accepted by EJBCA.
-     * 
-     * The signatures algorithms that are accepted by EJBCA are specified in 'ocsp.signaturealgorithm' in the 
-     * EJBCA_HOME/conf/ocsp.properties file.
-     * 
-     * @param sigAlg
-     * @return 'true' if sigAlg is accepted by EJBCA, and 'false' otherwise
-     */
-    public static boolean isAcceptedSignatureAlgorithm(String sigAlg) {
-        if(acceptedSignatureAlgorithms.isEmpty()) {
-            String[] algs = getSignatureAlgorithm().split(";");
-            acceptedSignatureAlgorithms.addAll(Arrays.asList(algs));
-        }
-        return acceptedSignatureAlgorithms.contains(sigAlg);
-    }
-
-    /** acceptedSignatureAlgorithms are cached, so if we try to dynamically change the value (for testing)
-     * we need to clear this cache so it is reloaded.
-     */
-    public static void clearAcceptedSignatureAlgorithmCache() {
-        acceptedSignatureAlgorithms = new HashSet<>();
-    }
-    
+        
     /**
      * The interval on which new OCSP signing certificates are loaded in milliseconds
      */
