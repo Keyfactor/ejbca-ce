@@ -1124,11 +1124,11 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
      * @throws IllegalArgumentException 
      */
     // Code duplication: Re-factor.
-    private static CertificateValidator createCertificateValidator(Class<? extends CertificateValidator> type, final String name, final String description, final Date notBefore,
+    private static ExternalScriptCertificateValidator createCertificateValidator(Class<? extends ExternalScriptCertificateValidator> type, final String name, final String description, final Date notBefore,
             final int notBeforeCondition, final Date notAfter, final int notAfterCondition, final int failedAction,
             final Integer... certificateProfileIds) throws InstantiationException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException, NoSuchMethodException, SecurityException {
-        CertificateValidator result = type.getDeclaredConstructor().newInstance();
+        ExternalScriptCertificateValidator result = type.getDeclaredConstructor().newInstance();
         result.setProfileName(name);
         if (null != description) {
             result.setDescription(description);
