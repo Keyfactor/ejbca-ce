@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TimeZone;
@@ -153,6 +154,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keybind.CertificateImportException;
+import org.cesecore.keybind.InternalKeyBindingBase;
 import org.cesecore.keybind.InternalKeyBindingDataSessionLocal;
 import org.cesecore.keybind.InternalKeyBindingInfo;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
@@ -216,7 +218,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     private static final Logger log = Logger.getLogger(OcspResponseGeneratorSessionBean.class);
 
     private static final InternalResources intres = InternalResources.getInstance();
-    
+        
     private static volatile ExecutorService service = Executors.newCachedThreadPool();
     
     @Resource
@@ -811,12 +813,9 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return caCertificateChain;
     }
    
-    
-      // ECA_10509 No fix available.
-//    @Override
-//    public void setCanlog(boolean canLog) {
-//        CanLogCache.INSTANCE.setCanLog(canLog);
-//    }
+    private static final boolean isAcceptedSignatureAlgorithm(final String signatureAlgorithm) {
+        return InternalKeyBindingBase.ACCEPTED_SIGNATURE_ALGORITHMS.contains(signatureAlgorithm);
+    }
 
     /**
      * This method exists solely to avoid code duplication when error handling in getOcspResponse.
@@ -861,14 +860,12 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
      *    5. Select a mandatory or recommended signature algorithm specified for the version of OCSP in use, aka. 
      *       specified in the properties file.
      * 
-     *    The acceptable algorithm by EJBCA are the algorithms specified in ocsp.properties file in 'ocsp.signaturealgorithm'
-     * 
-     * @param req
+     * @param req the OCSP request
      * @param ocspSigningCacheEntry
      * @param signerCert
      * @return
      */
-    private String getSigAlg(OCSPReq req, final OcspSigningCacheEntry ocspSigningCacheEntry, final X509Certificate signerCert) {
+    private String getSigAlg(final OCSPReq req, final OcspSigningCacheEntry ocspSigningCacheEntry, final X509Certificate signerCert) {
         String sigAlg = null;
         PublicKey pk = signerCert.getPublicKey();
         // Start with the preferred signature algorithm in the OCSP request
@@ -891,7 +888,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 }
                 if (algorithmOid != null) {
                     sigAlg = AlgorithmTools.getAlgorithmNameFromOID(algorithmOid);
-                    if (sigAlg!=null && OcspConfiguration.isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+                    if (sigAlg!=null && isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
                         if (log.isDebugEnabled()) {
                             log.debug("Using OCSP response signature algorithm extracted from OCSP request extension. " + algorithmOid);
                         }
@@ -913,7 +910,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         // the signature algorithm used to sign the OCSPRequest
         if(req.getSignatureAlgOID() != null) {
             sigAlg = AlgorithmTools.getAlgorithmNameFromOID(req.getSignatureAlgOID());
-            if(OcspConfiguration.isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
+            if(isAcceptedSignatureAlgorithm(sigAlg) && AlgorithmTools.isCompatibleSigAlg(pk, sigAlg)) {
                 if (log.isDebugEnabled()) {
                     log.debug("OCSP response signature algorithm: the signature algorithm used to sign the OCSPRequest. " + sigAlg);
                 }
@@ -934,8 +931,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         
         // possibly unreachable as we rule out both OcspKeybinding and CA certificates before
         // The signature algorithm specified for the version of OCSP in use.
-        String sigAlgs = OcspConfiguration.getSignatureAlgorithm();
-        sigAlg = getSigningAlgFromAlgSelection(sigAlgs, pk);
+        sigAlg = getSigningAlgFromAlgSelection(pk);
         if (log.isDebugEnabled()) {
             log.debug("Using configured signature algorithm to sign OCSP response. " + sigAlg);
         }
@@ -2470,21 +2466,14 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
     /**
      * Returns a signing algorithm to use selecting from a list of possible algorithms.
      * 
-     * @param sigalgs the list of possible algorithms, ;-separated. Example "SHA256WithRSA;SHA256WithECDSA".
      * @param pk public key of signer, so we can choose between RSA, DSA and ECDSA algorithms
      * @return A single algorithm to use Example: SHA256WithRSA or SHA256WithECDSA
      */
-    private static String getSigningAlgFromAlgSelection(String sigalgs, PublicKey pk) {
-        String sigAlg = null;
-        String[] algs = StringUtils.split(sigalgs, ';');
-        for (int i = 0; i < algs.length; i++) {
-            if (AlgorithmTools.isCompatibleSigAlg(pk, algs[i])) {
-                sigAlg = algs[i];
-                break;
-            }
-        }
-        log.debug("Using signature algorithm for response: " + sigAlg);
-        return sigAlg;
+    private static String getSigningAlgFromAlgSelection(final PublicKey pk) {
+        Optional<String> sigAlg = InternalKeyBindingBase.ACCEPTED_SIGNATURE_ALGORITHMS.stream()
+                .filter(signatureAlgorithm -> AlgorithmTools.isCompatibleSigAlg(pk, signatureAlgorithm)).findFirst();
+        log.debug("Using signature algorithm for response: " + sigAlg.get());
+        return sigAlg.get();
     }
 
     @Override
@@ -2685,8 +2674,11 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
         return p12;
     }
     
-    /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs during ad-hoc upgrades. */
-    @Deprecated //Remove this method as soon as upgrading from 5->6 is dropped
+    /** Create InternalKeyBindings for Ocsp signing and SSL client authentication certs during ad-hoc upgrades.
+     * 
+     * TODO: Drop when upgrading from EJBCA 5 to 6 is dropped
+     */
+    @Deprecated(forRemoval = true) //Remove this method as soon as upgrading from 5->6 is dropped
     private void createInternalKeyBindings(AuthenticationToken authenticationToken, int cryptoTokenId, KeyStore keyStore, List<InternalKeyBindingTrustEntry> trustDefaults) throws KeyStoreException, 
     CryptoTokenOfflineException, InternalKeyBindingNameInUseException, AuthorizationDeniedException, CertificateEncodingException, CertificateImportException, InvalidAlgorithmException, InternalKeyBindingNonceConflictException {
         final Enumeration<String> aliases = keyStore.aliases();
@@ -2701,7 +2693,7 @@ public class OcspResponseGeneratorSessionBean implements OcspResponseGeneratorSe
                 continue;   // Ignore entry
             }
             // Extract the default signature algorithm
-            final String signatureAlgorithm = getSigningAlgFromAlgSelection(OcspConfiguration.getSignatureAlgorithm(), chain[0].getPublicKey());
+            final String signatureAlgorithm = getSigningAlgFromAlgSelection(chain[0].getPublicKey());
             if (OcspKeyBinding.isOcspSigningCertificate(chain[0], 
                     (AvailableExtendedKeyUsagesConfiguration) globalConfigurationSession.getCachedConfiguration(AvailableExtendedKeyUsagesConfiguration.CONFIGURATION_ID))) {
                 // Create the actual OcspKeyBinding
