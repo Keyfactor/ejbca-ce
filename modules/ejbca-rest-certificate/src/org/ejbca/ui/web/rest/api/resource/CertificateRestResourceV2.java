@@ -15,7 +15,6 @@ package org.ejbca.ui.web.rest.api.resource;
 import java.math.BigInteger;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
-import java.util.List;
 import java.util.Map;
 
 import jakarta.ejb.EJB;
