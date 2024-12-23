@@ -70,6 +70,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -91,6 +92,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -173,9 +175,18 @@ public class ApprovalSessionSystemTest extends CaTestCase {
     private static String REDACTED_END_ENTITY_PROFILE_NAME = "redacted_ee_profile";
     private static int redactedEndEntityProfileId;
 
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        try {
+            afterClass();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
 
         createTestCA();
 
@@ -235,6 +246,12 @@ public class ApprovalSessionSystemTest extends CaTestCase {
 
     @Before
     public void createTestCAWithEndEntity() throws Exception {
+        try {
+            tearDown();
+        }
+        catch (Exception e) {
+            // Ignore
+        }
         EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), EndEntityConstants.EMPTY_END_ENTITY_PROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_P12, null);

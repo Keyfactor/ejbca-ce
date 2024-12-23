@@ -169,7 +169,7 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.0.3.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.0.7.jar" sourcepath="/x509-common-util"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-api-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.3.1.jar"/>
 	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.3.1.jar"/>

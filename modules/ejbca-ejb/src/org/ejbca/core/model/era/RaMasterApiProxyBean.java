@@ -48,18 +48,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.ConcurrencyManagement;
-import jakarta.ejb.ConcurrencyManagementType;
-import jakarta.ejb.DependsOn;
-import jakarta.ejb.EJB;
-import jakarta.ejb.Lock;
-import jakarta.ejb.LockType;
-import jakarta.ejb.Singleton;
-import jakarta.ejb.Startup;
-import jakarta.ejb.TransactionManagement;
-import jakarta.ejb.TransactionManagementType;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -154,9 +142,20 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyStoreCipher;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.ConcurrencyManagement;
+import jakarta.ejb.ConcurrencyManagementType;
+import jakarta.ejb.DependsOn;
+import jakarta.ejb.EJB;
+import jakarta.ejb.Lock;
+import jakarta.ejb.LockType;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Startup;
+import jakarta.ejb.TransactionManagement;
+import jakarta.ejb.TransactionManagementType;
 
 /**
  * Proxy implementation of the the RaMasterApi that will get the result of the most preferred API implementation
@@ -1650,7 +1649,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         if (caInfo == null) {
             throw new AuthorizationDeniedException("Not authorized to CA with ID " + storedEndEntity.getCAId() + ", or it does not exist.");
         }
-        final Certificate[] cachain = caInfo.getCertificateChain().toArray(new Certificate[0]);
+        final X509Certificate[] cachain = caInfo.getCertificateChain().toArray(new X509Certificate[0]);
         if (!isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
             throw new AuthorizationDeniedException("Not authorized to recover keys");
         }
@@ -1734,8 +1733,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             } else if (storedEndEntity.getTokenType() == EndEntityConstants.TOKEN_SOFT_BCFKS) {
                 ks = KeyTools.createBcfks(alias, kp.getPrivate(), cert, cachain);
             } else {
-                // TODO: Allow cipher to be retrieved from CA configuration, see ECA-12501
-                ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain, KeyStoreCipher.PKCS12_3DES_3DES);
+                ks = KeyTools.createP12(alias, kp.getPrivate(), cert, cachain, endEntityProfile.getP12Cipher());
             }
             try (final ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
                 ks.store(baos, endEntity.getPassword().toCharArray());

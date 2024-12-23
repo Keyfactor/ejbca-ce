@@ -39,14 +39,16 @@ import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.roles.member.RoleMember;
 import org.cesecore.roles.member.RoleMemberDataProxySessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.junit.Assume;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 /**
  * System test of AuthorizationSessionBean.
  * 
  * @version $Id$
-' */
+ */
 public class AuthorizationSessionBeanSystemTest {
 
     //private static final Logger log = Logger.getLogger(AuthorizationSessionBeanSystemTest.class);
@@ -57,6 +59,9 @@ public class AuthorizationSessionBeanSystemTest {
 
     private final AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "AuthorizationSessionBeanSystemTest"));
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @Test
     public void testIsAuthorizedAlwaysAllow() {

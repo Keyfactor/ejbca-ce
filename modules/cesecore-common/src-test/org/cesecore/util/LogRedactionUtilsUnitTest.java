@@ -125,7 +125,7 @@ public class LogRedactionUtilsUnitTest {
         assertEquals("SubjectAltName redaction pattern mismatch", LogRedactionUtils.getSubjectAltNameRedactionPattern(),
                 "((OTHERNAME=)|(RFC822NAME=)|(DNSNAME=)|(IPADDRESS=)|(X400ADDRESS=)|(DIRECTORYNAME=)|(EDIPARTYNAME=)|"
                         + "(UNIFORMRESOURCEID=)|(REGISTEREDID=)|(UPN=)|(GUID=)|(KRB5PRINCIPAL=)|(PERMANENTIDENTIFIER=)|(XMPPADDR=)|"
-                        + "(SRVNAME=)|(SUBJECTIDENTIFICATIONMETHOD=)" + federalAgencySmartCredentialNumberPattern
+                        + "(SRVNAME=)|(SUBJECTIDENTIFICATIONMETHOD=)|(HARDWAREMODULENAME=)" + federalAgencySmartCredentialNumberPattern
                         + "|(UNIFORMRESOURCEIDENTIFIER=)|(URI=)).*");
     }
     

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.security.KeyPair;
@@ -83,6 +84,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.roles.Role;
 import org.cesecore.roles.management.RoleSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileUtil;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
@@ -1172,14 +1174,10 @@ public class KeyValidatorSessionSystemTest extends RoleUsingTestCase {
      * @param classpath the class path (or filename -> put inside resources directory).
      * @return the full path.
      */
-    private String getFilePathFromClasspath(final String classpath) {
+    private String getFilePathFromClasspath(final String classpath) throws IOException {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
         final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
-        final String path = "resources/platform/" + subFolder + "/" + classpath + fileSuffix;
-        final String result = KeyValidatorSessionSystemTest.class.getClassLoader().getResource(path).getPath();
-        if (log.isDebugEnabled()) {
-            log.debug("Get file path by class path: " + classpath + " - " + result);
-        }
-        return SystemUtils.IS_OS_WINDOWS ? result.replaceFirst("/", StringUtils.EMPTY) : result;
+        final String path = "platform/" + subFolder + "/" + classpath + fileSuffix;
+        return FileUtil.getResourceAsFile(path).getAbsolutePath();
     }
 }

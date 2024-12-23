@@ -16,17 +16,8 @@ package org.ejbca.core.ejb.ca.store;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
@@ -38,6 +29,15 @@ import org.ejbca.core.model.ca.store.CertReqHistory;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 
 /**
  * Stores and manages CertReqHistory entries in the database.
@@ -87,7 +87,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
         try {          
         	String msg = intres.getLocalizedMessage("store.removehistory", certFingerprint);
         	log.info(msg);
-            CertReqHistoryData crh = CertReqHistoryData.findById(entityManager, certFingerprint);
+            CertReqHistoryData crh = entityManager.find(CertReqHistoryData.class, certFingerprint);
             if (crh == null) {
             	if (log.isDebugEnabled()) {
             		log.debug("Trying to remove CertReqHistory that does not exist: "+certFingerprint);                		
@@ -110,7 +110,10 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     @Override
     public CertReqHistory retrieveCertReqHistory(BigInteger certificateSN, String issuerDN){
     	CertReqHistory retval = null;
-    	Collection<CertReqHistoryData> result = CertReqHistoryData.findByIssuerDNSerialNumber(entityManager, issuerDN, certificateSN.toString());
+    	final TypedQuery<CertReqHistoryData> query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber", CertReqHistoryData.class);
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("serialNumber", certificateSN.toString());
+        List<CertReqHistoryData> result = query.getResultList();    	
     	if(result.iterator().hasNext()) {
     		retval = result.iterator().next().getCertReqHistory();
     	}
@@ -121,8 +124,10 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public List<CertReqHistory> retrieveCertReqHistory(String username){
-    	ArrayList<CertReqHistory> retval = new ArrayList<>();
-    	Collection<CertReqHistoryData> result = CertReqHistoryData.findByUsername(entityManager, username);
+    	List<CertReqHistory> retval = new ArrayList<>();
+    	final TypedQuery<CertReqHistoryData> query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.username=:username", CertReqHistoryData.class);
+        query.setParameter("username", username);
+        List<CertReqHistoryData> result = query.getResultList();  	
     	Iterator<CertReqHistoryData> iter = result.iterator();
     	while(iter.hasNext()) {
     		retval.add(iter.next().getCertReqHistory());
