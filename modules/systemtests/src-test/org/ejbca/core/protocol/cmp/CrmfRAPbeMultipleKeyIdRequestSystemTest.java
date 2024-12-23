@@ -110,7 +110,7 @@ import com.keyfactor.util.keys.KeyTools;
  * 
  * @version $Id$
  */
-@Ignore
+@Ignore("Requires special configuration to work")
 public class CrmfRAPbeMultipleKeyIdRequestSystemTest extends CmpTestCase {
 	
     private static final Logger log = Logger.getLogger(CrmfRAPbeMultipleKeyIdRequestSystemTest.class);

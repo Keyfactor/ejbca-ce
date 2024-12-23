@@ -62,12 +62,12 @@ public abstract class SignSessionCommon extends CaTestCase{
             }
         } else {
             log.info("User " + username + " already exists, resetting status.");
-            EndEntityInformation endEntity = new EndEntityInformation(username,  "C=SE,CN="+username,
+            EndEntityInformation endEntityInformation = new EndEntityInformation(username,  "C=SE,CN="+username,
                     caId, null, 
                     "foo@anatom.nu", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     endEntityProfileId, certificateProfileId, null, null, SecConst.TOKEN_SOFT_PEM, null);
-            endEntity.setPassword("foo123");
-            endEntityManagementSession.changeUser(internalAdmin, endEntity, false);            
+            endEntityInformation.setPassword("foo123");
+            endEntityManagementSession.changeUser(internalAdmin, endEntityInformation, false);
             if (log.isDebugEnabled()) {
                 log.debug("Reset status to NEW");
             }

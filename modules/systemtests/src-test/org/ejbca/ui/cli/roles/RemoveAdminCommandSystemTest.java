@@ -34,8 +34,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * @version $Id$
+/** Test for the 'roles removeadmin' CLI command
  */
 public class RemoveAdminCommandSystemTest {
 
@@ -66,14 +65,39 @@ public class RemoveAdminCommandSystemTest {
         final int caId = testx509ca.getCAId();
         caSession.addCA(internalAdmin, testx509ca);
         try {
-            final String matchValue = "foo";
-            roleMemberSession.persist(internalAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
-                    caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
-                    matchValue, roleId, null));
-            String[] args = { ROLENAME, "TestCA", "WITH_COMMONNAME", "TYPE_EQUALCASE", "foo" };
-            command.execute(args);
-            final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(internalAdmin, roleId);
-            assertEquals("RoleMember was not removed via CLI command", 0, roleMembers.size());
+            // A match value that implies case sensitive
+            {
+                final String matchValue = "foo";
+                roleMemberSession.persist(internalAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                        caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                        matchValue, roleId, null));
+                String[] args = { "--role", ROLENAME, "--caname", "TestCA", "--with", "WITH_COMMONNAME", "--value", matchValue };
+                command.execute(args);
+                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(internalAdmin, roleId);
+                assertEquals("RoleMember was not removed via CLI command", 0, roleMembers.size());
+            }
+            // Legacy script version of the above
+            {
+                final String matchValue = "foo";
+                roleMemberSession.persist(internalAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                        caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_COMMONNAME.getNumericValue(), AccessMatchType.TYPE_EQUALCASE.getNumericValue(),
+                        matchValue, roleId, null));
+                String[] args = { ROLENAME, "TestCA", "WITH_COMMONNAME", "TYPE_EQUALCASE", matchValue };
+                command.execute(args);
+                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(internalAdmin, roleId);
+                assertEquals("RoleMember was not removed via CLI command", 0, roleMembers.size());
+            }
+            // A match value that implies case insensitive
+            {
+                final String matchValue = "foo@example.com";
+                roleMemberSession.persist(internalAdmin, new RoleMember(X509CertificateAuthenticationTokenMetaData.TOKEN_TYPE,
+                        caId, RoleMember.NO_PROVIDER, X500PrincipalAccessMatchValue.WITH_DNEMAILADDRESS.getNumericValue(), AccessMatchType.TYPE_EQUALCASEINS.getNumericValue(),
+                        matchValue, roleId, null));
+                String[] args = { "--role", ROLENAME, "--caname", "TestCA", "--with", "WITH_DNEMAILADDRESS", "--value", matchValue };
+                command.execute(args);
+                final List<RoleMember> roleMembers = roleMemberSession.getRoleMembersByRoleId(internalAdmin, roleId);
+                assertEquals("RoleMember was not removed via CLI command", 0, roleMembers.size());
+            }
         } finally {
             CaTestUtils.removeCa(internalAdmin, testx509ca.getCAInfo());
         }

@@ -174,7 +174,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         private Set<String> nodesInCluster;
         private boolean enableCommandLine;
         private boolean enableCommandLineDefaultUser;
-        private boolean enableExternalScripts;
         private List<CTLogInfo> ctLogs;
         private boolean publicWebCertChainOrderRootFirst;
         private boolean enableSessionTimeout;
@@ -215,7 +214,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 this.nodesInCluster = globalConfig.getNodesInCluster();
                 this.enableCommandLine = globalConfig.getEnableCommandLineInterface();
                 this.enableCommandLineDefaultUser = globalConfig.getEnableCommandLineInterfaceDefaultUser();
-                this.enableExternalScripts = globalConfig.getEnableExternalScripts();
                 this.publicWebCertChainOrderRootFirst = globalConfig.getPublicWebCertChainOrderRootFirst();
                 this.enableSessionTimeout = globalConfig.getUseSessionTimeout();
                 this.sessionTimeoutTime = globalConfig.getSessionTimeoutTime();
@@ -270,8 +268,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         public void setEnableCommandLine(boolean enableCommandLine) { this.enableCommandLine=enableCommandLine; }
         public boolean getEnableCommandLineDefaultUser() { return this.enableCommandLineDefaultUser; }
         public void setEnableCommandLineDefaultUser(boolean enableCommandLineDefaultUser) { this.enableCommandLineDefaultUser=enableCommandLineDefaultUser; }
-        public boolean getEnableExternalScripts() { return this.enableExternalScripts; }
-        public void setEnableExternalScripts(boolean enableExternalScripts) { this.enableExternalScripts=enableExternalScripts; }
         public List<CTLogInfo> getCtLogs() { return this.ctLogs; }
         public void setCtLogs(List<CTLogInfo> ctlogs) { this.ctLogs = ctlogs; }
         public boolean getPublicWebCertChainOrderRootFirst() { return this.publicWebCertChainOrderRootFirst; }
@@ -422,6 +418,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
             }
             tabIndex++;
         }
+        flushCache();
     }
 
     public void authorizeViewCt(ComponentSystemEvent event) throws Exception {
@@ -498,7 +495,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
     public SystemConfigurationOAuthKeyManager getOauthKeyManager() {
         if (oauthKeyManager == null) {
             this.oAuthConfiguration = null;
-            getEjbcaWebBean().reloadOAuthConfiguration();
             oauthKeyManager = new SystemConfigurationOAuthKeyManager(getOauthKeys(),
                 new SystemConfigurationOAuthKeyManager.SystemConfigurationHelper() {
                     @Override
@@ -1048,7 +1044,6 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
                 globalConfig.setNodesInCluster(currentConfig.getNodesInCluster());
                 globalConfig.setEnableCommandLineInterface(currentConfig.getEnableCommandLine());
                 globalConfig.setEnableCommandLineInterfaceDefaultUser(currentConfig.getEnableCommandLineDefaultUser());
-                globalConfig.setEnableExternalScripts(currentConfig.getEnableExternalScripts());
                 globalConfig.setPublicWebCertChainOrderRootFirst(currentConfig.getPublicWebCertChainOrderRootFirst());
                 globalConfig.setUseSessionTimeout(currentConfig.isEnableSessionTimeout());
                 globalConfig.setSessionTimeoutTime(currentConfig.getSessionTimeoutTime());
@@ -1622,7 +1617,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ArrayList<String> cpNamesUsingEKU = getCertProfilesUsingEKU(oid);
         if(!cpNamesUsingEKU.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamesUsingEKU);
-            final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but is still used in the following certitifcate profiles: " +  cpNamesMessage;
+            final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but is still used in the following certificate profiles: " +  cpNamesMessage;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
         }
     }
@@ -1933,7 +1928,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final ArrayList<String> cpNamedUsingExtension = getCertProfilesUsingExtension(extID);
         if(!cpNamedUsingExtension.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamedUsingExtension);
-            final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certitifcate profiles: " +  cpNamesMessage;
+            final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certificate profiles: " +  cpNamesMessage;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
         }
     }
@@ -1942,12 +1937,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         String newOID = getNewOID();
         if (StringUtils.isEmpty(newOID)) {
             FacesContext.getCurrentInstance()
-            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExenstion OID is set.", null));
+            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension OID is set.", null));
             return;
         }
         if (!isOidNumericalOnly(newOID)) {
             FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + newOID + " contains non-numerical values.", null));
             return;
         }
 
@@ -1961,7 +1956,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         if (StringUtils.isEmpty(getNewDisplayName())) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExension Label is set.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension Label is set.", null));
             return;
         }
 

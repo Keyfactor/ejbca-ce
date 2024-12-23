@@ -163,15 +163,15 @@ public class RestResourceSystemTestBase {
     private static final String CERTIFICATE_USER_NAME_NOADMIN = "RestApiTestUserNoAdmin";
     private static final String CERTIFICATE_SUBJECT_DN_NOADMIN = "CN=" + CERTIFICATE_USER_NAME_NOADMIN;
     private static final String CERTIFICATE_PASSWORD = "RestApiTestUser123";
-    private static final X509Certificate X_509_CERTIFICATE;
-    private static final X509Certificate X_509_CERTIFICATE_NOADMIN;
+    private static X509Certificate X_509_CERTIFICATE;
+    private static X509Certificate X_509_CERTIFICATE_NOADMIN;
     private static final String LOGIN_STORE_PATH = System.getProperty("java.io.tmpdir") + File.separator + "restapitestuser_" + new Date().getTime() + ".jks";
     private static final String LOGIN_STORE_PATH_NOADMIN = System.getProperty("java.io.tmpdir") + File.separator + "restapitestuser_noadmin_" + new Date().getTime() + ".jks";
     private static final String SUPER_ADMINISTRATOR_ROLE_NAME = "Super Administrator Role";
-    private static final RoleMember ROLE_MEMBER;
-    private static final KeyStore ADMIN_KEYSTORE;
-    private static final KeyStore NOADMIN_KEYSTORE;
-    private static final KeyStore TRUST_KEYSTORE;
+    private static RoleMember ROLE_MEMBER;
+    private static KeyStore ADMIN_KEYSTORE;
+    private static KeyStore NOADMIN_KEYSTORE;
+    private static KeyStore TRUST_KEYSTORE;
     private static AvailableProtocolsConfiguration protocolConfigBackup;
     
     protected static final AuthenticationToken INTERNAL_ADMIN_TOKEN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaRestApiTest"));
@@ -183,7 +183,7 @@ public class RestResourceSystemTestBase {
     protected static final int HTTP_STATUS_CODE_NOT_FOUND = 404;
     protected static final int HTTP_STATUS_CODE_CONFLICT = 409;
 
-    static {
+    private static void staticSetup() {
         clearLoginCertificateSetup(); // Always make sure we start with a clean environment
         try {
             // Trusted CA setup: import CA that issued server certificate into trustedKeyStore (configurable with target.servercert.ca)
@@ -242,6 +242,7 @@ public class RestResourceSystemTestBase {
     }
 
     public static void beforeClass() throws Exception {
+        staticSetup();
         CryptoProviderTools.installBCProvider();
         backupProtocolConfiguration();
         enableRestProtocolConfiguration();
@@ -386,6 +387,10 @@ public class RestResourceSystemTestBase {
             final KeyPair keyPair,
             final byte[] certificateBytes
     ) throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
+        // Remove it if there already is there
+        if (keyStore.containsAlias(keyStoreAlias)) {
+            keyStore.deleteEntry(keyStoreAlias);
+        }
         // Add the certificate
         keyStore.setCertificateEntry(keyStoreAlias, getCertificateFromBytes(issuerCertificateBytes));
         // Add the key if exists

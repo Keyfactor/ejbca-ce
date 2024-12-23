@@ -140,7 +140,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_USERNAME_CONTAINS_INVALID_CHARACTERS = "enroll_username_contains_invalid_characters";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
-    private static final String ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD = "enroll_invalid_certificate_request_not_parsable_subject_dn_field";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
 
     private static final String ENROLL_INVALID_SSH_PUB_KEY = "enroll_invalid_ssh_pub_key";
@@ -233,6 +232,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
     private String extensionData;
     private String accountBindingId;
     private SubjectDn subjectDn;
+    private String csrSubjectDnString;
     private SubjectAlternativeName subjectAlternativeName;
     private SubjectDirectoryAttributes subjectDirectoryAttributes;
     private EndEntityInformation endEntityInformation;
@@ -1031,10 +1031,6 @@ public class EnrollMakeNewRequestBean implements Serializable {
                     }
                 }
             }
-            if (RequestFieldType.DN.equals(type) && getCertificateProfile().getAllowDNOverride()) {
-                raLocaleBean.addMessageError(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField);
-                throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage(ENROLL_INVALID_CERTIFICATE_REQUEST_DN_FIELD, subjectField)));
-            }
             if (log.isDebugEnabled()) {
                 if (RequestFieldType.DN.equals(type)) {
                     log.debug("Unparsable subject " + type + " field '" + LogRedactionUtils.getSubjectDnLogSafe(subjectField, eepId)
@@ -1796,6 +1792,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         //Get public key algorithm from CSR and check if it's allowed in certificate profile or by PQC configuration
         try {
             final PublicKey publicKey = certRequest.getRequestPublicKey();
+            csrSubjectDnString = certRequest.getRequestDN();
             final String keySpecification = AlgorithmTools.getKeySpecification(publicKey);
             final String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(publicKey);
             if (AlgorithmTools.isPQC(keyAlgorithm) && !WebConfiguration.isPQCEnabled()) {
@@ -2854,6 +2851,8 @@ public class EnrollMakeNewRequestBean implements Serializable {
     public RaRequestPreview getRequestPreview() {
         RaRequestPreview requestPreview = new RaRequestPreview();
         requestPreview.updateSubjectDn(getSubjectDn());
+        requestPreview.updateCsrSubjectDn(csrSubjectDnString);
+        requestPreview.setSdnOverrideByCsr(isSubjectDnOverrideByCsrEnabled());
         requestPreview.updateSubjectAlternativeName(getSubjectAlternativeName(), getEndEntityProfile());
         requestPreview.updateSubjectDirectoryAttributes(getSubjectDirectoryAttributes());
         requestPreview.setPublicKeyAlgorithm(getAlgorithmUiRepresentation());
@@ -3061,6 +3060,22 @@ public class EnrollMakeNewRequestBean implements Serializable {
         } else {
             return false;
         }
+    }
+
+    /**
+     * @return true if Subject DN Override by CSR is enabled in the current certificate profile
+     */
+    public boolean isSubjectDnOverrideByCsrEnabled() {
+        return StringUtils.isNotEmpty(getSelectedCertificateProfile())
+                && this.authorizedCertificateProfiles.getValue(Integer.parseInt(getSelectedCertificateProfile())).getAllowDNOverride();
+    }
+
+    /**
+     * @return true if the SDN Override enabled not should be shown in the UI. Only show it when relevant.
+     */
+    public boolean isDisplaySdnOverrideNote() {
+        return isSubjectDnOverrideByCsrEnabled() && (getSelectedKeyPairGenerationEnum() == KeyPairGeneration.PROVIDED_BY_USER
+                || getSelectedKeyPairGenerationEnum() == KeyPairGeneration.POSTPONE);
     }
 
     public String getSshKeyId() {

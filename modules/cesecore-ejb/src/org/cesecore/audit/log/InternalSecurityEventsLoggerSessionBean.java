@@ -61,8 +61,9 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
             throw new AuditRecordStorageException("Security audit logging is currently disabled.");
         }
         final Map<Class<?>, Object> ejbs = getEjbs();
+        final var loggerIds = AuditDevicesConfig.getAllDeviceIds();
         boolean anyFailures = false;
-        for (final String loggerId : AuditDevicesConfig.getAllDeviceIds()) {
+        for (final String loggerId : loggerIds) {
             try {
                 StopWatch sw = null;
                 if(LOG.isDebugEnabled()){
