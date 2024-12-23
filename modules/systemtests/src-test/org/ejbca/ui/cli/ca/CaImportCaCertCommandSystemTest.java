@@ -57,6 +57,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -105,8 +106,14 @@ public class CaImportCaCertCommandSystemTest {
 
         // Create a handmade External CA
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
-        X509Certificate externalCACert = CertTools.genSelfCert("CN=External CA", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate externalCACert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=External CA")
+                .setIssuerDn("CN=External CA")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();     
 
         List<Certificate> mylist = new ArrayList<>();
         mylist.add(externalCACert);

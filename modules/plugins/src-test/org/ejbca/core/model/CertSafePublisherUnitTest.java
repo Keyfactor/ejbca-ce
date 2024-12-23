@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevocationReasons;
@@ -39,6 +40,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -61,10 +63,18 @@ public class CertSafePublisherUnitTest {
 
     @Test
     public void testJSonSerialization() throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException,
-            NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ParseException, InstantiationException {
+            NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ParseException, InstantiationException, CertIOException {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=PrimeKey,CN=testJSonSerialization", 365, null, keys.getPrivate(),
-                keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=PrimeKey,CN=testJSonSerialization")
+                .setIssuerDn("C=SE,O=PrimeKey,CN=testJSonSerialization")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+
         //We want to run this test without calling the constructor. Test code, so calling a sun-package is acceptable. 
         ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
         Constructor<CustomPublisherContainer> objDef = CustomPublisherContainer.class.getDeclaredConstructor();

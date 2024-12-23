@@ -26,13 +26,14 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.isismtt.ocsp.CertHash;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -60,10 +61,19 @@ public class OcspCertHashExtensionUnitTest {
      */
     @Test
     public void testProcess() throws NoSuchAlgorithmException, IllegalStateException, InvalidAlgorithmParameterException,
-            OperatorCreationException, CertificateException {
+            OperatorCreationException, CertificateException, CertIOException {
         org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension ocspCertHashExtension = new org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension();
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate cert = CertTools.genSelfCert("CN=CertHashTest", 365, null, keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        X509Certificate cert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=CertHashTest")
+                .setIssuerDn("CN=CertHashTest")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         Map<ASN1ObjectIdentifier,Extension> result = ocspCertHashExtension.process(null, null, null, cert, null, null);
         Extension extension = result.get(new ASN1ObjectIdentifier(org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension.CERT_HASH_OID));
         ASN1Encodable derSequence = extension.getParsedValue();
