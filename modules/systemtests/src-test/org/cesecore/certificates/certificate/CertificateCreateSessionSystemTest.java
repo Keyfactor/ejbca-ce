@@ -102,6 +102,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -1034,8 +1035,16 @@ public class CertificateCreateSessionSystemTest extends RoleUsingTestCase {
     public void testAuthorization() throws Exception {
 
         // AuthenticationToken that does not have privileges to create a certificate
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(),
-                keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test CertProfileSessionNoAuth")
+                .setIssuerDn("C=SE,O=Test,CN=Test CertProfileSessionNoAuth")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
 
         EndEntityInformation user = new EndEntityInformation("certcreateauth", "C=SE,O=AnaTom,CN=certcreateauth", testx509ca.getCAId(), null,

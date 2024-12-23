@@ -44,9 +44,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.CertificateImplementationRegistry;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.certificate.x509.X509CertificateUtility;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
@@ -77,8 +77,16 @@ public class CvcKeyToolsUnitTest {
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
         // log.debug(b64private);
-        X509Certificate cert = CertTools.genSelfCert("C=SE,O=Test,CN=Test", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, true);
+        X509Certificate cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test")
+                .setIssuerDn("C=SE,O=Test,CN=Test")
+                .setValidityDays(265)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         // log.debug(cert);
         assertNotNull("cert must not be null", cert);
         String b64cert = new String(Base64.encode(cert.getEncoded()));

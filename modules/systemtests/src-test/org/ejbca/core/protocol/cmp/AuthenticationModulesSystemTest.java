@@ -1384,8 +1384,14 @@ public class AuthenticationModulesSystemTest extends CmpTestCase {
             Certificate cert = this.signSession.createCertificate(ADMIN, testUsername, "foo123", new PublicKeyWrapper(keys.getPublic()));
             fingerprint = CertTools.getFingerprintAsString(cert);
             // A fake certificate that should not be valid
-            Certificate fakeCert = CertTools.genSelfCert(testUserDN.toString(), 30, null, fakeKeys.getPrivate(), fakeKeys.getPublic(),
-                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+            Certificate fakeCert = SimpleCertGenerator.forTESTLeafCert()
+                    .setSubjectDn(testUserDN.toString())
+                    .setIssuerDn(testUserDN.toString())
+                    .setValidityDays(30)
+                    .setIssuerPrivKey(fakeKeys.getPrivate())
+                    .setEntityPubKey(fakeKeys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .generateCertificate();  
 
             // Step 1 sign with fake certificate, should not be valid as end entity authentication
             {

@@ -13,6 +13,10 @@
 
 package org.ejbca.core.ejb.ca.caadmin;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -54,15 +58,12 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.BaseCryptoToken;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.KeyGenParams;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests CA import and export.
@@ -92,8 +93,15 @@ public class CAImportExportSystemTest  {
     public static void beforeTest() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         KeyPair keys = KeyTools.genKeys(RSA_1024, AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test CertProfileSessionNoAuth")
+                .setIssuerDn("C=SE,O=Test,CN=Test CertProfileSessionNoAuth")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();
+                
         adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
     }
 

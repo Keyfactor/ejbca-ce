@@ -45,7 +45,7 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
 import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -147,8 +147,16 @@ public class CryptoTokenImportKeyPairCommand extends BaseCryptoTokenCommand {
             final Certificate[] certchain = new Certificate[1];
             final String signatureAlgorithm = getSignatureAlgorithm(keyAlgorithm + "-" + keySpec);
             
-            certchain[0] = CertTools.genSelfCert("CN=SignatureKeyHolder", 36500, null, privateKey, publicKey,
-                    signatureAlgorithm, true);
+            certchain[0] = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn("CN=SignatureKeyHolder")
+                    .setIssuerDn("CN=SignatureKeyHolder")
+                    .setValidityDays(36500)
+                    .setIssuerPrivKey(privateKey)
+                    .setEntityPubKey(publicKey)
+                    .setSignatureAlgorithm(signatureAlgorithm)
+                    .setLdapOrder(true)
+                    .generateCertificate();
+
             keystore.setKeyEntry(alias, privateKey, privateKeyPass, certchain);
 
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
