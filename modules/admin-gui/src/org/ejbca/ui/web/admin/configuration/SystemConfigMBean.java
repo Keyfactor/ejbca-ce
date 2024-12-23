@@ -1617,7 +1617,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         ArrayList<String> cpNamesUsingEKU = getCertProfilesUsingEKU(oid);
         if(!cpNamesUsingEKU.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamesUsingEKU);
-            final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but is still used in the following certitifcate profiles: " +  cpNamesMessage;
+            final String message = "ExtendedKeyUsage '" + ekuToRemove.getName() + "' has been removed, but is still used in the following certificate profiles: " +  cpNamesMessage;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
         }
     }
@@ -1928,7 +1928,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         final ArrayList<String> cpNamedUsingExtension = getCertProfilesUsingExtension(extID);
         if(!cpNamedUsingExtension.isEmpty()) {
             final String cpNamesMessage = getCertProfilesNamesMessage(cpNamedUsingExtension);
-            final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certitifcate profiles: " +  cpNamesMessage;
+            final String message = "CustomCertificateExtension '" + extensionToRemove.getDisplayName() + "' has been removed, but it is still used in the following certificate profiles: " +  cpNamesMessage;
             FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_WARN, message, null));
         }
     }
@@ -1937,12 +1937,12 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         String newOID = getNewOID();
         if (StringUtils.isEmpty(newOID)) {
             FacesContext.getCurrentInstance()
-            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExenstion OID is set.", null));
+            .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension OID is set.", null));
             return;
         }
         if (!isOidNumericalOnly(newOID)) {
             FacesContext.getCurrentInstance()
-                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + currentEKUOid + " contains non-numerical values.", null));
+                    .addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "OID " + newOID + " contains non-numerical values.", null));
             return;
         }
 
@@ -1956,7 +1956,7 @@ public class SystemConfigMBean extends BaseManagedBean implements Serializable {
         }
 
         if (StringUtils.isEmpty(getNewDisplayName())) {
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExension Label is set.", null));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_ERROR, "No CustomCertificateExtension Label is set.", null));
             return;
         }
 
