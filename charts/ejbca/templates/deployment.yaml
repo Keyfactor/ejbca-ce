@@ -158,7 +158,7 @@ spec:
               subPath: httpd.conf
             {{- if .Values.httpd.mountInternalHttpdCert }}
             - name: httpd-cert-provided
-              mountPath: /etc/httpd/ssl/
+              mountPath: /etc/httpd/ssl/pem/
             {{- else }}
             - name: httpd-cert
               mountPath: /etc/httpd/ssl/
