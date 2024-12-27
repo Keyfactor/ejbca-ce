@@ -2893,8 +2893,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // import sign keys.
             final Certificate[] certchain = new Certificate[1];
-            certchain[0] = CertTools.genSelfCert("CN=SignatureKeyHolder", 36500, null, privatekey, publickey, signatureAlgorithm, true);
-
+            certchain[0] = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn("CN=SignatureKeyHolder")
+                    .setIssuerDn("CN=SignatureKeyHolder")
+                    .setValidityDays(36500)
+                    .setIssuerPrivKey(privatekey)
+                    .setEntityPubKey(publickey)
+                    .setSignatureAlgorithm(signatureAlgorithm)
+                    .generateCertificate();
+                    
             keystore.setKeyEntry(CAToken.SOFTPRIVATESIGNKEYALIAS, privatekey, null, certchain);
 
             final KeyPair enckeys;
@@ -2905,8 +2912,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 enckeys = new KeyPair(publicEncryptionKey, privateEncryptionKey);
             }
             // generate dummy certificate
-            certchain[0] = CertTools.genSelfCert("CN=EncryptionKeyHolder", 36500, null, enckeys.getPrivate(), enckeys.getPublic(),
-                    AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm, enckeys.getPublic()), true);
+            certchain[0] = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn("CN=EncryptionKeyHolder")
+                    .setIssuerDn("CN=EncryptionKeyHolder")
+                    .setValidityDays(36500)
+                    .setIssuerPrivKey(enckeys.getPrivate())
+                    .setEntityPubKey(enckeys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm, enckeys.getPublic()))
+                    .generateCertificate();
+
             keystore.setKeyEntry(CAToken.SOFTPRIVATEDECKEYALIAS, enckeys.getPrivate(), null, certchain);
 
             // Set the token properties

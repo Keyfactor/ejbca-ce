@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.ejbca.scp.publisher;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
@@ -48,15 +51,12 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 
 import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 /**
  * 
@@ -135,8 +135,14 @@ public class ScpPublisherSystemTest {
         final int reason = RevocationReasons.KEYCOMPROMISE.getDatabaseValue();
         final long date = 1541434399560L;
         final String subjectDn = "C=SE,O=PrimeKey,CN=ScpPublisherTest";
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=PrimeKey,CN=ScpPublisherTest", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);     
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(subjectDn)
+                .setIssuerDn(subjectDn)
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate();   
         TestAlwaysAllowLocalAuthenticationToken testAlwaysAllowLocalAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken("testPublishCertificate");
         final String username = "ScpContainer";
         final long lastUpdate = 4711L;
@@ -193,8 +199,14 @@ public class ScpPublisherSystemTest {
         final int reason = RevocationReasons.KEYCOMPROMISE.getDatabaseValue();
         final long date = 1541434399560L;
         final String subjectDn = "C=SE,O=PrimeKey,CN=ScpPublisherTest";
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=PrimeKey,CN=ScpPublisherTest", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(subjectDn)
+                .setIssuerDn(subjectDn)
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate();  
         TestAlwaysAllowLocalAuthenticationToken testAlwaysAllowLocalAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken("testPublishCertificate");
         final String username = "ScpContainer";
         final long lastUpdate = 4711L;

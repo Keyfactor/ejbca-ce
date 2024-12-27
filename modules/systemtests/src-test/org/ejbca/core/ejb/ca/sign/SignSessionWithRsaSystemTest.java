@@ -105,6 +105,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
@@ -128,7 +129,9 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.FixMethodOrder;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
@@ -137,6 +140,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.RFC4683Tools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -216,7 +220,10 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
 
     private static KeyPair rsakeys;
     private static int rsacaid;
-    
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @BeforeClass
     public static void beforeClass() throws Exception {
         // Install BouncyCastle provider
@@ -1219,8 +1226,14 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         log.debug("Trying to use a certificate that isn't selfsigned for certificate renewal.");
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         KeyPair anotherRsaKey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        final X509Certificate notSelfSignedCert = CertTools.genSelfCert("CN=notSelfSigned", 1, null, rsakeys.getPrivate(), anotherRsaKey.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        final X509Certificate notSelfSignedCert =  SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(rsakeys.getPrivate())
+                .setEntityPubKey(anotherRsaKey.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate(); 
         try {
             signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", notSelfSignedCert);
             assertFalse("Tried to create cert from old certificate that wasn't self signed! Did not throw SignRequestSignatureException.", true);

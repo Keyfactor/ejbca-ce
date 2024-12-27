@@ -40,6 +40,9 @@ ejbca:
     # INFO, DEBUG, TRACE, ERROR
     LOG_LEVEL_APP: "INFO"
     LOG_LEVEL_SERVER: "INFO"
+
+    # Debug the container scripts and wildfy traffic
+    #DEBUG: full
     
     # Default Random Number Generator algorithm for certificate serial number generation.
     # Available algorithms are: BCSP800Hybrid, SHA1PRNG, default, defaultstrong
@@ -80,11 +83,6 @@ ejbca:
   #     secretKeyRef:
   #       name: ejbcadbcredentials
   #       key: database_password
-  #  - name: PASSWORD_ENCRYPTION_KEY
-  #    valueFrom:
-  #     secretKeyRef:
-  #       name: ejbca-confidentiality-secrets
-  #       key: password_encrpytion_key
   #  - name: EJBCA_CLI_DEFAULTPASSWORD
   #    valueFrom:
   #     secretKeyRef:
@@ -95,6 +93,12 @@ ejbca:
   #     secretKeyRef:
   #       name: ejbca-smtp-secrets
   #       key: smtp_password
+  # The PASSWORD_ENCRYPTION_KEY should be set for a production deployment of EJBCA
+  #  - name: PASSWORD_ENCRYPTION_KEY
+  #    valueFrom:
+  #     secretKeyRef:
+  #       name: ejbca-confidentiality-secrets
+  #       key: password_encrpytion_key
 
   #envFrom:
   #  - secretRef:
@@ -149,14 +153,16 @@ securityContext: {}
 # runAsUser: 1000
 
 # Only one of the following services can be enabled at a time
+# Use this for ingress or reverse proxy outside of the EJBCA pod which may be connected to a LoadBalancer.
 services:
-  # recommended
+  # recommended (automatically enabled when ingress is used)
   proxyHttp:
-    enabled: true
+    enabled: false
     type: ClusterIP
     bindIP: 0.0.0.0
     httpPort: 8081
     httpsPort: 8082
+  # recommended for Apache httpd reverse proxy
   proxyAJP:
     enabled: false
     type: ClusterIP
@@ -172,8 +178,7 @@ services:
   # are defined and need to expose ports
   sidecarPorts: []
 
-# Recommended for cluster internal communications
-# Requires services.proxyHttp to be enabled
+# Recommended for cluster internal communications or external when LoadBalancer type is used to terminate TLS at the pod
 nginx:
   image: nginx:1.27.1
   enabled: false
@@ -194,7 +199,21 @@ nginx:
     # create a load balancer service for each Pod with separate IP address
     enableReplicaSpecificAccess: false
   additionalHosts:
-
+httpd:
+  image: httpd:2.4
+  enabled: false
+  initializeWithSelfSignedTls: false
+  host: "ejbca-node1.ejbca-pki"
+  externalConfiguration:
+  # Server TLS credential for cluster internal communication
+  mountInternalHttpdCert: false
+  secretInternalHttpdCert: "internal-httpd-credential-secret-ca"
+  service:
+    # Use LoadBalancer to terminate in the pod, otherwise use ClusterIP or NodePort
+     type: ClusterIP
+     bindIP: 0.0.0.0
+     httpPort: 80
+     httpsPort: 443
 # External communication from cluster
 # Requires services.proxyAJP or services.proxyHttp to be enabled for adminweb access
 ingress:
@@ -218,6 +237,12 @@ ingress:
   #      pathType: Prefix
   tls: []
 resources: {}
+#limits:
+#  cpu: "1"
+#  memory: "2048Mi"
+#requests:
+#  cpu: 1000m
+#  memory: "2048Mi"
 # https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
 autoscaling:
   enabled: false

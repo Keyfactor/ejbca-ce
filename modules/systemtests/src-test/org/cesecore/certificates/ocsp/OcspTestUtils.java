@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.cert.CertIOException;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -81,8 +83,9 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.junit.Assert;
 
 import com.keyfactor.CesecoreException;
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
@@ -365,13 +368,22 @@ public final class OcspTestUtils {
         }
     }
 
-    public static CAInfo createExternalCa(AuthenticationToken alwaysAllowtoken, KeyPair caKeyPair, String issuerDn, String caName, long validity)
+    public static CAInfo createExternalCa(AuthenticationToken alwaysAllowtoken, KeyPair caKeyPair, String issuerDn, String caName, int validity)
             throws OperatorCreationException, CertificateException, CAExistsException, IllegalCryptoTokenException, CertificateImportException,
-            AuthorizationDeniedException {
+            AuthorizationDeniedException, CertIOException {
         final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         final CaSessionRemote caSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        Certificate cert = CertTools.genSelfCert(issuerDn, validity, "1.1.1.1", caKeyPair.getPrivate(), caKeyPair.getPublic(), "SHA256WithRSA", true,
-                "BC");
+        Certificate cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(issuerDn)
+                .setIssuerDn(issuerDn)
+                .setValidityDays(validity)
+                .setPolicyId("1.1.1.1")
+                .setIssuerPrivKey(caKeyPair.getPrivate())
+                .setEntityPubKey(caKeyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();           
+
         List<Certificate> certs = new ArrayList<>();
         certs.add(cert);
 
@@ -379,10 +391,19 @@ public final class OcspTestUtils {
         return caSessionRemote.getCAInfo(alwaysAllowtoken, caName);
     }
 
-    public static Certificate createCertByExternalCa(final KeyPair caKeyPair, String userDn, long validity) throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException {
-
-        KeyPair userKeyPair = KeyTools.genKeys("2048", "RSA");
-        return CertTools.genSelfCert(userDn, validity, "1.1.1.1", caKeyPair.getPrivate(), userKeyPair.getPublic(), "SHA256WithRSA", false, "BC");
+    public static Certificate createCertByExternalCa(final KeyPair caKeyPair, String userDn, int validity)
+            throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, CertIOException {
+        KeyPair userKeyPair = KeyTools.genKeys("2048", "RSA");        
+        return SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn(userDn)
+                .setIssuerDn(userDn)
+                .setValidityDays(validity)
+                .setPolicyId("1.1.1.1")
+                .setIssuerPrivKey(caKeyPair.getPrivate())
+                .setEntityPubKey(userKeyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                .generateCertificate();  
     }
 
 }

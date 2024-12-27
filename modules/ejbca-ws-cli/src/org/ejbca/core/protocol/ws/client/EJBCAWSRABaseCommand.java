@@ -238,7 +238,7 @@ public abstract class EJBCAWSRABaseCommand implements P11SlotUser {
         return this.ejbcaraws;
     }
 
-    protected PrintStream getPrintStream(){
+    public static PrintStream getPrintStream(){
         return System.out;
     }
     

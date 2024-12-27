@@ -90,7 +90,18 @@ tasks.processTestResources {
         include("profilemappings_enterprise.properties")
         include("certextensions.properties")
     }
+    from("${rootProject.projectDir}/conf") {
+        // Required by Pkcs11WrapperUnitTest
+        include("systemtests.properties")
+    }
     into("build/resources/test/")
+}
+
+// Required by Pkcs11WrapperUnitTest
+tasks.withType<Test> {
+    jvmArgs(
+        "--add-exports", "jdk.crypto.cryptoki/sun.security.pkcs11.wrapper=ALL-UNNAMED"
+    )
 }
 
 tasks.jar {
