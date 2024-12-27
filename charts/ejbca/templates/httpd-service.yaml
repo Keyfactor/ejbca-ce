@@ -1,0 +1,133 @@
+# Configuration for httpd meant for 
+# ClusterIP -> cluster internal communication
+# LoadBalancer -> external access
+{{- if .Values.httpd.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ejbca.fullname" . }}-httpd
+  {{- with .Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.httpd.service.type }}
+  ports:
+    {{- if .Values.httpd.service.httpPort }}
+    - name: httpd-http
+      port: {{ .Values.httpd.service.httpPort }}
+      {{- if eq .Values.httpd.service.type "NodePort" }}
+      nodePort: {{ .Values.httpd.service.httpPort }}
+      {{- end }}
+      targetPort: httpd-http
+      protocol: TCP
+    {{- end }}
+    - name: httpd-https
+      port: {{ .Values.httpd.service.httpsPort }}
+      {{- if eq .Values.httpd.service.type "NodePort" }}
+      nodePort: {{ .Values.httpd.service.httpsPort }}
+      {{- end }}
+      targetPort: httpd-https
+      protocol: TCP
+  selector:
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
+{{- end }}
+---
+# Conditional Client IP based sticky session - use case: UI Access 
+{{- if ne (int .Values.replicaCount) 1 }}
+{{- if and .Values.httpd.enabled .Values.httpd.loadBalancerAccess.enableStickySessionClientIp }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ejbca.fullname" . }}-httpd-sticky-session-client-ip
+  {{- with .Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: "LoadBalancer"
+  sessionAffinity: "ClientIP"
+  ports:
+    {{- if .Values.httpd.service.httpPort }}
+    - name: httpd-http
+      port: {{ .Values.httpd.service.httpPort }}
+      targetPort: httpd-http
+      protocol: TCP
+    {{- end }}
+    - name: httpd-https
+      port: {{ .Values.httpd.service.httpsPort }}
+      targetPort: httpd-https
+      protocol: TCP
+  selector:
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
+{{- end }}
+{{- end }}
+---
+# Conditional Pod index based access - use case: UI Access or Manually selecting Closer Instance
+{{- if ne (int .Values.replicaCount) 1 }}
+{{- if and .Values.httpd.enabled .Values.httpd.loadBalancerAccess.enableReplicaSpecificAccess }}
+{{- range $i := until (int .Values.replicaCount) }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ejbca.fullname" $ }}-httpd-load-balancer-{{ . }}
+  {{- with $.Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: "LoadBalancer"
+  ports:
+    {{- if $.Values.httpd.service.httpPort }}
+    - name: httpd-http
+      port: {{ $.Values.httpd.service.httpPort }}
+      targetPort: httpd-http
+      protocol: TCP
+    {{- end }}
+    - name: httpd-https
+      port: {{ $.Values.httpd.service.httpsPort }}
+      targetPort: httpd-https
+      protocol: TCP
+  selector:
+    {{- include "ejbca.selectorLabels" $ | nindent 4 }}
+    statefulset.kubernetes.io/pod-name: {{ include "ejbca.fullname" $ }}-{{ . }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
+---
+# Headless service cluster internal access - use case: peering
+{{- if ne (int .Values.replicaCount) 1 }}
+{{- if .Values.httpd.enabled }}
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ include "ejbca.fullname" . }}-httpd-headless
+  {{- with .Values.serviceAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    {{- if .Values.httpd.service.httpPort }}
+    - name: httpd-http
+      port: {{ .Values.httpd.service.httpPort }}
+      {{- if eq .Values.httpd.service.type "NodePort" }}
+      nodePort: {{ .Values.httpd.service.httpPort }}
+      {{- end }}
+      targetPort: httpd-http
+      protocol: TCP
+    {{- end }}
+    - name: httpd-https
+      port: {{ .Values.httpd.service.httpsPort }}
+      {{- if eq .Values.httpd.service.type "NodePort" }}
+      nodePort: {{ .Values.httpd.service.httpsPort }}
+      {{- end }}
+      targetPort: httpd-https
+      protocol: TCP
+  selector:
+    {{- include "ejbca.selectorLabels" . | nindent 4 }}
+{{- end }}
+{{- end }}
