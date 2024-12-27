@@ -146,6 +146,7 @@ import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.util.CvcKeyTools;
@@ -1475,6 +1476,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         ctConfig.setConfiguredCTLogs(globalConfiguration.getCTLogs());
         ctConfig.setValidityPolicy(globalConfiguration.getGoogleCtPolicy());
         certGenParams.setCTSubmissionConfigParams(ctConfig);
+        final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        certGenParams.setCtCacheFastFailEnabled(globalCesecoreConfiguration.getCtCacheFastFailEnabled());
+        certGenParams.setCtCacheFastFailBackoff(globalCesecoreConfiguration.getCtCacheFastFailBackoff());
         return certGenParams;
     }
 

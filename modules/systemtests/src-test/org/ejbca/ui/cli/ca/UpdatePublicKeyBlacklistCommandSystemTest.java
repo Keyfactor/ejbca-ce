@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.URL;
 import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.FileUtil;
 import org.ejbca.core.ejb.ca.validation.BlacklistDoesntExistsException;
 import org.ejbca.core.ejb.ca.validation.BlacklistSessionRemote;
 import org.ejbca.core.model.validation.BlacklistEntry;
@@ -60,9 +60,9 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
 
     // Directory and file constants (see ${project.dir}/resources)
     private static File emptyFolder;
-    private static final String TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS = "resources/publickey/rsa2048.pub.pem";
-    private static final String TEST_RESOURCE_ADD_REMOVE_FINGERPINTS = "resources/publickeyfingerprint/csv/fingerprints.txt";
-    private static final String TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS = "resources/publickeyfingerprint/debian/fingerprints.txt";
+    private static final String TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS = "publickey/rsa2048.pub.pem";
+    private static final String TEST_RESOURCE_ADD_REMOVE_FINGERPINTS = "publickeyfingerprint/csv/fingerprints.txt";
+    private static final String TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS = "publickeyfingerprint/debian/fingerprints.txt";
 
     /** Always allow authentication token. */
     private static final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(
@@ -78,7 +78,6 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         log.trace(">beforeClass()");
-
         CryptoProviderTools.installBCProvider();
         // Remove test entries from blacklist.
         removePublicKeyFingerprintsFromBlacklist(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
@@ -108,11 +107,8 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     public void test01AddAndRemoveCommand() throws Exception {
         log.trace(">test01AddAndRemoveCommand()");
 
-        URL url = UpdatePublicKeyBlacklistCommandSystemTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
-        if (null == url) {
-            throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
-        }
-        File dir = new File(url.getPath()).getParentFile();
+        File resourceFile = FileUtil.getResourceAsFile(TEST_RESOURCE_ADD_REMOVE_PUBLIC_KEYS);
+        File dir = resourceFile.getParentFile();
         log.info("Using directory (public keys): " + dir.getAbsolutePath());
 
         // A-1: Add/remove public key blacklist entries that does not exist, including invalid files (wrong format, unknown key).
@@ -186,11 +182,9 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     public void test02AddAndRemoveCommandModeByFingerprint() throws IOException {
         log.trace(">test02AddAndRemoveCommandModeByFingerprint()");
 
-        final URL url = UpdatePublicKeyBlacklistCommandSystemTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
-        if (null == url) {
-            throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
-        }
-        final File dir = new File(url.getPath()).getParentFile();
+        File resourceFile = FileUtil.getResourceAsFile(TEST_RESOURCE_ADD_REMOVE_FINGERPINTS);
+        final File dir = resourceFile.getParentFile();
+
         log.info("Using directory with fingerprints in CSV file:" + dir.getAbsolutePath());
 
         // A-1: Insert public key blacklist entries from file
@@ -244,14 +238,11 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
     }
 
     @Test
-    public void test02AddAndRemoveCommandModeByDebianFingerprint() {
+    public void test02AddAndRemoveCommandModeByDebianFingerprint() throws IOException {
         log.trace(">test02AddAndRemoveCommandModeByDebianFingerprint()");
 
-        final URL url = UpdatePublicKeyBlacklistCommandSystemTest.class.getClassLoader().getResource(TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS);
-        if (null == url) {
-            throw new IllegalArgumentException("Could not find resource " + TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS);
-        }
-        final File dir = new File(url.getPath()).getParentFile();
+        File resourceFile = FileUtil.getResourceAsFile(TEST_RESOURCE_ADD_REMOVE_DEBIAN_FINGERPINTS);
+        final File dir = resourceFile.getParentFile();
         log.info("Using directory of Debian fingerprints: " + dir.getAbsolutePath());
 
         // Add
@@ -289,12 +280,9 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
      * @throws CertificateParsingException if a public key could not be parsed.
      * @throws IOException 
      */
-    private static final void removePublicKeysFromBlacklist(String resource) throws CertificateParsingException, IOException {
-        final URL url = UpdatePublicKeyBlacklistCommandSystemTest.class.getClassLoader().getResource(resource);
-        if (null == url) {
-            throw new IllegalArgumentException("Could not find resource " + resource);
-        }
-        final File dir = new File(url.getPath()).getParentFile();
+    private static void removePublicKeysFromBlacklist(String resource) throws CertificateParsingException, IOException {
+        File resourceFile = FileUtil.getResourceAsFile(resource);
+        final File dir = resourceFile.getParentFile();
         log.info("Using directory (remove publicKey): " + dir.getAbsolutePath());
         final File[] files = dir.listFiles();
         PublicKey publicKey;
@@ -323,13 +311,10 @@ public class UpdatePublicKeyBlacklistCommandSystemTest {
      * @throws IOException any IO exception.
      * @throws FileNotFoundException if a file could not be found.
      */
-    private static final void removePublicKeyFingerprintsFromBlacklist(final String resource)
+    private static void removePublicKeyFingerprintsFromBlacklist(final String resource)
             throws IllegalArgumentException, IOException, FileNotFoundException {
-        final URL url = UpdatePublicKeyBlacklistCommandSystemTest.class.getClassLoader().getResource(resource);
-        if (null == url) {
-            throw new IllegalArgumentException("Could not find resource " + resource);
-        }
-        final File dir = new File(url.getPath()).getParentFile();
+        File resourceFile = FileUtil.getResourceAsFile(resource);
+        final File dir = resourceFile.getParentFile();
         log.info("Using directory (remove fingerprint): " + dir.getAbsolutePath());
         final File[] files = dir.listFiles();
         FileReader reader;

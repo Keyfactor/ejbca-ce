@@ -1,3 +1,4 @@
+
 <project name="ejbca" default="build" basedir=".">
 
 	<!-- Import build specific info, like version number -->
@@ -921,10 +922,10 @@
 	            <tokenfilter>
 	                <replacestring from="#sunp11.cryptotoken.enabled=false" to="sunp11.cryptotoken.enabled=false"/>
 	            </tokenfilter>
-                <tokenfilter>
-                    <replacestring from="#p11ng.cryptotoken.enabled=true" to="p11ng.cryptotoken.enabled=true"/>
-                </tokenfilter>
-                <tokenfilter>
+	        	<tokenfilter>
+	        	    <replacestring from="#p11ng.cryptotoken.enabled=true" to="p11ng.cryptotoken.enabled=true"/>
+	        	</tokenfilter>
+	        	<tokenfilter>
                     <replacestring from="#p11ng.utimacocp5.enabled=true" to="p11ng.utimacocp5.enabled=true"/>
                 </tokenfilter>
 	        </filterchain>

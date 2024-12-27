@@ -19,6 +19,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -26,15 +27,14 @@ import java.util.List;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -363,9 +363,15 @@ public class ExternalProcessToolsSystemTest {
 
     private final X509Certificate createSelfSignedX509TestCertificate(final String cn) throws Exception {
         final KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        return CertTools.genSelfCert(
-                "C=Test,O=Test,OU=Test,CN="+cn, 365, null, 
-                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        return SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=Test,O=Test,OU=Test,CN="+cn)
+                .setIssuerDn("C=Test,O=Test,OU=Test,CN="+cn)
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
     }
     
     /**
@@ -374,19 +380,19 @@ public class ExternalProcessToolsSystemTest {
      * @param classpath the class path (or filename -> put inside resources directory).
      * @return the full path.
      */
-    private final String getFilePathFromClasspath(final String classpath) {
+    private String getFilePathFromClasspath(final String classpath) throws IOException {
         final String fileSuffix = SystemUtils.IS_OS_WINDOWS ? ".bat" : ".sh";
         final String subFolder = SystemUtils.IS_OS_WINDOWS ? "windows" : "unix";
-        final String path = "resources/platform/" + subFolder + "/" + classpath + fileSuffix;
-        final String result = ExternalProcessToolsSystemTest.class.getClassLoader().getResource(path).getPath();
+        final String path = "platform/" + subFolder + "/" + classpath + fileSuffix;
+        String result = FileUtil.getResourceAsFile(path).getCanonicalPath();
         if (log.isDebugEnabled()) {
             log.debug("Get file path by class path: " + classpath + " - " + result);
         }
-        return SystemUtils.IS_OS_WINDOWS ? result.replaceFirst("/", StringUtils.EMPTY) : result;
+        return result;
     }
     
     /** Counts the occurrence of string prefix in the list. */
-    private final int count(final List<String> list, final String prefix) {
+    private int count(final List<String> list, final String prefix) {
         int result = 0;
         if (CollectionUtils.isNotEmpty(list)) {
             result = CollectionUtils.countMatches(list, new Predicate() {

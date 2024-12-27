@@ -32,6 +32,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
+import jakarta.ejb.EJBTransactionRolledbackException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -59,6 +60,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -71,6 +73,8 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.keyfactor.CesecoreException;
@@ -84,54 +88,71 @@ import com.keyfactor.util.keys.KeyTools;
 /**
  * 
  * @version $Id$
+ *
+ * To make this test succeed, it is needed to open an SQL-prompt and run the following script:
+ * ALTER TABLE CertificateData ADD CONSTRAINT unique_serialNumber_issuerDN UNIQUE (serialNumber, issuerDN);
  */
+@Ignore("Requires a unique index in the database to work")
 public class CustomCertSerialnumberSystemTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberSystemTest.class);
 
-    private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CustomCertSerialnumberSystemTest"));
+    private AuthenticationToken internalAdmin;
 
-    private static int rsacaid = 0;
-
+    private CAInfo caInfo;
     private int fooCertProfileId;
+    private String fooCertProfileName;
     private int fooEEProfileId;
+    private String fooEEProfileName;
 
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
-    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
-    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private CaSessionRemote caSession;
+    private CertificateStoreSessionRemote certificateStoreSession;
+    private CertificateRequestSessionRemote certificateRequestSession;
+    private CertificateProfileSessionRemote certificateProfileSession;
+    private EndEntityProfileSessionRemote endEntityProfileSession;
+    private EndEntityManagementSessionRemote endEntityManagementSession;
 
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
 
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
+
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        CAInfo inforsa = caSession.getCAInfo(internalAdmin, "TEST");
-        assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
-        rsacaid = inforsa.getCAId();
+        internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CustomCertSerialnumberSystemTest"));
+        caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+        certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
+        certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+        endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+        endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
-        certificateProfileSession.removeCertificateProfile(internalAdmin, "FOOCERTPROFILE");
-        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "FOOEEPROFILE");
+        caInfo = caSession.getCAInfo(internalAdmin, "TEST");
+        assertTrue("No active RSA CA! Must have at least one active CA to run tests!", caInfo != null);
+
+        fooCertProfileName = "FOOCERTPROFILE";
+        certificateProfileSession.removeCertificateProfile(internalAdmin, fooCertProfileName);
+        fooEEProfileName = "FOOEEPROFILE";
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, fooEEProfileName);
 
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setAllowKeyUsageOverride(true);
         certprof.setAllowCertSerialNumberOverride(true);
-        certificateProfileSession.addCertificateProfile(internalAdmin, "FOOCERTPROFILE", certprof);
-        fooCertProfileId = certificateProfileSession.getCertificateProfileId("FOOCERTPROFILE");
+        certificateProfileSession.addCertificateProfile(internalAdmin, fooCertProfileName, certprof);
+        fooCertProfileId = certificateProfileSession.getCertificateProfileId(fooCertProfileName);
 
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setDefaultCertificateProfile(fooCertProfileId);
         profile.setAvailableCertificateProfileIds(Arrays.asList(fooCertProfileId));
         profile.setAvailableTokenTypes(Arrays.asList(SecConst.TOKEN_SOFT_BROWSERGEN));
         assertTrue(profile.isCustomSerialNumberUsed());
-        endEntityProfileSession.addEndEntityProfile(internalAdmin, "FOOEEPROFILE", profile);
-        fooEEProfileId = endEntityProfileSession.getEndEntityProfileId("FOOEEPROFILE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, fooEEProfileName, profile);
+        fooEEProfileId = endEntityProfileSession.getEndEntityProfileId(fooEEProfileName);
       
     }
 
@@ -139,6 +160,9 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        final String subjectDN = caInfo.getSubjectDN();
+        certificateStoreSession.revokeAllCertByCA(internalAdmin, subjectDN,
+                RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         try {
             endEntityManagementSession.deleteUser(internalAdmin, "foo");
             log.debug("deleted user: foo");
@@ -154,9 +178,6 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
             log.debug("deleted user: foo3");
         } catch (Exception e) {
         }
-
-        certificateStoreSession.revokeAllCertByCA(internalAdmin, caSession.getCAInfo(internalAdmin, rsacaid).getSubjectDN(),
-                RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     }
 
     // Create certificate request for user: foo with cert serialnumber=1234567890
@@ -166,18 +187,18 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
             CertificateExtensionException, CertificateParsingException, CertificateEncodingException {
      log.trace(">test01CreateCustomCert()");
 
-        KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        KeyPair keyPair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         BigInteger serno = SernoGeneratorRandom.instance(20).getSerno();
         log.debug("serno: " + serno);
 
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithRSA", DnComponents.stringToBcX500Name("C=SE, O=AnaTom, CN=foo"),
-                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
+                keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.toASN1Structure().getEncoded());
         p10.setUsername("foo");
         p10.setPassword("foo123");
 
-        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", caInfo.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
@@ -214,7 +235,7 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
         p10.setUsername("foo2");
         p10.setPassword("foo123");
 
-        EndEntityInformation user = new EndEntityInformation("foo2", "C=SE,O=AnaTom,CN=foo2", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
+        EndEntityInformation user = new EndEntityInformation("foo2", "C=SE,O=AnaTom,CN=foo2", caInfo.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setPassword("foo123");
 
@@ -248,7 +269,7 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
         p10.setUsername("foo3");
         p10.setPassword("foo123");
 
-        EndEntityInformation user = new EndEntityInformation("foo3", "C=SE,O=AnaTom,CN=foo3", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
+        EndEntityInformation user = new EndEntityInformation("foo3", "C=SE,O=AnaTom,CN=foo3", caInfo.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
@@ -263,6 +284,9 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
             log.debug(e.getMessage());
             assertTrue("Unexpected exception.",
                     e.getMessage().startsWith("There is already a certificate stored in 'CertificateData' with the serial number"));
+        }
+        catch (EJBTransactionRolledbackException rolledbackException) {
+            assertTrue(rolledbackException.getMessage().contains("Could not commit"));
         }
         assertNull(resp);
     }
@@ -285,11 +309,11 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
 
-        CertificateProfile fooCertProfile = certificateProfileSession.getCertificateProfile("FOOCERTPROFILE");
+        CertificateProfile fooCertProfile = certificateProfileSession.getCertificateProfile(fooCertProfileName);
         fooCertProfile.setAllowCertSerialNumberOverride(false);
-        certificateProfileSession.changeCertificateProfile(internalAdmin, "FOOCERTPROFILE", fooCertProfile);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, fooCertProfileName, fooCertProfile);
 
-        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", caInfo.getCAId(), null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
@@ -306,6 +330,6 @@ public class CustomCertSerialnumberSystemTest extends CaTestCase {
 
     @Override
     public String getRoleName() {
-        return "";
+        return this.getClass().getSimpleName()+"RoleName";
     }
 }

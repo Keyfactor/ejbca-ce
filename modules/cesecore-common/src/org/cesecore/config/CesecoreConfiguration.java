@@ -272,7 +272,10 @@ public final class CesecoreConfiguration {
      * -1 means no limit (and not "off"). The default is 100 000.
      *
      * @see #getCTCacheEnabled
+     * 
+     * @deprecated Only used for upgrades to 9.2.0 and later
      */
+    @Deprecated(since = "9.2.0")
     public static long getCTCacheMaxEntries() {
         return getLongValue("ct.cache.maxentries", 100000L, "number of entries in cache");
     }
@@ -280,12 +283,19 @@ public final class CesecoreConfiguration {
     /**
      * How many milliseconds between periodic cache cleanup. The cleanup routine is only
      * run when the cache is filled with too many entries.
+     * 
+     * @deprecated Only used for upgrades to 9.2.0 and later
      */
+    @Deprecated(since = "9.2.0")
     public static long getCTCacheCleanupInterval() {
         return getLongValue("ct.cache.cleanupinterval", 10000L, "milliseconds between periodic cache cleanup");
     }
 
-    /** Whether caching of SCTs should be enabled. The default is true. */
+    /** Whether caching of SCTs should be enabled. The default is true. 
+     * 
+     * @deprecated Only used for upgrades to 9.2.0 and later
+     */
+    @Deprecated(since = "9.2.0")
     public static boolean getCTCacheEnabled() {
         final String value = ConfigurationHolder.getString("ct.cache.enabled");
         return value == null || !value.trim().equalsIgnoreCase(FALSE);
@@ -295,7 +305,10 @@ public final class CesecoreConfiguration {
      * Whether log availability should be tracked, and requests should "fast fail"
      * whenever a log is known to be down. A log is "known to be down" when it
      * is either unreachable or responds with an HTTP error status to a request.
+     * 
+     * @deprecated Only used for upgrades to 9.2.0 and later
      */
+    @Deprecated(since = "9.2.0")
     public static boolean getCTFastFailEnabled() {
         final String value = ConfigurationHolder.getString("ct.fastfail.enabled");
         return value == null || !value.trim().equalsIgnoreCase(FALSE);
@@ -304,7 +317,10 @@ public final class CesecoreConfiguration {
     /**
      * How long time (in milliseconds) EJBCA should wait until trying to use a log
      * which has failed to respond to a request.
+     * 
+     *  @deprecated Only used for upgrades to 9.2.0 and later
      */
+    @Deprecated(since = "9.2.0")
     public static long getCTFastFailBackOff() {
         return getLongValue("ct.fastfail.backoff", 1000L, "milliseconds");
     }

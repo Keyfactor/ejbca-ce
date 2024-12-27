@@ -19,6 +19,8 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 
+import java.lang.reflect.InvocationTargetException;
+
 /**
  * Implements the EJBCA RA WS command line interface
  *
@@ -30,7 +32,7 @@ public class ejbcawsracli  {
      *
      * @param args command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
         try {
             IAdminCommand cmd = EJBCAWSRACommandFactory.getCommand(args);
 

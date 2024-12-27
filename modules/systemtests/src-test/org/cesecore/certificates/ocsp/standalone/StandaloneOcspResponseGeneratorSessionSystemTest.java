@@ -137,6 +137,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -219,7 +220,6 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
     @Before
     public void setUp() throws Exception {
         assumeTrue("Test with runner " + cryptoTokenRunner.getSimpleName() + " cannot run on this platform.", cryptoTokenRunner.canRun());
-
         if (cryptoTokenRunner.canRun()) {
             x509ca = cryptoTokenRunner.createX509Ca("CN="+testName.getMethodName(), testName.getMethodName());
             originalSigningTruststoreValidTime = cesecoreConfigurationProxySession.getConfigurationValue(OcspConfiguration.SIGNING_TRUSTSTORE_VALID_TIME);
@@ -841,11 +841,17 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
         // Now, construct an external CA. 
         final String externalCaName = "testStandAloneOcspResponseExternalCa";
         final String externalCaSubjectDn = "CN=" + externalCaName;
-        final long validity = 3650L;
+        final int validity = 3650;
         final String encodedValidity = "3650d";
         KeyPair externalCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate externalCaCertificate = CertTools.genSelfCert(externalCaSubjectDn, validity, null, externalCaKeys.getPrivate(),
-                externalCaKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        Certificate externalCaCertificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(externalCaSubjectDn)
+                .setIssuerDn(externalCaSubjectDn)
+                .setValidityDays(validity)
+                .setIssuerPrivKey(externalCaKeys.getPrivate())
+                .setEntityPubKey(externalCaKeys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate();
         X509CAInfo externalCaInfo = X509CAInfo.getDefaultX509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
                 CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
         CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
@@ -918,11 +924,17 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
             // Now, construct an external CA. 
             final String externalCaName = "testStandAloneOcspResponseExternalCa";
             final String externalCaSubjectDn = "CN=" + externalCaName;
-            final long validity = 3650L;
+            final int validity = 3650;
             final String encodedValidity = "3650d";
             KeyPair externalCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            Certificate externalCaCertificate = CertTools.genSelfCert(externalCaSubjectDn, validity, null, externalCaKeys.getPrivate(),
-                    externalCaKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+            Certificate externalCaCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn(externalCaSubjectDn)
+                    .setIssuerDn(externalCaSubjectDn)
+                    .setValidityDays(validity)
+                    .setIssuerPrivKey(externalCaKeys.getPrivate())
+                    .setEntityPubKey(externalCaKeys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                    .generateCertificate();
             X509CAInfo externalCaInfo = X509CAInfo.getDefaultX509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
             CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
@@ -992,11 +1004,17 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
             // Now, construct an external CA. 
             final String externalCaName = "testStandAloneOcspResponseExternalCa";
             final String externalCaSubjectDn = "CN=" + externalCaName;
-            final long validity = 3650L;
+            final int validity = 3650;
             final String encodedValidity = "3650d";
             KeyPair externalCaKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            Certificate externalCaCertificate = CertTools.genSelfCert(externalCaSubjectDn, validity, null, externalCaKeys.getPrivate(),
-                    externalCaKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+            Certificate externalCaCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn(externalCaSubjectDn)
+                    .setIssuerDn(externalCaSubjectDn)
+                    .setValidityDays(validity)
+                    .setIssuerPrivKey(externalCaKeys.getPrivate())
+                    .setEntityPubKey(externalCaKeys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                    .generateCertificate();
             X509CAInfo externalCaInfo = X509CAInfo.getDefaultX509CAInfo(externalCaSubjectDn, externalCaName, CAConstants.CA_EXTERNAL,
                     CertificateProfileConstants.CERTPROFILE_NO_PROFILE, encodedValidity, CAInfo.SELFSIGNED, null, null);
             CAToken token = new CAToken(externalCaInfo.getCAId(), new NullCryptoToken().getProperties());
@@ -1087,7 +1105,14 @@ public class StandaloneOcspResponseGeneratorSessionSystemTest {
             ocspResponseGeneratorSession.reloadOcspSigningCache();
             // Do the OCSP request
             final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            final X509Certificate fakeIssuerCertificate = CertTools.genSelfCert("CN=fakeCA", 365, null, keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);       
+            final X509Certificate fakeIssuerCertificate = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn("CN=fakeCA")
+                    .setIssuerDn("CN=fakeCA")
+                    .setValidityDays(365)
+                    .setIssuerPrivKey(keys.getPrivate())
+                    .setEntityPubKey(keys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                    .generateCertificate();                    
             final BigInteger fakeSerialNumber = new BigInteger("4711");
             final OCSPReq ocspRequest = buildOcspRequest(null, null, fakeIssuerCertificate, fakeSerialNumber);
             final OCSPResp response = sendRequest(ocspRequest);

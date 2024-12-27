@@ -69,6 +69,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -111,7 +112,6 @@ public final class EjbcaWebBeanImplUnitTest {
     
     private byte[] tlsSession;
     private boolean alreadyInitialized;
-    private boolean alreadyFetchedOauthConfig;
     private String bearerToken;
     private String bearerTokenFingerprint;
     private String idToken;
@@ -123,8 +123,25 @@ public final class EjbcaWebBeanImplUnitTest {
         final KeyPair kp = KeyTools.genKeys(AlgorithmConstants.SIGALG_ED25519, AlgorithmConstants.KEYALGORITHM_ED25519);
         allAdminCerts = new X509Certificate[2];
         // Serial numbers are randomized, so these certs are random 
-        allAdminCerts[0] = CertTools.genSelfCert(CERT_DN, 7, null, kp.getPrivate(), kp.getPublic(), AlgorithmConstants.SIGALG_ED25519, false);
-        allAdminCerts[1] = CertTools.genSelfCert(CERT_DN, 7, null, kp.getPrivate(), kp.getPublic(), AlgorithmConstants.SIGALG_ED25519, false);
+        allAdminCerts[0] = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn(CERT_DN)
+                .setIssuerDn(CERT_DN)
+                .setValidityDays(7)
+                .setIssuerPrivKey(kp.getPrivate())
+                .setEntityPubKey(kp.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_ED25519)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
+        allAdminCerts[1] = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn(CERT_DN)
+                .setIssuerDn(CERT_DN)
+                .setValidityDays(7)
+                .setIssuerPrivKey(kp.getPrivate())
+                .setEntityPubKey(kp.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_ED25519)
+                .setLdapOrder(true)
+                .generateCertificate();
     }
 
     @Before
@@ -142,7 +159,6 @@ public final class EjbcaWebBeanImplUnitTest {
         mockedAuthToken = null;
         tlsSession = TLS_SESSION_1;
         alreadyInitialized = false;
-        alreadyFetchedOauthConfig = false;
         setClientCertNumber(1);
         setBearerTokenNumber(1);
         idToken = null;
@@ -242,10 +258,7 @@ public final class EjbcaWebBeanImplUnitTest {
         allMockObjects.add(oauthToken);
         expect(oauthToken.getClaims()).andReturn(TEST_CLAIMS);
         expect(oauthToken.getPublicKeyBase64Fingerprint()).andReturn(bearerTokenFingerprint);
-        if (!alreadyFetchedOauthConfig) {
-            expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
-            alreadyFetchedOauthConfig = true;
-        }
+        expect(ejbs.getGlobalConfigurationSession().getCachedConfiguration(OAuthConfiguration.OAUTH_CONFIGURATION_ID)).andReturn(dummyOAuthConfig);
         expect(ejbs.getWebAuthenticationProviderSession().authenticateUsingOAuthBearerToken(same(dummyOAuthConfig), eq(bearerToken), eq(idToken))).andReturn(oauthToken);
         expect(oauthToken.getProviderLabel()).andReturn(OAUTH_PROVIDER_NAME).anyTimes();
         expect(ejbs.getRoleSession().getRolesAuthenticationTokenIsMemberOf(oauthToken)).andReturn(ADMIN_ROLES);
