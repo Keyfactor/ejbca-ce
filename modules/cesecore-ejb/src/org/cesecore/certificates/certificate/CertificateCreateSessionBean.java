@@ -34,13 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.ejb.EJB;
-import jakarta.ejb.EJBException;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
@@ -101,6 +94,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.configuration.LogRedactionConfigurationCache;
 import org.cesecore.internal.InternalResources;
@@ -118,6 +112,13 @@ import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.annotation.PostConstruct;
+import jakarta.ejb.EJB;
+import jakarta.ejb.EJBException;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * Session bean for creating certificates.
@@ -504,6 +505,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                 return sctDataSession.getThreadPool();
             }
         });
+        final GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigurationSession
+                .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        certGenParams.setCtCacheFastFailEnabled(globalCesecoreConfiguration.getCtCacheEnabled());
+        certGenParams.setCtCacheFastFailBackoff(globalCesecoreConfiguration.getCtCacheFastFailBackoff());
         certGenParams.setIncompleteIssuanceJournalCallbacks(incompleteIssuanceJournalDataSession);
 
         try {

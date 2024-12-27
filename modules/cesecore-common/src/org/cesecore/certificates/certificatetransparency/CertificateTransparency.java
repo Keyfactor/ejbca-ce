@@ -54,7 +54,8 @@ public interface CertificateTransparency {
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      * @see CertificateTransparency#fetchSCTList(List, CertificateProfile, CTSubmissionConfigParams, SctDataCallback)
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, CTSubmissionConfigParams config, SctDataCallback sctDataCallback) throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, CTSubmissionConfigParams config, SctDataCallback sctDataCallback,
+            boolean fastFailEnabled, long fastFailBackoff) throws CTLogException;
 
     /**
      * Tries to add a certificate to CT logs and obtain SCTs (Signed Certificate Timestamps).
@@ -64,10 +65,13 @@ public interface CertificateTransparency {
      * @param certProfile Certificate profile with CT configuration
      * @param config Configuration parameters, that are not specific to the certificate profile.
      * @param usageMode Why we are fetching SCTs. The minimum and maximum number of SCTs are different depending on this.
+     * @param fastFailEnabled set to true to automatically ignore suspected offline logs for a given interval
+     * @param fastFailBackoff the time in ms to wait if fast fail is active
      * @return A "SCT List" structure, for inclusion in e.g. the CT certificate extension, or null if no logs have been configured.
      * @throws CTLogException If too many servers are down to satisfy the certificate profile.
      */
-    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, CTSubmissionConfigParams config, UsageMode usageMode, SctDataCallback sctDataCallback) throws CTLogException;
+    byte[] fetchSCTList(List<Certificate> chain, CertificateProfile certProfile, CTSubmissionConfigParams config, UsageMode usageMode,
+            SctDataCallback sctDataCallback, boolean fastFailEnabled, long fastFailBackoff) throws CTLogException;
 
     /**
      * Adds a critical extension to prevent the certificate from being used
