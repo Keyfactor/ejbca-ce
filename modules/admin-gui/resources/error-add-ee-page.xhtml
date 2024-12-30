@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+ xmlns:h="http://xmlns.jcp.org/jsf/html">
+<head>
+<title>Error</title>
+</head>
+<body>
+ <h1>Something went wrong</h1>
+
+ <h:panelGroup>
+  <h3>Error Details:</h3>
+  <h:outputText value="#{requestScope['add.end.entity.error.message']}"
+   style="    font-size: 18px;
+    color: #555;
+    margin-bottom: 20px;
+    display: block;" />
+ </h:panelGroup>
+ <br />
+ <!-- Navigation link back to the home page -->
+ <h:outputLink value="/ejbca/adminweb" style="    display: inline-block;
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 16px;
+    text-decoration: none;
+    color: white;
+    background-color: #007bff;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;">
+    Go to EJBCA Home
+</h:outputLink>
+</body>
+</html>
