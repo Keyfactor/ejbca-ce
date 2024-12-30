@@ -22,10 +22,12 @@ import java.security.SignatureException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.bouncycastle.asn1.crmf.POPOSigningKey;
 import org.bouncycastle.cert.crmf.CRMFException;
+import org.bouncycastle.cert.crmf.CertificateRequestMessage;
 import org.bouncycastle.cert.crmf.PKMACBuilder;
 import org.bouncycastle.cert.crmf.jcajce.JcaCertificateRequestMessage;
 import org.bouncycastle.cert.crmf.jcajce.JcePKMACValuesCalculator;
@@ -219,16 +221,16 @@ public abstract class RequestMessageUtils {
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CRMF) {
             try {
             final byte[] certificateRequestMessages = Base64.decode(req.getBytes());
-            final CertReqMsg certReqMsg = CertReqMsg.getInstance(((ASN1Sequence)ASN1Sequence.fromByteArray(certificateRequestMessages)).getObjectAt(0));
+            final CertReqMsg certReqMsg = CertReqMsg.getInstance(((ASN1Sequence) ASN1Primitive.fromByteArray(certificateRequestMessages)).getObjectAt(0));
             final JcaCertificateRequestMessage jcrm = new JcaCertificateRequestMessage(certReqMsg);
                 final PublicKey publicKey = jcrm.getPublicKey();
                 if (jcrm.hasProofOfPossession()) {
                     switch (jcrm.getProofOfPossessionType()) {
-                    case JcaCertificateRequestMessage.popRaVerified: {
+                    case CertificateRequestMessage.popRaVerified: {
                         // The requestor claims that it is verified by an RA
                         break;
                     }
-                    case JcaCertificateRequestMessage.popSigningKey: {
+                    case CertificateRequestMessage.popSigningKey: {
                         // RFC 4211 Section 4.1
                         final POPOSigningKey popoSigningKey = POPOSigningKey.getInstance(jcrm.toASN1Structure().getPopo().getObject());
                         if (log.isDebugEnabled()) {
@@ -269,12 +271,12 @@ public abstract class RequestMessageUtils {
                         }
                         break;
                     }
-                    case JcaCertificateRequestMessage.popKeyEncipherment: {
+                    case CertificateRequestMessage.popKeyEncipherment: {
                         // RFC 4211 Section 4.2 (Not implemented)
                         log.info("CRMF RFC4211 Section 4.2 KeyEncipherment POP validation is not implemented. Will try to use the request's public key anyway.");
                         break;
                     }
-                    case JcaCertificateRequestMessage.popKeyAgreement: {
+                    case CertificateRequestMessage.popKeyAgreement: {
                         // RFC 4211 Section 4.3 (Not implemented)
                         log.info("CRMF RFC4211 Section 4.3 KeyAgreement POP validation is not implemented. Will try to use the request's public key anyway.");
                         break;
