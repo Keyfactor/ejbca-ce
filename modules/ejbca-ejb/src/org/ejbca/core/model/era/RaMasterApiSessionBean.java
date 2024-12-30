@@ -128,6 +128,7 @@ import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -372,9 +373,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>16<td>=<td>8.1.0
      * <tr><th>17<td>=<td>8.2.0
      * <tr><th>18<td>=<td>8.3.0
+     * <tr><th>19<td>=<td>9.2.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 18;
+    private static final int RA_MASTER_API_VERSION = 19;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -3440,6 +3442,12 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
         return keyStoreCreateSessionLocal.generateOrKeyRecoverTokenAsByteArray(authenticationToken, request.getUsername(), request.getPassword(),
                 request.getKeySpecification(), request.getKeyAlgorithm(), request.getAltKeySpecification(), request.getAltKeyAlgorithm());
+    }
+
+    @Override
+    public RaKeyImportResponseV2 keyImportV2(AuthenticationToken authenticationToken, String issuerDN, KeyImportRequestData keyImportRequestData)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
+        return new RaKeyImportResponseV2();
     }
 
     @Override

@@ -172,8 +172,8 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     })
     public Response importKeystores(@Context HttpServletRequest requestContext,
                                     @Parameter(description = "Subject DN of CA that will take over key management") @PathParam("issuer_dn") String issuerDN,
-                                    @Parameter(name = "request") KeyImportRestRequest request) {
-
+                                    @Parameter(name = "request") KeyImportRestRequest request)
+            throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
         return super.importKeystores(requestContext, issuerDN, request);
     }
 }

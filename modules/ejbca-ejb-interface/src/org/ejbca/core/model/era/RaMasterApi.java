@@ -45,6 +45,7 @@ import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OAuthConfiguration;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.roles.Role;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.member.RoleMember;
@@ -1750,5 +1751,14 @@ public interface RaMasterApi {
     String findUsernameByIssuerDnAndSerialNumber(String issuerDn, String serialNumber);
 
     byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
+            throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+
+    /**
+     * @param authenticationToken The authentication token
+     * @param issuerDN The CA's DN which will wrap the imported keys
+     * @param keyImportRequestData All data required to perform key import of all the supplied keys
+     * @return A response consisting of all the failed imports along with failure reasons
+     */
+    RaKeyImportResponseV2 keyImportV2(AuthenticationToken authenticationToken, String issuerDN, KeyImportRequestData keyImportRequestData)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 }
