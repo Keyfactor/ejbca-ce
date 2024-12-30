@@ -91,6 +91,7 @@ import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.EJBTools;
 import com.keyfactor.util.SHA1DigestCalculator;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -125,9 +126,15 @@ public class WebAuthenticationProviderSessionBeanSystemTest {
      */
     @Test
     public void testAuthenticateWithNotifiedAboutExpiration() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException, CreateException, AuthorizationDeniedException  {
-        X509Certificate certificate = CertTools.genSelfCert("CN=Foo", 1, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        X509Certificate certificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=Foo")
+                .setIssuerDn("CN=Foo")
+                .setValidityDays(1)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate();              
+        Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(certificate);
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         try {
@@ -143,9 +150,15 @@ public class WebAuthenticationProviderSessionBeanSystemTest {
     
     @Test
     public void testAuthenticateWithCertificateExpired() throws Exception {
-        X509Certificate certificate = CertTools.genSelfCert("CN=Foo", -1, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        X509Certificate certificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=Foo")
+                .setIssuerDn("CN=Foo")
+                .setValidityDays(-1)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate();  
+        Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(certificate);
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
@@ -166,7 +179,7 @@ public class WebAuthenticationProviderSessionBeanSystemTest {
     public void testAuthenticationWithFutureCertificate() throws Exception {
         X509Certificate certificate = generateUnbornCert("CN=foo", null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(certificate);
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
@@ -189,9 +202,15 @@ public class WebAuthenticationProviderSessionBeanSystemTest {
         try {
             requireAdminCertificateInDatabase = configurationSession.getProperty(WebConfiguration.CONFIG_REQCERTINDB);
             configurationSession.updateProperty(WebConfiguration.CONFIG_REQCERTINDB, Boolean.TRUE.toString());
-            X509Certificate certificate = CertTools.genSelfCert("CN=Foo", 1, null, keys.getPrivate(), keys.getPublic(),
-                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            X509Certificate certificate = SimpleCertGenerator.forTESTLeafCert()
+                    .setSubjectDn("CN=Foo")
+                    .setIssuerDn("CN=Foo")
+                    .setValidityDays(1)
+                    .setIssuerPrivKey(keys.getPrivate())
+                    .setEntityPubKey(keys.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                    .generateCertificate();  
+            Set<X509Certificate> credentials = new HashSet<>();
             credentials.add(certificate);
             AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
             AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
@@ -213,9 +232,15 @@ public class WebAuthenticationProviderSessionBeanSystemTest {
 
     @Test
     public void testAuthenticationWithInactiveCertificate() throws Exception {
-        X509Certificate certificate = CertTools.genSelfCert("CN=Foo", 1, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        X509Certificate certificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=Foo")
+                .setIssuerDn("CN=Foo")
+                .setValidityDays(1)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate();  
+        Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(certificate);
         AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
         try {

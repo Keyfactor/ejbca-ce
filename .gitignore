@@ -21,3 +21,5 @@ modules/ra-gui/resources/js/jquery.min.js
 /.project
 .gradle
 jacoco.exec
+**/*.log
+modules/ejbca-common/result.ser

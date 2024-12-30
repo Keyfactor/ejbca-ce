@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -302,8 +301,11 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
-        CACommon caCommon = caSessionLocal.getCA(admin, endEntityInformation.getCAId());
-        List<Certificate> caCertificateChain = fetchCaCertificateChain(admin, true, caCommon.getName());
+        String caName = caSessionLocal.getCAIdToNameMap().get(endEntityInformation.getCAId());
+        if (caName == null) {
+            throw new RestException(Status.NOT_FOUND.getStatusCode(), "CA does not exist");
+        }
+        List<Certificate> caCertificateChain = fetchCaCertificateChain(admin, true, caName);
         String keyStoreType = SecConst.getKeyStoreTypeAsString(tokenType);
 
         X509Certificate certificate = getFirstCertificate(keyStoreBytes, keyStoreType, keyStorePassword);

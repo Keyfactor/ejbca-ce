@@ -41,6 +41,7 @@ import com.keyfactor.CesecoreException;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -520,8 +521,16 @@ public class CrmfKeyUpdateSystemTest extends CmpTestCase {
         createUser(fakeUsername, fakeUserDN.toString(), "foo123");
 
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate fakeCert = CertTools.genSelfCert(fakeUserDN.toString(), 30, null, keys.getPrivate(), keys.getPublic(),
-                    AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        Certificate fakeCert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn(fakeUserDN.toString())
+                .setIssuerDn(fakeUserDN.toString())
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         assertNotNull("Failed to create a test certificate", fakeCert);
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption);

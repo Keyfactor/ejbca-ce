@@ -690,16 +690,6 @@ public class EnrollWithRequestIdBean implements Serializable {
     /** Validate an uploaded CSR and store the extracted key algorithm and CSR for later use. */
     public void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         RaCsrTools.validateCsr(value, this, raLocaleBean, getCertificateProfile(), requestId, false);
-        try {
-            if(getCertificateProfile().getAllowDNOverride()) {
-                RaCsrTools.validetaNumberOfFieldsInSubjectDn(authorizedEndEntityProfiles.get(getEndEntityInformation().getEndEntityProfileId()), getCertificateRequest(), raLocaleBean, requestId,
-                        false);
-            }
-        } catch (ValidatorException e) {
-            setSelectedAlgorithm(null);
-            certificateRequest = null;
-            throw e;
-        }
     }
 
     public boolean isRenderPassword() {

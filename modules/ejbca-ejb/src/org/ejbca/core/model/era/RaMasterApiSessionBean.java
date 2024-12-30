@@ -3497,7 +3497,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
                 }
                 continue;
             }
-            if (validator.getValidatorTypeIdentifier().equals(DnsNameValidator.CAA_TYPE_IDENTIFIER)) {
+            if (validator instanceof CaaIdentitiesValidator) {
                 caaIdentities.addAll(((CaaIdentitiesValidator) validator).getIssuers());
             }
         }

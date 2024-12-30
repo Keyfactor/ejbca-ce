@@ -38,6 +38,7 @@ import javax.security.auth.x500.X500Principal;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -803,7 +804,16 @@ public class NestedMessageContentSystemTest extends CmpTestCase {
                 nb, na, null, pAlg, new DEROctetString(senderNonce));
 
         KeyPair nonAdminKeys = KeyTools.genKeys("1024", "RSA");
-        Certificate nonAdminCert = CertTools.genSelfCert("CN=cmpTestAdmin,C=SE", 365, null, nonAdminKeys.getPrivate(), nonAdminKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        Certificate nonAdminCert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=cmpTestAdmin,C=SE")
+                .setIssuerDn("CN=cmpTestAdmin,C=SE")
+                .setValidityDays(365)
+                .setIssuerPrivKey(nonAdminKeys.getPrivate())
+                .setEntityPubKey(nonAdminKeys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         CMPCertificate[] cmpcert = getCMPCert(nonAdminCert);
         crmfMsg = CmpMessageHelper.buildCertBasedPKIProtection(crmfMsg, cmpcert, nonAdminKeys.getPrivate(),
                 AlgorithmTools.getAlgorithmNameFromOID(pAlg.getAlgorithm()), BouncyCastleProvider.PROVIDER_NAME);

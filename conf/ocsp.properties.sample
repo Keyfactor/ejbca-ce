@@ -4,10 +4,6 @@
 # These values are used for OCSP responses signed by a CA and as defaults for delegated OCSP signing by OcspKeyBindings.
 # Certificate Profile or URL specific configuration here will still override the configured values of an OcspKeyBinding.
 
-# OCSP servlet enabled. If false there will be no servlet.
-# Default is true.
-#ocsp.enabled=false
-
 # Context root (the path in the URL)
 # Default is '/${app.name}/publicweb/status'
 #ocsp.contextroot=/status

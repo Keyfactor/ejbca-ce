@@ -34,6 +34,7 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
@@ -48,6 +49,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -67,11 +69,16 @@ public class X509CertificateAuthenticationTokenUnitTest {
     }
 
     @Before
-    public void setUp() throws InvalidAlgorithmParameterException, IllegalStateException, OperatorCreationException, CertificateException {
+    public void setUp() throws InvalidAlgorithmParameterException, IllegalStateException, OperatorCreationException, CertificateException, CertIOException {
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        certificate = CertTools.genSelfCert(
-                "C=Test,O=Test,CN=Test,DC=Test,L=Test,SN=Test,ST=Test,OU=Test,T=Test,UID=Test,E=Test,EmailAddress=Test", 365, null,
-                keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=Test,O=Test,CN=Test,DC=Test,L=Test,SN=Test,ST=Test,OU=Test,T=Test,UID=Test,E=Test,EmailAddress=Test")
+                .setIssuerDn("C=Test,O=Test,CN=Test,DC=Test,L=Test,SN=Test,ST=Test,OU=Test,T=Test,UID=Test,E=Test,EmailAddress=Test")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();  
     }
 
     @After
@@ -125,8 +132,14 @@ public class X509CertificateAuthenticationTokenUnitTest {
     public void testCreateAuthenticationTokenWithMultipleCredentials() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
         X509CertificateAuthenticationToken authenticationToken = null;
 
-        X509Certificate secondCertificate = CertTools.genSelfCert("C=SE,O=Monkey,CN=Monkey", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate secondCertificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Monkey,CN=Monkey")
+                .setIssuerDn("C=SE,O=Monkey,CN=Monkey")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();  
         Set<X509Certificate> credentials = new HashSet<>();
         credentials.add(certificate);
         credentials.add(secondCertificate);

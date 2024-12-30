@@ -31,6 +31,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -261,7 +262,15 @@ public class CrmfRequestSystemTest extends CmpTestCase {
         byte[] transid = CmpMessageHelper.createSenderNonce();
         PKIMessage req = genCertReq(ISSUER_DN_SHA256, USER_DN, this.keys, this.cacertSha256, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
-        X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, this.keys.getPrivate(), this.keys.getPublic(), "SHA256WithRSA", false);
+        X509Certificate signCert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=CMP Sign Test")
+                .setIssuerDn("CN=CMP Sign Test")
+                .setValidityDays(3650)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         ArrayList<Certificate> signCertColl = new ArrayList<>();
         signCertColl.add(signCert);
         CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
