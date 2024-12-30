@@ -31,13 +31,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
-import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
-import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
-import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.*;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
@@ -177,12 +175,23 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
     /**
      * Import keystores into a CA for key management takeover
+     *
      * @param requestContext
      * @param issuerDN
      * @param request
      * @return
+     * @throws AuthorizationDeniedException
+     * @throws RestException
+     * @throws EjbcaException
+     * @throws CADoesntExistsException
      */
-    public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequest request) {
+    public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequest request)
+            throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
+
+        final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
+        KeyImportRequestData requestData = KeyImportRestRequest.converter().toRequestData(request, issuerDN);
+        RaKeyImportResponseV2 raResponse = raMasterApi.keyImportV2(authenticationToken, issuerDN, requestData);
+
         return Response.ok().build();
     }
     
