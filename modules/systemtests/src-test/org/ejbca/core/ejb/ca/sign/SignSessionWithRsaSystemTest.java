@@ -140,6 +140,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.RFC4683Tools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -1225,8 +1226,14 @@ public class SignSessionWithRsaSystemTest extends SignSessionCommon {
         log.debug("Trying to use a certificate that isn't selfsigned for certificate renewal.");
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         KeyPair anotherRsaKey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        final X509Certificate notSelfSignedCert = CertTools.genSelfCert("CN=notSelfSigned", 1, null, rsakeys.getPrivate(), anotherRsaKey.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        final X509Certificate notSelfSignedCert =  SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(rsakeys.getPrivate())
+                .setEntityPubKey(anotherRsaKey.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate(); 
         try {
             signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", notSelfSignedCert);
             assertFalse("Tried to create cert from old certificate that wasn't self signed! Did not throw SignRequestSignatureException.", true);

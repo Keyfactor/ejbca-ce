@@ -297,6 +297,8 @@ if (edition == "ee") {
         "modules:ct",
         "modules:cesecore-cvcca",
         "modules:unidfnr",
+        "modules:iodef",
+        "modules:mpic"
     )
 }
 

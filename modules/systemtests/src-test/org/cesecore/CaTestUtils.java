@@ -82,12 +82,10 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenAuthenticationFailedException;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -118,7 +116,7 @@ public abstract class CaTestUtils {
     public static X509CA createActiveX509Ca(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn)
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
             AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
-            IllegalStateException, OperatorCreationException, CAExistsException {
+            IllegalStateException, OperatorCreationException, CAExistsException, CertIOException {
         return createX509Ca(authenticationToken, cryptoTokenName, caName, cadn, CAConstants.CA_ACTIVE);
     }
 
@@ -133,7 +131,7 @@ public abstract class CaTestUtils {
     public static X509CA createX509Ca(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn, int caStatus)
             throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
             AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
-            IllegalStateException, OperatorCreationException, CAExistsException {
+            IllegalStateException, OperatorCreationException, CAExistsException, CertIOException {
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -148,7 +146,7 @@ public abstract class CaTestUtils {
     public static X509CA createX509CaWithApprovals(final AuthenticationToken authenticationToken, final String cryptoTokenName, final String caName, final String cadn,
             int caStatus, Map<ApprovalRequestType, Integer> approvals) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, CryptoTokenNameInUseException,
                 AuthorizationDeniedException, InvalidKeyException, InvalidAlgorithmParameterException, CertificateException, InvalidAlgorithmException,
-                IllegalStateException, OperatorCreationException, CAExistsException {
+                IllegalStateException, OperatorCreationException, CAExistsException, CertIOException {
         final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         final CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
                 .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -163,7 +161,7 @@ public abstract class CaTestUtils {
     }
 
     private static X509CA createX509Ca(final CryptoToken cryptoToken, String caName, String cadn, int caStatus) throws CertificateException,
-            CryptoTokenOfflineException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
+            CryptoTokenOfflineException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException, CertIOException {
         CAToken catoken = createCaToken(cryptoToken.getId(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, AlgorithmConstants.SIGALG_SHA256_WITH_RSA,
                 CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
         // No extended services
@@ -173,10 +171,15 @@ public abstract class CaTestUtils {
         X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         x509ca.setCAToken(catoken);
         // A CA certificate
-        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1",
-                cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                "SHA256WithRSA", true);
+        X509Certificate cacert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(cadn)
+                .setIssuerDn(cadn)
+                .setValidityDays(10)
+                .setPolicyId("1.1.1.1")
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)))
+                .setEntityPubKey(cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);
@@ -309,7 +312,6 @@ public abstract class CaTestUtils {
                     signingKeyName).getPublicKey();
             final PrivateKey privateKey = cryptoTokenManagementProxySession.getPrivateKey(cryptoTokenId,
                     signingKeyName);
-            final String keyalg = AlgorithmTools.getKeyAlgorithm(publicKey);
             X509Certificate cacert;
             if (keyusage == -1) {
                 cacert = SimpleCertGenerator.forTESTCaCert()
@@ -530,9 +532,16 @@ public abstract class CaTestUtils {
         X509CA x509ca = (X509CA) CAFactory.INSTANCE.getX509CAImpl(cainfo);
         x509ca.setCAToken(caToken);
         // A CA certificate
-        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1",
-                cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
-                cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), "SHA256WithRSA", true);
+        X509Certificate cacert =  SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(cadn)
+                .setIssuerDn(cadn)
+                .setPolicyId("1.1.1.1")
+                .setValidityDays(10)
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)))
+                .setEntityPubKey(cryptoToken.getPublicKey(caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();  
+                
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);

@@ -171,7 +171,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
     private static final String ENABLESESSIONTIMEOUT = "use_session_timeout";
     private static final String SESSIONTIMEOUTTIME = "session_timeout_time";
     private static final String VA_STATUS_TIME_CONSTRAINT_KEY = "va_status_time_constraint";
-
+    
     /** Creates a new instance of GlobalConfiguration */
     public GlobalConfiguration()  {
        super();
@@ -361,7 +361,7 @@ public class GlobalConfiguration extends ConfigurationBase implements ExternalSc
 
     public boolean getEnableIcaoCANameChange() { return getBoolean(ENABLEICAOCANAMECHANGE, false); }
     public void setEnableIcaoCANameChange(final boolean value) { putBoolean(ENABLEICAOCANAMECHANGE, value);}
-
+    
     /** @return true of email notification of requested approvals should be sent (default false) */
      @Deprecated // Used during upgrade to EJBCA 6.6.0
      public boolean getUseApprovalNotifications() { return getBoolean(USEAPPROVALNOTIFICATIONS, false); }

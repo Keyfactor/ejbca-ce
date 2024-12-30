@@ -98,27 +98,4 @@ public class RaCsrTools {
     private static String getKeyAlgorithmMessageString(String alg, String spec ) {
         return alg.equals(spec)? alg : alg + "_" + spec;
     }
-
-    public static void validetaNumberOfFieldsInSubjectDn(final KeyToValueHolder<EndEntityProfile> endEntityProfileKeyValue, String certificateRequest,
-                                                         RaLocaleBean raLocaleBean, String usernameOrId, boolean isUsername) {
-        if (endEntityProfileKeyValue != null) {
-            EndEntityProfile endEntityProfile = endEntityProfileKeyValue.getValue();
-            final RequestMessage certRequest = RequestMessageUtils.parseRequestMessage(certificateRequest.getBytes(StandardCharsets.UTF_8));
-            String subject = certRequest.getRequestX500Name().toString();
-            final DNFieldExtractor subjectDnFields = new DNFieldExtractor(subject, DNFieldExtractor.TYPE_SUBJECTDN);
-            final List<String> dnFields = DnComponents.getDnProfileFields();
-            final List<Integer> dnFieldExtractorIds = DnComponents.getDnDnIds();
-            for (int i = 0; i < dnFields.size(); i++) {
-                if (endEntityProfile.getNumberOfField(dnFields.get(i)) < subjectDnFields.getNumberOfFields(dnFieldExtractorIds.get(i))) {
-                    throw new ValidatorException(new FacesMessage(raLocaleBean.getMessage("enroll_invalid_number_of_subjectdn_fields_in_request",  dnFields.get(i))));
-                }
-            }
-        } else {
-            if (log.isDebugEnabled()) {
-                log.debug("Ignoring subject DN validation on CSR because we can not find a End Entity Profile for "
-                        + (isUsername ? "user: " : "request with ID: ")
-                        + usernameOrId);
-            }
-        }
-    }
 }

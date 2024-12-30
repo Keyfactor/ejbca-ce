@@ -47,6 +47,7 @@ import org.junit.Test;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -101,8 +102,14 @@ public class RequestHelperUnitTest {
 
         //Generate a self signed certificate to act as a CA cert, and a signed certificate.
         KeyPair caKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate caCert = CertTools.genSelfCert("CN=foo", 365, null, caKeys.getPrivate(), caKeys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        Certificate caCert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=foo")
+                .setIssuerDn("CN=foo")
+                .setValidityDays(365)
+                .setIssuerPrivKey(caKeys.getPrivate())
+                .setEntityPubKey(caKeys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate(); 
         KeyPair replyKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(replyKeys.getPublic().getEncoded());
         String signedCertDn = "CN=signedcert";
