@@ -1233,8 +1233,18 @@ table#config tr td:first-child {
 }
 
 /* --- Publisher Queue page */
+.linter-profiles {
+	max-height: 20em;
+	max-width: 40em;
+	overflow: scroll;
+}
+
 .publisherQueueTable input {
 	margin-right: .5em;
+}
+/* --- PkiMetal Validator */
+.ui-selectmanycheckbox.layout-line-direction.ui-grid-responsive > div {
+	display: block;
 }
 
 /*--------------------------------------------------------------------------*/

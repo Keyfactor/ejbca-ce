@@ -44,7 +44,9 @@
             <!-- Available profiles from pkimetal -->
             <h:outputLabel for="profiles" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AVAILABLE_PROFILES}"/>
             <h:panelGroup id="profiles">
-                <p:selectManyCheckbox value="#{validatorBean.validator.chosenProfiles}" disabled="#{validatorsBean.viewOnly}">
+                <p:selectManyCheckbox styleClass="linter-profiles"
+                                      value="#{validatorBean.validator.chosenProfiles}"
+                                      disabled="#{validatorsBean.viewOnly}">
                     <f:selectItems value="#{validatorBean.getGroupList()}"/>
                 </p:selectManyCheckbox>
             </h:panelGroup>
