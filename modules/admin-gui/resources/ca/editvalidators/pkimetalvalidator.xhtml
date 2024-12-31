@@ -44,9 +44,9 @@
             <!-- Available profiles from pkimetal -->
             <h:outputLabel for="profiles" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AVAILABLE_PROFILES}"/>
             <h:panelGroup id="profiles">
-                <p:selectOneMenu value="#{validatorBean.validator.chosenProfile}" disabled="#{validatorsBean.viewOnly}">
+                <p:selectManyCheckbox value="#{validatorBean.validator.chosenProfiles}" disabled="#{validatorsBean.viewOnly}">
                     <f:selectItems value="#{validatorBean.getGroupList()}"/>
-                </p:selectOneMenu>
+                </p:selectManyCheckbox>
             </h:panelGroup>
             <!-- Severity level for failing the validator -->
             <h:outputLabel for="severityFail" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_SEVERITY_FAIL}"/>
