@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.ejbca.ui.web.rest.api.io.request.AddEndEntityRestRequest;
 
 import com.keyfactor.util.certificate.DnComponents;
+import org.ejbca.ui.web.rest.api.io.request.TokenType;
 
 /**
  * Validation annotation for input parameter with built-in validator. An input AddEndEntityRestRequest is validated for:
@@ -134,7 +135,7 @@ public @interface ValidAddEndEntityRestRequest {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.token.nullOrEmpty}");
                 return false;
             }
-            final AddEndEntityRestRequest.TokenType tokenType = AddEndEntityRestRequest.TokenType.resolveEndEntityTokenByName(tokenValue);
+            final TokenType tokenType = TokenType.resolveEndEntityTokenByName(tokenValue);
             if (tokenType == null) {
             	ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidAddEndEntityRestRequest.invalid.token.unknown}");
                 return false;
