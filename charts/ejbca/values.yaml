@@ -113,6 +113,48 @@ ejbca:
   # Extra volume mounts to be added to the deployment
   volumeMounts: []
 
+hsm:
+  # provide HSM container image here when keyfactor repository is not used i.e. 
+  # company internal artifactory is used
+  image:
+  imagePullPolicy: IfNotPresent
+  enabled: false
+  softhsm:
+    enabled: false
+    logLevel: "INFO"
+    tokenPersistentVolumeClaim: 
+  luna:
+    enabled: false
+    server_name: "192.168.0.200"
+    credentials:
+      certificates:
+        configMap: "hsm-luna-configmap"
+        serverCertificateKey: "server.pem"
+        clientCertificateKey: "dockerlunaclient.pem"
+      privateKey:
+        secret: "hsm-luna-secret-client-key"
+        key: "dockerlunaclientKey.pem"
+    env:
+      CKLOG2_ENABLED: 0
+      PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS: 0
+  utimaco:
+    enabled: false
+    hsmConfiguration: 
+      configMap: ejbca-utimaco-configmap
+      key: "cs_pkcs11_R3.cfg"
+  nshield:
+    enabled: false
+    # configuration parameters provided as secret
+    configuration: "nshield-secret"
+    # example:
+    # HSM_IP='192.168.34.101'
+    # HSM_PORT='9004'
+    # HSM_ESN='291F-03E0-8970'
+    # HSM_HKNETI='dbbcb19108b208811dc2993ae7b8b878aee3f234'
+    # RFS_IP='192.168.34.101'
+    # RFS_PORT='9005'
+    # RFS_MODE='readonly'
+
 replicaCount: 1
 
 # https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
