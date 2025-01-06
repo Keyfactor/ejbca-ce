@@ -126,27 +126,24 @@ hsm:
   luna:
     enabled: false
     server_name: "192.168.0.200"
+    CKLOG2_ENABLED: 0
+    PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS: 0
     credentials:
       certificates:
         configMap: "hsm-luna-configmap"
-        serverCertificateKey: "server.pem"
-        clientCertificateKey: "dockerlunaclient.pem"
+        # mandatory keys for file mount: "server.pem", "dockerlunaclient.pem"
       privateKey:
         secret: "hsm-luna-secret-client-key"
-        key: "dockerlunaclientKey.pem"
-    env:
-      CKLOG2_ENABLED: 0
-      PROTECTED_AUTHENTICATION_PATH_FLAG_STATUS: 0
+        # mandatory key for file mount: "dockerlunaclientKey.pem"      
   utimaco:
     enabled: false
-    hsmConfiguration: 
-      configMap: ejbca-utimaco-configmap
-      key: "cs_pkcs11_R3.cfg"
+    hsmConfigurationSecret: ejbca-utimaco-configmap
+      # mandatory keys for file mount: "cs_pkcs11_R3.cfg"
   nshield:
     enabled: false
     # configuration parameters provided as secret
-    configuration: "nshield-secret"
-    # example:
+    hsmConfigurationSecret: "nshield-secret"
+    # mandatory keys for environment variables(example):
     # HSM_IP='192.168.34.101'
     # HSM_PORT='9004'
     # HSM_ESN='291F-03E0-8970'

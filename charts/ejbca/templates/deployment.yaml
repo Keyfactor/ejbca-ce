@@ -294,7 +294,7 @@ spec:
             - name: ejbca-config-configdump-initialize
               mountPath: /opt/keyfactor/configdump/initialize.d/
             {{- end }}
-            {{- if .Values.ejbca.hsmEnabled }}
+            {{- if .Values.hsm.enabled }}
             - name: p11proxy-client
               mountPath: /opt/keyfactor/p11proxy-client
             {{- end }}
@@ -303,6 +303,15 @@ spec:
             {{- end }}
         {{- if .Values.hsm.softhsm.enabled }}
           {{ include "ejbca.hsm.sidecar.softhsm" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.luna.enabled }}
+          {{ include "ejbca.hsm.sidecar.luna" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.utimaco.enabled }}
+          {{ include "ejbca.hsm.sidecar.utimaco" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.nshield.enabled }}
+          {{ include "ejbca.hsm.sidecar.nshield" . | nindent 8 }}
         {{- end }}
         {{- if .Values.ejbca.sidecarContainers }}
           {{- toYaml .Values.ejbca.sidecarContainers | nindent 8 }}
@@ -395,6 +404,12 @@ spec:
         {{- end }}
         {{- if .Values.hsm.softhsm.tokenPersistentVolumeClaim }}
           {{ include "ejbca.hsm.volume.softhsm" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.luna.enabled }}
+          {{ include "ejbca.hsm.volume.luna" . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.hsm.utimaco.enabled }}
+          {{ include "ejbca.hsm.volume.utimaco" . | nindent 8 }}
         {{- end }}
         {{- if .Values.ejbca.volumes }}
           {{- toYaml .Values.ejbca.volumes | nindent 8 }}
