@@ -130,7 +130,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Enrollment with client generated keys for an existing End Entity",
-            description = "Enroll for a certificate given a PEM encoded public key or PKCS#10, CRMF, SPKAC or CVC CSR.",
+            description = "Enroll for a certificate given a PEM encoded  PUBLICKEY, PKCS10, CRMF, SPKAC, or CVC.",
             responses = {
                     @ApiResponse(
                             responseCode = "200",
