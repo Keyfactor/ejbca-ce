@@ -1828,7 +1828,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         CADoesntExistsException caDoesntExistException = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (log.isDebugEnabled()) {
-                log.debug("raMasterApi calling createCertificateWS: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+                log.debug("raMasterApi calling softTokenRequest: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
             }
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
                 try {
