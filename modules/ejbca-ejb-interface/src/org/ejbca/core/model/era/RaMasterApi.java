@@ -1751,4 +1751,14 @@ public interface RaMasterApi {
 
     byte[] generateOrKeyRecoverTokenV2(AuthenticationToken authenticationToken, GenerateOrKeyRecoverTokenRequest request)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+    
+    /**
+     * Return total count of certificates in database
+     * 
+     * @param authenticationToken
+     * @param isActive only count the active certificates
+     * @return
+     * @throws AuthorizationDeniedException
+     */
+    Long getCertificateCount(AuthenticationToken authenticationToken, Boolean isActive) throws AuthorizationDeniedException;
 }
