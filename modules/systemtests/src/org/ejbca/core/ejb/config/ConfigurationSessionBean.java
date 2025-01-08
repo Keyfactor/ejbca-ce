@@ -110,7 +110,7 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
             poolClass.getMethod("setSocketTimeout", int.class)
                     .invoke(poolInstance, timeout);
         } catch (ClassNotFoundException e) {
-            // Do nothing as we should not end here.
+            // This would happen if called in Community Edition (which it shouldn't be)
         } catch (IllegalAccessException | NoSuchMethodException |
                  InvocationTargetException e) {
             throw new IllegalStateException("Reflection operation failed: " + e.getMessage(), e);
