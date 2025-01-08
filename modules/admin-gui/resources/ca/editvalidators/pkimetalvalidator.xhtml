@@ -40,15 +40,20 @@
             <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}" />     
             <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}">
               <h:outputLabel styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_NOT_CONNECTED}"/>
-            </h:panelGroup> 
+            </h:panelGroup>
+            <h:outputLabel for="autodetect" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AUTODETECT_PROFILES}"/>
+            <h:selectBooleanCheckbox id="autodetect" value="#{validatorBean.validator.autoDetect}">
+              <f:ajax render="validators" event="change"/>
+            </h:selectBooleanCheckbox>
             <!-- Available profiles from pkimetal -->
-            <h:outputLabel for="profiles" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AVAILABLE_PROFILES}"/>
-            <h:panelGroup id="profiles">
-                <p:selectManyCheckbox styleClass="linter-profiles"
+            <h:outputLabel rendered="#{not validatorBean.validator.autoDetect}"
+                           id="profiles-label" for="profiles" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AVAILABLE_PROFILES}"/>
+            <h:panelGroup rendered="#{not validatorBean.validator.autoDetect}" id="profiles">
+                <h:selectManyCheckbox styleClass="linter-profiles"
                                       value="#{validatorBean.validator.chosenProfiles}"
                                       disabled="#{validatorsBean.viewOnly}">
                     <f:selectItems value="#{validatorBean.getGroupList()}"/>
-                </p:selectManyCheckbox>
+                </h:selectManyCheckbox>
             </h:panelGroup>
             <!-- Severity level for failing the validator -->
             <h:outputLabel for="severityFail" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_SEVERITY_FAIL}"/>
