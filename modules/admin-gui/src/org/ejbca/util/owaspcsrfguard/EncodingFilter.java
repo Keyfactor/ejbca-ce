@@ -46,8 +46,7 @@ public class EncodingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException,IOException {
-        final RequestId requestId = new RequestId();
-        try {
+        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
             final HttpServletRequest httpreq = (HttpServletRequest) request;
 
             // The way we use OWASP CSRF Guard makes all POST requests to our form in the last remaining jsp pages protected against csrf attacks
@@ -79,9 +78,6 @@ public class EncodingFilter implements Filter {
             //WARNING: do NOT swallow any Exception!!! If container can not see any exception, it will not redirect client to related error page.
             //You can catch Exceptions and print them, and you must throw them at last!
             chain.doFilter(request, response);
-        }
-        finally {
-            requestId.clear();
         }
     }
 

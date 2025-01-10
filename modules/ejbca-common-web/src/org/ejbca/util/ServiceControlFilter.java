@@ -112,8 +112,7 @@ public class ServiceControlFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        final RequestId requestId = new RequestId();
-        try {
+        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
             final HttpServletRequest httpRequest = (HttpServletRequest) request;
             final HttpServletResponse httpResponse = (HttpServletResponse) response;
             AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession
@@ -154,9 +153,6 @@ public class ServiceControlFilter implements Filter {
                 log.debug("Access to service " + serviceName + " is allowed. HTTP request " + httpRequest.getRequestURL() + " is let through.");
             }
             chain.doFilter(request, response);
-        }
-        finally {
-            requestId.clear();
         }
     }
         
