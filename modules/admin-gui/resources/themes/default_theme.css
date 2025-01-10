@@ -1238,13 +1238,11 @@ table#config tr td:first-child {
 }
 /* --- PkiMetal Validator */
 .linter-profiles {
-	display: block;
 	max-height: 20em;
 	max-width: 40em;
 	overflow: scroll;
 }
-
-.linter-profiles td {
+.linter-profiles.ui-selectmanycheckbox.layout-line-direction.ui-grid-responsive > div {
 	display: block;
 }
 /*--------------------------------------------------------------------------*/
