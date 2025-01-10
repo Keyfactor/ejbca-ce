@@ -57,8 +57,7 @@ public class NoCacheFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
-        final RequestId requestId = new RequestId();
-        try {
+        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
             HttpServletRequest request = (HttpServletRequest) req;
             HttpServletResponse response = (HttpServletResponse) res;
 
@@ -69,9 +68,6 @@ public class NoCacheFilter implements Filter {
             }
 
             chain.doFilter(req, res);
-        }
-        finally {
-            requestId.clear();
         }
     }
 

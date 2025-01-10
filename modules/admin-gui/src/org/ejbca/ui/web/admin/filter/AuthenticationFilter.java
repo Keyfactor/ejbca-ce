@@ -52,8 +52,7 @@ public class AuthenticationFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        final RequestId requestId = new RequestId();
-        try {
+        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
             final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             final HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             boolean hasAuthenticationError = false;
@@ -116,9 +115,6 @@ public class AuthenticationFilter implements Filter {
                 log.info("Client " + httpServletRequest.getRemoteAddr() + " was denied. " + authenticationErrorMessage);
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, authenticationErrorPublicMessage);
             }
-        }
-        finally {
-            requestId.clear();
         }
     }
 

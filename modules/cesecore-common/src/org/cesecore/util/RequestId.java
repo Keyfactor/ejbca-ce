@@ -1,54 +1,100 @@
 package org.cesecore.util;
 
+import org.apache.log4j.Logger;
+
 import java.nio.ByteBuffer;
 import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
 
-public class RequestId {
+public class RequestId implements AutoCloseable {
+
+    private static final Logger log = Logger.getLogger(RequestId.class);
 
     protected static final String SEPARATOR = "   ";
     private static final SecureRandom secureRandom;
+    private static final Map<Long, String> originalNames;
+    private static final Map<Long, RequestId> instances;
 
     static {
         ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
         buffer.putLong(System.currentTimeMillis());
         secureRandom = new SecureRandom(buffer.array());
+        originalNames = new HashMap<>();
+        instances = new HashMap<>();
     }
 
-    public static String[] split() {
-        return Thread.currentThread().getName().split(SEPARATOR);
+    public static String getOriginalName() {
+        Thread currentThread = Thread.currentThread();
+        originalNames.putIfAbsent(currentThread.getId(), currentThread.getName().split(SEPARATOR)[0]);
+        return originalNames.get(currentThread.getId());
     }
 
-    public static void setRequestId(final String requestId) {
-        Thread.currentThread().setName(split()[0]+SEPARATOR+requestId);
+    public static RequestId getCurrent() {
+        return instances.get(Thread.currentThread().getId());
     }
 
-    private final String originalThreadName;
-
-    public RequestId(final String requestId) {
-        originalThreadName = Thread.currentThread().getName();
-        final String[] array = originalThreadName.split(SEPARATOR);
-        if (array.length <= 1) {
-            // There is no previous request-id. Generate a new one.
-            String id;
-            if (requestId == null) {
-                id = String.format("request-id-%06d", secureRandom.nextInt(100_000));
-            }
-            else {
-                id = requestId;
-            }
-            Thread.currentThread().setName(originalThreadName+SEPARATOR+id);
+    public static RequestId getCurrentOrCreate() {
+        Thread currentThread = Thread.currentThread();
+        RequestId instance = instances.get(currentThread.getId());
+        if (instance == null) {
+            String id = String.format("request-id-%06d", secureRandom.nextInt(100_000));
+            instance = new RequestId(id);
+            instances.put(currentThread.getId(), instance);
         }
-        else {
-            // There is already a request-id. Keep using it.
+        instance.increaseCounter();
+        return instance;
+    }
+
+    private final String id;
+    private int counter;
+
+    private RequestId(final String id) {
+        this.id = id;
+        this.counter = 0;
+        Thread.currentThread().setName(getOriginalName()+SEPARATOR+id);
+        log.info("Start of request");
+    }
+
+    private void increaseCounter() {
+        counter++;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public int getCounter() {
+        return counter;
+    }
+
+    public void close(boolean recursive) {
+        if (counter > 0) {
+            counter--;
+            if (recursive || counter == 0) {
+                log.info("End of request");
+                counter = 0;
+                Thread currentThread = Thread.currentThread();
+                instances.remove(currentThread.getId());
+                currentThread.setName(getOriginalName());
+            }
         }
     }
 
-    public RequestId() {
-        this(null);
+    @Override
+    public void close() {
+        close(false);
     }
 
-    public void clear() {
-        Thread.currentThread().setName(originalThreadName);
+    public static void closeAll() {
+        Set<Thread> threads = Thread.getAllStackTraces().keySet();
+        for (Thread thread : threads) {
+            var originalName = thread.getName().split(SEPARATOR)[0];
+            thread.setName(originalName);
+        }
+        instances.clear();
+        originalNames.clear();
     }
-
 }

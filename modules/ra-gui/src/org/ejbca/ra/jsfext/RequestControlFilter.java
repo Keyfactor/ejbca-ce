@@ -139,8 +139,7 @@ public class RequestControlFilter implements Filter {
             ServletResponse response,
             FilterChain chain)
                     throws IOException, ServletException {
-        final RequestId requestId = new RequestId();
-        try {
+        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
             HttpServletRequest httpRequest = (HttpServletRequest)request;
             HttpSession session = httpRequest.getSession();
 
@@ -184,9 +183,6 @@ public class RequestControlFilter implements Filter {
             } finally {
                 releaseQueuedRequest(httpRequest);
             }
-        }
-        finally {
-            requestId.clear();
         }
     }
 
