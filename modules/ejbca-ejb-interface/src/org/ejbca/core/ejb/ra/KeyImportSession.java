@@ -10,32 +10,29 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.era;
+package org.ejbca.core.ejb.ra;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.keys.keyimport.KeyImportFailure;
+import org.cesecore.keys.keyimport.KeyImportRequestData;
+import org.ejbca.core.EjbcaException;
 
-import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RaResponse for Key Migration.
+ *
  */
-public class RaKeyImportResponseV2 implements Serializable {
+public interface KeyImportSession {
 
-    private static final long serialVersionUID = 1L;
-
-    private List<KeyImportFailure> failedKeys = new ArrayList<>();
-
-    public RaKeyImportResponseV2(List<KeyImportFailure> failedKeys) {
-        this.failedKeys = failedKeys;
-    }
-
-    public List<KeyImportFailure> getFailedKeys() {
-        return failedKeys;
-    }
-
-    public void setFailedKeys(List<KeyImportFailure> failedKeys) {
-        this.failedKeys = failedKeys;
-    }
+    /**
+     * Imports keys to EJBCA.
+     *
+     * @param authenticationToken authentication token
+     * @param keyImportRequestData data required to perform the key imports
+     * @return the list of failed key imports
+     */
+    List<KeyImportFailure> importKeys(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
+            throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
 }

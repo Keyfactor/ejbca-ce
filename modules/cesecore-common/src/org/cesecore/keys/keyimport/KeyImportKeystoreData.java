@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.keys.keyimport;
 
+import com.keyfactor.util.StringTools;
+
 import java.io.Serializable;
 
 /**
@@ -27,7 +29,7 @@ public class KeyImportKeystoreData implements Serializable {
 
     public KeyImportKeystoreData(final String username, final String password, final String keystore) {
         this.username = username;
-        this.password = password;
+        this.password = StringTools.putBase64String(password);
         this.keystore = keystore;
     }
 
@@ -40,11 +42,11 @@ public class KeyImportKeystoreData implements Serializable {
     }
 
     public String getPassword() {
-        return password;
+        return StringTools.getBase64String(password);
     }
 
     public void setPassword(String password) {
-        this.password = password;
+        this.password = StringTools.putBase64String(password);
     }
 
     public String getKeystore() {
