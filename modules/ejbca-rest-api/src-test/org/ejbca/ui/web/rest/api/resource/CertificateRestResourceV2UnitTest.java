@@ -36,6 +36,8 @@ import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
 import org.easymock.TestSubject;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
+import org.ejbca.core.model.era.RaMasterApiSessionLocal;
 import org.ejbca.ui.web.rest.api.InMemoryRestServer;
 import org.ejbca.ui.web.rest.api.resource.swagger.CertificateRestResourceV2Swagger;
 import org.json.simple.JSONObject;
@@ -76,7 +78,7 @@ public class CertificateRestResourceV2UnitTest {
 	private static final CertificateRestResourceWithoutSecurity TEST_CLASS = new CertificateRestResourceWithoutSecurity();
 
 	@Mock
-	private CertificateDataSessionLocal certificateDataSession;
+	private RaMasterApiProxyBeanLocal raMasterApiSession;
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
@@ -93,8 +95,8 @@ public class CertificateRestResourceV2UnitTest {
 	public void shouldGetCountOfAllTheIssuedCertificates() throws ParseException, AuthorizationDeniedException {
 		// given
 		final Long expectedCount = 3L;
-		expect(certificateDataSession.getCertificateCount(anyObject(AuthenticationToken.class), isNull())).andReturn(expectedCount);
-		replay(certificateDataSession);
+		expect(raMasterApiSession.getCertificateCount(anyObject(AuthenticationToken.class), isNull())).andReturn(expectedCount);
+		replay(raMasterApiSession);
 
 		// when
 		final Invocation.Builder request = server.newRequest("/v2/certificate/count").request();
@@ -105,7 +107,7 @@ public class CertificateRestResourceV2UnitTest {
 		final Long certCount = (Long) actualJsonObject.get("count");
 
 		// then
-		verify(certificateDataSession);
+		verify(raMasterApiSession);
 		assertEquals(Optional.of(expectedCount), Optional.of(certCount));
 		assertEquals(Response.Status.OK.getStatusCode(), actualStatus);
 		assertJsonContentType(actualResponse);
@@ -115,8 +117,8 @@ public class CertificateRestResourceV2UnitTest {
 	public void shouldThrowAuthorizationDeniedException_WhenQueryingQuantityOfAllCertificates() throws ParseException, AuthorizationDeniedException {
 		// given
 		AuthorizationDeniedException exception = new AuthorizationDeniedException(ERROR_MESSAGE);
-		expect(certificateDataSession.getCertificateCount(anyObject(AuthenticationToken.class), isNull())).andThrow(exception);
-		replay(certificateDataSession);
+		expect(raMasterApiSession.getCertificateCount(anyObject(AuthenticationToken.class), isNull())).andThrow(exception);
+		replay(raMasterApiSession);
 
 		// when
 		final Invocation.Builder request = server.newRequest("/v2/certificate/count").request();
@@ -127,7 +129,7 @@ public class CertificateRestResourceV2UnitTest {
 		final String errorMessage = (String) actualJsonObject.get("error_message");
 
 		// then
-		verify(certificateDataSession);
+		verify(raMasterApiSession);
 		assertEquals(Response.Status.FORBIDDEN.getStatusCode(), actualStatus);
 		assertEquals(ERROR_MESSAGE, errorMessage);
 		assertJsonContentType(actualResponse);
@@ -137,8 +139,8 @@ public class CertificateRestResourceV2UnitTest {
 	public void shouldGetCountOfActiveCertificates() throws ParseException, AuthorizationDeniedException {
 		// given
 		final Long expectedCount = 3L;
-		expect(certificateDataSession.getCertificateCount(anyObject(AuthenticationToken.class), eq(Boolean.TRUE))).andReturn(expectedCount);
-		replay(certificateDataSession);
+		expect(raMasterApiSession.getCertificateCount(anyObject(AuthenticationToken.class), eq(Boolean.TRUE))).andReturn(expectedCount);
+		replay(raMasterApiSession);
 
 		// when
 		final Invocation.Builder request = server.newRequest("/v2/certificate/count?isActive=true").request();
@@ -149,7 +151,7 @@ public class CertificateRestResourceV2UnitTest {
 		final Long certCount = (Long) actualJsonObject.get("count");
 
 		// then
-		verify(certificateDataSession);
+		verify(raMasterApiSession);
 		assertEquals(Optional.of(expectedCount), Optional.of(certCount));
 		assertEquals(Response.Status.OK.getStatusCode(), actualStatus);
 		assertJsonContentType(actualResponse);
@@ -159,8 +161,8 @@ public class CertificateRestResourceV2UnitTest {
 	public void shouldThrowAuthorizationDeniedException_WhenQueryingQuantityOfActiveCertificates() throws ParseException, AuthorizationDeniedException {
 		// given
 		AuthorizationDeniedException exception = new AuthorizationDeniedException(ERROR_MESSAGE);
-		expect(certificateDataSession.getCertificateCount(anyObject(AuthenticationToken.class), eq(Boolean.TRUE))).andThrow(exception);
-		replay(certificateDataSession);
+		expect(raMasterApiSession.getCertificateCount(anyObject(AuthenticationToken.class), eq(Boolean.TRUE))).andThrow(exception);
+		replay(raMasterApiSession);
 
 		// when
 		final Invocation.Builder request = server.newRequest("/v2/certificate/count?isActive=true").request();
@@ -171,7 +173,7 @@ public class CertificateRestResourceV2UnitTest {
 		final String errorMessage = (String) actualJsonObject.get("error_message");
 
 		// then
-		verify(certificateDataSession);
+		verify(raMasterApiSession);
 		assertEquals(Response.Status.FORBIDDEN.getStatusCode(), actualStatus);
 		assertEquals(ERROR_MESSAGE, errorMessage);
 		assertJsonContentType(actualResponse);
