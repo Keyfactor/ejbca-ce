@@ -609,6 +609,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         return ret;
     }
+    
+    @Override
+    public X509Certificate findLatestX509CertificateBySubjectforEndEntity(String subjectDN) {
+        CertificateData certificateData = certificateDataSession.findLatestBySubjectDN(subjectDN);
+        CertificateDataWrapper certificateDataWrapper = new CertificateDataWrapper(certificateData, 
+                            Base64CertData.findByFingerprint(entityManager, certificateData.getFingerprint()));
+        if (!(certificateDataWrapper.getCertificate() instanceof X509Certificate)) {
+            return null;
+        }
+        return (X509Certificate) certificateDataWrapper.getCertificate();
+    }
 
     @Override
     public X509Certificate findLatestX509CertificateBySubject(String subjectDN) {
