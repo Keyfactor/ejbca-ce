@@ -284,7 +284,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     public EndEntityInformation canonicalizeUser(final EndEntityInformation endEntity) throws CustomFieldException {
         // Make a deep copy
         EndEntityInformation endEntityInformationCopy = new EndEntityInformation(endEntity);
-        final int endEntityProfileId = endEntityInformationCopy.getEndEntityProfileId();
         final String dn = DnComponents.stringToBCDNString(StringTools.strip(endEntityInformationCopy.getDN()));
         endEntityInformationCopy.setDN(dn);
         endEntityInformationCopy.setSubjectAltName(StringTools.strip(endEntityInformationCopy.getSubjectAltName()));
