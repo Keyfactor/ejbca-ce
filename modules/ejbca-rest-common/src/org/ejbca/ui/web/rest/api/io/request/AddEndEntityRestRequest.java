@@ -65,9 +65,9 @@ public class AddEndEntityRestRequest {
     private String status;
     @Schema(description = "Send notification or not", example = "false", required=false)
     private Boolean sendNotification;
-    @Schema(description = "Valid start time", example = "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'", required=false)
+    @Schema(description = "Valid start time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
     private String startTime;
-    @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15T14:07:09Z'", required=false)
+    @Schema(description = "Valid end time", example = "ISO 8601 Date string, eg. '2023-06-15 14:07:09'", required=false)
     private String endTime;
     @Schema(description = "Certificate Serial Number", example = "1234567890", required=false)
     private BigInteger certificateSerialNumber;
