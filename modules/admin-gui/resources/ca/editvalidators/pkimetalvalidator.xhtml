@@ -34,12 +34,13 @@
             <h:panelGroup id="settings" />                   
             <h:outputLabel for="url" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_URL}"/>
             <h:panelGroup>
-                <p:inputText id="url" size="60" value="#{validatorBean.validator.url}" disabled="#{validatorsBean.viewOnly}" placeholder="http://&lt;host&gt;:port"/>
-                <p:commandButton value="#{web.text.PKIMETAL_VALIDATOR_PING}" action="#{validatorBean.validator.ping()}" disabled="#{validatorsBean.viewOnly}">
-                    <f:ajax render="validators" event="click"/>
-                </p:commandButton>
-            </h:panelGroup>	 
-            <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}" />     
+                <p:inputText id="url" size="60" value="#{validatorBean.validator.url}" disabled="#{validatorsBean.viewOnly}" placeholder="http://&lt;host&gt;:port">
+                    <f:ajax render="profiles" event="change"/>
+                </p:inputText>
+                <p:commandButton value="#{web.text.PKIMETAL_VALIDATOR_PING}" action="#{validatorBean.validator.ping()}" disabled="#{validatorsBean.viewOnly}" />
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}" />
             <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}">
               <h:outputLabel styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_NOT_CONNECTED}"/>
             </h:panelGroup>
