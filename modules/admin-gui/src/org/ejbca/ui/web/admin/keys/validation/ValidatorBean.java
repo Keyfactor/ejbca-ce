@@ -770,9 +770,9 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
                     } else {
                         StringBuilder stringBuilder = new StringBuilder();
                         for (String errorMessage : result) {
-                            stringBuilder.append(errorMessage + "<br/>");
+                            stringBuilder.append(errorMessage + "\n");
                         }
-                        testResults = "Validation failure(s):<br/><br/>" + stringBuilder.toString();
+                        testResults = "Validation failure(s):\n\n" + stringBuilder.toString();
                     }
                 } catch (IOException e) {
                     FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_WARN, "Failure.", "Could not parse uploaded file: " + e.getMessage());
@@ -815,7 +815,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     }
     
     public String getTestResults() {
-        return testResults;
+        return testResults.replace("\n", "<br>");
     }
 
     
