@@ -43,7 +43,7 @@
             <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}">
               <h:outputLabel styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_NOT_CONNECTED}"/>
             </h:panelGroup>
-            <h:outputLabel for="autodetect" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AUTODETECT_PROFILES}"/>
+            <h:outputLabel for="autodetect" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AUTODETECT_PROFILE}"/>
             <h:selectBooleanCheckbox id="autodetect"
                                      value="#{validatorBean.validator.autoDetect}"
                                      disabled="#{validatorsBean.viewOnly}">
