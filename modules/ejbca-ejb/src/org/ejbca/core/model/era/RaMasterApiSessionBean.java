@@ -170,6 +170,7 @@ import org.ejbca.core.ejb.ra.CouldNotRemoveEndEntityException;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityExistsException;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.KeyImportSessionLocal;
 import org.ejbca.core.ejb.ra.KeyStoreCreateSessionLocal;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.UserData;
@@ -345,6 +346,8 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     private AcmeChallengeDataSessionLocal acmeChallengeDataSession;
     @EJB
     private EtsiEcaOperationsSessionLocal ecaOperationsSession;
+    @EJB
+    private KeyImportSessionLocal keyImportSession;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -3445,9 +3448,9 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     }
 
     @Override
-    public RaKeyImportResponseV2 keyImportV2(AuthenticationToken authenticationToken, String issuerDN, KeyImportRequestData keyImportRequestData)
+    public RaKeyImportResponseV2 keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        return new RaKeyImportResponseV2();
+        return new RaKeyImportResponseV2(keyImportSession.importKeys(authenticationToken, keyImportRequestData));
     }
 
     @Override

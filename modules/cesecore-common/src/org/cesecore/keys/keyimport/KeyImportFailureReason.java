@@ -13,7 +13,7 @@
 package org.cesecore.keys.keyimport;
 
 /**
- * An Enum which holds the reason why a key import operation failed.
+ * An Enum which holds possible reasons for key import failures.
  */
 public enum KeyImportFailureReason {
     GENERAL_ERROR;

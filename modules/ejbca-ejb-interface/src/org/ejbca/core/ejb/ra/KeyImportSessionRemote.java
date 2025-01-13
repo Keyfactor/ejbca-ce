@@ -10,32 +10,14 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.era;
+package org.ejbca.core.ejb.ra;
 
-import org.cesecore.keys.keyimport.KeyImportFailure;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import jakarta.ejb.Remote;
 
 /**
- * RaResponse for Key Migration.
+ * @see KeyImportSession
  */
-public class RaKeyImportResponseV2 implements Serializable {
+@Remote
+public interface KeyImportSessionRemote extends KeyImportSession {
 
-    private static final long serialVersionUID = 1L;
-
-    private List<KeyImportFailure> failedKeys = new ArrayList<>();
-
-    public RaKeyImportResponseV2(List<KeyImportFailure> failedKeys) {
-        this.failedKeys = failedKeys;
-    }
-
-    public List<KeyImportFailure> getFailedKeys() {
-        return failedKeys;
-    }
-
-    public void setFailedKeys(List<KeyImportFailure> failedKeys) {
-        this.failedKeys = failedKeys;
-    }
 }

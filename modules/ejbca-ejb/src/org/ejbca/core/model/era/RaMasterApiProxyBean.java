@@ -4062,12 +4062,12 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
     }
 
     @Override
-    public RaKeyImportResponseV2 keyImportV2(AuthenticationToken authenticationToken, String issuerDn, KeyImportRequestData keyImportRequestData)
+    public RaKeyImportResponseV2 keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
             throws AuthorizationDeniedException, EjbcaException, CADoesntExistsException {
         for (RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 19) {
                 try {
-                    return raMasterApi.keyImportV2(authenticationToken, issuerDn, keyImportRequestData);
+                    return raMasterApi.keyImportV2(authenticationToken, keyImportRequestData);
                 } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
                     // Just try next implementation
                 }

@@ -50,6 +50,7 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
     boolean addKeyRecoveryDataInternal(AuthenticationToken admin, CertificateWrapper caCertificate, CertificateWrapper certificate, String username, KeyPairWrapper keypair, int cryptoTokenId,
             String keyAlias);
 
+
     /**
      * Returns the keyrecovery data for a user. Observe only one certificate's
      * key can be recovered for every user at the time.

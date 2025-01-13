@@ -1755,10 +1755,9 @@ public interface RaMasterApi {
 
     /**
      * @param authenticationToken The authentication token
-     * @param issuerDN The CA's DN which will wrap the imported keys
      * @param keyImportRequestData All data required to perform key import of all the supplied keys
      * @return A response consisting of all the failed imports along with failure reasons
      */
-    RaKeyImportResponseV2 keyImportV2(AuthenticationToken authenticationToken, String issuerDN, KeyImportRequestData keyImportRequestData)
+    RaKeyImportResponseV2 keyImportV2(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 }

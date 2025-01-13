@@ -24,6 +24,10 @@ public class KeyImportFailure implements Serializable {
     private String username;
     private KeyImportFailureReason reason = KeyImportFailureReason.GENERAL_ERROR;
 
+    public KeyImportFailure() {
+
+    }
+
     public KeyImportFailure(final String username, final KeyImportFailureReason reason) {
         this.username = username;
         this.reason = reason;

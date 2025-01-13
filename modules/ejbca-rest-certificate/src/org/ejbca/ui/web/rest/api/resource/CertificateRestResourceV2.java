@@ -35,7 +35,11 @@ import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.era.*;
+import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
+import org.ejbca.core.model.era.RaCertificateSearchRequestV2;
+import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
+import org.ejbca.core.model.era.RaKeyImportResponseV2;
+import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
@@ -190,7 +194,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         KeyImportRequestData requestData = KeyImportRestRequest.converter().toRequestData(request, issuerDN);
-        RaKeyImportResponseV2 raResponse = raMasterApi.keyImportV2(authenticationToken, issuerDN, requestData);
+        RaKeyImportResponseV2 raResponse = raMasterApi.keyImportV2(authenticationToken, requestData);
 
         return Response.ok().build();
     }
