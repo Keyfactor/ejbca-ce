@@ -45,6 +45,7 @@ import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
+import org.ejbca.ui.web.rest.api.io.response.KeyImportRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 
@@ -180,23 +181,23 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     /**
      * Import keystores into a CA for key management takeover
      *
-     * @param requestContext
-     * @param issuerDN
-     * @param request
+     * @param requestContext the request context
+     * @param issuerDN       the DN of the CA which will be used to wrap the imported keys
+     * @param request        the request itself
      * @return
      * @throws AuthorizationDeniedException
      * @throws RestException
      * @throws EjbcaException
      * @throws CADoesntExistsException
      */
-    public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequest request)
+    public KeyImportRestResponseV2 importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequest request)
             throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         KeyImportRequestData requestData = KeyImportRestRequest.converter().toRequestData(request, issuerDN);
         RaKeyImportResponseV2 raResponse = raMasterApi.keyImportV2(authenticationToken, requestData);
 
-        return Response.ok().build();
+        return new KeyImportRestResponseV2().convert().toKeyImportRestResponse(raResponse);
     }
     
     /**

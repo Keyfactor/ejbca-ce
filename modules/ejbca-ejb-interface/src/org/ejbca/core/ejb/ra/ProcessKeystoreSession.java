@@ -16,8 +16,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportKeystoreData;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.model.keyimport.KeyImportException;
 
 /**
  * Processes one keystore during the key import process. Split from KeyImportSession for transaction management purposes.
@@ -33,7 +35,8 @@ public interface ProcessKeystoreSession {
      * @param caData CA data
      * @param certificateProfileId id of the certificate profile to be used during key import
      * @param endEntityProfileId id of the end entity profile to be used during key import
+     * @throws KeyImportException
      */
     void processKeyStore(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo,
-                                CAData caData, int certificateProfileId, int endEntityProfileId) throws AuthorizationDeniedException, EjbcaException;
+                                     CAData caData, int certificateProfileId, int endEntityProfileId) throws KeyImportException;
 }

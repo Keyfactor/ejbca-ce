@@ -12,10 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import com.keyfactor.util.certificate.CertificateWrapper;
 import jakarta.ejb.Local;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
 
 /**
  * @see KeyImportSession

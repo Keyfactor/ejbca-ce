@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RaResponse for Key Migration.
+ * RaResponse for Key Import.
  */
 public class RaKeyImportResponseV2 implements Serializable {
 

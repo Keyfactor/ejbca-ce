@@ -27,11 +27,11 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.keyimport.KeyImportFailure;
-import org.cesecore.keys.keyimport.KeyImportFailureReason;
 import org.cesecore.keys.keyimport.KeyImportKeystoreData;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
+import org.ejbca.core.model.keyimport.KeyImportException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,8 +80,8 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
             // Process the keystore and if it fails record the failure reason. Either way, continue with the next keystore without interrupting
             try {
                 processKeystoreSession.processKeyStore(authenticationToken, keystore, caInfo, caData, certificateProfileId, endEntityProfileId);
-            } catch (Exception e) {
-                failures.add(new KeyImportFailure(keystore.getUsername(), KeyImportFailureReason.GENERAL_ERROR));
+            } catch (KeyImportException e) {
+                failures.add(new KeyImportFailure(keystore.getUsername(), e.getMessage()));
             }
         }
 
