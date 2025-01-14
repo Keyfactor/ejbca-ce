@@ -20,15 +20,14 @@ import jakarta.ejb.TransactionAttributeType;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAData;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportKeystoreData;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
+import org.cesecore.keys.keyimport.KeyImportResponseData;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.keyimport.KeyImportException;
@@ -56,35 +55,43 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
     private ProcessKeystoreSessionLocal processKeystoreSession;
 
     @Override
-    public List<KeyImportFailure> importKeys(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
-            throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException {
-        String caDn = keyImportRequestData.getIssuerDn();
-        CAData caData = caSession.findBySubjectDN(caDn);
-        if (caData == null) {
-            log.error("No CA found with Subject DN " + caDn);
-            throw new CADoesntExistsException("CA does not exist: " + caDn);
-        }
-        CAInfo caInfo = caSession.getCAInfo(authenticationToken, caData.getCaId());
-        String certificateProfileName = keyImportRequestData.getCertificateProfileName();
-        int certificateProfileId = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-        String endEntityProfileName = keyImportRequestData.getEndEntityProfileName();
-        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
-        List<KeyImportKeystoreData> keystores = keyImportRequestData.getKeystores();
-        if (CollectionUtils.isEmpty(keystores)) {
-            log.error("No keystores found for key import request: " + keyImportRequestData);
-            throw new EjbcaException("No keystores found in the key import request");
-        }
+    public KeyImportResponseData importKeys(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData) {
+        KeyImportResponseData response = new KeyImportResponseData();
         List<KeyImportFailure> failures = new ArrayList<>();
-
-        for (KeyImportKeystoreData keystore : keystores) {
-            // Process the keystore and if it fails record the failure reason. Either way, continue with the next keystore without interrupting
-            try {
-                processKeystoreSession.processKeyStore(authenticationToken, keystore, caInfo, caData, certificateProfileId, endEntityProfileId);
-            } catch (KeyImportException e) {
-                failures.add(new KeyImportFailure(keystore.getUsername(), e.getMessage()));
+        try {
+            String caDn = keyImportRequestData.getIssuerDn();
+            CAData caData = caSession.findBySubjectDN(caDn);
+            if (caData == null) {
+                log.error("No CA found with Subject DN " + caDn);
+                throw new EjbcaException("CA does not exist: " + caDn);
             }
-        }
+            CAInfo caInfo = caSession.getCAInfo(authenticationToken, caData.getCaId());
+            String certificateProfileName = keyImportRequestData.getCertificateProfileName();
+            int certificateProfileId = certificateProfileSession.getCertificateProfileId(certificateProfileName);
+            if (certificateProfileId == 0) {
+                log.error("Certificate profile does not exist: " + certificateProfileName);
+                throw new EjbcaException("Certificate profile does not exist: " + certificateProfileName);
+            }
+            String endEntityProfileName = keyImportRequestData.getEndEntityProfileName();
+            int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
+            List<KeyImportKeystoreData> keystores = keyImportRequestData.getKeystores();
+            if (CollectionUtils.isEmpty(keystores)) {
+                log.error("No keystores found for key import request: " + keyImportRequestData);
+                throw new EjbcaException("No keystores found in the key import request");
+            }
 
-        return failures;
+            for (KeyImportKeystoreData keystore : keystores) {
+                // Process the keystore and if it fails record the failure reason. Either way, continue with the next keystore without interrupting
+                try {
+                    processKeystoreSession.processKeyStore(authenticationToken, keystore, caInfo, caData, certificateProfileId, endEntityProfileId);
+                } catch (KeyImportException e) {
+                    failures.add(new KeyImportFailure(keystore.getUsername(), e.getMessage()));
+                }
+            }
+        } catch (Exception e) {
+            response.setGeneralErrorMessage(e.getMessage());
+        }
+        response.setFailures(failures);
+        return response;
     }
 }

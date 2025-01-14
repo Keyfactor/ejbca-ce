@@ -129,6 +129,7 @@ import org.cesecore.config.RaStyleInfo;
 import org.cesecore.configuration.ConfigurationBase;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
+import org.cesecore.keys.keyimport.KeyImportResponseData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
 import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
@@ -3450,7 +3451,11 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
     @Override
     public RaKeyImportResponseV2 keyImportV2(final AuthenticationToken authenticationToken, final KeyImportRequestData keyImportRequestData)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException {
-        return new RaKeyImportResponseV2(keyImportSession.importKeys(authenticationToken, keyImportRequestData));
+        KeyImportResponseData responseData = keyImportSession.importKeys(authenticationToken, keyImportRequestData);
+        RaKeyImportResponseV2 raResponse = new RaKeyImportResponseV2();
+        raResponse.setGeneralErrorMessage(responseData.getGeneralErrorMessage());
+        raResponse.setFailedKeys(responseData.getFailures());
+        return raResponse;
     }
 
     @Override

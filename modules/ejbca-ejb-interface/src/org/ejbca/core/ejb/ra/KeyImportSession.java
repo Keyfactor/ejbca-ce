@@ -17,6 +17,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
+import org.cesecore.keys.keyimport.KeyImportResponseData;
 import org.ejbca.core.EjbcaException;
 
 import java.util.List;
@@ -31,8 +32,8 @@ public interface KeyImportSession {
      *
      * @param authenticationToken authentication token
      * @param keyImportRequestData data required to perform the key imports
-     * @return the list of failed key imports
+     * @return the list of failed key imports as well as a general error if it does exist
      */
-    List<KeyImportFailure> importKeys(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
+    KeyImportResponseData importKeys(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
             throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException;
 }

@@ -26,14 +26,21 @@ import java.util.List;
  */
 public class KeyImportRestResponseV2 {
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String generalErrorMessage;
     private List<KeyImportFailure> keyImportFailures;
 
-    public KeyImportRestResponseV2(List<KeyImportFailure> keyImportFailures) {
+    public KeyImportRestResponseV2(String generalErrorMessage, List<KeyImportFailure> keyImportFailures) {
+        this.generalErrorMessage = generalErrorMessage;
         this.keyImportFailures = keyImportFailures;
     }
 
     public KeyImportRestResponseV2() {
         
+    }
+
+    public String getGeneralErrorMessage() {
+        return generalErrorMessage;
     }
 
     public List<KeyImportFailure> getKeyImportFailures() {
@@ -50,9 +57,15 @@ public class KeyImportRestResponseV2 {
     }
 
     public static class KeyImportRestResponseBuilderV2 {
+        private String generalErrorMessage;
         private List<KeyImportFailure> keyImportFailures;
         
         public KeyImportRestResponseBuilderV2() {}
+
+        public KeyImportRestResponseBuilderV2 setGeneralErrorMessage(final String generalErrorMessage) {
+            this.generalErrorMessage = generalErrorMessage;
+            return this;
+        }
 
         public KeyImportRestResponseBuilderV2 setKeyImportFailures(final List<KeyImportFailure> keyImportFailures) {
             this.keyImportFailures = keyImportFailures;
@@ -60,7 +73,7 @@ public class KeyImportRestResponseV2 {
         }
 
         public KeyImportRestResponseV2 build() {
-            return new KeyImportRestResponseV2(keyImportFailures);
+            return new KeyImportRestResponseV2(generalErrorMessage, keyImportFailures);
         }
     }
     
@@ -73,6 +86,7 @@ public class KeyImportRestResponseV2 {
         
         public KeyImportRestResponseV2 toKeyImportRestResponse(RaKeyImportResponseV2 raResponse) {
             return KeyImportRestResponseV2.builder().setKeyImportFailures(raResponse.getFailedKeys())
+                    .setGeneralErrorMessage(raResponse.getGeneralErrorMessage())
                     .build();
         }
     }

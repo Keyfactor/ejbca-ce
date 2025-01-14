@@ -137,10 +137,6 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                             endEntityProfileId, userCertificate);
                 }
 
-                if (keyCounter == 1) {
-                    throw new KeyImportException("Test");
-                }
-
                 final Certificate caCert = persistCertificate(authenticationToken, keystoreData, caInfo, certificateProfileId, endEntityProfileId,
                         fingerprint, userCertificate);
 

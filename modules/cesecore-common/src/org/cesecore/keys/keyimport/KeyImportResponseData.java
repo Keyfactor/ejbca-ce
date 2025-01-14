@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA Community: The OpenSource Certificate Authority                *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,31 +10,36 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.model.era;
-
-import org.cesecore.keys.keyimport.KeyImportFailure;
+package org.cesecore.keys.keyimport;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
- * RaResponse for Key Import.
+ * Holds data which can be output in the key import response.
  */
-public class RaKeyImportResponseV2 implements Serializable {
+public class KeyImportResponseData implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     private String generalErrorMessage;
-    private List<KeyImportFailure> failedKeys = new ArrayList<>();
+    private List<KeyImportFailure> failures;
 
-    public RaKeyImportResponseV2() {
+    public KeyImportResponseData() {
 
     }
 
-    public RaKeyImportResponseV2(String generalErrorMessage, List<KeyImportFailure> failedKeys) {
+    public KeyImportResponseData(String generalErrorMessage, List<KeyImportFailure> failures) {
         this.generalErrorMessage = generalErrorMessage;
-        this.failedKeys = failedKeys;
+        this.failures = failures;
+    }
+
+    public List<KeyImportFailure> getFailures() {
+        return failures;
+    }
+
+    public void setFailures(List<KeyImportFailure> failures) {
+        this.failures = failures;
     }
 
     public String getGeneralErrorMessage() {
@@ -43,13 +48,5 @@ public class RaKeyImportResponseV2 implements Serializable {
 
     public void setGeneralErrorMessage(String generalErrorMessage) {
         this.generalErrorMessage = generalErrorMessage;
-    }
-
-    public List<KeyImportFailure> getFailedKeys() {
-        return failedKeys;
-    }
-
-    public void setFailedKeys(List<KeyImportFailure> failedKeys) {
-        this.failedKeys = failedKeys;
     }
 }
