@@ -22,13 +22,13 @@ public class KeyImportFailure implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private String username;
-    private KeyImportFailureReason reason = KeyImportFailureReason.GENERAL_ERROR;
+    private String reason;
 
     public KeyImportFailure() {
 
     }
 
-    public KeyImportFailure(final String username, final KeyImportFailureReason reason) {
+    public KeyImportFailure(final String username, final String reason) {
         this.username = username;
         this.reason = reason;
     }
@@ -41,11 +41,11 @@ public class KeyImportFailure implements Serializable {
         this.username = username;
     }
 
-    public KeyImportFailureReason getReason() {
+    public String getReason() {
         return reason;
     }
 
-    public void setReason(KeyImportFailureReason reason) {
+    public void setReason(String reason) {
         this.reason = reason;
     }
 }

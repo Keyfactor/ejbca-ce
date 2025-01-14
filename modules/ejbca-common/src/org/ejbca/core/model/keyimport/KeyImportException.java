@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA Community: The OpenSource Certificate Authority                *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,12 +10,16 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.keys.keyimport;
 
-/**
- * An Enum which holds possible reasons for key import failures.
- */
-public enum KeyImportFailureReason {
-    GENERAL_ERROR;
+package org.ejbca.core.model.keyimport;
 
+import org.ejbca.core.EjbcaException;
+import jakarta.ejb.ApplicationException;
+
+@ApplicationException(rollback=true)
+public class KeyImportException extends EjbcaException {
+
+    public KeyImportException(String message) {
+        super(message);
+    }
 }

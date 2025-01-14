@@ -30,15 +30,12 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.certificates.ca.CAData;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -47,21 +44,14 @@ import org.cesecore.keys.keyimport.KeyImportKeystoreData;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
+import org.ejbca.core.model.keyimport.KeyImportException;
 
-import java.io.IOException;
 import java.security.KeyPair;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.util.Date;
 import java.util.Enumeration;
 
@@ -88,17 +78,17 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public void processKeyStore(final AuthenticationToken authenticationToken, final KeyImportKeystoreData keystoreData, final CAInfo caInfo,
-            final CAData caData, final int certificateProfileId, final int endEntityProfileId) throws AuthorizationDeniedException, EjbcaException {
+                                            final CAData caData, final int certificateProfileId, final int endEntityProfileId) throws KeyImportException {
         try {
             // Check whether username and password exist
             String username = keystoreData.getUsername();
             String password = keystoreData.getPassword();
             if (StringUtils.isEmpty(username)) {
                 log.info("Username is null or empty, can't process keystore");
-                throw new EjbcaException("Username is null or empty, can't process keystore");
+                throw new KeyImportException("Username is null or empty, can't process keystore");
             } else if (StringUtils.isEmpty(password)) {
                 log.info("Password for username " + username + " is null or empty, can't process keystore");
-                throw new EjbcaException("Password for username " + username + " is null or empty, can't process keystore");
+                throw new KeyImportException("Password for username " + username + " is null or empty, can't process keystore");
             }
 
             // Load keystore
@@ -119,12 +109,12 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                 }
                 if (privateKeyAlias == null) {
                     log.error("Keystore does not contain any private key aliases.");
-                    throw new EjbcaException("Keystore does not contain any private key aliases.");
+                    throw new KeyImportException("Keystore does not contain any private key aliases.");
                 }
                 final Certificate[] certChain = KeyTools.getCertChain(keystore, privateKeyAlias);
                 if (certChain == null || certChain.length == 0) {
                     log.info("Cannot load any certificate chain with alias: " + privateKeyAlias);
-                    throw new EjbcaException("Cannot load certificate chain with alias: " + privateKeyAlias);
+                    throw new KeyImportException("Cannot load certificate chain with alias: " + privateKeyAlias);
                 }
                 final Certificate userCertificate = certChain[0];
                 final String fingerprint = CertTools.getFingerprintAsString(userCertificate);
@@ -136,16 +126,19 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                 final PrivateKey p12PrivateKey = (PrivateKey) keystore.getKey(privateKeyAlias, keystoreData.getPassword().toCharArray());
                 if (p12PrivateKey == null) {
                     log.error("Cannot load any private key with alias: " + privateKeyAlias);
-                    throw new EjbcaException("Cannot load private key with alias: " + privateKeyAlias);
+                    throw new KeyImportException("Cannot load private key with alias: " + privateKeyAlias);
                 }
                 if (log.isDebugEnabled()) {
                     log.debug("Found private key with algorithm: " + p12PrivateKey.getAlgorithm());
                 }
 
-                // If this is the first key of the keystore, either create or fetch an end entity
                 if (keyCounter == 0) {
                     createUserIfNecessary(authenticationToken, keystoreData, caData, certificateProfileId,
                             endEntityProfileId, userCertificate);
+                }
+
+                if (keyCounter == 1) {
+                    throw new KeyImportException("Test");
                 }
 
                 final Certificate caCert = persistCertificate(authenticationToken, keystoreData, caInfo, certificateProfileId, endEntityProfileId,
@@ -155,15 +148,14 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
 
                 keyCounter++;
             }
-        } catch (CertificateException | KeyStoreException | IOException | NoSuchAlgorithmException |
-                 NoSuchProviderException | UnrecoverableKeyException | EndEntityExistsException |
-                 WaitingForApprovalException | CertificateSerialNumberException | EndEntityProfileValidationException |
-                 IllegalNameException | CADoesntExistsException | CryptoTokenOfflineException e) {
-            throw new EjbcaException(e.getMessage());
+        } catch (Exception e) {
+            throw new KeyImportException(e.getMessage());
         }
     }
 
-    private Certificate persistCertificate(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo, int certificateProfileId, int endEntityProfileId, String fingerprint, Certificate userCertificate) throws AuthorizationDeniedException {
+    private Certificate persistCertificate(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo,
+                                           int certificateProfileId, int endEntityProfileId, String fingerprint, Certificate userCertificate)
+            throws AuthorizationDeniedException, KeyImportException {
         // Try to fetch old certificate from the database
         CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(fingerprint);
         // Import the old certificate into EJBCA
@@ -177,12 +169,14 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                     CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, endEntityProfileId, crlPartitionIndex, null,
                     new Date().getTime(), null);
         } else {
-            // Handle in ECA-12867
+            throw new KeyImportException("Certificate can't be added since it already exists in the database");
         }
         return caCert;
     }
 
-    private void persistKeyRecoveryData(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo, Certificate userCertificate, PrivateKey p12PrivateKey, Certificate cacert) throws CryptoTokenOfflineException, EjbcaException {
+    private void persistKeyRecoveryData(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo,
+                                        Certificate userCertificate, PrivateKey p12PrivateKey, Certificate cacert) throws CryptoTokenOfflineException,
+            EjbcaException {
         final PublicKey p12PublicKey = userCertificate.getPublicKey();
         final KeyPair keypair = new KeyPair(p12PublicKey, p12PrivateKey);
         CAToken caToken = caInfo.getCAToken();
@@ -191,17 +185,15 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
         if (encryptKeyAlias != null && authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
             keyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(cacert),
                     EJBTools.wrap(userCertificate), keystoreData.getUsername(), EJBTools.wrap(keypair), cryptoTokenId, encryptKeyAlias);
-
         } else {
             log.info("Not authorized to add key recovery data to CA or unable to get CA encrypt key.");
-            throw new EjbcaException("Not authorized to add key recovery data to CA or unable to get CA encrypt key.");
+            throw new KeyImportException("Not authorized to add key recovery data to CA or unable to get CA encrypt key.");
         }
     }
 
     private void createUserIfNecessary(final AuthenticationToken authenticationToken, final KeyImportKeystoreData keystore, final CAData ca,
-                                       final int certificateProfileId, final int endEntityProfileId, final Certificate userCertificate) throws AuthorizationDeniedException, EjbcaException,
-            EndEntityExistsException, WaitingForApprovalException, CertificateSerialNumberException, EndEntityProfileValidationException, IllegalNameException,
-            CADoesntExistsException {
+                                       final int certificateProfileId, final int endEntityProfileId, final Certificate userCertificate)
+            throws AuthorizationDeniedException, KeyImportException {
         // Check whether EE exists already
         String username = keystore.getUsername();
         String password = keystore.getPassword();
@@ -217,6 +209,7 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                 endEntityManagementSession.addUser(authenticationToken, userdata, false);
             } catch (Exception e) {
                 log.info("Exception: " + e.getMessage());
+                throw new KeyImportException(e.getMessage());
             }
         }
     }
