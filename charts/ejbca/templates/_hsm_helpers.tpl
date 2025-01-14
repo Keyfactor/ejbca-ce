@@ -5,13 +5,13 @@ Define HSM container image with versions
 {{- if .Values.hsm.image  }}
 {{- printf .Values.hsm.image }}
 {{- else if .Values.hsm.softhsm.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-softhsm/images/hsm-driver-softhsm:1.0.8" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-softhsm/images/hsm-driver-softhsm:1.1.0" }}
 {{- else if .Values.hsm.luna.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.1.3" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-luna7/images/hsm-driver-luna7:0.3.0" }}
 {{- else if .Values.hsm.utimaco.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.1.3" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-utimaco/images/hsm-driver-utimaco:0.3.0" }}
 {{- else if .Values.hsm.nshield.enabled }}
-{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-nshield/images/hsm-driver-nshield:latest" }}
+{{- printf "keyfactor.jfrog.io/dev-oci/keyfactor-commons/hsm-driver-nshield/images/hsm-driver-nshield:0.4.0" }}
 {{- end }}
 {{- end -}}
 
