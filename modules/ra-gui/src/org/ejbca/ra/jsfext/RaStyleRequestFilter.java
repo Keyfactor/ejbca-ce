@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.RaStyleInfo;
 import org.cesecore.config.RaStyleInfo.RaCssInfo;
-import org.cesecore.util.RequestId;
+import org.ejbca.util.RequestId;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;

@@ -32,7 +32,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.certificate.CertificateConstants;
-import org.cesecore.util.RequestId;
+import org.ejbca.util.RequestId;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.model.util.EjbLocalHelper;
 

@@ -1,4 +1,4 @@
-package org.cesecore.util;
+package org.ejbca.util;
 
 import org.junit.After;
 import org.junit.Before;
