@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.RequestId;
+import org.ejbca.util.RequestId;
 
 /**
  * Filter that prevents a browser to cache everything except resources like java script, css and images.

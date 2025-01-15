@@ -22,7 +22,7 @@ package org.owasp.filters;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.RequestId;
+import org.ejbca.util.RequestId;
 import org.ejbca.config.WebConfiguration;
 
 import jakarta.servlet.Filter;

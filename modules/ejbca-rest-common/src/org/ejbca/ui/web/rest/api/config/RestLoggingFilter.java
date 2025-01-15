@@ -34,7 +34,7 @@ import jakarta.servlet.http.HttpServletResponseWrapper;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.log4j.Logger;
 import org.cesecore.util.LogRedactionUtils;
-import org.cesecore.util.RequestId;
+import org.ejbca.util.RequestId;
 import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 
 /**

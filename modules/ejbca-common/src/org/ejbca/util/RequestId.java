@@ -1,4 +1,4 @@
-package org.cesecore.util;
+package org.ejbca.util;
 
 import org.apache.log4j.Logger;
 
@@ -7,7 +7,6 @@ import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class RequestId implements AutoCloseable {
 

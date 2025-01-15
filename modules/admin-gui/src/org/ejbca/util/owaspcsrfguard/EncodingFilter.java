@@ -27,7 +27,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.util.RequestId;
+import org.ejbca.util.RequestId;
 import org.ejbca.ui.web.RequestHelper;
 
 /**

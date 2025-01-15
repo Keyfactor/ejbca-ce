@@ -34,7 +34,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
-import org.cesecore.util.RequestId;
+import org.ejbca.util.RequestId;
 
 /**
  * Use this filter to synchronize requests to your web application and

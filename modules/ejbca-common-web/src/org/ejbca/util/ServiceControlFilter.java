@@ -33,7 +33,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
-import org.cesecore.util.RequestId;
 import org.ejbca.config.AvailableProtocolsConfiguration;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.rest.EjbcaRestHelperSessionLocal;
