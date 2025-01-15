@@ -35,42 +35,56 @@
             <h:outputLabel for="url" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_URL}"/>
             <h:panelGroup>
                 <p:inputText id="url" size="60" value="#{validatorBean.validator.url}" disabled="#{validatorsBean.viewOnly}" placeholder="http://&lt;host&gt;:port">
-                    <f:ajax render="profiles" event="change"/>
+                    <f:ajax render="connectedLabel" event="change" />
+                    <f:ajax render="profiles" event="change" />
+                    <f:ajax render="profileCheckboxes" event="change" />
+                    <f:ajax render="autodetect" event="change" />
+                    <f:ajax render="autodetectLabel" event="change" />
+                    <f:ajax render="severityFail" event="change" />
+                    <f:ajax render="severityLog" event="change" />
                 </p:inputText>
                 <p:commandButton value="#{web.text.PKIMETAL_VALIDATOR_PING}" action="#{validatorBean.validator.ping()}" disabled="#{validatorsBean.viewOnly}" />
             </h:panelGroup>
-
-            <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}" />
-            <h:panelGroup rendered="#{!validatorBean.validator.isConnected()}">
-              <h:outputLabel styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_NOT_CONNECTED}"/>
+            <h:panelGroup/>
+            <h:panelGroup id="connectedLabel">
+              <h:outputLabel rendered="#{validatorBean.validator.isConnected()}"  styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_CONNECTED}"/>
+              <h:outputLabel rendered="#{!validatorBean.validator.isConnected()}" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_NOT_CONNECTED}"/>
             </h:panelGroup>
-            <h:outputLabel for="autodetect" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AUTODETECT_PROFILE}"/>
+            <h:outputLabel id="autodetectLabel"
+                           for="autodetect"
+                           styleClass="block"
+                           value="#{web.text.PKIMETAL_VALIDATOR_AUTODETECT_PROFILE}" />
             <h:selectBooleanCheckbox id="autodetect"
                                      value="#{validatorBean.validator.autoDetect}"
-                                     disabled="#{validatorsBean.viewOnly}">
-              <f:ajax render="validators" event="change"/>
+                                     disabled="#{validatorsBean.viewOnly or !validatorBean.validator.isConnected()}">
+              <f:ajax render="profileCheckboxes" event="change"/>
             </h:selectBooleanCheckbox>
             <!-- Available profiles from pkimetal -->
             <h:outputLabel
                            id="profiles-label" for="profiles" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_AVAILABLE_PROFILES}"/>
             <h:panelGroup id="profiles">
-                <p:selectManyCheckbox styleClass="linter-profiles"
+                <p:selectManyCheckbox id="profileCheckboxes"
+                                      styleClass="linter-profiles"
                                       value="#{validatorBean.validator.chosenProfiles}"
-                                      disabled="#{validatorsBean.viewOnly or validatorBean.validator.autoDetect}">
+                                      disabled="#{validatorsBean.viewOnly or validatorBean.validator.autoDetect or !validatorBean.validator.isConnected()}">
                     <f:selectItems value="#{validatorBean.getGroupList()}"/>
                 </p:selectManyCheckbox>
             </h:panelGroup>
             <!-- Severity level for failing the validator -->
-            <h:outputLabel for="severityFail" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_SEVERITY_FAIL}"/>
+            <h:outputLabel for="severityFail"
+                           styleClass="block"
+                           value="#{web.text.PKIMETAL_VALIDATOR_SEVERITY_FAIL}"/>
             <h:panelGroup id="severityFail">
-                <p:selectOneMenu value="#{validatorBean.validator.severityFail}" disabled="#{validatorsBean.viewOnly}">
+                <p:selectOneMenu value="#{validatorBean.validator.severityFail}"
+                                 disabled="#{validatorsBean.viewOnly or !validatorBean.validator.isConnected()}">
                     <f:selectItems value="#{validatorBean.validator.availableSeverities}"/>
                 </p:selectOneMenu>
             </h:panelGroup>
             <!-- Severity level for logging to system log -->     
             <h:outputLabel for="severityLog" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_SEVERITY_LOG}"/>
             <h:panelGroup id="severityLog">
-                <p:selectOneMenu value="#{validatorBean.validator.severityLog}" disabled="#{validatorsBean.viewOnly}">
+                <p:selectOneMenu value="#{validatorBean.validator.severityLog}"
+                                 disabled="#{validatorsBean.viewOnly or !validatorBean.validator.isConnected()}">
                     <f:selectItems value="#{validatorBean.validator.availableSeverities}"/>
                 </p:selectOneMenu>
             </h:panelGroup>
