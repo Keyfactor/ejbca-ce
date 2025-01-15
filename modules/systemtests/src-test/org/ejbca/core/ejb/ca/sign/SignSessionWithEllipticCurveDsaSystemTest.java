@@ -24,6 +24,7 @@ import java.util.Locale;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -128,8 +129,14 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
-        X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
+        X509Certificate selfcert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(ecdsakeys.getPrivate())
+                .setEntityPubKey(ecdsakeys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)
+                .generateCertificate();  
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
@@ -211,8 +218,14 @@ public class SignSessionWithEllipticCurveDsaSystemTest extends SignSessionCommon
         endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECDSA_USERNAME + "' to NEW");
         // user that we know exists...
-        X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
+        X509Certificate selfcert =  SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=selfsigned")
+                .setIssuerDn("CN=selfsigned")
+                .setValidityDays(1)
+                .setIssuerPrivKey(ecdsakeys.getPrivate())
+                .setEntityPubKey(ecdsakeys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)
+                .generateCertificate();  
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, ECDSA_USERNAME, "foo123", selfcert);
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());

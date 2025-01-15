@@ -149,16 +149,15 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws EndEntityException {
+    public void initialize() throws AuthorizationDeniedException, EjbcaException {
+        if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
+            throw new AuthorizationDeniedException("You are not authorized to view this page.");
+        }
 
+        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+
+        ejbcaWebBean = getEjbcaWebBean();
         try {
-            if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
-                throw new AuthorizationDeniedException("You are not authorized to view this page.");
-            }
-
-            final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
-
-            ejbcaWebBean = getEjbcaWebBean();
 
             globalConfiguration = ejbcaWebBean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
                     AccessRulesConstants.REGULAR_CREATEENDENTITY);
@@ -167,9 +166,23 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             raBean.initialize(ejbcaWebBean);
 
             RequestHelper.setDefaultCharacterEncoding(request);
+            
             initUserData();
         } catch (Exception e) {
-            throw new EndEntityException("Error while initializing the class " + this.getClass().getCanonicalName(), e);
+            addNonTranslatedErrorMessage(e.getMessage());
+
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+
+            if (facesContext != null) {
+                facesContext.getExternalContext().invalidateSession();
+                try {
+                    facesContext.getExternalContext().getRequestMap().put("add.end.entity.error.message", e.getMessage());
+                    facesContext.getExternalContext().dispatch("/error-add-ee-page.xhtml");
+                } catch (Exception ex) {
+                    throw new IllegalStateException("Error while transfering to error page!");
+                }
+            }
+
         }
     }
 
@@ -999,7 +1012,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         return selectedEeProfile.isPasswordPreDefined();
     }
     
-    private void initUserData() throws EndEntityProfileNotFoundException, EndEntityException {
+    private void initUserData() throws EndEntityProfileNotFoundException, EndEntityException{
 
         profileNames = (String[]) ejbcaWebBean.getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
         
@@ -1008,6 +1021,10 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         } else {
             this.selectedEeProfileId = raBean.getEndEntityProfileId(profileNames[0]);
             this.selectedEeProfile = raBean.getEndEntityProfile(selectedEeProfileId);
+        }
+        
+        if (caSession.getAuthorizedCaIds(getAdmin()) == null || caSession.getAuthorizedCaIds(getAdmin()).isEmpty()) {
+            throw new EndEntityException(getEjbcaWebBean().getText("NOCAAVAILABLEFORTHEADMIN"));
         }
         
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
