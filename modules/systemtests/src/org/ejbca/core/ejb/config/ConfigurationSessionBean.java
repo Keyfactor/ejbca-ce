@@ -105,15 +105,15 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
     public void setPeerConnectorPoolTimeout(int timeout) {
         try {
             // This class is not available in EJBCA Community edition, so we need to use reflection to set the timeout.
-            Class.forName("org.ejbca.peerconnector.client.PeerConnectorPool")
-                    .getDeclaredField("INSTANCE")
-                    .get(null)
-                    .getClass()
-                    .getMethod("setSocketTimeout", int.class)
-                    .invoke(null, timeout);
-        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException | NoSuchMethodException |
+            final Class<?> poolClass = Class.forName("org.ejbca.peerconnector.client.PeerConnectorPool");
+            final Object poolInstance = poolClass.getEnumConstants()[0]; // "INSTANCE" enum value
+            poolClass.getMethod("setSocketTimeout", int.class)
+                    .invoke(poolInstance, timeout);
+        } catch (ClassNotFoundException e) {
+            // This would happen if called in Community Edition (which it shouldn't be)
+        } catch (IllegalAccessException | NoSuchMethodException |
                  InvocationTargetException e) {
-            // Do nothing as we should not end here.
+            throw new IllegalStateException("Reflection operation failed: " + e.getMessage(), e);
         }
     }
 }

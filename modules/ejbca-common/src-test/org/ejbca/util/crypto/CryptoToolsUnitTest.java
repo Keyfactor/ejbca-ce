@@ -42,8 +42,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -120,8 +120,17 @@ public class CryptoToolsUnitTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsUnitTest", 1, "0.0", cryptoToken.getPrivateKey(alias),
-                cryptoToken.getPublicKey(alias), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=CryptoToolsUnitTest")
+                .setIssuerDn("CN=CryptoToolsUnitTest")
+                .setValidityDays(1)
+                .setPolicyId("1.1")
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(alias))
+                .setEntityPubKey(cryptoToken.getPublicKey(alias))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+
         final KeyPair keypair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
@@ -154,8 +163,16 @@ public class CryptoToolsUnitTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsUnitTest", 1, "0.0", cryptoToken.getPrivateKey(alias),
-                cryptoToken.getPublicKey(alias), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=CryptoToolsUnitTest")
+                .setIssuerDn("CN=CryptoToolsUnitTest")
+                .setValidityDays(1)
+                .setPolicyId("1.1")
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(alias))
+                .setEntityPubKey(cryptoToken.getPublicKey(alias))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
 
         final KeyPair keypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
@@ -192,8 +209,17 @@ public class CryptoToolsUnitTest {
         cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), encAlias);
         // then the standard keys, which will be used in the certificate
         cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), signAlias);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsUnitTest", 1, "0.0", cryptoToken.getPrivateKey(signAlias),
-                cryptoToken.getPublicKey(signAlias), AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, false);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=CryptoToolsUnitTest")
+                .setIssuerDn("CN=CryptoToolsUnitTest")
+                .setValidityDays(1)
+                .setPolicyId("1.1")
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(signAlias))
+                .setEntityPubKey(cryptoToken.getPublicKey(signAlias))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         final KeyPair endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
@@ -233,8 +259,17 @@ public class CryptoToolsUnitTest {
         cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), encAlias);
         // then the standard keys, which will be used in the certificate
         cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), signAlias);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsUnitTest", 1, "0.0", cryptoToken.getPrivateKey(signAlias),
-                cryptoToken.getPublicKey(signAlias), AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA, false);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=CryptoToolsUnitTest")
+                .setIssuerDn("CN=CryptoToolsUnitTest")
+                .setValidityDays(1)
+                .setPolicyId("1.1")
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(signAlias))
+                .setEntityPubKey(cryptoToken.getPublicKey(signAlias))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA384_WITH_ECDSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         final KeyPair endEntityKeypair = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, encAlias, endEntityKeypair);
         assertNotNull("Encrypted key pair should not be null", encryptedBytes);
@@ -283,8 +318,16 @@ public class CryptoToolsUnitTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsUnitTest", 1, "0.0", cryptoToken.getPrivateKey(alias),
-                cryptoToken.getPublicKey(alias), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=CryptoToolsUnitTest")
+                .setIssuerDn("CN=CryptoToolsUnitTest")
+                .setValidityDays(1)
+                .setPolicyId("1.1")
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(alias))
+                .setEntityPubKey(cryptoToken.getPublicKey(alias))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
 
         final KeyPair keypair = KeyTools.genKeys("Ed25519", AlgorithmConstants.KEYALGORITHM_ED25519);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);
@@ -329,8 +372,16 @@ public class CryptoToolsUnitTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = CertTools.genSelfCert("CN=CryptoToolsUnitTest", 1, "0.0", cryptoToken.getPrivateKey(alias),
-                cryptoToken.getPublicKey(alias), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=CryptoToolsUnitTest")
+                .setIssuerDn("CN=CryptoToolsUnitTest")
+                .setValidityDays(1)
+                .setPolicyId("1.1")
+                .setIssuerPrivKey(cryptoToken.getPrivateKey(alias))
+                .setEntityPubKey(cryptoToken.getPublicKey(alias))
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
 
         final KeyPair keypair = KeyTools.genKeys("Ed448", AlgorithmConstants.KEYALGORITHM_ED448);
         byte[] encryptedBytes = CryptoTools.encryptKeys(caCertificate, cryptoToken, alias, keypair);

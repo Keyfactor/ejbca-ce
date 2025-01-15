@@ -1760,4 +1760,14 @@ public interface RaMasterApi {
      */
     RaKeyImportResponseV2 keyImportV2(AuthenticationToken authenticationToken, KeyImportRequestData keyImportRequestData)
             throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
+
+    /**
+     * Return total count of certificates in database
+     *
+     * @param authenticationToken
+     * @param isActive only count the active certificates
+     * @return
+     * @throws AuthorizationDeniedException
+     */
+    Long getCertificateCount(AuthenticationToken authenticationToken, Boolean isActive) throws AuthorizationDeniedException;
 }

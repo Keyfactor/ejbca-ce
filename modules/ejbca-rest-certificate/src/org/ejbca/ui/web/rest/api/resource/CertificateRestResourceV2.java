@@ -62,10 +62,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
     private static final Logger log = Logger.getLogger(CertificateRestResourceV2.class);
-    
-    @EJB
-    private CertificateDataSessionLocal certDataSession;
-    
+
     @Override
     public Response status() {
         return Response.ok(RestResourceStatusRestResponse.builder()
@@ -79,7 +76,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     public Response getCertificateCount(HttpServletRequest requestContext, Boolean isActive) throws AuthorizationDeniedException, RestException {
         AuthenticationToken admin = getAdmin(requestContext, false);
         return Response.ok(new CertificateCountResponse(
-                certDataSession.getCertificateCount(admin, isActive)
+                raMasterApi.getCertificateCount(admin, isActive)
         )).build();
     }
 

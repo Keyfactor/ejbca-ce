@@ -93,6 +93,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
@@ -348,7 +349,15 @@ public class CrlCreateSessionSystemTest {
             // Create an external root ca certificate
             final KeyPair rootcakp = KeyTools.genKeys("1024", "RSA");
             final String rootcadn = "CN=CrlCSTestRoot";
-            final X509Certificate rootcacert = CertTools.genSelfCert(rootcadn, 3650, null, rootcakp.getPrivate(), rootcakp.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true, "BC", false);
+            final X509Certificate rootcacert = SimpleCertGenerator.forTESTCaCert()
+                    .setSubjectDn(rootcadn)
+                    .setIssuerDn(rootcadn)
+                    .setValidityDays(3650)
+                    .setIssuerPrivKey(rootcakp.getPrivate())
+                    .setEntityPubKey(rootcakp.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .setProvider(BouncyCastleProvider.PROVIDER_NAME)
+                    .generateCertificate();              
             
             // Create sub ca
             final int cryptoTokenId = CryptoTokenTestUtils.createCryptoTokenForCA(authenticationToken, subcaname, "1024", "1024", CAToken.SOFTPRIVATESIGNKEYALIAS, CAToken.SOFTPRIVATEDECKEYALIAS);
