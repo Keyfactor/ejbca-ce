@@ -43,6 +43,7 @@ import org.junit.runners.MethodSorters;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -88,10 +89,25 @@ public class CertReqHistorySessionSystemTest {
     public void test01addCertReqHist() throws Exception {
         log.trace(">test01addCertReqHist()");
 
-        cert1 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1", 24, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
-        cert2 = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2", 24, null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        cert1 = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")
+                .setIssuerDn("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")
+                .setValidityDays(24)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
+        cert2 = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2")
+                .setIssuerDn("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2")
+                .setValidityDays(24)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
 
         final EndEntityInformation userdata = new EndEntityInformation();
         userdata.setUsername("1111");

@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 import org.apache.commons.lang.SystemUtils;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -38,8 +39,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.Base64;
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -132,7 +133,7 @@ public class GeneralPurposeCustomPublisherSystemTest {
      * Tests storing a certificate using arguments passed to the command. 
      */
     @Test
-    public void  testStoreCertificateWithArguments() throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, PublisherException {
+    public void  testStoreCertificateWithArguments() throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, PublisherException, CertIOException {
         Properties props = new Properties();
         // Test function by calling a command that is available on most platforms
         boolean ret = false;
@@ -141,7 +142,16 @@ public class GeneralPurposeCustomPublisherSystemTest {
         gpcPublisher.setExternalScriptsAllowlist(ExternalScriptsAllowlist.permitAll());
         KeyPair keys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_EC);
         String certificateDn = "CN=Foo Bar, OU=Xyz Abc";
-        X509Certificate cert = CertTools.genSelfCert(certificateDn, 10L, "1.1.1.1", keys.getPrivate(), keys.getPublic(), "SHA256WithECDSA", true);
+        X509Certificate cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(certificateDn)
+                .setIssuerDn(certificateDn)
+                .setPolicyId("1.1.1.1")
+                .setValidityDays(10)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA)
+                .setLdapOrder(true)
+                .generateCertificate();
 
         ret = gpcPublisher.storeCertificate(admin, cert, "foo", "foo123", certificateDn, "foo", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, 0, 0, null, 0, 0, null);
