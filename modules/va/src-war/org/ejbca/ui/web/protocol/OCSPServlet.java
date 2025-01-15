@@ -17,13 +17,6 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.security.cert.X509Certificate;
 
-import jakarta.ejb.EJB;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cert.ocsp.OCSPResp;
@@ -37,7 +30,6 @@ import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.GlobalOcspConfiguration;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.util.GUIDGenerator;
 import org.ejbca.config.AvailableProtocolsConfiguration;
@@ -52,6 +44,13 @@ import org.ejbca.util.IPatternLogger;
 
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.StringTools;
+
+import jakarta.ejb.EJB;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 
 /** 
@@ -109,8 +108,6 @@ public class OCSPServlet extends HttpServlet {
                     ConfigurationHolder.updateConfiguration(aConfig[i].substring(0, separatorIx),
                             aConfig[i].substring(separatorIx + 1, aConfig[i].length()));
                 }
-                // This setting is cached and must be cleared on config update
-                OcspConfiguration.clearAcceptedSignatureAlgorithmCache();
                 OcspConfigurationCache.INSTANCE.reloadConfiguration();
                 log.info("Call from " + remote + " to update configuration");
                 return;

@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -46,6 +47,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -100,15 +102,29 @@ public class RoleMemberDataSessionSystemTest {
      * Tests that optimized lookup of "preferred" match values is working (e.g. serial number for X.509 authentication tokens, and user name for CLI)
      */
     @Test
-    public void testPreferredMatchValues() throws RoleExistsException, AuthorizationDeniedException, AuthenticationFailedException, InvalidAlgorithmParameterException, OperatorCreationException, CertificateException {
+    public void testPreferredMatchValues() throws RoleExistsException, AuthorizationDeniedException, AuthenticationFailedException, InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, CertIOException {
         log.debug(">testPreferredMatchValues");
         final Role role1 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, TEST_ROLE_NAME + "1"));
         final Role role2 = roleSession.persistRole(alwaysAllowAuthenticationToken, new Role(null, TEST_ROLE_NAME + "2"));
         try {
             // Create certificates with the serial numbers
             KeyPair kp = KeyTools.genKeys("1024", "RSA");
-            X509Certificate cert1 = CertTools.genSelfCert("CN=TestPreferredMatchValues1", 10, null, kp.getPrivate(), kp.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
-            X509Certificate cert2 = CertTools.genSelfCert("CN=TestPreferredMatchValues2", 10, null, kp.getPrivate(), kp.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, false);
+            X509Certificate cert1 = SimpleCertGenerator.forTESTLeafCert()
+                    .setSubjectDn("CN=TestPreferredMatchValues1")
+                    .setIssuerDn("CN=TestPreferredMatchValues1")
+                    .setValidityDays(10)
+                    .setIssuerPrivKey(kp.getPrivate())
+                    .setEntityPubKey(kp.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .generateCertificate(); 
+            X509Certificate cert2 = SimpleCertGenerator.forTESTLeafCert()
+                    .setSubjectDn("CN=TestPreferredMatchValues2")
+                    .setIssuerDn("CN=TestPreferredMatchValues2")
+                    .setValidityDays(10)
+                    .setIssuerPrivKey(kp.getPrivate())
+                    .setEntityPubKey(kp.getPublic())
+                    .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                    .generateCertificate(); 
             String serial1 = CertTools.getSerialNumberAsString(cert1);
             String serial2 = CertTools.getSerialNumberAsString(cert2);
             log.debug("Serial number for cert 1: "+ serial1);

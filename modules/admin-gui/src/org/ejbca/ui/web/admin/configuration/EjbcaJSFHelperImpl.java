@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Year;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -192,4 +193,9 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper {
          }
          return legacyInternetExplorer;
      }
+
+    @Override
+    public int getCurrentYear() {
+        return Year.now().getValue();
+    }
 }
