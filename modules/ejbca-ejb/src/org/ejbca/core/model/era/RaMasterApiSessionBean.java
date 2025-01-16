@@ -381,9 +381,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>17<td>=<td>8.2.0
      * <tr><th>18<td>=<td>8.3.0
      * <tr><th>19<td>=<td>9.2.0
+     * <tr><th>20<td>=<td>9.3.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 19;
+    private static final int RA_MASTER_API_VERSION = 20;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
