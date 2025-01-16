@@ -346,12 +346,14 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(revDate.toString(), entry.getRevocationDate().toString());
         // Getting the revocation reason is a pita...
         byte[] extval = entry.getExtensionValue(Extension.reasonCode.getId());
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
-        ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        ASN1Primitive obj = aIn.readObject();
-        CRLReason reason = CRLReason.getInstance(obj);
-        assertEquals("CRLReason: certificateHold", reason.toString());
+        try (ASN1InputStream extValInputStream = new ASN1InputStream(new ByteArrayInputStream(extval))) {
+            ASN1OctetString octs = ASN1OctetString.getInstance(extValInputStream.readObject());
+            try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                ASN1Primitive obj = aIn.readObject();
+                CRLReason reason = CRLReason.getInstance(obj);
+                assertEquals("CRLReason: certificateHold", reason.toString());
+            }
+        }
 
         // Create a delta CRL
         revcerts = new ArrayList<>();
@@ -378,12 +380,14 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(revDate.toString(), entry.getRevocationDate().toString());
         // Getting the revocation reason is a pita...
         extval = entry.getExtensionValue(Extension.reasonCode.getId());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
-        octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        obj = aIn.readObject();
-        reason = CRLReason.getInstance(obj);
-        assertEquals("CRLReason: certificateHold", reason.toString());
+        try (ASN1InputStream extValInputStream = new ASN1InputStream(new ByteArrayInputStream(extval))) {
+            ASN1OctetString octs = ASN1OctetString.getInstance(extValInputStream.readObject());
+            try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                ASN1Primitive obj = aIn.readObject();
+                CRLReason reason = CRLReason.getInstance(obj);
+                assertEquals("CRLReason: certificateHold", reason.toString());
+            }
+        }
     }
 
     @Test
@@ -971,7 +975,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // New CA certificate to make it work again
         PublicKey publicKey = cryptoToken.getPublicKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         PrivateKey privateKey = cryptoToken.getPrivateKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        X509Certificate cacert = SimpleCertGenerator.forTESTLeafCert()
+        X509Certificate cacert = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn(CADN)
                 .setIssuerDn(CADN)
                 .setValidityDays(10)

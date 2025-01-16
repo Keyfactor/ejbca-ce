@@ -631,7 +631,7 @@ public class MessagesUnitTest {
     public void testSerializeScepMessage() throws OperatorCreationException, CertificateException, InvalidAlgorithmParameterException, InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException, SignatureException, CertStoreException, IOException, CMSException {
         final KeyPair keypair = KeyTools.genKeys("1024", "RSA");
-        final X509Certificate caCert = SimpleCertGenerator.forTESTLeafCert()
+        final X509Certificate caCert = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn("CN=testSerializationCA")
                 .setIssuerDn("CN=testSerializationCA")
                 .setValidityDays(10*365)
