@@ -192,15 +192,11 @@ public class EnableGlobalPiiDataRedactionSystemTest {
         Map<String, Set<String>> loggedPiiLines = new HashMap<>();
         Set<String> issuerDns = new HashSet<>();
 
-
-        BufferedReader reader;
-        String line = "start";
         try {
-            reader = new BufferedReader(new FileReader(logFilePath));
-
-            while (line != null) {
+            BufferedReader reader = new BufferedReader(new FileReader(logFilePath));
+            String line;
+            while ((line = reader.readLine()) != null ) {
                 linesRead++;
-                line = reader.readLine();
                 if (line.contains("org.ejbca")) {
                     linesReadEjbca++;
                 } else if (line.contains("org.cesecore")) {
