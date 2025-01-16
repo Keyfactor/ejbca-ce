@@ -139,6 +139,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
     private static final String ENROLL_USERNAME_ALREADY_EXISTS = "enroll_username_already_exists";
     private static final String ENROLL_USERNAME_CONTAINS_INVALID_CHARACTERS = "enroll_username_contains_invalid_characters";
+    private static final String ENROLL_SAN_EMAIL_INVALID = "enroll_san_email_invalid";
     private static final String ENROLL_INVALID_CERTIFICATE_REQUEST = "enroll_invalid_certificate_request";
     private static final String ENROLL_SELECT_KA_NOCHOICE = "enroll_select_ka_nochoice";
 
@@ -1278,6 +1279,16 @@ public class EnrollMakeNewRequestBean implements Serializable {
         getSubjectDn().update();
         getSubjectAlternativeName().update();
         getSubjectDirectoryAttributes().update();
+
+
+        //Validate SAN Emails
+        List<String> sanEmails = DnComponents.getEmailFromDN(getSubjectAlternativeName().value);
+        for (String email : sanEmails) {
+            if (!StringTools.isValidEmail(email)) {
+                raLocaleBean.addMessageError(ENROLL_SAN_EMAIL_INVALID, email);
+                return new byte[0];
+            }
+        }
 
         // Workaround.
         // Corrections for SAN rfc822name and UPN (which might be a valid e-mail)
