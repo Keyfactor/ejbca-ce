@@ -131,7 +131,7 @@ public class ContentSecurityPolicyFilter implements Filter {
      */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain fchain) throws IOException, ServletException {
-        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
+        try (final RequestId requestId = new RequestId()) {
             HttpServletResponse httpResponse = ((HttpServletResponse) response);
             StringBuilder policiesBuffer = new StringBuilder(this.policies);
             for (String header : this.cspHeaders) {

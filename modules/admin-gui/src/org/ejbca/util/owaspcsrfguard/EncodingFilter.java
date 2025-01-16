@@ -46,7 +46,7 @@ public class EncodingFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws ServletException,IOException {
-        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
+        try (final RequestId requestId = new RequestId()) {
             final HttpServletRequest httpreq = (HttpServletRequest) request;
 
             // The way we use OWASP CSRF Guard makes all POST requests to our form in the last remaining jsp pages protected against csrf attacks

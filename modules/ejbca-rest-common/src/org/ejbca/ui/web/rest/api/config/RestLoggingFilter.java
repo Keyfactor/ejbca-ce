@@ -145,7 +145,7 @@ public class RestLoggingFilter implements Filter {
 
     @Override
     public void doFilter(final ServletRequest servletRequest, final ServletResponse servletResponse, final FilterChain filterChain) throws IOException, ServletException {
-        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
+        try (final RequestId requestId = new RequestId()) {
             final long startTime = System.currentTimeMillis();
             final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             final StringBuilder sbInfo = new StringBuilder(200);

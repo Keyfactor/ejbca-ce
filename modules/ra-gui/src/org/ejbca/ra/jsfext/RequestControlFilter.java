@@ -139,7 +139,7 @@ public class RequestControlFilter implements Filter {
             ServletResponse response,
             FilterChain chain)
                     throws IOException, ServletException {
-        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
+        try (final RequestId requestId = new RequestId()) {
             HttpServletRequest httpRequest = (HttpServletRequest)request;
             HttpSession session = httpRequest.getSession();
 

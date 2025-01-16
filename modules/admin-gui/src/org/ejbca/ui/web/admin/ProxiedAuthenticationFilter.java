@@ -61,7 +61,7 @@ public class ProxiedAuthenticationFilter implements Filter {
 
 	@Override
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain filterChain) throws IOException, ServletException {
-		try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
+		try (final RequestId requestId = new RequestId()) {
 			if (request.getAttribute(ATTR_X509CERTIFICATE) == null) {
 				if (proxiedAuthenticationEnabled) {
 					final String username = (String) request.getAttribute(ATTR_PROXIED_AUTH_TOKEN_STRING);
