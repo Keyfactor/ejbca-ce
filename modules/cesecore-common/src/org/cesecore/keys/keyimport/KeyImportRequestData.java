@@ -27,6 +27,10 @@ public class KeyImportRequestData implements Serializable {
     private String endEntityProfileName;
     private List<KeyImportKeystoreData> keystores;
 
+    public KeyImportRequestData() {
+
+    }
+
     public KeyImportRequestData(final String issuerDn, final String certificateProfileName,
                                 final String endEntityProfileName, final List<KeyImportKeystoreData> keystores) {
         this.issuerDn = issuerDn;

@@ -27,6 +27,10 @@ public class KeyImportKeystoreData implements Serializable {
     private String password;
     private String keystore;
 
+    public KeyImportKeystoreData() {
+
+    }
+
     public KeyImportKeystoreData(final String username, final String password, final String keystore) {
         this.username = username;
         this.password = StringTools.putBase64String(password);
