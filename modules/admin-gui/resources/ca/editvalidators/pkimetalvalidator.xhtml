@@ -48,7 +48,7 @@
             <h:panelGroup/>
             <h:panelGroup id="connectedLabel">
               <h:outputLabel rendered="#{validatorBean.validator.isConnected()}"  styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_CONNECTED}"/>
-              <h:outputLabel rendered="#{!validatorBean.validator.isConnected()}" styleClass="block" value="#{web.text.PKIMETAL_VALIDATOR_NOT_CONNECTED}"/>
+              <h:outputLabel rendered="#{!validatorBean.validator.isConnected()}" styleClass="warning" value="#{web.text.PKIMETAL_VALIDATOR_NOT_CONNECTED}"/>
             </h:panelGroup>
             <h:outputLabel id="autodetectLabel"
                            for="autodetect"
