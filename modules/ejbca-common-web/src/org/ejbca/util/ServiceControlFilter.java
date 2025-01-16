@@ -111,7 +111,7 @@ public class ServiceControlFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
+        try (final RequestId requestId = new RequestId()) {
             final HttpServletRequest httpRequest = (HttpServletRequest) request;
             final HttpServletResponse httpResponse = (HttpServletResponse) response;
             AvailableProtocolsConfiguration availableProtocolsConfiguration = (AvailableProtocolsConfiguration) globalConfigurationSession

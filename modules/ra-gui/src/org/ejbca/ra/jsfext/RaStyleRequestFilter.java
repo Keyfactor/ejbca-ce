@@ -81,7 +81,7 @@ public class RaStyleRequestFilter implements Filter {
     /** Called once for every requested resource on a RA page load. If modified resources are available, the response will be intercept */
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
+        try (final RequestId requestId = new RequestId()) {
             HttpServletRequest httpRequest = (HttpServletRequest) request;
             HttpServletResponse httpResponse = (HttpServletResponse) response;
             String requestPath = httpRequest.getRequestURI();

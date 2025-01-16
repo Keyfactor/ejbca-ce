@@ -52,7 +52,7 @@ public class AuthenticationFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        try (final RequestId requestId = RequestId.getCurrentOrCreate()) {
+        try (final RequestId requestId = new RequestId()) {
             final HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
             final HttpServletResponse httpServletResponse = (HttpServletResponse) servletResponse;
             boolean hasAuthenticationError = false;

@@ -17,6 +17,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -28,33 +30,35 @@ public class RequestIdUnitTest {
 
     private static final String ORIGINAL_THREAD_NAME = "test-thread-"+ RequestIdUnitTest.class.getSimpleName();
 
+    private void closeAllRequestIds() {
+        Set<Thread> threadSet = Thread.getAllStackTraces().keySet();
+        for (Thread thread : threadSet) {
+            thread.setName(thread.getName().split(RequestId.SEPARATOR)[0]);
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
-        RequestId.closeAll();
+        closeAllRequestIds();
         Thread.currentThread().setName(ORIGINAL_THREAD_NAME);
-
-        assertNull(RequestId.getCurrent());
+        assertNull(RequestId.parse());
         assertFalse(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
-        assertEquals(ORIGINAL_THREAD_NAME, RequestId.getOriginalName());
     }
 
     @After
     public void tearDown() throws Exception {
-        assertNull(RequestId.getCurrent());
+        assertNull(RequestId.parse());
         assertFalse(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
-        assertEquals(ORIGINAL_THREAD_NAME, RequestId.getOriginalName());
-
-        RequestId.closeAll();
+        closeAllRequestIds();
     }
 
     @Test
     public void testDoFilter_oneFilter() {
         // When
-        try (RequestId requestId = RequestId.getCurrentOrCreate()) {
+        try (RequestId requestId = new RequestId()) {
             // Then
             assertNotNull(requestId);
-            assertSame(requestId, RequestId.getCurrent());
-            assertEquals(1, requestId.getCounter());
+            assertEquals(requestId, RequestId.parse());
             assertTrue(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
         }
     }
@@ -64,24 +68,21 @@ public class RequestIdUnitTest {
         // Outer filter
 
         // When
-        try (final RequestId outerRequestId = RequestId.getCurrentOrCreate()) {
+        try (final RequestId outerRequestId = new RequestId()) {
             // Then
             assertNotNull(outerRequestId);
-            assertSame(outerRequestId, RequestId.getCurrent());
-            assertEquals(1, outerRequestId.getCounter());
+            assertEquals(outerRequestId, RequestId.parse());
             assertTrue(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
 
             // Inner filter
 
             // When
-            try (final RequestId innerRequestId = RequestId.getCurrentOrCreate()) {
+            try (final RequestId innerRequestId = new RequestId()) {
                 // Then
                 assertNotNull(innerRequestId);
-                assertSame(innerRequestId, RequestId.getCurrent());
-                assertSame(outerRequestId, RequestId.getCurrent());
-                assertEquals(2, outerRequestId.getCounter());
+                assertEquals(outerRequestId, RequestId.parse());
+                assertEquals(innerRequestId.getId(), outerRequestId.getId());
                 assertTrue(Thread.currentThread().getName().contains(RequestId.SEPARATOR));
-                assertEquals(outerRequestId.getId(), innerRequestId.getId());
             }
         }
     }
