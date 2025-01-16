@@ -21,3 +21,4 @@ modules/ra-gui/resources/js/jquery.min.js
 /.project
 .gradle
 jacoco.exec
+java_*.hprof
