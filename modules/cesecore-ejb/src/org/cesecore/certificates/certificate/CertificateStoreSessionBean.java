@@ -159,8 +159,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     	// Check that user is authorized to the CA that issued this certificate
     	int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
-    	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, crlPartitionIndex, 
-    	        endEntityProfileId, tag, updateTime, accountBindingId);
+    	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, endEntityProfileId,
+                crlPartitionIndex, tag, updateTime, accountBindingId);
     }
     
     @Override

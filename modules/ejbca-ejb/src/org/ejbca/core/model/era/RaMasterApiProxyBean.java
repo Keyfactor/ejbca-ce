@@ -1828,7 +1828,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
         CADoesntExistsException caDoesntExistException = null;
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (log.isDebugEnabled()) {
-                log.debug("raMasterApi calling createCertificateWS: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
+                log.debug("raMasterApi calling softTokenRequest: "+raMasterApi.getApiVersion()+", "+raMasterApi.isBackendAvailable()+", "+raMasterApi.getClass());
             }
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 1) {
                 try {
@@ -4058,5 +4058,19 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
             throw caDoesntExistException;
         }
         return null;
+    }
+
+    @Override
+    public Long getCertificateCount(AuthenticationToken authenticationToken, Boolean isActive) throws AuthorizationDeniedException {
+        for (final RaMasterApi raMasterApi : raMasterApis) {
+            if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 19) {
+                try {
+                    return raMasterApi.getCertificateCount(authenticationToken, isActive);
+                } catch (UnsupportedOperationException | RaMasterBackendUnavailableException e) {
+                    // Just try next implementation
+                }
+            }
+        }
+        return Long.valueOf(0);
     }
 }

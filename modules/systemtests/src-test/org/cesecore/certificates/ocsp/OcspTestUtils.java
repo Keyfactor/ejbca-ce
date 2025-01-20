@@ -394,6 +394,7 @@ public final class OcspTestUtils {
     public static Certificate createCertByExternalCa(final KeyPair caKeyPair, String userDn, int validity)
             throws InvalidAlgorithmParameterException, OperatorCreationException, CertificateException, CertIOException {
         KeyPair userKeyPair = KeyTools.genKeys("2048", "RSA");        
+        // The Issuer DN (which is set to an incorrect value here) is not used because there's SKID and AKID in the cert.
         return SimpleCertGenerator.forTESTLeafCert()
                 .setSubjectDn(userDn)
                 .setIssuerDn(userDn)
