@@ -98,6 +98,16 @@ public class CertificateDataSessionBean extends BaseCertificateDataSessionBean i
         query.setParameter("subjectDN", subjectDN);
         return query.getResultList();
     }
+    
+    @Override
+    public CertificateData findLatestBySubjectDN(final String subjectDN) {
+        final TypedQuery<CertificateData> query = entityManager.createQuery(
+                                    "SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN and a.notBefore="
+                                    + "(SELECT max(b.notBefore) FROM CertificateData b WHERE b.subjectDN=:subjectDN)", 
+                                    CertificateData.class);
+        query.setParameter("subjectDN", subjectDN);
+        return query.getSingleResult();
+    }
 
     /**
      * @return active certificates that match the specified types and subjectDN
