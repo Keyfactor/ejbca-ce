@@ -120,7 +120,7 @@ public class CryptoToolsUnitTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn("CN=CryptoToolsUnitTest")
                 .setIssuerDn("CN=CryptoToolsUnitTest")
                 .setValidityDays(1)
@@ -163,7 +163,7 @@ public class CryptoToolsUnitTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn("CN=CryptoToolsUnitTest")
                 .setIssuerDn("CN=CryptoToolsUnitTest")
                 .setValidityDays(1)
@@ -209,7 +209,7 @@ public class CryptoToolsUnitTest {
         cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), encAlias);
         // then the standard keys, which will be used in the certificate
         cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), signAlias);
-        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn("CN=CryptoToolsUnitTest")
                 .setIssuerDn("CN=CryptoToolsUnitTest")
                 .setValidityDays(1)
@@ -259,7 +259,7 @@ public class CryptoToolsUnitTest {
         cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), encAlias);
         // then the standard keys, which will be used in the certificate
         cryptoToken.generateKeyPair(KeyGenParams.builder(curveName).build(), signAlias);
-        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn("CN=CryptoToolsUnitTest")
                 .setIssuerDn("CN=CryptoToolsUnitTest")
                 .setValidityDays(1)
@@ -318,7 +318,7 @@ public class CryptoToolsUnitTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn("CN=CryptoToolsUnitTest")
                 .setIssuerDn("CN=CryptoToolsUnitTest")
                 .setValidityDays(1)
@@ -372,7 +372,7 @@ public class CryptoToolsUnitTest {
         final String alias = "alias";
         // key pair to encrypt decrypt keys
         cryptoToken.generateKeyPair(KeyGenParams.builder("1024").build(), alias);
-        final X509Certificate caCertificate = SimpleCertGenerator.forTESTLeafCert()
+        final X509Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
                 .setSubjectDn("CN=CryptoToolsUnitTest")
                 .setIssuerDn("CN=CryptoToolsUnitTest")
                 .setValidityDays(1)
