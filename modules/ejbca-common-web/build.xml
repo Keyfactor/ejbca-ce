@@ -19,6 +19,7 @@
 		<path refid="lib.commons-collections4.classpath"/>
 		<path refid="lib.commons-logging.classpath"/>
 		<path refid="lib.commons-io.classpath"/>
+		<path refid="lib.hc.classpath"/>
 		<path refid="lib.jsf.classpath"/>
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.jee.classpath"/>

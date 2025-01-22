@@ -12,7 +12,22 @@
  *************************************************************************/
 package org.ejbca.config;
 
+import java.io.Serializable;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.conn.ssl.TrustStrategy;
 import org.apache.log4j.Logger;
 import org.cesecore.accounts.AccountBindingException;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -24,18 +39,6 @@ import org.ejbca.core.protocol.acme.AcmeIdentifier;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBinding;
 import org.ejbca.core.protocol.acme.eab.AcmeExternalAccountBindingFactory;
 import org.ejbca.core.protocol.dnssec.DnsSecDefaults;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Configuration used by specifying the configurationId as part of the request URL path or as URL parameter.
@@ -51,7 +54,7 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
 
     protected static final InternalResources intres = InternalResources.getInstance();
 
-    protected static final float LATEST_VERSION = 12;
+    protected static final float LATEST_VERSION = 13;
 
     private static final String KEY_RA_NAMEGENERATIONSCHEME = "ra.namegenerationscheme";
     private static final String KEY_RA_NAMEGENERATIONPARAMS = "ra.namegenerationparameters";
@@ -71,6 +74,14 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final String KEY_PRE_AUTHORIZATION_VALIDITY = "preAuthorizationValidity";
     private static final String KEY_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = "wildcardCertificateIssuanceAllowed";
     private static final String KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = "wildcardWithHttp01ChallengeAllowed";
+    private static final String KEY_USE_MPIC_SERVICE = "useMpicService";
+    private static final String KEY_MPIC_SERVICES = "mpicServices";
+    private static final String KEY_MPIC_API_KEYS = "mpicApiKeys";
+    private static final String KEY_MPIC_CAA_VALIDATION = "mpicCaaValidation";
+    private static final String KEY_USE_MPIC_ORCHESTRATION_PARAMETERS = "useMpicOrchestrationParameters";
+    private static final String KEY_MPIC_PERSPECTIVE_COUNT = "useMpicPerspectiveCount";
+    private static final String KEY_MPIC_QUORUM_COUNT = "useMpicQuorumCount";
+    private static final String KEY_MPIC_ATTEMPT_COUNT = "useMpicAttempCount";
     private static final String KEY_DNS_IDENTIFIER_CHALLENGE_TYPES = "dnsIdentifierChallengeTypes";
     private static final String KEY_DNS_RESOLVER = "dnsResolver";
     private static final String KEY_DNSSEC_TRUST_ANCHOR = "dnssecTrustAnchor";
@@ -99,6 +110,14 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     private static final boolean DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED = true;
     private static final boolean DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED = false;
     private static final boolean DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED = true;
+    private static final boolean DEFAULT_USE_MPIC_SERVICE = false;
+    private static final String DEFAULT_MPIC_SERVICES = "";
+    private static final String DEFAULT_MPIC_API_KEYS = "";
+    private static final boolean DEFAULT_MPIC_CAA_VALIDATION = false;
+    private static final boolean DEFAULT_KEY_USE_MPIC_ORCHESTRATION_PARAMETERS = true;
+    public static final int DEFAULT_KEY_MPIC_PERSPECTIVE_COUNT = 2;
+    public static final int DEFAULT_KEY_MPIC_QUORUM_COUNT = 1;
+    public static final int DEFAULT_KEY_MPIC_ATTEMPT_COUNT = 1;
     public static final String DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES = "any-dns-challenge";
 
     private static final String DEFAULT_TERMS_OF_SERVICE_URL = "https://example.com/acme/terms";
@@ -136,8 +155,35 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void upgrade() {
         if (Float.compare(getLatestVersion(), getVersion()) > 0) {
             // New version of the class, upgrade.
+            
+            // v13. MPIC challenge response
             log.info(intres.getLocalizedMessage("acmeconfiguration.upgrade", getVersion()));
 
+            if (data.get(KEY_USE_MPIC_SERVICE) == null) {
+                setUseMpicService(DEFAULT_USE_MPIC_SERVICE);
+            }
+            if (data.get(KEY_MPIC_SERVICES) == null) {
+                setMpicServices(DEFAULT_MPIC_SERVICES);
+            }
+            if (data.get(KEY_MPIC_API_KEYS) == null) {
+                setMpicApiKeys(DEFAULT_MPIC_API_KEYS);
+            }
+            if (data.get(KEY_MPIC_CAA_VALIDATION) == null) {
+                setMpicCaaValidation(DEFAULT_MPIC_CAA_VALIDATION);
+            }
+            if (data.get(KEY_USE_MPIC_ORCHESTRATION_PARAMETERS) == null) {
+                setUseMpicOrchestrationParameters(DEFAULT_KEY_USE_MPIC_ORCHESTRATION_PARAMETERS);
+            }
+            if (data.get(KEY_MPIC_PERSPECTIVE_COUNT) == null) {
+                setMpicPerspectiveCount(DEFAULT_KEY_MPIC_PERSPECTIVE_COUNT);
+            }
+            if (data.get(KEY_MPIC_QUORUM_COUNT) == null) {
+                setMpicQuorumCount(DEFAULT_KEY_MPIC_QUORUM_COUNT);
+            }
+            if (data.get(KEY_MPIC_ATTEMPT_COUNT) == null) {
+                setMpicAttemptCount(DEFAULT_KEY_MPIC_ATTEMPT_COUNT);
+            }
+            
             // v12. Added challenge response timout.
             if (data.get(KEY_CHALLENGE_RESPONSE_TIMOUT) == null) {
                 data.put(KEY_CHALLENGE_RESPONSE_TIMOUT, DEFAULT_CHALLENGE_RESPONSE_TIMOUT);
@@ -533,6 +579,86 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
     public void setWildcardWithHttp01ChallengeAllowed(final boolean allowed) {
         super.data.put(KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED, String.valueOf(allowed));
     }
+    
+    public boolean isUseMpicService() {
+        return Boolean.valueOf((String) super.data.get(KEY_USE_MPIC_SERVICE));
+    }
+    
+    public void setUseMpicService(final boolean use) {
+        super.data.put(KEY_USE_MPIC_SERVICE, String.valueOf(use));
+    }
+    
+    public String getMpicServices() {
+        return (String) super.data.get(KEY_MPIC_SERVICES);
+    }
+
+    public void setMpicServices(final String servers) {
+        super.data.put(KEY_MPIC_SERVICES, servers);
+    }
+    
+    public String getMpicApiKeys() {
+        return (String) super.data.get(KEY_MPIC_API_KEYS);
+    }
+
+    public void setMpicApiKeys(final String apiKeys) {
+        super.data.put(KEY_MPIC_API_KEYS, apiKeys);
+    }
+    
+    /* This is for the RFC draft of MPIC and currently not used because we do not support the draft. */
+    public boolean isMpicCaaValidation() {
+        return Boolean.valueOf((String) super.data.get(KEY_MPIC_CAA_VALIDATION));
+    }
+    
+    /* This is for the RFC draft of MPIC and currently not used because we do not support the draft. */
+    public void setMpicCaaValidation(final boolean use) {
+        super.data.put(KEY_MPIC_CAA_VALIDATION, String.valueOf(use));
+    }
+    
+    public boolean isUseMpicOrchestrationParameters() {
+        return Boolean.valueOf((String) super.data.get(KEY_USE_MPIC_ORCHESTRATION_PARAMETERS));
+    }
+    
+    public void setUseMpicOrchestrationParameters(final boolean use) {
+        super.data.put(KEY_USE_MPIC_ORCHESTRATION_PARAMETERS, String.valueOf(use));
+    }
+    
+    public int getMpicPerspectiveCount() {
+        return (Integer) super.data.get(KEY_MPIC_PERSPECTIVE_COUNT);
+    }
+
+    public void setMpicPerspectiveCount(final int count) {
+        super.data.put(KEY_MPIC_PERSPECTIVE_COUNT, count);
+    }
+    
+    public int getMpicQuorumCount() {
+        return (Integer) super.data.get(KEY_MPIC_QUORUM_COUNT);
+    }
+
+    public void setMpicQuorumCount(final int count) {
+        super.data.put(KEY_MPIC_QUORUM_COUNT, count);
+    }
+    
+    public int getMpicAttemptCount() {
+        return (Integer) super.data.get(KEY_MPIC_ATTEMPT_COUNT);
+    }
+
+    public void setMpicAttemptCount(final int count) {
+        super.data.put(KEY_MPIC_ATTEMPT_COUNT, count);
+    }
+    
+    public TrustStrategy getMpicServiceTrustStrategy() {
+        if (EjbcaConfiguration.getIsInProductionMode()) {
+            // Null as trust strategy means use the local trust store.
+            return null;
+        } else {
+            return new TrustStrategy() {
+                @Override
+                public boolean isTrusted(X509Certificate[] chain, String host) throws CertificateException {
+                    return true;
+                }
+            };
+        }
+    }
 
     public String getDnsIdentifiersChallengeTypes() {
         return (String) super.data.get(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES);
@@ -719,7 +845,6 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setRANameGenPostfix(DEFAULT_RA_USERNAME_GENERATION_POSTFIX);
         setEndEntityProfileId(DEFAULT_END_ENTITY_PROFILE_ID);
         setRequireExternalAccountBinding(DEFAULT_REQUIRE_EXTERNAL_ACCOUNT_BINDING);
-
         setPreAuthorizationAllowed(DEFAULT_PRE_AUTHORIZATION_ALLOWED);
         setTermsOfServiceUrl(DEFAULT_TERMS_OF_SERVICE_URL);
         setTermsOfServiceChangeUrl(DEFAULT_TERMS_OF_SERVICE_CHANGE_URL);
@@ -727,6 +852,14 @@ public class AcmeConfiguration extends UpgradeableDataHashMap implements Seriali
         setAgreeToNewTermsOfServiceAllowed(DEFAULT_AGREE_TO_TERMS_OF_SERVICE_CHANGED);
         setWildcardCertificateIssuanceAllowed(DEFAULT_WILDCARD_CERTIFICATE_ISSUANCE_ALLOWED);
         setWildcardWithHttp01ChallengeAllowed(DEFAULT_KEY_WILDCARD_WITH_HTTP_01_CHALLENGE_ALLOWED);
+        setUseMpicService(DEFAULT_USE_MPIC_SERVICE);
+        setMpicServices(DEFAULT_MPIC_SERVICES);
+        setMpicApiKeys(DEFAULT_MPIC_API_KEYS);
+        setMpicCaaValidation(DEFAULT_MPIC_CAA_VALIDATION);
+        setUseMpicOrchestrationParameters(DEFAULT_KEY_USE_MPIC_ORCHESTRATION_PARAMETERS);
+        setMpicPerspectiveCount(DEFAULT_KEY_MPIC_PERSPECTIVE_COUNT);
+        setMpicQuorumCount(DEFAULT_KEY_MPIC_QUORUM_COUNT);
+        setMpicAttemptCount(DEFAULT_KEY_MPIC_ATTEMPT_COUNT);
         data.put(KEY_DNS_IDENTIFIER_CHALLENGE_TYPES, DEFAULT_DNS_IDENTIFIER_CHALLENGE_TYPES);
         setWebSiteUrl(DEFAULT_WEBSITE_URL);
         setOrderValidity(DEFAULT_ORDER_VALIDITY);

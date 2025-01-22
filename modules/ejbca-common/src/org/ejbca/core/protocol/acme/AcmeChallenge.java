@@ -15,6 +15,8 @@ package org.ejbca.core.protocol.acme;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.ejbca.core.protocol.acme.AcmeIdentifier.AcmeIdentifierTypes;
 
@@ -75,6 +77,16 @@ public interface AcmeChallenge {
         DNS_TLS_ALPN_01(AcmeIdentifierTypes.DNS, "tls-alpn-01"),
         IP_HTTP_01(AcmeIdentifierTypes.IP, "http-01");
 
+        private static final String REQUEST_V2_VALIDATION_METHOD_ACME_HTTP_01 = "acme-http-01";
+        private static final String REQUEST_V2_VALIDATION_METHOD_ACME_DNS_01 = "acme-dns-01";
+        
+        private static final Map<String,String> CHALLENGE_TO_MPIC_CHALLENGE_MAPPING = new TreeMap<>();
+        
+        static {
+            CHALLENGE_TO_MPIC_CHALLENGE_MAPPING.put(DNS_HTTP_01.getChallengeType(), REQUEST_V2_VALIDATION_METHOD_ACME_HTTP_01);
+            CHALLENGE_TO_MPIC_CHALLENGE_MAPPING.put(DNS_DNS_01.getChallengeType(), REQUEST_V2_VALIDATION_METHOD_ACME_DNS_01);
+        }
+        
         private final AcmeIdentifierTypes acmeIdentifierType;
         private final String challengeType;
 
@@ -94,6 +106,30 @@ public interface AcmeChallenge {
                 }
             }
             return result;
-        } 
+        }
+        
+        /**
+         * Returns true if the challenge type is dns-http-01 or ip-http-01.
+         * 
+         * @param type the challenge type as a string.
+         * @return true if the challenge is an HTTP challenge.
+         */
+        public static boolean isHttpChallenge(final String type) {
+            return DNS_HTTP_01.getChallengeType().equals(type) || IP_HTTP_01.getChallengeType().equals(type);
+        }
+        
+        /**
+         * Returns true if the challenge type is dns-http-01 or dns-dns-01 or tls-alpn-01.
+         * 
+         * @param type the challenge type as a string.
+         * @return true if the challenge is an HTTP challenge.
+         */
+        public static boolean isMpicChallenge(final String type) {
+            return DNS_HTTP_01.getChallengeType().equals(type) || DNS_DNS_01.getChallengeType().equals(type);
+        }
+        
+        public static String getMpicChallengeType(String challengeName) {
+            return CHALLENGE_TO_MPIC_CHALLENGE_MAPPING.get(challengeName);
+        }
     }
 }
