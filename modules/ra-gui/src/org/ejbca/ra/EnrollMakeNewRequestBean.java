@@ -72,6 +72,7 @@ import org.cesecore.certificates.ca.ApprovalRequestType;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.standard.CabForumOrganizationIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.NameConstraint;
@@ -1494,6 +1495,21 @@ public class EnrollMakeNewRequestBean implements Serializable {
      * @param exception  Exception
      */
     private void reportGenericError(final String messageKey, final String logMessage, final ErrorCode errorCode, final Exception exception) {
+        
+        // Show Validator exception
+        // EjbcaException -> CertificateCreateException -> ValidationException
+        if (exception.getCause()!=null && 
+                exception.getCause().getClass().equals(CertificateCreateException.class) &&
+                exception.getCause().getCause()!=null && 
+                exception.getCause().getCause().getClass().equals(
+                            org.cesecore.keys.validation.ValidationException.class)) {
+            String validationErrorOutMessage = exception.getCause().getCause().getMessage();
+            String[] validationErrorOutLines = validationErrorOutMessage.split("ERROUT:");
+            raLocaleBean.addMessageError(messageKey, getEndEntityInformation().getUsername(), 
+                    Arrays.asList(validationErrorOutLines));
+            return;
+        }
+        
         if (errorCode != null) {
             raLocaleBean.addMessageError(messageKey, getEndEntityInformation().getUsername(), raLocaleBean.getErrorCodeMessage(errorCode));
         } else {
