@@ -17,6 +17,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.keyfactor.util.CertTools;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.ws.rs.core.Response;
+import java.util.Objects;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 
@@ -116,7 +118,7 @@ public class CertificateRequestRestRequest {
                     .password(certificateRequestRestRequest.getPassword())
                     .includeChain(certificateRequestRestRequest.getIncludeChain())
                     .certificateAuthorityName(certificateRequestRestRequest.getCertificateAuthorityName())
-                    .requestType(certificateRequestRestRequest.getCertificateRequestType())
+                    .requestType(getRequestTypeCode(certificateRequestRestRequest.getCertificateRequestType()))
                     .build();
         }
 
@@ -135,6 +137,14 @@ public class CertificateRequestRestRequest {
             } else {
                 return CertTools.encapsulateCsr(certificateRequestRestRequest.getCertificateRequest());
             }
+        }
+
+        private static int getRequestTypeCode(String requestTypeName) {
+            if (requestTypeName == null) {
+               return CertificateConstants.CERT_REQ_TYPE_PKCS10;
+            }
+            RequestType requestType = RequestType.resolveRequestTypeStatusByName(requestTypeName);
+            return Objects.requireNonNullElse(requestType, RequestType.PKCS10).getRequestTypeValue();
         }
     }
 }
