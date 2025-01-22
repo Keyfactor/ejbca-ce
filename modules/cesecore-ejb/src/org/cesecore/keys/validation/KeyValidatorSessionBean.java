@@ -573,12 +573,13 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
         }
         if (ca != null && !CollectionUtils.isEmpty(ca.getValidators())) {
             Validator baseValidator;
-            CertificateValidator validator;
+            CertificateValidatorBase validator;
             String name;
             for (final int id : ca.getValidators()) {
                 baseValidator = getValidatorInternal(id, true);
-                if (baseValidator != null && baseValidator.getValidatorSubType().equals(CertificateValidator.class)) {
-                    validator = (CertificateValidator) baseValidator;
+                if (baseValidator != null && (baseValidator.getValidatorSubType().equals(CertificateValidator.class)
+                        || baseValidator.getValidatorSubType().equals(ExternalScriptCertificateValidator.class))) {
+                    validator = (CertificateValidatorBase) baseValidator;
                     name = validator.getProfileName();
                     if (phase.getIndex() != validator.getPhase()) {
                         continue;

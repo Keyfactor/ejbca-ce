@@ -546,7 +546,7 @@ public class ExternalCommandCertificateValidator extends CertificateValidatorBas
 
     @Override
     public Class<? extends Validator> getValidatorSubType() {
-        return ExternalCommandCertificateValidator.class;
+        return ExternalScriptCertificateValidator.class;
     }
 
 }
