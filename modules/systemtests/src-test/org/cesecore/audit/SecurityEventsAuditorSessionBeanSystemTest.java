@@ -38,8 +38,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -143,8 +143,14 @@ public class SecurityEventsAuditorSessionBeanSystemTest extends SecurityEventsBa
 
     @Test
     public void test06Authorization() throws Exception {
-        final X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test LogMgmtSessionNoAuth", 365, null, keys.getPrivate(),
-                keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        final X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test LogMgmtSessionNoAuth")
+                .setIssuerDn("C=SE,O=Test,CN=Test LogMgmtSessionNoAuth")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate();  
         final AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
         for (final String logDeviceId : securityEventsAuditor.getQuerySupportingLogDevices()) {
             // SelectLogsWithNoCriteria

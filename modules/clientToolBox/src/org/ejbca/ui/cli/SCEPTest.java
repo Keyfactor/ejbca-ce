@@ -105,6 +105,7 @@ import org.ejbca.util.PerformanceTest.NrOfThreadsAndNrOfTests;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 
 /**
@@ -273,9 +274,14 @@ class SCEPTest extends ClientToolBox {
                                 bcKeyUsage += i < 8 ? 1 << (7 - i) : 1 << (15 + 8 - i);
                             }
                         }
-                        X509Certificate senderCertificate = CertTools.genSelfCert(userDN, 24 * 60 * 60 * 1000, null,
-                                StressTest.this.keyPair.getPrivate(), StressTest.this.keyPair.getPublic(), StressTest.this.signatureAlg,
-                                false);
+                        X509Certificate senderCertificate = SimpleCertGenerator.forTESTLeafCert()
+                                .setSubjectDn(userDN)
+                                .setIssuerDn(userDN)
+                                .setValidityDays(24 * 60 * 60 * 1000)
+                                .setIssuerPrivKey(StressTest.this.keyPair.getPrivate())
+                                .setEntityPubKey(StressTest.this.keyPair.getPublic())
+                                .setSignatureAlgorithm(StressTest.this.signatureAlg)
+                                .generateCertificate(); 
                         msgBytes = gen.generateCertReq(userDN, "foo123", transactionId, this.sessionData.certchain[0],
                                 generateExtensions(bcKeyUsage), senderCertificate, StressTest.this.keyPair.getPrivate());
                     }
@@ -306,9 +312,14 @@ class SCEPTest extends ClientToolBox {
                 for (int keeprunning = 0; keeprunning < 5; keeprunning++) {
                     Thread.sleep(5000); // wait 5 seconds between polls
                     // Generate a SCEP GerCertInitial message
-                    X509Certificate senderCertificate = CertTools.genSelfCert(userDN, 24 * 60 * 60 * 1000, null,
-                            StressTest.this.keyPair.getPrivate(), StressTest.this.keyPair.getPublic(), StressTest.this.signatureAlg,
-                            false);
+                    X509Certificate senderCertificate = SimpleCertGenerator.forTESTLeafCert()
+                            .setSubjectDn(userDN)
+                            .setIssuerDn(userDN)
+                            .setValidityDays(24 * 60 * 60 * 1000)
+                            .setIssuerPrivKey(StressTest.this.keyPair.getPrivate())
+                            .setEntityPubKey(StressTest.this.keyPair.getPublic())
+                            .setSignatureAlgorithm(StressTest.this.signatureAlg)
+                            .generateCertificate(); 
                     final byte[] msgBytes = gen.generateGetCertInitial(userDN, transactionId, this.sessionData.certchain[0], senderCertificate, StressTest.this.keyPair.getPrivate());
                     // Get some valuable things to verify later on
                     final String senderNonce = gen.getSenderNonce();

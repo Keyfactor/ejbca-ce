@@ -12,9 +12,10 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.validator;
 
+import org.ejbca.ui.web.rest.api.io.request.EndEntityStatus;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest;
 
-import static org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest.EndEntityStatus;
+
 import static org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest.CriteriaProperty;
 
 import jakarta.validation.Constraint;
