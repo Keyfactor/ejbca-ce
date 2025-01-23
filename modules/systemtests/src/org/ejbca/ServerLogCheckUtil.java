@@ -40,7 +40,7 @@ public class ServerLogCheckUtil {
                         {"issuerdn", "issuer", "cadn", "admin", "administrator", 
                                 "issued by", "issuer dn(transformed)", "TrustAnchor",
                                 "user", "username", "end entity", "public key", "publickey",
-                                "self signed"};
+                                "self signed", "altpublickey"};
     // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6
     private static final int PREFIXES_SLACK = 10;
     
