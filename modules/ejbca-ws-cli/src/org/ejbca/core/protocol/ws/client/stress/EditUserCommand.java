@@ -54,7 +54,7 @@ public class EditUserCommand extends BaseCommand implements PerformanceTest.Comm
         if ( this.doCreateNewUser ) {
             this.jobData.passWord = "foo123";
             if (jobData.forCvc) {
-                this.jobData.userName = "S"+ StressTestCommandBase.nextLong(true);
+                this.jobData.userName = "S"+ StressTestCommandBase.generateUniqueUsernameNumber();
             } else {
                 this.jobData.userName = "WS_STRESS_TEST_USER"+ StressTestCommandBase.nextLong(false);
             }

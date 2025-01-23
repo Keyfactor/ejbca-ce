@@ -20,9 +20,9 @@ import java.security.cert.X509Certificate;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -43,8 +43,15 @@ public class HashIDUnitTest {
     public void testSubjectDn() throws Exception {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         final String subjectDn = "CN=HashIDUnitTest,O=Test,C=SE";
-        X509Certificate testCertificate = CertTools.genSelfCert(subjectDn, 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate testCertificate =  SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(subjectDn)
+                .setIssuerDn(subjectDn)
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(subjectDn).getKey());
         assertEquals(HashID.getFromSubjectDN(testCertificate).getKey(), HashID.getFromDNString(DnComponents.reverseDN(subjectDn)).getKey());
     }

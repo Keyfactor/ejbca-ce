@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -45,17 +52,6 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import javax.security.auth.x500.X500Principal;
-
-import com.keyfactor.util.CeSecoreNameStyle;
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.SHA1DigestCalculator;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.certificate.DnComponents;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
-import com.keyfactor.util.keys.KeyTools;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
@@ -148,12 +144,17 @@ import org.cesecore.keys.validation.IssuancePhase;
 import org.cesecore.keys.validation.ValidationException;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import com.keyfactor.util.CeSecoreNameStyle;
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.SHA1DigestCalculator;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
+import com.keyfactor.util.keys.KeyTools;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /** JUnit test for X.509 CA
  *
@@ -345,12 +346,14 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(revDate.toString(), entry.getRevocationDate().toString());
         // Getting the revocation reason is a pita...
         byte[] extval = entry.getExtensionValue(Extension.reasonCode.getId());
-        ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
-        ASN1OctetString octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        ASN1Primitive obj = aIn.readObject();
-        CRLReason reason = CRLReason.getInstance(obj);
-        assertEquals("CRLReason: certificateHold", reason.toString());
+        try (ASN1InputStream extValInputStream = new ASN1InputStream(new ByteArrayInputStream(extval))) {
+            ASN1OctetString octs = ASN1OctetString.getInstance(extValInputStream.readObject());
+            try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                ASN1Primitive obj = aIn.readObject();
+                CRLReason reason = CRLReason.getInstance(obj);
+                assertEquals("CRLReason: certificateHold", reason.toString());
+            }
+        }
 
         // Create a delta CRL
         revcerts = new ArrayList<>();
@@ -377,12 +380,14 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         assertEquals(revDate.toString(), entry.getRevocationDate().toString());
         // Getting the revocation reason is a pita...
         extval = entry.getExtensionValue(Extension.reasonCode.getId());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
-        octs = ASN1OctetString.getInstance(aIn.readObject());
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        obj = aIn.readObject();
-        reason = CRLReason.getInstance(obj);
-        assertEquals("CRLReason: certificateHold", reason.toString());
+        try (ASN1InputStream extValInputStream = new ASN1InputStream(new ByteArrayInputStream(extval))) {
+            ASN1OctetString octs = ASN1OctetString.getInstance(extValInputStream.readObject());
+            try (ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()))) {
+                ASN1Primitive obj = aIn.readObject();
+                CRLReason reason = CRLReason.getInstance(obj);
+                assertEquals("CRLReason: certificateHold", reason.toString());
+            }
+        }
     }
 
     @Test
@@ -970,7 +975,15 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         // New CA certificate to make it work again
         PublicKey publicKey = cryptoToken.getPublicKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
         PrivateKey privateKey = cryptoToken.getPrivateKey(x509ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        X509Certificate cacert = CertTools.genSelfCert(CADN, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true);
+        X509Certificate cacert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(CADN)
+                .setIssuerDn(CADN)
+                .setValidityDays(10)
+                .setPolicyId("1.1.1.1")
+                .setIssuerPrivKey(privateKey)
+                .setEntityPubKey(publicKey)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();  
         assertNotNull(cacert);
         List<Certificate> cachain = new ArrayList<>();
         cachain.add(cacert);

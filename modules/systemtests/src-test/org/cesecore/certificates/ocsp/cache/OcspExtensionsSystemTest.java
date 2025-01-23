@@ -46,6 +46,8 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
 /**
@@ -71,7 +73,15 @@ public class OcspExtensionsSystemTest {
         caCertificateFile = File.createTempFile("tmp", ".pem");
         trustedCertificateFile = File.createTempFile("tmp", ".pem", trustDir);
         KeyPair caKeyPair = KeyTools.genKeys("1024", "RSA");
-        Certificate caCertificate = CertTools.genSelfCert("CN=TESTCA", 10L, null, caKeyPair.getPrivate(), caKeyPair.getPublic(), "SHA256WithRSA", true);
+        Certificate caCertificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=TESTCA")
+                .setIssuerDn("CN=TESTCA")
+                .setValidityDays(10)
+                .setIssuerPrivKey(caKeyPair.getPrivate())
+                .setEntityPubKey(caKeyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         FileOutputStream fileOutputStream = new FileOutputStream(caCertificateFile);
         try {
             fileOutputStream.write(CertTools.getPemFromCertificateChain(Arrays.asList(caCertificate)));

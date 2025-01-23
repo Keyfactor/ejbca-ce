@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -29,12 +32,10 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 
 /**
  * Tests backwards and forwards compatibility with the CertificateData class,
@@ -104,7 +105,16 @@ public class CertificateDataSerializationUnitTest {
     public void testSerializeCurrent() throws Exception {
         log.trace(">testSerializeCurrent");
         final KeyPair kp = KeyTools.genKeys("1024", "RSA");
-        final Certificate cert = CertTools.genSelfCert("CN=certuser", 10*365, null, kp.getPrivate(), kp.getPublic(), "SHA256withRSA", false);
+        final Certificate cert = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=certuser")
+                .setIssuerDn("CN=certuser")
+                .setValidityDays(10*365)
+                .setIssuerPrivKey(kp.getPrivate())
+                .setEntityPubKey(kp.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
+                
         final CertificateData certData = new CertificateData(cert, kp.getPublic(), "certuser", "1234567812345678", "CSR123456", CertificateConstants.CERT_ACTIVE,
                 CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.NO_END_ENTITY_PROFILE,
                 CertificateConstants.NO_CRL_PARTITION, null, new Date().getTime(), false, true);
