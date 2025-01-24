@@ -10,28 +10,22 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
+
 package org.cesecore.keys.validation;
 
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.List;
 
 /**
- * Base interface for certificate validators. All certificate validators must implement this interface.
- *
- *
+ * Provides an interface for Validators to be testable, primarily from the UI. 
  */
-public interface CertificateValidator extends Validator, ValidityAwareValidator {
+public interface TestableValidator {
 
     /**
-     * Method that validates the public key.
-     *
-     * @param certificate the certificate to validate.
-     * @return the error messages or an empty list if the certificate was validated successfully.
-     * @throws ValidatorNotApplicableException when this validator is not applicable for the input, for example CVC certificate instead of X.509 or other type
-     * @throws ValidationException if the certificate could not be validated by the external command (exit code > 0).
-     * @throws CertificateException if one of the certificates could not be parsed.
+     * 
+     * @return an empty list in the case of success, or error messages if not. 
      */
-    List<String> validate(Certificate certificate)
-            throws ValidatorNotApplicableException, ValidationException, CertificateException;
+    List<String> test(final X509Certificate testCertificate);
+
+    
 }
