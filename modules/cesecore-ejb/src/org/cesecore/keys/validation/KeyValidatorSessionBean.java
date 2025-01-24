@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -419,25 +418,19 @@ public class KeyValidatorSessionBean implements KeyValidatorSessionLocal, KeyVal
                     final CertificateProfile certificateProfile = certificateProfileSession
                             .getCertificateProfile(endEntityInformation.getCertificateProfileId());
 
+                    // Determine the domain names to validate.
+                    // This is ALWAYS both dnsNames and domain names in e-mails, regardless of EKU settings.
+                    // That way, we can be sure that validation is not skipped in case of a misconfiguration.
                     final Set<String> dnsNames = new TreeSet<>();
-                    final boolean isEmailProtection = certificateProfile.getExtendedKeyUsageOids().contains(KeyPurposeId.id_kp_emailProtection.getId());
-                    
-                    if (isEmailProtection) {
-                        dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
-                    } else {
-                        dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
-                    }
-                    
+                    dnsNames.addAll(findAllEmailDomainsInSubject(endEntityInformation.getSubjectAltName()));
+                    dnsNames.addAll(findAllDNSInSubject(endEntityInformation.getSubjectAltName()));
+
                     if (certificateProfile.getAllowExtensionOverride() && requestMessage != null && requestMessage.getRequestExtensions() != null) {
                         var extension = requestMessage.getRequestExtensions().getExtension(Extension.subjectAlternativeName);
                         if (extension != null) {
                             var san = DnComponents.getAltNameStringFromExtension(extension);
-                            
-                            if (isEmailProtection) {
-                                dnsNames.addAll(findAllEmailDomainsInSubject(san));
-                            } else {
-                                dnsNames.addAll(findAllDNSInSubject(san));
-                            }
+                            dnsNames.addAll(findAllEmailDomainsInSubject(san));
+                            dnsNames.addAll(findAllDNSInSubject(san));
                         }
                     }
 
