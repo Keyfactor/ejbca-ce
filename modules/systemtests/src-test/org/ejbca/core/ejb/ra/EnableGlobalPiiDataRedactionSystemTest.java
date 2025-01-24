@@ -179,75 +179,75 @@ public class EnableGlobalPiiDataRedactionSystemTest {
         }
         
         assertTrue("Found audit logged PII data in: " + detectedEventTypes, detectedEventTypes.isEmpty());
-    }    
-    
+    }
+
     @Test
     public void testServerLogPiiDataWithCompulsoryRedaction() throws Exception {
         String logFilePath = SystemTestsConfiguration.getServerLogFilePath();
-        
+
         int linesRead = 0;
         int linesReadEjbca = 0;
         int linesReadCesecore = 0;
         int linesReadKeyFactor = 0;
         Map<String, Set<String>> loggedPiiLines = new HashMap<>();
         Set<String> issuerDns = new HashSet<>();
-        
-        BufferedReader reader;
-        try {
-            reader = new BufferedReader(new FileReader(logFilePath));
-            String line = reader.readLine();
 
-            while (line != null) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(logFilePath));
+            String line;
+            while ((line = reader.readLine()) != null ) {
                 linesRead++;
                 if (line.contains("org.ejbca")) {
                     linesReadEjbca++;
-                }
-                if (line.contains("org.cesecore")) {
+                } else if (line.contains("org.cesecore")) {
                     linesReadCesecore++;
-                }
-                if (line.contains("com.keyfactor")) {
+                } else if (line.contains("com.keyfactor")) {
                     linesReadKeyFactor++;
+                } else {
+                    continue;
                 }
-                line = reader.readLine();
-                
+
                 ServerLogRecord logRecord = ServerLogCheckUtil.parseServerLogRecord(line);
-                
-                if (logRecord!=null && logRecord.getMessage()!=null 
+
+                if (logRecord != null && logRecord.getMessage() != null
                         && logRecord.getMessage().contains(CA_CREATED_WITH_DN_MARKER)) {
                     String issuerDn = logRecord.getMessage().substring(
-                            logRecord.getMessage().indexOf(CA_CREATED_WITH_DN_MARKER) 
-                            + CA_CREATED_WITH_DN_MARKER.length() + 1).strip();
+                            logRecord.getMessage().indexOf(CA_CREATED_WITH_DN_MARKER)
+                                    + CA_CREATED_WITH_DN_MARKER.length() + 1).strip();
+                    log.error("Issuer DN: " + issuerDn);
                     issuerDns.add(issuerDn);
-                    String transformedIssuerDn = DnComponents.stringToBCDNString(StringTools.strip(issuerDn));
-                    issuerDns.add(transformedIssuerDn);
-                    if(issuerDn.endsWith("C=SE")) {
-                        issuerDn = "C=SE," + issuerDn.replace(",C=SE", "");
-                        issuerDns.add(issuerDn);
+                    if (!issuerDn.contains("cits")) {
+                        String transformedIssuerDn = DnComponents.stringToBCDNString(StringTools.strip(issuerDn));
+                        issuerDns.add(transformedIssuerDn);
+                        if (issuerDn.endsWith("C=SE")) {
+                            issuerDn = "C=SE," + issuerDn.replace(",C=SE", "");
+                            issuerDns.add(issuerDn);
+                        }
                     }
                 }
                 if (logRecord==null || logRecord.isWhiteListed(issuerDns, ADMIN_DN_LIST)) {
                     continue;
                 }
-                
+
                 if (!loggedPiiLines.containsKey(logRecord.getClassName())) {
                     loggedPiiLines.put(logRecord.getClassName(), new HashSet<>());
                 }
                 loggedPiiLines.get(logRecord.getClassName()).add(logRecord.getMethodName() + " : " + logRecord.getLineNo());
-                
+
             }
 
             reader.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         log.error("processed log lines: " + linesRead);
         log.error("processed log lines from keyfactor packages: " + linesReadKeyFactor);
         log.error("processed log lines from cesecore packages: " + linesReadCesecore);
         log.error("processed log lines from ejbca packages: " + linesReadEjbca);
         log.error("processed issuer dn: " + issuerDns);
         log.error("processed admin dn: " + ADMIN_DN_LIST);
-        
+
         StringBuilder sb = new StringBuilder();
         for (String key: loggedPiiLines.keySet()) {
             sb.append("    " + key + "\n");
@@ -255,7 +255,7 @@ public class EnableGlobalPiiDataRedactionSystemTest {
                 sb.append("        " + entry + "\n");
             }
         }
-        
+
         String piiLogged = sb.toString();
         if (!piiLogged.isEmpty()) {
             if (issuerDns.isEmpty()) {
@@ -268,9 +268,9 @@ public class EnableGlobalPiiDataRedactionSystemTest {
         } else {
             log.error("Detected no PII instances");
         }
-        
+
         assertTrue("Expected no PII to be logged after ignoring whitelisted ones.", loggedPiiLines.isEmpty());
-        
+
     }
-    
+
 }
