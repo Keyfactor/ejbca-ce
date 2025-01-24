@@ -12,11 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.rest.api.io.response;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.swagger.v3.oas.annotations.media.Schema;
 import org.cesecore.keys.keyimport.KeyImportFailure;
-import org.ejbca.core.model.era.RaCertificateProfileResponseV2;
 import org.ejbca.core.model.era.RaKeyImportResponseV2;
 
 import java.util.List;

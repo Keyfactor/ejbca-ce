@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;

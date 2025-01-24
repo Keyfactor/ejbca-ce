@@ -132,7 +132,6 @@ import org.cesecore.configuration.GlobalConfigurationSessionLocal;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.keys.keyimport.KeyImportResponseData;
 import org.cesecore.keys.validation.CaaIdentitiesValidator;
-import org.cesecore.keys.validation.DnsNameValidator;
 import org.cesecore.keys.validation.KeyValidatorSessionLocal;
 import org.cesecore.keys.validation.Validator;
 import org.cesecore.roles.Role;

@@ -15,12 +15,9 @@ package org.ejbca.core.ejb.ra;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.keys.keyimport.KeyImportFailure;
 import org.cesecore.keys.keyimport.KeyImportRequestData;
 import org.cesecore.keys.keyimport.KeyImportResponseData;
 import org.ejbca.core.EjbcaException;
-
-import java.util.List;
 
 /**
  *
