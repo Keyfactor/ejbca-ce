@@ -136,9 +136,9 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                     createUserIfNecessary(authenticationToken, keystoreData, caData, certificateProfileId,
                             endEntityProfileId, userCertificate);
                 }
-
-                final Certificate caCert = persistCertificate(authenticationToken, keystoreData, caInfo, certificateProfileId, endEntityProfileId,
-                        fingerprint, userCertificate);
+                final Certificate caCert = caInfo.getCertificateChain().iterator().next();
+                persistCertificate(authenticationToken, keystoreData, caInfo, certificateProfileId, endEntityProfileId,
+                        fingerprint, userCertificate, caCert);
 
                 persistKeyRecoveryData(authenticationToken, keystoreData, caInfo, userCertificate, p12PrivateKey, caCert);
 
@@ -149,14 +149,13 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
         }
     }
 
-    private Certificate persistCertificate(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo,
-                                           int certificateProfileId, int endEntityProfileId, String fingerprint, Certificate userCertificate)
+    private void persistCertificate(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo,
+                                           int certificateProfileId, int endEntityProfileId, String fingerprint, Certificate userCertificate, Certificate caCert)
             throws AuthorizationDeniedException, KeyImportException {
         // Try to fetch old certificate from the database
         CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(fingerprint);
         // Import the old certificate into EJBCA
         final int crlPartitionIndex = caInfo.determineCrlPartitionIndex(userCertificate);
-        final Certificate caCert = caInfo.getCertificateChain().iterator().next();
         if (certInfo == null) {
             log.info("Adding end entity certificate with fingerprint '" + fingerprint +
                     "' to the database, with status active (not revoked), for end entity: " + keystoreData.getUsername());
@@ -167,7 +166,6 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
         } else {
             throw new KeyImportException("Certificate can't be added since it already exists in the database");
         }
-        return caCert;
     }
 
     private void persistKeyRecoveryData(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo,

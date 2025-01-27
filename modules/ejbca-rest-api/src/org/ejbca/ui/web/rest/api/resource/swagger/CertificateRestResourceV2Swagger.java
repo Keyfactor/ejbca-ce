@@ -27,7 +27,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
-import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
@@ -173,7 +173,7 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
     })
     public KeyImportRestResponseV2 importKeystores(@Context HttpServletRequest requestContext,
                                                    @Parameter(description = "Subject DN of CA that will take over key management") @PathParam("issuer_dn") String issuerDN,
-                                                   @Parameter(name = "request") KeyImportRestRequest request)
+                                                   @Parameter(name = "request") KeyImportRestRequestV2 request)
             throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
         return super.importKeystores(requestContext, issuerDN, request);
     }

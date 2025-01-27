@@ -17,7 +17,7 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Payload;
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.request.KeystoreRestRequestComponent;
 
 import java.lang.annotation.Documented;
@@ -41,14 +41,14 @@ public @interface ValidKeyImportRestRequest {
 
     Class<? extends Payload>[] payload() default {};
 
-    class Validator implements ConstraintValidator<ValidKeyImportRestRequest, KeyImportRestRequest> {
+    class Validator implements ConstraintValidator<ValidKeyImportRestRequest, KeyImportRestRequestV2> {
 
         @Override
         public void initialize(final ValidKeyImportRestRequest constraintAnnotation) {
         }
 
         @Override
-        public boolean isValid(KeyImportRestRequest request, ConstraintValidatorContext constraintValidatorContext) {
+        public boolean isValid(KeyImportRestRequestV2 request, ConstraintValidatorContext constraintValidatorContext) {
             if (request == null) {
                 ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidKeyImportRestRequest.invalid.null}");
                 return false;

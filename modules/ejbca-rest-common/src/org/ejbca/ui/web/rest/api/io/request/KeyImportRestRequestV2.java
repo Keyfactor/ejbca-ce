@@ -28,7 +28,7 @@ import java.util.List;
  */
 @ValidKeyImportRestRequest
 @JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
-public class KeyImportRestRequest {
+public class KeyImportRestRequestV2 {
 
     @Schema(description = "Certificate Profile Name", example = "ENDUSER")
     private String certificateProfileName;
@@ -36,10 +36,10 @@ public class KeyImportRestRequest {
     private String endEntityProfileName;
     private List<KeystoreRestRequestComponent> keystores;
 
-    public KeyImportRestRequest() {
+    public KeyImportRestRequestV2() {
     }
 
-    public KeyImportRestRequest(String certificateProfileName, String endEntityProfileName, List<KeystoreRestRequestComponent> keystores) {
+    public KeyImportRestRequestV2(String certificateProfileName, String endEntityProfileName, List<KeystoreRestRequestComponent> keystores) {
         this.certificateProfileName = certificateProfileName;
         this.endEntityProfileName = endEntityProfileName;
         this.keystores = keystores;
@@ -50,16 +50,16 @@ public class KeyImportRestRequest {
      *
      * @return instance of converter for this class.
      */
-    public static KeyImportRestRequest.KeyImportRestRequestConverter converter() {
-        return new KeyImportRestRequest.KeyImportRestRequestConverter();
+    public static KeyImportRestRequestV2.KeyImportRestRequestConverter converter() {
+        return new KeyImportRestRequestV2.KeyImportRestRequestConverter();
     }
 
     public static class KeyImportRestRequestConverter {
 
-        public KeyImportRequestData toRequestData(final KeyImportRestRequest keyImportRestRequest, final String issuerDN) throws RestException {
-            String certificateProfile = keyImportRestRequest.getCertificateProfileName();
-            String endEntityProfile = keyImportRestRequest.getEndEntityProfileName();
-            List<KeystoreRestRequestComponent> keystoreEntries = keyImportRestRequest.getKeystores();
+        public KeyImportRequestData toRequestData(final KeyImportRestRequestV2 keyImportRestRequestV2, final String issuerDN) throws RestException {
+            String certificateProfile = keyImportRestRequestV2.getCertificateProfileName();
+            String endEntityProfile = keyImportRestRequestV2.getEndEntityProfileName();
+            List<KeystoreRestRequestComponent> keystoreEntries = keyImportRestRequestV2.getKeystores();
             List<KeyImportKeystoreData> keyImportKeystores = new ArrayList<>();
             if (keystoreEntries != null && !keystoreEntries.isEmpty()) {
                 for (KeystoreRestRequestComponent keystore : keystoreEntries) {

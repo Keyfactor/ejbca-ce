@@ -57,7 +57,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 
 public class KeyImportSystemTest extends CaTestCase {
 
-    private static final String TEST_USERNAME      = "KeyImportSystemTestUser";
+    private static final String TEST_USERNAME = "KeyImportSystemTestUser";
     private static final String TEST_USER_PASSWORD = "foo123";
     private static final String TEST_EEP_NAME = "KeyImportSystemTestEEP";
     private static final String TEST_CP_NAME = "KeyImportSystemTestCP";

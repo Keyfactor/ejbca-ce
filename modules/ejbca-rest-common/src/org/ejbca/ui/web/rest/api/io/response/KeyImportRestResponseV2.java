@@ -79,7 +79,7 @@ public class KeyImportRestResponseV2 {
     }
     
     public static class KeyImportRestResponseConverterV2 {
-        public KeyImportRestResponseConverterV2() {};
+        public KeyImportRestResponseConverterV2() {}
         
         public KeyImportRestResponseV2 toKeyImportRestResponse(RaKeyImportResponseV2 raResponse) {
             return KeyImportRestResponseV2.builder().setKeyImportFailures(raResponse.getFailedKeys())
