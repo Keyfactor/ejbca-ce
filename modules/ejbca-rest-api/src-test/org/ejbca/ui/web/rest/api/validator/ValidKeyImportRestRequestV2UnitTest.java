@@ -15,7 +15,7 @@ package org.ejbca.ui.web.rest.api.validator;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
-import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.junit.Test;
 
@@ -24,7 +24,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class ValidKeyImportRestRequestUnitTest {
+public class ValidKeyImportRestRequestV2UnitTest {
 
     private static final Validator validator = Validation.byDefaultProvider().configure().
             messageInterpolator(new ParameterMessageInterpolator()).buildValidatorFactory().getValidator();
@@ -33,7 +33,7 @@ public class ValidKeyImportRestRequestUnitTest {
     public void errorCertificateProfileName() {
         // given
         final String expectedMessage = "Invalid KeyImportRestRequest content, certificateProfileName cannot be null or empty.";
-        final KeyImportRestRequest testClass = new KeyImportRestRequest();
+        final KeyImportRestRequestV2 testClass = new KeyImportRestRequestV2();
         // when
         final Set<ConstraintViolation<Object>> constraintViolations = validator.validate(testClass);
         // then
@@ -45,7 +45,7 @@ public class ValidKeyImportRestRequestUnitTest {
     public void errorEndEntityProfileName() {
         // given
         final String expectedMessage = "Invalid KeyImportRestRequest content, endEntityProfileName cannot be null or empty.";
-        final KeyImportRestRequest testClass = new KeyImportRestRequest();
+        final KeyImportRestRequestV2 testClass = new KeyImportRestRequestV2();
         testClass.setCertificateProfileName("CertificateProfileName");
         testClass.setEndEntityProfileName("");
         // when
@@ -59,7 +59,7 @@ public class ValidKeyImportRestRequestUnitTest {
     public void errorEmptyKeystores() {
         // given
         final String expectedMessage = "Invalid KeyImportRestRequest content, keystores cannot be null or empty.";
-        final KeyImportRestRequest testClass = new KeyImportRestRequest();
+        final KeyImportRestRequestV2 testClass = new KeyImportRestRequestV2();
         testClass.setCertificateProfileName("CertificateProfileName");
         testClass.setEndEntityProfileName("endEntityProfileName");
         testClass.setKeystores(new ArrayList<>());

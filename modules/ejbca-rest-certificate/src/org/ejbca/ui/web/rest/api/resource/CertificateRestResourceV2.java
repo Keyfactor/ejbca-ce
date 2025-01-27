@@ -40,7 +40,7 @@ import org.ejbca.core.model.era.RaCertificateSearchResponseV2;
 import org.ejbca.core.model.era.RaKeyImportResponseV2;
 import org.ejbca.core.model.era.RaMasterApiProxyBeanLocal;
 import org.ejbca.ui.web.rest.api.exception.RestException;
-import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequest;
+import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
@@ -186,11 +186,11 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      * @throws EjbcaException
      * @throws CADoesntExistsException
      */
-    public KeyImportRestResponseV2 importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequest request)
+    public KeyImportRestResponseV2 importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequestV2 request)
             throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
-        KeyImportRequestData requestData = KeyImportRestRequest.converter().toRequestData(request, issuerDN);
+        KeyImportRequestData requestData = KeyImportRestRequestV2.converter().toRequestData(request, issuerDN);
         RaKeyImportResponseV2 raResponse = raMasterApi.keyImportV2(authenticationToken, requestData);
 
         return new KeyImportRestResponseV2().convert().toKeyImportRestResponse(raResponse);
