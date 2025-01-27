@@ -375,9 +375,10 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
      * <tr><th>17<td>=<td>8.2.0
      * <tr><th>18<td>=<td>8.3.0
      * <tr><th>19<td>=<td>9.2.0
+     * <tr><th>20<td>=<td>9.3.0
      * </table>
      */
-    private static final int RA_MASTER_API_VERSION = 19;
+    private static final int RA_MASTER_API_VERSION = 20;
 
     /**
      * Cached value of an active CA, so we don't have to list through all CAs every time as this is a critical path executed every time
@@ -2556,6 +2557,30 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
         }
     }
 
+
+    @Override
+    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String requestData, int requestType, int responseType) throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException {
+        try {
+            return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, responseType);
+        } catch (InvalidKeyException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(ErrorCode.INVALID_KEY, e.getMessage());
+        } catch (InvalidKeySpecException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(ErrorCode.ILLEGAL_KEY, e.getMessage());
+        } catch (CesecoreException e) {
+            log.debug("EJBCA REST exception", e);
+            // Will convert the CESecore exception to an EJBCA exception with the same error code
+            throw new EjbcaException(e.getErrorCode(), LogRedactionUtils.getRedactedException(e));
+        } catch (CertificateExtensionException | NoSuchAlgorithmException | NoSuchProviderException |
+                CertificateException | IOException e) {
+            log.debug("EJBCA REST exception", LogRedactionUtils.getRedactedException(e));
+            throw new EjbcaException(ErrorCode.INTERNAL_ERROR, LogRedactionUtils.getRedactedMessage(e.getMessage()));
+        } catch (SignatureException e) {
+            log.debug("EJBCA REST exception", e);
+            throw new EjbcaException(ErrorCode.SIGNATURE_ERROR, e.getMessage());
+        }
+    }
 
     @Override
     public byte[] createCertificateRest(final AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollCertificateRequest)

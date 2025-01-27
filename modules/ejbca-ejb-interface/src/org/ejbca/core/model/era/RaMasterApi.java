@@ -754,7 +754,7 @@ public interface RaMasterApi {
      * Enrolls a new end entity or updates it and creates an SSH certificate according to the profiles defined for that end entity
      *
      * @param authenticationToken an authentication token
-     * @param EndEntityInformation a object describing the end entity to be created
+     * @param endEntityInformation a object describing the end entity to be created
      * @param sshRequestMessage a {@link SshRequestMessage} container with the request details
      *
      * @return an SSH encoded certificate
@@ -769,17 +769,32 @@ public interface RaMasterApi {
             SshRequestMessage sshRequestMessage) throws AuthorizationDeniedException, EjbcaException, EndEntityProfileValidationException;
 
     /**
-     * Generates a certificate. This variant is used from the REST Service interface.
-     * @param authenticationToken authentication token.
-     * @param enrollCertificateRequest input data object for enrolling a certificate
-     * @throws CertificateProfileDoesNotExistException if no profile was found
-     * @throws CADoesntExistsException if the CA doesn't exist
+     * Edits or adds a user and generates a certificate for that user in a single transaction.
+     *
+     * @param authenticationToken is the requesting administrator
+     * @param endEntityInformation contains information about the user that is about to get a certificate
+     * @param req is the certificate request, base64 encoded binary request, in the format specified in the reqType parameter
+     * @param reqType is one of SecConst.CERT_REQ_TYPE_..
+     * @param responseType is one of SecConst.CERT_RES_TYPE_...
+     * @return a encoded certificate of the type specified in responseType
      * @throws AuthorizationDeniedException if not authorized
-     * @throws EndEntityProfileNotFoundException if EEP not found
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      * @throws EndEntityProfileValidationException if End Entity doesn't match profile
-     * @since RA Master API version 4 (EJBCA 6.14.0)
      */
+    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType) throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException;
+
+        /**
+         * Generates a certificate. This variant is used from the REST Service interface.
+         * @param authenticationToken authentication token.
+         * @param enrollCertificateRequest input data object for enrolling a certificate
+         * @throws CertificateProfileDoesNotExistException if no profile was found
+         * @throws CADoesntExistsException if the CA doesn't exist
+         * @throws AuthorizationDeniedException if not authorized
+         * @throws EndEntityProfileNotFoundException if EEP not found
+         * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
+         * @throws EndEntityProfileValidationException if End Entity doesn't match profile
+         * @since RA Master API version 4 (EJBCA 6.14.0)
+         */
     byte[] createCertificateRest(AuthenticationToken authenticationToken, EnrollPkcs10CertificateRequest enrollCertificateRequest)
             throws CertificateProfileDoesNotExistException, CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException,
             EjbcaException, EndEntityProfileValidationException;
