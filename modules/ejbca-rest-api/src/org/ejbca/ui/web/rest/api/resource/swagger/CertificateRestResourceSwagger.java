@@ -125,6 +125,26 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
         return super.enrollPkcs10Certificate(requestContext, enrollCertificateRestRequest);
     }
 
+
+    @POST
+    @Path("/enroll")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Enrollment with client generated keys. If end entity does not exist, it will be created. Existing end entity will be updated with provided input",
+            description = "Enroll for a certificate given a PEM encoded PKCS#10 CSR. "
+                    + "\nResponse Format is 'DER' (default when excluded) or 'PKCS7' in base64 encoded PEM format",
+            responses = {
+                    @ApiResponse(responseCode = "200",
+                            description = "Successful operation",
+                            content = @Content(schema = @Schema(implementation = CertificateEnrollmentRestResponse.class))
+                    )
+            })
+    public Response enrollCertificate(@Context HttpServletRequest requestContext,
+                                            final EnrollCertificateWithEntityRestRequest enrollCertificateRestRequest)
+            throws RestException {
+        return super.enrollCertificate(requestContext, enrollCertificateRestRequest);
+    }
+
     @POST
     @Path("/certificaterequest")
     @Consumes(MediaType.APPLICATION_JSON)
