@@ -20,12 +20,14 @@ import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.CertificateWrapper;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
+import java.security.cert.CertificateParsingException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
@@ -33,6 +35,7 @@ import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevocationReasons;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -41,6 +44,7 @@ import org.cesecore.util.LogRedactionUtils;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.dto.CertRevocationDto;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.TokenDownloadType;
@@ -133,6 +137,12 @@ public class CertificateRestResource extends BaseRestResource {
     private CaSessionLocal caSessionLocal;
 
     @EJB
+    private EndEntityProfileSessionLocal endEntityProfileSession;
+
+    @EJB
+    private CertificateProfileSessionLocal certificateProfileSession;
+
+    @EJB
     private RaMasterApiProxyBeanLocal raMasterApi;
 
     /**
@@ -211,7 +221,7 @@ public class CertificateRestResource extends BaseRestResource {
      * @throws AuthorizationDeniedException
      */
     public Response enrollCertificate(final HttpServletRequest requestContext,
-                                      @Valid final EnrollCertificateWithEntityRestRequest enrollCertificateRestRequest) throws RestException {
+                                      @Valid final EnrollCertificateWithEntityRestRequest enrollCertificateRestRequest) throws RestException, CADoesntExistsException, EndEntityProfileValidationException, CertificateEncodingException, AuthorizationDeniedException, EjbcaException, WaitingForApprovalException {
         try {
             String responseFormat;
             int responseType;
@@ -230,13 +240,37 @@ public class CertificateRestResource extends BaseRestResource {
             }
 
             EndEntityInformation endEntityInformation = AddEndEntityRestRequest.converter().toEntity(enrollCertificateRestRequest.getEndEntity());
+
+            String caName = enrollCertificateRestRequest.getEndEntity().getCaName();
+            final CAInfo cainfo = caSessionLocal.getCAInfoInternal(-1, caName, true);
+            if (cainfo == null) {
+                throw new RestException(Status.NOT_FOUND.getStatusCode(), "No CA found by name of " + caName);
+            }
+            final int caId = cainfo.getCAId();
+            if (caId == 0) {
+                throw new RestException(Status.NOT_FOUND.getStatusCode(), "No CA found by name of " + caName);
+            }
+            endEntityInformation.setCAId(caId);
+
+            int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(
+                    enrollCertificateRestRequest.getEndEntity().getEndEntityProfileName());
+            endEntityInformation.setEndEntityProfileId(endEntityProfileId);
+
+            final int certificateProfileId = certificateProfileSession.getCertificateProfileId(
+                    enrollCertificateRestRequest.getEndEntity().getCertificateProfileName());
+            if (certificateProfileId == 0) {
+                throw new RestException(Status.NOT_FOUND.getStatusCode(), "Error Certificate profile " + enrollCertificateRestRequest.getEndEntity().getCertificateProfileName() + " does not exist.");
+            }
+            endEntityInformation.setCertificateProfileId(certificateProfileId);
+
             int requestType = RequestType.resolveRequestTypeStatusByName(enrollCertificateRestRequest.getCertificateRequestType()).getRequestTypeValue();
+            String request = CertificateRequestRestRequest.CertificateRequestRestRequestConverter.getFormatedRequestString(enrollCertificateRestRequest.getCertificateRequest(), enrollCertificateRestRequest.getCertificateRequestType());
             final byte[] certificateBytes = raMasterApi.createCertificateWithEntity(authenticationToken,
-                    endEntityInformation, enrollCertificateRestRequest.getCertificateRequest(), requestType, responseType);
+                    endEntityInformation, request, requestType, responseType);
             final boolean includeChain = enrollCertificateRestRequest.getIncludeChain();
             final Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, Certificate.class);
             final List<Certificate> certificateChain = fetchCaCertificateChain(authenticationToken, includeChain,
-                    enrollCertificateRestRequest.getEndEntity().getCaName());
+                    caName);
             CertificateRestResponse enrollCertificateRestResponse;
 
             switch (TokenDownloadType.valueOf(responseFormat)) {
@@ -261,7 +295,7 @@ public class CertificateRestResource extends BaseRestResource {
             }
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
 
-        } catch (Exception e) {
+        } catch (CertificateParsingException | CMSException e) {
             log.info("Exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
             throw new RestException(Status.BAD_REQUEST.getStatusCode(),
                     e.getCause() != null ? e.getCause().getMessage() : e.getMessage());

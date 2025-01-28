@@ -1924,7 +1924,7 @@ public class RaMasterApiProxyBean implements RaMasterApiProxyBeanLocal {
 
     @Override
     public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType)
-            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException {
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException {
         for (final RaMasterApi raMasterApi : raMasterApisLocalFirst) {
             if (raMasterApi.isBackendAvailable() && raMasterApi.getApiVersion() >= 20) {
                 if (log.isDebugEnabled()) {

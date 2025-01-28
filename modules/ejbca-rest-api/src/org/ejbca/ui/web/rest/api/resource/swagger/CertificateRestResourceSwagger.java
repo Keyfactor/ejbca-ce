@@ -55,6 +55,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
 import org.ejbca.ui.web.rest.api.io.request.*;
 import org.ejbca.ui.web.rest.api.io.response.CertificateRestResponse;
@@ -141,7 +142,7 @@ public class CertificateRestResourceSwagger extends CertificateRestResource {
             })
     public Response enrollCertificate(@Context HttpServletRequest requestContext,
                                             final EnrollCertificateWithEntityRestRequest enrollCertificateRestRequest)
-            throws RestException {
+            throws RestException, AuthorizationDeniedException, EjbcaException, CertificateEncodingException, EndEntityProfileValidationException, CADoesntExistsException, WaitingForApprovalException {
         return super.enrollCertificate(requestContext, enrollCertificateRestRequest);
     }
 

@@ -780,8 +780,11 @@ public interface RaMasterApi {
      * @throws AuthorizationDeniedException if not authorized
      * @throws EjbcaException if an EJBCA exception with an error code has occurred during the process
      * @throws EndEntityProfileValidationException if End Entity doesn't match profile
+     * @throws WaitingForApprovalException if operation required approval (expected to be thrown with approvals enabled). The request ID will be included as a field in this exception.
+     * @throws ApprovalException if an approval is already pending to recover this certificate
      */
-    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType) throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException;
+    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String req, int reqType, int responseType)
+            throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException, ApprovalException;
 
         /**
          * Generates a certificate. This variant is used from the REST Service interface.

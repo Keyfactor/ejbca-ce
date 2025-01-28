@@ -2559,7 +2559,7 @@ public class RaMasterApiSessionBean implements RaMasterApiSessionLocal {
 
 
     @Override
-    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String requestData, int requestType, int responseType) throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException {
+    public byte[] createCertificateWithEntity(AuthenticationToken authenticationToken, EndEntityInformation endEntityInformation, String requestData, int requestType, int responseType) throws EjbcaException, AuthorizationDeniedException, EndEntityProfileValidationException, WaitingForApprovalException{
         try {
             return certificateRequestSession.processCertReq(authenticationToken, endEntityInformation, requestData, requestType, responseType);
         } catch (InvalidKeyException e) {
