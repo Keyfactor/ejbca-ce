@@ -140,6 +140,7 @@ public class RaMasterApiSystemTest {
             new MethodApiDescriptor("searchForCertificate", "org.cesecore.certificates.certificate.CertificateDataWrapper", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "java.lang.String"), "05b89f2f3579"),
             new MethodApiDescriptor("getAuthorizedRoles", "java.util.List", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken"), "3c69ec7af15a"),
             new MethodApiDescriptor("getCertificateDataForRenew", "org.ejbca.core.model.era.RaCertificateDataOnRenew", Arrays.asList("java.math.BigInteger", "java.lang.String"), "b9766620c18a"),
+            new MethodApiDescriptor("createCertificateWithEntity", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.cesecore.certificates.endentity.EndEntityInformation", "java.lang.String","int", "int"), "500f51d12feb"),
             new MethodApiDescriptor("createCertificateRest", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest"), "dc7a418e6186"),
             new MethodApiDescriptor("getAvailableCustomRaStyles", "java.util.List", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "int"), "e47a77fe1f6e"),
             new MethodApiDescriptor("softTokenRequest", "[B", Arrays.asList("org.cesecore.authentication.tokens.AuthenticationToken", "org.ejbca.core.protocol.ws.objects.UserDataVOWS", "java.lang.String", "java.lang.String", "boolean"), "a49c92128e0e"),
