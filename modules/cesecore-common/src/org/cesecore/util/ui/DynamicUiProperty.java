@@ -61,6 +61,9 @@ public class DynamicUiProperty<T extends Serializable> implements Serializable, 
 
     /** Literal for rendering hint for text fields. */
     public static final String RENDER_TEXTFIELD = "textfield";
+    
+    /** Literal for rendering hint for secret text fields. */
+    public static final String RENDER_SECRET = "secrettextfield";
 
     /** Literal for rendering hint for text areas. */
     public static final String RENDER_TEXTAREA = "textarea";
