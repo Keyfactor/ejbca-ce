@@ -184,6 +184,7 @@ dependencies {
         earlib(project(path = ":modules:cits:common", configuration = "archives"))
         earlib(project(path = ":modules:proxy-ca", configuration = "archives"))
         earlib(project(path = ":modules:caa", configuration = "archives"))
+        earlib(project(path = ":modules:mpic", configuration = "archives"))
         earlib(project(path = ":modules:ct", configuration = "archives"))
         earlib(project(path = ":modules:iodef", configuration = "archives"))
         earlib(project(path = ":modules:mpic", configuration = "archives"))
@@ -401,6 +402,7 @@ val systemTestTasksOrder = listOfNotNull(
     project.findProject(":modules:acme")?.tasks?.named("systemTest"),
     project.findProject(":modules:ejbca-rest-api")?.tasks?.named("systemTest"),
     project.findProject(":modules:caa")?.tasks?.named("systemTest"),
+    project.findProject(":modules:mpic")?.tasks?.named("systemTest"),
     project.findProject(":modules:ssh")?.tasks?.named("systemTest"),
     project.findProject(":modules:cits")?.tasks?.named("systemTest"),
     project.findProject(":modules:ejbca-entity")?.tasks?.named("systemTest")

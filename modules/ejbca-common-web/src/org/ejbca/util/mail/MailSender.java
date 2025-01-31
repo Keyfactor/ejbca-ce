@@ -13,10 +13,6 @@
 
 package org.ejbca.util.mail;
 
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.Executors;
-
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
@@ -26,11 +22,14 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
-
 import org.apache.log4j.Logger;
 import org.ejbca.config.MailConfiguration;
 import org.ejbca.core.ejb.ServiceLocator;
 import org.ejbca.core.ejb.ServiceLocatorException;
+
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Executors;
 
 /**
  * Simple wrapper for JavaMail.
