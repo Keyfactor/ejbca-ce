@@ -1236,7 +1236,15 @@ table#config tr td:first-child {
 .publisherQueueTable input {
 	margin-right: .5em;
 }
-
+/* --- PkiMetal Validator */
+.linter-profiles {
+	max-height: 20em;
+	max-width: 40em;
+	overflow: scroll;
+}
+.linter-profiles.ui-selectmanycheckbox.layout-line-direction.ui-grid-responsive > div {
+	display: block;
+}
 /*--------------------------------------------------------------------------*/
 /* TABLES */
 

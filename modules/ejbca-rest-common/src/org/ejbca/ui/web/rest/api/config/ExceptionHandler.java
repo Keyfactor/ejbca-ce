@@ -297,6 +297,7 @@ public class ExceptionHandler implements ExceptionMapper<Exception> {
                         .build();
             // 404
             case EndEntityProfileNotFoundException:
+            case NoSuchEndEntityException:
             case RoleNotFoundException:
                 return ExceptionErrorRestResponse.builder()
                         .errorCode(Status.NOT_FOUND.getStatusCode())

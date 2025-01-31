@@ -66,7 +66,7 @@ public class CertificateRequestCommand extends BaseCommand implements Performanc
             this.jobData.userName = "WSTESTUSER_REUSE_"+ StressTestCommandBase.nextLong(false);
         }
         String signAlgorithm = "SHA256WithRSA";
-        if (keys.getPublic().getAlgorithm().equals("ECDSA")) {
+        if (keys.getPublic().getAlgorithm().equals("EC")) {
             signAlgorithm = "SHA256withECDSA";
         } else if(keys.getPublic().getAlgorithm().equalsIgnoreCase("Ed25519")) {
             signAlgorithm = "ed25519";
