@@ -194,6 +194,18 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         doTestX509CABasicOperations(AlgorithmConstants.SIGALG_ED448);
     }
 
+    @Test
+    public void testX509CABasicOperationsMLDSA() throws Exception {
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_MLDSA44);
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_MLDSA65);
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_MLDSA87);
+    }
+
+    @Test
+    public void testX509CABasicOperationsLMS() throws Exception {
+        doTestX509CABasicOperations(AlgorithmConstants.SIGALG_LMS);
+    }
+
     private void doTestX509CABasicOperations(String algName) throws Exception {
         final CryptoToken cryptoToken = getNewCryptoToken();
         final X509CA x509ca = createTestCA(cryptoToken, CADN, algName, null, null);
@@ -207,7 +219,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         Store<X509CertificateHolder> certstore = s.getCertificates();
         Collection<X509CertificateHolder> certs = certstore.getMatches(null);
         assertEquals(2, certs.size());
-        // ED25519 and ED448 specifies the hash algorithm as part of the signature algo definition
+        // Ed25519, Ed448, ML-DSA, LMS specifies the hash algorithm as part of the signature algo definition
         // See RFC8419, section 3.1
         final String expectedDigest;
         switch (algName) {
@@ -216,6 +228,11 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             break;
         case AlgorithmConstants.SIGALG_ED448:
             expectedDigest = NISTObjectIdentifiers.id_shake256_len.getId();
+            break;
+        case AlgorithmConstants.SIGALG_MLDSA44:
+        case AlgorithmConstants.SIGALG_MLDSA65:
+        case AlgorithmConstants.SIGALG_MLDSA87:
+            expectedDigest = NISTObjectIdentifiers.id_shake256.getId();
             break;
         default:
             expectedDigest = CMSSignedGenerator.DIGEST_SHA256;
@@ -621,6 +638,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
         KeyPair userKeyPairEd25519 = genTestKeyPair(AlgorithmConstants.SIGALG_ED25519);
         KeyPair userKeyPairMLDSA65 = genTestKeyPair(AlgorithmConstants.SIGALG_MLDSA65);
         KeyPair userKeyPairFalcon512 = genTestKeyPair(AlgorithmConstants.SIGALG_FALCON512);
+        KeyPair userKeyPairLMS = genTestKeyPair(AlgorithmConstants.SIGALG_LMS);
 
         // Create a CA using SHA256WithRSA as sigAlg
         {
@@ -631,6 +649,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairLMS);
         }
 
         // Create a CA using SHA256WithECDSA as sigAlg
@@ -642,6 +661,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairLMS);
         }
 
         // Create a CA using SHA512WithRSAAndMGF1 (RSA-PSS) as sigAlg
@@ -653,6 +673,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairLMS);
         }
         // Create a CA using Ed25519 as sigAlg
         {
@@ -663,6 +684,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairLMS);
         }
         // Create a CA using ML-DSA-65 as sigAlg
         {
@@ -673,6 +695,7 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairLMS);
         }
         // Create a CA using Falcon-512 as sigAlg
         {
@@ -683,6 +706,18 @@ public class X509CAUnitTest extends X509CAUnitTestBase {
             runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
             runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
             runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairLMS);
+        }
+        // Create a CA using LMS as sigAlg
+        {
+            final CryptoToken cryptoToken = getNewCryptoToken();
+            final X509CA x509ca = createTestCA(cryptoToken, CADN, AlgorithmConstants.SIGALG_LMS, null, null);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairRSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairECDSA);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairEd25519);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairMLDSA65);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairFalcon512);
+            runValidatorTests(cryptoToken, x509ca, userKeyPairLMS);
         }
     }
 

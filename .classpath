@@ -173,12 +173,12 @@
 	<classpathentry kind="lib" path="lib/jee/soapclient/saaj-impl-3.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jee/soapclient/gmbal-api-only-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/ejbca-ws-client-gen.jar"/>
-	<classpathentry kind="lib" path="lib/x509-common-util-5.1.0.jar" sourcepath="/x509-common-util"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-api-2.3.5.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.3.5.jar"/>
-	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.3.5.jar"/>
+	<classpathentry kind="lib" path="lib/x509-common-util-5.2.1.jar" sourcepath="/x509-common-util"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-api-2.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-2.4.1.jar"/>
+	<classpathentry kind="lib" path="lib/cryptotokens-impl-ee-2.4.1.jar"/>
 	<classpathentry kind="lib" path="lib/primefaces/primefaces-14.0.0-jakarta.jar"/>
-	<classpathentry kind="lib" path="lib/p11ng-0.25.1.jar" sourcepath="/p11ng"/>
+	<classpathentry kind="lib" path="lib/p11ng-0.25.7.jar" sourcepath="/p11ng"/>
 	<classpathentry kind="var" path="APPSRV_HOME/bin/client/jboss-client.jar"/>
 	<classpathentry kind="var" path="ANT_HOME/lib/ant.jar"/>
 	<classpathentry kind="lib" path="src/appserver/jboss/jboss7"/>
@@ -209,10 +209,10 @@
 	<classpathentry kind="lib" path="lib/ext/jackson2/jackson-annotations-2.17.2.jar"/>
 	<classpathentry kind="lib" path="lib/ct/ctlog-0.1.7.jar"/>
 	<classpathentry kind="lib" path="lib/ct/protobuf-java-3.25.5.jar"/>
-	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-1.79.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk18on-1.79.jar"/>
-	<classpathentry kind="lib" path="lib/bctls-jdk18on-1.79.jar"/>
-	<classpathentry kind="lib" path="lib/bcutil-jdk18on-1.79.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk18on-1.80.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk18on-1.80.jar"/>
+	<classpathentry kind="lib" path="lib/bctls-jdk18on-1.80.jar"/>
+	<classpathentry kind="lib" path="lib/bcutil-jdk18on-1.80.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/jboss-logging-3.6.0.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/parsson-1.1.7.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/yasson-3.0.4.jar"/>
