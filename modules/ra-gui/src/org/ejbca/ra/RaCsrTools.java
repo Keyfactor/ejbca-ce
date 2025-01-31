@@ -14,26 +14,20 @@
  
 package org.ejbca.ra;
 
-import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.model.era.KeyToValueHolder;
-import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 import jakarta.faces.application.FacesMessage;
 import jakarta.faces.validator.ValidatorException;
-import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
-import java.util.List;
 
 public class RaCsrTools {
     private static final Logger log = Logger.getLogger(RaCsrTools.class);
