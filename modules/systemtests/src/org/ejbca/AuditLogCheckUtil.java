@@ -30,7 +30,7 @@ public class AuditLogCheckUtil {
     // case insensitive: do not use 'CA' here as too short
     private static final String[] IGNORED_ON_LOWERCASE_PREFIXES = 
                         {"issuerdn", "issuer", "cadn", "keyalias", "keyid", "username", 
-                                "end entity", 
+                                "end entity", "altpublickey",
                                 // edge cases from hell
                                 "o=anatom", "o=let's encrypt"};
     // "admin ::: CN=blah" -> 'CN' starts at index 10, 'admin' ends at index 4, slack needed 6

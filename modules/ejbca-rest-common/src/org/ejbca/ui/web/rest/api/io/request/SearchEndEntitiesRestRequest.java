@@ -174,7 +174,7 @@ public class SearchEndEntitiesRestRequest {
                         break;
                     }
                     case STATUS: {
-                        final SearchEndEntityCriteriaRestRequest.EndEntityStatus endEntityStatus = SearchEndEntityCriteriaRestRequest.EndEntityStatus.resolveEndEntityStatusByName(criteriaValue);
+                        final EndEntityStatus endEntityStatus = EndEntityStatus.resolveEndEntityStatusByName(criteriaValue);
                         if(endEntityStatus == null) {
                             throw new RestException(Response.Status.BAD_REQUEST.getStatusCode(), "Malformed request.");
                         }

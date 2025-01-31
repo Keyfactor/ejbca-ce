@@ -159,8 +159,8 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     	// Check that user is authorized to the CA that issued this certificate
     	int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
-    	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, crlPartitionIndex, 
-    	        endEntityProfileId, tag, updateTime, accountBindingId);
+    	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, endEntityProfileId,
+                crlPartitionIndex, tag, updateTime, accountBindingId);
     }
     
     @Override
@@ -608,6 +608,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
 
         return ret;
+    }
+    
+    @Override
+    public X509Certificate findLatestX509CertificateBySubjectforEndEntity(String subjectDN) {
+        CertificateData certificateData = certificateDataSession.findLatestBySubjectDN(subjectDN);
+        CertificateDataWrapper certificateDataWrapper = new CertificateDataWrapper(certificateData, 
+                            Base64CertData.findByFingerprint(entityManager, certificateData.getFingerprint()));
+        if (!(certificateDataWrapper.getCertificate() instanceof X509Certificate)) {
+            return null;
+        }
+        return (X509Certificate) certificateDataWrapper.getCertificate();
     }
 
     @Override

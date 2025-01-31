@@ -106,7 +106,7 @@ public class StartupSingletonBean {
 
     private static final Logger log = Logger.getLogger(StartupSingletonBean.class);
     private final AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken("Application internal");
-        
+
     @EJB
     private AuthorizationSessionLocal authorizationSession;
     @EJB
@@ -145,29 +145,29 @@ public class StartupSingletonBean {
         // Make a log row that EJBCA is stopping
         //final Map<String, Object> details = new LinkedHashMap<String, Object>();
         //details.put("msg", iMsg);
-        //logSession.log(EjbcaEventTypes.EJBCA_STOPPING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, null, null, details);                
+        //logSession.log(EjbcaEventTypes.EJBCA_STOPPING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, null, null, details);
     }
 
-    
+
     /** Checks that a class is loaded by a classloader that is local to the ejbca.ear deployment.
      * This check is probably JBoss / WildFly specific but not certain. We want to check this so we can detect if JBoss / WildFly bundles jars that we use so we risk having a version conflict.
-     * 
+     *
      * A classloader that is from the main/core JBoss/WildFly modules is typically printed like:
      * <code>
-     * org.bouncycastle.jcajce.provider.asymmetric.x509.X509CertificateObject(6034186b).ClassLoader=ModuleClassLoader for Module "org.bouncycastle" from local module loader @649d209a 
-     * </code> 
+     * org.bouncycastle.jcajce.provider.asymmetric.x509.X509CertificateObject(6034186b).ClassLoader=ModuleClassLoader for Module "org.bouncycastle" from local module loader @649d209a
+     * </code>
      * while a classloader from the ejbca.ear space is printed like:
      * <code>
      * org.bouncycastle.jcajce.provider.asymmetric.x509.X509CertificateObject(362bcba0).ClassLoader=ModuleClassLoader for Module "deployment.ejbca.ear" from Service Module Loader
      * </code>
-     * 
+     *
      * @param clazz the class that we want to check which classloader it comes from. For example org.bouncycastle.jcajce.provider.asymmetric.x509.X509CertificateObject.class
      */
     private static void checkClassLoaderIsEJBCA(Class<? extends X509Certificate> clazz) {
         StringBuffer results = new StringBuffer();
         ClassLoader cl = clazz.getClassLoader();
         results.append("\n" + clazz.getName() + "(" + Integer.toHexString(clazz.hashCode()) + ").ClassLoader=" + cl);
-        // We want classes (that we check here) to be loaded from the EJBCA application classloader, and not by the 
+        // We want classes (that we check here) to be loaded from the EJBCA application classloader, and not by the
         // JBoss/WildFly main classloader
         if (results.indexOf("ejbca.ear") == -1) {
             CodeSource clazzCS = clazz.getProtectionDomain().getCodeSource();
@@ -176,7 +176,7 @@ public class StartupSingletonBean {
             } else {
                 results.append("\n++++Null CodeSource");
             }
-            log.error("BouncyCastle is not loaded by an EJBCA classloader, version conflict is likely: "+clazz.getName()+": "+results.toString());            
+            log.error("BouncyCastle is not loaded by an EJBCA classloader, version conflict is likely: "+clazz.getName()+": "+results.toString());
         } else {
             log.info("BouncyCastle provider is from our ejbca.ear classloader.");
         }
@@ -199,12 +199,12 @@ public class StartupSingletonBean {
     @PostConstruct
     private void startup() {
         //
-        // Run all "safe" initializations first, 
+        // Run all "safe" initializations first,
         // i.e. those that does not depend on other running beans, components etc
         LogManager.getLogManager().getLogger("com.keyfactor").addHandler(new Log4jLogRedactionRedactHandler());
         LogManager.getLogManager().getLogger("org.ejbca").addHandler(new Log4jLogRedactionRedactHandler());
         LogManager.getLogManager().getLogger("org.cesecore").addHandler(new Log4jLogRedactionRedactHandler());
-        
+
         // Log a startup message
         String iMsg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
         log.info(iMsg);
@@ -217,43 +217,43 @@ public class StartupSingletonBean {
         log.debug(">startup re-installing BC-provider");
         CryptoProviderTools.removeBCProvider();
         CryptoProviderTools.installBCProvider();
-        
+
         // Register forbidden characters
         // Using 'instance().getString' instead of 'getString' since an empty String (size 0) must be returned when the property is defined without any value.
         final String forbiddenCharacters = ConfigurationHolder.instance().getString("forbidden.characters");
-        if (StringUtils.isNotBlank(forbiddenCharacters)) {
+        if (forbiddenCharacters != null) {
             StringConfigurationCache.INSTANCE.setForbiddenCharacters(forbiddenCharacters.toCharArray());
         }
-       
+
         //Register password encryption count
         final String encryptionCount = ConfigurationHolder.getString("password.encryption.count");
         if (StringUtils.isNumeric(encryptionCount)) {
             StringConfigurationCache.INSTANCE.setPasswordEncryptionCount(Integer.valueOf(encryptionCount) );
         }
-        
+
         //Register encryption key
         StringConfigurationCache.INSTANCE.setEncryptionKey(ConfigurationHolder.getString("password.encryption.key").toCharArray());
-        
+
         final String disableHashingSignMechanisms = ConfigurationHolder.getString("pkcs11.disableHashingSignMechanisms");
         CryptoProviderConfigurationCache.INSTANCE.setP11disableHashingSignMechanisms(disableHashingSignMechanisms==null || Boolean.parseBoolean(disableHashingSignMechanisms.trim()));
-        
+
         CryptoProviderConfigurationCache.INSTANCE.setKeystoreCacheEnabled(Boolean.parseBoolean(ConfigurationHolder.getString("cryptotoken.keystorecache")));
 
-        
+
         final String doPermitExtractablePrivateKeys = ConfigurationHolder.getString("ca.doPermitExtractablePrivateKeys");
         CryptoProviderConfigurationCache.INSTANCE.setPermitExtractablePrivateKeys(
                 doPermitExtractablePrivateKeys != null && doPermitExtractablePrivateKeys.trim().equalsIgnoreCase(Boolean.TRUE.toString()));
-                
+
         // Run java seed collector, that can take a little time the first time it is run
         log.debug(">startup initializing random seed, can take a little time...");
         SecureRandom rand = new SecureRandom();
         rand.nextInt();
         log.debug(">startup finished initializing random seed");
-        
+
         //
         // Start services that requires calling other beans or components
         //
-        
+
         // We really need BC to be installed. This is an attempt to fix a bug where the ServiceSessionBean
         // crashes from not finding the BC-provider.
         int waitTime = 0;
@@ -278,16 +278,16 @@ public class StartupSingletonBean {
             throw new IllegalStateException(e1.getMessage());
         }
 
-        /* 
+        /*
          * Trigger ServiceLoader for AuthenticationTokens at startup, since this is a critical function it makes
          * debugging nicer if the available tokens are shown at startup
          */
         log.info("Registered AuthenticationTokens " + AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes().toString());
         // We have to read CAs into cache (and upgrade them) early, because the log system may use CAs for signing logs
-        
+
         log.debug(">startup CryptoTokenFactory just to load those classes that are available");
         CryptoTokenFactory.instance();
-        
+
         authorizationSession.scheduleBackgroundRefresh();
         // Load CAs at startup to improve impression of speed the first time a CA is accessed, it takes a little time to load it.
         log.debug(">startup loading CAs into cache");
@@ -300,7 +300,7 @@ public class StartupSingletonBean {
         // Make a log row that EJBCA is starting
         Map<String, Object> details = new LinkedHashMap<>();
         details.put("msg", iMsg);
-        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, getHostName(), null, details);               
+        logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, getHostName(), null, details);
 
         // Log the type of security audit configuration that we have enabled.
         log.debug(">startup security audit device configuration");
@@ -314,7 +314,7 @@ public class StartupSingletonBean {
                 final String msg = InternalEjbcaResources.getInstance().getLocalizedMessage("startservices.noprotectedauditdevices");
                 final Map<String, Object> logdetails = new LinkedHashMap<>();
                 logdetails.put("msg", msg);
-                logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, logdetails);                
+                logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, logdetails);
             }
         }
 
@@ -328,7 +328,7 @@ public class StartupSingletonBean {
         } catch (Exception e) {
             log.error("Error init ServiceSession: ", e);
         }
-        
+
         // Load Certificate profiles at startup to upgrade them if needed
         log.debug(">startup loading CertificateProfile to check for upgrades");
         try {
@@ -336,16 +336,16 @@ public class StartupSingletonBean {
         } catch (Exception e) {
             log.error("Error initializing certificate profiles: ", e);
         }
-        
+
         // Load EndEntity profiles at startup to upgrade them if needed
         // And add this node to list of nodes
         log.debug(">startup loading EndEntityProfile to check for upgrades");
         try {
-            endEntityProfileSession.initializeAndUpgradeProfiles();         
+            endEntityProfileSession.initializeAndUpgradeProfiles();
         } catch (Exception e) {
             log.error("Error initializing end entity profiles: ", e);
         }
-        
+
         if (EjbcaConfiguration.getIsNodeTrackingEnabled()) {
             // Add this node's hostname to list of nodes
             log.debug(">startup checking if this node is in the list of nodes");
@@ -362,7 +362,7 @@ public class StartupSingletonBean {
                 }
             } catch (Exception e) {
                 log.error("Error adding host to node list in global configuration: ", e);
-            } 
+            }
         }
 
         log.debug(">startup loading node level redaction settings");
@@ -379,8 +379,8 @@ public class StartupSingletonBean {
         } else {
             certificateStoreSession.setUniqueCertificateSerialNumberIndex(unique);
         }
-        
-        log.debug(">startup performing (automatic) upgrades, if needed"); 
+
+        log.debug(">startup performing (automatic) upgrades, if needed");
         // Perform (automatic) upgrades, if needed
         upgradeSession.performPreUpgrade(isFreshInstallation);
         upgradeSession.performUpgrade();
@@ -416,16 +416,16 @@ public class StartupSingletonBean {
 
         log.debug(">startup completed");
     }
-    
 
-    /** Method that checks if we have an integrity protected security audit device configured, and in that case logs the configuration startup 
-     * 
-     * @param admin an authentication token used to log the configuration management startup (logged as a change as audit is configured during startup from properties file) 
+
+    /** Method that checks if we have an integrity protected security audit device configured, and in that case logs the configuration startup
+     *
+     * @param admin an authentication token used to log the configuration management startup (logged as a change as audit is configured during startup from properties file)
      * @param loggerIds the configured loggers among which we look for the protected device
      * @return true if there is an integrity protected audit device and is was configured during startup (and audit log of this config was made)
      */
     private boolean checkForProtectedAudit(AuthenticationToken admin, final Set<String> loggerIds) {
-        boolean ret = false;                                            
+        boolean ret = false;
         // See if we have IntegrityProtectedDevice configured, due to class loading constraints we can not use IntegrityProtectedDevice.class.getSimpleName().
         // This is admin-gui and does not have access to that class
         final String integrityProtectedName = "IntegrityProtectedDevice";
@@ -461,7 +461,7 @@ public class StartupSingletonBean {
                             logdetails.put("protectVersion", protectVersion);
                             logdetails.put("keyLabel", keyLabel);
                             logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, admin.toString(), null, null, null, logdetails);
-                            ret = true;                                            
+                            ret = true;
                         } else {
                             log.debug("No database integrity protection enabled for AuditRecordData.");
                         }
@@ -485,19 +485,19 @@ public class StartupSingletonBean {
         }
         return ret;
     }
-    
+
     /**
      * @return The host's name or null if it could not be determined.
      */
     private String getHostName() {
         String hostname = null;
         try {
-            InetAddress addr = InetAddress.getLocalHost();    
+            InetAddress addr = InetAddress.getLocalHost();
             // Get hostname
             hostname = addr.getHostName();
         } catch (UnknownHostException e) {
             log.error("Hostname could not be determined", e);
         }
         return hostname;
-    }    
+    }
 }

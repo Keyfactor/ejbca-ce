@@ -20,6 +20,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
+import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
@@ -53,6 +54,7 @@ public enum ExceptionClasses {
     UnsupportedOperationException(UnsupportedOperationException.class),
     // 404
     EndEntityProfileNotFoundException(EndEntityProfileNotFoundException.class),
+    NoSuchEndEntityException(NoSuchEndEntityException.class),
     RoleNotFoundException(RoleNotFoundException.class),
     // 409
     AdminAlreadyApprovedRequestException(AdminAlreadyApprovedRequestException.class),

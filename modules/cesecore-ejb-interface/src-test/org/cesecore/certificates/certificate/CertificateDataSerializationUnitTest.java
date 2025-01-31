@@ -106,8 +106,8 @@ public class CertificateDataSerializationUnitTest {
         log.trace(">testSerializeCurrent");
         final KeyPair kp = KeyTools.genKeys("1024", "RSA");
         final Certificate cert = SimpleCertGenerator.forTESTLeafCert()
-                .setSubjectDn("C=SE,O=Test,CN=Test CertProfileSessionNoAuth")
-                .setIssuerDn("C=SE,O=Test,CN=Test CertProfileSessionNoAuth")
+                .setSubjectDn("CN=certuser")
+                .setIssuerDn("CN=certuser")
                 .setValidityDays(10*365)
                 .setIssuerPrivKey(kp.getPrivate())
                 .setEntityPubKey(kp.getPublic())
