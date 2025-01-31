@@ -97,9 +97,10 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
             final KeyStore keystore = KeyStore.getInstance("PKCS12", BouncyCastleProvider.PROVIDER_NAME);
             keystore.load(new java.io.ByteArrayInputStream(keystoreBytes), keystoreData.getPassword().toCharArray());
             final Enumeration<String> en = keystore.aliases();
-            String privateKeyAlias = null;
-            int keyCounter = 0;
+            String privateKeyAlias;
+            EndEntityInformation userInfo = null;
             while (en.hasMoreElements()) {
+                privateKeyAlias = null;
                 final String alias = en.nextElement();
                 if (keystore.isKeyEntry(alias)) {
                     privateKeyAlias = alias;
@@ -108,8 +109,8 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                     }
                 }
                 if (privateKeyAlias == null) {
-                    log.error("Keystore does not contain any private key aliases.");
-                    throw new KeyImportException("Keystore does not contain any private key aliases.");
+                    log.info("Keystore contains an alias which is not a key entry alias.");
+                    throw new KeyImportException("Keystore contains an alias which is not a key entry alias.");
                 }
                 final Certificate[] certChain = KeyTools.getCertChain(keystore, privateKeyAlias);
                 if (certChain == null || certChain.length == 0) {
@@ -132,24 +133,22 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
                     log.debug("Found private key with algorithm: " + p12PrivateKey.getAlgorithm());
                 }
 
-                if (keyCounter == 0) {
-                    createUserIfNecessary(authenticationToken, keystoreData, caData, certificateProfileId,
+                if (userInfo == null) {
+                    userInfo = createUserIfNecessary(authenticationToken, keystoreData, caData, certificateProfileId,
                             endEntityProfileId, userCertificate);
                 }
                 final Certificate caCert = caInfo.getCertificateChain().iterator().next();
-                persistCertificate(authenticationToken, keystoreData, caInfo, certificateProfileId, endEntityProfileId,
+                persistCertificate(authenticationToken, userInfo, caInfo, certificateProfileId, endEntityProfileId,
                         fingerprint, userCertificate, caCert);
 
-                persistKeyRecoveryData(authenticationToken, keystoreData, caInfo, userCertificate, p12PrivateKey, caCert);
-
-                keyCounter++;
+                persistKeyRecoveryData(authenticationToken, userInfo, caInfo, userCertificate, p12PrivateKey, caCert);
             }
         } catch (Exception e) {
             throw new KeyImportException(e.getMessage());
         }
     }
 
-    private void persistCertificate(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo,
+    private void persistCertificate(AuthenticationToken authenticationToken, EndEntityInformation userInfo, CAInfo caInfo,
                                            int certificateProfileId, int endEntityProfileId, String fingerprint, Certificate userCertificate, Certificate caCert)
             throws AuthorizationDeniedException, KeyImportException {
         // Try to fetch old certificate from the database
@@ -158,9 +157,9 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
         final int crlPartitionIndex = caInfo.determineCrlPartitionIndex(userCertificate);
         if (certInfo == null) {
             log.info("Adding end entity certificate with fingerprint '" + fingerprint +
-                    "' to the database, with status active (not revoked), for end entity: " + keystoreData.getUsername());
+                    "' to the database, with status active (not revoked), for end entity: " + userInfo.getUsername());
             certificateStoreSession.storeCertificate(authenticationToken, userCertificate,
-                    keystoreData.getUsername(), CertTools.getFingerprintAsString(caCert), CertificateConstants.CERT_ACTIVE,
+                    userInfo.getUsername(), CertTools.getFingerprintAsString(caCert), CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ENDENTITY, certificateProfileId, endEntityProfileId, crlPartitionIndex, null,
                     new Date().getTime(), null);
         } else {
@@ -168,7 +167,7 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
         }
     }
 
-    private void persistKeyRecoveryData(AuthenticationToken authenticationToken, KeyImportKeystoreData keystoreData, CAInfo caInfo,
+    private void persistKeyRecoveryData(AuthenticationToken authenticationToken, EndEntityInformation userInfo, CAInfo caInfo,
                                         Certificate userCertificate, PrivateKey p12PrivateKey, Certificate cacert) throws CryptoTokenOfflineException,
             EjbcaException {
         final PublicKey p12PublicKey = userCertificate.getPublicKey();
@@ -178,34 +177,36 @@ public class ProcessKeystoreSessionBean implements ProcessKeystoreSessionLocal, 
         final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
         if (encryptKeyAlias != null && authorizationSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.REGULAR_KEYRECOVERY)) {
             keyRecoverySession.addKeyRecoveryDataInternal(authenticationToken, EJBTools.wrap(cacert),
-                    EJBTools.wrap(userCertificate), keystoreData.getUsername(), EJBTools.wrap(keypair), cryptoTokenId, encryptKeyAlias);
+                    EJBTools.wrap(userCertificate), userInfo.getUsername(), EJBTools.wrap(keypair), cryptoTokenId, encryptKeyAlias);
         } else {
             log.info("Not authorized to add key recovery data to CA or unable to get CA encrypt key.");
             throw new KeyImportException("Not authorized to add key recovery data to CA or unable to get CA encrypt key.");
         }
     }
 
-    private void createUserIfNecessary(final AuthenticationToken authenticationToken, final KeyImportKeystoreData keystore, final CAData ca,
+    private EndEntityInformation createUserIfNecessary(final AuthenticationToken authenticationToken, final KeyImportKeystoreData keystore, final CAData ca,
                                        final int certificateProfileId, final int endEntityProfileId, final Certificate userCertificate)
             throws AuthorizationDeniedException, KeyImportException {
         // Check whether EE exists already
         String username = keystore.getUsername();
         String password = keystore.getPassword();
         EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(authenticationToken, username);
-        if (endEntityInformation == null && StringUtils.isNotEmpty(username) && StringUtils.isNotEmpty(password)) {
+        if (endEntityInformation == null) {
             log.info("No user found for username " + username + ", creating a new user");
             try {
-                final EndEntityInformation userdata = new EndEntityInformation(keystore.getUsername(), CertTools.getSubjectDN(userCertificate), ca.getCaId(),
+                endEntityInformation = new EndEntityInformation(keystore.getUsername(), CertTools.getSubjectDN(userCertificate), ca.getCaId(),
                         DnComponents.getSubjectAlternativeName(userCertificate), DnComponents.getEMailAddress(userCertificate), EndEntityConstants.STATUS_GENERATED,
                         new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certificateProfileId, null, null,
                         SecConst.TOKEN_SOFT_P12, null);
-                userdata.setPassword(keystore.getPassword());
-                endEntityManagementSession.addUser(authenticationToken, userdata, false);
+                endEntityInformation.setPassword(password);
+                endEntityManagementSession.addUser(authenticationToken, endEntityInformation, false);
             } catch (Exception e) {
                 log.info("Exception: " + e.getMessage());
                 throw new KeyImportException(e.getMessage());
             }
         }
+
+        return endEntityInformation;
     }
 
 }

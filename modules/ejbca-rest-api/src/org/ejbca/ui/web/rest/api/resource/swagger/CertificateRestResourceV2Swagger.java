@@ -31,7 +31,6 @@ import org.ejbca.ui.web.rest.api.io.request.KeyImportRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.request.SearchCertificatesRestRequestV2;
 import org.ejbca.ui.web.rest.api.io.response.CertificateCountResponse;
 import org.ejbca.ui.web.rest.api.io.response.CertificateProfileInfoRestResponseV2;
-import org.ejbca.ui.web.rest.api.io.response.KeyImportRestResponseV2;
 import org.ejbca.ui.web.rest.api.io.response.RestResourceStatusRestResponse;
 import org.ejbca.ui.web.rest.api.io.response.SearchCertificatesRestResponseV2;
 import org.ejbca.ui.web.rest.api.resource.BaseRestResource;
@@ -171,9 +170,9 @@ public class CertificateRestResourceV2Swagger extends CertificateRestResourceV2 
             @ApiResponse(responseCode = "200", description = "Keystores imported successfully"),
             @ApiResponse(responseCode = "500", description = "Something went wrong"),
     })
-    public KeyImportRestResponseV2 importKeystores(@Context HttpServletRequest requestContext,
-                                                   @Parameter(description = "Subject DN of CA that will take over key management") @PathParam("issuer_dn") String issuerDN,
-                                                   @Parameter(name = "request") KeyImportRestRequestV2 request)
+    public Response importKeystores(@Context HttpServletRequest requestContext,
+                                    @Parameter(description = "Subject DN of CA that will take over key management") @PathParam("issuer_dn") String issuerDN,
+                                    @Parameter(name = "request") KeyImportRestRequestV2 request)
             throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
         return super.importKeystores(requestContext, issuerDN, request);
     }

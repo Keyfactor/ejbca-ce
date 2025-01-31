@@ -186,14 +186,15 @@ public class CertificateRestResourceV2 extends BaseRestResource {
      * @throws EjbcaException
      * @throws CADoesntExistsException
      */
-    public KeyImportRestResponseV2 importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequestV2 request)
+    public Response importKeystores(final HttpServletRequest requestContext, final String issuerDN, @Valid final KeyImportRestRequestV2 request)
             throws AuthorizationDeniedException, RestException, EjbcaException, CADoesntExistsException {
 
         final AuthenticationToken authenticationToken = getAdmin(requestContext, true);
         KeyImportRequestData requestData = KeyImportRestRequestV2.converter().toRequestData(request, issuerDN);
         RaKeyImportResponseV2 raResponse = raMasterApi.keyImportV2(authenticationToken, requestData);
+        final KeyImportRestResponseV2 response = new KeyImportRestResponseV2().convert().toKeyImportRestResponse(raResponse);
 
-        return new KeyImportRestResponseV2().convert().toKeyImportRestResponse(raResponse);
+        return Response.ok(response).build();
     }
     
     /**
