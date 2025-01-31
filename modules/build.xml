@@ -351,7 +351,7 @@
 		<ant antfile="${mod.acme.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
 	</target>
 
-    <target name="ejbca-rest-common" if="${mod.ejbca-rest-common.exists}" description="Build EJBCA rest common">
+    <target name="ejbca-rest-common" if="${mod.ejbca-rest-common.exists}" depends="cesecore-common" description="Build EJBCA rest common">
         <ant antfile="${mod.ejbca-rest-common.path}/build.xml" target="build" inheritall="true" inheritrefs="true"/>
     </target>
 	
