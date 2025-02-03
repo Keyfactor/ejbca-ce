@@ -310,7 +310,7 @@ public class RaRenewBean implements Serializable {
             if (availableKeyAlgorithms.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 final Set<String> ecChoices = new HashSet<>();
                 if (availableEcCurves.contains(CertificateProfile.ANY_EC_CURVE)) {
-                    for (final String ecNamedCurve : AlgorithmTools.getNamedEcCurvesMap().keySet()) {
+                    for (final String ecNamedCurve : AlgorithmTools.getOnlyNamedEcCurvesMap().keySet()) {
                         if (CertificateProfile.ANY_EC_CURVE.equals(ecNamedCurve)) {
                             continue;
                         }

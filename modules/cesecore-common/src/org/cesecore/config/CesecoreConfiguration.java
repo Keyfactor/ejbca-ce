@@ -14,8 +14,6 @@ package org.cesecore.config;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
@@ -85,13 +83,6 @@ public final class CesecoreConfiguration {
      */
     public static String getCaSerialNumberAlgorithm() {
         return ConfigurationHolder.getString("ca.rngalgorithm");
-    }
-
-    /**
-     * The date and time from which an expire date of a certificate is to be considered to be too far in the future.
-     */
-    public static String getCaTooLateExpireDate() {
-        return ConfigurationHolder.getExpandedString("ca.toolateexpiredate");
     }
 
     /**
@@ -210,16 +201,6 @@ public final class CesecoreConfiguration {
     }
 
     /**
-     * Option if we should keep internal CA keystores in the CAData table to be compatible with CeSecore 1.1/EJBCA 5.0.
-     * Default to true. Set to false when all nodes in a cluster have been upgraded to CeSecore 1.2/EJBCA 5.1 or later,
-     * then internal keystore in CAData will be replaced with a foreign key in to the migrated entry in CryptotokenData.
-     */
-    public static boolean isKeepInternalCAKeystores() {
-        final String value = ConfigurationHolder.getString("db.keepinternalcakeystores");
-        return value == null || !value.trim().equalsIgnoreCase("false");
-    }
-
-    /**
      * When we run in a cluster, each node should have it's own identifier. By default we use the DNS name.
      */
     public static String getNodeIdentifier() {
@@ -269,10 +250,6 @@ public final class CesecoreConfiguration {
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("databaseprotection.enableverify"));
     }
 
-    public static boolean getCaKeepOcspExtendedService() {
-        return Boolean.parseBoolean(ConfigurationHolder.getString("ca.keepocspextendedservice").toLowerCase());
-    }
-
     /** @return the number of rows that should be fetched at the time when creating CRLs. */
     public static int getDatabaseRevokedCertInfoFetchSize() {
         return (int) getLongValue("database.crlgenfetchsize", 500000L, "rows");
@@ -286,30 +263,6 @@ public final class CesecoreConfiguration {
         return Boolean.TRUE.toString().equalsIgnoreCase(ConfigurationHolder.getString("database.crlgenfetchordered"));
     }
 
-    /** @return a list of enabled TLS protocol versions and cipher suites */
-    /*
-     * Java 6: http://docs.oracle.com/javase/6/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
-     *  TLS versions: SSLv3, TLSv1, SSLv2Hello
-     * Java 7: http://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
-     *  TLS versions: SSLv3, TLSv1, TLSv1.1, TLSv1.2
-     *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
-     * Java 8: http://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJSSEProvider
-     *  TLS versions: SSLv3, TLSv1, TLSv1.1, TLSv1.2
-     *  Cipher suites with SHA384 and SHA256 are available only for TLS 1.2 or later.
-     */
-    public static String[] getAvailableCipherSuites() {
-        final List<String> availableCipherSuites = new ArrayList<>();
-        for (int i=0; i<255; i++) {
-            final String key = "authkeybind.ciphersuite." + i;
-            final String value = ConfigurationHolder.getString(key);
-            if (value==null || !value.contains(AVAILABLE_CIPHER_SUITES_SPLIT_CHAR)) {
-                continue;
-            }
-            availableCipherSuites.add(value);
-        }
-        return availableCipherSuites.toArray(new String[0]);
-    }
-
     /**
      * Gets the maximum number of entries in the CT cache. Each entry contains the SCTs for a
      * given certificate. Each SCT will be around 100-150 bytes, and a certificate will typically
@@ -319,7 +272,10 @@ public final class CesecoreConfiguration {
      * -1 means no limit (and not "off"). The default is 100 000.
      *
      * @see #getCTCacheEnabled
+     * 
+     * @deprecated Only used for upgrades to 9.2.0 and later
      */
+    @Deprecated(since = "9.2.0")
     public static long getCTCacheMaxEntries() {
         return getLongValue("ct.cache.maxentries", 100000L, "number of entries in cache");
     }
@@ -327,12 +283,19 @@ public final class CesecoreConfiguration {
     /**
      * How many milliseconds between periodic cache cleanup. The cleanup routine is only
      * run when the cache is filled with too many entries.
+     * 
+     * @deprecated Only used for upgrades to 9.2.0 and later
      */
+    @Deprecated(since = "9.2.0")
     public static long getCTCacheCleanupInterval() {
         return getLongValue("ct.cache.cleanupinterval", 10000L, "milliseconds between periodic cache cleanup");
     }
 
-    /** Whether caching of SCTs should be enabled. The default is true. */
+    /** Whether caching of SCTs should be enabled. The default is true. 
+     * 
+     * @deprecated Only used for upgrades to 9.2.0 and later
+     */
+    @Deprecated(since = "9.2.0")
     public static boolean getCTCacheEnabled() {
         final String value = ConfigurationHolder.getString("ct.cache.enabled");
         return value == null || !value.trim().equalsIgnoreCase(FALSE);
@@ -342,7 +305,10 @@ public final class CesecoreConfiguration {
      * Whether log availability should be tracked, and requests should "fast fail"
      * whenever a log is known to be down. A log is "known to be down" when it
      * is either unreachable or responds with an HTTP error status to a request.
+     * 
+     * @deprecated Only used for upgrades to 9.2.0 and later
      */
+    @Deprecated(since = "9.2.0")
     public static boolean getCTFastFailEnabled() {
         final String value = ConfigurationHolder.getString("ct.fastfail.enabled");
         return value == null || !value.trim().equalsIgnoreCase(FALSE);
@@ -351,7 +317,10 @@ public final class CesecoreConfiguration {
     /**
      * How long time (in milliseconds) EJBCA should wait until trying to use a log
      * which has failed to respond to a request.
+     * 
+     *  @deprecated Only used for upgrades to 9.2.0 and later
      */
+    @Deprecated(since = "9.2.0")
     public static long getCTFastFailBackOff() {
         return getLongValue("ct.fastfail.backoff", 1000L, "milliseconds");
     }

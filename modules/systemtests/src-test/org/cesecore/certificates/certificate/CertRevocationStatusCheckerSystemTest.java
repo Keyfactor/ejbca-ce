@@ -54,6 +54,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.PKIXCertRevocationStatusChecker;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.NoSuchEndEntityException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -67,6 +68,7 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.ocsp.OcspJunitHelper;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
@@ -108,6 +110,9 @@ public class CertRevocationStatusCheckerSystemTest extends CaTestCase {
     private int eeprofileID;
     private String certprofileName;
     private int certprofileID;
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
 
     @Override
     @Before

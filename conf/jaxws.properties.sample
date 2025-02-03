@@ -8,36 +8,11 @@
 # and customize at will.
 #
 
-# ------------ Web service (jaxws) configuration ---------------------
-# 
-# Disable this (set to false) if you do not want to deploy the WS-API in EJBCA
-# Default: true
-#ejbcaws.enabled=true
-
 #------------------- JAXWS settings -------------
-# Setting indicating if a call to genTokenCertificates for non-authorized users 
-# should result in an approval request instead of an authorized denied exception (i.e. rejected 
-# right away).
-# This setting is only applicable to the calls named above. 
-# (Approvals for other methods like editUser are triggered the normal way for approvals, 
-# i.e. by selecting an approval profile in the CA or Certificate Profile configuration.)       
-# The id is used instead of the name, since the name can be changed while the id remain the same.
-# Default : empty
-#jaxws.approvalprofileid=
-
 # Disable authorization control on the fetchUserData call, making it possible
 # for all with a valid certificate to retrieve userData
 # Default : false
 #jaxws.noauthonfetchuserdata=false
-
-# If this is true, all certificates on the old token will be put on hold.
-# If this is false, MS SmartCard Logon certificates will not be put on hold.
-# This is used when a temporary card is issued with ToLiMa, since MS doesn't
-# work well with temporarily revoked smartcards. 
-#
-# Default : false
-#jaxws.gentokens.setmslogononhold=false
-
 
 #------------------- EJBCAWS Logging settings -------------
 # Transaction logging logs summary lines for all WS calls.

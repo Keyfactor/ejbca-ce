@@ -34,7 +34,7 @@
 		<p:ajax event="tabChange" listener="#{systemConfigMBean.onTabChange}"/>
 
 		<p:tab title="Basic Configurations" rendered="#{systemConfigMBean.renderSystemConfiguration()}" >
-			<h:form id="systemconfiguration" >
+			<h:form id="systemconfiguration" enctype="multipart/form-data" >
 
 		<h:panelGrid columns="2" styleClass="edit-top" cellspacing="3" cellpadding="3" border="0" width="100%" rowClasses="Row0" columnClasses="editColumnSystem1,editColumn2">
 			<h:panelGroup>
@@ -52,15 +52,28 @@
 			<h:inputText id="title" value="#{systemConfigMBean.currentConfig.title}" size="45" title="#{web.text.FORMAT_STRING}" disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
 
 			<h:panelGroup>
-				<h:outputLabel for="headbanner" value="#{web.text.HEADBANNER}" styleClass="titles"/>
+				<h:outputLabel for="headbanner" value="#{web.text.HEADLOGO}" styleClass="titles"/>
                 <h:outputText value="#{web.ejbcaWebBean.getHelpReference('/Customizing_the_User_Interface.html')}" escape="false"/>
 				<br/>
-				<h:outputText value="#{web.text.HEADBANNER_HELP}" styleClass="help"/>
+				<h:outputText value="#{web.text.HEADLOGO_HELP}" styleClass="help"/>
 			</h:panelGroup>
-			<h:inputText id="headbanner" value="#{systemConfigMBean.currentConfig.headBanner}" size="45" title="#{web.text.FORMAT_FILENAME}"
-				disabled="#{!systemConfigMBean.allowedToEditSystemConfiguration}"/>
+      <h:panelGroup>
+       
+       <p:fileUpload
+            value="#{systemConfigMBean.headerFile}"
+            fileLimit="1" 
+            mode="advanced"
+            auto="true"
+            sizeLimit="250000" 
+            label="Choose a header logo"
+            allowTypes = "/(\.|\/)(jpg|jpeg|png)$/"
+            update="messages"
+            invalidSizeMessage="File is too large! Max size is 250KB."
+            invalidFileMessage="Invalid file type! Only images are allowed."
+            fileLimitMessage="You can only upload one file at a time."/>
+      </h:panelGroup>
 
-			<h:panelGroup>
+      <h:panelGroup>
 				<h:outputLabel for="enableeeplimit" value="#{web.text.ENABLEENDENTITYPROFILELIM}" styleClass="titles"/>
 				<h:outputText value="#{web.ejbcaWebBean.getHelpReference('/End_Entity_Profiles_Overview.html')}" escape="false"/>
 				<br/>
@@ -716,7 +729,7 @@
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_KNOWN_LOGS2}"/>
         </h:outputLink>
         <div class="section-label">
-            <h4><h:outputText value="#{web.text.CONFIGURE_GOOGLES_CT_POLICY}"/></h4>
+            <h4><h:outputText value="#{web.text.LIFETIME_CT_POLICY}"/></h4>
         </div>
 		<h:dataTable styleClass="grid" value="#{systemConfigMBean.googleCtPolicy.breakpoints}" var="breakpoint">
 			<h:column>
@@ -729,6 +742,23 @@
 				<h:inputText size="5" value="#{breakpoint.minSct}"/>
 			</h:column>
 		</h:dataTable>
+		<!-- Global CT Settings -->
+		<div class="section-label">
+            <h4><h:outputText value="#{web.text.CT_CACHE_SETTINGS}"/></h4>
+        </div>
+        <h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
+            <h:outputLabel for="ctCacheEnable" value="#{web.text.CT_CACHE_ENABLED}"/>
+            <p:toggleSwitch id="ctCacheEnable" value="#{systemConfigMBean.ctCacheEnabled}" onIcon="pi pi-check" offIcon="pi pi-times" />
+            <h:outputLabel for="ctCacheSize" value="#{web.text.CT_CACHE_MAX_SIZE}"/>
+            <p:inputNumber id="ctCacheSize" value="#{systemConfigMBean.ctCacheSize}" minValue="-1" />
+            <h:outputLabel for="ctCacheCleanupInterval" value="#{web.text.CT_CACHE_CLEANUP_INTERVAL}"/>
+            <p:inputNumber id="ctCacheCleanupInterval" value="#{systemConfigMBean.ctCacheCleanupInterval}" minValue="0" />
+            <h:outputLabel for="ctFastFailEnable" value="#{web.text.CT_CACHE_FAST_FAIL_ENABLED}"/>
+            <p:toggleSwitch id="ctFastFailEnable" value="#{systemConfigMBean.ctCacheFastFailEnabled}" onIcon="pi pi-check" offIcon="pi pi-times" />
+            <h:outputLabel for="ctCacheFastFailBackoff" value="#{web.text.CT_CACHE_FAST_FAIL_BACKOFF}"/>
+            <p:inputNumber id="ctCacheFastFailBackoff" value="#{systemConfigMBean.ctCacheFastFailBackoff}" minValue="0" />
+        </h:panelGrid>
+		
         <div style="margin-top:1em;">
             <h:commandButton id="saveCtPolicy" action="#{systemConfigMBean.saveCurrentConfig}"
                 value="#{web.text.SAVE_CT_POLICY}"

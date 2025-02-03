@@ -36,6 +36,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.cert.CertIOException;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CaTestUtils;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -70,6 +71,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.OcspTestUtils;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
+import org.cesecore.config.GlobalCesecoreConfiguration;
 import org.cesecore.config.GlobalOcspConfiguration;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -170,7 +172,7 @@ public class UpgradeSessionBeanSystemTest {
     private static CAInfo testCaInfo;
 
     @BeforeClass
-    public static void beforeClass() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, InvalidAlgorithmException, AuthorizationDeniedException {
+    public static void beforeClass() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException, CAExistsException, InvalidAlgorithmException, AuthorizationDeniedException, CertIOException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         // Clean up from previous aborted tests
         CaTestUtils.removeCa(alwaysAllowtoken, "NoActions", "NoActions");
@@ -708,11 +710,12 @@ public class UpgradeSessionBeanSystemTest {
      * Test upgrading CAs to the 6.8.0 form of approvals, i.e. using one approval profile per approval action instead of one
      * profile for all actions. Expected behavior is that the upgraded CA should have a map containing all actions mapped to the same (previously)
      * set profile, and any entities
+     * @throws CertIOException 
      * 
      */
     @Test
     public void testUpgradeCaTo680Approvals() throws CertificateParsingException, CryptoTokenOfflineException, OperatorCreationException,
-            CAExistsException, AuthorizationDeniedException, ApprovalProfileExistsException, CADoesntExistsException {
+            CAExistsException, AuthorizationDeniedException, ApprovalProfileExistsException, CADoesntExistsException, CertIOException {
         //This CA should not be assigned an approval profile on account of lacking any actions
         X509CA noActionsCa = CaTestUtils.createTestX509CA("CN=NoActions", "foo123".toCharArray(), false);
         noActionsCa.setApprovals(null);
@@ -1502,6 +1505,48 @@ public class UpgradeSessionBeanSystemTest {
         
         assertNull("ConfigurationCheckerConfiguration was not removed.", globalConfigurationProxySession.findByConfigurationId(ConfigurationCheckerConfiguration.CONFIGURATION_ID));
         
+    }
+    
+    @Test
+    public void testMigrateCtCacheValues920() throws AuthorizationDeniedException {
+       
+        GlobalCesecoreConfiguration globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession.getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+        boolean oldEnableCache = globalCesecoreConfiguration.getCtCacheEnabled();
+        long oldCacheSize = globalCesecoreConfiguration.getCtCacheSize();
+        long oldCleanupInterval = globalCesecoreConfiguration.getCtCacheCleanupInterval();
+        boolean oldFastFail = globalCesecoreConfiguration.getCtCacheFastFailEnabled();
+        long oldBackoff = globalCesecoreConfiguration.getCtCacheFastFailBackoff();
+        try {
+            final GlobalUpgradeConfiguration guc = (GlobalUpgradeConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalUpgradeConfiguration.CONFIGURATION_ID);
+            guc.setUpgradedToVersion("8.3.0");
+            guc.setPostUpgradedToVersion("8.3.0");
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, guc);
+            //Set some non-default values to test with
+            cesecoreConfigSession.setConfigurationValue("ct.cache.enabled", "false");
+            cesecoreConfigSession.setConfigurationValue("ct.cache.maxentries", "200");
+            cesecoreConfigSession.setConfigurationValue("ct.cache.cleanupinterval", "300");
+            cesecoreConfigSession.setConfigurationValue("ct.fastfail.enabled", "false");
+            cesecoreConfigSession.setConfigurationValue("ct.fastfail.backoff", "400");
+            //Perform upgrade
+            upgradeSession.upgrade(null, "8.3.0", false);
+            //Verify values
+            globalCesecoreConfiguration = (GlobalCesecoreConfiguration) globalConfigSession
+                    .getCachedConfiguration(GlobalCesecoreConfiguration.CESECORE_CONFIGURATION_ID);
+            assertEquals("CT Cache Enable was not upgraded as expected", false, globalCesecoreConfiguration.getCtCacheEnabled());
+            assertEquals("CT Cache Size was not upgraded as expected", 200, globalCesecoreConfiguration.getCtCacheSize());
+            assertEquals("CT Cache Cleanup Interval was not upgraded as expected", 300, globalCesecoreConfiguration.getCtCacheCleanupInterval());
+            assertEquals("CT Cache Fast Fail Enable was not upgraded as expected", false, globalCesecoreConfiguration.getCtCacheFastFailEnabled());
+            assertEquals("CT Cache Fast Fail Backoff was not upgraded as expected", 400, globalCesecoreConfiguration.getCtCacheFastFailBackoff());         
+        } finally {
+            //Restore old values
+            globalCesecoreConfiguration.setCtCacheEnabled(oldEnableCache);
+            globalCesecoreConfiguration.setCtCacheSize(oldCacheSize);
+            globalCesecoreConfiguration.setCtCacheCleanupInterval(oldCleanupInterval);
+            globalCesecoreConfiguration.setCtCacheFastFailEnabled(oldFastFail);
+            globalCesecoreConfiguration.setCtCacheFastFailBackoff(oldBackoff);
+            globalConfigSession.saveConfiguration(alwaysAllowtoken, globalCesecoreConfiguration);
+        }
     }
 
     private EndEntityInformation makeEndEntityInfo(final String username, final String startTime, final String endTime) {

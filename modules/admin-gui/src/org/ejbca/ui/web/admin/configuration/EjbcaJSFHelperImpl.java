@@ -13,6 +13,19 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+import java.time.Year;
+
+import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.web.admin.bean.SessionBeans;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource;
+import org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource;
+import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 import jakarta.enterprise.context.SessionScoped;
 import jakarta.faces.application.Application;
@@ -20,18 +33,6 @@ import jakarta.faces.context.FacesContext;
 import jakarta.inject.Named;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-
-import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.config.WebConfiguration;
-import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.web.admin.bean.SessionBeans;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFHelper;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFImageResource;
-import org.ejbca.ui.web.jsf.configuration.EjbcaJSFLanguageResource;
-import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 
 /**
  * Class used to integrate the old jsp framework with the new JSF one.
@@ -88,7 +89,7 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper, Serializable {
     /** Returns the EJBCA content string */
     @Override
     public String getContent() {
-    	return "text/html; charset=" + WebConfiguration.getWebContentEncoding();
+    	return "text/html; charset=" + StandardCharsets.UTF_8.name();
     } 
     
    /** Used for language resources. */
@@ -145,7 +146,7 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper, Serializable {
      }
 
      @Override
-    public org.ejbca.ui.web.jsf.configuration.EjbcaWebBean getEjbcaErrorWebBean() {
+    public EjbcaWebBean getEjbcaErrorWebBean() {
          if(ejbcawebbean == null) {
              final FacesContext ctx = FacesContext.getCurrentInstance();
              final HttpSession session = (HttpSession) ctx.getExternalContext().getSession(true);
@@ -185,4 +186,9 @@ public class EjbcaJSFHelperImpl implements EjbcaJSFHelper, Serializable {
          }
          return legacyInternetExplorer;
      }
+
+    @Override
+    public int getCurrentYear() {
+        return Year.now().getValue();
+    }
 }

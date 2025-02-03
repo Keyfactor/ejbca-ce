@@ -163,7 +163,7 @@ public class RaInspectBean implements Serializable {
             final ASN1InputStream asn1InputStream = new ASN1InputStream(new ByteArrayInputStream(pkcs10.getEncoded()));
             final ASN1Primitive asn1Primitive = asn1InputStream.readObject();
             asn1InputStream.close();
-            final String dump = ASN1Dump.dumpAsString(asn1Primitive);
+            final String dump = ASN1Dump.dumpAsString(asn1Primitive, true);
             return InspectedObject.builder()
                     .type(InspectType.PKCS10)
                     .content(dump)

@@ -5,7 +5,6 @@
 	</description>
 
 	<dirname property="clientToolBox.dir" file="${ant.file.clientToolBox}"/>
-	<property name="appserver.type" value="dummy. clientToolBox is not using any appserver."/>
 
     <import file="${clientToolBox.dir}/../build-helpers.xml"/>
 

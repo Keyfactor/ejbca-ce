@@ -147,21 +147,38 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
     
     // Authentication check and audit log page access request
     @PostConstruct
-    public void initialize() throws Exception {
+    public void initialize() throws AuthorizationDeniedException, EjbcaException {
         if (!getEjbcaWebBean().isAuthorizedNoLogSilent(AccessRulesConstants.ROLE_ADMINISTRATOR)) {
             throw new AuthorizationDeniedException("You are not authorized to view this page.");
         }
-        
-        final HttpServletRequest request = (HttpServletRequest)FacesContext.getCurrentInstance().getExternalContext().getRequest();
-        
-        globalConfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
-                AccessRulesConstants.REGULAR_CREATEENDENTITY);
 
-        raBean = SessionBeans.getRaBean(request);
-        getRaBean().initialize(getEjbcaWebBean());
-        
-        RequestHelper.setDefaultCharacterEncoding(request);
-        initUserData();
+        final HttpServletRequest request = (HttpServletRequest) FacesContext.getCurrentInstance().getExternalContext().getRequest();
+
+        try {
+            globalConfiguration = getEjbcaWebBean().initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR,
+                    AccessRulesConstants.REGULAR_CREATEENDENTITY);
+
+            raBean = SessionBeans.getRaBean(request);
+            raBean.initialize(getEjbcaWebBean());
+
+            RequestHelper.setDefaultCharacterEncoding(request);
+            
+            initUserData();
+        } catch (Exception e) {
+            addNonTranslatedErrorMessage(e.getMessage());
+
+            FacesContext facesContext = FacesContext.getCurrentInstance();
+
+            if (facesContext != null) {
+                facesContext.getExternalContext().invalidateSession();
+                try {
+                    facesContext.getExternalContext().getRequestMap().put("add.end.entity.error.message", e.getMessage());
+                    facesContext.getExternalContext().dispatch("/error-add-ee-page.xhtml");
+                } catch (Exception ex) {
+                    throw new IllegalStateException("Error while transfering to error page!");
+                }
+            }
+        }
     }
 
     public String getSelectedSubjectAltName() {
@@ -990,7 +1007,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         return selectedEeProfile.isPasswordPreDefined();
     }
     
-    private void initUserData() throws EndEntityProfileNotFoundException, EndEntityException {
+    private void initUserData() throws EndEntityProfileNotFoundException, EndEntityException{
 
         profileNames = (String[]) getEjbcaWebBean().getAuthorizedEndEntityProfileNames(AccessRulesConstants.CREATE_END_ENTITY).keySet().toArray(new String[0]);
         
@@ -999,6 +1016,10 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
         } else {
             this.selectedEeProfileId = getRaBean().getEndEntityProfileId(profileNames[0]);
             this.selectedEeProfile = getRaBean().getEndEntityProfile(selectedEeProfileId);
+        }
+        
+        if (caSession.getAuthorizedCaIds(getAdmin()) == null || caSession.getAuthorizedCaIds(getAdmin()).isEmpty()) {
+            throw new EndEntityException(getEjbcaWebBean().getText("NOCAAVAILABLEFORTHEADMIN"));
         }
         
         this.useClearTextPasswordStorage = selectedEeProfile.getValue(EndEntityProfile.CLEARTEXTPASSWORD,0).equals(EndEntityProfile.TRUE);
@@ -1333,7 +1354,7 @@ public class AddEndEntityMBean extends EndEntityBaseManagedBean implements Seria
             String fieldValue = StringUtils.trim(cabfOrganizationIdentifier);
             if (selectedEeProfile.isCabfOrganizationIdentifierRequired() && StringUtils.isEmpty(fieldValue)) {
                 throw new ParameterException(getEjbcaWebBean().getText("EXT_CABF_ORGANIZATION_IDENTIFIER_REQUIRED"));
-            } else if (fieldValue != null && !fieldValue.matches(CabForumOrganizationIdentifier.VALIDATION_REGEX)) {
+            } else if (StringUtils.isNotEmpty(fieldValue) && !fieldValue.matches(CabForumOrganizationIdentifier.VALIDATION_REGEX)) {
                 throw new ParameterException(getEjbcaWebBean().getText("EXT_CABF_ORGANIZATION_IDENTIFIER_BADFORMAT"));
             }
             ei.setCabfOrganizationIdentifier(fieldValue);

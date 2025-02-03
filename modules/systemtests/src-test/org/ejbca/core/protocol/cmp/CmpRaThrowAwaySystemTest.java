@@ -88,7 +88,7 @@ import com.keyfactor.util.string.StringConfigurationCache;
  */
 public class CmpRaThrowAwaySystemTest extends CmpTestCase {
 
-    private static final Logger LOG = Logger.getLogger(CmpRAAuthenticationSystemTest.class);
+    private static final Logger LOG = Logger.getLogger(CmpRaThrowAwaySystemTest.class);
     private static final Random RND = new SecureRandom();
 
     private static final String TESTCA_NAME = "CmpRaThrowAwayTestCA";
@@ -396,7 +396,7 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
         certificateProfile.setAllowCertSerialNumberOverride(allowCertSerialNumberOverride);
         certificateProfileSession.changeCertificateProfile(ADMIN, CERTPROFILE_NAME, certificateProfile);
     }
-
+    
     /** Legacy teletex encoding for testing purpose. */
     private static class TeletexNamingStyle extends BCStyle {
 
@@ -441,4 +441,5 @@ public class CmpRaThrowAwaySystemTest extends CmpTestCase {
             return true;
         }
     }
+
 }

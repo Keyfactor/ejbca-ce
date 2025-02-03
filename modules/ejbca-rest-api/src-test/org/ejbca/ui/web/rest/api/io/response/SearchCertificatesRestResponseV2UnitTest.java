@@ -58,6 +58,7 @@ public class SearchCertificatesRestResponseV2UnitTest {
     final Integer certificateProfileId = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
     final Integer endEntityProfileId = EndEntityConstants.NO_END_ENTITY_PROFILE;
     final Long expireDate = certificate.getNotAfter().getTime();
+    // getIssuerX500Principal() returns the incorrect order, so let this be a warning for the time being
     final String issuerDn = certificate.getIssuerDN().getName();
     final Long notBefore = certificate.getNotBefore().getTime();
     // CertificateData revocation date and reason are 0.
@@ -67,6 +68,7 @@ public class SearchCertificatesRestResponseV2UnitTest {
     final Integer status = CertificateConstants.CERT_ACTIVE;
     // Test with other certificate.
     final String subjectAn = null; 
+    //getSubjectX500Principal does not deliver the exact same order, so leave this for now
     final String subjectDn = certificate.getSubjectDN().getName();
     final String subjectKeyId = new String(Hex.encode(CertTools.getSubjectKeyId(certificate)));
     final String tag = "tag";

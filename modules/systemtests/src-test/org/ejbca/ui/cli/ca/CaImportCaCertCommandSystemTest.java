@@ -24,6 +24,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -56,6 +57,7 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.FileTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -104,10 +106,16 @@ public class CaImportCaCertCommandSystemTest {
 
         // Create a handmade External CA
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
-        X509Certificate externalCACert = CertTools.genSelfCert("CN=External CA", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate externalCACert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=External CA")
+                .setIssuerDn("CN=External CA")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();     
 
-        ArrayList<Certificate> mylist = new ArrayList<Certificate>();
+        List<Certificate> mylist = new ArrayList<>();
         mylist.add(externalCACert);
         FileOutputStream fos = new FileOutputStream(temp);
         fos.write(CertTools.getPemFromCertificateChain(mylist));
@@ -131,7 +139,7 @@ public class CaImportCaCertCommandSystemTest {
         Random random = new Random();
         random.nextBytes(serno);
         final SubjectPublicKeyInfo pkinfo = SubjectPublicKeyInfo.getInstance(msg.getRequestPublicKey().getEncoded());
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name(externalCACert.getSubjectDN().toString()),
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(DnComponents.stringToBcX500Name(externalCACert.getSubjectX500Principal().toString()),
                 new BigInteger(serno).abs(), firstDate, lastDate, DnComponents.stringToBcX500Name(msg.getRequestDN()), pkinfo);
         BasicConstraints bc = new BasicConstraints(true);
         certbuilder.addExtension(Extension.basicConstraints, true, bc);

@@ -30,8 +30,8 @@ import org.cesecore.util.ExternalScriptsAllowlist;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -69,7 +69,7 @@ public class ExternalCommandCertificateValidatorSystemTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path);
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        validator.validate(null, createCert("C=Test,O=Test,OU=Test,CN=testDisabledWhitelist"), ExternalScriptsAllowlist.permitAll());
+        validator.validate(createCert("C=Test,O=Test,OU=Test,CN=testDisabledWhitelist"), ExternalScriptsAllowlist.permitAll());
     }
 
     @Test
@@ -85,14 +85,14 @@ public class ExternalCommandCertificateValidatorSystemTest {
         data.put(ExternalCommandCertificateValidator.FAIL_ON_STANDARD_ERROR, false);
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        List<String> out = validator.validate(null, certificate, new ExternalScriptsAllowlist(path));
+        List<String> out = validator.validate(certificate, new ExternalScriptsAllowlist(path));
         assertEquals("Validation with external script logged to ERROUT with failOnStandardError=false must succeed.", out.size(), 0);
         
         // B: Let validation fail (result list size > 0).
         // B.1 Sample script logs to error stream with failOnStandardError=true.
         data.put(ExternalCommandCertificateValidator.FAIL_ON_STANDARD_ERROR, true);
         validator.setDataMap(data);
-        out = validator.validate(null, certificate, new ExternalScriptsAllowlist(path));
+        out = validator.validate(certificate, new ExternalScriptsAllowlist(path));
         assertTrue("Validation with external script logged to ERROUT with failOnStandardError=true must have failed.", out.size() > 0);
         log.info( "ECCV validation called with result: " + out);
         
@@ -114,7 +114,7 @@ public class ExternalCommandCertificateValidatorSystemTest {
         data.put(ExternalCommandCertificateValidator.LOG_STANDARD_OUT, true);
         data.put(ExternalCommandCertificateValidator.LOG_ERROR_OUT, true);
         validator.setDataMap(data);
-        out = validator.validate(null, certificate, new ExternalScriptsAllowlist(path));
+        out = validator.validate(certificate, new ExternalScriptsAllowlist(path));
         assertTrue("Validation with external script logged to ERROUT with failOnStandardError=true must have failed.", out.size() > 0);
         log.info( "ECCV validation called with result: " + out);
         
@@ -122,7 +122,7 @@ public class ExternalCommandCertificateValidatorSystemTest {
         data.put(ExternalCommandCertificateValidator.LOG_STANDARD_OUT, false);
         data.put(ExternalCommandCertificateValidator.LOG_ERROR_OUT, false);
         validator.setDataMap(data);
-        out = validator.validate(null, certificate, new ExternalScriptsAllowlist(path));
+        out = validator.validate(certificate, new ExternalScriptsAllowlist(path));
         assertTrue("Validation with external script logged to ERROUT with failOnStandardError=true, logStandardOut=false and logErrorOut=false must have failed as well.", out.size() > 0);
         log.info( "ECCV validation called with result: " + out);
     }
@@ -135,7 +135,7 @@ public class ExternalCommandCertificateValidatorSystemTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path + " param1 param2");
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        final List<String> out = validator.validate(null, createCert("C=Test,O=Test,OU=Test,CN=testAllowedCommandWithParameters"), new ExternalScriptsAllowlist(path));
+        final List<String> out = validator.validate(createCert("C=Test,O=Test,OU=Test,CN=testAllowedCommandWithParameters"), new ExternalScriptsAllowlist(path));
         log.info( "External script called with result: " + out);
     }
 
@@ -147,7 +147,7 @@ public class ExternalCommandCertificateValidatorSystemTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path);
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        validator.validate(null, null, new ExternalScriptsAllowlist(path + "/foo/doesnotexist"));
+        validator.validate(null, new ExternalScriptsAllowlist(path + "/foo/doesnotexist"));
     }
 
     @Test(expected = ValidatorNotApplicableException.class)
@@ -158,7 +158,7 @@ public class ExternalCommandCertificateValidatorSystemTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path + " param1 param2");
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        validator.validate(null, null, new ExternalScriptsAllowlist(path + "/foo/doesnotexist"));
+        validator.validate(null, new ExternalScriptsAllowlist(path + "/foo/doesnotexist"));
     }
     
     @Test(expected = ValidatorNotApplicableException.class)
@@ -169,7 +169,7 @@ public class ExternalCommandCertificateValidatorSystemTest {
         data.put(ExternalCommandCertificateValidator.EXTERNAL_COMMAND, path);
         data.put(UpgradeableDataHashMap.VERSION, 1f);
         validator.setDataMap(data);
-        validator.validate(null, null, new ExternalScriptsAllowlist(path));
+        validator.validate(null, new ExternalScriptsAllowlist(path));
     }
 
     /**
@@ -195,9 +195,15 @@ public class ExternalCommandCertificateValidatorSystemTest {
 
     private final X509Certificate createCert(final String cn) throws Exception {
         KeyPair keyPair = KeyTools.genKeys("2048", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert(
-                cn, 365, null,
-                keyPair.getPrivate(), keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(cn)
+                .setIssuerDn(cn)
+                .setValidityDays(365)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();
         return certificate;
     }
 }

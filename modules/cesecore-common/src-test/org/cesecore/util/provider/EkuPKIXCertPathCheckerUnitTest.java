@@ -12,6 +12,10 @@
  *************************************************************************/
 package org.cesecore.util.provider;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.cert.CertPathValidatorException;
@@ -30,18 +34,13 @@ import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
-
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Test EKU validation.
@@ -190,8 +189,18 @@ public class EkuPKIXCertPathCheckerUnitTest {
         } else {
             ku = X509KeyUsage.digitalSignature|X509KeyUsage.keyEncipherment;
         }
-        final X509Certificate cert = CertTools.genSelfCertForPurpose("CN=dummy", new Date(now-3600000L), new Date(now+3600000L), null, keyPair.getPrivate(), keyPair.getPublic(),
-                AlgorithmConstants.SIGALG_SHA256_WITH_RSA, isCa, ku, null, null, BouncyCastleProvider.PROVIDER_NAME, true, additionalExtensions);
+        final X509Certificate cert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=dummy")
+                .setIssuerDn("CN=dummy")
+                .setFirstDate(new Date(now-3600000L))
+                .setLastDate(new Date(now+3600000L))
+                .setSelfSignKeyPair(keyPair)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setCa(isCa)
+                .setKeyUsage(ku)
+                .setLdapOrder(true)
+                .setAdditionalExtensions(additionalExtensions)
+                .generateCertificate();
         final PKIXCertPathChecker pkixCertPathChecker = new EkuPKIXCertPathChecker(requiredOids);
         final Collection<String> unresolvedCritExts = new ArrayList<>(Arrays.asList(Extension.extendedKeyUsage.getId()));
         if (throwOnFailure) {

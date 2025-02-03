@@ -44,8 +44,6 @@ import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
-import java.io.File;
-import java.io.IOException;
 import java.security.cert.CertificateEncodingException;
 
 /**

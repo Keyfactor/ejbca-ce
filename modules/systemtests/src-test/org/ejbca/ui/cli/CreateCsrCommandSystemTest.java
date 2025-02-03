@@ -12,22 +12,22 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import com.keyfactor.util.CryptoProviderTools;
 
 import org.ejbca.ui.cli.csr.CreateCsrCommand;
 import org.ejbca.ui.cli.infrastructure.command.CommandResult;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CryptoProviderTools;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Basic system test for the CreateCsrCommand
- * 
+ *
  *
  */
 public class CreateCsrCommandSystemTest {
@@ -38,13 +38,13 @@ public class CreateCsrCommandSystemTest {
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
     }
-    
+
     @Test
     public void testVanilla() throws IOException {
         Path tmpDir = Files.createTempDirectory("CreateCsrCommandSystemTest");
         String[] args = new String[] { "--subjectdn", "CN=foo", "--keyalg", "RSA", "--keyspec", "1024", "--altkeyalg", "ML-DSA-44", "--destination", tmpDir.toFile().getAbsolutePath() };
         //Verify that the command ran without errors
         assertEquals("CreateCsrCommand executed with errors, see logs.", CommandResult.SUCCESS, command.execute(args));
-       
+
     }
 }

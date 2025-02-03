@@ -29,10 +29,12 @@ import org.ejbca.config.AvailableProtocolsConfiguration.AvailableProtocols;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.EnterpriseEditionEjbBridgeProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.db.DatabaseContentRule;
 import org.ejbca.core.protocol.ws.EjbcaWSSystemTest;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -58,7 +60,9 @@ public class ProtocolConfigSystemTest {
     
     private static String httpReqPath;
     private AvailableProtocolsConfiguration configBackup;
-    
+
+    @ClassRule
+    public static DatabaseContentRule databaseContentRule = new DatabaseContentRule();
     
     @Before
     public void preTest() {

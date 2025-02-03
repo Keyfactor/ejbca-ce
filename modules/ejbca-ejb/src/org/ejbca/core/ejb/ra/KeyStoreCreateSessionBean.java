@@ -26,11 +26,6 @@ import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Date;
 
-import jakarta.ejb.EJB;
-import jakarta.ejb.Stateless;
-import jakarta.ejb.TransactionAttribute;
-import jakarta.ejb.TransactionAttributeType;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Properties;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
@@ -79,6 +74,11 @@ import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.keys.KeyStoreTools;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+
+import jakarta.ejb.EJB;
+import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 
 /**
  * Implementation of KeyStoreCreateSession
@@ -435,9 +435,9 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             boolean loadkeys, boolean savekeys, boolean isNewToken, KeyPair rsaKeys, KeyPair altKeys, EndEntityInformation userdata, X509Certificate cert)
             throws EndEntityProfileValidationException, AuthorizationDeniedException, NoSuchEndEntityException, CertificateSignatureException,
             KeyStoreException, CertificateException, NoSuchAlgorithmException, InvalidKeySpecException {
+        final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
         if (userdata.getStatus() == EndEntityConstants.STATUS_GENERATED) {
             // Don't clear the password if "Allow renewal before expiration" is enabled
-            final EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(userdata.getEndEntityProfileId());
             if (eep == null || !eep.isRenewDaysBeforeExpirationUsed()) {
                 // If we have a successful key recovery via EJBCA WS we implicitly want to allow resetting of the password without edit_end_entity rights (ECA-4947)
                 if (loadkeys) {
@@ -453,7 +453,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
             }
         }
         // Make a certificate chain from the certificate and the CA-certificate
-        Certificate[] cachain = signSession.getCertificateChain(caid).toArray(new Certificate[0]);
+        X509Certificate[] cachain = signSession.getCertificateChain(caid).toArray(new X509Certificate[0]);
         // Verify CA-certificate
         Certificate rootcert = cachain[cachain.length - 1];
         if (CertTools.isSelfSigned(rootcert)) {
@@ -510,7 +510,7 @@ public class KeyStoreCreateSessionBean implements KeyStoreCreateSessionLocal, Ke
                 if (altKeys != null) { // TODO EJBCAINTER-789
                     throw new UnsupportedOperationException("Hybrid keystore support is not implemented yet");
                 }
-                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), /*altKeys != null ? altKeys.getPrivate() : null, TODO EJBCAINTER-789 */ cert, cachain);
+                ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), /*altKeys != null ? altKeys.getPrivate() : null, TODO EJBCAINTER-789 */ cert, cachain, eep.getP12Cipher());
             }
 
         } finally {

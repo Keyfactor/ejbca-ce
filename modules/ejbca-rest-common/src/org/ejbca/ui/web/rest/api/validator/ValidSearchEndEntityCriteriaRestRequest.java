@@ -13,6 +13,7 @@
 package org.ejbca.ui.web.rest.api.validator;
 
 import org.apache.commons.lang.StringUtils;
+import org.ejbca.ui.web.rest.api.io.request.EndEntityStatus;
 import org.ejbca.ui.web.rest.api.io.request.SearchEndEntityCriteriaRestRequest;
 
 import jakarta.validation.Constraint;
@@ -144,7 +145,7 @@ public @interface ValidSearchEndEntityCriteriaRestRequest {
                         ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchEndEntityCriteriaRestRequest.invalid.operation.notEqual}");
                         return false;
                     }
-                    final SearchEndEntityCriteriaRestRequest.EndEntityStatus endEntityStatus = SearchEndEntityCriteriaRestRequest.EndEntityStatus.resolveEndEntityStatusByName(value);
+                    final EndEntityStatus endEntityStatus = EndEntityStatus.resolveEndEntityStatusByName(value);
                     if(endEntityStatus == null) {
                         ValidationHelper.addConstraintViolation(constraintValidatorContext, "{ValidSearchEndEntityCriteriaRestRequest.invalid.value.unknownStatus}");
                         return false;

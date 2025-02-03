@@ -26,10 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import jakarta.ws.rs.client.Entity;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.CaTestUtils;
@@ -40,6 +36,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.junit.util.TraceLogMethodsTestWatcher;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -56,7 +53,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestWatcher;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.keyfactor.util.Base64;
@@ -64,6 +63,10 @@ import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
+
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourceSystemTestBase {
     
@@ -89,6 +92,9 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
     private static final Random RANDOM = new Random();
     
     private static boolean useKeyRecoveryBkup;
+    
+    @Rule
+    public final TestWatcher traceLogMethodsRule = new TraceLogMethodsTestWatcher(log);
     
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -139,7 +145,6 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
         endEntityProfile.setAvailableCAs(Arrays.asList(TEST_CA_DN.hashCode()));
         endEntityProfileSession.addEndEntityProfile(
                                 INTERNAL_ADMIN_TOKEN, TEST_EE_PROFILE_KEY_RECOVERY_NAME, endEntityProfile);   
-        
     }
 
     @AfterClass
@@ -200,6 +205,49 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
         enrollKeyStore(AlgorithmConstants.KEYALGORITHM_ECDSA, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
     }
 
+    // enroll ML-DSA-44 key x 3 types of keystore
+    @Test
+    public void enrollMLDSA44Pkcs12() {
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
+    
+    @Test
+    public void enrollMLDSA44Jks() {
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
+    
+    @Test
+    public void enrollMLDSA44Bcfks() {
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_MLDSA44, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
+    
+    // enroll FALCON-512 key x 3 types of keystore
+    @Test
+    public void enrollFalcon512Pkcs12() {
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_P12, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
+    
+    @Test
+    public void enrollFalcon512Jks() {
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_NAME);
+        enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_JKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
+    
+    @Test
+    public void enrollFalcon512Bcfks() {
+        // TODO: ECA-12721 Fix. Fails at
+        // com.keyfactor.util.keys.KeyTools.createBcfks
+        // Caused by: java.lang.IllegalStateException: java.security.KeyStoreException: BCFKS not found 
+        // java.security.NoSuchAlgorithmException: no such algorithm: BCFKS for provider BCPQC
+        // enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_NAME);
+        // TODO: ECA-12721 Fix. See above. 
+        // enrollKeyStore(AlgorithmConstants.KEYALGORITHM_FALCON512, SecConst.TOKEN_SOFT_BCFKS, TEST_EE_PROFILE_KEY_RECOVERY_NAME);
+    }
+    
     private void enrollKeyStore(String keyAlgorithm, int tokenType, String eeProfileName) {
         
         String keySpec = keyAlgorithm.equals(AlgorithmConstants.KEYALGORITHM_RSA) ? "2048" : "secp256r1";
@@ -250,7 +298,6 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
                     ", tokenType: " + tokenType, keyStoreRecovered.length!=0);
 
         }
-        
     }
     
     private String createUser(String eeProfileName, String certProfileName, int tokenType, String keyalgorithm, String keySpec) {
@@ -315,7 +362,6 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
         }
         
         return actualJsonString;
-            
     }
         
     // negative: empty user name, password, CA, non-existent EE, wrong password, not allowed bit length, not allowed algo
@@ -374,7 +420,6 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
             log.error(e1);
             fail("failed to parse keystore enroll response");
         }
-        
     }
     
     @Test
@@ -401,7 +446,5 @@ public class CertificateRestResourceEnrollKeyStoreSystemTest extends RestResourc
             log.error(e1);
             fail("failed to parse keystore enroll response");
         }
-        
-        
     }
 }

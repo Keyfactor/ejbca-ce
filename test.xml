@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <project name="ejbcatest" basedir=".">
 
+    <taskdef uri="antlib:org.jacoco.ant" resource="org/jacoco/ant/antlib.xml">
+        <classpath path="lib/coverage/jacocoant.jar"/>
+    </taskdef>
+
     <target name="test:run" description="run both stand-alone JUnit test cases and system test" depends="deleteDirectories">
     	<antcall target="test:runsa" inheritall="true" inheritrefs="true"><param name="aggregate.results" value="true"/></antcall>
     	<antcall target="test:runsys" inheritall="true" inheritrefs="true"><param name="aggregate.results" value="true"/></antcall>
@@ -18,6 +22,7 @@
     	<antcall target="optional-test-acme-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-rest-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-caa-system" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-mpic-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-ssh-system" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-cits-system" inheritall="true" inheritrefs="true"/>
     	<antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -63,7 +68,8 @@
         <antcall target="optional-test-configdump-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-ct" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-caa-unit" inheritall="true" inheritrefs="true"/>
-    	<antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-mpic-unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="optional-test-ssh-unit" inheritall="true" inheritrefs="true"/>
     	<antcall target="optional-test-cits-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-peerconnector-unit" inheritall="true" inheritrefs="true"/>
         <antcall target="optional-test-plugins-ee-unit" inheritall="true" inheritrefs="true"/>
@@ -130,6 +136,13 @@
     <target name="optional-test-caa-system" if="${caa.exists}">
         <ant antfile="build.xml" dir="modules/caa" target="test:system" inheritall="true" inheritrefs="true"/>
     </target>
+    <condition property="mpic.exists"><available file="modules/caa/build.xml" /></condition>
+    <target name="optional-test-mpic-unit" if="${mpic.exists}">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:unit" inheritall="true" inheritrefs="true"/>
+    </target>
+    <target name="optional-test-mpic-system" if="${mpic.exists}">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:system" inheritall="true" inheritrefs="true"/>
+    </target>
     <condition property="ssh.exists"><available file="modules/ssh/build.xml" /></condition>
     <target name="optional-test-ssh-unit" if="${ssh.exists}">
         <ant antfile="build.xml" dir="modules/ssh" target="test:unit" inheritall="true" inheritrefs="true"/>
@@ -171,6 +184,7 @@
 					<include name="modules/acme/src-test/**/${test.runone}.java" />
 					<include name="modules/acme/src-common-test/**/${test.runone}.java" />
 					<include name="modules/caa/src-test/**/${test.runone}.java" />
+					<include name="modules/mpic/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-ws-cli/src-test/**/${test.runone}.java" />
 					<include name="modules/ejbca-rest-api/src-test/**/${test.runone}.java" />
                     <include name="modules/admin-gui/src-test/**/${test.runone}.java" />
@@ -250,6 +264,9 @@
     	</condition>
         <condition property="module" value="modules/caa">
             <matches string="${test-fullname}" pattern="^modules/caa/.*$"/>
+        </condition>
+        <condition property="module" value="modules/mpic">
+            <matches string="${test-fullname}" pattern="^modules/mpic/.*$"/>
         </condition>
     	<condition property="module" value="modules/ejbca-ws-cli">
     	    <matches string="${test-fullname}" pattern="^modules/ejbca-ws-cli/.*$"/>
@@ -485,6 +502,16 @@
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
     </target>
 
+    <target name="test:unit:mpic" description="run all JUnit tests for mpic." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:unit" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:system:mpic" description="run all System tests for mpic." depends="deleteDirectories">
+        <ant antfile="build.xml" dir="modules/mpic" target="test:system" inheritall="true" inheritrefs="true"/>
+        <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
     <target name="test:unit:cesecore-entity" description="run all JUnit tests for cesecore-entity." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/cesecore-entity" target="test:unit" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
@@ -518,6 +545,168 @@
     <target name="test:system:ssh" description="run all System tests for ssh." depends="deleteDirectories">
         <ant antfile="build.xml" dir="modules/ssh" target="test:system" inheritall="true" inheritrefs="true"/>
         <antcall target="createreport" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="coverage:report-systemtest-processor" description="internal only: process coverage for system test.">
+        <mkdir dir="./reports/coverage-report"/>
+        <java jar="lib/coverage/jacococli.jar" fork="true" failonerror="false">
+          <!-- TODO: not included now statedump, unidfnr -->
+          <arg line="report jacoco.exec --csv ./reports/coverage-report/coverage-report.csv --html ./reports/coverage-report/html-report
+                                                 --sourcefiles ./modules/acme/src
+                                                 --sourcefiles ./modules/admin-gui/src
+                                                 --sourcefiles ./modules/caa/src
+                                                 --sourcefiles ./modules/certificatestore/src
+                                                 --sourcefiles ./modules/cesecore-common/src
+                                                 --sourcefiles ./modules/cesecore-cvcca/src
+                                                 --sourcefiles ./modules/cesecore-ejb/src
+                                                 --sourcefiles ./modules/cesecore-entity/src
+                                                 --sourcefiles ./modules/cesecore-x509ca/src
+                                                 --sourcefiles ./modules/cits/src
+                                                 --sourcefiles ./modules/clearcache-war/src
+                                                 --sourcefiles ./modules/clientToolBox/src
+                                                 --sourcefiles ./modules/cmpclient/src
+                                                 --sourcefiles ./modules/configdump/src-common
+                                                 --sourcefiles ./modules/configdump/src-ejb
+                                                 --sourcefiles ./modules/crlstore/src
+                                                 --sourcefiles ./modules/ct/src
+                                                 --sourcefiles ./modules/edition-specific-ee/src-ejb
+                                                 --sourcefiles ./modules/ejbca-cmp-war/src
+                                                 --sourcefiles ./modules/ejbca-common/src
+                                                 --sourcefiles ./modules/ejbca-common-web/src
+                                                 --sourcefiles ./modules/ejbca-ejb/src
+                                                 --sourcefiles ./modules/ejbca-ejb-cli/src
+                                                 --sourcefiles ./modules/ejbca-entity/src
+                                                 --sourcefiles ./modules/ejbca-properties/src
+                                                 --sourcefiles ./modules/ejbca-rest-api/src
+                                                 --sourcefiles ./modules/ejbca-rest-ca/src
+                                                 --sourcefiles ./modules/ejbca-rest-camanagement/src
+                                                 --sourcefiles ./modules/ejbca-rest-certificate/src
+                                                 --sourcefiles ./modules/ejbca-rest-coap/src
+                                                 --sourcefiles ./modules/ejbca-rest-common/src
+                                                 --sourcefiles ./modules/ejbca-rest-configdump/src
+                                                 --sourcefiles ./modules/ejbca-rest-cryptotoken/src
+                                                 --sourcefiles ./modules/ejbca-rest-endentity/src
+                                                 --sourcefiles ./modules/ejbca-rest-ssh/src
+                                                 --sourcefiles ./modules/ejbca-rest-system/src
+                                                 --sourcefiles ./modules/ejbca-scep-war/src
+                                                 --sourcefiles ./modules/ejbca-webdist-war/src
+                                                 --sourcefiles ./modules/ejbca-ws/src
+                                                 --sourcefiles ./modules/ejbca-ws-cli/src
+                                                 --sourcefiles ./modules/est/src
+                                                 --sourcefiles ./modules/healthcheck-war/src
+                                                 --sourcefiles ./modules/msae/src
+                                                 --sourcefiles ./modules/plugins/src
+                                                 --sourcefiles ./modules/plugins-ee/src
+                                                 --sourcefiles ./modules/proxy-ca/src
+                                                 --sourcefiles ./modules/ra-gui/src
+                                                 --sourcefiles ./modules/ssh/src
+                                                 --sourcefiles ./modules/ssh/src-war
+                                                 --sourcefiles ./modules/va/src-war
+                                                 --sourcefiles ./modules/peerconnector/src-cli
+                                                 --sourcefiles ./modules/peerconnector/src-common
+                                                 --sourcefiles ./modules/peerconnector/src-ejb
+                                                 --sourcefiles ./modules/peerconnector/src-interface
+                                                 --sourcefiles ./modules/peerconnector/src-publ
+                                                 --sourcefiles ./modules/peerconnector/src-ra
+                                                 --sourcefiles ./modules/peerconnector/src-rar
+                                                 --sourcefiles ./modules/peerconnector/src-war
+
+                                                 --classfiles ./modules/acme/build
+                                                 --classfiles ./modules/admin-gui/build
+                                                 --classfiles ./modules/caa/build
+                                                 --classfiles ./modules/certificatestore/build-certstore
+                                                 --classfiles ./modules/cesecore-common/build
+                                                 --classfiles ./modules/cesecore-cvcca/build
+                                                 --classfiles ./modules/cesecore-ejb/build
+                                                 --classfiles ./modules/cesecore-entity/build
+                                                 --classfiles ./modules/cesecore-x509ca/build
+                                                 --classfiles ./modules/cits/build
+                                                 --classfiles ./modules/clearcache-war/build
+                                                 --classfiles ./modules/clientToolBox/build
+                                                 --classfiles ./modules/configdump/build-common
+                                                 --classfiles ./modules/configdump/build-ejb
+                                                 --classfiles ./modules/crlstore/build-crlstore
+                                                 --classfiles ./modules/ct/build
+                                                 --classfiles ./modules/edition-specific-ee/build
+                                                 --classfiles ./modules/ejbca-cmp-war/build
+                                                 --classfiles ./modules/ejbca-common/build-common
+                                                 --classfiles ./modules/ejbca-common-web/build-common-web
+                                                 --classfiles ./modules/ejbca-ejb/build
+                                                 --classfiles ./modules/ejbca-ejb-cli/build
+                                                 --classfiles ./modules/ejbca-entity/build
+                                                 --classfiles ./modules/ejbca-properties/build
+                                                 --classfiles ./modules/ejbca-rest-api/build
+                                                 --classfiles ./modules/ejbca-rest-ca/build
+                                                 --classfiles ./modules/ejbca-rest-camanagement/build
+                                                 --classfiles ./modules/ejbca-rest-certificate/build
+                                                 --classfiles ./modules/ejbca-rest-coap/build
+                                                 --classfiles ./modules/ejbca-rest-common/build
+                                                 --classfiles ./modules/ejbca-rest-configdump/build
+                                                 --classfiles ./modules/ejbca-rest-cryptotoken/build
+                                                 --classfiles ./modules/ejbca-rest-endentity/build
+                                                 --classfiles ./modules/ejbca-rest-ssh/build
+                                                 --classfiles ./modules/ejbca-rest-system/build
+                                                 --classfiles ./modules/ejbca-scep-war/build
+                                                 --classfiles ./modules/ejbca-webdist-war/build
+                                                 --classfiles ./modules/ejbca-ws/build
+                                                 --classfiles ./modules/ejbca-ws-cli/build
+                                                 --classfiles ./modules/est/build-war
+                                                 --classfiles ./modules/healthcheck-war/build
+                                                 --classfiles ./modules/msae/build
+                                                 --classfiles ./modules/plugins/build-plugins
+                                                 --classfiles ./modules/plugins-ee/build-plugins-ee
+                                                 --classfiles ./modules/proxy-ca/build
+                                                 --classfiles ./modules/ra-gui/build
+                                                 --classfiles ./modules/ssh/build-ssh
+                                                 --classfiles ./modules/ssh/build-war
+                                                 --classfiles ./modules/va/build-status
+                                                 --classfiles ./modules/peerconnector/build-cli
+                                                 --classfiles ./modules/peerconnector/build-common
+                                                 --classfiles ./modules/peerconnector/build-ejb
+                                                 --classfiles ./modules/peerconnector/build-interface
+                                                 --classfiles ./modules/peerconnector/build-publ
+                                                 --classfiles ./modules/peerconnector/build-ra
+                                                 --classfiles ./modules/peerconnector/build-rar
+                                                 --classfiles ./modules/peerconnector/build-war
+                                                "/>
+          <classpath>
+            <pathelement location="lib/jacococli.jar"/>
+            <pathelement path="${java.class.path}"/>
+          </classpath>
+        </java>
+        <java jar="lib/coverage/DecorateCoverageReport.jar" fork="true" failonerror="false">
+		<arg line="updatedfiles.txt"/>
+	</java>
+    </target>
+
+    <target name="coverage:reset-systemtest" description="remove coverage for system test in wildfly.">
+        <java jar="lib/coverage/jacococli.jar" fork="true" failonerror="false" maxmemory="128m">
+          <arg line="dump --reset --address localhost --port 8079 --destfile jacoco.exec"/>
+          <classpath>
+            <pathelement location="lib/jacococli.jar"/>
+            <pathelement path="${java.class.path}"/>
+          </classpath>
+        </java>
+        <delete file="jacoco.exec"/>
+    </target>
+
+    <target name="coverage:report-systemtest" description="get coverage for system test. automatically adds links to updated classes after split from main. additional files can be added as updatedfiles.txt in project base directory">
+        <java jar="lib/coverage/jacococli.jar" fork="true" failonerror="false">
+          <arg line="dump --reset --address localhost --port 8079 --destfile jacoco.exec"/>
+          <classpath>
+            <pathelement location="lib/jacococli.jar"/>
+            <pathelement path="${java.class.path}"/>
+          </classpath>
+        </java>
+        <antcall target="coverage:report-systemtest-processor" inheritall="true" inheritrefs="true"/>
+    </target>
+
+    <target name="test:runone-coverage-systemtest" description="run a single Test and report coverage specified -Dtest.runone=classname" depends="deleteDirectories">
+        <antcall target="coverage:reset-systemtest" inheritall="true" inheritrefs="true"/>
+        <antcall target="test:runone" inheritall="true" inheritrefs="true">
+            <param name="test.runone" value="${test.runone}"/>
+        </antcall>
+        <antcall target="coverage:report-systemtest" inheritall="true" inheritrefs="true"/>
     </target>
 
     <target name="createreport">

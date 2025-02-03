@@ -12,9 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -27,6 +24,13 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Properties;
+
+import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.StringTools;
+import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
+import com.keyfactor.util.keys.token.CryptoToken;
+import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
+import com.keyfactor.util.keys.token.KeyGenParams;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -93,17 +97,15 @@ import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import com.keyfactor.util.CryptoProviderTools;
-import com.keyfactor.util.StringTools;
-import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
-import com.keyfactor.util.keys.token.CryptoToken;
-import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
-import com.keyfactor.util.keys.token.KeyGenParams;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * System tests focusing on the creation of Hybrid X509 Certificates
  */
 public class HybridCertificateSystemTest {
+
+    private static final Logger log = Logger.getLogger(HybridCertificateSystemTest.class);
 
     @Rule
     public final TestWatcher traceLogMethodsRule = new TestWatcher() {
@@ -123,39 +125,54 @@ public class HybridCertificateSystemTest {
     @Rule
     public TestName testName = new TestName();
 
-    private static final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(
-            new UsernamePrincipal("HybridCertificateSystemTest"));
-    private static final Logger log = Logger.getLogger(HybridCertificateSystemTest.class);
-
-    private final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private final CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CertificateCreateSessionRemote.class);
-    private final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
-    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(EndEntityManagementSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-
+    private AuthenticationToken alwaysAllowToken;
+    private CAAdminSessionRemote caAdminSession;
+    private CaSessionRemote caSession;
+    private CertificateCreateSessionRemote certificateCreateSession;
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession;
+    private EndEntityManagementSessionRemote endEntityManagementSession;
+    private InternalCertificateStoreSessionRemote internalCertificateStoreSession;
+    private SignSessionRemote signSession;
     private int cryptoTokenId;
     private X509CAInfo hybridRoot;
-
-    private final String username = testName.getMethodName() + "_EE";
-    private final String subjectDn = "CN=" + username;
+    private String username;
+    private String subjectDn;
 
     @BeforeClass
     public static void setUpCryptoProvider() {
         CryptoProviderTools.installBCProvider();
     }
 
+    private void deleteCryptoTokenIfItExists(String cryptoTokenName) throws AuthorizationDeniedException {
+        final var id = cryptoTokenManagementSession.getIdFromName(cryptoTokenName);
+        if (id != null) {
+            cryptoTokenManagementSession.deleteCryptoToken(alwaysAllowToken, id);
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
+        alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(
+                new UsernamePrincipal("HybridCertificateSystemTest"));
+        caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        certificateCreateSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CertificateCreateSessionRemote.class);
+        cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+        endEntityManagementSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(EndEntityManagementSessionRemote.class);
+        internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+        username = testName.getMethodName() + "_EE";
+        subjectDn = "CN=" + username;
+
         final String cryptoTokenPin = "foo123";
         final String cryptoTokenName = testName.getMethodName() + "CryptoToken";
         final Properties cryptoTokenProperties = new Properties();
         cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, cryptoTokenPin);
+        deleteCryptoTokenIfItExists(cryptoTokenName);
         cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(alwaysAllowToken, cryptoTokenName, SoftCryptoToken.class.getName(),
                 cryptoTokenProperties, null, cryptoTokenPin.toCharArray());
         cryptoTokenManagementSession.createKeyPair(alwaysAllowToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS,
@@ -183,7 +200,7 @@ public class HybridCertificateSystemTest {
 
     @After
     public void tearDown() throws Exception {
-        //Delete the end entity 
+        //Delete the end entity
         if (endEntityManagementSession.existsUser(username)) {
             endEntityManagementSession.deleteUser(alwaysAllowToken, username);
         }
@@ -211,7 +228,7 @@ public class HybridCertificateSystemTest {
     }
 
     /**
-     * Try enrolling a hybrid X509 certificate 
+     * Try enrolling a hybrid X509 certificate
      *
      */
     @Test

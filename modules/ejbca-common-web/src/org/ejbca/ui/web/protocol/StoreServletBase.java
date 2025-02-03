@@ -25,12 +25,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.internal.CaCertificateCache;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
-import org.cesecore.certificates.certificate.HashID;
 import org.ejbca.config.VAConfiguration;
 import org.ejbca.util.HTMLTools;
 
@@ -150,7 +148,7 @@ public abstract class StoreServletBase extends HttpServlet {
 				return;
 			}
 		}
-		printInfo(req, resp);
+		printInfo(resp);
 	}
 
 	private boolean alias(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -241,17 +239,13 @@ public abstract class StoreServletBase extends HttpServlet {
 
 
     /**
-     * Print info and download URL of a certificate or CRL.
-     * <p>
-     *     The implementation has to escape characters of URL to be HTML safe.
-     * </p>
+     * Print info and download URL of a certificate or CRL. A relative URL with only a query string is used.
      *
      * @param cert certificate
      * @param indent indentation
      * @param pw PrintWriter
-     * @param url The URL in the escaped form for HTML
      */
-	public abstract void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url);
+	public abstract void printInfo(X509Certificate cert, String indent, PrintWriter pw);
 
 	/**
 	 * @return the title of the page
@@ -288,10 +282,10 @@ public abstract class StoreServletBase extends HttpServlet {
 		writer.flush();
 	}
 
-	private void printInfo(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	private void printInfo(final HttpServletResponse resp) throws IOException {
 		final StringWriter sw = new StringWriter();
 		final PrintWriter pw = new HtmlPrintWriter(sw);
-		printInfo(this.certCache.getRootCertificates(), "", pw, req.getRequestURL().toString());
+		printInfo(this.certCache.getRootCertificates(), "", pw);
 		pw.flush();
 		pw.close();
 		sw.flush();
@@ -316,5 +310,5 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 	}
 	
-	protected abstract void printInfo(X509Certificate[] certs, String indent, PrintWriter pw, String url);
+	protected abstract void printInfo(X509Certificate[] certs, String indent, PrintWriter pw);
 }

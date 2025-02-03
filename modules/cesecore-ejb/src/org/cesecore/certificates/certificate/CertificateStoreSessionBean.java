@@ -159,8 +159,15 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     	// Check that user is authorized to the CA that issued this certificate
     	int caid = CertTools.getIssuerDN(incert).hashCode();
         authorizedToCA(admin, caid);
-    	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, crlPartitionIndex, 
-    	        endEntityProfileId, tag, updateTime, accountBindingId);
+    	return storeCertificateNoAuth(admin, incert, username, cafp, null, status, type, certificateProfileId, endEntityProfileId,
+                crlPartitionIndex, tag, updateTime, accountBindingId);
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public CertificateDataWrapper storeCertificateNewTransaction(AuthenticationToken admin, Certificate incert, String username, String cafp, int status, int type, int certificateProfileId, 
+            final int endEntityProfileId, final int crlPartitionIndex, String tag, long updateTime, String accountBindingId) throws AuthorizationDeniedException {
+        return storeCertificate(admin, incert, username, cafp, status, type, certificateProfileId, endEntityProfileId, crlPartitionIndex, tag, updateTime, accountBindingId);
     }
 
     @Override
@@ -372,6 +379,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, authenticationToken.toString(),
                 caId, serialNo, username, details);
         return true;
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public boolean updateCertificateOnlyNewTransaction(AuthenticationToken authenticationToken, Certificate certificate) {
+        return updateCertificateOnly(authenticationToken, certificate);
     }
 
     @Override
@@ -595,6 +608,17 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         }
 
         return ret;
+    }
+    
+    @Override
+    public X509Certificate findLatestX509CertificateBySubjectforEndEntity(String subjectDN) {
+        CertificateData certificateData = certificateDataSession.findLatestBySubjectDN(subjectDN);
+        CertificateDataWrapper certificateDataWrapper = new CertificateDataWrapper(certificateData, 
+                            Base64CertData.findByFingerprint(entityManager, certificateData.getFingerprint()));
+        if (!(certificateDataWrapper.getCertificate() instanceof X509Certificate)) {
+            return null;
+        }
+        return (X509Certificate) certificateDataWrapper.getCertificate();
     }
 
     @Override

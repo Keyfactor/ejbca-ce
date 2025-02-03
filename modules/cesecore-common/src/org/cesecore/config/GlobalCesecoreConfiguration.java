@@ -39,6 +39,12 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     private static final String REDACT_PII_DATA_DEFAULT = "redact.pii.default";
     private static final String REDACT_PII_DATA_ENFORCED = "redact.pii.enforced";
     
+    private static final String CT_CACHE_ENABLED_KEY = "ct_cache_enabled";
+    private static final String CT_CACHE_SIZE_KEY = "ct_cache_size";
+    private static final String CT_CACHE_CLEANUP_INTERVAL_KEY = "ct_cache_cleanup_interval";
+    private static final String CT_CACHE_FAST_FAIL_ENABLED_KEY = "ct_cache_fast_fail_enabled";
+    private static final String CT_CACHE_FAST_FAIL_BACKOFF_KEY = "ct_cache_fast_fail_backoff";
+    
     @Override
     public void upgrade() {
     }
@@ -106,4 +112,51 @@ public class GlobalCesecoreConfiguration extends ConfigurationBase implements Se
     public void setMaximumQueryTimeout(final long maximumQueryTimeoutMs) { 
         data.put(MAXIMUM_QUERY_TIMEOUT_KEY, Math.max(maximumQueryTimeoutMs, 0L));
     }
+    
+    public boolean getCtCacheEnabled() { return getBoolean(CT_CACHE_ENABLED_KEY, true); }
+    public void setCtCacheEnabled(final boolean value) { data.put(CT_CACHE_ENABLED_KEY, value); } 
+    
+    public long getCtCacheSize() { 
+        Long value = (Long) data.get(CT_CACHE_SIZE_KEY);
+        if(value == null) {
+            setCtCacheSize(1000000L);
+        }
+        return (Long) data.get(CT_CACHE_SIZE_KEY);
+    }
+    public void setCtCacheSize(final long ctCacheSize) {
+        data.put(CT_CACHE_SIZE_KEY, ctCacheSize);
+    }
+    
+    public long getCtCacheCleanupInterval() {
+        Long value = (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
+        if(value == null) {
+            setCtCacheCleanupInterval(10000L);
+        }
+        return (Long) data.get(CT_CACHE_CLEANUP_INTERVAL_KEY);
+    }
+    
+    public void setCtCacheCleanupInterval(final long interval) {
+        data.put(CT_CACHE_CLEANUP_INTERVAL_KEY, interval);
+    }
+    
+    public boolean getCtCacheFastFailEnabled() {
+        return getBoolean(CT_CACHE_FAST_FAIL_ENABLED_KEY, true);
+    }
+    
+    public void setCtCacheFastFailEnabled(final boolean fastFailEnabled) {
+        data.put(CT_CACHE_FAST_FAIL_ENABLED_KEY, fastFailEnabled);
+    }
+    
+    public long getCtCacheFastFailBackoff() {
+        Long value = (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
+        if(value == null) {
+            setCtCacheFastFailBackoff(1000L);
+        }
+        return (Long) data.get(CT_CACHE_FAST_FAIL_BACKOFF_KEY);
+    }
+    
+    public void setCtCacheFastFailBackoff(final long backoff) {
+        data.put(CT_CACHE_FAST_FAIL_BACKOFF_KEY, backoff);
+    }
+    
 }
