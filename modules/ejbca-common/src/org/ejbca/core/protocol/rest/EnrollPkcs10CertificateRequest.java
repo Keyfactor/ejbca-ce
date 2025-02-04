@@ -165,10 +165,6 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
             this.includeChain = includeChain;
             return this;
         }
-
-        public EnrollPkcs10CertificateRequest build() {
-            return new EnrollPkcs10CertificateRequest(this);
-        }
         
         public Builder email(final String email) {
             this.email = email;
@@ -229,6 +225,10 @@ public class EnrollPkcs10CertificateRequest implements Serializable {
         public Builder endTime(final String endTime) {
             this.endTime = endTime;
             return this;
+        }
+
+        public EnrollPkcs10CertificateRequest build() {
+            return new EnrollPkcs10CertificateRequest(this);
         }
     }
     
