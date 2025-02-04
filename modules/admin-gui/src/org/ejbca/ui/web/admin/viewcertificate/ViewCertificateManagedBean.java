@@ -27,6 +27,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.AvailableExtendedKeyUsagesConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -596,7 +597,7 @@ public class ViewCertificateManagedBean extends BaseManagedBean implements Seria
         return getEjbcaWebBean().getBaseUrl()+ getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + java.net.URLEncoder.encode("viewcertificate.xhtml","UTF-8") ;
     }
 
-    public void actionKeyRecovery() throws AuthorizationDeniedException {
+    public void actionKeyRecovery() throws AuthorizationDeniedException, CADoesntExistsException {
         if (!cacerts && getRaBean().keyRecoveryPossible(certificateData.getCertificate(), certificateData.getUsername()) && useKeyRecovery) {
             try {
                 getRaBean().markForRecovery(certificateData.getUsername(), certificateData.getCertificate());

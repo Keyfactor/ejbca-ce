@@ -118,7 +118,7 @@ public class ValidatorBean extends BaseManagedBean implements Serializable {
     private transient HtmlPanelGrid dataGrid;
     
     /** Test file */
-    private UploadedFile testFile;   
+    private transient UploadedFile testFile;   
     private String testResults = "";
 
     public ValidatorBean() {
