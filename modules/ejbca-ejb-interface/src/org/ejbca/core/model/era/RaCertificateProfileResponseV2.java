@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
@@ -36,6 +37,21 @@ public class RaCertificateProfileResponseV2 implements Serializable {
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     private List<Integer> availableBitLengths;
+    private List<Integer> keyUsages;
+    private List<String> extendedKeyUsages;
+    private String validity;
+
+    public List<Integer> getKeyUsages() {
+        return keyUsages;
+    }
+
+    public List<String> getExtendedKeyUsages() {
+        return extendedKeyUsages;
+    }
+
+    public String getValidity() {
+        return validity;
+    }
 
     public Integer getCertificateProfileId() {
         return certificateProfileId;
@@ -68,6 +84,43 @@ public class RaCertificateProfileResponseV2 implements Serializable {
     public static class RaCertificateProfileResponseConverter{
         RaCertificateProfileResponseConverter(){
         }
+        
+        private List<Integer> getCertProfileKeyUsages(final CertificateProfile certificateProfile ) {
+            
+            List<Integer> results = new ArrayList<>();
+
+            if (certificateProfile.getKeyUsage(CertificateConstants.DIGITALSIGNATURE)) {
+                results.add(CertificateConstants.DIGITALSIGNATURE);
+            }
+
+            if (certificateProfile.getKeyUsage(CertificateConstants.NONREPUDIATION)) {
+                results.add(CertificateConstants.NONREPUDIATION);
+            }
+            if (certificateProfile.getKeyUsage(CertificateConstants.KEYENCIPHERMENT)) {
+                results.add(CertificateConstants.KEYENCIPHERMENT);
+            }
+            if (certificateProfile.getKeyUsage(CertificateConstants.DATAENCIPHERMENT)) {
+                results.add(CertificateConstants.DATAENCIPHERMENT);
+            }
+            if (certificateProfile.getKeyUsage(CertificateConstants.KEYAGREEMENT)) {
+                results.add(CertificateConstants.KEYAGREEMENT);
+            }
+            if (certificateProfile.getKeyUsage(CertificateConstants.KEYCERTSIGN)) {
+                results.add(CertificateConstants.KEYCERTSIGN);
+            }
+            if (certificateProfile.getKeyUsage(CertificateConstants.CRLSIGN)) {
+                results.add(CertificateConstants.CRLSIGN);
+            }
+            if (certificateProfile.getKeyUsage(CertificateConstants.ENCIPHERONLY)) {
+                results.add(CertificateConstants.ENCIPHERONLY);
+            }
+
+            if (certificateProfile.getKeyUsage(CertificateConstants.DECIPHERONLY)) {
+                results.add(CertificateConstants.DECIPHERONLY);
+            }
+
+            return results;
+        }
 
         private List<String> getAvailableCasFromProfile(List<Integer>caIds, IdNameHashMap<CAInfo> caInfos) {
             List<String> availableCas = new ArrayList<>();
@@ -99,14 +152,14 @@ public class RaCertificateProfileResponseV2 implements Serializable {
 
             if (!availableKeyAlgorithmsFromProfile.contains(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
                 availableEcdsaCurvesFromProfile.add("No ECDSA curves available.");
-            }else {
+            } else {
                 availableEcdsaCurvesFromProfile = certificateProfile.getAvailableEcCurvesAsList();
             }
 
             if ((!availableKeyAlgorithmsFromProfile.contains(AlgorithmConstants.KEYALGORITHM_RSA)) && 
                     (!availableEcdsaCurvesFromProfile.contains(CertificateProfile.ANY_EC_CURVE))) {
                 availableBitLengthsFromProfile.add(0);
-            }else {
+            } else {
                 availableBitLengthsFromProfile = certificateProfile.getAvailableBitLengthsAsList();
             }
 
@@ -115,6 +168,9 @@ public class RaCertificateProfileResponseV2 implements Serializable {
             response.availableBitLengths = availableBitLengthsFromProfile;
             response.availableEcdsaCurves = availableEcdsaCurvesFromProfile;
             response.availableCas = getAvailableCasFromProfile(caIds, caInfos);
+            response.keyUsages = getCertProfileKeyUsages(certificateProfile);
+            response.extendedKeyUsages = certificateProfile.getExtendedKeyUsageOids();
+            response.validity = certificateProfile.getEncodedValidity();
 
             if (useAlternativeSignature) {
                 response.availableAlternativeAlgorithms = availableAlternativeKeyAlgorithmsFromProfile;

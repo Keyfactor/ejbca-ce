@@ -36,14 +36,22 @@ public class CertificateProfileInfoRestResponseV2 {
     private List<String> availableEcdsaCurves;
     private List<String> availableCas;
     
+    private List<Integer> keyUsages;
+    private List<String> extendedKeyUsages;
+    private String validity;
+    
     public CertificateProfileInfoRestResponseV2(List<String> availableKeyAlgs, List<String> availableAltKeyAlgs, List<Integer> availableBitLengths,
-            List<String> availableEcdsaCurves, List<String> availableCas, final Integer certificateProfileId) {
+            List<String> availableEcdsaCurves, List<String> availableCas, final Integer certificateProfileId, final List<Integer> keyUsages, 
+            final List<String> extendedKeyUsages, final String validity) {
         this.certificateProfileId = certificateProfileId;
         this.availableKeyAlgs = availableKeyAlgs;
         this.availableAltKeyAlgs = availableAltKeyAlgs;
         this.availableBitLenghts = availableBitLengths;
         this.availableEcdsaCurves = availableEcdsaCurves;
         this.availableCas = availableCas;
+        this.keyUsages = keyUsages;
+        this.extendedKeyUsages = extendedKeyUsages;
+        this.validity = validity;
     }
     
     public CertificateProfileInfoRestResponseV2() {
@@ -73,6 +81,18 @@ public class CertificateProfileInfoRestResponseV2 {
     public List<String> getAvailableCas() {
         return availableCas;
     }
+    
+    public List<Integer> getKeyUsages() {
+        return keyUsages;
+    }
+    
+    public List<String> getExtendedKeyUsages() {
+        return extendedKeyUsages;
+    }
+    
+    public String getValidity() {
+        return validity;
+    }
 
     /**
      * Returns a builder instance for this class.
@@ -90,6 +110,9 @@ public class CertificateProfileInfoRestResponseV2 {
         private List<Integer> availableProfileBitLengths;
         private List<String> availableProfileEcdsaCurves;
         private List<String> availableProfileCas;
+        private List<Integer> keyUsages;
+        private List<String> extendedKeyUsages;
+        private String validity;
         
         public CertificateProfileInfoRestResponseBuilderV2() {}
 
@@ -122,10 +145,25 @@ public class CertificateProfileInfoRestResponseV2 {
             this.availableProfileCas = availableProfileCas;
             return this;
         }
+        
+        public CertificateProfileInfoRestResponseBuilderV2 setKeyUsages(List<Integer> keyUsages) {
+            this.keyUsages = keyUsages;
+            return this;
+        }
+        
+        public CertificateProfileInfoRestResponseBuilderV2 setExtendedKeyUsages(List<String> extendedKeyUsages) {
+            this.extendedKeyUsages = extendedKeyUsages;
+            return this;
+        }
+        
+        public CertificateProfileInfoRestResponseBuilderV2 setValidity(String validity) {
+            this.validity = validity;
+            return this;
+        }
 
         public CertificateProfileInfoRestResponseV2 build() {
             return new CertificateProfileInfoRestResponseV2(availableProfileAlgorithms, availableProfileAlternativeAlgorithms, availableProfileBitLengths,
-                                                            availableProfileEcdsaCurves, availableProfileCas, certificateProfileId);
+                                                            availableProfileEcdsaCurves, availableProfileCas, certificateProfileId, keyUsages, extendedKeyUsages, validity);
         }
     }
     
@@ -143,6 +181,9 @@ public class CertificateProfileInfoRestResponseV2 {
                     .setAvailableBitLengths(raResponse.getAvailableBitLengths())
                     .setAvailableEcdsaCurves(raResponse.getAvailableEcdsaCurves())
                     .setAvailableProfileCAs(raResponse.getAvailableCas())
+                    .setKeyUsages(raResponse.getKeyUsages())
+                    .setExtendedKeyUsages(raResponse.getExtendedKeyUsages())
+                    .setValidity(raResponse.getValidity())
                     .build();
         }
     }
