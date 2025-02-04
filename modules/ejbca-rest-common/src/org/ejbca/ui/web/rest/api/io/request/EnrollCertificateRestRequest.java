@@ -208,7 +208,7 @@ public class EnrollCertificateRestRequest {
             }
 
             final List<Map.Entry<String, String>> customData = new ArrayList<>();
-            List<ExtendedInformationRestRequestComponent> components = enrollCertificateRestRequest.getExtensionData();
+            List<ExtendedInformationRestRequestComponent> components = enrollCertificateRestRequest.getCustomData();
             if (components != null && !components.isEmpty()) {
                 components.forEach(component -> {
                     customData.add(new AbstractMap.SimpleEntry<>(component.getName(),component.getValue()));
