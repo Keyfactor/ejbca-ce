@@ -46,6 +46,7 @@ import org.cesecore.certificates.certificate.certextensions.standard.SubjectDire
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.easymock.EasyMock;
 import org.easymock.EasyMockRunner;
 import org.easymock.Mock;
@@ -335,15 +336,15 @@ public class EjbcaRestHelperUnitTest {
     
     @Test
     public void shouldConvertToCorrectEndEntityInformationWithoutEmail() throws Exception {
-        shouldConvertToCorrectEndEntityInformation(null);
+        shouldConvertToCorrectEndEntityInformation(null, false);
     }
     
     @Test
     public void shouldConvertToCorrectEndEntityInformationWithEmail() throws Exception {
-        shouldConvertToCorrectEndEntityInformation("random@random.rand");
+        shouldConvertToCorrectEndEntityInformation("random@random.rand", false);
     }
 
-    public void shouldConvertToCorrectEndEntityInformation(String email) throws Exception {
+    public void shouldConvertToCorrectEndEntityInformation(String email, Boolean checkOverwrite) throws Exception {
         // given
         String endEntityProfileName = "eep1";
         int endEntityProfileId = 7;
@@ -352,11 +353,14 @@ public class EjbcaRestHelperUnitTest {
         String certificateProfileName = "CP1";
         String username = "testuser";
         int certificateProfileId = 9;
-        String subjectDn = DnComponents.stringToBCDNString("CN=mydn"); 
+        String subjectDn = DnComponents.stringToBCDNString("CN=mydn");
+        String overwriteDn = DnComponents.stringToBCDNString("CN=overwrite");
         String name = "test123";
         int status = 20;
         String encodedValidity = "";
         int signedby = 1;
+        String startTime = "2025-04-15 14:30:45";
+        String endTime = "2025-08-15 14:30:45";
 
         X509Certificate mockX509Cert = EasyMock.mock(X509Certificate.class);
 
@@ -394,8 +398,15 @@ public class EjbcaRestHelperUnitTest {
         if(email!=null) {
             builder.email(email);
         }
+
+        if(checkOverwrite) {
+            builder.subjectDn(overwriteDn)
+                    .startTime(startTime)
+                    .endTime(endTime);
+        }
         
         EnrollPkcs10CertificateRequest request = builder.build();
+
 
         // when
         EndEntityInformation endEntityInformation = testClass.convertToEndEntityInformation(authenticationToken, request);
@@ -407,12 +418,26 @@ public class EjbcaRestHelperUnitTest {
         assertEquals("The injected certificate profile id in 'given' section didnt get converted into result properly",
                 certificateProfileId, endEntityInformation.getCertificateProfileId());
 
-        assertEquals("End entiy DN got incorrectly parsed pkcs10 certificate request",
-                "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", endEntityInformation.getDN());
+        if (checkOverwrite) {
+            assertEquals("SubjectDn is not overwritten ", overwriteDn, endEntityInformation.getDN());
+            ExtendedInformation extendedInformation = endEntityInformation.getExtendedInformation();
+            String actualStartTime = extendedInformation.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+            String actualEndTime = extendedInformation.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+            assertEquals("Validity end time is wrong ", startTime, actualStartTime);
+            assertEquals("Validity end time is wrong ", endTime, actualEndTime);
+        } else {
+            assertEquals("End entiy DN got incorrectly parsed pkcs10 certificate request",
+                    "C=EE,ST=Alabama,L=tallinn,O=naabrivalve,CN=hello123server6", endEntityInformation.getDN());
+        }
         
         assertEquals("Email was not set during conversion.", email,endEntityInformation.getEmail());
 
         EasyMock.verify();
+    }
+
+    @Test
+    public void shouldEndEntityConversionOverwriteSubjectDnAndStartDateAndEndDate() throws Exception {
+        shouldConvertToCorrectEndEntityInformation(null, true);
     }
 
     @Test
