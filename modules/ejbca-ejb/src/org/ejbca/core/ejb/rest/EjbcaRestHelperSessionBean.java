@@ -174,7 +174,7 @@ public class EjbcaRestHelperSessionBean implements EjbcaRestHelperSessionLocal, 
 
         List<Map.Entry<String, String>> customData = enrollcertificateRequest.getCustomData();
         if (customData != null && !customData.isEmpty()) {
-            customData.forEach(entry -> {extendedInformation.setExtensionData(entry.getKey(), entry.getValue());});
+            customData.forEach(entry -> {extendedInformation.setStringKeyData(entry.getKey(), entry.getValue());});
         }
 
         String startTime = enrollcertificateRequest.getStartTime();
