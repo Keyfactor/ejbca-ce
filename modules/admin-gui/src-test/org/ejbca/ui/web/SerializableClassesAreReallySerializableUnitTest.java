@@ -19,12 +19,9 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.reflect.ClassPath;
-import com.google.common.reflect.ClassPath.ClassInfo;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.core.ejb.EjbBridgeSessionBean;
 import org.ejbca.util.CeSecoreNameStyleEnumSingleton;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,7 +30,6 @@ import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
 import static org.junit.Assert.fail;
-
 
 /**
  * There are too many failures to leave this in.  We need to fix this at some point,
@@ -57,7 +53,7 @@ public class SerializableClassesAreReallySerializableUnitTest {
 
         // find all classes that implement serializable in our packages
         var serializableClasses = new TreeSet<Class<?>>((c1, c2) -> c1.getName().compareTo(c2.getName()));
-        ImmutableSet<ClassInfo> allClasses = ClassPath.from(EjbBridgeSessionBean.class.getClassLoader()).getAllClasses();
+        var allClasses = ClassPath.from(SerializableClassesAreReallySerializableUnitTest.class.getClassLoader()).getAllClasses();
         allClasses.forEach(c -> {
             if (SerializationUtils.isOurClass(c)) {
                 // dont worry about unit tests
@@ -98,5 +94,5 @@ public class SerializableClassesAreReallySerializableUnitTest {
                         + " which is not serializable"));
         //@formatter:on
     }
-    
+
 }
