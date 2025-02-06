@@ -34,6 +34,8 @@ import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.QueryResultWrapper;
 
+import com.keyfactor.util.RandomHelper;
+
 /**
  * @see org.cesecore.keybind.InternalKeyBindingDataSessionLocal
  *
@@ -44,7 +46,7 @@ public class InternalKeyBindingDataSessionBean implements InternalKeyBindingData
 
     private static final Logger log = Logger.getLogger(InternalKeyBindingDataSessionBean.class);
     private static final InternalResources intres = InternalResources.getInstance();
-    private static final Random rnd = new SecureRandom();
+    private static final Random rnd = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
