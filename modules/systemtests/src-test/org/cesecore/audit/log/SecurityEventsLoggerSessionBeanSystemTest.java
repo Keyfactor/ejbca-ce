@@ -52,8 +52,8 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
@@ -197,8 +197,14 @@ public class SecurityEventsLoggerSessionBeanSystemTest extends SecurityEventsBas
     @Test
     public void test08Authorization() throws Exception {
     	KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test SecurityEventsLoggerSessionTestNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate =  SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test SecurityEventsLoggerSessionTestNoAuth")
+                .setIssuerDn("C=SE,O=Test,CN=Test SecurityEventsLoggerSessionTestNoAuth")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .generateCertificate();  
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
         try {
             securityEventsLogger.log(adminTokenNoAuth, EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE);

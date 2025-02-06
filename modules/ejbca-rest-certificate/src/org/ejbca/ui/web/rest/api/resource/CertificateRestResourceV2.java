@@ -30,7 +30,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.certificate.CertificateDataSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -59,9 +58,6 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     private RaMasterApiProxyBeanLocal raMasterApi;
     private static final Logger log = Logger.getLogger(CertificateRestResourceV2.class);
     
-    @EJB
-    private CertificateDataSessionLocal certDataSession;
-    
     @Override
     public Response status() {
         return Response.ok(RestResourceStatusRestResponse.builder()
@@ -75,7 +71,7 @@ public class CertificateRestResourceV2 extends BaseRestResource {
     public Response getCertificateCount(HttpServletRequest requestContext, Boolean isActive) throws AuthorizationDeniedException, RestException {
         AuthenticationToken admin = getAdmin(requestContext, false);
         return Response.ok(new CertificateCountResponse(
-                certDataSession.getCertificateCount(admin, isActive)
+                raMasterApi.getCertificateCount(admin, isActive)
         )).build();
     }
 

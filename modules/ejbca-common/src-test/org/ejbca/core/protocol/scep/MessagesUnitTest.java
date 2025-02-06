@@ -86,6 +86,7 @@ import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
 import com.keyfactor.util.certificate.DnComponents;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -630,7 +631,15 @@ public class MessagesUnitTest {
     public void testSerializeScepMessage() throws OperatorCreationException, CertificateException, InvalidAlgorithmParameterException, InvalidKeyException,
             NoSuchAlgorithmException, NoSuchProviderException, SignatureException, CertStoreException, IOException, CMSException {
         final KeyPair keypair = KeyTools.genKeys("1024", "RSA");
-        final X509Certificate caCert = CertTools.genSelfCert("CN=testSerializationCA", 10*365, null, keypair.getPrivate(), keypair.getPublic(), "SHA256withRSA", false);
+        final X509Certificate caCert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("CN=testSerializationCA")
+                .setIssuerDn("CN=testSerializationCA")
+                .setValidityDays(10*365)
+                .setIssuerPrivKey(keypair.getPrivate())
+                .setEntityPubKey(keypair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();                
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         String userdn = "CN=testSerialization";
         byte[] request = genScepRequest(caCert, createTransactionId(), CMSSignedGenerator.DIGEST_SHA1, userdn, keys);
@@ -654,8 +663,15 @@ public class MessagesUnitTest {
         ScepRequestGenerator gen = new ScepRequestGenerator();
         gen.setKeys(keyPair, BouncyCastleProvider.PROVIDER_NAME);
         gen.setDigestOid(digestoid);
-        final X509Certificate senderCertificate = CertTools.genSelfCert("CN=SenderCertificate", 24 * 60 * 60 * 1000, null, keyPair.getPrivate(),
-                keyPair.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        final X509Certificate senderCertificate = SimpleCertGenerator.forTESTLeafCert()
+                .setSubjectDn("CN=SenderCertificate")
+                .setIssuerDn("CN=SenderCertificate")
+                .setValidityDays( 24 * 60 * 60 * 1000)
+                .setIssuerPrivKey(keyPair.getPrivate())
+                .setEntityPubKey(keyPair.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA)
+                .setLdapOrder(true)
+                .generateCertificate();      
         return gen.generateCertReq(userDN, "foo123", transactionId, issuerCertificate, senderCertificate, keyPair.getPrivate(),
                 SMIMECapability.dES_CBC);
     }

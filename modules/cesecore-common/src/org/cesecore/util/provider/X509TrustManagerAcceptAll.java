@@ -73,4 +73,7 @@ public class X509TrustManagerAcceptAll implements X509TrustManager {
         return null;
     }
 
+    public static final X509TrustManager[] asArray() {
+        return new X509TrustManager[] { new X509TrustManagerAcceptAll() };
+    }
 }
