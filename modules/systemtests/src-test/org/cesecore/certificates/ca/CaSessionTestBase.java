@@ -12,6 +12,13 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -53,17 +60,11 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.StringTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.KeyGenParams;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * Tests the CA session bean.
@@ -286,7 +287,16 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         List<Certificate> cachain = new ArrayList<Certificate>();
         final PublicKey publicKey = cryptoTokenManagementProxySession.getPublicKey(catoken.getCryptoTokenId(), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)).getPublicKey();
         final PrivateKey privateKey = cryptoTokenManagementProxySession.getPrivateKey(catoken.getCryptoTokenId(), catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true, cryptoTokenManagementProxySession.getSignProviderName(catoken.getCryptoTokenId()));
+        X509Certificate cacert = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn(cadn)
+                .setIssuerDn(cadn)
+                .setValidityDays(10)
+                .setPolicyId("1.1.1.1")
+                .setIssuerPrivKey(privateKey)
+                .setEntityPubKey(publicKey)
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .setProvider(cryptoTokenManagementProxySession.getSignProviderName(catoken.getCryptoTokenId()))
+                .generateCertificate();                             
         assertNotNull(cacert);
         cachain.add(cacert);
         CAInfo cainfo = ca1.getCAInfo();
@@ -469,8 +479,15 @@ public class CaSessionTestBase extends RoleUsingTestCase {
 
     public void authorization() throws Exception {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); 
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CaSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test CaSessionNoAuth")
+                .setIssuerDn("C=SE,O=Test,CN=Test CaSessionNoAuth")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();   
+                
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
         cleanUpAnyExistingCa(testx509ca.getCAId(), null);
         // Try to add and edit CAs with and admin that does not have authorization

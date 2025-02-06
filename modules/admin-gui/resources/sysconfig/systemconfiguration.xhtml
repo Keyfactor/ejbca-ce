@@ -729,7 +729,7 @@
             <h:outputText value="#{web.text.CTLOGCONFIGURATION_KNOWN_LOGS2}"/>
         </h:outputLink>
         <div class="section-label">
-            <h4><h:outputText value="#{web.text.CONFIGURE_GOOGLES_CT_POLICY}"/></h4>
+            <h4><h:outputText value="#{web.text.LIFETIME_CT_POLICY}"/></h4>
         </div>
 		<h:dataTable styleClass="grid" value="#{systemConfigMBean.googleCtPolicy.breakpoints}" var="breakpoint">
 			<h:column>
@@ -742,6 +742,23 @@
 				<h:inputText size="5" value="#{breakpoint.minSct}"/>
 			</h:column>
 		</h:dataTable>
+		<!-- Global CT Settings -->
+		<div class="section-label">
+            <h4><h:outputText value="#{web.text.CT_CACHE_SETTINGS}"/></h4>
+        </div>
+        <h:panelGrid columns="2" columnClasses="gridColumnLeft,gridColumnRight">
+            <h:outputLabel for="ctCacheEnable" value="#{web.text.CT_CACHE_ENABLED}"/>
+            <p:toggleSwitch id="ctCacheEnable" value="#{systemConfigMBean.ctCacheEnabled}" onIcon="pi pi-check" offIcon="pi pi-times" />
+            <h:outputLabel for="ctCacheSize" value="#{web.text.CT_CACHE_MAX_SIZE}"/>
+            <p:inputNumber id="ctCacheSize" value="#{systemConfigMBean.ctCacheSize}" minValue="-1" />
+            <h:outputLabel for="ctCacheCleanupInterval" value="#{web.text.CT_CACHE_CLEANUP_INTERVAL}"/>
+            <p:inputNumber id="ctCacheCleanupInterval" value="#{systemConfigMBean.ctCacheCleanupInterval}" minValue="0" />
+            <h:outputLabel for="ctFastFailEnable" value="#{web.text.CT_CACHE_FAST_FAIL_ENABLED}"/>
+            <p:toggleSwitch id="ctFastFailEnable" value="#{systemConfigMBean.ctCacheFastFailEnabled}" onIcon="pi pi-check" offIcon="pi pi-times" />
+            <h:outputLabel for="ctCacheFastFailBackoff" value="#{web.text.CT_CACHE_FAST_FAIL_BACKOFF}"/>
+            <p:inputNumber id="ctCacheFastFailBackoff" value="#{systemConfigMBean.ctCacheFastFailBackoff}" minValue="0" />
+        </h:panelGrid>
+		
         <div style="margin-top:1em;">
             <h:commandButton id="saveCtPolicy" action="#{systemConfigMBean.saveCurrentConfig}"
                 value="#{web.text.SAVE_CT_POLICY}"

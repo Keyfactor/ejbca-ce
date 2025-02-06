@@ -41,8 +41,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.certificate.SimpleCertGenerator;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
 
@@ -132,8 +132,15 @@ public class BlacklistSessionSystemTest extends RoleUsingTestCase {
     public void testAuthorization() throws Exception {
         // AuthenticationToken that does not have privileges to edit a Blacklist
         KeyPair keys = KeyTools.genKeys("1024",  "RSA");
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test BlacklistSessionSystemTest", 365, null, keys.getPrivate(),
-                keys.getPublic(), AlgorithmConstants.SIGALG_SHA256_WITH_RSA, true);
+        X509Certificate certificate = SimpleCertGenerator.forTESTCaCert()
+                .setSubjectDn("C=SE,O=Test,CN=Test BlacklistSessionSystemTest")
+                .setIssuerDn("C=SE,O=Test,CN=Test BlacklistSessionSystemTest")
+                .setValidityDays(365)
+                .setIssuerPrivKey(keys.getPrivate())
+                .setEntityPubKey(keys.getPublic())
+                .setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA)
+                .generateCertificate();
+                
         AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(certificate);
 
         final String value = "authTest123";

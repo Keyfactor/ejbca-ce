@@ -953,7 +953,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
             // Find the signature algorithm from the public key, because it is more granular, i.e. can differnetiate between ML-DSA-44 and ML-DSA-65
             String signatureAlgorithmName = AlgorithmTools.getAlgorithmNameFromDigestAndKey(CMSSignedGenerator.DIGEST_SHA256, publicKey.getAlgorithm());
             try {
-                final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName).setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
+                final ContentSigner contentSigner = new BufferingContentSigner(new JcaContentSignerBuilder(signatureAlgorithmName, publicKey)
+                        .setProvider(cryptoToken.getSignProviderName()).build(privateKey), 20480);
                 final JcaDigestCalculatorProviderBuilder calculatorProviderBuilder = new JcaDigestCalculatorProviderBuilder().setProvider(BouncyCastleProvider.PROVIDER_NAME);
                 final JcaSignerInfoGeneratorBuilder builder = new JcaSignerInfoGeneratorBuilder(calculatorProviderBuilder.build());
                 gen.addSignerInfoGenerator(builder.build(contentSigner, cacert));
@@ -1845,7 +1846,8 @@ public class X509CAImpl extends CABase implements Serializable, X509CA {
                    // Submit to logs and get signed timestamps
                    byte[] sctlist = null;
                    try {
-                       sctlist = ct.fetchSCTList(chain, certProfile, certGenParams.getCTSubmissionConfigParams(), certGenParams.getSctDataCallback());
+                       sctlist = ct.fetchSCTList(chain, certProfile, certGenParams.getCTSubmissionConfigParams(), certGenParams.getSctDataCallback(),
+                               certGenParams.getCtCacheFastFailEnabled(), certGenParams.getCtCacheFastFailBackoff());
                    } catch (CTLogException e) {
                        e.setPreCertificate(EJBTools.wrap(cert));
                        throw e;

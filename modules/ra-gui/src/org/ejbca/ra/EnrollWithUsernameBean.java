@@ -200,15 +200,6 @@ public class EnrollWithUsernameBean extends EnrollWithRequestIdBean implements S
     @Override
     public final void validateCsr(FacesContext context, UIComponent component, Object value) throws ValidatorException {
         RaCsrTools.validateCsr(value, this, raLocaleBean, getCertificateProfile(), username, true);
-        try {
-            if(getCertificateProfile().getAllowDNOverride()) {
-                RaCsrTools.validetaNumberOfFieldsInSubjectDn(authorizedEndEntityProfiles.get(getEndEntityInformation().getEndEntityProfileId()), getCertificateRequest(), raLocaleBean, username, true);
-            }
-        } catch (ValidatorException e) {
-            setSelectedAlgorithm(null);
-            certificateRequest = null;
-            throw e;
-        }
     }
 
     private CertificateProfile getCertificateProfile() {

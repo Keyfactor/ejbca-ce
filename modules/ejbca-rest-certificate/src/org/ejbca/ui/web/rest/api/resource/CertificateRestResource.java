@@ -25,7 +25,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CACommon;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -59,6 +58,7 @@ import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileValidationException;
 import org.ejbca.core.protocol.rest.EnrollPkcs10CertificateRequest;
+import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
 import org.ejbca.ui.web.rest.api.exception.RestException;
@@ -201,7 +201,7 @@ public class CertificateRestResource extends BaseRestResource {
     }
 
     public Response certificateRequest(final HttpServletRequest requestContext, final CertificateRequestRestRequest certificateRequestRestRequest)
-            throws RestException, AuthorizationDeniedException, CesecoreException, IOException, SignatureException, NoSuchFieldException {
+            throws RestException, AuthorizationDeniedException, CesecoreException, SignatureException, NoSuchFieldException {
         try {
             final AuthenticationToken authenticationToken = getAdmin(requestContext, false);
             final EnrollPkcs10CertificateRequest requestData = CertificateRequestRestRequest.converter().toEnrollPkcs10CertificateRequest(certificateRequestRestRequest);
@@ -209,14 +209,19 @@ public class CertificateRestResource extends BaseRestResource {
             // local call as the CA should normally be present as external CA in RA
             String caName = requestData.getCertificateAuthorityName();
             // seems to be only way to read from cache without instantiating the CA related objects
-            if (!caSessionLocal.getCAIdToNameMap().values().contains(caName)) {
+            if (!caSessionLocal.getCAIdToNameMap().containsValue(caName)) {
                 throw new RestException(Status.BAD_REQUEST.getStatusCode(), "CA with name " + caName + " doesn't exist.");
             }
             
             final byte[] certificateBytes = raMasterApi.processCertificateRequest(authenticationToken, requestData.getUsername(), requestData.getPassword(),
-                    requestData.getCertificateRequest(), CertificateConstants.CERT_REQ_TYPE_PKCS10, null, "CERTIFICATE");
+                    requestData.getCertificateRequest(), requestData.getRequestType(), null, "CERTIFICATE");
 
-            final X509Certificate certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            Certificate certificate = null;
+            if (requestData.getRequestType() == CertificateConstants.CERT_REQ_TYPE_CVC) {
+                certificate = CertTools.getCertfromByteArray(certificateBytes, CardVerifiableCertificate.class);
+            } else {
+                certificate = CertTools.getCertfromByteArray(certificateBytes, X509Certificate.class);
+            }
 
             final List<Certificate> certificateChain = fetchCaCertificateChain(
                     authenticationToken,
@@ -237,7 +242,8 @@ public class CertificateRestResource extends BaseRestResource {
         } catch (CertificateExtensionException e) {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to an issue with certificate extensions.");
         } catch (IOException e) {
-            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to malformed CSR.");
+            throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Failed to generate certificate due to malformed certificate requet for type "
+                    + certificateRequestRestRequest.getCertificateRequestType() + ".");
         } catch (CertificateCreateException e) {
             throw makeCertificateCreationException(e);
         }
@@ -302,8 +308,11 @@ public class CertificateRestResource extends BaseRestResource {
             throw new RestException(Status.BAD_REQUEST.getStatusCode(), "Unsupported token type. Must be one of 'PKCS12', 'BCFKS' or 'JKS'.");
         }
         final byte[] keyStoreBytes = raMasterApi.generateKeyStore(admin, endEntityInformation);
-        CACommon caCommon = caSessionLocal.getCA(admin, endEntityInformation.getCAId());
-        List<Certificate> caCertificateChain = fetchCaCertificateChain(admin, true, caCommon.getName());
+        String caName = caSessionLocal.getCAIdToNameMap().get(endEntityInformation.getCAId());
+        if (caName == null) {
+            throw new RestException(Status.NOT_FOUND.getStatusCode(), "CA does not exist");
+        }
+        List<Certificate> caCertificateChain = fetchCaCertificateChain(admin, true, caName);
         String keyStoreType = SecConst.getKeyStoreTypeAsString(tokenType);
 
         X509Certificate certificate = getFirstCertificate(keyStoreBytes, keyStoreType, keyStorePassword);

@@ -24,6 +24,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.InvalidConfigurationException;
@@ -600,6 +601,7 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
         data.put(ALIAS_LIST, aliases);
     }
 
+    @SuppressWarnings("unchecked")
     public void cloneAlias(String originAlias, String cloneAlias) {
         if(log.isDebugEnabled()) {
             log.debug("Cloning Autoenrollment alias '" + originAlias + "' to '" + cloneAlias + "'");
@@ -621,12 +623,17 @@ public class MSAutoEnrollmentConfiguration extends ConfigurationBase implements 
             return;
         }
 
+        // Otherwise the cloned alias data might still have references to lists etc from the original alias
+        final LinkedHashMap<Object, Object> clonedDataMap = (LinkedHashMap<Object, Object>) SerializationUtils.clone(data);
+
         for (String originalKey : getAllAliasKeys(originAlias)) {
             String cloneKey = originalKey;
             cloneKey = StringUtils.replace(cloneKey, originAlias + ".", cloneAlias + ".");
-            Object value = data.get(originalKey);
+
+            final Object value = clonedDataMap.get(originalKey);
             data.put(cloneKey, value);
         }
+
         aliases.add(cloneAlias);
         data.put(ALIAS_LIST, aliases);
     }
