@@ -24,6 +24,7 @@ import javax.net.ssl.X509TrustManager;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -37,6 +38,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -112,7 +114,7 @@ public class EstAliasSystemTest extends EstTestCase {
             // Create TLS context that accepts all CA certificates and does not use client cert authentication
             SSLContext context = SSLContext.getInstance("TLS");
             TrustManager[] tm = new X509TrustManager[] {new X509TrustManagerAcceptAll()};
-            context.init(null, tm, new SecureRandom());
+            context.init(null, tm, RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()));
             SSLSocketFactory factory = context.getSocketFactory();
             HttpsURLConnection.setDefaultSSLSocketFactory(factory);
 

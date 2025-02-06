@@ -28,11 +28,13 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.math.Primes;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.profiles.Profile;
 import org.cesecore.util.ui.DynamicUiActionCallback;
 import org.cesecore.util.ui.DynamicUiCallbackException;
 import org.cesecore.util.ui.DynamicUiProperty;
 
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
 import com.keyfactor.util.keys.KeyTools;
@@ -116,7 +118,7 @@ public class RsaKeyValidator extends KeyValidatorBase {
         // SP 800-89 requires use of an approved DRBG.
 //        SecureRandom testRandom = FipsDRBG.SHA256.fromEntropySource(new SecureRandom(), false)
 //            .build(Pack.longToBigEndian(System.currentTimeMillis()), false, Strings.toByteArray(Thread.currentThread().toString()));
-        SecureRandom testRandom = new SecureRandom(); // we cheat a little and use regular SecureRandom, which is good
+        SecureRandom testRandom = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
         Primes.MROutput mr = Primes.enhancedMRProbablePrimeTest(modulus, testRandom, iterations);
         if (!mr.isProvablyComposite())
         {

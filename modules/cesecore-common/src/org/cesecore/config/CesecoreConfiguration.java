@@ -79,10 +79,12 @@ public final class CesecoreConfiguration {
     
         
     /**
-     * The algorithm that should be used to generate random numbers (Random Number Generator Algorithm)
+     * The algorithm that should be used to generate random numbers (Random Number Generator Algorithm).
+     * Defaults to BCPS800HYBRID.
      */
     public static String getCaSerialNumberAlgorithm() {
-        return ConfigurationHolder.getString("ca.rngalgorithm");
+        String algorithm = ConfigurationHolder.getString("ca.rngalgorithm");
+        return algorithm == null? "BCPS800HYBRID" : algorithm; 
     }
 
     /**
