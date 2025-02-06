@@ -91,6 +91,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.PSD2RoleOfPSPStatement;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.config.EABConfiguration;
 import org.cesecore.util.LogRedactionUtils;
 import org.cesecore.util.PrintableStringNameStyle;
@@ -113,6 +114,7 @@ import org.ejbca.util.cert.OID;
 import com.keyfactor.ErrorCode;
 import com.keyfactor.util.CeSecoreNameStyle;
 import com.keyfactor.util.CertTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.StringTools;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmTools;
@@ -1330,7 +1332,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
 
         // Fill end-entity information (Username and Password)
         final byte[] randomData = new byte[16];
-        final Random random = new SecureRandom();
+        final Random random = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
         random.nextBytes(randomData);
         if (StringUtils.isBlank(endEntityInformation.getUsername())) {
             String autousername = new String(Hex.encode(randomData));
@@ -3393,7 +3395,7 @@ public class EnrollMakeNewRequestBean implements Serializable {
         String password = getEndEntityInformation().getPassword();
         if (StringUtils.isEmpty(password)) {
             final byte[] randomData = new byte[16];
-            final Random random = new SecureRandom();
+            final Random random = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
             random.nextBytes(randomData);
             password = new String(Hex.encode(CertTools.generateSHA256Fingerprint(randomData)));
         }

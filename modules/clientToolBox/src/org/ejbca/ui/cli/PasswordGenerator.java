@@ -23,6 +23,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.cesecore.config.CesecoreConfiguration;
+
+import com.keyfactor.util.RandomHelper;
+
 /**
  * <p><b>PasswordGenerator Module</b>
  * <p>Implements a cryptographically secure password generator. Runs as a
@@ -37,7 +41,7 @@ import java.util.regex.Pattern;
  * @version $Id$
  */
 public class PasswordGenerator extends ClientToolBox {
-    private static final SecureRandom secureRandom = new SecureRandom();
+    private static final SecureRandom secureRandom = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     @Override
     protected void execute(final String[] args) {

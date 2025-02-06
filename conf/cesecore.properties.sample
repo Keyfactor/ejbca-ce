@@ -44,8 +44,7 @@
 # ------------ Basic CA configuration ---------------------
 #
 # Default Random Number Generator algorithm for certificate serial number generation.
-# Available algorithms are: BCSP800Hybrid, SHA1PRNG, default, defaultstrong
-# From Java 11 and onwards, DRBG is also available
+# Available algorithms are: BCSP800Hybrid, default, DRBG, SHA1PRNG
 # See Java documentation on "SecureRandom Number Generation Algorithms", https://docs.oracle.com/en/java/javase/11/docs/specs/security/standard-names.html#securerandom-number-generation-algorithms
 # 
 # BCSP800Hybrid implements a FIPS/SP800 compliant DRBG chain. After initial seed generation the base source uses a 
@@ -59,17 +58,12 @@
 #
 # Using the value "default" (or an empty value which is hard to set here) uses the OS:es default implementation, 
 #   which may vary. See the documentation of Java's SecureRandom for more information. On Linux this uses /dev/(u)random.
-# Using the value "defaultstrong" is only available in JDK 8 and later and will use the SecureRandom.getInstanceStrong(), to get
-#   an ensured "strong" random number generator. On JDK's below 8 it will throw an error if used. 
-#   Before using "defaultstrong" take note that it will on most cases use a blocking random number generator, 
-#   and if you don't have enough entropy it may take a long time, >60 seconds, to create a single random number (i.e. to generate a certificate). 
-#   Test well before using. 
-# Default value (if property left unset) is SHA1PRNG which is/was FIPS compliant according to Java documentation
-#ca.rngalgorithm=SHA1PRNG
+# Default value fo CA serial numbers (if property left unset) is BCSP800Hybrid which is FIPS compliant.
+#ca.rngalgorithm=BCSP800Hybrid
 #ca.rngalgorithm=default
 #ca.rngalgorithm=DRBG
-#ca.rngalgorithm=BCSP800Hybrid
 #ca.rngalgorithm=PKCS11
+#ca.rngalgorithm=SHA1PRNG
 
 # The default length in octets of certificate serial numbers configured when creating new CAs. 
 # Note: since EJBCA 7.0.1 this only affects the default value of this field, which is editable in the CA configuration 
