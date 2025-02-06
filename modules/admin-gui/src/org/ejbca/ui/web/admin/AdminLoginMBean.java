@@ -38,6 +38,7 @@ import org.cesecore.authentication.oauth.OAuthGrantResponseInfo;
 import org.cesecore.authentication.oauth.OAuthKeyInfo;
 import org.cesecore.authentication.oauth.OauthRequestHelper;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingMgmtSessionLocal;
 import org.cesecore.keybind.KeyBindingFinder;
 import org.cesecore.keybind.KeyBindingNotFoundException;
@@ -46,6 +47,7 @@ import org.ejbca.config.WebConfiguration;
 import org.ejbca.ui.web.jsf.configuration.EjbcaWebBean;
 import org.ejbca.util.HttpTools;
 
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 
 /**
@@ -196,7 +198,7 @@ public class AdminLoginMBean extends BaseManagedBean implements Serializable {
         } else {
             log.debug("Generating randomized 'state' string.");
             final byte[] stateBytes = new byte[32];
-            new SecureRandom().nextBytes(stateBytes);
+            RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()).nextBytes(stateBytes);
             stateInSession = Base64.encodeBase64URLSafeString(stateBytes);
             initOauthProviders();
             if (showWelcomePage) {

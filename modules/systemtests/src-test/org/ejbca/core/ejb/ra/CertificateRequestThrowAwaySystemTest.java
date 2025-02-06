@@ -44,6 +44,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.keybind.InternalKeyBindingNonceConflictException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -65,6 +66,7 @@ import org.junit.rules.TestRule;
 import com.keyfactor.util.Base64;
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
@@ -90,7 +92,7 @@ public class CertificateRequestThrowAwaySystemTest {
     private static final Logger LOG = Logger.getLogger(CertificateRequestThrowAwaySystemTest.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CertificateRequestThrowAwaySystemTest"));
-    private static final Random random = new SecureRandom();
+    private static final Random random = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     private static final String TESTCA_NAME = "ThrowAwayTestCA";
 

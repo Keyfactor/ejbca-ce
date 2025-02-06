@@ -163,28 +163,16 @@ public class SernoGeneratorUnitTest {
 
 
     /** Try fetching a random number generator of type "defaultstrong". 
-     * We will not make actual tests with this, since on Tomas's Linux laptop (on real HW) 
-     * it takes 30-70 seconds to generate a single random number once the entropy pool is exhausted after 0-10 serials.
-     * On JDK7 and less the "defaultstrong" option is not available, which is considered in this test.
+     *  This is expected to fail, we don't support this option anymore.
      */
     @Test(timeout = 60_000)
     public void testGettingDefaultStrong() throws Exception {
         try {
             generateSernos(4, "defaultstrong", 0, 0);
-            // If running on JDK >= 8 we will come here
-            final String algo = ((SernoGeneratorRandom)SernoGeneratorRandom.instance(4)).getAlgorithm();
-            assertEquals("NativePRNGBlocking", algo);        
+            ((SernoGeneratorRandom)SernoGeneratorRandom.instance(4)).getAlgorithm();
+            fail("Should throw IllegalStateException when defaultstrong is used");        
         } catch (IllegalStateException e) {
-            // if running on JDK < 8 this is a valid exception
-            try {
-                SecureRandom.class.getDeclaredMethod("getInstanceStrong");
-                // What? We had an IllegalStateException but running on JDK >= 8?
-                fail("We couldn't get the 'defaultstrong' algorithm although we appear to run on JDK >=8: "+e.getMessage());
-            } catch (NoSuchMethodException nsme) {
-                // Yep, this JDK didn't have SecureRandom.getInstanceStrong(), so let it pass
-                log.debug("Trying to get SecureRandom.getInstanceStrong() on JDK < 8 resulted in an IllegalStateException, as expected");
-                assumeTrue("Test is only relevant on Java 8.", false);
-            }
+            assertEquals("The algorithm option defaultstrong is not supported by this software. Please use a non-blocking algorithm instead.", e.getMessage());
         }
     }
 

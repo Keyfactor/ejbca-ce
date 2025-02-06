@@ -61,6 +61,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.GlobalConfigurationSession;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
@@ -77,6 +78,7 @@ import org.junit.Test;
 
 import com.keyfactor.util.CertTools;
 import com.keyfactor.util.CryptoProviderTools;
+import com.keyfactor.util.RandomHelper;
 import com.keyfactor.util.certificate.DnComponents;
 import com.keyfactor.util.crypto.algorithm.AlgorithmConstants;
 import com.keyfactor.util.keys.KeyTools;
@@ -89,7 +91,7 @@ import com.keyfactor.util.string.StringConfigurationCache;
 public class CmpRaThrowAwaySystemTest extends CmpTestCase {
 
     private static final Logger LOG = Logger.getLogger(CmpRaThrowAwaySystemTest.class);
-    private static final Random RND = new SecureRandom();
+    private static final Random RND = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
 
     private static final String TESTCA_NAME = "CmpRaThrowAwayTestCA";
     private static final String CERTPROFILE_NAME = "CmpRaThrowAwayTest";

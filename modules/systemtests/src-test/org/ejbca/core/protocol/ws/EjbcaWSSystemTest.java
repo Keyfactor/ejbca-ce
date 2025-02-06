@@ -110,6 +110,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.configuration.GlobalConfigurationSessionRemote;
 import org.cesecore.keys.token.CryptoTokenInfo;
@@ -208,6 +209,8 @@ import com.keyfactor.util.keys.KeyTools;
 import com.keyfactor.util.keys.token.CryptoToken;
 import com.keyfactor.util.keys.token.CryptoTokenOfflineException;
 import com.keyfactor.util.keys.token.KeyGenParams;
+import com.keyfactor.util.RandomHelper;
+
 
 /**
  * System tests for the EjbcaWS API. This test uses remote EJB calls to setup the environment.
@@ -288,11 +291,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
     private final static SecureRandom secureRandom;
 
     static {
-        try {
-            secureRandom = SecureRandom.getInstance("SHA1PRNG");
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
+        secureRandom = RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm());
     }
 
     private static List<File> fileHandles = new ArrayList<>();
@@ -2413,7 +2412,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test48CertificateRequestWithCardNumber() throws Exception {
-        String userName = "wsRequestCardNumber" + new SecureRandom().nextLong();
+        String userName = "wsRequestCardNumber" + RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()).nextLong();
 
         // Generate a CSR
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -3035,7 +3034,7 @@ public class EjbcaWSSystemTest extends CommonEjbcaWs {
      */
     @Test
     public void test75CertificateRequestWithOnlyAltNames() throws Exception {
-        final String username = "wsRequestOnlyAltNames" + new SecureRandom().nextLong();
+        final String username = "wsRequestOnlyAltNames" + RandomHelper.getInstance(CesecoreConfiguration.getCaSerialNumberAlgorithm()).nextLong();
         final String eeProfileName = username;
         // Generate a CSR
         final KeyPair keyPair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
