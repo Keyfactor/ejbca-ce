@@ -28,6 +28,9 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 
+import com.keyfactor.util.CertTools;
+import com.keyfactor.util.certificate.DnComponents;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -41,16 +44,11 @@ import org.ejbca.ui.cli.infrastructure.parameter.enums.MandatoryMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.ParameterMode;
 import org.ejbca.ui.cli.infrastructure.parameter.enums.StandaloneMode;
 
-import com.keyfactor.util.CertTools;
-import com.keyfactor.util.certificate.DnComponents;
-
 /**
  * Implementation of the CLI command <code>./ejbca.sh ca importcertsms</code>.
- * 
+ *
  * <p>This command is used to migrate data exported from a Microsoft CA-installation using the <code>certutil</code>
  * tool in Windows to EJBCA.
- * 
- * @version $Id$
  */
 public class CaImportMsCaCertificates extends BaseCaAdminCommand {
     /**
@@ -135,8 +133,8 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
         registerParameter(new Parameter(CA_NAME_KEY, "CA Name", MandatoryMode.MANDATORY, StandaloneMode.ALLOW, ParameterMode.ARGUMENT,
                 "The name of an existing CA in EJBCA, whose certificates are going to be imported."));
         registerParameter(new Parameter(EE_USERNAME, "End Entity Username", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "Specify a single field, or a comma-separated list of fields in the certificate from where the end entity username is extracted. Possible values are:" 
-                    + System.lineSeparator() + System.lineSeparator() 
+                "Specify a single field, or a comma-separated list of fields in the certificate from where the end entity username is extracted. Possible values are:"
+                    + System.lineSeparator() + System.lineSeparator()
                     + "    SERIAL_NUMBER - Use the certificate serial number" + System.lineSeparator()
                     + "    SERIAL_NUMBER_HEX - Use the certificate serial number in hexadecimal format" + System.lineSeparator()
                     + "    DN - Use the whole subject distinguished name" + System.lineSeparator()
@@ -145,13 +143,13 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                     + "    OU - Use the first organizational unit in the subject distinguished name" + System.lineSeparator()
                     + "    UPN - Use a non-empty Microsoft UPN from the certutil dump file" + System.lineSeparator()
                     + "    universalPrincipalName - Use the first Microsoft UPN in the subject alternative name"
-                    + System.lineSeparator() + System.lineSeparator() + 
-                    "If multiple fields are specified, the first non-empty one is used. If the certificate does not contain any of " + 
+                    + System.lineSeparator() + System.lineSeparator() +
+                    "If multiple fields are specified, the first non-empty one is used. If the certificate does not contain any of " +
                     "the specified fields, the certificate serial number is used instead."));
         registerParameter(new Parameter(EE_PASSWORD, "End Entity Password", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
                 "The password (enrollment code) to use for new end entities. If no password is specified, the default password 'foo123' is used."));
         registerParameter(new Parameter(CHARSET_KEY, "File encoding", MandatoryMode.OPTIONAL, StandaloneMode.FORBID, ParameterMode.ARGUMENT,
-                "The file encoding of the certutil dump file. Using UTF-16 if omitted."));
+                "The file encoding of the certutil dump file. Using UTF-16 if omitted. Other values can be UTF-8, etc."));
     }
 
     @Override
@@ -170,14 +168,14 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
                 + "This command helps you to migrate certificates, revocation information and end entities from an existing Microsoft CA-installation to EJBCA."
                 + System.lineSeparator() + System.lineSeparator()
                 + "Before starting the migration, you need to create the appropriate profiles and the CA to use during the import. Then export the existing data "
-                + "in your Microsoft CA-installation to a dump file. Use the certutil tool in Windows for this task:" + System.lineSeparator()
+                + "in your Microsoft CA-installation to a dump file. Use the certutil tool in Windows for this task. For example (check the flags usage for your system):" + System.lineSeparator()
                 + System.lineSeparator() + "    certutil -view -restrict \"GeneralFlags > 0\" /out \\" + System.lineSeparator()
-                + "        \"UPN,CertificateTemplate,Disposition,RawCertificate\" > certdump.txt" + System.lineSeparator() + System.lineSeparator()
+                + "        \"UPN,CertificateTemplate,Disposition,RawCertificate,SerialNumber,DistinguishedName\" > certdump.txt" + System.lineSeparator() + System.lineSeparator()
                 + "This command creates a file 'certdump.txt' containing, for each certificate, the User Principal Name (UPN) of the user to whom the certificate "
                 + "was issued, the OID and name of the certificate template used, the revocation status and the actual PEM encoded certificate."
                 + System.lineSeparator() + System.lineSeparator()
-                + "Once the dump file has been created, it can be imported to EJBCA using the 'importcertsms' command. For example:"
-                + System.lineSeparator() + System.lineSeparator() + "    ./ejbca.sh ca importcertsms '/path/to/certdump.txt' 'Name of CA'"
+                + "Once the dump file has been created, it can be imported to EJBCA using the 'importcertsms' command. For example (see separate description of parameters like charset and verbose):"
+                + System.lineSeparator() + System.lineSeparator() + "    ./ejbca.sh ca importcertsms '/path/to/certdump.txt' 'Name of CA' --charset [Optional Parameter - Default: UTF-16 | UTF-8 | etc..] --verbose"
                 + System.lineSeparator() + System.lineSeparator()
                 + "During the import, an end entity is created in EJBCA if one does not already exist. The serial number of the certificate is used as the "
                 + "username of the end entity by default. If desired, the username can be derived from a field in the certificate instead, by using the "
@@ -311,11 +309,11 @@ public class CaImportMsCaCertificates extends BaseCaAdminCommand {
         }
 
         final CommandResult commandResult = new CaImportCertCommand().execute(
-                "--caname", parameters.get(CA_NAME_KEY), 
+                "--caname", parameters.get(CA_NAME_KEY),
                 "--password", password,
-                "--username", username, 
+                "--username", username,
                 "-a", requestDisposition == RequestDisposition.REVOKED ? "REVOKED" : "ACTIVE",
-                "-f", pathToCertificate, 
+                "-f", pathToCertificate,
                 "--certprofile", certificateTemplate,
                 "--eeprofile", certificateTemplate,
                 "--overwrite");
