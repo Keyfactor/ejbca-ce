@@ -296,7 +296,7 @@ public class CertificateRestResource extends BaseRestResource {
             return Response.status(Status.CREATED).entity(enrollCertificateRestResponse).build();
 
         } catch (CertificateParsingException | CMSException e) {
-            log.info("Exception during enrollPkcs10Certificate: ", LogRedactionUtils.getRedactedThrowable(e));
+            log.info("Exception during enrollCertificate: ", LogRedactionUtils.getRedactedThrowable(e));
             throw new RestException(Status.BAD_REQUEST.getStatusCode(),
                     e.getCause() != null ? e.getCause().getMessage() : e.getMessage());
         }
