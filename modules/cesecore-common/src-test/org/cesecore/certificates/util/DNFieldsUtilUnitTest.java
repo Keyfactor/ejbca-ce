@@ -93,6 +93,14 @@ public class DNFieldsUtilUnitTest {
         assertFalse("A subject-DN string with missing CN does not belong to a CSCA certificate.", DNFieldsUtil.dnEqualsWithOtherSerialNumber(DNFieldsUtil.dnStringToMap(string1), DNFieldsUtil.dnStringToMap(string1)));
 
     }
+
+    @Test
+    public void testMapContainsCountryAndCN() {
+        assertTrue(DNFieldsUtil.mapContainsCountryAndCN(DNFieldsUtil.dnStringToMap("C=SE,CN=CSCA")));
+        assertFalse(DNFieldsUtil.mapContainsCountryAndCN(DNFieldsUtil.dnStringToMap("CN=CSCA, C=SE")));
+        assertFalse(DNFieldsUtil.mapContainsCountryAndCN(DNFieldsUtil.dnStringToMap("C=SE")));
+        assertFalse(DNFieldsUtil.mapContainsCountryAndCN(DNFieldsUtil.dnStringToMap("CN=CSCA")));
+    }
     
     @Test
     public void testRemoveAllEmpties() throws Exception {
@@ -101,6 +109,8 @@ public class DNFieldsUtilUnitTest {
     	assertEquals(simpleBeforeAfter, removeEmpties(simpleBeforeAfter, false));
     	assertEquals(simple2AfterA, removeEmpties(simple2Before, false));
     }
+
+
     
     @Test
     public void testRemoveTrailingEmpties() {
