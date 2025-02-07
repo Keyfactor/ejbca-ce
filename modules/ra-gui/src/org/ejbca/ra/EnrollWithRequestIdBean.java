@@ -22,6 +22,7 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,6 +35,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.IllegalNameException;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.exception.CertificateSerialNumberException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -272,6 +274,21 @@ public class EnrollWithRequestIdBean implements Serializable {
             raLocaleBean.addMessageInfo("enroll_unauthorized_operation", e.getMessage());
             log.info(raAuthenticationBean.getAuthenticationToken() + " is not authorized to execute this operation", e);
         } catch (EjbcaException e) {
+            
+            // Show Validator exception
+            // EjbcaException -> CertificateCreateException -> ValidationException
+            if (e.getCause()!=null && 
+                    e.getCause().getClass().equals(CertificateCreateException.class) &&
+                    e.getCause().getCause()!=null && 
+                    e.getCause().getCause().getClass().equals(
+                                org.cesecore.keys.validation.ValidationException.class)) {
+                String validationErrorOutMessage = e.getCause().getCause().getMessage();
+                String[] validationErrorOutLines = validationErrorOutMessage.split("ERROUT:");
+                raLocaleBean.addMessageError("enroll_keystore_could_not_be_generated", getEndEntityInformation().getUsername(), 
+                        Arrays.asList(validationErrorOutLines));
+                return;
+            }
+            
             ErrorCode errorCode = EjbcaException.getErrorCode(e);
             if (errorCode != null) {
                 if (errorCode.equals(ErrorCode.LOGIN_ERROR)) {
