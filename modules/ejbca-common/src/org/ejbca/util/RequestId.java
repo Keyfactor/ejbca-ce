@@ -24,7 +24,7 @@ public final class RequestId implements AutoCloseable {
 
     private static final Logger log = Logger.getLogger(RequestId.class);
 
-    protected static final String SEPARATOR = "   ";
+    protected static final String SEPARATOR = ": ";
     private static final SecureRandom secureRandom;
 
     static {
