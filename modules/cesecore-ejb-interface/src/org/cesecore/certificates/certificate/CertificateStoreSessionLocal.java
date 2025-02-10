@@ -83,9 +83,9 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      *
      * @throws AuthorizationDeniedException if admin was not authorized to store certificate in database
      */
-    CertificateDataWrapper storeCertificate(AuthenticationToken admin, Certificate incert, String username, String cafp, int status,
-                                            int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime,
-                                            String accountBindingId, String issuerDn) throws AuthorizationDeniedException;
+    CertificateDataWrapper storeCertificate(AuthenticationToken admin, final Certificate incert, final String username, final String cafp, final int status,
+            final int type, final int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex, final String tag, final long updateTime,
+            final String accountBindingId, final String issuerDn) throws AuthorizationDeniedException;
 
 
     /**
@@ -117,8 +117,9 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      * @return CertificateDataWrapper with the certificate just stored that can be used for further publishing
      * 
      */
-    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, Certificate incert, String username, String cafp, String certificateRequest, 
-            int status, int type, int certificateProfileId, int endEntityProfileId, int crlPartitionIndex, String tag, long updateTime, String accountBindingId);
+    CertificateDataWrapper storeCertificateNoAuth(AuthenticationToken admin, final Certificate incert, final String username, final String cafp,
+            final String certificateRequest, final int status, final int type, final int certificateProfileId, final int endEntityProfileId, final int crlPartitionIndex,
+            final String tag, final long updateTime, final String accountBindingId);
 
     /**
      * Stores a certificate without checking authorization. This should be used from other methods where authorization to

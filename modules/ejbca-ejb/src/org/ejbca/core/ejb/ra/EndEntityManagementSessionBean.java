@@ -333,14 +333,10 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * @throws EndEntityProfileValidationException if the end entity fails constrains set by the end entity profile
      * @throws WaitingForApprovalException to mark that a request has been created and is awaiting approval. The request ID will be included as a field in this exception.
      */
-    private EndEntityInformation addUser(final AuthenticationToken authenticationToken,
-                                         EndEntityInformation endEntity,
-                                         final boolean clearPwd,
-                                         final AuthenticationToken lastApprovingAdmin,
-                                         final boolean isForKeyImport)
-            throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException,
-            WaitingForApprovalException, CADoesntExistsException, CustomFieldException, IllegalNameException,
-            ApprovalException, CertificateSerialNumberException {
+    private EndEntityInformation addUser(final AuthenticationToken authenticationToken, EndEntityInformation endEntity, final boolean clearPwd,
+            final AuthenticationToken lastApprovingAdmin, final boolean isForKeyImport)
+            throws AuthorizationDeniedException, EndEntityExistsException, EndEntityProfileValidationException, WaitingForApprovalException, CADoesntExistsException,
+            CustomFieldException, IllegalNameException, ApprovalException, CertificateSerialNumberException {
         final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final int caId = endEntity.getCAId();
         // Check if administrator is authorized to add user to CA.
