@@ -18,6 +18,7 @@ import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAData;
@@ -63,9 +64,12 @@ public class KeyImportSessionBean implements KeyImportSessionLocal, KeyImportSes
             CAData caData = caSession.findBySubjectDN(caDn);
             if (caData == null) {
                 log.error("No CA found with Subject DN " + caDn);
-                throw new EjbcaException("CA does not exist: " + caDn);
+                throw new EjbcaException("CA does not exist. CA DN: " + caDn);
             }
             CAInfo caInfo = caSession.getCAInfo(authenticationToken, caData.getCaId());
+            if (caInfo == null || StringUtils.isEmpty(caInfo.getSubjectDN())) {
+                throw new EjbcaException("CAInfo is empty, looks like CA does not exist. CA id: " + caData.getCaId());
+            }
             String certificateProfileName = keyImportRequestData.getCertificateProfileName();
             int certificateProfileId = certificateProfileSession.getCertificateProfileId(certificateProfileName);
             if (certificateProfileId == 0) {

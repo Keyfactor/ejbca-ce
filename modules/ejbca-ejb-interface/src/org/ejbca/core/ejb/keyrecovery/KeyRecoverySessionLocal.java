@@ -50,6 +50,27 @@ public interface KeyRecoverySessionLocal extends KeyRecoverySession {
     boolean addKeyRecoveryDataInternal(AuthenticationToken admin, CertificateWrapper caCertificate, CertificateWrapper certificate, String username, KeyPairWrapper keypair, int cryptoTokenId,
             String keyAlias);
 
+    /**
+     * Adds a certificates keyrecovery data to the database. This method allows a crypto token to be specified,
+     * and does not require the CA to be present on the system. It also allows an issuer DN to be specified which may differ from the actual issuerDN.
+     *
+     * <p>Additionally, this method expects the caller to do the authorization checks, using the authorization
+     * HashMaps available on the RA.
+     *
+     * @param admin the administrator calling the function (used for audit logging)
+     * @param caCertificate the certificate of the issuing CA
+     * @param certificate the certificate used with the keypair.
+     * @param username of the administrator
+     * @param keypair the actual keypair to save.
+     * @param cryptoTokenId ID of crypto token to use to encrypt key.
+     * @param keyAlias key alias in crypto token to use to encrypt key.
+     * @param issuerDn issuerDn to be saved
+     * @return false if the certificates keyrecovery data already exists, or if the crypto token was offline.
+     * @see KeyRecoverySession#addKeyRecoveryData
+     */
+    boolean addKeyRecoveryDataInternal(AuthenticationToken admin, CertificateWrapper caCertificate, CertificateWrapper certificate, String username,
+                                                     KeyPairWrapper keypair, int cryptoTokenId, String keyAlias, final String issuerDn);
+
 
     /**
      * Returns the keyrecovery data for a user. Observe only one certificate's
